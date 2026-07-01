@@ -108,6 +108,10 @@ interface Hex {
   territoryId?: string;       // owning territory (undefined for open sea/wild filler)
   moveCost: number;           // base traversal cost multiplier
   nodeIds: string[];
+  battleMapId?: string;       // the UNIQUE battle-engine map for battles fought on this hex.
+                              // Layer stitch: every overworld hexagon has its own battlefield in
+                              // etherfantasy-browser-moba-game; BattleInstance.hexId → this map.
+                              // Fighting FOR a territory means fighting ON it (see 04 §handoff).
 }
 
 interface Territory {
