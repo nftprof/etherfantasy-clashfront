@@ -50,9 +50,24 @@ in as a sibling. Proposed layout (finalize in [`07`](./07-backend-architecture.m
 /infra                    # IaC, migrations, deploy
 ```
 
-> ❓ OPEN — **MOBA fork ingestion.** The EF MOBA source is in a separate private repo. Until it is added
-> to this repo (or session repo-scope), agents build against the **battle handoff contract** in
+### Sibling repositories (the real system landscape)
+
+Clash Front builds **on top of existing EF systems**. Integration targets (all under `blockchainsuperheroes/`):
+
+| Repo | Role | Stack | Clash Front usage |
+|------|------|-------|-------------------|
+| `etherfantasy-browser-moba-game` | **The battle engine** — browser 3D MOBA client + authoritative multiplayer server (Pentagon Chain) | TS (browser + server) | LIVE battle handoff target ([`04`](./04-battle-system.md), [`09`](./09-api-contracts.md)). Battles happen *within* a land territory here. |
+| `hexagone-city-website` | **The overworld map base** — browser hex map with NFT-owned land | TypeScript | Source of the map/zone/land-NFT data model and renderer. Import its hexes/zones into canonical `Hex`/`Territory` ([`08`](./08-data-models.md)); its NFT owners are our Landlords. |
+| `games-etherfantasy-backend` | EF platform backend (`api.etherfantasy.com`) | Node/Express TS | Accounts/identity/heroes source of truth (confirm), platform API integration. |
+| `hexagon-crons` | Scheduled jobs for hexagon city | Python | Reference for existing land/yield cron logic. |
+| `_archive-infra-hexr-backend` | Old hexagon-city backend (**archived**) | C# | Historical reference only — do not build against. |
+
+**Chain:** Pentagon Chain (Land NFTs + CT settlement — see [`07`](./07-backend-architecture.md) chain service).
+
+> ❓ OPEN — **Repo access.** These sibling repos must be added to the agent session's repo scope to be
+> readable. Until then, build against the **battle handoff contract** in
 > [`09-api-contracts.md`](./09-api-contracts.md) and a stub battle server. Do not block overworld work on it.
+> ❓ OPEN — confirm whether hero/account source of truth is `games-etherfantasy-backend`.
 
 ---
 
