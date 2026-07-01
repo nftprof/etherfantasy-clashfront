@@ -1,0 +1,20 @@
+{
+  "name": "etherfantasy-clashfront",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Clash Front — persistent-world war layer of Ether Fantasy. Design bible in docs/, code in packages/.",
+  "packageManager": "pnpm@10.33.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "pnpm -r build",
+    "test": "pnpm -r test",
+    "typecheck": "pnpm -r typecheck",
+    "clean": "pnpm -r clean"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.0",
+    "@types/node": "^22.0.0"
+  }
+}

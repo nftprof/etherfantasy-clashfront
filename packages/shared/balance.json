@@ -1,0 +1,138 @@
+{
+  "_note": "balance.json v0 — designer-tunable numbers (docs mark these ⚙). Sources: docs/01 (terrain, supply, desertion), docs/02 (prosperity, population, tax, food, development, pillage/occupy), docs/03 (upkeep, units, morale events). Canon CONSTANTS (HERO_IMPACT_MAX, TICK_SECONDS, PILLAGE_*, TAX_SPLIT_LANDLORD_DEFAULT, …) live in code (shared/src/constants.ts per docs/08 §2) and are NOT duplicated here. INVENTED PLACEHOLDERS (not given in docs, flag before tuning around them): supply.drainPer1000Troops (back-derived from 01 §5.3's '1000-troop army holds ~50 min' example), population.basePopCap.WILD/SEA (0), desertion.desertersReturnToWildBanditPct. KNOWN DOC CONFLICT: 01 §5.2 says +5 supply-range hexes per active train, 03 §7 says +3 (chainable up to 3 trains) — using 01's value 5; ❓ OPEN to resolve in docs.",
+  "version": 0,
+  "travel": {
+    "moveCostByTerrain": {
+      "PLAINS": 1.0,
+      "ROAD": 0.5,
+      "FOREST": 1.5,
+      "HILLS": 1.5,
+      "MOUNTAIN": 3.0,
+      "RIVER": 2.0,
+      "COAST": 1.0,
+      "OCEAN": 1.0
+    },
+    "openOceanNoLanePenaltyMult": 2.0
+  },
+  "development": {
+    "maxLevel": 10,
+    "costGrowthPerLevel": 1.6,
+    "baseCostCtUnits": {
+      "AGRICULTURE": 1000000,
+      "ECONOMY": 1200000,
+      "DEFENSE": 1500000,
+      "MILITARY": 1300000
+    },
+    "buildTimeHoursPerLevel": 2,
+    "repairCostFractionOfBuild": 0.5
+  },
+  "tax": {
+    "cycleTicks": 1440,
+    "baseTaxCtUnitsPerPop": 200,
+    "economyTrackBonusPerLevel": 0.10
+  },
+  "prosperity": {
+    "growthPerDay": 24,
+    "decayPerDay": 48,
+    "foodScoreFullAtDaysOfStock": 7,
+    "pillageScarDecayPerHour": 0.02
+  },
+  "food": {
+    "productionBasePerAgriLevelPerDay": 400,
+    "foodPerPopPerDay": 0.1,
+    "soldierFoodPerDay": 1,
+    "civilianFoodPerDay": 0.2,
+    "granaryBaseCap": 3500
+  },
+  "population": {
+    "basePopCap": {
+      "VILLAGE": 5000,
+      "TOWN": 20000,
+      "HARBOR": 15000,
+      "FORTRESS": 8000,
+      "CAPITAL": 50000,
+      "WILD": 0,
+      "SEA": 0
+    },
+    "popCapBonusPerAgriLevel": 0.25,
+    "growthRatePerDay": 0.02,
+    "migrationPctPerDay": 0.005,
+    "migrationProsperityThreshold": 30
+  },
+  "supply": {
+    "rangeHexes": 10,
+    "trainRangeBonusHexes": 5,
+    "maxAttachedTrains": 3,
+    "regenPerTick": 2,
+    "drainBase": 1,
+    "drainPer1000Troops": 1,
+    "marchDrainMult": 2,
+    "refillPerDayInSupplySource": 20
+  },
+  "morale": {
+    "lossUnsuppliedPerTick": 1,
+    "regenGarrisonPerTick": 1,
+    "victoryDelta": 10,
+    "defeatDelta": -20,
+    "retreatMoraleLoss": 15,
+    "deepEnemyTerritoryPerDay": -1,
+    "restingFriendlyGarrisonPerDay": 5,
+    "unpaidUpkeepPerDay": -10,
+    "occupiedCivilMoraleLoss": 20
+  },
+  "desertion": {
+    "ratePerTick": 0.005,
+    "basePerDayAtZeroMorale": 0.05,
+    "supplyCutMult": 2.0,
+    "hungerMult": 1.5,
+    "retreatingMult": 1.5,
+    "hardCapPerDay": 0.20,
+    "desertersReturnToPopulationPct": 0.5,
+    "desertersReturnToWildBanditPct": 0.1
+  },
+  "upkeep": {
+    "perUnitClassPer100PerDay": {
+      "INFANTRY": { "food": 100, "ctUnits": 10000 },
+      "ARCHER": { "food": 100, "ctUnits": 15000 },
+      "CAVALRY": { "food": 150, "ctUnits": 30000 },
+      "SPEAR": { "food": 100, "ctUnits": 10000 },
+      "SIEGE": { "food": 120, "ctUnits": 40000 },
+      "MARINE": { "food": 110, "ctUnits": 20000 },
+      "SHIP": { "food": 0, "ctUnits": 60000 }
+    },
+    "distanceFactorPerHex": 0.05,
+    "empireFactorPer50kSoldiers": 0.10
+  },
+  "units": {
+    "classBase": {
+      "INFANTRY": 10,
+      "ARCHER": 9,
+      "CAVALRY": 14,
+      "SPEAR": 9,
+      "SIEGE": 4,
+      "MARINE": 10,
+      "SHIP": 16
+    },
+    "trainCtUnitsPerSoldier": {
+      "INFANTRY": 20000,
+      "ARCHER": 30000,
+      "CAVALRY": 60000,
+      "SPEAR": 25000,
+      "SIEGE": 100000,
+      "MARINE": 40000,
+      "SHIP": 120000
+    },
+    "armyMaxStacks": 8,
+    "shipCapacitySoldiers": 200
+  },
+  "pillageOccupy": {
+    "pillageLootTreasuryPct": 0.8,
+    "pillageLootCtUnitsPerPop": 500,
+    "occupySeizeTreasuryPct": 0.20
+  },
+  "draft": {
+    "draftBasePctOfPop": 0.05,
+    "draftPerMilitaryLevel": 0.03,
+    "disbandReturnPct": 0.9
+  }
+}

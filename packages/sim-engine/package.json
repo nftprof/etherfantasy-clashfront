@@ -1,0 +1,21 @@
+{
+  "name": "@clashfront/sim-engine",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Authoritative deterministic world tick engine skeleton (docs/01-world-simulation.md).",
+  "main": "dist/src/index.js",
+  "types": "dist/src/index.d.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "node --test \"dist/test/**/*.test.js\"",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@clashfront/shared": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.0",
+    "@types/node": "^22.0.0"
+  }
+}

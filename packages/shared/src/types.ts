@@ -1,0 +1,212 @@
+/**
+ * Canonical entity interfaces — verbatim from docs/08-data-models.md §4.
+ * Storage notes (Postgres/Redis mapping) live in the doc; this file is the type canon.
+ * Do NOT invent fields — extend docs/08 first (AGENTS.md prime directive 2).
+ *
+ * Conventions (08 §1): ULID ids type-prefixed; timestamps UTC epoch ms; money/resources
+ * are integers in base units (CT in ct_units, 1 CT = 10_000 units — never floats for money).
+ */
+import type {
+  ArmyState,
+  BattleState,
+  BattleType,
+  ContractType,
+  DevelopmentTrack,
+  DiplomacyStance,
+  GovernorKind,
+  HexTerrain,
+  PostVictoryAction,
+  ResolutionMode,
+  UnitClass,
+  ZoneType,
+} from './enums';
+
+// ── Player & Hero ────────────────────────────────────────────────────────────
+
+export interface Player {
+  id: string;                 // player_…
+  handle: string;
+  walletAddress?: string;     // EVM address for CT / NFTs
+  ctBalance: number;          // ct_units, mirrored from ledger (authoritative = ledger)
+  heroIds: string[];
+  guildId?: string;
+  createdAt: number; lastSeenAt: number;
+}
+
+export interface Hero {
+  id: string;                 // hero_…
+  ownerPlayerId: string;
+  name: string;
+  // Clash Front does NOT permanently level heroes. These are equipment/fame, not power creep.
+  fame: number;               // reputation; unlocks contracts/titles, cosmetic, soft influence
+  equipmentIds: string[];     // affects HeroImpact within HERO_IMPACT_MAX cap only
+  efMobaProfileId: string;    // link to EF MOBA account for LIVE battles
+  titleIds: string[];
+}
+
+// ── World / Region / Territory / Hex ─────────────────────────────────────────
+
+export interface World { id: string; name: string; seed: string; tick: number; startedAt: number; }
+
+export interface Region { id: string; worldId: string; name: string; hexIds: string[]; capitalTerritoryId?: string; }
+
+export interface Hex {
+  id: string;                 // hex_…
+  worldId: string;
+  q: number; r: number;       // axial coordinates
+  terrain: HexTerrain;
+  territoryId?: string;       // owning territory (undefined for open sea/wild filler)
+  moveCost: number;           // base traversal cost multiplier
+  nodeIds: string[];
+}
+
+export interface Territory {
+  id: string;                 // terr_…  (1:1 with Land NFT)
+  worldId: string; regionId: string;
+  name: string;
+  zoneType: ZoneType;
+  hexIds: string[];
+  landNftId: string;          // nft_…  (ownership / landlord)
+  governorId: string;         // controller: player/guild/alliance/npc/system
+  governorKind: GovernorKind;
+  // resources & state
+  population: number;
+  foodStock: number;
+  ctTreasury: number;         // ct_units held by the territory (governor-controlled)
+  prosperity: number;         // 0–100
+  morale: number;             // 0–100 (civil morale)
+  // development levels per track (0..MAX_DEV_LEVEL)
+  development: Record<DevelopmentTrack, number>;
+  structures: StructureState[];
+  garrisonArmyId?: string;
+  supplySource: boolean;      // can this territory originate supply for armies?
+  underSiegeBattleId?: string;
+  version: number; updatedAt: number;
+}
+
+export interface StructureState {
+  key: string;                // e.g. 'walls','granary','market','barracks'
+  track: DevelopmentTrack;
+  level: number;
+  hp: number; maxHp: number;  // damaged in siege; repaired with CT
+}
+
+// ── Land NFT & economy ledger ────────────────────────────────────────────────
+
+export interface LandNFT {
+  id: string;                 // nft_…
+  territoryId: string;
+  chainId?: number; contract?: string; tokenId?: string; // on-chain settlement (optional/mirrored)
+  ownerPlayerId?: string;     // undefined ⇒ SYSTEM-owned (buyable)
+  leaseId?: string;           // active lease, if any
+  taxSplitLandlord: number;   // landlord share of tax (default CONSTANTS.TAX_SPLIT_LANDLORD_DEFAULT)
+  listedForSalePriceCt?: number;
+}
+
+export interface Lease {
+  id: string; nftId: string;
+  lesseeGovernorId: string;
+  rentCtPerDay: number;
+  revenueSharePct: number;    // extra cut to lessee of development revenue
+  startAt: number; endAt: number;
+}
+
+// Append-only, double-entry. This is the AUTHORITATIVE source of CT truth.
+export interface LedgerEntry {
+  id: string; ts: number;
+  fromAccount: string;        // 'player_…' | 'terr_…' | 'system:treasury' | 'contract:…'
+  toAccount: string;
+  amountCt: number;           // ct_units, positive
+  reason: string;             // 'tax','build','train','repair','pillage','bounty','lease','trade','mint'
+  refId?: string;             // linked battle/contract/order
+}
+
+// ── Army / Unit / Supply ─────────────────────────────────────────────────────
+
+export interface Army {
+  id: string;                 // army_…
+  worldId: string;
+  ownerGovernorId: string;
+  heroId?: string;            // leading officer (optional; AI-led if absent)
+  state: ArmyState;
+  hexId: string;              // current position
+  path?: string[];            // remaining hexIds when MARCHING
+  arrivalTick?: number;       // tick at next hex / destination
+  units: UnitStack[];
+  supply: number;             // 0..supplyMax
+  supplyMax: number;
+  morale: number;             // 0–100
+  supplyTrainIds: string[];
+  version: number;
+}
+
+export interface UnitStack {
+  unitClass: UnitClass;
+  count: number;
+  veterancy: number;          // 0..3, raises effective strength (soft, within reason)
+  hp: number;                 // aggregate condition 0–100
+}
+
+export interface SupplyTrain {
+  id: string; armyId?: string; hexId: string;
+  capacity: number; carrying: number; // food/CT ferried
+  state: 'IDLE' | 'MOVING' | 'RAIDED';
+}
+
+// ── Battle ───────────────────────────────────────────────────────────────────
+
+export interface BattleInstance {
+  id: string;                 // battle_…
+  worldId: string;
+  type: BattleType;
+  state: BattleState;
+  hexId: string;              // where it happens
+  attackerArmyIds: string[];
+  defenderArmyIds: string[];
+  defenderTerritoryId?: string; // set for SIEGE
+  resolutionMode: ResolutionMode;
+  scheduledStartTick: number;
+  lobbyClosesAt?: number;
+  efMobaMatchId?: string;     // set when LIVE handed to EF MOBA
+  participants: BattleParticipant[];
+  warScore?: WarScore;
+  result?: BattleResult;
+}
+
+export interface BattleParticipant {
+  playerId: string; heroId: string; side: 'ATTACKER' | 'DEFENDER';
+  joinedTick: number; role: 'HERO';
+}
+
+export interface WarScore {
+  attacker: number; defender: number; // computed aggregate
+  breakdown: Record<string, number>;  // 'army','supply','morale','terrain','hero','structures'
+}
+
+export interface BattleResult {
+  winner: 'ATTACKER' | 'DEFENDER' | 'DRAW';
+  postVictoryAction?: PostVictoryAction; // chosen by winning governor/player
+  casualties: Record<string, number>;    // armyId → units lost
+  lootCt?: number;
+  territoryOutcome?: 'HELD' | 'OCCUPIED' | 'PILLAGED';
+  resolvedTick: number;
+}
+
+// ── Diplomacy & contracts ────────────────────────────────────────────────────
+
+export interface DiplomacyRelation {
+  id: string; worldId: string;
+  aGovernorId: string; bGovernorId: string;
+  stance: DiplomacyStance;
+  since: number; expiresAt?: number;     // truces expire
+  tributeCtPerDay?: number;              // for VASSAL/SUZERAIN
+}
+
+export interface Contract {
+  id: string; type: ContractType;
+  posterGovernorId: string;
+  targetRef?: string;                     // territory/hero/hex
+  rewardCt: number;
+  state: 'OPEN' | 'TAKEN' | 'FULFILLED' | 'EXPIRED';
+  takerId?: string; expiresAt: number;
+}

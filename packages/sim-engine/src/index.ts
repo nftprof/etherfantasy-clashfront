@@ -1,0 +1,6 @@
+/**
+ * @clashfront/sim-engine — deterministic world tick engine skeleton (docs/01).
+ */
+export * from './state';
+export * from './tick';
+export * from './seed';
