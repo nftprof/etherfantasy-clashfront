@@ -1,0 +1,16 @@
+{
+  "name": "ef-moba-server",
+  "version": "0.1.0",
+  "description": "EtherFantasy Moba — authoritative game server (gateway + matchmaker + headless sim)",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node --watch index.js",
+    "goldenmaster": "node test/goldenmaster.js"
+  },
+  "dependencies": {
+    "ws": "^8.18.0"
+  },
+  "engines": { "node": ">=20" }
+}

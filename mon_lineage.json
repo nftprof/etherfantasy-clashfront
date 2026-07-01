@@ -1,0 +1,3634 @@
+{
+ "typeChart": {
+  "strong": {
+   "Fire": [
+    "Leaf",
+    "Insect",
+    "Ice",
+    "Iron"
+   ],
+   "Water": [
+    "Fire",
+    "Earth",
+    "Rock"
+   ],
+   "Leaf": [
+    "Water",
+    "Earth",
+    "Rock"
+   ],
+   "Lightning": [
+    "Water",
+    "Flyer"
+   ],
+   "Earth": [
+    "Fire",
+    "Lightning",
+    "Toxin",
+    "Rock",
+    "Iron"
+   ],
+   "Ice": [
+    "Leaf",
+    "Earth",
+    "Flyer",
+    "Dragon"
+   ],
+   "Combat": [
+    "Neutral",
+    "Ice",
+    "Rock",
+    "Iron",
+    "Toxin"
+   ],
+   "Toxin": [
+    "Leaf",
+    "Water"
+   ],
+   "Telepath": [
+    "Combat",
+    "Toxin"
+   ],
+   "Insect": [
+    "Leaf",
+    "Telepath",
+    "Mystic"
+   ],
+   "Rock": [
+    "Fire",
+    "Ice",
+    "Flyer",
+    "Insect"
+   ],
+   "Phantom": [
+    "Phantom",
+    "Telepath",
+    "Mystic"
+   ],
+   "Dragon": [
+    "Dragon"
+   ],
+   "Iron": [
+    "Ice",
+    "Rock",
+    "Mystic"
+   ],
+   "Flyer": [
+    "Leaf",
+    "Combat",
+    "Insect"
+   ],
+   "Mystic": [
+    "Dragon",
+    "Combat",
+    "Phantom"
+   ],
+   "Neutral": []
+  }
+ },
+ "upgradeChains": [
+  {"name": "Irene", "cls": 9001, "rarity": "mythic", "types": ["Flyer"],
+   "forms": [{"name": "Irene", "cls": 9001, "glb": "hero/Irene_Token_000001.glb", "animated": true}]},
+  {"name": "Kai", "cls": 9010, "rarity": "mythic", "types": ["Combat"],
+   "forms": [{"name": "Kai", "cls": 9010, "glb": "hero/Kai_Set_Default.glb", "animated": true}]},
+  {"name": "Leah", "cls": 9011, "rarity": "mythic", "types": ["Mystic"],
+   "forms": [{"name": "Leah", "cls": 9011, "glb": "hero/Leah_Set_Default.glb", "animated": true}]},
+  {
+   "name": "Dilloom",
+   "cls": 1,
+   "rarity": "uncommon",
+   "types": [
+    "Leaf",
+    "Toxin"
+   ],
+   "forms": [
+    {
+     "name": "Dilloom",
+     "cls": 1.0,
+     "glb": "1_Diloom.glb",
+     "animated": true
+    },
+    {
+     "name": "Dillow",
+     "cls": 38.0,
+     "glb": "38_Dillow.glb",
+     "animated": true
+    },
+    {
+     "name": "Dillossus",
+     "cls": 64.0,
+     "glb": null,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "name": "Dynamouse",
+   "cls": 2,
+   "rarity": "uncommon",
+   "types": [
+    "Fire"
+   ],
+   "forms": [
+    {
+     "name": "Dynamouse",
+     "cls": 2.0,
+     "glb": "2_Dynamouse.glb",
+     "animated": true
+    },
+    {
+     "name": "Pyrode",
+     "cls": 39.0,
+     "glb": "39_Pyrode.glb",
+     "animated": true
+    },
+    {
+     "name": "Raxplode",
+     "cls": 65.0,
+     "glb": null,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "name": "Nageel",
+   "cls": 3,
+   "rarity": "uncommon",
+   "types": [
+    "Water"
+   ],
+   "forms": [
+    {
+     "name": "Nageel",
+     "cls": 3.0,
+     "glb": "3_Nageel.glb",
+     "animated": true
+    },
+    {
+     "name": "Moranagi",
+     "cls": 40.0,
+     "glb": "40_Moranagi.glb",
+     "animated": true
+    }
+   ]
+  },
+  {
+   "name": "Eekape",
+   "cls": 4,
+   "rarity": "uncommon",
+   "types": [
+    "Phantom",
+    "Toxin"
+   ],
+   "forms": [
+    {
+     "name": "Eekape",
+     "cls": 4.0,
+     "glb": "4_Eekape.glb",
+     "animated": true
+    },
+    {
+     "name": "Moldec",
+     "cls": 41.0,
+     "glb": "41_Moldec.glb",
+     "animated": true
+    },
+    {
+     "name": "Dehedra",
+     "cls": 66.0,
+     "glb": null,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "name": "Palytid",
+   "cls": 5,
+   "rarity": "uncommon",
+   "types": [
+    "Toxin"
+   ],
+   "forms": [
+    {
+     "name": "Palytid",
+     "cls": 5.0,
+     "glb": "5_Palytid.glb",
+     "animated": true
+    },
+    {
+     "name": "Oculid",
+     "cls": 42.0,
+     "glb": "42_Oculid.glb",
+     "animated": true
+    },
+    {
+     "name": "Aphroxid",
+     "cls": 67.0,
+     "glb": null,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "name": "Mianari",
+   "cls": 6,
+   "rarity": "uncommon",
+   "types": [
+    "Lightning"
+   ],
+   "forms": [
+    {
+     "name": "Mianari",
+     "cls": 6.0,
+     "glb": "6_Mianari.glb",
+     "animated": true
+    },
+    {
+     "name": "Surinari",
+     "cls": 43.0,
+     "glb": "43_Surinari.glb",
+     "animated": true
+    }
+   ]
+  },
+  {
+   "name": "Berrball",
+   "cls": 7,
+   "rarity": "uncommon",
+   "types": [
+    "Mystic"
+   ],
+   "forms": [
+    {
+     "name": "Berrball",
+     "cls": 7.0,
+     "glb": "7_Berrball.glb",
+     "animated": true
+    },
+    {
+     "name": "Silvyx",
+     "cls": 44.0,
+     "glb": "44_Silvyx.glb",
+     "animated": true
+    }
+   ]
+  },
+  {
+   "name": "Cesstoid",
+   "cls": 8,
+   "rarity": "uncommon",
+   "types": [
+    "Neutral",
+    "Mystic"
+   ],
+   "forms": [
+    {
+     "name": "Cesstoid",
+     "cls": 8.0,
+     "glb": "8_Cesstoid.glb",
+     "animated": true
+    },
+    {
+     "name": "Coronoid",
+     "cls": 45.0,
+     "glb": "45_Coronoid.glb",
+     "animated": true
+    }
+   ]
+  },
+  {
+   "name": "Mizumi",
+   "cls": 9,
+   "rarity": "uncommon",
+   "types": [
+    "Neutral"
+   ],
+   "forms": [
+    {
+     "name": "Mizumi",
+     "cls": 9.0,
+     "glb": "9_Mizumi.glb",
+     "animated": true
+    },
+    {
+     "name": "Watadzumi",
+     "cls": 46.0,
+     "glb": "46_Watadzumi.glb",
+     "animated": true
+    }
+   ]
+  },
+  {
+   "name": "Chulember",
+   "cls": 10,
+   "rarity": "uncommon",
+   "types": [
+    "Fire"
+   ],
+   "forms": [
+    {
+     "name": "Chulember",
+     "cls": 10.0,
+     "glb": "10_Chulember.glb",
+     "animated": true
+    },
+    {
+     "name": "Fuenago",
+     "cls": 47.0,
+     "glb": "47_Fuenago.glb",
+     "animated": true
+    }
+   ]
+  },
+  {
+   "name": "Geckno",
+   "cls": 11,
+   "rarity": "uncommon",
+   "types": [
+    "Telepath"
+   ],
+   "forms": [
+    {
+     "name": "Geckno",
+     "cls": 11.0,
+     "glb": "11_Geckno.glb",
+     "animated": true
+    },
+    {
+     "name": "Geckelic",
+     "cls": 48.0,
+     "glb": "48_Geckelic.glb",
+     "animated": true
+    }
+   ]
+  },
+  {
+   "name": "Blockid",
+   "cls": 12,
+   "rarity": "uncommon",
+   "types": [
+    "Combat"
+   ],
+   "forms": [
+    {
+     "name": "Blockid",
+     "cls": 12.0,
+     "glb": "12_Blockid.glb",
+     "animated": true
+    },
+    {
+     "name": "Blockall",
+     "cls": 49.0,
+     "glb": "49_Blockall.glb",
+     "animated": true
+    }
+   ]
+  },
+  {
+   "name": "Geenee",
+   "cls": 18,
+   "rarity": "uncommon",
+   "types": [
+    "Neutral"
+   ],
+   "forms": [
+    {
+     "name": "Geenee",
+     "cls": 18.0,
+     "glb": "18_Geenee.glb",
+     "animated": true
+    },
+    {
+     "name": "Geerex",
+     "cls": 50.0,
+     "glb": "50_Geerex.glb",
+     "animated": true
+    }
+   ]
+  },
+  {
+   "name": "Baulder",
+   "cls": 20,
+   "rarity": "legendary",
+   "types": [
+    "Dragon"
+   ],
+   "forms": [
+    {
+     "name": "Baulder",
+     "cls": 20.0,
+     "glb": "20_Baulder.glb",
+     "animated": true
+    },
+    {
+     "name": "Dredrock",
+     "cls": 51.0,
+     "glb": "51_Dredrock.glb",
+     "animated": true
+    },
+    {
+     "name": "Tekagon",
+     "cls": 68.0,
+     "glb": null,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "name": "Mintol",
+   "cls": 25,
+   "rarity": "common",
+   "types": [
+    "Leaf",
+    "Ice"
+   ],
+   "forms": [
+    {
+     "name": "Mintol",
+     "cls": 25.0,
+     "glb": "25_Mintol.glb",
+     "animated": true
+    },
+    {
+     "name": "Florost",
+     "cls": 52.0,
+     "glb": "52_Florost.glb",
+     "animated": true
+    },
+    {
+     "name": "Aromerita",
+     "cls": 69.0,
+     "glb": null,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "name": "Omnom",
+   "cls": 26,
+   "rarity": "common",
+   "types": [
+    "Water",
+    "Mystic"
+   ],
+   "forms": [
+    {
+     "name": "Omnom",
+     "cls": 26.0,
+     "glb": "26_Omnom.glb",
+     "animated": true
+    },
+    {
+     "name": "Yumee",
+     "cls": 53.0,
+     "glb": "53_Yumee.glb",
+     "animated": true
+    },
+    {
+     "name": "Liscious",
+     "cls": 70.0,
+     "glb": null,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "name": "Lectrobe",
+   "cls": 28,
+   "rarity": "common",
+   "types": [
+    "Lightning",
+    "Toxin"
+   ],
+   "forms": [
+    {
+     "name": "Lectrobe",
+     "cls": 28.0,
+     "glb": "28_Lectrobe.glb",
+     "animated": true
+    },
+    {
+     "name": "Wrektric",
+     "cls": 55.0,
+     "glb": "55_Wrektric.glb",
+     "animated": true
+    }
+   ]
+  },
+  {
+   "name": "Mirrie",
+   "cls": 29,
+   "rarity": "common",
+   "types": [
+    "Phantom",
+    "Iron"
+   ],
+   "forms": [
+    {
+     "name": "Mirrie",
+     "cls": 29.0,
+     "glb": "29_Mirrie.glb",
+     "animated": true
+    },
+    {
+     "name": "Reflectre",
+     "cls": 56.0,
+     "glb": "56_Reflecter.glb",
+     "animated": true
+    }
+   ]
+  },
+  {
+   "name": "Lollipunch",
+   "cls": 31,
+   "rarity": "common",
+   "types": [
+    "Combat"
+   ],
+   "forms": [
+    {
+     "name": "Lollipunch",
+     "cls": 31.0,
+     "glb": "31_Lollipunch.glb",
+     "animated": true
+    },
+    {
+     "name": "Mawverize",
+     "cls": 58.0,
+     "glb": "58_Mawverize.glb",
+     "animated": true
+    }
+   ]
+  },
+  {
+   "name": "Odwig",
+   "cls": 32,
+   "rarity": "common",
+   "types": [
+    "Leaf"
+   ],
+   "forms": [
+    {
+     "name": "Odwig",
+     "cls": 32.0,
+     "glb": "32_Odwing.glb",
+     "animated": true
+    },
+    {
+     "name": "Occlusk",
+     "cls": 59.0,
+     "glb": "59_Occlusk.glb",
+     "animated": true
+    }
+   ]
+  },
+  {
+   "name": "Tygloo",
+   "cls": 33,
+   "rarity": "common",
+   "types": [
+    "Ice",
+    "Neutral"
+   ],
+   "forms": [
+    {
+     "name": "Tygloo",
+     "cls": 33.0,
+     "glb": "33_Tygloo.glb",
+     "animated": true
+    },
+    {
+     "name": "Mechloo",
+     "cls": 60.0,
+     "glb": "60_Mechloo.glb",
+     "animated": true
+    }
+   ]
+  },
+  {
+   "name": "Pudde",
+   "cls": 34,
+   "rarity": "common",
+   "types": [
+    "Water",
+    "Telepath"
+   ],
+   "forms": [
+    {
+     "name": "Pudde",
+     "cls": 34.0,
+     "glb": "34_Pudde.glb",
+     "animated": true
+    },
+    {
+     "name": "Aquary",
+     "cls": 61.0,
+     "glb": "61_Aquary.glb",
+     "animated": true
+    },
+    {
+     "name": "Resurvy",
+     "cls": 71.0,
+     "glb": null,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "name": "Fuirrel",
+   "cls": 37,
+   "rarity": "common",
+   "types": [
+    "Neutral"
+   ],
+   "forms": [
+    {
+     "name": "Fuirrel",
+     "cls": 37.0,
+     "glb": "37_Fuirrel.glb",
+     "animated": true
+    },
+    {
+     "name": "Squake",
+     "cls": 62.0,
+     "glb": "62_Squake.glb",
+     "animated": true
+    },
+    {
+     "name": "Qairrel",
+     "cls": 63.0,
+     "glb": null,
+     "animated": false
+    }
+   ]
+  }
+ ],
+ "baseOnly": [
+  {"name": "Inchapp", "glb": "241_Inchapp.glb", "types": ["Insect", "Lightning"]},
+  {"name": "Kyari", "glb": "27_Kyari.glb", "types": ["Leaf"]},
+  {"name": "Candeliria", "glb": "54_Candeliria.glb", "types": ["Fire", "Mystic"]},
+  {"name": "Dracobra", "glb": "57_Dracobra.glb", "types": ["Dragon", "Toxin"]},
+  {"name": "Spoulder", "glb": "166_Spoulder.glb", "types": ["Rock"]},
+  {"name": "Batflare", "glb": "173_Batflare.glb", "types": ["Fire", "Flyer"]},
+  {"name": "Finray", "glb": "192_Finray.glb", "types": ["Water"]},
+  {"name": "Dorentu", "glb": "196_Dorentu.glb", "types": ["Earth"]},
+  {"name": "Pricktile", "glb": "198_Pricktile.glb", "types": ["Earth", "Toxin"]},
+  {"name": "Yarmeow", "glb": "200_Yarmeow.glb", "types": ["Neutral"]},
+  {"name": "Naviumi", "glb": "202_Naviumi.glb", "types": ["Water", "Mystic"]},
+  {"name": "Juphant", "glb": "218_Juphant.glb", "types": ["Earth", "Iron"]},
+  {"name": "Elekitt", "glb": "224_Elekitt.glb", "types": ["Lightning"]},
+  {"name": "Hambrisk", "glb": "227_Hambrisk.glb", "types": ["Combat"]},
+  {"name": "Moonara", "glb": "229_Moonara.glb", "types": ["Mystic", "Phantom"]},
+  {"name": "Clawcount", "glb": "231_Clawcount.glb", "types": ["Leaf", "Combat"]},
+  {"name": "Wallopop", "glb": "233_Wallopop.glb", "types": ["Combat"]},
+  {"name": "Snobbit", "glb": "235_Snobbit.glb", "types": ["Ice", "Neutral"]},
+  {"name": "Eriegle", "glb": "237_Eriegle.glb", "types": ["Flyer"]},
+  {"name": "Mytier", "glb": "240_Mytier.glb", "types": ["Mystic"]},
+  {"name": "Deefyn", "glb": "245_Deefyn.glb", "types": ["Water", "Flyer"]},
+  {"name": "Nova", "glb": "252_Nova.glb", "types": ["Mystic", "Lightning"]},
+  {
+   "name": "Thermolophus",
+   "glb": "13_Thermolophus.glb",
+   "types": [
+    "Rock",
+    "Earth"
+   ]
+  },
+  {
+   "name": "Keradon",
+   "glb": "14_Keradon.glb",
+   "types": [
+    "Earth"
+   ]
+  },
+  {
+   "name": "Vermillios",
+   "glb": "15_Vermillios.glb",
+   "types": [
+    "Water"
+   ]
+  },
+  {
+   "name": "Vivorin",
+   "glb": "16_Vivorin.glb",
+   "types": [
+    "Insect",
+    "Flyer"
+   ]
+  },
+  {
+   "name": "Windora",
+   "glb": "17_Windora.glb",
+   "types": [
+    "Water",
+    "Flyer"
+   ]
+  },
+  {
+   "name": "Quillster",
+   "glb": "19_Quillster.glb",
+   "types": [
+    "Neutral"
+   ]
+  },
+  {
+   "name": "Vibe",
+   "glb": "22_Vibe.glb",
+   "types": [
+    "Phantom"
+   ]
+  },
+  {
+   "name": "Swifty",
+   "glb": "23_Swifty.glb",
+   "types": [
+    "Telepath"
+   ]
+  },
+  {
+   "name": "Pangrass",
+   "glb": "24_Pangrass.glb",
+   "types": [
+    "Leaf",
+    "Neutral"
+   ]
+  },
+  {
+   "name": "Mushmite",
+   "glb": "35_Mushmite.glb",
+   "types": [
+    "Water"
+   ]
+  },
+  {
+   "name": "Polynimo",
+   "glb": "36_Polynimo.glb",
+   "types": [
+    "Fire"
+   ]
+  },
+  {
+   "name": "Morinori",
+   "glb": "72_Morinori.glb",
+   "types": [
+    "Iron"
+   ]
+  },
+  {
+   "name": "Gremin",
+   "glb": "73_Gremin.glb",
+   "types": [
+    "Flyer"
+   ]
+  },
+  {
+   "name": "Spoxin",
+   "glb": "74_Spoxin.glb",
+   "types": [
+    "Toxin"
+   ]
+  },
+  {
+   "name": "Intelix",
+   "glb": "75_Intelix.glb",
+   "types": [
+    "Mystic"
+   ]
+  },
+  {
+   "name": "Inkami",
+   "glb": "77_Inkami.glb",
+   "types": [
+    "Flyer",
+    "Telepath"
+   ]
+  },
+  {
+   "name": "Redhandit",
+   "glb": "78_Redhandit.glb",
+   "types": [
+    "Combat",
+    "Phantom"
+   ]
+  },
+  {
+   "name": "Endorr",
+   "glb": "79_Endorr.glb",
+   "types": [
+    "Leaf",
+    "Rock"
+   ]
+  },
+  {
+   "name": "Sonectid",
+   "glb": "80_Sonectid.glb",
+   "types": [
+    "Insect",
+    "Iron"
+   ]
+  },
+  {
+   "name": "Cryptise",
+   "glb": "81_Cryptise.glb",
+   "types": [
+    "Phantom",
+    "Earth"
+   ]
+  },
+  {
+   "name": "Barkindle",
+   "glb": "90_Barkindle.glb",
+   "types": [
+    "Fire",
+    "Combat"
+   ]
+  },
+  {
+   "name": "Ruffski",
+   "glb": "93_Ruffski.glb",
+   "types": [
+    "Ice",
+    "Neutral"
+   ]
+  },
+  {
+   "name": "Matara",
+   "glb": "97_Matara.glb",
+   "types": [
+    "Earth"
+   ]
+  },
+  {
+   "name": "MalakelE",
+   "glb": "99_Malakele.glb",
+   "types": [
+    "Toxin",
+    "Combat"
+   ]
+  },
+  {
+   "name": "Tobeno",
+   "glb": "101_Tebeno.glb",
+   "types": [
+    "Neutral",
+    "Flyer"
+   ]
+  },
+  {
+   "name": "Flaraton",
+   "glb": "103_Flaraton.glb",
+   "types": [
+    "Fire",
+    "Earth"
+   ]
+  },
+  {
+   "name": "Ekopi",
+   "glb": "106_Ekopi.glb",
+   "types": [
+    "Leaf",
+    "Earth"
+   ]
+  },
+  {
+   "name": "Krubble",
+   "glb": "116_Krubble.glb",
+   "types": [
+    "Water",
+    "Iron"
+   ]
+  },
+  {
+   "name": "Tipsillar",
+   "glb": "119_Tipsillar.glb",
+   "types": [
+    "Insect",
+    "Lightning"
+   ]
+  },
+  {
+   "name": "Grubgas",
+   "glb": "122_Grubgas.glb",
+   "types": [
+    "Toxin",
+    "Iron"
+   ]
+  },
+  {
+   "name": "Kelpony",
+   "glb": "125_Kelpony.glb",
+   "types": [
+    "Ice",
+    "Rock"
+   ]
+  },
+  {
+   "name": "Lemeeni",
+   "glb": "128_Lemeeni.glb",
+   "types": [
+    "Leaf",
+    "Combat"
+   ]
+  },
+  {
+   "name": "Iquander",
+   "glb": "131_Iquander.glb",
+   "types": [
+    "Dragon",
+    "Fire"
+   ]
+  },
+  {
+   "name": "Mindallion",
+   "glb": "134_Mindallion.glb",
+   "types": [
+    "Iron",
+    "Mystic"
+   ]
+  },
+  {
+   "name": "Krakowee",
+   "glb": "136_Krakowee.glb",
+   "types": [
+    "Insect",
+    "Rock"
+   ]
+  },
+  {
+   "name": "Felistar",
+   "glb": "138_Felistar.glb",
+   "types": [
+    "Phantom",
+    "Lightning"
+   ]
+  },
+  {
+   "name": "Dusprite",
+   "glb": "140_Dusprite.glb",
+   "types": [
+    "Mystic",
+    "Toxin"
+   ]
+  },
+  {
+   "name": "Clothom",
+   "glb": "142_Clothom.glb",
+   "types": [
+    "Phantom",
+    "Flyer"
+   ]
+  },
+  {
+   "name": "Pistaccoul",
+   "glb": "144_Pistaccoul.glb",
+   "types": [
+    "Insect",
+    "Earth"
+   ]
+  },
+  {
+   "name": "Kikapole",
+   "glb": "146_Kikapole.glb",
+   "types": [
+    "Telepath",
+    "Combat"
+   ]
+  },
+  {
+   "name": "Vexigon",
+   "glb": "148_Vexigon.glb",
+   "types": [
+    "Dragon",
+    "Neutral"
+   ]
+  },
+  {
+   "name": "Greipawn",
+   "glb": "151_Greipawn.glb",
+   "types": [
+    "Leaf"
+   ]
+  },
+  {
+   "name": "Vernirox",
+   "glb": "153_Vernirox.glb",
+   "types": [
+    "Earth",
+    "Rock"
+   ]
+  },
+  {
+   "name": "Quadrossal",
+   "glb": "154_Quadrossal.glb",
+   "types": [
+    "Telepath",
+    "Mystic"
+   ]
+  },
+  {
+   "name": "Zedakazm",
+   "glb": "155_Zedakazm.glb",
+   "types": [
+    "Dragon",
+    "Phantom"
+   ]
+  },
+  {
+   "name": "Armadigoal",
+   "glb": "156_Armadigoal.glb",
+   "types": [
+    "Iron",
+    "Rock"
+   ]
+  },
+  {
+   "name": "Kyberra",
+   "glb": "159_Kyberra.glb",
+   "types": [
+    "Mystic",
+    "Leaf"
+   ]
+  },
+  {
+   "name": "Pigperus",
+   "glb": "161_Pigperus.glb",
+   "types": [
+    "Earth",
+    "Ice"
+   ]
+  },
+  {
+   "name": "Piggicius",
+   "glb": "163_Piggicius.glb",
+   "types": [
+    "Water",
+    "Insect"
+   ]
+  },
+  {
+   "name": "Foxeez",
+   "glb": "168_Foxeez.glb",
+   "types": [
+    "Ice",
+    "Phantom"
+   ]
+  },
+  {
+   "name": "Roichirp",
+   "glb": "170_Roichirp.glb",
+   "types": [
+    "Flyer"
+   ]
+  },
+  {
+   "name": "Watuber",
+   "glb": "176_Watuber.glb",
+   "types": [
+    "Water",
+    "Combat"
+   ]
+  },
+  {
+   "name": "Vaudequin",
+   "glb": "179_Vaudequin.glb",
+   "types": [
+    "Fire",
+    "Mystic"
+   ]
+  },
+  {
+   "name": "Helichrome",
+   "glb": "180_Helichrome.glb",
+   "types": [
+    "Iron",
+    "Dragon"
+   ]
+  },
+  {
+   "name": "Onchor",
+   "glb": "183_Onchor.glb",
+   "types": [
+    "Water",
+    "Iron"
+   ]
+  },
+  {
+   "name": "Sully",
+   "glb": "186_Sully.glb",
+   "types": [
+    "Iron",
+    "Flyer"
+   ]
+  },
+  {
+   "name": "Cannubis",
+   "glb": "189_Cannubis.glb",
+   "types": [
+    "Leaf",
+    "Phantom"
+   ]
+  },
+  {
+   "name": "Fauneek",
+   "glb": "221_Fauneek.glb",
+   "types": [
+    "Earth",
+    "Combat"
+   ]
+  }
+ ],
+ "allMons": [
+  {
+   "name": "Dilloom",
+   "cls": 1,
+   "rarity": "uncommon",
+   "types": [
+    "Leaf",
+    "Toxin"
+   ],
+   "forms": [
+    {
+     "name": "Dilloom",
+     "cls": 1.0,
+     "glb": "1_Diloom.glb",
+     "animated": true
+    },
+    {
+     "name": "Dillow",
+     "cls": 38.0,
+     "glb": "38_Dillow.glb",
+     "animated": true
+    },
+    {
+     "name": "Dillossus",
+     "cls": 64.0,
+     "glb": null,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "name": "Dynamouse",
+   "cls": 2,
+   "rarity": "uncommon",
+   "types": [
+    "Fire"
+   ],
+   "forms": [
+    {
+     "name": "Dynamouse",
+     "cls": 2.0,
+     "glb": "2_Dynamouse.glb",
+     "animated": true
+    },
+    {
+     "name": "Pyrode",
+     "cls": 39.0,
+     "glb": "39_Pyrode.glb",
+     "animated": true
+    },
+    {
+     "name": "Raxplode",
+     "cls": 65.0,
+     "glb": null,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "name": "Nageel",
+   "cls": 3,
+   "rarity": "uncommon",
+   "types": [
+    "Water"
+   ],
+   "forms": [
+    {
+     "name": "Nageel",
+     "cls": 3.0,
+     "glb": "3_Nageel.glb",
+     "animated": true
+    },
+    {
+     "name": "Moranagi",
+     "cls": 40.0,
+     "glb": "40_Moranagi.glb",
+     "animated": true
+    }
+   ]
+  },
+  {
+   "name": "Eekape",
+   "cls": 4,
+   "rarity": "uncommon",
+   "types": [
+    "Phantom",
+    "Toxin"
+   ],
+   "forms": [
+    {
+     "name": "Eekape",
+     "cls": 4.0,
+     "glb": "4_Eekape.glb",
+     "animated": true
+    },
+    {
+     "name": "Moldec",
+     "cls": 41.0,
+     "glb": "41_Moldec.glb",
+     "animated": true
+    },
+    {
+     "name": "Dehedra",
+     "cls": 66.0,
+     "glb": null,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "name": "Palytid",
+   "cls": 5,
+   "rarity": "uncommon",
+   "types": [
+    "Toxin"
+   ],
+   "forms": [
+    {
+     "name": "Palytid",
+     "cls": 5.0,
+     "glb": "5_Palytid.glb",
+     "animated": true
+    },
+    {
+     "name": "Oculid",
+     "cls": 42.0,
+     "glb": "42_Oculid.glb",
+     "animated": true
+    },
+    {
+     "name": "Aphroxid",
+     "cls": 67.0,
+     "glb": null,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "name": "Mianari",
+   "cls": 6,
+   "rarity": "uncommon",
+   "types": [
+    "Lightning"
+   ],
+   "forms": [
+    {
+     "name": "Mianari",
+     "cls": 6.0,
+     "glb": "6_Mianari.glb",
+     "animated": true
+    },
+    {
+     "name": "Surinari",
+     "cls": 43.0,
+     "glb": "43_Surinari.glb",
+     "animated": true
+    }
+   ]
+  },
+  {
+   "name": "Berrball",
+   "cls": 7,
+   "rarity": "uncommon",
+   "types": [
+    "Mystic"
+   ],
+   "forms": [
+    {
+     "name": "Berrball",
+     "cls": 7.0,
+     "glb": "7_Berrball.glb",
+     "animated": true
+    },
+    {
+     "name": "Silvyx",
+     "cls": 44.0,
+     "glb": "44_Silvyx.glb",
+     "animated": true
+    }
+   ]
+  },
+  {
+   "name": "Cesstoid",
+   "cls": 8,
+   "rarity": "uncommon",
+   "types": [
+    "Neutral",
+    "Mystic"
+   ],
+   "forms": [
+    {
+     "name": "Cesstoid",
+     "cls": 8.0,
+     "glb": "8_Cesstoid.glb",
+     "animated": true
+    },
+    {
+     "name": "Coronoid",
+     "cls": 45.0,
+     "glb": "45_Coronoid.glb",
+     "animated": true
+    }
+   ]
+  },
+  {
+   "name": "Mizumi",
+   "cls": 9,
+   "rarity": "uncommon",
+   "types": [
+    "Neutral"
+   ],
+   "forms": [
+    {
+     "name": "Mizumi",
+     "cls": 9.0,
+     "glb": "9_Mizumi.glb",
+     "animated": true
+    },
+    {
+     "name": "Watadzumi",
+     "cls": 46.0,
+     "glb": "46_Watadzumi.glb",
+     "animated": true
+    }
+   ]
+  },
+  {
+   "name": "Chulember",
+   "cls": 10,
+   "rarity": "uncommon",
+   "types": [
+    "Fire"
+   ],
+   "forms": [
+    {
+     "name": "Chulember",
+     "cls": 10.0,
+     "glb": "10_Chulember.glb",
+     "animated": true
+    },
+    {
+     "name": "Fuenago",
+     "cls": 47.0,
+     "glb": "47_Fuenago.glb",
+     "animated": true
+    }
+   ]
+  },
+  {
+   "name": "Geckno",
+   "cls": 11,
+   "rarity": "uncommon",
+   "types": [
+    "Telepath"
+   ],
+   "forms": [
+    {
+     "name": "Geckno",
+     "cls": 11.0,
+     "glb": "11_Geckno.glb",
+     "animated": true
+    },
+    {
+     "name": "Geckelic",
+     "cls": 48.0,
+     "glb": "48_Geckelic.glb",
+     "animated": true
+    }
+   ]
+  },
+  {
+   "name": "Blockid",
+   "cls": 12,
+   "rarity": "uncommon",
+   "types": [
+    "Combat"
+   ],
+   "forms": [
+    {
+     "name": "Blockid",
+     "cls": 12.0,
+     "glb": "12_Blockid.glb",
+     "animated": true
+    },
+    {
+     "name": "Blockall",
+     "cls": 49.0,
+     "glb": "49_Blockall.glb",
+     "animated": true
+    }
+   ]
+  },
+  {
+   "name": "Thermolophus",
+   "cls": 13,
+   "rarity": "uncommon",
+   "types": [
+    "Rock",
+    "Earth"
+   ],
+   "forms": [
+    {
+     "name": "Thermolophus",
+     "cls": 13.0,
+     "glb": "13_Thermolophus.glb",
+     "animated": true
+    }
+   ]
+  },
+  {
+   "name": "Keradon",
+   "cls": 14,
+   "rarity": "uncommon",
+   "types": [
+    "Earth"
+   ],
+   "forms": [
+    {
+     "name": "Keradon",
+     "cls": 14.0,
+     "glb": "14_Keradon.glb",
+     "animated": true
+    }
+   ]
+  },
+  {
+   "name": "Vermillios",
+   "cls": 15,
+   "rarity": "uncommon",
+   "types": [
+    "Water"
+   ],
+   "forms": [
+    {
+     "name": "Vermillios",
+     "cls": 15.0,
+     "glb": "15_Vermillios.glb",
+     "animated": true
+    }
+   ]
+  },
+  {
+   "name": "Vivorin",
+   "cls": 16,
+   "rarity": "uncommon",
+   "types": [
+    "Insect",
+    "Flyer"
+   ],
+   "forms": [
+    {
+     "name": "Vivorin",
+     "cls": 16.0,
+     "glb": "16_Vivorin.glb",
+     "animated": true
+    }
+   ]
+  },
+  {
+   "name": "Windora",
+   "cls": 17,
+   "rarity": "rare",
+   "types": [
+    "Water",
+    "Flyer"
+   ],
+   "forms": [
+    {
+     "name": "Windora",
+     "cls": 17.0,
+     "glb": "17_Windora.glb",
+     "animated": true
+    }
+   ]
+  },
+  {
+   "name": "Geenee",
+   "cls": 18,
+   "rarity": "uncommon",
+   "types": [
+    "Neutral"
+   ],
+   "forms": [
+    {
+     "name": "Geenee",
+     "cls": 18.0,
+     "glb": "18_Geenee.glb",
+     "animated": true
+    },
+    {
+     "name": "Geerex",
+     "cls": 50.0,
+     "glb": "50_Geerex.glb",
+     "animated": true
+    }
+   ]
+  },
+  {
+   "name": "Quillster",
+   "cls": 19,
+   "rarity": "rare",
+   "types": [
+    "Neutral"
+   ],
+   "forms": [
+    {
+     "name": "Quillster",
+     "cls": 19.0,
+     "glb": "19_Quillster.glb",
+     "animated": true
+    }
+   ]
+  },
+  {
+   "name": "Baulder",
+   "cls": 20,
+   "rarity": "legendary",
+   "types": [
+    "Dragon"
+   ],
+   "forms": [
+    {
+     "name": "Baulder",
+     "cls": 20.0,
+     "glb": "20_Baulder.glb",
+     "animated": true
+    },
+    {
+     "name": "Dredrock",
+     "cls": 51.0,
+     "glb": "51_Dredrock.glb",
+     "animated": true
+    },
+    {
+     "name": "Tekagon",
+     "cls": 68.0,
+     "glb": null,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "name": "Vibe",
+   "cls": 22,
+   "rarity": "gason",
+   "types": [
+    "Phantom"
+   ],
+   "forms": [
+    {
+     "name": "Vibe",
+     "cls": 22.0,
+     "glb": "22_Vibe.glb",
+     "animated": true
+    }
+   ]
+  },
+  {
+   "name": "Swifty",
+   "cls": 23,
+   "rarity": "uncommon",
+   "types": [
+    "Telepath"
+   ],
+   "forms": [
+    {
+     "name": "Swifty",
+     "cls": 23.0,
+     "glb": "23_Swifty.glb",
+     "animated": true
+    }
+   ]
+  },
+  {
+   "name": "Pangrass",
+   "cls": 24,
+   "rarity": "rare",
+   "types": [
+    "Leaf",
+    "Neutral"
+   ],
+   "forms": [
+    {
+     "name": "Pangrass",
+     "cls": 24.0,
+     "glb": "24_Pangrass.glb",
+     "animated": true
+    },
+    {
+     "name": "Mapla",
+     "cls": 89.0,
+     "glb": null,
+     "animated": false
+    },
+    {
+     "name": "Pangrove",
+     "cls": 158.0,
+     "glb": null,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "name": "Mintol",
+   "cls": 25,
+   "rarity": "common",
+   "types": [
+    "Leaf",
+    "Ice"
+   ],
+   "forms": [
+    {
+     "name": "Mintol",
+     "cls": 25.0,
+     "glb": "25_Mintol.glb",
+     "animated": true
+    },
+    {
+     "name": "Florost",
+     "cls": 52.0,
+     "glb": "52_Florost.glb",
+     "animated": true
+    },
+    {
+     "name": "Aromerita",
+     "cls": 69.0,
+     "glb": null,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "name": "Omnom",
+   "cls": 26,
+   "rarity": "common",
+   "types": [
+    "Water",
+    "Mystic"
+   ],
+   "forms": [
+    {
+     "name": "Omnom",
+     "cls": 26.0,
+     "glb": "26_Omnom.glb",
+     "animated": true
+    },
+    {
+     "name": "Yumee",
+     "cls": 53.0,
+     "glb": "53_Yumee.glb",
+     "animated": true
+    },
+    {
+     "name": "Liscious",
+     "cls": 70.0,
+     "glb": null,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "name": "Kyari",
+   "cls": 27,
+   "rarity": "common",
+   "types": [
+    "Fire",
+    "Telepath"
+   ],
+   "forms": [
+    {
+     "name": "Kyari",
+     "cls": 27.0,
+     "glb": "27_Kyari.glb",
+     "animated": false
+    },
+    {
+     "name": "Candeliria",
+     "cls": 54.0,
+     "glb": "54_Candeliria.glb",
+     "animated": true
+    }
+   ]
+  },
+  {
+   "name": "Lectrobe",
+   "cls": 28,
+   "rarity": "common",
+   "types": [
+    "Lightning",
+    "Toxin"
+   ],
+   "forms": [
+    {
+     "name": "Lectrobe",
+     "cls": 28.0,
+     "glb": "28_Lectrobe.glb",
+     "animated": true
+    },
+    {
+     "name": "Wrektric",
+     "cls": 55.0,
+     "glb": "55_Wrektric.glb",
+     "animated": true
+    }
+   ]
+  },
+  {
+   "name": "Mirrie",
+   "cls": 29,
+   "rarity": "common",
+   "types": [
+    "Phantom",
+    "Iron"
+   ],
+   "forms": [
+    {
+     "name": "Mirrie",
+     "cls": 29.0,
+     "glb": "29_Mirrie.glb",
+     "animated": true
+    },
+    {
+     "name": "Reflectre",
+     "cls": 56.0,
+     "glb": "56_Reflecter.glb",
+     "animated": true
+    }
+   ]
+  },
+  {
+   "name": "Cobrus",
+   "cls": 30,
+   "rarity": "common",
+   "types": [
+    "Dragon"
+   ],
+   "forms": [
+    {
+     "name": "Cobrus",
+     "cls": 30.0,
+     "glb": "30_Cobrus.glb",
+     "animated": false
+    },
+    {
+     "name": "Dracobra",
+     "cls": 57.0,
+     "glb": "57_Dracobra.glb",
+     "animated": true
+    }
+   ]
+  },
+  {
+   "name": "Lollipunch",
+   "cls": 31,
+   "rarity": "common",
+   "types": [
+    "Combat"
+   ],
+   "forms": [
+    {
+     "name": "Lollipunch",
+     "cls": 31.0,
+     "glb": "31_Lollipunch.glb",
+     "animated": true
+    },
+    {
+     "name": "Mawverize",
+     "cls": 58.0,
+     "glb": "58_Mawverize.glb",
+     "animated": true
+    }
+   ]
+  },
+  {
+   "name": "Odwig",
+   "cls": 32,
+   "rarity": "common",
+   "types": [
+    "Leaf"
+   ],
+   "forms": [
+    {
+     "name": "Odwig",
+     "cls": 32.0,
+     "glb": "32_Odwing.glb",
+     "animated": true
+    },
+    {
+     "name": "Occlusk",
+     "cls": 59.0,
+     "glb": "59_Occlusk.glb",
+     "animated": true
+    }
+   ]
+  },
+  {
+   "name": "Tygloo",
+   "cls": 33,
+   "rarity": "common",
+   "types": [
+    "Ice",
+    "Neutral"
+   ],
+   "forms": [
+    {
+     "name": "Tygloo",
+     "cls": 33.0,
+     "glb": "33_Tygloo.glb",
+     "animated": true
+    },
+    {
+     "name": "Mechloo",
+     "cls": 60.0,
+     "glb": "60_Mechloo.glb",
+     "animated": true
+    }
+   ]
+  },
+  {
+   "name": "Pudde",
+   "cls": 34,
+   "rarity": "common",
+   "types": [
+    "Water",
+    "Telepath"
+   ],
+   "forms": [
+    {
+     "name": "Pudde",
+     "cls": 34.0,
+     "glb": "34_Pudde.glb",
+     "animated": true
+    },
+    {
+     "name": "Aquary",
+     "cls": 61.0,
+     "glb": "61_Aquary.glb",
+     "animated": true
+    },
+    {
+     "name": "Resurvy",
+     "cls": 71.0,
+     "glb": null,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "name": "Mushmite",
+   "cls": 35,
+   "rarity": "gason",
+   "types": [
+    "Water"
+   ],
+   "forms": [
+    {
+     "name": "Mushmite",
+     "cls": 35.0,
+     "glb": "35_Mushmite.glb",
+     "animated": true
+    }
+   ]
+  },
+  {
+   "name": "Polynimo",
+   "cls": 36,
+   "rarity": "gason",
+   "types": [
+    "Fire"
+   ],
+   "forms": [
+    {
+     "name": "Polynimo",
+     "cls": 36.0,
+     "glb": "36_Polynimo.glb",
+     "animated": true
+    }
+   ]
+  },
+  {
+   "name": "Fuirrel",
+   "cls": 37,
+   "rarity": "common",
+   "types": [
+    "Neutral"
+   ],
+   "forms": [
+    {
+     "name": "Fuirrel",
+     "cls": 37.0,
+     "glb": "37_Fuirrel.glb",
+     "animated": true
+    },
+    {
+     "name": "Squake",
+     "cls": 62.0,
+     "glb": "62_Squake.glb",
+     "animated": true
+    },
+    {
+     "name": "Qairrel",
+     "cls": 63.0,
+     "glb": null,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "name": "Morinori",
+   "cls": 72,
+   "rarity": "gason",
+   "types": [
+    "Iron"
+   ],
+   "forms": [
+    {
+     "name": "Morinori",
+     "cls": 72.0,
+     "glb": "72_Morinori.glb",
+     "animated": true
+    }
+   ]
+  },
+  {
+   "name": "Gremin",
+   "cls": 73,
+   "rarity": "gason",
+   "types": [
+    "Flyer"
+   ],
+   "forms": [
+    {
+     "name": "Gremin",
+     "cls": 73.0,
+     "glb": "73_Gremin.glb",
+     "animated": true
+    }
+   ]
+  },
+  {
+   "name": "Spoxin",
+   "cls": 74,
+   "rarity": "gason",
+   "types": [
+    "Toxin"
+   ],
+   "forms": [
+    {
+     "name": "Spoxin",
+     "cls": 74.0,
+     "glb": "74_Spoxin.glb",
+     "animated": true
+    }
+   ]
+  },
+  {
+   "name": "Intelix",
+   "cls": 75,
+   "rarity": "gason",
+   "types": [
+    "Mystic"
+   ],
+   "forms": [
+    {
+     "name": "Intelix",
+     "cls": 75.0,
+     "glb": "75_Intelix.glb",
+     "animated": true
+    }
+   ]
+  },
+  {
+   "name": "Lilspri",
+   "cls": 76,
+   "rarity": "gason",
+   "types": [
+    "Leaf"
+   ],
+   "forms": [
+    {
+     "name": "Lilspri",
+     "cls": 76.0,
+     "glb": null,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "name": "Inkami",
+   "cls": 77,
+   "rarity": "common",
+   "types": [
+    "Flyer",
+    "Telepath"
+   ],
+   "forms": [
+    {
+     "name": "Inkami",
+     "cls": 77.0,
+     "glb": "77_Inkami.glb",
+     "animated": true
+    },
+    {
+     "name": "Tenteink",
+     "cls": 82.0,
+     "glb": null,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "name": "Redhandit",
+   "cls": 78,
+   "rarity": "common",
+   "types": [
+    "Combat",
+    "Phantom"
+   ],
+   "forms": [
+    {
+     "name": "Redhandit",
+     "cls": 78.0,
+     "glb": "78_Redhandit.glb",
+     "animated": true
+    },
+    {
+     "name": "Criminiac",
+     "cls": 83.0,
+     "glb": null,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "name": "Endorr",
+   "cls": 79,
+   "rarity": "common",
+   "types": [
+    "Leaf",
+    "Rock"
+   ],
+   "forms": [
+    {
+     "name": "Endorr",
+     "cls": 79.0,
+     "glb": "79_Endorr.glb",
+     "animated": true
+    },
+    {
+     "name": "Endrowth",
+     "cls": 84.0,
+     "glb": null,
+     "animated": false
+    },
+    {
+     "name": "Monstratos",
+     "cls": 87.0,
+     "glb": null,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "name": "Sonectid",
+   "cls": 80,
+   "rarity": "common",
+   "types": [
+    "Insect",
+    "Iron"
+   ],
+   "forms": [
+    {
+     "name": "Sonectid",
+     "cls": 80.0,
+     "glb": "80_Sonectid.glb",
+     "animated": true
+    },
+    {
+     "name": "Nuklectid",
+     "cls": 85.0,
+     "glb": null,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "name": "Cryptise",
+   "cls": 81,
+   "rarity": "common",
+   "types": [
+    "Phantom",
+    "Earth"
+   ],
+   "forms": [
+    {
+     "name": "Cryptise",
+     "cls": 81.0,
+     "glb": "81_Cryptise.glb",
+     "animated": true
+    },
+    {
+     "name": "Cremortus",
+     "cls": 86.0,
+     "glb": null,
+     "animated": false
+    },
+    {
+     "name": "Duscre",
+     "cls": 88.0,
+     "glb": null,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "name": "Barkindle",
+   "cls": 90,
+   "rarity": "legendary",
+   "types": [
+    "Fire",
+    "Combat"
+   ],
+   "forms": [
+    {
+     "name": "Barkindle",
+     "cls": 90.0,
+     "glb": "90_Barkindle.glb",
+     "animated": true
+    },
+    {
+     "name": "Wolflaze",
+     "cls": 91.0,
+     "glb": null,
+     "animated": false
+    },
+    {
+     "name": "Wolverize",
+     "cls": 92.0,
+     "glb": null,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "name": "Ruffski",
+   "cls": 93,
+   "rarity": "legendary",
+   "types": [
+    "Ice",
+    "Neutral"
+   ],
+   "forms": [
+    {
+     "name": "Ruffski",
+     "cls": 93.0,
+     "glb": "93_Ruffski.glb",
+     "animated": true
+    },
+    {
+     "name": "Arblizen",
+     "cls": 94.0,
+     "glb": null,
+     "animated": false
+    },
+    {
+     "name": "Siberizen",
+     "cls": 95.0,
+     "glb": null,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "name": "Tundrill",
+   "cls": 96,
+   "rarity": "gason",
+   "types": [
+    "Earth"
+   ],
+   "forms": [
+    {
+     "name": "Tundrill",
+     "cls": 96.0,
+     "glb": null,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "name": "Matara",
+   "cls": 97,
+   "rarity": "common",
+   "types": [
+    "Earth"
+   ],
+   "forms": [
+    {
+     "name": "Matara",
+     "cls": 97.0,
+     "glb": "97_Matara.glb",
+     "animated": true
+    },
+    {
+     "name": "Matarama",
+     "cls": 98.0,
+     "glb": null,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "name": "MalakelE",
+   "cls": 99,
+   "rarity": "uncommon",
+   "types": [
+    "Toxin",
+    "Combat"
+   ],
+   "forms": [
+    {
+     "name": "MalakelE",
+     "cls": 99.0,
+     "glb": "99_Malakele.glb",
+     "animated": true
+    },
+    {
+     "name": "KahukelE",
+     "cls": 100.0,
+     "glb": null,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "name": "Tobeno",
+   "cls": 101,
+   "rarity": "uncommon",
+   "types": [
+    "Neutral",
+    "Flyer"
+   ],
+   "forms": [
+    {
+     "name": "Tobeno",
+     "cls": 101.0,
+     "glb": "101_Tebeno.glb",
+     "animated": true
+    },
+    {
+     "name": "Puremu",
+     "cls": 102.0,
+     "glb": null,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "name": "Flaraton",
+   "cls": 103,
+   "rarity": "uncommon",
+   "types": [
+    "Fire",
+    "Earth"
+   ],
+   "forms": [
+    {
+     "name": "Flaraton",
+     "cls": 103.0,
+     "glb": "103_Flaraton.glb",
+     "animated": true
+    },
+    {
+     "name": "Inferacoon",
+     "cls": 104.0,
+     "glb": null,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "name": "Scubella",
+   "cls": 105,
+   "rarity": "gason",
+   "types": [
+    "Ice"
+   ],
+   "forms": [
+    {
+     "name": "Scubella",
+     "cls": 105.0,
+     "glb": null,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "name": "Ekopi",
+   "cls": 106,
+   "rarity": "uncommon",
+   "types": [
+    "Leaf",
+    "Earth"
+   ],
+   "forms": [
+    {
+     "name": "Ekopi",
+     "cls": 106.0,
+     "glb": "106_Ekopi.glb",
+     "animated": true
+    },
+    {
+     "name": "Ekoraft",
+     "cls": 107.0,
+     "glb": null,
+     "animated": false
+    },
+    {
+     "name": "Expertri",
+     "cls": 108.0,
+     "glb": null,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "name": "Purgast",
+   "cls": 109,
+   "rarity": "gason",
+   "types": [
+    "Telepath"
+   ],
+   "forms": [
+    {
+     "name": "Purgast",
+     "cls": 109.0,
+     "glb": null,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "name": "Smeltal",
+   "cls": 110,
+   "rarity": "gason",
+   "types": [
+    "Combat"
+   ],
+   "forms": [
+    {
+     "name": "Smeltal",
+     "cls": 110.0,
+     "glb": null,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "name": "Vorvosip",
+   "cls": 111,
+   "rarity": "gason",
+   "types": [
+    "Insect"
+   ],
+   "forms": [
+    {
+     "name": "Vorvosip",
+     "cls": 111.0,
+     "glb": null,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "name": "Devostoric",
+   "cls": 112,
+   "rarity": "gason",
+   "types": [
+    "Rock"
+   ],
+   "forms": [
+    {
+     "name": "Devostoric",
+     "cls": 112.0,
+     "glb": null,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "name": "Sauntler",
+   "cls": 113,
+   "rarity": "gason",
+   "types": [
+    "Dragon"
+   ],
+   "forms": [
+    {
+     "name": "Sauntler",
+     "cls": 113.0,
+     "glb": null,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "name": "Zapillar",
+   "cls": 114,
+   "rarity": "gason",
+   "types": [
+    "Lightning"
+   ],
+   "forms": [
+    {
+     "name": "Zapillar",
+     "cls": 114.0,
+     "glb": null,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "name": "Infiluv",
+   "cls": 115,
+   "rarity": "gason",
+   "types": [
+    "Neutral"
+   ],
+   "forms": [
+    {
+     "name": "Infiluv",
+     "cls": 115.0,
+     "glb": null,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "name": "Krubble",
+   "cls": 116,
+   "rarity": "rare",
+   "types": [
+    "Water",
+    "Iron"
+   ],
+   "forms": [
+    {
+     "name": "Krubble",
+     "cls": 116.0,
+     "glb": "116_Krubble.glb",
+     "animated": true
+    },
+    {
+     "name": "Krabboul",
+     "cls": 117.0,
+     "glb": null,
+     "animated": false
+    },
+    {
+     "name": "Capareef",
+     "cls": 118.0,
+     "glb": null,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "name": "Tipsillar",
+   "cls": 119,
+   "rarity": "rare",
+   "types": [
+    "Insect",
+    "Lightning"
+   ],
+   "forms": [
+    {
+     "name": "Tipsillar",
+     "cls": 119.0,
+     "glb": "119_Tipsillar.glb",
+     "animated": true
+    },
+    {
+     "name": "Mesmerhys",
+     "cls": 120.0,
+     "glb": null,
+     "animated": false
+    },
+    {
+     "name": "Chromothic",
+     "cls": 121.0,
+     "glb": null,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "name": "Grubgas",
+   "cls": 122,
+   "rarity": "rare",
+   "types": [
+    "Toxin",
+    "Iron"
+   ],
+   "forms": [
+    {
+     "name": "Grubgas",
+     "cls": 122.0,
+     "glb": "122_Grubgas.glb",
+     "animated": true
+    },
+    {
+     "name": "Polupa",
+     "cls": 123.0,
+     "glb": null,
+     "animated": false
+    },
+    {
+     "name": "Noxibeet",
+     "cls": 124.0,
+     "glb": null,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "name": "Kelpony",
+   "cls": 125,
+   "rarity": "rare",
+   "types": [
+    "Ice",
+    "Rock"
+   ],
+   "forms": [
+    {
+     "name": "Kelpony",
+     "cls": 125.0,
+     "glb": "125_Kelpony.glb",
+     "animated": true
+    },
+    {
+     "name": "Chevalage",
+     "cls": 126.0,
+     "glb": null,
+     "animated": false
+    },
+    {
+     "name": "Reefallion",
+     "cls": 127.0,
+     "glb": null,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "name": "Lemeeni",
+   "cls": 128,
+   "rarity": "rare",
+   "types": [
+    "Leaf",
+    "Combat"
+   ],
+   "forms": [
+    {
+     "name": "Lemeeni",
+     "cls": 128.0,
+     "glb": "128_Lemeeni.glb",
+     "animated": true
+    },
+    {
+     "name": "Lemeeglar",
+     "cls": 129.0,
+     "glb": null,
+     "animated": false
+    },
+    {
+     "name": "Primasham",
+     "cls": 130.0,
+     "glb": null,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "name": "Iquander",
+   "cls": 131,
+   "rarity": "uncommon",
+   "types": [
+    "Dragon",
+    "Fire"
+   ],
+   "forms": [
+    {
+     "name": "Iquander",
+     "cls": 131.0,
+     "glb": "131_Iquander.glb",
+     "animated": true
+    },
+    {
+     "name": "Iquanaze",
+     "cls": 132.0,
+     "glb": null,
+     "animated": false
+    },
+    {
+     "name": "Wrecktile",
+     "cls": 133.0,
+     "glb": null,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "name": "Mindallion",
+   "cls": 134,
+   "rarity": "rare",
+   "types": [
+    "Iron",
+    "Mystic"
+   ],
+   "forms": [
+    {
+     "name": "Mindallion",
+     "cls": 134.0,
+     "glb": "134_Mindallion.glb",
+     "animated": true
+    },
+    {
+     "name": "Talisment",
+     "cls": 135.0,
+     "glb": null,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "name": "Krakowee",
+   "cls": 136,
+   "rarity": "rare",
+   "types": [
+    "Insect",
+    "Rock"
+   ],
+   "forms": [
+    {
+     "name": "Krakowee",
+     "cls": 136.0,
+     "glb": "136_Krakowee.glb",
+     "animated": true
+    },
+    {
+     "name": "Alligwamp",
+     "cls": 137.0,
+     "glb": null,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "name": "Felistar",
+   "cls": 138,
+   "rarity": "rare",
+   "types": [
+    "Phantom",
+    "Lightning"
+   ],
+   "forms": [
+    {
+     "name": "Felistar",
+     "cls": 138.0,
+     "glb": "138_Felistar.glb",
+     "animated": true
+    },
+    {
+     "name": "Galaleo",
+     "cls": 139.0,
+     "glb": null,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "name": "Dusprite",
+   "cls": 140,
+   "rarity": "uncommon",
+   "types": [
+    "Mystic",
+    "Toxin"
+   ],
+   "forms": [
+    {
+     "name": "Dusprite",
+     "cls": 140.0,
+     "glb": "140_Dusprite.glb",
+     "animated": true
+    },
+    {
+     "name": "Spoxie",
+     "cls": 141.0,
+     "glb": null,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "name": "Clothom",
+   "cls": 142,
+   "rarity": "rare",
+   "types": [
+    "Phantom",
+    "Flyer"
+   ],
+   "forms": [
+    {
+     "name": "Clothom",
+     "cls": 142.0,
+     "glb": "142_Clothom.glb",
+     "animated": true
+    },
+    {
+     "name": "Blankosu",
+     "cls": 143.0,
+     "glb": null,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "name": "Pistaccoul",
+   "cls": 144,
+   "rarity": "rare",
+   "types": [
+    "Insect",
+    "Earth"
+   ],
+   "forms": [
+    {
+     "name": "Pistaccoul",
+     "cls": 144.0,
+     "glb": "144_Pistaccoul.glb",
+     "animated": true
+    },
+    {
+     "name": "Fantasnut",
+     "cls": 145.0,
+     "glb": null,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "name": "Kikapole",
+   "cls": 146,
+   "rarity": "uncommon",
+   "types": [
+    "Telepath",
+    "Combat"
+   ],
+   "forms": [
+    {
+     "name": "Kikapole",
+     "cls": 146.0,
+     "glb": "146_Kikapole.glb",
+     "animated": true
+    },
+    {
+     "name": "Ribibrawl",
+     "cls": 147.0,
+     "glb": null,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "name": "Vexigon",
+   "cls": 148,
+   "rarity": "rare",
+   "types": [
+    "Dragon",
+    "Neutral"
+   ],
+   "forms": [
+    {
+     "name": "Vexigon",
+     "cls": 148.0,
+     "glb": "148_Vexigon.glb",
+     "animated": true
+    },
+    {
+     "name": "Noxareo",
+     "cls": 149.0,
+     "glb": null,
+     "animated": false
+    },
+    {
+     "name": "Darcastro",
+     "cls": 150.0,
+     "glb": null,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "name": "Greipawn",
+   "cls": 151,
+   "rarity": "uncommon",
+   "types": [
+    "Leaf"
+   ],
+   "forms": [
+    {
+     "name": "Greipawn",
+     "cls": 151.0,
+     "glb": "151_Greipawn.glb",
+     "animated": true
+    },
+    {
+     "name": "Vitisir",
+     "cls": 152.0,
+     "glb": null,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "name": "Vernirox",
+   "cls": 153,
+   "rarity": "legendary",
+   "types": [
+    "Earth",
+    "Rock"
+   ],
+   "forms": [
+    {
+     "name": "Vernirox",
+     "cls": 153.0,
+     "glb": "153_Vernirox.glb",
+     "animated": true
+    }
+   ]
+  },
+  {
+   "name": "Quadrossal",
+   "cls": 154,
+   "rarity": "legendary",
+   "types": [
+    "Telepath",
+    "Mystic"
+   ],
+   "forms": [
+    {
+     "name": "Quadrossal",
+     "cls": 154.0,
+     "glb": "154_Quadrossal.glb",
+     "animated": true
+    }
+   ]
+  },
+  {
+   "name": "Zedakazm",
+   "cls": 155,
+   "rarity": "legendary",
+   "types": [
+    "Dragon",
+    "Phantom"
+   ],
+   "forms": [
+    {
+     "name": "Zedakazm",
+     "cls": 155.0,
+     "glb": "155_Zedakazm.glb",
+     "animated": true
+    }
+   ]
+  },
+  {
+   "name": "Armadigoal",
+   "cls": 156,
+   "rarity": "uncommon",
+   "types": [
+    "Iron",
+    "Rock"
+   ],
+   "forms": [
+    {
+     "name": "Armadigoal",
+     "cls": 156.0,
+     "glb": "156_Armadigoal.glb",
+     "animated": true
+    },
+    {
+     "name": "Armordigoal",
+     "cls": 157.0,
+     "glb": null,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "name": "Kyberra",
+   "cls": 159,
+   "rarity": "rare",
+   "types": [
+    "Mystic",
+    "Leaf"
+   ],
+   "forms": [
+    {
+     "name": "Kyberra",
+     "cls": 159.0,
+     "glb": "159_Kyberra.glb",
+     "animated": true
+    },
+    {
+     "name": "Kyberram",
+     "cls": 160.0,
+     "glb": null,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "name": "Pigperus",
+   "cls": 161,
+   "rarity": "rare",
+   "types": [
+    "Earth",
+    "Ice"
+   ],
+   "forms": [
+    {
+     "name": "Pigperus",
+     "cls": 161.0,
+     "glb": "161_Pigperus.glb",
+     "animated": true
+    },
+    {
+     "name": "Boarazer",
+     "cls": 162.0,
+     "glb": null,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "name": "Piggicius",
+   "cls": 163,
+   "rarity": "uncommon",
+   "types": [
+    "Water",
+    "Insect"
+   ],
+   "forms": [
+    {
+     "name": "Piggicius",
+     "cls": 163.0,
+     "glb": "163_Piggicius.glb",
+     "animated": true
+    },
+    {
+     "name": "Wartoink",
+     "cls": 164.0,
+     "glb": null,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "name": "Kumabaggu",
+   "cls": 165,
+   "rarity": "rare",
+   "types": [
+    "Iron",
+    "Telepath"
+   ],
+   "forms": [
+    {
+     "name": "Kumabaggu",
+     "cls": 165.0,
+     "glb": null,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "name": "Spoulder",
+   "cls": 166,
+   "rarity": "rare",
+   "types": [
+    "Insect",
+    "Rock"
+   ],
+   "forms": [
+    {
+     "name": "Spoulder",
+     "cls": 166.0,
+     "glb": "166_Spoulder.glb",
+     "animated": false
+    },
+    {
+     "name": "Cavachnid",
+     "cls": 167.0,
+     "glb": null,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "name": "Foxeez",
+   "cls": 168,
+   "rarity": "rare",
+   "types": [
+    "Ice",
+    "Phantom"
+   ],
+   "forms": [
+    {
+     "name": "Foxeez",
+     "cls": 168.0,
+     "glb": "168_Foxeez.glb",
+     "animated": true
+    },
+    {
+     "name": "Coyoteez",
+     "cls": 169.0,
+     "glb": null,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "name": "Roichirp",
+   "cls": 170,
+   "rarity": "rare",
+   "types": [
+    "Flyer"
+   ],
+   "forms": [
+    {
+     "name": "Roichirp",
+     "cls": 170.0,
+     "glb": "170_Roichirp.glb",
+     "animated": true
+    },
+    {
+     "name": "Hawkrey",
+     "cls": 171.0,
+     "glb": null,
+     "animated": false
+    },
+    {
+     "name": "Emperazor",
+     "cls": 172.0,
+     "glb": null,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "name": "Batflare",
+   "cls": 173,
+   "rarity": "rare",
+   "types": [
+    "Fire"
+   ],
+   "forms": [
+    {
+     "name": "Batflare",
+     "cls": 173.0,
+     "glb": "173_Batflare.glb",
+     "animated": false
+    },
+    {
+     "name": "Inferbat",
+     "cls": 174.0,
+     "glb": null,
+     "animated": false
+    },
+    {
+     "name": "Zyracier",
+     "cls": 175.0,
+     "glb": null,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "name": "Watuber",
+   "cls": 176,
+   "rarity": "rare",
+   "types": [
+    "Water",
+    "Combat"
+   ],
+   "forms": [
+    {
+     "name": "Watuber",
+     "cls": 176.0,
+     "glb": "176_Watuber.glb",
+     "animated": true
+    },
+    {
+     "name": "Floatuber",
+     "cls": 177.0,
+     "glb": null,
+     "animated": false
+    },
+    {
+     "name": "Chambrawl",
+     "cls": 178.0,
+     "glb": null,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "name": "Vaudequin",
+   "cls": 179,
+   "rarity": "rare",
+   "types": [
+    "Fire",
+    "Mystic"
+   ],
+   "forms": [
+    {
+     "name": "Vaudequin",
+     "cls": 179.0,
+     "glb": "179_Vaudequin.glb",
+     "animated": true
+    }
+   ]
+  },
+  {
+   "name": "Helichrome",
+   "cls": 180,
+   "rarity": "rare",
+   "types": [
+    "Iron",
+    "Dragon"
+   ],
+   "forms": [
+    {
+     "name": "Helichrome",
+     "cls": 180.0,
+     "glb": "180_Helichrome.glb",
+     "animated": true
+    },
+    {
+     "name": "Boomergon",
+     "cls": 181.0,
+     "glb": null,
+     "animated": false
+    },
+    {
+     "name": "Flairon",
+     "cls": 182.0,
+     "glb": null,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "name": "Onchor",
+   "cls": 183,
+   "rarity": "rare",
+   "types": [
+    "Water",
+    "Iron"
+   ],
+   "forms": [
+    {
+     "name": "Onchor",
+     "cls": 183.0,
+     "glb": "183_Onchor.glb",
+     "animated": true
+    },
+    {
+     "name": "Opmarine",
+     "cls": 184.0,
+     "glb": null,
+     "animated": false
+    },
+    {
+     "name": "Opsidien",
+     "cls": 185.0,
+     "glb": null,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "name": "Sully",
+   "cls": 186,
+   "rarity": "rare",
+   "types": [
+    "Iron",
+    "Flyer"
+   ],
+   "forms": [
+    {
+     "name": "Sully",
+     "cls": 186.0,
+     "glb": "186_Sully.glb",
+     "animated": true
+    },
+    {
+     "name": "Silica",
+     "cls": 187.0,
+     "glb": null,
+     "animated": false
+    },
+    {
+     "name": "Sinexus",
+     "cls": 188.0,
+     "glb": null,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "name": "Cannubis",
+   "cls": 189,
+   "rarity": "rare",
+   "types": [
+    "Leaf",
+    "Phantom"
+   ],
+   "forms": [
+    {
+     "name": "Cannubis",
+     "cls": 189.0,
+     "glb": "189_Cannubis.glb",
+     "animated": true
+    },
+    {
+     "name": "Keefo",
+     "cls": 190.0,
+     "glb": null,
+     "animated": false
+    },
+    {
+     "name": "Duwat",
+     "cls": 191.0,
+     "glb": null,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "name": "Finray",
+   "cls": 192,
+   "rarity": "rare",
+   "types": [
+    "Water",
+    "Dragon"
+   ],
+   "forms": [
+    {
+     "name": "Finray",
+     "cls": 192.0,
+     "glb": "192_Finray.glb",
+     "animated": false
+    },
+    {
+     "name": "Ogoprowl",
+     "cls": 193.0,
+     "glb": null,
+     "animated": false
+    },
+    {
+     "name": "Sephysar",
+     "cls": 195.0,
+     "glb": null,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "name": "Dorentu",
+   "cls": 196,
+   "rarity": "rare",
+   "types": [
+    "Neutral"
+   ],
+   "forms": [
+    {
+     "name": "Dorentu",
+     "cls": 196.0,
+     "glb": "196_Dorentu.glb",
+     "animated": false
+    },
+    {
+     "name": "Grandorent",
+     "cls": 197.0,
+     "glb": null,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "name": "Pricktile",
+   "cls": 198,
+   "rarity": "rare",
+   "types": [
+    "Leaf",
+    "Earth"
+   ],
+   "forms": [
+    {
+     "name": "Pricktile",
+     "cls": 198.0,
+     "glb": "198_Pricktile.glb",
+     "animated": false
+    },
+    {
+     "name": "Cactodon",
+     "cls": 199.0,
+     "glb": null,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "name": "Yarmeow",
+   "cls": 200,
+   "rarity": "legendary",
+   "types": [
+    "Telepath",
+    "Mystic"
+   ],
+   "forms": [
+    {
+     "name": "Yarmeow",
+     "cls": 200.0,
+     "glb": "200_Yarmeow.glb",
+     "animated": false
+    },
+    {
+     "name": "Tressemiao",
+     "cls": 201.0,
+     "glb": null,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "name": "Naviumi",
+   "cls": 202,
+   "rarity": "rare",
+   "types": [
+    "Lightning",
+    "Mystic"
+   ],
+   "forms": [
+    {
+     "name": "Naviumi",
+     "cls": 202.0,
+     "glb": "202_Naviumi.glb",
+     "animated": false
+    }
+   ]
+  },
+  {
+   "name": "Fauneek",
+   "cls": 221,
+   "rarity": "rare",
+   "types": [
+    "Earth",
+    "Combat"
+   ],
+   "forms": [
+    {
+     "name": "Fauneek",
+     "cls": 221.0,
+     "glb": "221_Fauneek.glb",
+     "animated": true
+    },
+    {
+     "name": "Satyreek",
+     "cls": 222.0,
+     "glb": null,
+     "animated": false
+    },
+    {
+     "name": "Coleeram",
+     "cls": 223.0,
+     "glb": null,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "name": "Elekitt",
+   "cls": 224,
+   "rarity": "rare",
+   "types": [
+    "Lightning"
+   ],
+   "forms": [
+    {
+     "name": "Elekitt",
+     "cls": 224.0,
+     "glb": "224_Elekitt.glb",
+     "animated": false
+    },
+    {
+     "name": "Velocikat",
+     "cls": 225.0,
+     "glb": null,
+     "animated": false
+    },
+    {
+     "name": "Thunderzen",
+     "cls": 226.0,
+     "glb": null,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "name": "Hambrisk",
+   "cls": 227,
+   "rarity": "common",
+   "types": [
+    "Fire"
+   ],
+   "forms": [
+    {
+     "name": "Hambrisk",
+     "cls": 227.0,
+     "glb": "227_Hambrisk.glb",
+     "animated": false
+    },
+    {
+     "name": "Chinchype",
+     "cls": 228.0,
+     "glb": null,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "name": "Moonara",
+   "cls": 229,
+   "rarity": "uncommon",
+   "types": [
+    "Mystic",
+    "Telepath"
+   ],
+   "forms": [
+    {
+     "name": "Moonara",
+     "cls": 229.0,
+     "glb": "229_Moonara.glb",
+     "animated": false
+    },
+    {
+     "name": "Lunaeire",
+     "cls": 230.0,
+     "glb": null,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "name": "Clawcount",
+   "cls": 231,
+   "rarity": "uncommon",
+   "types": [
+    "Leaf",
+    "Rock"
+   ],
+   "forms": [
+    {
+     "name": "Clawcount",
+     "cls": 231.0,
+     "glb": "231_Clawcount.glb",
+     "animated": false
+    },
+    {
+     "name": "Clawgigus",
+     "cls": 232.0,
+     "glb": null,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "name": "Wallopop",
+   "cls": 233,
+   "rarity": "uncommon",
+   "types": [
+    "Combat",
+    "Neutral"
+   ],
+   "forms": [
+    {
+     "name": "Wallopop",
+     "cls": 233.0,
+     "glb": "233_Wallopop.glb",
+     "animated": false
+    },
+    {
+     "name": "Samudangi",
+     "cls": 234.0,
+     "glb": null,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "name": "Snobbit",
+   "cls": 235,
+   "rarity": "common",
+   "types": [
+    "Ice",
+    "Water"
+   ],
+   "forms": [
+    {
+     "name": "Snobbit",
+     "cls": 235.0,
+     "glb": "235_Snobbit.glb",
+     "animated": false
+    },
+    {
+     "name": "Frosslord",
+     "cls": 236.0,
+     "glb": null,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "name": "Eriegle",
+   "cls": 237,
+   "rarity": "rare",
+   "types": [
+    "Flyer"
+   ],
+   "forms": [
+    {
+     "name": "Eriegle",
+     "cls": 237.0,
+     "glb": "237_Eriegle.glb",
+     "animated": false
+    },
+    {
+     "name": "Albivore",
+     "cls": 238.0,
+     "glb": null,
+     "animated": false
+    },
+    {
+     "name": "Emperiegle",
+     "cls": 239.0,
+     "glb": null,
+     "animated": false
+    }
+   ]
+  },
+  {
+   "name": "Mytier",
+   "cls": 240,
+   "rarity": "mythic",
+   "types": [
+    "Fire",
+    "Mystic"
+   ],
+   "forms": [
+    {
+     "name": "Mytier",
+     "cls": 240.0,
+     "glb": "240_Mytier.glb",
+     "animated": false
+    }
+   ]
+  },
+  {
+   "name": "Inchapp",
+   "cls": 241,
+   "rarity": "rare",
+   "types": [
+    "insect",
+    "Lightning"
+   ],
+   "forms": [
+    {
+     "name": "Inchapp",
+     "cls": 241.0,
+     "glb": "241_Inchapp.glb",
+     "animated": true
+    }
+   ]
+  }
+ ]
+}

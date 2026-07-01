@@ -1,0 +1,17 @@
+{
+  "name": "ef-moba-client",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "EtherFantasy MOBA — game client. `npm run build` produces a hardened RELEASE/ (obfuscated) from the readable SOURCE.",
+  "scripts": {
+    "build": "node build/build.mjs",
+    "build:prod": "cross-env DOMAIN_LOCK=.etherfantasy.com CFF=0.3 node build/build.mjs",
+    "build:heavy": "cross-env DOMAIN_LOCK=.etherfantasy.com CFF=0.75 node build/build.mjs",
+    "build:max": "cross-env CFF=1 DEAD=1 STRIP_CONSOLE=1 DOMAIN_LOCK=.etherfantasy.com node build/build.mjs"
+  },
+  "devDependencies": {
+    "javascript-obfuscator": "^4.1.1",
+    "cross-env": "^7.0.3"
+  }
+}

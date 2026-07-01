@@ -1,0 +1,26 @@
+# build outputs (generated; never edit by hand)
+/RELEASE/
+/dist/
+
+# deps
+node_modules/
+**/node_modules/
+
+# logs / scratch
+*.log
+npm-debug.log*
+
+# OS / editor / office temp
+.DS_Store
+Thumbs.db
+~$*
+*.fuse_hidden*
+*.tmp
+
+# backups / archives produced by deploy
+*.bak
+*.bak.*
+*.tgz
+
+# removed/broken junk (13MB of discarded files)
+_removed_broken/

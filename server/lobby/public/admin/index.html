@@ -1,0 +1,318 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EF Moba — PlayEscrow Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink-950:#050409;--ink-900:#0a0813;--ink-850:#0f0c1b;--ink-500:#352b54;
+    --ether-300:#d8bbff;--ether-400:#c08cff;--ether-500:#a855f7;--ether-700:#6d28d9;
+    --gold-300:#ecd293;--gold-500:#c79c44;--crystal-300:#9cf6e4;--crystal-500:#2dd4bf;
+    --fg:#ece9f5;--fg-dim:#a8a3bf;--fg-mute:#6f6a88;--red:#f0556b;--good:#34d399;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:"Inter",system-ui,Segoe UI,sans-serif;color:var(--fg);background:var(--ink-950);min-height:100vh}
+  body::before{content:"";position:fixed;inset:0;z-index:-1;background:
+    radial-gradient(1100px 600px at 80% -10%,rgba(168,85,247,.16),transparent 60%),
+    radial-gradient(900px 600px at 5% 5%,rgba(45,212,191,.08),transparent 55%),var(--ink-950)}
+  .wrap{max-width:920px;margin:0 auto;padding:26px 18px 80px}
+  h1{font-family:"EB Garamond",Georgia,serif;font-weight:600;font-size:30px;margin:0;
+    background:linear-gradient(120deg,#fff,var(--ether-300) 55%,var(--crystal-300));-webkit-background-clip:text;background-clip:text;color:transparent}
+  h2{font-family:"EB Garamond",Georgia,serif;font-weight:600;font-size:19px;margin:0 0 12px}
+  .top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:6px}
+  .sub{color:var(--fg-dim);font-size:13px;margin:0 0 18px}
+  .card{position:relative;background:linear-gradient(180deg,rgba(255,255,255,.045),rgba(255,255,255,.012));border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:18px 20px;margin:14px 0;backdrop-filter:blur(12px)}
+  .card.warn{border-color:rgba(240,85,107,.4)}
+  .card.up{border-color:rgba(168,85,247,.45)}
+  button{font:inherit;font-weight:600;cursor:pointer;border-radius:11px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.05);color:var(--fg);padding:10px 16px;transition:.15s}
+  button:hover{border-color:rgba(255,255,255,.3);background:rgba(255,255,255,.1)}
+  button.primary{border:none;color:#fff;background:linear-gradient(135deg,var(--ether-500),var(--ether-700))}
+  button.gold{border:none;color:var(--ink-950);background:linear-gradient(135deg,var(--gold-300),var(--gold-500))}
+  button.danger{border-color:rgba(240,85,107,.5);color:#ffd0d6;background:rgba(240,85,107,.12)}
+  button:disabled{opacity:.4;cursor:not-allowed}
+  input{font:inherit;background:var(--ink-900);border:1px solid rgba(255,255,255,.14);color:var(--fg);border-radius:9px;padding:9px 11px;width:140px}
+  input.addr{width:340px;max-width:100%}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:8px 0}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:6px 0 2px}
+  .stat{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:11px 13px}
+  .stat .k{font-size:10px;text-transform:uppercase;letter-spacing:.16em;color:var(--fg-mute)}
+  .stat .v{font-family:"EB Garamond",Georgia,serif;font-size:22px;margin-top:3px}
+  .ct{color:var(--crystal-300)} .mut{color:var(--fg-dim);font-size:13px}
+  .pill{display:inline-flex;gap:6px;align-items:center;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:600;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.05);color:var(--fg-dim)}
+  .ok{color:var(--good)} .bad{color:var(--red)}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;color:var(--ether-300);word-break:break-all}
+  .log{margin-top:14px;font-size:12.5px;color:var(--fg-dim);min-height:20px}
+  .log a{color:var(--crystal-300)}
+  hr{border:none;border-top:1px solid rgba(255,255,255,.08);margin:14px 0}
+  label.f{display:flex;flex-direction:column;gap:4px;font-size:11px;color:var(--fg-mute);text-transform:uppercase;letter-spacing:.12em}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <h1>⚙️ PlayEscrow Admin</h1>
+    <div class="row" style="margin:0">
+      <span class="pill" id="net">—</span>
+      <button class="primary" id="connect">🔗 Connect wallet</button>
+    </div>
+  </div>
+  <p class="sub">Owner-only control panel for the EF Moba CT economy contract. Every action is enforced on-chain — only the <code>ADMIN_ROLE</code> wallet can execute anything here.</p>
+
+  <div class="card warn hide" id="notAdmin">
+    <b class="bad">⚠ Connected wallet is not the admin.</b>
+    <div class="mut" id="notAdminTxt"></div>
+  </div>
+
+  <!-- STATUS -->
+  <div class="card">
+    <h2>📊 Contract status</h2>
+    <div class="grid">
+      <div class="stat"><div class="k">Paid loot pool</div><div class="v ct" id="sSp">—</div></div>
+      <div class="stat"><div class="k">VIP free pool</div><div class="v ct" id="sFree">—</div></div>
+      <div class="stat"><div class="k">Leaderboard pot</div><div class="v ct" id="sLb">—</div></div>
+      <div class="stat"><div class="k">PvP pot</div><div class="v ct" id="sPvp">—</div></div>
+      <div class="stat"><div class="k">Unbooked (direct sends)</div><div class="v ct" id="sUn">—</div></div>
+      <div class="stat"><div class="k">Entry / Split</div><div class="v" id="sSplit" style="font-size:15px">—</div></div>
+    </div>
+    <div class="mut" id="sMeta" style="margin-top:8px"></div>
+    <div class="row"><button id="refresh">↻ Refresh</button></div>
+  </div>
+
+  <!-- UPGRADE -->
+  <div class="card up" id="upgradeCard">
+    <h2>⬆️ Upgrade to v3 — on-chain loot odds</h2>
+    <div class="mut">Current implementation: <code id="curImpl">—</code></div>
+    <div class="mut">v3 implementation: <code id="tgtImpl"></code></div>
+    <div class="row"><button class="primary" id="doUpgrade">Upgrade to v3 (contract rolls the loot table)</button> <span class="pill" id="upState">—</span></div>
+    <div class="mut">Runs <code>upgradeToAndCall(v3Impl, initializeV3())</code> — removes keeper amount-discretion; the contract now rolls 1–100 and pays the exact tier. Safe: storage layout validated.</div>
+  </div>
+
+  <!-- FUND -->
+  <div class="card">
+    <h2>💰 Fund a pool</h2>
+    <p class="mut">Approves CT then deposits into the chosen pool. (The free pool is house-funded; paid pool also self-funds from entries.)</p>
+    <div class="row">
+      <input id="fundAmt" type="number" min="0" placeholder="CT amount">
+      <button class="gold" data-fund="free">Fund VIP free pool</button>
+      <button data-fund="sp">Fund paid pool</button>
+      <button data-fund="lb">Fund leaderboard pot</button>
+      <button data-fund="pvp">Fund PvP pot</button>
+    </div>
+  </div>
+
+  <!-- ALLOCATE -->
+  <div class="card">
+    <h2>📥 Book a direct transfer</h2>
+    <p class="mut">If you sent CT straight to the contract, it shows as <b>Unbooked</b> above. Split it into the pools here.</p>
+    <div class="row">
+      <label class="f">→ Free<input id="aFree" type="number" min="0" placeholder="CT" style="width:110px"></label>
+      <label class="f">→ Paid<input id="aPaid" type="number" min="0" placeholder="CT" style="width:110px"></label>
+      <label class="f">→ Leaderboard<input id="aLb" type="number" min="0" placeholder="CT" style="width:110px"></label>
+      <button class="primary" id="doAlloc" style="align-self:flex-end">Allocate</button>
+    </div>
+  </div>
+
+  <!-- WITHDRAW -->
+  <div class="card">
+    <h2>🏧 Withdraw from a pool</h2>
+    <div class="row">
+      <input class="addr" id="wTo" placeholder="recipient 0x… (blank = your wallet)">
+      <input id="wAmt" type="number" min="0" placeholder="CT (blank = all)">
+    </div>
+    <div class="row">
+      <button data-wd="free">Free pool</button>
+      <button data-wd="sp">Paid pool</button>
+      <button data-wd="lb">Leaderboard</button>
+      <button data-wd="pvp">PvP pot</button>
+    </div>
+  </div>
+
+  <!-- LEADERBOARD PAYOUT -->
+  <div class="card">
+    <h2>🏆 Pay out leaderboard (from the pot)</h2>
+    <p class="mut">One line per winner: <code>address,amountCT</code></p>
+    <textarea id="lbList" rows="4" style="width:100%;font:inherit;font-family:ui-monospace,monospace;font-size:12.5px;background:var(--ink-900);color:var(--fg);border:1px solid rgba(255,255,255,.14);border-radius:9px;padding:10px" placeholder="0xabc…,50&#10;0xdef…,30"></textarea>
+    <div class="row"><button class="primary" id="doLb">Distribute</button> <span class="mut" id="lbSum"></span></div>
+  </div>
+
+  <!-- PARAMS -->
+  <div class="card">
+    <h2>🔧 Parameters</h2>
+    <div class="row">
+      <label class="f">loot %<input id="pLoot" type="number" placeholder="50" style="width:80px"></label>
+      <label class="f">leaderboard %<input id="pLb" type="number" placeholder="30" style="width:80px"></label>
+      <label class="f">burn %<input id="pBurn" type="number" placeholder="20" style="width:80px"></label>
+      <button id="doSplit" style="align-self:flex-end">Set split</button>
+    </div>
+    <hr>
+    <div class="row">
+      <label class="f">Entry (CT)<input id="pEntry" type="number" placeholder="10" style="width:100px"></label>
+      <button id="doEntry" style="align-self:flex-end">Set entry</button>
+      <span style="flex:1"></span>
+      <input class="addr" id="opAddr" placeholder="operator/keeper 0x…">
+      <button data-op="1" style="align-self:flex-end">Grant operator</button>
+      <button data-op="0" class="danger" style="align-self:flex-end">Revoke</button>
+    </div>
+    <hr>
+    <div class="row">
+      <button class="danger" id="doPause">⏸ Pause</button>
+      <button id="doUnpause">▶ Unpause</button>
+    </div>
+  </div>
+
+  <!-- SERVER DEMAND (geo) -->
+  <div class="card">
+    <h2>🌍 Server demand — where players connect</h2>
+    <p class="mut">Consented, aggregated connection origins (no raw IPs) to decide where to add zones. <b>Paid</b> columns weight real payers; <b>underserved</b> = best ping above the bad-ping threshold.</p>
+    <div class="row">
+      <input class="addr" id="geoKey" placeholder="data key (cat ~/.ef_geo_key on the box)" style="width:320px">
+      <button id="geoLoad">Load</button>
+    </div>
+    <div id="geoOut" class="mut" style="margin-top:12px">Enter the data key and Load.</div>
+  </div>
+
+  <div class="log" id="log">Connect the admin wallet to begin.</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/ethers@6.13.2/dist/ethers.umd.min.js"></script>
+<script>
+const CFG = {
+  chainId: 3344, rpc: "https://rpc.pentagon.games", explorer: "https://explorer.pentagon.games",
+  ct: "0x6a3a8407E6d33cDb63650741Bd1f3a97a1D2D4b9",
+  proxy: "0x4A9699d70DeebA226c5cBD372098fD1a1c643f06",
+  v2impl: "0xe516F076340D34c9861CB3d24D29A65cbe76431F",  // current target impl (v3 — on-chain odds)
+  initData: "0x38e454b1",                                  // initializeV3()
+  admin: "0xB2e3e82a95f5c4c47E30A5b420Ac4f99d32EF61f",
+};
+const IMPL_SLOT = "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc";
+const ABI = [
+  "function pools() view returns (uint256 sp,uint256 free,uint256 lb,uint256 pvp,uint256 unbooked)",
+  "function entry() view returns (uint256)","function lootBps() view returns (uint16)","function lbBps() view returns (uint16)","function burnBps() view returns (uint16)",
+  "function paused() view returns (bool)","function ADMIN_ROLE() view returns (bytes32)","function hasRole(bytes32,address) view returns (bool)",
+  "function upgradeToAndCall(address,bytes) payable",
+  "function fundFreePool(uint256)","function fundSpPool(uint256)","function fundLbPot(uint256)","function fundPvpPot(uint256)",
+  "function allocateFunding(uint256,uint256,uint256)","function unaccounted() view returns (uint256)",
+  "function withdrawFreePool(address,uint256)","function withdrawSpPool(address,uint256)","function withdrawLbPot(address,uint256)","function withdrawPvpPot(address,uint256)",
+  "function distributeLeaderboard(address[],uint256[])",
+  "function setSplit(uint16,uint16,uint16)","function setEntry(uint256)","function setOperator(address,bool)","function pause()","function unpause()",
+];
+const ERC20 = ["function approve(address,uint256) returns (bool)","function allowance(address,address) view returns (uint256)","function balanceOf(address) view returns (uint256)","function decimals() view returns (uint8)"];
+const $ = (id) => document.getElementById(id);
+const E = ethers; const pe18 = (n) => E.parseEther(String(n)); const f18 = (n) => (+E.formatEther(n)).toLocaleString(undefined,{maximumFractionDigits:2});
+let provider, signer, me, c, ct, isAdmin = false;
+
+function log(html, link) { $("log").innerHTML = html + (link ? ` <a href="${CFG.explorer}/tx/${link}" target="_blank">view ↗</a>` : ""); }
+function err(e) { log('<span class="bad">✗ ' + ((e&&(e.shortMessage||e.reason||e.message))||e) + '</span>'); }
+
+async function ensureChain(){ const hex="0x"+CFG.chainId.toString(16);
+  try{ await ethereum.request({method:"wallet_switchEthereumChain",params:[{chainId:hex}]}); }
+  catch(e){ if(e.code===4902) await ethereum.request({method:"wallet_addEthereumChain",params:[{chainId:hex,chainName:"Pentagon Chain",nativeCurrency:{name:"PC",symbol:"PC",decimals:18},rpcUrls:[CFG.rpc],blockExplorerUrls:[CFG.explorer]}]}); else throw e; } }
+
+$("connect").onclick = async () => {
+  try{
+    if(!window.ethereum) return err("No wallet found — install MetaMask.");
+    await ethereum.request({method:"eth_requestAccounts"}); await ensureChain();
+    provider = new E.BrowserProvider(ethereum); signer = await provider.getSigner(); me = await signer.getAddress();
+    c = new E.Contract(CFG.proxy, ABI, signer); ct = new E.Contract(CFG.ct, ERC20, signer);
+    $("connect").textContent = me.slice(0,6)+"…"+me.slice(-4);
+    $("net").textContent = "Pentagon 3344";
+    // authoritative: ask the contract who holds ADMIN_ROLE (not a brittle hardcoded-address compare)
+    try { isAdmin = await c.hasRole(await c.ADMIN_ROLE(), me); } catch(e){ isAdmin = me.toLowerCase() === CFG.admin.toLowerCase(); }
+    $("notAdmin").classList.toggle("hide", isAdmin);
+    if(!isAdmin) $("notAdminTxt").innerHTML = "Connected <code>"+me+"</code> does not hold ADMIN_ROLE. Reads work; writes will revert.";
+    log(isAdmin ? '<span class="ok">✓ Admin connected.</span>' : 'Connected (read-only — not admin).');
+    refresh();
+  }catch(e){ err(e); }
+};
+
+async function curImpl(){ try{ const raw = await (provider||new E.JsonRpcProvider(CFG.rpc)).getStorage(CFG.proxy, IMPL_SLOT); return E.getAddress("0x"+raw.slice(26)); }catch(e){ return "?"; } }
+
+async function refresh(){
+  try{
+    const rp = provider || new E.JsonRpcProvider(CFG.rpc);
+    const r = new E.Contract(CFG.proxy, ABI, rp);
+    const impl = await curImpl();
+    $("curImpl").textContent = impl; $("tgtImpl").textContent = CFG.v2impl;
+    const isV2 = impl.toLowerCase() === CFG.v2impl.toLowerCase();
+    $("upState").textContent = isV2 ? "✓ on v2" : "needs upgrade";
+    $("upState").className = "pill " + (isV2?"ok":"bad");
+    $("doUpgrade").disabled = isV2;
+    // pools() only exists post-upgrade; fall back gracefully
+    try{
+      const p = await r.pools();
+      $("sSp").textContent=f18(p.sp); $("sFree").textContent=f18(p.free); $("sLb").textContent=f18(p.lb); $("sPvp").textContent=f18(p.pvp); $("sUn").textContent=f18(p.unbooked);
+      const e=await r.entry(), lo=await r.lootBps(), lb=await r.lbBps(), bu=await r.burnBps(), pa=await r.paused();
+      $("sSplit").textContent = f18(e)+" CT · "+(Number(lo)/100)+"/"+(Number(lb)/100)+"/"+(Number(bu)/100);
+      $("sMeta").innerHTML = (pa?'<span class="bad">⏸ PAUSED</span> · ':'<span class="ok">● live</span> · ')+'split = loot/leaderboard/burn %';
+    }catch(_){
+      $("sMeta").innerHTML = '<span class="bad">Not upgraded yet</span> — pool stats appear after the v2 upgrade. (Legacy spPool still intact.)';
+      $("sSp").textContent=$("sFree").textContent=$("sLb").textContent=$("sPvp").textContent=$("sUn").textContent="—";
+    }
+  }catch(e){ err(e); }
+}
+$("refresh").onclick = refresh;
+
+const send = async (label, fn) => { try{ log("⏳ "+label+"…"); const tx = await fn(); log("⏳ "+label+" — pending…", tx.hash); await tx.wait(); log('<span class="ok">✓ '+label+' done.</span>', tx.hash); refresh(); }catch(e){ err(e); } };
+async function approveIf(spender, amt){ if((await ct.allowance(me, spender)) < amt){ log("⏳ approving CT…"); await (await ct.approve(spender, amt)).wait(); } }
+
+$("doUpgrade").onclick = () => send("Upgrade to v2", () => c.upgradeToAndCall(CFG.v2impl, CFG.initData));
+
+document.querySelectorAll("[data-fund]").forEach(b => b.onclick = async () => {
+  const amt = pe18($("fundAmt").value||"0"); if(amt<=0n) return err("Enter an amount.");
+  const m = {free:"fundFreePool",sp:"fundSpPool",lb:"fundLbPot",pvp:"fundPvpPot"}[b.dataset.fund];
+  try{ await approveIf(CFG.proxy, amt); await send("Fund "+b.dataset.fund, () => c[m](amt)); }catch(e){ err(e); }
+});
+
+$("doAlloc").onclick = () => send("Allocate", () => c.allocateFunding(pe18($("aFree").value||"0"), pe18($("aPaid").value||"0"), pe18($("aLb").value||"0")));
+
+document.querySelectorAll("[data-wd]").forEach(b => b.onclick = () => {
+  const to = ($("wTo").value||"").trim() || me; const amt = $("wAmt").value ? pe18($("wAmt").value) : 0n;
+  const m = {free:"withdrawFreePool",sp:"withdrawSpPool",lb:"withdrawLbPot",pvp:"withdrawPvpPot"}[b.dataset.wd];
+  send("Withdraw "+b.dataset.wd, () => c[m](to, amt));
+});
+
+$("doLb").onclick = () => {
+  const lines = ($("lbList").value||"").split("\n").map(s=>s.trim()).filter(Boolean);
+  const addrs=[], amts=[]; let total=0;
+  for(const l of lines){ const [a,n]=l.split(","); if(!a||!n) return err("Bad line: "+l); addrs.push(a.trim()); amts.push(pe18(n.trim())); total+=+n; }
+  if(!addrs.length) return err("No winners.");
+  if(!confirm("Pay "+total+" CT to "+addrs.length+" winners?")) return;
+  send("Distribute leaderboard", () => c.distributeLeaderboard(addrs, amts));
+};
+
+$("doSplit").onclick = () => { const lo=+($("pLoot").value), lb=+($("pLb").value), bu=+($("pBurn").value);
+  if(lo+lb+bu!==100) return err("Must sum to 100.");
+  send("Set split", () => c.setSplit(lo*100, lb*100, bu*100)); };
+$("doEntry").onclick = () => send("Set entry", () => c.setEntry(pe18($("pEntry").value||"0")));
+document.querySelectorAll("[data-op]").forEach(b => b.onclick = () => { const a=($("opAddr").value||"").trim(); if(!a) return err("Enter an operator address."); send((b.dataset.op==="1"?"Grant":"Revoke")+" operator", () => c.setOperator(a, b.dataset.op==="1")); });
+$("doPause").onclick = () => send("Pause", () => c.pause());
+$("doUnpause").onclick = () => send("Unpause", () => c.unpause());
+
+// ---- server demand (geo) — gated by GEO_KEY (separate from the wallet) ----
+try { $("geoKey").value = localStorage.getItem("ef_geo_key") || ""; } catch(e){}
+$("geoLoad").onclick = async () => {
+  const k = ($("geoKey").value || "").trim(); try { localStorage.setItem("ef_geo_key", k); } catch(e){}
+  $("geoOut").textContent = "Loading…";
+  try {
+    const j = await fetch("/geo/summary?key=" + encodeURIComponent(k)).then(r => r.json());
+    if (!j.ok) { $("geoOut").innerHTML = '<span class="bad">' + (j.reason || "error") + '</span>'; return; }
+    if (!j.total) { $("geoOut").textContent = "No plays recorded yet."; return; }
+    const esc = (s) => String(s).replace(/[<>&]/g, c => ({ "<":"&lt;", ">":"&gt;", "&":"&amp;" }[c]));
+    const td = 'style="padding:5px 7px;border-top:1px solid rgba(255,255,255,.07)"';
+    const tdr = 'style="padding:5px 7px;text-align:right;border-top:1px solid rgba(255,255,255,.07)"';
+    const tbl = (rows, label) => '<table style="width:100%;border-collapse:collapse;font-size:13px;margin:6px 0 16px"><thead><tr style="color:var(--fg-mute);text-align:left"><th style="padding:5px 7px">'+label+'</th><th style="padding:5px 7px;text-align:right">Plays</th><th style="padding:5px 7px;text-align:right">Paid</th></tr></thead><tbody>'
+      + rows.map(r => '<tr><td '+td+'>'+esc(r.k)+'</td><td '+tdr+'>'+r.n+'</td><td '+tdr+' style="color:var(--crystal-300)">'+r.paid+'</td></tr>').join("") + '</tbody></table>';
+    $("geoOut").innerHTML =
+      '<div style="margin-bottom:10px">Total plays <b>'+j.total+'</b> · paid <b class="ok">'+j.paid+'</b> · underserved (ping &gt;'+j.badPingMs+'ms) <b class="bad">'+j.underserved.plays+'</b> <span class="mut">('+j.underserved.paid+' paid → candidates for a new zone)</span></div>'
+      + '<div style="font-weight:600;margin:4px 0">By timezone (best location signal)</div>' + tbl(j.byTz, "Timezone")
+      + '<div style="font-weight:600;margin:4px 0">By selected region</div>' + tbl(j.byRegion, "Region");
+  } catch (e) { $("geoOut").innerHTML = '<span class="bad">' + (e.message || e) + '</span>'; }
+};
+
+refresh(); // initial read-only view via public RPC
+</script>
+</body>
+</html>

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>EtherFantasy — Choose Your Game</title>
+<style>
+html,body{margin:0;padding:0;min-height:100vh;background:#0c0a12;font-family:'Segoe UI',Arial,sans-serif;color:#dfe8f2;
+ display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:auto}
+h1{font-size:54px;margin:0 0 4px;letter-spacing:4px;background:linear-gradient(90deg,#7fb6ff,#c96bff,#ff9d6b);
+ -webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.sub{color:#9a8ab0;margin-bottom:26px;text-align:center;max-width:640px;line-height:1.6}
+.wallet{font-size:15px;background:#171225;border:1px solid #3a2a52;border-radius:10px;padding:10px 22px;margin-bottom:30px}
+.wallet b{color:#ffd34d}
+.row{display:flex;gap:26px;flex-wrap:wrap;justify-content:center;padding:0 16px}
+.game{width:330px;background:#171225;border:1px solid #3a2a52;border-radius:16px;padding:26px 26px 22px;cursor:pointer;
+ text-decoration:none;color:#dfe8f2;transition:.18s;display:block}
+.game:hover{transform:translateY(-6px);box-shadow:0 14px 40px rgba(0,0,0,.5)}
+.game.moba:hover{border-color:#7fb6ff}.game.hunt:hover{border-color:#ff9d6b}
+.game h2{margin:0 0 4px;font-size:26px;letter-spacing:1px}
+.game.moba h2{color:#7fb6ff}.game.hunt h2{color:#ff9d6b}
+.tag{font-size:11px;letter-spacing:2px;color:#9a8ab0;margin-bottom:12px}
+.game p{font-size:13px;color:#bfb3d4;line-height:1.65;margin:0 0 14px}
+.feat{font-size:12px;color:#8a7da6;line-height:1.8}
+.feat b{color:#cde}
+.go{display:inline-block;margin-top:16px;background:linear-gradient(90deg,#7a2adf,#df6b2a);color:#fff;border-radius:8px;
+ padding:10px 30px;font-size:15px;letter-spacing:1px}
+.game.moba .go{background:linear-gradient(90deg,#2a5adf,#7a2adf)}
+.stats{font-size:11.5px;color:#9a8ab0;margin-top:10px;border-top:1px solid #2a2240;padding-top:10px;line-height:1.7}
+.stats b{color:#ffd34d}
+.foot{margin-top:30px;font-size:11.5px;color:#5a5070;text-align:center;line-height:1.8}
+.foot a{color:#7fb6ff;text-decoration:none}
+</style>
+</head>
+<body>
+<h1>ETHERFANTASY</h1>
+<div class="sub">One world, one <b style="color:#ffd34d">💎 CT</b> wallet — two ways to play. Earn Carat hunting in the wilds, stake it in MOBA tournaments.</div>
+<div class="wallet">💎 <b id="ct">…</b> CT in your wallet</div>
+<div class="row">
+ <a class="game moba" href="index.html">
+  <h2>⚔ EF MOBA</h2>
+  <div class="tag">PVP · BATTLE ARENA · 10–20 MIN</div>
+  <p>Pick a champion, push three lanes, take down towers and slay the core. Modern MOBA systems against a scheming AI — or your friends.</p>
+  <div class="feat"><b>Multiplayer</b> rooms &amp; quick match · <b>Tournament mode</b> (stake 💎 CT) · item shop &amp; build paths · boss zones, sprees, attack-move, Tab scoreboard</div>
+  <div class="go">ENTER THE ARENA →</div>
+ </a>
+ <a class="game hunt" href="pve.html">
+  <h2>🌙 EF HUNT</h2>
+  <div class="tag">PVE · ARPG GRIND · 4-HOUR HUNTS</div>
+  <p>Set out from Emberhollow across the sculpted wilds — high crags, glowing fens — into three dungeons and a final boss. Die and lose it all… except 💎 CT and your skills.</p>
+  <div class="feat"><b>Earn 💎 CT</b> at checkpoints · loot rarities, gems &amp; uniques · tame pets · persistent skills · Blood Moons · boon builds · weak-spot sniping at Hunter's Overlooks</div>
+  <div class="stats" id="huntStats">…</div>
+  <div class="go">BEGIN THE HUNT →</div>
+ </a>
+</div>
+<div class="foot">Both games share this server, the monster roster, and your CT wallet (browser storage).<br>
+<a href="wiki.html">📖 MOBA wiki</a> · <a href="hotkeys.html" target="_blank">⌨ Hotkeys</a> · dev test mode: <a href="pve.html?fast=1">HUNT ?fast=1</a></div>
+<script>
+function ctGet(){try{const v=parseFloat(localStorage.getItem('efm_ct'));return isNaN(v)?2:v;}catch(e){return 0;}}
+document.getElementById('ct').textContent=ctGet();
+try{
+ const s=JSON.parse(localStorage.getItem('efm_pve'))||{};
+ const sk=s.skills||{};const lv=x=>Math.min(50,Math.floor(Math.sqrt((x||0)/60))+1);
+ const cd=s.last?Math.max(0,2*3600*1000-(Date.now()-s.last)):0;
+ document.getElementById('huntStats').innerHTML=
+  '☠ Difficulty <b>'+(s.diff||1)+'/9</b> · 🧪 potions <b>'+(s.pot||0)+'</b> · '+
+  (cd>0?('⏳ next run in <b>'+(Math.ceil(cd/36e5*10)/10)+'h</b>'):'✅ <b>run available</b>')+
+  '<br>skills: ⚔ '+lv(sk.slay)+' · 🌲 '+lv(sk.wood)+' · ⛏ '+lv(sk.mine)+' · 🐾 '+lv(sk.tame);
+}catch(e){document.getElementById('huntStats').textContent='';}
+</script>
+</body>
+</html>

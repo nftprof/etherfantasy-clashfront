@@ -1,0 +1,16 @@
+{
+  "name": "ef-moba-build",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "EF Moba production client build — obfuscate SOURCE into RELEASE/ (see README.md).",
+  "scripts": {
+    "build": "node build.mjs",
+    "build:prod": "cross-env CFF=0.75 DOMAIN_LOCK=.etherfantasy.com node build.mjs",
+    "build:max": "cross-env CFF=0.9 DEAD=1 STRIP_CONSOLE=1 DOMAIN_LOCK=.etherfantasy.com node build.mjs"
+  },
+  "devDependencies": {
+    "cross-env": "^7.0.3",
+    "javascript-obfuscator": "^4.1.1"
+  }
+}

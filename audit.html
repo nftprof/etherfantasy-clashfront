@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>EF Model Audit — all characters facing RIGHT</title>
+<style>
+html,body{margin:0;overflow:hidden;background:#101622;font-family:'Segoe UI',Arial,sans-serif;color:#dfe8f2;user-select:none}
+#c{display:block}
+#bar{position:absolute;top:0;left:0;right:0;background:rgba(10,14,22,.92);border-bottom:1px solid #2a3a52;padding:8px 12px;z-index:10;display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:13px}
+#bar b{color:#6cf}
+button{background:#16202f;border:1px solid #2c405e;border-radius:7px;color:#cde;padding:6px 12px;cursor:pointer;font-size:12px}
+button:hover{border-color:#6cf}
+button.on{border-color:#6cf;background:#1b2942}
+#report{position:absolute;right:8px;top:52px;width:300px;z-index:10;background:rgba(10,14,22,.95);border:1px solid #2a3a52;border-radius:10px;padding:10px;display:none}
+#report textarea{width:100%;height:180px;background:#0d1420;color:#fc6;border:1px solid #2c405e;border-radius:6px;font-size:11px;padding:6px;box-sizing:border-box}
+#report h4{margin:0 0 6px;color:#6cf;font-size:13px}
+#hint{color:#8aa}
+#prog{color:#7fd08a}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="bar">
+  <b>EF MODEL AUDIT</b>
+  <span id="prog">loading…</span>
+  <button id="aWalk" class="on">walk</button><button id="aRun">run</button><button id="aIdle">idle</button><button id="aAtk">attack</button>
+  <span id="hint">Face the <b style="color:#3f6">GREEN arrow</b> → · <b>click</b> select · <b>R</b> 90° · <b>←/→</b> fine ±5° · <b>F</b> flag broken · <b>T</b> range/melee · <b>G</b> air/land · <b>+/-</b> resize · <b>0</b> reset · report captures exact value · drag pan · wheel zoom</span>
+  <span id="selName" style="color:#fc6"></span>
+  <button id="repBtn">📋 Report (0)</button>
+</div>
+<div id="report"><h4>Flagged models — copy &amp; paste this to Claude</h4><textarea id="repTxt" readonly></textarea></div>
+<div id="clipPanel" style="position:absolute;left:8px;top:52px;width:230px;max-height:75vh;overflow:auto;z-index:10;background:rgba(10,14,22,.95);border:1px solid #2a3a52;border-radius:10px;padding:10px;display:none">
+  <h4 style="margin:0 0 6px;color:#6cf;font-size:13px">🎬 Clips — <span id="clipWho"></span></h4>
+  <div id="clipList" style="display:flex;flex-direction:column;gap:4px"></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/utils/SkeletonUtils.js"></script>
+<script src="model_calibration.js"></script>
+<script>
+/* ============ EF MODEL AUDIT — every pets/*.glb in a grid, all facing +X (right),
+   using THE SAME facing logic as the game (FACE_FIX is read live from index.html). ============ */
+const renderer=new THREE.WebGLRenderer({canvas:document.getElementById('c'),antialias:true});
+renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+const scene=new THREE.Scene();scene.background=new THREE.Color(0x141b2a);
+const cam=new THREE.PerspectiveCamera(50,innerWidth/innerHeight,1,800);
+addEventListener('resize',()=>{cam.aspect=innerWidth/innerHeight;cam.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});
+scene.add(new THREE.HemisphereLight(0xcfe0ff,0x2a3044,1.0));
+const sun=new THREE.DirectionalLight(0xfff2dd,0.7);sun.position.set(40,80,30);scene.add(sun);
+const ground=new THREE.Mesh(new THREE.PlaneGeometry(2000,2000),new THREE.MeshLambertMaterial({color:0x223047}));
+ground.rotation.x=-Math.PI/2;scene.add(ground);
+
+const gltfLoader=new THREE.GLTFLoader();
+let FACE_FIX={},SIZE_FIX={};
+let SEL=null;
+const selRing=new THREE.Mesh(new THREE.RingGeometry(3.4,4,28),
+ new THREE.MeshBasicMaterial({color:0xffe06a,side:THREE.DoubleSide}));
+selRing.rotation.x=-Math.PI/2;selRing.position.y=.05;selRing.visible=false;scene.add(selRing);
+/* GREEN forward-arrow + reference: shows where the selected model's body faces vs the
+   target "RIGHT (+X)". When they're parallel the facing is correct. Makes 15° errors obvious. */
+const faceArrow=new THREE.Group();
+{const shaft=new THREE.Mesh(new THREE.BoxGeometry(6,0.1,0.5),new THREE.MeshBasicMaterial({color:0x33ff66}));shaft.position.x=3;
+ const head=new THREE.Mesh(new THREE.ConeGeometry(0.9,1.6,4),new THREE.MeshBasicMaterial({color:0x33ff66}));head.rotation.z=-Math.PI/2;head.position.x=6.6;
+ faceArrow.add(shaft,head);faceArrow.position.y=.15;faceArrow.visible=false;scene.add(faceArrow);}
+function modelBox(root){root.updateMatrixWorld(true);const box=new THREE.Box3();const p=new THREE.Vector3();let sk=false;
+ root.traverse(o=>{if(o.isSkinnedMesh&&o.skeleton&&o.skeleton.bones.length){sk=true;
+  for(const b of o.skeleton.bones){b.getWorldPosition(p);
+   if(Math.abs(p.x)>1e5||Math.abs(p.y)>1e5||Math.abs(p.z)>1e5)continue;
+   box.expandByPoint(p);}}});
+ if(!sk||box.isEmpty()){box.setFromObject(root);return box;}
+ const s=box.getSize(new THREE.Vector3());box.expandByScalar(Math.max(s.x,s.y,s.z)*0.14);return box;}
+function normalizeInPlace(root,h){let box=modelBox(root);let size=box.getSize(new THREE.Vector3());
+ const s=h/Math.max(size.y,0.001);root.scale.setScalar(s);root.updateMatrixWorld(true);
+ box=modelBox(root);const c=box.getCenter(new THREE.Vector3());
+ root.position.x-=c.x;root.position.z-=c.z;root.position.y-=box.min.y;root.updateMatrixWorld(true);}
+function computeFaceOffset(sceneRoot){try{sceneRoot.updateMatrixWorld(true);
+ const bones=[];let head=null;sceneRoot.traverse(o=>{if(o.isBone){bones.push(o);if(!head&&/head|skull|jaw|snout|nose|beak|mouth/i.test(o.name))head=o;}});
+ if(!head||!bones.length)return 0;
+ const hp=new THREE.Vector3();head.getWorldPosition(hp);
+ let cx=0,cz=0,bn=0;const t=new THREE.Vector3();
+ for(const b of bones){b.getWorldPosition(t);
+  if(Math.abs(t.x)>1e5||Math.abs(t.y)>1e5||Math.abs(t.z)>1e5)continue;
+  cx+=t.x;cz+=t.z;bn++;}
+ if(!bn)return 0;cx/=bn;cz/=bn;
+ const fx=hp.x-cx,fz=hp.z-cz;if(Math.hypot(fx,fz)<1e-4)return 0;
+ const raw=-Math.atan2(fx,fz);
+ return Math.round(raw/(Math.PI/2))*(Math.PI/2);}catch(e){return 0;}}
+
+const ENTRIES=[];/* {file,name,grp,mixer,clips,label,flag,labCv,labTex} */
+let curAnim='walk';
+function label(grp,name,h,flag,missing,size,atk){const cv=grp._labCv||document.createElement('canvas');cv.width=340;cv.height=80;
+ const x=cv.getContext('2d');x.clearRect(0,0,340,80);x.textAlign='center';
+ x.fillStyle='rgba(8,12,20,.72)';x.fillRect(0,0,340,80);
+ /* row 1: name (smaller, no overflow) */
+ x.font='bold 19px Segoe UI';x.fillStyle=flag==='dir'?'#ffb04a':(flag==='broken'?'#ff5d5d':'#dfe8f2');
+ x.fillText((flag==='dir'?'🔄 ':(flag==='broken'?'💢 ':''))+name,170,23);
+ /* row 2: basic-attack type + size change, on their own line */
+ x.font='15px Segoe UI';x.fillStyle=atk==='RANGED'?'#7fd0ff':'#ffce8a';
+ x.fillText((atk==='RANGED'?'🏹 RANGED':'⚔ MELEE')+((size&&Math.abs(size-1)>.01)?('     ×'+size.toFixed(1)):''),170,46);
+ /* row 3: missing clips */
+ if(missing){x.font='13px Segoe UI';x.fillStyle='#ff8888';x.fillText(missing,170,67);}
+ if(!grp._labSp){const tex=new THREE.CanvasTexture(cv);
+  const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,depthTest:false}));
+  sp.scale.set(11,2.6,1);sp.position.y=h+2.2;grp.add(sp);grp._labCv=cv;grp._labTex=tex;grp._labSp=sp;}
+ else grp._labTex.needsUpdate=true;}
+const H=5,COLS=10,SX=14,SZ=16;
+function place(i){return{x:(i%COLS)*SX,z:Math.floor(i/COLS)*SZ};}
+async function loadOne(file,i){
+ const isVrm=file.startsWith('vrm:');const raw=isVrm?file.slice(4):file;
+ const base=raw.split('/').pop();
+ const _tag={'hero/':'[HERO] ','boss/':'[BOSS] ','masters/':'[MASTER] ','mons/':'[MON] ','npc/':'[NPC] '};
+ const _pf=Object.keys(_tag).find(p=>raw.startsWith(p));
+ const name=(isVrm?'[VRM] ':'')+(_pf?_tag[_pf]:'')+base.replace(/\.(glb|vrm)$/i,'').replace(/^\d+_/,'');
+ const calKey=(window.MODEL_CAL&&MODEL_CAL.keyOf)?MODEL_CAL.keyOf(base):base.replace(/\.(glb|vrm)$/i,'').replace(/^\d+_/,'');
+ const pos=place(i);
+ const grp=new THREE.Group();grp.position.set(pos.x,0,pos.z);scene.add(grp);
+ const e={file,name,calKey,grp,flag:null,clips:{},missing:'',size:SIZE_FIX[calKey]||1,size0:SIZE_FIX[calKey]||1};ENTRIES.push(e);
+ try{
+  const buf=await(await fetch(isVrm?('/vrmfile/'+encodeURIComponent(raw)):(raw.includes('/')?('./'+raw):('./pets/'+raw)))).arrayBuffer();
+  await new Promise((res,rej)=>gltfLoader.parse(buf,'',g=>{
+   try{let hb=false;g.scene.traverse(o=>{if(o.isBone)hb=true;});
+    if(hb)(g.animations||[]).forEach(cl=>{cl.tracks=cl.tracks.filter(tr=>{
+     try{const nd=THREE.PropertyBinding.findNode(g.scene,THREE.PropertyBinding.parseTrackName(tr.name).nodeName);
+      /* drop ALL non-bone tracks — Armature carries baked root motion + a tip-over rotation */
+      return !nd||nd.isBone;}catch(e2){return true;}});});}catch(err2){}
+   const root=g.scene;normalizeInPlace(root,H);
+   root.traverse(o=>{if(o.isMesh||o.isSkinnedMesh){
+    if(/collider|collision|_ucx|bound(ing)?box/i.test(o.name||'')){o.visible=false;return;}
+    if(!o.isSkinnedMesh&&/^cube(\.\d+)?$/i.test(o.name||'')){o.visible=false;return;}
+    if(o.geometry){if(!o.geometry.boundingSphere)o.geometry.computeBoundingSphere();
+     const bs=o.geometry.boundingSphere;if(bs&&(!isFinite(bs.radius)||bs.radius>1e5)){o.visible=false;return;}}
+    o.frustumCulled=false;const mats=Array.isArray(o.material)?o.material:[o.material];
+    mats.forEach(m=>{if(!m)return;if(m.map)m.map.encoding=THREE.sRGBEncoding;
+     if(m.transparent){m.transparent=false;
+      m.alphaTest=(window.MODEL_CAL&&MODEL_CAL.FORCE_OPAQUE&&MODEL_CAL.FORCE_OPAQUE[calKey])?0:0.5;
+      m.depthWrite=true;}
+     if('metalness'in m)m.metalness=0;if('roughness'in m&&m.roughness<0.4)m.roughness=0.7;
+     m.side=THREE.DoubleSide;m.needsUpdate=true;});}});
+   const off=(FACE_FIX[calKey]!==undefined)?FACE_FIX[calKey]:Math.PI;/* un-calibrated default = π (match the game; these rigs face -X at 0) */
+   const vis=new THREE.Group();vis.add(root);grp.add(vis);e.vis=vis;
+   e.appliedOff=off;e.rot=0;
+   vis.rotation.y=Math.PI/2+off;/* face +X (RIGHT), exactly like the game's faceTo */
+   vis.scale.setScalar(e.size);
+   if(g.animations&&g.animations.length){e.mixer=new THREE.AnimationMixer(root);
+    g.animations.forEach(c=>e.clips[c.name.toLowerCase()]=c);
+    /* same canon as the games: prefer moving + shortest clip per state */
+    function maxMove(c){let mx=0;for(const t of c.tracks){if(!/\.quaternion$/.test(t.name))continue;const v=t.values,n=v.length/4;if(n<2)continue;for(let k=1;k<n;k++){const a=v[0]*v[k*4]+v[1]*v[k*4+1]+v[2]*v[k*4+2]+v[3]*v[k*4+3];const an=2*Math.acos(Math.min(1,Math.abs(a)))*180/Math.PI;if(an>mx)mx=an;}}return mx;}
+    const CM=(window.MODEL_CAL&&MODEL_CAL.CANON)||[['idle',/idle/],['walk',/walk/],['run',/run|fly/],
+     ['melee claw',/attack|claw|angry|bite|punch|kick/],['spell cast',/skill|spell|buff|shot/],['win',/win|social|happy/]];
+    const ks=Object.keys(e.clips);
+    for(const[k,re]of CM){if(e.clips[k])continue;const m=ks.filter(n=>re.test(n));if(!m.length)continue;
+     const good=m.filter(n=>maxMove(e.clips[n])>8);const pool=good.length?good:m;pool.sort((a,b)=>e.clips[a].duration-e.clips[b].duration);e.clips[k]=e.clips[pool[0]];}
+    if(window.MODEL_CAL&&MODEL_CAL.forceClips)MODEL_CAL.forceClips(e.clips,calKey);}
+   /* fallbacks count: run←fly←walk, attack←angry — only flag what truly has no substitute */
+   const need=[];
+   if(!e.clips['idle'])need.push('idle');
+   if(!e.clips['walk']&&!e.clips['run']&&!e.clips['fly'])need.push('walk/run');
+   if(!e.clips['melee claw']&&!e.clips['spell cast']&&!e.clips['angry'])need.push('attack');
+   e.missing=need.length?('missing: '+need.join(',')):'';
+   /* basic-attack type heuristic from clip names: a shot/bow/magic/throw clip => RANGED, else MELEE.
+      Helps decide each unit's basic attack (projectile vs melee). Override in-game as needed. */
+   const rawN=(g.animations||[]).map(c=>c.name).join(' ').toLowerCase();
+   e.atkType=/shot|bow|arrow|missile|gun|cannon|dart|sling|crossbow|fireball/.test(rawN)?'RANGED':'MELEE';
+   e.air=!!(window.MODEL_CAL&&MODEL_CAL.AIR&&MODEL_CAL.AIR[calKey]);/* AIR override from calibration (G toggles) */
+   playAnim(e,curAnim);
+   label(grp,name,H,null,e.missing,e.size,e.atkType);
+   res();},rej));
+ }catch(err){e.missing='LOAD FAILED';label(grp,name,H,'broken',e.missing,e.size,e.atkType);}
+}
+function playAnim(e,which){if(!e.mixer)return;
+ const map={walk:['walk','fly','run','idle'],run:['run','fly','walk','idle'],idle:['idle','walk'],attack:['melee claw','spell cast','angry','idle']};
+ const c=(map[which]||['idle']).map(n=>e.clips[n]).find(Boolean)||Object.values(e.clips)[0];
+ if(!c)return;e.mixer.stopAllAction();e.mixer.clipAction(c).reset().play();}
+['aWalk','aRun','aIdle','aAtk'].forEach((id,ix)=>{const w=['walk','run','idle','attack'][ix];
+ document.getElementById(id).onclick=()=>{curAnim=w;
+  document.querySelectorAll('#bar button').forEach(b=>b.classList.remove('on'));
+  document.getElementById(id).classList.add('on');
+  ENTRIES.forEach(e=>playAnim(e,w));};});
+document.getElementById('repBtn').classList.remove('on');
+async function init(){
+ /* calibration comes straight from the shared model_calibration.js (same file the games load) */
+ if(window.MODEL_CAL){FACE_FIX=MODEL_CAL.FACE_FIX||{};SIZE_FIX=MODEL_CAL.SIZE_FIX||{};}
+ let files=[];
+ try{files=await(await fetch('/listpets')).json();}catch(e){}
+ if(!files.length){try{const r=await(await fetch('./mon_lineage.json')).json();
+  const s=new Set();(r.upgradeChains||[]).forEach(c=>c.forms.forEach(f=>f&&f.glb&&s.add(f.glb)));
+  (r.baseOnly||[]).forEach(b=>b.glb&&s.add(b.glb));files=[...s].sort();}catch(e){}}
+ /* de-dupe by base name (hero/ copies supersede any pets/ duplicate; ignore the out/ staging folder) */
+ const seen={};files=files.filter(f=>{const b=f.split('/').pop();if(seen[b])return false;seen[b]=1;return true;});
+ document.getElementById('prog').textContent='0/'+files.length;
+ for(let i=0;i<files.length;i+=4){
+  await Promise.all(files.slice(i,i+4).map((f,j)=>loadOne(f,i+j)));
+  document.getElementById('prog').textContent=Math.min(i+4,files.length)+'/'+files.length;}
+ document.getElementById('prog').textContent=files.length+' models · FACE_FIX entries: '+Object.keys(FACE_FIX).length;}
+/* camera + picking */
+let camX=(COLS-1)*SX/2,camZ=10,zoom=1;
+addEventListener('wheel',e=>{zoom=Math.max(.4,Math.min(3,zoom+e.deltaY*.001));},{passive:true});
+let dragP=null;
+addEventListener('pointerdown',e=>{if(e.target.closest('#bar,#report'))return;dragP={x:e.clientX,y:e.clientY,moved:false};});
+addEventListener('pointermove',e=>{if(!dragP)return;
+ const dx=e.clientX-dragP.x,dy=e.clientY-dragP.y;
+ if(Math.abs(dx)+Math.abs(dy)>4)dragP.moved=true;
+ camX-=dx*0.08*zoom;camZ-=dy*0.08*zoom;dragP.x=e.clientX;dragP.y=e.clientY;});
+addEventListener('pointerup',e=>{const d=dragP;dragP=null;
+ if(!d||d.moved||e.target.closest('#bar,#report'))return;
+ /* click: SELECT nearest model (F flags it, +/- resizes it) */
+ const v=new THREE.Vector2(e.clientX/innerWidth*2-1,-(e.clientY/innerHeight)*2+1);
+ const ray=new THREE.Raycaster();ray.setFromCamera(v,cam);
+ const pt=new THREE.Vector3();ray.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0,1,0),0),pt);
+ let best=null,bd=7;
+ for(const en of ENTRIES){const d2=Math.hypot(en.grp.position.x-pt.x,en.grp.position.z-pt.z);
+  if(d2<bd){bd=d2;best=en;}}
+ if(!best)return;
+ SEL=best;selRing.visible=true;
+ selRing.position.set(best.grp.position.x,.05,best.grp.position.z);
+ /* green arrow on the ground points RIGHT (+X) = the direction the character should face.
+    Dial ←/→ until the body/nose aligns with the green arrow. */
+ faceArrow.visible=true;
+ faceArrow.position.set(best.grp.position.x,.15,best.grp.position.z);
+ document.getElementById('selName').textContent='▶ '+best.name+' ×'+best.size.toFixed(1)+(best.flag?(' ['+best.flag+']'):'');
+ /* 🎬 per-clip review panel: every RAW clip in this model, click to play it solo */
+ {const cp=document.getElementById('clipPanel'),cl=document.getElementById('clipList');
+  document.getElementById('clipWho').textContent=best.name;
+  cl.innerHTML='';
+  const seen=new Set();
+  Object.keys(best.clips).forEach(k=>{const c=best.clips[k];
+   if(k!==c.name.toLowerCase())return;/* skip canonical aliases — show real clip names */
+   if(seen.has(c))return;seen.add(c);
+   const b=document.createElement('button');b.textContent=c.name+' ('+c.duration.toFixed(1)+'s)';
+   b.style.textAlign='left';
+   b.onclick=()=>{if(!best.mixer)return;best.mixer.stopAllAction();
+    best.mixer.clipAction(c).reset().play();
+    cl.querySelectorAll('button').forEach(x=>x.classList.remove('on'));b.classList.add('on');};
+   cl.appendChild(b);});
+  cp.style.display=seen.size?'block':'none';}});
+addEventListener('keydown',e=>{
+ if(!SEL)return;const k=e.key;
+ if(k==='f'||k==='F'){SEL.flag=SEL.flag===null?'dir':(SEL.flag==='dir'?'broken':null);}
+ else if(k==='t'||k==='T'){SEL.atkType=SEL.atkType==='RANGED'?'MELEE':'RANGED';SEL.atkOverride=true;}/* toggle basic-attack RANGED/MELEE */
+ else if(k==='g'||k==='G'){SEL.air=!SEL.air;SEL.airOverride=true;}/* toggle AIR (flyer) vs LAND */
+ else if(k==='+'||k==='='){SEL.size=Math.min(3,Math.round((SEL.size+0.1)*10)/10);}
+ else if(k==='-'||k==='_'){SEL.size=Math.max(0.1,Math.round((SEL.size-0.1)*10)/10);}
+ else if(k==='0'){SEL.size=1;}
+ else if(k==='r'||k==='R'){/* coarse: rotate 90° */
+  SEL.rot=(SEL.rot+Math.PI/2)%(Math.PI*2);
+  if(SEL.vis)SEL.vis.rotation.y=Math.PI/2+SEL.appliedOff+SEL.rot;}
+ else if(k==='ArrowLeft'){SEL.rot+=Math.PI/36;if(SEL.vis)SEL.vis.rotation.y=Math.PI/2+SEL.appliedOff+SEL.rot;}/* fine: +5° */
+ else if(k==='ArrowRight'){SEL.rot-=Math.PI/36;if(SEL.vis)SEL.vis.rotation.y=Math.PI/2+SEL.appliedOff+SEL.rot;}/* fine: -5° */
+ else return;
+ if(e.key&&e.key.indexOf('Arrow')===0)e.preventDefault();
+ if(SEL.vis)SEL.vis.scale.setScalar(SEL.size);
+ label(SEL.grp,SEL.name,H,SEL.flag,SEL.missing,SEL.size,SEL.atkType);
+ document.getElementById('selName').textContent='▶ '+SEL.name+' ×'+SEL.size.toFixed(1)+' '+(SEL.atkType==='RANGED'?'🏹RNG':'⚔MEL')+(SEL.air?' 🕊AIR':' 🦶LAND')+(SEL.flag?(' ['+SEL.flag+']'):'');
+ updReport();});
+function updReport(){const dir=ENTRIES.filter(e=>e.flag==='dir').map(e=>e.name);
+ const bro=ENTRIES.filter(e=>e.flag==='broken').map(e=>e.name);
+ const siz=ENTRIES.filter(e=>Math.abs(e.size-e.size0)>.01).map(e=>e.name+' x'+e.size.toFixed(1));
+ const fac=ENTRIES.filter(e=>e.rot).map(e=>{let v=e.appliedOff+e.rot;
+  while(v>Math.PI)v-=2*Math.PI;while(v<=-Math.PI)v+=2*Math.PI;
+  const t=Math.abs(v-Math.PI)<.01||Math.abs(v+Math.PI)<.01?'Math.PI':
+   (Math.abs(v-Math.PI/2)<.01?'Math.PI/2':(Math.abs(v+Math.PI/2)<.01?'-Math.PI/2':(Math.abs(v)<.01?'0':v.toFixed(3))));
+  return e.name+':'+t;});
+ const auto=ENTRIES.filter(e=>e.missing&&!e.flag).map(e=>e.name+' ('+e.missing+')');
+ const atk=ENTRIES.filter(e=>e.atkOverride).map(e=>e.name+':'+e.atkType);
+ const air=ENTRIES.filter(e=>e.airOverride).map(e=>e.name+':'+(e.air?1:0));
+ document.getElementById('repBtn').textContent='📋 Report ('+(dir.length+bro.length+siz.length+fac.length+atk.length+air.length)+')';
+ document.getElementById('repTxt').value=
+  'WRONG DIRECTION: '+(dir.join(', ')||'-')+'\n\nLOOKS BROKEN: '+(bro.join(', ')||'-')
+  +'\n\nFACING SET (exact values from R-key dialing): '+(fac.join(', ')||'-')
+  +'\n\nSIZE CHANGES: '+(siz.join(', ')||'-')
+  +'\n\nBASIC ATTACK SET (T-key range/melee): '+(atk.join(', ')||'-')
+  +'\n\nAIR SET (G-key flyer; 1=air 0=land): '+(air.join(', ')||'-')
+  +'\n\nAUTO-DETECTED MISSING CLIPS:\n'+(auto.join('\n')||'-');}
+document.getElementById('repBtn').onclick=()=>{const r=document.getElementById('report');
+ r.style.display=r.style.display==='block'?'none':'block';updReport();};
+let last=performance.now();
+function loop(now){requestAnimationFrame(loop);
+ const dt=Math.min((now-last)/1000,.05);last=now;
+ for(const e of ENTRIES)if(e.mixer)e.mixer.update(dt);
+ cam.position.set(camX,26*zoom,camZ+30*zoom);cam.lookAt(camX,2,camZ);
+ renderer.render(scene,cam);}
+init();loop(performance.now());
+</script>
+</body>
+</html>

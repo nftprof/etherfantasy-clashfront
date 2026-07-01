@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EF Moba — saturation tuner (per class)</title>
+<style>
+  :root{color-scheme:dark}
+  body{margin:0;background:#11151c;color:#dfe6ee;font:15px/1.5 system-ui,Segoe UI,Roboto,sans-serif}
+  header{padding:16px 20px 6px}
+  h1{font-size:18px;font-weight:600;margin:0 0 4px}
+  .sub{color:#8da0b3;font-size:13px;margin:0}
+  .bar{padding:10px 20px;display:flex;flex-wrap:wrap;gap:16px;align-items:center;border-bottom:1px solid #222b36}
+  .bar label{font-size:13px;color:#9fb0c2;margin-right:6px}
+  select{background:#1a2230;color:#dfe6ee;border:1px solid #2c3a4c;border-radius:6px;padding:5px 8px;font:inherit}
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;padding:16px 20px}
+  @media(max-width:820px){.grid{grid-template-columns:1fr}}
+  .card{background:#171d27;border:1px solid #232e3c;border-radius:12px;padding:10px;text-align:center}
+  .card h2{font-size:14px;font-weight:600;margin:2px 0 8px}
+  .card .kind{color:#8da0b3;font-size:12px;font-weight:400}
+  canvas{width:100%;height:300px;display:block;border-radius:8px;background:#0c1118;cursor:grab;transition:filter .1s linear}
+  canvas:active{cursor:grabbing}
+  .satrow{display:flex;align-items:center;gap:8px;margin-top:8px}
+  .satrow input{flex:1}
+  .satrow .v{font-weight:600;min-width:38px;text-align:right;font-size:13px}
+  .knobs{margin-top:8px}
+  .knobs .row{display:flex;align-items:center;gap:8px;margin-top:5px}
+  .knobs .row label{font-size:12px;color:#9fb0c2;min-width:30px;text-align:left;text-transform:uppercase;letter-spacing:.03em}
+  .knobs .row input{flex:1}
+  .knobs .row .v{font-weight:600;min-width:36px;text-align:right;font-size:12px;color:#cfe0f0}
+  .err{color:#ff8f8f;font-size:12px;min-height:14px;margin-top:4px}
+  code{background:#0e141d;padding:2px 6px;border-radius:5px;color:#bcd0e6}
+  .mono{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;color:#bcd0e6;padding:2px 20px 6px}
+  .note{font-size:12px;color:#8da0b3;padding:0 20px 18px}
+  button.use{margin:6px 20px 0;padding:8px 14px;background:#16243a;color:#9bd1ff;border:1px solid #2c4468;border-radius:8px;cursor:pointer;font:inherit}
+</style>
+</head>
+<body>
+<header>
+  <h1>Saturation tuner — one slider per class</h1>
+  <p class="sub">Static view of the actual models (drag a model to turn it, scroll to zoom). Each class has its own saturation slider.</p>
+</header>
+
+<div class="bar">
+  <span><label>hero</label><select id="selHero"></select></span>
+  <span><label>monster</label><select id="selMon"></select></span>
+  <span><label>pet</label><select id="selPet"></select></span>
+</div>
+
+<div class="grid">
+  <div class="card"><h2>Kai <span class="kind">· hero</span></h2><canvas id="cv-hero"></canvas>
+    <div class="knobs" id="k-hero"></div>
+    <div class="err" id="er-hero"></div></div>
+  <div class="card"><h2>Wild monster <span class="kind">· enemy</span></h2><canvas id="cv-mon"></canvas>
+    <div class="knobs" id="k-mon"></div>
+    <div class="err" id="er-mon"></div></div>
+  <div class="card"><h2>Pet <span class="kind">· companion</span></h2><canvas id="cv-pet"></canvas>
+    <div class="knobs" id="k-pet"></div>
+    <div class="err" id="er-pet"></div></div>
+</div>
+<div class="bar" style="justify-content:space-between">
+  <button class="use" id="use">Send these values to Claude ↗</button>
+  <button class="use" id="reset" style="color:#9fb0c2;border-color:#33404f">Reset to current defaults</button>
+</div>
+<pre class="mono" id="readout" style="white-space:pre-wrap"></pre>
+<p class="note">Open at <code>http://localhost:8000/sat_preview.html</code> (run <code>start_game.bat</code> first). Four knobs per class: <b>sat</b> (color intensity), <b>bri</b> (brightness), <b>con</b> (contrast), <b>warm</b> (warm/cool wash). Preview is a live CSS approximation — the game applies the exact same numbers in-shader. Hit <b>Send</b> when happy, or copy the block below and paste it to me to save into <code>model_calibration.js</code>.</p>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+<script>
+(function(){
+  function bannerErr(msg){var d=document.createElement('div');d.style.cssText='color:#ffb3b3;background:#2a1518;padding:8px 20px;font:12px ui-monospace,monospace;border-bottom:1px solid #803';d.textContent=msg;document.body.insertBefore(d,document.body.firstChild);}
+  window.addEventListener('error',function(e){bannerErr('JS error: '+(e.message||e.type)+'  ('+(e.filename||'').split('/').pop()+':'+(e.lineno||'?')+')');});
+  if(!window.THREE){bannerErr('Three.js failed to load — open this while online (CDN blocked?).');return;}
+  if(!THREE.GLTFLoader){bannerErr('GLTFLoader failed to load — the model loader is missing (jsdelivr blocked?). Models can\'t render.');return;}
+  var FALLBACK={hero:['hero/Kai_Set_Default','hero/Leah_Set_Default','hero/Irene_Token_000001'],
+    mon:['mons/Mon_Goblin','mons/Mon_Skell_Base','mons/Mon_Gnoll_01_Claw','boss/Boss_Centaur_Warrior_Fire'],
+    pet:['90_Barkindle','200_Yarmeow','1_Diloom','101_Tebeno','45_Coronoid']};
+  function urlFor(name){var n=name.replace(/\.(glb|vrm)$/i,'');return n.indexOf('/')>=0?('./'+n+'.glb'):('./pets/'+n+'.glb');}
+  function shortName(name){return name.split('/').pop().replace(/\.(glb|vrm)$/i,'').replace(/^\d+_/,'');}
+
+  function Viewer(canvasId,errId){
+    var cv=document.getElementById(canvasId), er=document.getElementById(errId);
+    var w=cv.clientWidth||260, h=300;
+    var renderer=new THREE.WebGLRenderer({canvas:cv,antialias:true,alpha:true});
+    renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(w,h,false);
+    if(THREE.sRGBEncoding)renderer.outputEncoding=THREE.sRGBEncoding;
+    var scene=new THREE.Scene();
+    var cam=new THREE.PerspectiveCamera(32,w/h,0.05,200);
+    scene.add(new THREE.HemisphereLight(0xffffff,0x40464f,1.05));
+    var dl=new THREE.DirectionalLight(0xffffff,1.0);dl.position.set(2.5,4,3);scene.add(dl);
+    var dl2=new THREE.DirectionalLight(0xffffff,0.4);dl2.position.set(-3,2,-2);scene.add(dl2);
+    scene.add(new THREE.AmbientLight(0xffffff,0.32));
+    var pivot=new THREE.Group();scene.add(pivot);var current=null;
+    var baseDist=4, zoom=1, yaw=0;
+    function frame(){var d=baseDist*zoom;cam.position.set(0,d*0.16,d);cam.lookAt(0,0,0);}
+    function cull(root){root.traverse(function(o){if(!o.isMesh)return;var nm=o.name||'',pn=(o.parent&&o.parent.name)||'';
+      if(/collider|collision|_ucx|bound(ing)?box/i.test(nm)||/collider|collision/i.test(pn)){o.visible=false;return;}
+      if(!o.isSkinnedMesh&&/^cube(\.\d+)?$/i.test(nm)){o.visible=false;}});}
+    function fixMats(root){root.traverse(function(o){if(o.isMesh&&o.material){var ms=Array.isArray(o.material)?o.material:[o.material];
+      ms.forEach(function(m){if(m.map&&THREE.sRGBEncoding)m.map.encoding=THREE.sRGBEncoding;
+        if('metalness'in m)m.metalness=0;if('roughness'in m&&m.roughness<0.4)m.roughness=0.7;
+        m.side=THREE.DoubleSide;m.needsUpdate=true;});}});}
+    function fit(root){
+      root.scale.setScalar(1);root.position.set(0,0,0);root.updateWorldMatrix(true,true);
+      var box=new THREE.Box3().setFromObject(root);/* whole hierarchy (handles skinned meshes far better than per-mesh) */
+      var size=new THREE.Vector3(),ctr=new THREE.Vector3();box.getSize(size);box.getCenter(ctr);
+      var maxd=Math.max(size.x,size.y,size.z)||1, s=1.6/maxd;
+      root.scale.setScalar(s);root.position.set(-ctr.x*s,-ctr.y*s,-ctr.z*s);
+      var span=Math.max(size.x,size.y,size.z)*s||1.6;
+      baseDist=(span*0.5)/Math.tan((cam.fov*Math.PI/180)/2)*2.4;zoom=1;frame();/* generous default so the WHOLE model is in frame */
+    }
+    var loader=new THREE.GLTFLoader();
+    function load(name){er.textContent='loading '+shortName(name)+'…';
+      loader.load(urlFor(name),function(g){
+        if(current)pivot.remove(current); current=g.scene;
+        cull(current);fixMats(current);fit(current);pivot.add(current);er.textContent='';
+      },undefined,function(){er.textContent='could not load '+name+' (serve via localhost:8000)';});
+    }
+    cv.addEventListener('wheel',function(e){e.preventDefault();zoom*=(e.deltaY>0?1.15:0.87);zoom=Math.max(0.15,Math.min(20,zoom));frame();},{passive:false});
+    cv.addEventListener('dblclick',function(){zoom=1;frame();});/* double-click = reset framing */
+    var drag=null;
+    cv.addEventListener('pointerdown',function(e){drag={x:e.clientX,y0:yaw};cv.setPointerCapture(e.pointerId);});
+    cv.addEventListener('pointermove',function(e){if(!drag)return;yaw=drag.y0+(e.clientX-drag.x)*0.01;pivot.rotation.y=yaw;});
+    cv.addEventListener('pointerup',function(){drag=null;});
+    cv.addEventListener('pointercancel',function(){drag=null;});
+    (function loop(){requestAnimationFrame(loop);renderer.render(scene,cam);})();
+    return {load:load,canvas:cv};
+  }
+
+  var vHero=Viewer('cv-hero','er-hero'), vMon=Viewer('cv-mon','er-mon'), vPet=Viewer('cv-pet','er-pet');
+
+  // ---- per-class grade knobs (sat / bri / con / warm) — defaults mirror CLASS_ADJ in model_calibration.js ----
+  var DEF={
+    hero:{ sat:0.88, bri:1.00, con:1.06, warm:0.05 },
+    mon: { sat:0.74, bri:0.97, con:1.05, warm:0.05 },
+    pet: { sat:0.96, bri:1.03, con:0.96, warm:0.05 }
+  };
+  var KNOB=[
+    {k:'sat', lab:'sat',  min:0.2, max:1.8,  step:0.02},
+    {k:'bri', lab:'bri',  min:0.6, max:1.4,  step:0.01},
+    {k:'con', lab:'con',  min:0.6, max:1.4,  step:0.01},
+    {k:'warm',lab:'warm', min:0.0, max:0.40, step:0.01}
+  ];
+  var groups={};/* cls -> {sat:input, bri:input, ...} */
+  function buildKnobs(cls,mountId,viewer){
+    var mount=document.getElementById(mountId),g={};
+    KNOB.forEach(function(def){
+      var row=document.createElement('div');row.className='row';
+      var lab=document.createElement('label');lab.textContent=def.lab;
+      var inp=document.createElement('input');inp.type='range';inp.min=def.min;inp.max=def.max;inp.step=def.step;inp.value=DEF[cls][def.k];
+      var val=document.createElement('span');val.className='v';
+      row.appendChild(lab);row.appendChild(inp);row.appendChild(val);mount.appendChild(row);
+      inp.addEventListener('input',function(){apply(cls,viewer);});
+      g[def.k]={inp:inp,val:val};
+    });
+    groups[cls]=g;apply(cls,viewer);
+  }
+  function apply(cls,viewer){
+    var g=groups[cls];
+    var sat=parseFloat(g.sat.inp.value),bri=parseFloat(g.bri.inp.value),con=parseFloat(g.con.inp.value),warm=parseFloat(g.warm.inp.value);
+    g.sat.val.textContent=sat.toFixed(2);g.bri.val.textContent=bri.toFixed(2);g.con.val.textContent=con.toFixed(2);g.warm.val.textContent=warm.toFixed(2);
+    /* CSS approximation of the in-shader grade: sepia() gives the warm wash */
+    viewer.canvas.style.filter='saturate('+sat+') brightness('+bri+') contrast('+con+') sepia('+warm+')';
+    updReadout();
+  }
+  function tintHex(warm){/* map warm amount → a warm tint colour + amount for the game block */
+    return { tint:'0xffece0', tintAmt:warm };
+  }
+  function vals(cls){var g=groups[cls];return {sat:parseFloat(g.sat.inp.value),bri:parseFloat(g.bri.inp.value),con:parseFloat(g.con.inp.value),warm:parseFloat(g.warm.inp.value)};}
+  function line(name,v){var t=tintHex(v.warm);
+    return '  '+name+':'.padEnd(9)+'{ sat:'+v.sat.toFixed(2)+', con:'+v.con.toFixed(2)+', bri:'+v.bri.toFixed(2)+', tint:'+t.tint+', tintAmt:'+t.tintAmt.toFixed(2)+' },';}
+  function updReadout(){
+    if(!groups.hero||!groups.mon||!groups.pet)return;
+    var h=vals('hero'),m=vals('mon'),p=vals('pet');
+    document.getElementById('readout').textContent=
+      'CLASS_ADJ:{\n'+line('hero',h)+'\n'+line('monster',m)+'\n'+line('pet',p)+'\n}';
+  }
+  buildKnobs('hero','k-hero',vHero);
+  buildKnobs('mon','k-mon',vMon);
+  buildKnobs('pet','k-pet',vPet);
+  updReadout();
+
+  document.getElementById('use').addEventListener('click',function(){
+    var h=vals('hero'),m=vals('mon'),p=vals('pet');
+    sendPrompt('Save these per-class colour-grade values into EF Moba model_calibration.js CLASS_ADJ:\n'+
+      'hero: sat '+h.sat.toFixed(2)+', bri '+h.bri.toFixed(2)+', con '+h.con.toFixed(2)+', warm '+h.warm.toFixed(2)+'\n'+
+      'monster: sat '+m.sat.toFixed(2)+', bri '+m.bri.toFixed(2)+', con '+m.con.toFixed(2)+', warm '+m.warm.toFixed(2)+'\n'+
+      'pet: sat '+p.sat.toFixed(2)+', bri '+p.bri.toFixed(2)+', con '+p.con.toFixed(2)+', warm '+p.warm.toFixed(2));
+  });
+  document.getElementById('reset').addEventListener('click',function(){
+    ['hero','mon','pet'].forEach(function(cls){
+      var g=groups[cls];KNOB.forEach(function(def){g[def.k].inp.value=DEF[cls][def.k];});
+      apply(cls,cls==='hero'?vHero:cls==='mon'?vMon:vPet);
+    });
+  });
+
+  // ---- dropdowns from serve.py /listpets ----
+  function fill(sel,arr,def){sel.innerHTML='';arr.forEach(function(n){var o=document.createElement('option');o.value=n;o.textContent=shortName(n)+(n.indexOf('/')>=0?'  ('+n.split('/')[0]+')':'  (pet)');sel.appendChild(o);});
+    if(def){for(var i=0;i<arr.length;i++){if(arr[i]===def||arr[i].replace(/\.(glb|vrm)$/i,'')===def||arr[i].indexOf(def)>=0){sel.value=arr[i];break;}}}}
+  function boot(lists){
+    fill(document.getElementById('selHero'),lists.hero,'Kai_Set_Default');
+    fill(document.getElementById('selMon'),lists.mon,lists.mon[0]);
+    fill(document.getElementById('selPet'),lists.pet,'90_Barkindle');
+    document.getElementById('selHero').onchange=function(){vHero.load(this.value);};
+    document.getElementById('selMon').onchange=function(){vMon.load(this.value);};
+    document.getElementById('selPet').onchange=function(){vPet.load(this.value);};
+    vHero.load(document.getElementById('selHero').value);
+    vMon.load(document.getElementById('selMon').value);
+    vPet.load(document.getElementById('selPet').value);
+  }
+  /* boot IMMEDIATELY from the built-in fallback (never wait on the network) so the dropdowns fill and
+     the models load right away — then ENRICH from /listpets if the server provides the full list. */
+  try{boot(FALLBACK);}catch(e){bannerErr('init error: '+e.message);}
+  fetch('/listpets').then(function(r){return r.json();}).then(function(files){
+    if(!Array.isArray(files)||!files.length)return;
+    var hero=files.filter(function(n){return String(n).indexOf('hero/')===0;});
+    var mon=files.filter(function(n){return String(n).indexOf('mons/')===0||String(n).indexOf('boss/')===0;});
+    var pet=files.filter(function(n){return String(n).indexOf('/')<0;});
+    try{boot({hero:hero.length?hero:FALLBACK.hero, mon:mon.length?mon:FALLBACK.mon, pet:pet.length?pet:FALLBACK.pet});}catch(e){}
+  }).catch(function(){});
+})();
+</script>
+</body>
+</html>

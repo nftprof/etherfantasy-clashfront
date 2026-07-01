@@ -1,0 +1,598 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>EtherFantasy MOBA — Play</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  /* ===== EtherFantasy design system — matches etherfantasy.com ===== */
+  :root{
+    --ink-950:#050409;--ink-900:#0a0813;--ink-850:#0f0c1b;--ink-800:#14111f;--ink-700:#1c1730;--ink-600:#271f3f;--ink-500:#352b54;
+    --ether-300:#d8bbff;--ether-400:#c08cff;--ether-500:#a855f7;--ether-600:#8b3df0;--ether-700:#6d28d9;
+    --gold-200:#f5e6bf;--gold-300:#ecd293;--gold-400:#e0bd6b;--gold-500:#c79c44;
+    --crystal-300:#9cf6e4;--crystal-400:#5fe9d0;--crystal-500:#2dd4bf;
+    --fg:#ece9f5;--fg-dim:#a8a3bf;--fg-mute:#6f6a88;
+    /* back-compat aliases for inline styles in markup/JS */
+    --bg:var(--ink-950);--panel:var(--ink-850);--panel2:var(--ink-900);--edge:rgba(255,255,255,.10);--ink:var(--fg);--mut:var(--fg-dim);--acc:var(--ether-400);--good:#34d399;--warn:var(--gold-400);--red:#f0556b;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;font-family:"Inter",ui-sans-serif,system-ui,Segoe UI,Arial,sans-serif;color:var(--fg);min-height:100vh;background-color:var(--ink-950);-webkit-font-smoothing:antialiased}
+  body::before{content:"";position:fixed;inset:0;z-index:-2;background:
+    radial-gradient(1200px 700px at 78% -10%,rgba(168,85,247,.18),transparent 60%),
+    radial-gradient(900px 600px at 8% 8%,rgba(45,212,191,.10),transparent 55%),
+    radial-gradient(1000px 800px at 50% 120%,rgba(109,40,217,.16),transparent 60%),var(--ink-950)}
+  body::after{content:"";position:fixed;inset:0;z-index:-1;opacity:.035;pointer-events:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+  .wrap{max-width:820px;margin:0 auto;padding:30px 18px 70px}
+  .brand{display:flex;align-items:center;gap:14px;justify-content:center;margin:16px 0 6px}
+  .brand .mark{font-size:30px;filter:drop-shadow(0 0 14px rgba(168,85,247,.6))}
+  .brand h1{font-family:"EB Garamond",Georgia,serif;font-size:40px;font-weight:600;margin:0;letter-spacing:-.01em;
+    background:linear-gradient(120deg,#fff 8%,var(--ether-300) 52%,var(--crystal-300) 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .tag{text-align:center;color:var(--fg-dim);margin:0 0 26px;font-size:14px}
+  .eyebrow{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.26em;color:var(--ether-300)}
+  .card{position:relative;background:linear-gradient(180deg,rgba(255,255,255,.045),rgba(255,255,255,.012));border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:22px;margin:16px 0;backdrop-filter:blur(14px);box-shadow:0 18px 50px -22px rgba(0,0,0,.75)}
+  .card::before{content:"";position:absolute;left:18px;right:18px;top:0;height:1px;background:linear-gradient(90deg,transparent,rgba(168,85,247,.55),transparent)}
+  h2{font-family:"EB Garamond",Georgia,serif;margin:0 0 12px;font-size:23px;font-weight:600;letter-spacing:-.01em}
+  p{line-height:1.6;margin:0 0 10px}
+  button{font:inherit;font-weight:600;cursor:pointer;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);color:var(--fg);padding:11px 17px;transition:all .18s ease}
+  button:hover{border-color:rgba(255,255,255,.28);background:rgba(255,255,255,.09);transform:translateY(-1px)}
+  button.primary{color:#fff;border:none;background:linear-gradient(135deg,var(--ether-500),var(--ether-700));box-shadow:0 10px 30px -8px rgba(139,61,240,.7),inset 0 1px 0 rgba(255,255,255,.18)}
+  button.primary:hover{filter:brightness(1.1)}
+  button.gold{color:var(--ink-950);border:none;background:linear-gradient(135deg,var(--gold-300),var(--gold-500));box-shadow:0 10px 30px -8px rgba(199,156,68,.6),inset 0 1px 0 rgba(255,255,255,.4)}
+  button.good{color:var(--ink-950);border:none;background:linear-gradient(135deg,var(--crystal-400),var(--crystal-500));box-shadow:0 10px 30px -8px rgba(45,212,191,.5),inset 0 1px 0 rgba(255,255,255,.35)}
+  button:disabled{opacity:.4;cursor:not-allowed;transform:none;filter:none}
+  button.crossed{text-decoration:line-through!important}
+  #disclaimer{margin-top:14px;padding:13px 15px;border:1px solid rgba(240,85,107,.4);border-radius:14px;background:rgba(240,85,107,.06)}
+  #disclaimer .ttl{color:var(--warn);font-weight:600;margin-bottom:4px}
+  #disclaimer label{cursor:pointer;display:flex;gap:8px;align-items:center;font-size:13px;color:var(--fg)}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  input,select{font:inherit;background:var(--ink-900);border:1px solid rgba(255,255,255,.12);color:var(--fg);border-radius:10px;padding:10px 12px;transition:border-color .15s,box-shadow .15s}
+  input:focus,select:focus{outline:none;border-color:var(--ether-500);box-shadow:0 0 0 3px rgba(168,85,247,.2)}
+  .mut{color:var(--fg-dim);font-size:13px}
+  .pill,.chip{display:inline-flex;align-items:center;gap:6px;padding:3px 11px;border-radius:999px;font-size:11px;font-weight:500;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);color:var(--fg-dim)}
+  .hide{display:none!important}
+  .pl{display:flex;align-items:center;gap:10px;padding:10px 13px;border:1px solid rgba(255,255,255,.08);border-radius:12px;margin:8px 0;background:rgba(255,255,255,.03)}
+  .dot{width:10px;height:10px;border-radius:50%;background:var(--ink-500)}
+  .dot.ready{background:var(--crystal-400);box-shadow:0 0 10px rgba(45,212,191,.7)} .t0{color:var(--ether-300)} .t1{color:#f0556b}
+  .ct{color:var(--crystal-300);font-weight:600}
+  .err{color:#f0556b;font-size:13px;min-height:18px;margin-top:8px}
+  .big{font-family:"EB Garamond",Georgia,serif;font-size:42px;text-align:center;font-weight:700;letter-spacing:4px;color:var(--ether-300);text-shadow:0 0 30px rgba(168,85,247,.5)}
+  a{color:var(--ether-400)}
+  .roomItem{display:flex;justify-content:space-between;align-items:center;padding:10px 13px;border:1px solid rgba(255,255,255,.08);border-radius:12px;margin:7px 0;background:rgba(255,255,255,.03)}
+  /* win/lose payout panel */
+  .payouts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0}
+  .po{border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:13px 15px;background:rgba(255,255,255,.025)}
+  .po .lbl{font-size:10px;text-transform:uppercase;letter-spacing:.18em;color:var(--fg-mute)}
+  .po .val{font-family:"EB Garamond",Georgia,serif;font-size:21px;margin-top:4px}
+  .po.win{border-color:rgba(45,212,191,.32);background:rgba(45,212,191,.05)}
+  .po.lose{border-color:rgba(240,85,107,.28);background:rgba(240,85,107,.045)}
+  .odds{display:flex;gap:8px;margin-top:9px;flex-wrap:wrap}
+  .odds .o{flex:1;min-width:84px;border:1px solid rgba(255,255,255,.09);border-radius:10px;padding:7px 9px;text-align:center;background:rgba(255,255,255,.02)}
+  @media(max-width:560px){.payouts{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="brand"><span class="mark">⚔️</span><h1>EtherFantasy MOBA</h1></div>
+  <div class="tag">Battle for <span class="ct">$CT</span> · sign in with your Pentagon Games account</div>
+
+  <!-- ============ REGION SELECT ============ -->
+  <section id="region" class="card">
+    <h2>🌐 Choose your server</h2>
+    <p class="mut">We auto-pick the lowest-ping region. <span style="color:var(--good)">Green</span> is great, <span style="color:var(--warn)">yellow</span> is okay, <span style="color:var(--red)">red</span> will be laggy.</p>
+    <div id="regionList"></div>
+    <div id="regionWarn" class="hide" style="margin-top:10px;padding:10px;border:1px solid var(--red);border-radius:9px;background:#2a1414">
+      <div style="color:var(--red);font-weight:600">⚠ High ping to the selected region</div>
+      <div class="mut" id="regionWarnTxt" style="margin:4px 0 8px"></div>
+      <label class="mut" style="cursor:pointer"><input type="checkbox" id="regionAck"> I understand this region will be laggy and want to continue anyway.</label>
+    </div>
+    <div class="row" style="margin-top:12px">
+      <button class="primary" id="regionGo" disabled>Continue →</button>
+      <span class="mut" id="regionStatus">Measuring ping…</span>
+    </div>
+    <div class="row" style="margin-top:14px;border-top:1px solid var(--edge);padding-top:14px">
+      <button id="soloBtn">🎟 VIP Demo</button>
+      <span class="mut">Authorized VIPs only — enter your demo code. Plays smoothly (runs locally) after a quick server check.</span>
+    </div>
+  </section>
+
+  <!-- ============ LOGIN ============ -->
+  <section id="login" class="card hide">
+    <h2>Sign in</h2>
+    <p class="mut"><b>Staff testing.</b> Access is limited to EtherFantasy staff. Log in with your <b>Pentagon Games</b> account (email + password).</p>
+    <div class="row"><input id="pgEmail" type="email" placeholder="Pentagon Games email" autocomplete="username" style="width:240px"></div>
+    <div class="row" style="margin-top:8px">
+      <input id="pgPass" type="password" placeholder="Password" autocomplete="current-password" style="width:240px">
+      <button class="primary" id="pgBtn">🔐 Log in</button>
+    </div>
+    <div class="err" id="loginErr"></div>
+  </section>
+
+  <!-- ============ LOBBY HOME ============ -->
+  <section id="home" class="card hide">
+    <div class="row" style="justify-content:space-between">
+      <h2 style="margin:0">Welcome, <span id="me" class="t0"></span></h2>
+      <div class="row" style="gap:8px">
+        <span class="pill" id="onlinePill">—</span>
+        <button id="logoutBtn" style="padding:6px 12px;font-size:12px">Log out</button>
+      </div>
+    </div>
+    <div id="disclaimer">
+      <div class="ttl">⚠ Pre-alpha — play at your own risk</div>
+      <p class="mut" style="margin:0 0 8px">EtherFantasy MOBA is in <b>pre-alpha</b>. Expect bugs, crashes and disconnects. Paid &amp; staked matches put real <span class="ct">$CT</span> at risk, and it <b>can be lost without a refund</b> if a match crashes or errors. By playing you accept this.</p>
+      <p class="mut" style="margin:0 0 10px">To improve performance we record basic connection info — your <b>region, timezone and IP address</b> — <b>solely to decide where to add game servers</b>. It is not used for advertising or sold to anyone.</p>
+      <label><input type="checkbox" id="ackChk"> By ticking this and playing, I accept the risks above and consent to this connection-data collection for server optimization.</label>
+    </div>
+    <div class="mut" id="ackNote" style="margin-top:6px;color:var(--warn)">Tick the box above to enable play.</div>
+    <div class="row" style="margin-top:14px">
+      <select id="mode">
+        <option value="grind">🎮 Player vs AI</option>
+        <option value="1v1" class="pvpOpt">1v1</option>
+        <option value="2v2" class="pvpOpt">2v2</option>
+        <option value="coop" class="pvpOpt">Co-op vs AI</option>
+      </select>
+      <button class="primary" id="quickBtn">⚡ Quick Match</button>
+      <button id="createBtn">＋ Create Room</button>
+    </div>
+    <div class="row" style="margin-top:8px" id="paidRow">
+      <label class="mut" style="cursor:pointer"><input type="checkbox" id="paidChk"> 💎 <b>Paid Match</b> — 10 CT entry (winner takes entry + 50% of the loser). Needs a wallet. 1v1 / 2v2 only.</label>
+    </div>
+    <div class="row" style="margin-top:12px">
+      <input id="joinCode" placeholder="ROOM CODE" maxlength="4" style="width:120px;text-transform:uppercase">
+      <button id="joinBtn">Join by Code</button>
+      <button id="browseBtn">↻ Browse Rooms</button>
+      <button id="boardBtn">🏆 Leaderboard</button>
+    </div>
+    <div id="roomList" style="margin-top:12px"></div>
+    <div class="err" id="homeErr"></div>
+  </section>
+
+  <!-- ============ LEADERBOARD ============ -->
+  <section id="board" class="card hide">
+    <div class="row" style="justify-content:space-between">
+      <h2 style="margin:0">🏆 Champions</h2>
+      <button id="boardBack">← Back</button>
+    </div>
+    <p class="mut" style="margin:8px 0 4px">Ranked by <b>Champion Score = CT earned + ½ × CT spent</b>. Winning is what climbs the board; spending gives a boost.</p>
+    <div style="overflow-x:auto">
+      <table id="boardTable" style="width:100%;border-collapse:collapse;font-size:13px;margin-top:8px">
+        <thead><tr style="color:var(--mut);text-align:right">
+          <th style="text-align:left;padding:6px 8px">#</th>
+          <th style="text-align:left;padding:6px 8px">Player</th>
+          <th style="padding:6px 8px">Played</th>
+          <th style="padding:6px 8px">Won</th>
+          <th style="padding:6px 8px">Lost</th>
+          <th style="padding:6px 8px">CT spent</th>
+          <th style="padding:6px 8px">CT earned</th>
+          <th style="padding:6px 8px">Score</th>
+        </tr></thead>
+        <tbody id="boardBody"></tbody>
+      </table>
+    </div>
+    <div class="mut" id="boardEmpty" style="margin-top:10px"></div>
+  </section>
+
+  <!-- ============ ROOM / LOBBY ============ -->
+  <section id="room" class="card hide">
+    <div class="row" style="justify-content:space-between">
+      <h2 style="margin:0"><span id="roomName"></span></h2>
+      <div class="row">
+        <span class="pill">Code <b id="roomCode"></b></span>
+        <span class="pill" id="roomMode"></span>
+      </div>
+    </div>
+    <div id="players" style="margin:12px 0"></div>
+    <div id="countdown" class="big hide"></div>
+    <div class="row" style="margin-top:8px">
+      <button class="good" id="readyBtn">✓ Ready</button>
+      <select id="roomModeSel" class="hide">
+        <option value="1v1">1v1</option><option value="2v2">2v2</option><option value="coop">Co-op vs AI</option>
+      </select>
+      <button class="primary hide" id="startBtn">▶ Start Game</button>
+      <button id="leaveBtn">← Leave</button>
+    </div>
+    <div class="mut" id="roomNote" style="margin-top:8px"></div>
+  </section>
+
+  <!-- ============ GRIND SETUP (single-player loot) ============ -->
+  <section id="grind" class="card hide">
+    <div class="eyebrow">Single-player</div>
+    <h2 style="margin-top:8px">🎮 Player vs AI</h2>
+    <p class="mut">Beat the AI to crack open a loot chest. Here's exactly what's at stake:</p>
+    <div class="payouts">
+      <div class="po">
+        <div class="lbl">Entry to play</div>
+        <div class="val"><span class="ct">Free</span> plays, then <span class="ct">10 CT</span></div>
+        <div class="odds" style="margin-top:8px">
+          <div class="o"><div class="ct">VIP 1</div><div class="mut">1 free</div></div>
+          <div class="o"><div class="ct">VIP 2</div><div class="mut">5 free</div></div>
+          <div class="o"><div class="ct">VIP 3</div><div class="mut">25 free</div></div>
+        </div>
+        <div class="mut" id="grindCredit" style="margin-top:8px">Checking your VIP free plays…</div>
+      </div>
+      <div class="po win">
+        <div class="lbl">If you win → open a loot chest</div>
+        <div class="val ct">up to 100 CT</div>
+        <div class="odds">
+          <div class="o"><div class="ct">Common</div><div class="mut">Cache</div></div>
+          <div class="o"><div class="ct">Rare</div><div class="mut">Chest</div></div>
+          <div class="o"><div class="ct">Legendary</div><div class="mut">Hoard</div></div>
+        </div>
+        <div class="mut" style="margin-top:7px">The rarer the chest, the bigger the prize. Free plays pay up to <span class="ct">25 CT</span>, paid plays up to <span class="ct">100 CT</span>.</div>
+      </div>
+    </div>
+    <div class="po lose" style="margin-bottom:14px">
+      <div class="lbl">If you lose</div>
+      <div class="val">No loot — your entry isn't refunded.</div>
+    </div>
+    <div class="row">
+      <button class="primary hide" id="grindFree">▶ Play (free)</button>
+      <button class="hide" id="grindPay">💎 Pay 10 CT &amp; Play</button>
+      <button id="grindConnect">🔗 Connect wallet</button>
+      <button id="grindBack">← Back</button>
+    </div>
+    <div class="mut" id="grindWallet" style="margin-top:8px"></div>
+    <!-- shown when a connected wallet has < 10 CT -->
+    <div id="grindNoCt" class="hide" style="margin-top:12px;padding:13px 15px;border:1px solid rgba(224,189,107,.35);border-radius:14px;background:rgba(224,189,107,.06)">
+      <div style="color:var(--warn);font-weight:600;margin-bottom:6px">Not enough <span class="ct">$CT</span> to play paid</div>
+      <div class="mut" style="margin-bottom:10px">Get more $CT one of these ways:</div>
+      <div class="row" style="gap:8px">
+        <a href="https://etherfantasy.com/mint" target="_blank" rel="noopener"><button class="gold">🎨 Mint a Master &amp; earn</button></a>
+        <a href="https://pentaswap.io" target="_blank" rel="noopener"><button class="good">💱 Buy $CT on PentaSwap</button></a>
+        <a href="https://pentagonchain.com" target="_blank" rel="noopener"><button>🌉 No PC? Bridge from Uniswap</button></a>
+      </div>
+      <div class="mut" style="margin-top:8px;font-size:12px">Mint &amp; play to earn, swap $CT on PentaSwap, or buy PC on Uniswap and bridge it to Pentagon Chain — then come back and re-check your balance.</div>
+      <div class="row" style="margin-top:8px"><button id="grindRecheckCt" style="padding:6px 12px;font-size:12px">↻ Re-check my balance</button></div>
+    </div>
+    <div class="err" id="grindErr"></div>
+  </section>
+
+  <!-- ============ LAUNCH ============ -->
+  <section id="launch" class="card hide">
+    <h2>🚀 Match starting…</h2>
+    <p class="mut" id="launchInfo"></p>
+    <div class="row"><button class="primary" id="enterBtn">Enter Game</button><button id="backBtn">Back to lobby</button></div>
+  </section>
+
+  <p class="mut" style="text-align:center;margin-top:24px">EtherFantasy · <span id="ver">lobby</span></p>
+</div>
+
+<script src="config.js"></script>
+<script>
+// ---- config (overridable by the deployer via these globals) ----------------
+const EF_PG_LOGIN_URL = window.EF_PG_LOGIN_URL || "";          // PG hosted-login URL; returns ?token=…
+const EF_LOBBY_WS     = window.EF_LOBBY_WS || ((location.protocol==="https:"?"wss://":"ws://")+location.host);
+const EF_GAME_CLIENT  = window.EF_GAME_CLIENT || "/play";       // where the actual game client lives
+const $ = (id)=>document.getElementById(id);
+const show=(id)=>$(id).classList.remove("hide"), hide=(id)=>$(id).classList.add("hide");
+function panel(name){ ["region","login","home","room","grind","launch","board"].forEach(p=>hide(p)); show(name); }
+// During testing only PvP-authorized users (EF_PVP_USERS, e.g. nftprof1) get multiplayer modes;
+// everyone else is Player vs AI only.
+function applyAccess(pvp){
+  if(pvp) return;
+  document.querySelectorAll("#mode .pvpOpt").forEach(o=>o.remove());
+  $("mode").value="grind";
+  const pr=$("paidRow"); if(pr) pr.classList.add("hide");
+}
+
+// ---- on-chain wallet (paid/loot) — same Pentagon Chain wiring as the game client ----
+const EF_CHAIN = window.EF_CHAIN || { chainId:3344, rpc:"https://rpc.pentagon.games", explorer:"https://explorer.pentagon.games",
+  ct:"0x6a3a8407E6d33cDb63650741Bd1f3a97a1D2D4b9", playEscrow:"0x4A9699d70DeebA226c5cBD372098fD1a1c643f06" };
+const efWallet = (function(){ let E=null,_p=null,_s=null,_a=null; const C=()=>EF_CHAIN;
+ const ESCROW=['function payEntry()','function entry() view returns(uint256)'];
+ const ERC20=['function allowance(address,address) view returns(uint256)','function approve(address,uint256) returns(bool)','function balanceOf(address) view returns(uint256)'];
+ async function load(){ if(E)return E; if(window.ethers){E=window.ethers;return E;}
+  await new Promise((res,rej)=>{const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/ethers@6.13.2/dist/ethers.umd.min.js';s.onload=res;s.onerror=()=>rej(new Error('wallet lib load failed'));document.head.appendChild(s);}); E=window.ethers; return E; }
+ const hasWallet=()=>typeof window.ethereum!=='undefined';
+ async function ensureChain(){ const hex='0x'+(C().chainId||3344).toString(16);
+  try{await window.ethereum.request({method:'wallet_switchEthereumChain',params:[{chainId:hex}]});}
+  catch(e){ if(e&&e.code===4902)await window.ethereum.request({method:'wallet_addEthereumChain',params:[{chainId:hex,chainName:'Pentagon Chain',nativeCurrency:{name:'PC',symbol:'PC',decimals:18},rpcUrls:[C().rpc],blockExplorerUrls:[C().explorer]}]}); else throw e; } }
+ async function connect(){ if(!hasWallet())throw new Error('No wallet found — install MetaMask (desktop) or open this page in the MetaMask app browser.');
+  await window.ethereum.request({method:'eth_requestAccounts'});  /* popup FIRST, inside the click gesture — don't await the CDN before this */
+  await load(); await ensureChain();
+  _p=new E.BrowserProvider(window.ethereum); _s=await _p.getSigner(); _a=await _s.getAddress(); return _a; }
+ async function payEntry(){ await load(); const ct=new E.Contract(C().ct,ERC20,_s), esc=new E.Contract(C().playEscrow,ESCROW,_s);
+  const entry=await esc.entry(); if((await ct.allowance(_a,C().playEscrow))<entry){const t=await ct.approve(C().playEscrow,entry);await t.wait();}
+  const r=await(await esc.payEntry()).wait(); return r.hash||r.transactionHash; }
+ async function ctBalance(){ await load(); const ct=new E.Contract(C().ct,ERC20,_s); return Number(E.formatUnits(await ct.balanceOf(_a),18)); }
+ return {connect,payEntry,ctBalance,hasWallet,address:()=>_a}; })();
+
+// ---- token handling --------------------------------------------------------
+function readTokenFromUrl(){
+  const u=new URL(location.href); const h=new URLSearchParams(location.hash.replace(/^#/,""));
+  const t=u.searchParams.get("token")||u.searchParams.get("access_token")||h.get("access_token")||h.get("token");
+  if(t){ history.replaceState({},"",location.pathname); }
+  return t;
+}
+let token = readTokenFromUrl() || (function(){try{return localStorage.getItem("ef_pg_token");}catch(e){return null;}})() || null;
+
+$("pgBtn").onclick=()=>{ const email=($("pgEmail").value||"").trim(), pass=$("pgPass").value||"";
+  if(!email||!pass){ $("loginErr").textContent="Enter your Pentagon Games email and password."; return; }
+  openLobby({t:"pglogin", email, password:pass}); };
+
+// ---- logout: clear saved session, drop the socket, return to a clean login ----
+function doLogout(){
+  try{localStorage.removeItem("ef_pg_token");}catch(e){}
+  token=null; authMsg=null; you=null; curRoom=null;
+  try{ if(ws){ws.onclose=null;ws.close();} }catch(e){}
+  ws=null;
+  $("pgEmail").value=""; $("pgPass").value=""; $("loginErr").textContent="";
+  panel("login");
+}
+$("logoutBtn").onclick=doLogout;
+
+// ---- pre-alpha risk gate: the disclaimer must be ticked to enable any play button ----
+const ACK_KEY="ef_prealpha_ack";
+function playAcked(){ const c=$("ackChk"); return !!(c&&c.checked); }
+function applyPlayGate(){ const ok=playAcked();
+  ["quickBtn","createBtn","grindPay"].forEach(id=>{ const b=$(id); if(b) b.disabled=!ok; });
+  const gf=$("grindFree"); if(gf) gf.disabled=!ok || !!gf._noFree;   // free play also gated by lifetime quota (crossed out)
+  const n=$("ackNote"); if(n) n.style.display=ok?"none":"block"; }
+function restoreAck(){ try{ const c=$("ackChk"); if(c) c.checked=localStorage.getItem(ACK_KEY)==="1"; }catch(e){} }
+{ const c=$("ackChk"); if(c) c.onchange=()=>{ try{localStorage.setItem(ACK_KEY,c.checked?"1":"");}catch(e){} applyPlayGate(); }; }
+
+// ---- websocket -------------------------------------------------------------
+let ws=null, you=null, gameUrl="", curRoom=null, cdTimer=null, lobbyWsUrl=null, authMsg=null;
+function sendWs(o){ try{ ws && ws.readyState===1 && ws.send(JSON.stringify(o)); }catch(e){} }
+
+// open the lobby WS and authenticate with `msg` ({t:'pglogin',email,password} or {t:'auth',token})
+function openLobby(msg){
+  authMsg=msg; token=(msg&&msg.token)||null; $("loginErr").textContent="Connecting…";
+  ws=new WebSocket(lobbyWsUrl||EF_LOBBY_WS);
+  ws.onopen=()=>{ /* wait for hello */ };
+  ws.onclose=()=>{ if(curRoom||you){ $("homeErr").textContent="Disconnected. Reload to reconnect."; } };
+  ws.onerror=()=>{ $("loginErr").textContent="Could not reach the lobby server."; };
+  ws.onmessage=(ev)=>{ let m; try{m=JSON.parse(ev.data);}catch(e){return;} onMsg(m); };
+}
+function connect(tok){ openLobby({t:"auth",token:tok}); } // token-based (returning session / dev)
+
+function onMsg(m){
+  switch(m.t){
+    case "hello": if(m.needAuth) sendWs(authMsg); break;
+    case "auth-failed":
+      try{localStorage.removeItem("ef_pg_token");}catch(e){} token=null; // drop any stale/expired saved token
+      $("loginErr").textContent="Login failed: "+m.reason; ws&&ws.close(); panel("login"); break;
+    case "auth-ok":
+      you={username:m.username,id:m.id,pvp:!!m.pvp};
+      if(m.token){token=m.token; try{localStorage.setItem("ef_pg_token",m.token);}catch(e){}} // remember login
+      $("me").textContent=m.username; applyAccess(!!m.pvp); panel("home"); restoreAck(); applyPlayGate(); sendWs({t:"rooms"});
+      break;
+    case "rooms": renderRooms(m.rooms); break;
+    case "joined": gameUrl=m.gameUrl||""; you.connId=m.you; break;
+    case "room": curRoom=m; renderRoom(m); break;
+    case "chat": /* (chat UI optional) */ break;
+    case "launch": doLaunch(m); break;
+    case "grindTicket": if(m.ticket) location.href = EF_GAME_CLIENT + "?solo=1&ticket=" + encodeURIComponent(m.ticket); break;
+    case "grindDenied": $("grindErr").textContent = m.reason || "Could not start loot grind."; break;
+    case "error": $("homeErr").textContent=$("roomNote").textContent=m.reason; break;
+  }
+}
+
+// ---- leaderboard -----------------------------------------------------------
+function showBoard(){
+  panel("board"); $("boardBody").innerHTML=""; $("boardEmpty").textContent="Loading…";
+  fetch("/leaderboard").then(r=>r.json()).then(j=>{
+    const rows=(j&&j.rows)||[]; const you=($("me").textContent||"").toLowerCase();
+    if(!rows.length){ $("boardEmpty").textContent="No games played yet — be the first champion."; return; }
+    $("boardEmpty").textContent="";
+    const esc=(s)=>String(s).replace(/[<>&]/g,c=>({"<":"&lt;",">":"&gt;","&":"&amp;"}[c]));
+    const medal=(n)=>n===1?"🥇":n===2?"🥈":n===3?"🥉":n;
+    $("boardBody").innerHTML=rows.map(r=>{
+      const mine=r.username.toLowerCase()===you;
+      const td='style="padding:8px;text-align:right;border-top:1px solid rgba(255,255,255,.07)"';
+      const tdl='style="padding:8px;text-align:left;border-top:1px solid rgba(255,255,255,.07)"';
+      const tdct='style="padding:8px;text-align:right;border-top:1px solid rgba(255,255,255,.07);color:var(--crystal-300);font-weight:600"';
+      return `<tr${mine?' style="background:rgba(168,85,247,.12)"':''}>
+        <td ${tdl}><b>${medal(r.rank)}</b></td>
+        <td ${tdl}><b class="${mine?'t0':''}">${esc(r.username)}</b>${mine?' <span class="pill">you</span>':''}</td>
+        <td ${td}>${r.gp}</td><td ${td} class="t0">${r.gw}</td><td ${td} class="t1">${r.gl}</td>
+        <td ${td}>${r.spent}</td><td ${tdct}>${r.earned}</td>
+        <td ${td}><b style="color:var(--ether-300)">${r.score}</b></td></tr>`;
+    }).join("");
+  }).catch(()=>{ $("boardEmpty").textContent="Could not load the leaderboard."; });
+}
+$("boardBtn").onclick=showBoard;
+$("boardBack").onclick=()=>{ panel("home"); sendWs({t:"rooms"}); };
+
+// ---- home ------------------------------------------------------------------
+const _paid=()=>{ const c=$("paidChk"); const on=!!(c&&c.checked); const mode=$("mode").value;
+  if(mode==="grind")return false; // grind is single-player loot (pay/quota handled in-game), not PvP stake
+  if(on&&mode==="coop"){alert("Paid Match is PvP only (1v1 / 2v2). Co-op has no opponent to stake against.");return null;} return on; };
+$("quickBtn").onclick =()=>{ const mode=$("mode").value;
+  if(mode==="grind"){ openGrind(); return; } // setup: connect wallet for loot, or "play for fun" (pure local)
+  const p=_paid(); if(p===null)return; sendWs({t:"quick", mode, paid:p}); };
+
+// ---- Player vs AI setup (VIP free play needs NO wallet; wallet only to pay / bank winnings) ----
+window.efGrindWallet=null; window.efGrindPaidTx=null;
+function setWalletNote(){ $("grindWallet").innerHTML = window.efGrindWallet
+  ? "🔗 Wallet connected — winnings will be banked to <b>"+window.efGrindWallet.slice(0,6)+"…"+window.efGrindWallet.slice(-4)+"</b>."
+  : "No wallet connected — VIP free wins still count, but connect a wallet to bank your CT."; }
+async function openGrind(){ window.efGrindWallet=null; window.efGrindPaidTx=null;
+  $("grindErr").textContent=""; hide("grindFree"); hide("grindPay"); hide("grindNoCt"); setWalletNote(); panel("grind");
+  refreshGrindCredits(false);
+}
+// free-play eligibility is by PG USERNAME — no wallet required to check or to play. `fresh` bypasses
+// the server's 2-min VIP cache so a just-upgraded tier shows immediately. Free plays are a LIFETIME
+// limit per account; when used up the free option is crossed out and we point to vip.pentagon.games.
+async function refreshGrindCredits(fresh, retried){
+  $("grindCredit").textContent="Checking your VIP free plays…";
+  const gf=$("grindFree");
+  try{
+    const r=await fetch("/grind/credits?username="+encodeURIComponent((you&&you.username)||"")+(fresh?"&fresh=1":"")+"&t="+Date.now()).then(x=>x.json());
+    const tier=(r&&r.tier)||0, free=(r&&r.free)||0, checked=!r||r.checked!==false;
+    if(!checked){ // VIP service didn't answer
+      if(!retried) return refreshGrindCredits(true, true); // one silent retry — the API is just slow/flaky
+      $("grindCredit").innerHTML="⚠ Couldn't reach the VIP service just now. "
+        +"<button id='grindRecheck' style='margin-left:6px;padding:5px 11px;font-size:12px'>↻ Try again</button>";
+      hide("grindFree"); if(gf){ gf._noFree=true; } show("grindPay");
+      const rc=$("grindRecheck"); if(rc) rc.onclick=()=>refreshGrindCredits(true);
+      applyPlayGate(); return;
+    }
+    if(free>0){
+      $("grindCredit").innerHTML="✅ <b>VIP"+tier+"</b> — <b>"+free+"</b> free play(s) left.";
+      show("grindFree"); if(gf){ gf._noFree=false; gf.classList.remove("crossed"); } hide("grindPay");
+    } else {
+      $("grindCredit").innerHTML="❌ <b>VIP"+tier+"</b> — you've used all your <b>lifetime</b> free plays."
+        +"<div class='mut' style='margin-top:6px'>Raise your VIP tier for more free plays at "
+        +"<a href='https://vip.pentagon.games' target='_blank' rel='noopener'>vip.pentagon.games</a>, then re-check below. "
+        +"<i>(Free plays are a lifetime limit per account.)</i></div>"
+        +"<button id='grindRecheck' style='margin-top:8px;padding:5px 11px;font-size:12px'>↻ I upgraded my VIP — re-check</button>";
+      show("grindFree"); if(gf){ gf._noFree=true; gf.classList.add("crossed"); }   // free option crossed out
+      show("grindPay");
+      const rc=$("grindRecheck"); if(rc) rc.onclick=()=>refreshGrindCredits(true);
+    }
+  }catch(e){ $("grindCredit").textContent="Could not check free plays — you can still pay 10 CT to play."; if(gf)gf._noFree=true; show("grindPay"); }
+  applyPlayGate(); // honor the pre-alpha risk acknowledgement
+}
+$("grindBack").onclick=()=>{ panel("home"); };
+$("grindConnect").onclick=async ()=>{ $("grindErr").textContent=""; hide("grindNoCt");
+  try{ window.efGrindWallet=await efWallet.connect(); setWalletNote();
+    const bal=await efWallet.ctBalance().catch(()=>null);   // proactively show the get-CT options if short
+    if(bal!=null){ $("grindWallet").innerHTML+=" <span class='mut'>· balance <b>"+bal.toFixed(2)+" CT</b></span>"; if(bal<10) show("grindNoCt"); }
+  }
+  catch(e){ $("grindErr").textContent=(e&&e.message)||"Wallet connect failed."; }
+};
+$("grindRecheckCt").onclick=async ()=>{ try{ const bal=await efWallet.ctBalance();
+  if(bal>=10){ hide("grindNoCt"); $("grindWallet").innerHTML="✅ Balance <b>"+bal.toFixed(2)+" CT</b> — tap 💎 Pay 10 CT &amp; Play."; }
+  else { $("grindWallet").innerHTML="Balance still <b>"+bal.toFixed(2)+" CT</b> — need 10."; } }catch(e){} };
+// free VIP play: launch LOCAL play with a signed ticket — wallet optional (banked only if connected)
+// origin hints for server-zone planning: browser timezone + chosen region + measured pings
+function geoMeta(){ let tz=""; try{ tz=Intl.DateTimeFormat().resolvedOptions().timeZone||""; }catch(e){} return { tz, region: chosenRegion&&chosenRegion.id, pings: regionPings }; }
+$("grindFree").onclick =()=>{ $("grindErr").textContent=""; $("grindCredit").textContent="Preparing your match…"; sendWs({t:"grindTicket", wallet:window.efGrindWallet||null, mode:"free", ...geoMeta()}); };
+$("grindPay").onclick=async ()=>{ $("grindErr").textContent=""; hide("grindNoCt");
+  try{
+    if(!window.efGrindWallet){ $("grindWallet").textContent="Connecting wallet…"; window.efGrindWallet=await efWallet.connect(); setWalletNote(); }
+    const bal=await efWallet.ctBalance().catch(()=>null);   // not enough CT → show how to get it, don't push a failing tx
+    if(bal!=null && bal<10){ $("grindWallet").innerHTML="Wallet has <b>"+bal.toFixed(2)+" CT</b> — you need 10 to play paid."; show("grindNoCt"); return; }
+    $("grindWallet").textContent="💎 Approve + pay 10 CT in your wallet…";
+    const tx=await efWallet.payEntry(); setWalletNote();
+    $("grindCredit").textContent="✅ Paid — preparing your match…";
+    sendWs({t:"grindTicket", wallet:window.efGrindWallet, mode:"paid", tx, ...geoMeta()});
+  }catch(e){ $("grindErr").textContent="Payment failed: "+((e&&e.message)||e); setWalletNote(); }
+};
+$("createBtn").onclick=()=>{ const p=_paid(); if(p===null)return; sendWs({t:"create", mode:$("mode").value, paid:p}); };
+$("joinBtn").onclick  =()=>{ const c=($("joinCode").value||"").toUpperCase(); if(c) sendWs({t:"join",code:c}); };
+$("browseBtn").onclick=()=> sendWs({t:"rooms"});
+function renderRooms(rooms){
+  const el=$("roomList");
+  if(!rooms.length){ el.innerHTML='<div class="mut">No open rooms — Quick Match or Create one.</div>'; return; }
+  el.innerHTML="";
+  rooms.forEach(r=>{ const d=document.createElement("div"); d.className="roomItem";
+    d.innerHTML='<div><b>'+r.name+'</b> <span class="pill">'+r.mode+'</span></div><div class="row"><span class="mut">'+r.players+'/'+r.cap+'</span><button>Join</button></div>';
+    d.querySelector("button").onclick=()=>sendWs({t:"join",code:r.code}); el.appendChild(d); });
+}
+
+// ---- room ------------------------------------------------------------------
+function meIn(r){ return r.players.find(p=>p.connId===you.connId); }
+function renderRoom(r){
+  panel("room"); $("roomNote").textContent=r.note||"";
+  $("roomName").textContent=r.name; $("roomCode").textContent=r.code; $("roomMode").textContent=r.mode+" · "+r.players.length+"/"+r.cap;
+  const me=meIn(r); const amHost=!!(me&&me.isHost);
+  $("startBtn").classList.toggle("hide", !amHost);
+  $("roomModeSel").classList.toggle("hide", !amHost);
+  $("roomModeSel").value=r.mode;
+  const pl=$("players"); pl.innerHTML="";
+  r.players.forEach(p=>{ const d=document.createElement("div"); d.className="pl";
+    d.innerHTML='<span class="dot '+(p.ready?"ready":"")+'"></span>'
+      +'<b class="t'+p.team+'">'+p.username+'</b>'
+      +(p.isHost?' <span class="pill">host</span>':'')
+      +(r.mode!=="coop"?' <span class="pill">'+(p.team===0?"Blue":"Red")+'</span>':'')
+      +(p.ready?' <span class="pill" style="color:var(--good)">ready</span>':'');
+    pl.appendChild(d); });
+  $("readyBtn").textContent=(me&&me.ready)?"✗ Unready":"✓ Ready";
+  $("readyBtn").classList.toggle("good", !(me&&me.ready));
+  if(r.state==="countdown" && r.countdownEndsAt){ startCountdown(r.countdownEndsAt); }
+  else { $("countdown").classList.add("hide"); if(cdTimer){clearInterval(cdTimer);cdTimer=null;} }
+}
+$("readyBtn").onclick=()=>{ const me=curRoom&&meIn(curRoom); sendWs({t:"ready",ready:!(me&&me.ready)}); };
+$("startBtn").onclick=()=> sendWs({t:"start"});
+$("leaveBtn").onclick=()=>{ sendWs({t:"leave"}); curRoom=null; panel("home"); sendWs({t:"rooms"}); };
+$("roomModeSel").onchange=(e)=> sendWs({t:"mode",mode:e.target.value});
+function startCountdown(endsAt){
+  $("countdown").classList.remove("hide");
+  if(cdTimer) clearInterval(cdTimer);
+  const tick=()=>{ const s=Math.max(0,Math.ceil((endsAt-Date.now())/1000)); $("countdown").textContent=s>0?("Starting in "+s):"Go!"; if(s<=0&&cdTimer){clearInterval(cdTimer);cdTimer=null;} };
+  tick(); cdTimer=setInterval(tick,200);
+}
+
+// ---- launch ----------------------------------------------------------------
+function doLaunch(m){
+  panel("launch");
+  const seats=(m.seats||[]).map(s=>s.name+(m.mode!=="coop"?(" ["+(s.team===0?"Blue":"Red")+"]"):"")).join(", ");
+  const teamName=m.team===0?"Blue":"Red";
+  $("launchInfo").innerHTML="Mode <b>"+m.mode+"</b> · you are on <b>"+teamName+"</b> · players: "+seats
+    + (m.gameUrl? "" : "<br><span style='color:var(--warn)'>No server game URL configured — launching the local/AI build for now.</span>");
+  const params=new URLSearchParams({net:m.gameUrl?"server":"ai", ws:m.gameUrl||"", party:m.party||"", team:m.team, slot:m.slot, mode:m.mode, name:(you&&you.username)||"", ps:(m.seats||[]).length||1, paid:m.paid?1:0, loot:m.loot?1:0});
+  if(m.loot && window.efGrindWallet){ params.set("wallet", window.efGrindWallet); if(window.efGrindPaidTx)params.set("paidtx", window.efGrindPaidTx); } // grind: wallet+payment resolved on the lobby
+  const url = EF_GAME_CLIENT + "?" + params.toString();
+  $("enterBtn").onclick=()=>{ location.href=url; };
+  $("backBtn").onclick=()=>{ panel("home"); sendWs({t:"rooms"}); };
+  setTimeout(()=>{ if(!$("launch").classList.contains("hide")) location.href=url; }, 2500); // auto-enter
+}
+
+// ---- region selection (ping each region, auto-pick, gate bad ping) ---------
+const EF_REGIONS = (window.EF_REGIONS && window.EF_REGIONS.length)
+  ? window.EF_REGIONS : [{ id:"local", name:"Default server", host:location.host }];
+let chosenRegion=null; const regionPings={};
+const regionWs=(host)=> (location.protocol==="https:"?"wss://":"ws://")+host;
+const pingColor=(ms)=> ms==null?"var(--red)":(ms<80?"var(--good)":(ms<160?"var(--warn)":"var(--red)"));
+const pingLabel=(ms)=> ms==null?"unreachable":(ms+" ms");
+const isBad=(ms)=> ms==null || ms>=160;
+function pingHost(host){
+  return new Promise(async(res)=>{
+    const url=(location.protocol==="https:"?"https://":"http://")+host+"/ping";
+    const samples=[];
+    for(let i=0;i<4;i++){ const t=performance.now();
+      try{ await fetch(url,{cache:"no-store",mode:"cors"}); samples.push(performance.now()-t); }catch(e){} }
+    res(samples.length?Math.round(Math.min(...samples)):null); // min = warm RTT, excludes handshake
+  });
+}
+function renderRegions(){
+  const el=$("regionList"); el.innerHTML="";
+  EF_REGIONS.forEach(r=>{ const ms=regionPings[r.id];
+    const d=document.createElement("div"); d.className="pl"; d.style.cursor="pointer"; d.style.justifyContent="space-between";
+    const sel=chosenRegion&&chosenRegion.id===r.id;
+    d.style.borderColor=sel?"var(--acc)":"var(--edge)";
+    d.innerHTML='<span><b>'+r.name+'</b>'+(sel?' <span class="pill" style="color:var(--acc)">selected</span>':'')+'</span>'
+      +'<span style="color:'+pingColor(ms)+';font-weight:600">●&nbsp; '+(ms===undefined?'…':pingLabel(ms))+'</span>';
+    d.onclick=()=>selectRegion(r); el.appendChild(d); });
+}
+function selectRegion(r){
+  chosenRegion=r; renderRegions(); const ms=regionPings[r.id];
+  if(isBad(ms)){ show("regionWarn"); $("regionAck").checked=false; $("regionGo").disabled=true;
+    $("regionWarnTxt").textContent="Your ping to "+r.name+" is "+pingLabel(ms)+". You can still play, but expect lag — pick a closer region for the best experience."; }
+  else { hide("regionWarn"); $("regionGo").disabled=false; }
+}
+$("regionAck").onchange=()=>{ $("regionGo").disabled=!$("regionAck").checked; };
+$("regionGo").onclick=()=>{ if(!chosenRegion)return; lobbyWsUrl=regionWs(chosenRegion.host);
+  if(token){ connect(token); } else { panel("login"); } };
+/* VIP demo: handshake with the server for a signed play token, then launch the local game gated on it */
+$("soloBtn").onclick=async ()=>{
+  const code=(prompt('Enter your VIP demo code:')||'').trim(); if(!code)return;
+  $("regionStatus").textContent='Authorizing…';
+  try{
+    const r=await fetch('/demo/auth',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({code})});
+    const j=await r.json().catch(()=>null);
+    if(j&&j.ok&&j.token){ sessionStorage.setItem('ef_demo_token',j.token); location.href=EF_GAME_CLIENT+'?demo=1'; }
+    else { $("regionStatus").textContent='Invalid VIP code.'; }
+  }catch(e){ $("regionStatus").textContent='Could not reach the server.'; }
+};
+async function initRegions(){
+  panel("region"); renderRegions();
+  await Promise.all(EF_REGIONS.map(async r=>{ regionPings[r.id]=await pingHost(r.host); renderRegions(); }));
+  let best=null; for(const r of EF_REGIONS){ const ms=regionPings[r.id]; if(ms==null)continue; if(!best||ms<regionPings[best.id])best=r; }
+  if(!best){ // nothing reachable yet → fall back to this origin so the lobby still works
+    chosenRegion={id:"__fb",name:"Default server",host:location.host}; lobbyWsUrl=regionWs(location.host);
+    $("regionStatus").textContent="Couldn't reach the regional servers — using the default."; $("regionGo").disabled=false; return; }
+  $("regionStatus").textContent="Best region picked automatically — tap another to change."; selectRegion(best);
+}
+
+// ---- boot ------------------------------------------------------------------
+initRegions();
+</script>
+</body>
+</html>

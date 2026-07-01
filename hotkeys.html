@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>EF MOBA — Keyboard Shortcuts</title>
+<style>
+:root{
+ --bg:#0c0a12;--panel:#171225;--panel2:#120e1d;--edge:#3a2a52;--edge2:#2a2240;
+ --ink:#dfe8f2;--mut:#9a8ab0;--mut2:#8a7da6;--blue:#7fb6ff;--vio:#c96bff;--amb:#ff9d6b;
+ --key:#1d2740;--keyEdge:#3c4d72;--keyInk:#cfe0ff;--good:#46d06b;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);
+ font-family:'Segoe UI',Arial,sans-serif;line-height:1.55;-webkit-font-smoothing:antialiased}
+body{background:
+  radial-gradient(1200px 600px at 80% -10%,rgba(201,107,255,.10),transparent 60%),
+  radial-gradient(1000px 500px at -10% 10%,rgba(127,182,255,.08),transparent 55%),
+  var(--bg)}
+.wrap{max-width:1080px;margin:0 auto;padding:28px 20px 60px}
+header.top{display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+ padding:18px 22px;margin-bottom:22px;border:1px solid var(--edge);border-radius:16px;
+ background:linear-gradient(180deg,var(--panel),var(--panel2))}
+header.top .logo{font-size:26px;font-weight:800;letter-spacing:.5px;
+ background:linear-gradient(90deg,var(--blue),var(--vio));-webkit-background-clip:text;background-clip:text;color:transparent}
+header.top .sub{color:var(--mut);font-size:13px}
+header.top .spacer{flex:1}
+header.top a.back{color:var(--keyInk);text-decoration:none;border:1px solid var(--keyEdge);
+ background:var(--key);padding:8px 14px;border-radius:10px;font-size:13px;font-weight:600}
+header.top a.back:hover{border-color:var(--blue)}
+.note{color:var(--mut);font-size:13px;margin:0 2px 22px;line-height:1.6}
+.note b{color:var(--ink)}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
+@media(max-width:760px){.grid{grid-template-columns:1fr}}
+section.card{border:1px solid var(--edge);border-radius:14px;overflow:hidden;
+ background:linear-gradient(180deg,var(--panel),var(--panel2))}
+section.card h2{margin:0;padding:13px 18px;font-size:14px;letter-spacing:.6px;text-transform:uppercase;
+ color:var(--blue);border-bottom:1px solid var(--edge2);
+ background:rgba(127,182,255,.05);display:flex;align-items:center;gap:8px}
+section.card.v h2{color:var(--vio);background:rgba(201,107,255,.05)}
+section.card.a h2{color:var(--amb);background:rgba(255,157,107,.05)}
+section.card h2 .ic{font-size:16px}
+.row{display:flex;align-items:flex-start;gap:14px;padding:11px 18px;border-bottom:1px solid rgba(58,42,82,.4)}
+.row:last-child{border-bottom:none}
+.keys{flex:0 0 auto;min-width:118px;display:flex;flex-wrap:wrap;gap:5px;align-items:center}
+.desc{flex:1;color:var(--ink);font-size:13.5px}
+.desc small{display:block;color:var(--mut2);font-size:12px;margin-top:2px}
+kbd{display:inline-block;min-width:20px;text-align:center;padding:3px 8px;font-size:12.5px;
+ font-family:'Consolas','SF Mono',monospace;font-weight:700;color:var(--keyInk);
+ background:linear-gradient(180deg,#243154,#1a2236);border:1px solid var(--keyEdge);
+ border-bottom-width:2px;border-radius:7px;box-shadow:0 1px 0 rgba(0,0,0,.4)}
+kbd.alt{color:#ffe1bd;background:linear-gradient(180deg,#3a2e1f,#2a2117);border-color:#6a4d2f}
+kbd.mouse{color:#cfe;background:linear-gradient(180deg,#1f3a2e,#172a21);border-color:#2f6a4d}
+.plus{color:var(--mut2);font-size:11px;font-weight:700;padding:0 1px}
+footer{margin-top:30px;color:var(--mut2);font-size:12px;text-align:center;line-height:1.7}
+footer b{color:var(--mut)}
+.legendbar{display:flex;gap:18px;flex-wrap:wrap;margin:0 2px 20px;font-size:12px;color:var(--mut)}
+.legendbar span{display:inline-flex;align-items:center;gap:7px}
+.sw{width:26px;height:16px;border-radius:5px;border:1px solid var(--keyEdge);display:inline-block}
+.sw.k{background:linear-gradient(180deg,#243154,#1a2236)}
+.sw.m{background:linear-gradient(180deg,#1f3a2e,#172a21);border-color:#2f6a4d}
+.sw.x{background:linear-gradient(180deg,#3a2e1f,#2a2117);border-color:#6a4d2f}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+ <div class="logo">⌨ EF MOBA</div>
+ <div class="sub">Keyboard &amp; Mouse Controls</div>
+ <div class="spacer"></div>
+ <a class="back" href="launcher.html">← Launcher</a>
+</header>
+
+<p class="note">A fast 3-lane MOBA: one <b>hero</b> plus commandable <b>workers (pets)</b>, <b>soldiers</b>, and recruited <b>masters</b>. Controls follow the StarCraft / League conventions you already know — right-click to move &amp; fight, <kbd>Q</kbd><kbd>W</kbd><kbd>E</kbd><kbd>R</kbd> for abilities, number keys for control groups. Typing in a chat/name field disables shortcuts automatically.</p>
+
+<div class="legendbar">
+ <span><i class="sw k"></i> keyboard key</span>
+ <span><i class="sw m"></i> mouse</span>
+ <span><i class="sw x"></i> modifier</span>
+</div>
+
+<div class="grid">
+
+ <section class="card">
+  <h2><span class="ic">🎥</span> Camera</h2>
+  <div class="row"><div class="keys"><kbd>Space</kbd></div><div class="desc">Recenter on your hero &amp; follow<small>Snaps the camera back and re-locks onto the hero.</small></div></div>
+  <div class="row"><div class="keys"><kbd>←</kbd><kbd>↑</kbd><kbd>↓</kbd><kbd>→</kbd></div><div class="desc">Pan the map<small>Screen edges also pan. Disabled while 🎥 Follow is on.</small></div></div>
+  <div class="row"><div class="keys"><kbd class="mouse">Minimap ◐</kbd></div><div class="desc">Click the minimap to jump the camera there<small>A quick look in either camera mode.</small></div></div>
+  <div class="row"><div class="keys"><kbd class="mouse">🎥</kbd></div><div class="desc">Follow / camera-lock toggle<small>On = camera glued to hero (LoL locked-cam). Off = free StarCraft scroll.</small></div></div>
+ </section>
+
+ <section class="card">
+  <h2><span class="ic">🎯</span> Selection &amp; Control Groups</h2>
+  <div class="row"><div class="keys"><kbd class="mouse">L-Click</kbd></div><div class="desc">Select a unit</div></div>
+  <div class="row"><div class="keys"><kbd class="alt">Shift</kbd><span class="plus">+</span><kbd class="mouse">Click</kbd></div><div class="desc">Select all units of that type on screen</div></div>
+  <div class="row"><div class="keys"><kbd>1</kbd><span class="plus">or</span><kbd>T</kbd></div><div class="desc">Command center / town-hall menu<small>Build &amp; train. Double-tap centers the camera on it.</small></div></div>
+  <div class="row"><div class="keys"><kbd>2</kbd><span class="plus">…</span><kbd>0</kbd></div><div class="desc">Select control group<small>Tap selects; tap again within 400 ms centers the camera.</small></div></div>
+  <div class="row"><div class="keys"><kbd class="alt">Ctrl</kbd><span class="plus">/</span><kbd class="alt">Alt</kbd><span class="plus">+</span><kbd>2–0</kbd></div><div class="desc">Assign selected units to that group</div></div>
+  <div class="row"><div class="keys"><kbd>Esc</kbd></div><div class="desc">Cancel aim / deselect all</div></div>
+ </section>
+
+ <section class="card a">
+  <h2><span class="ic">⚔</span> Unit Commands</h2>
+  <div class="row"><div class="keys"><kbd class="mouse">R-Click</kbd></div><div class="desc">Move, or attack the target under the cursor</div></div>
+  <div class="row"><div class="keys"><kbd class="alt">Shift</kbd><span class="plus">+</span><kbd class="mouse">R-Click</kbd></div><div class="desc">Queue orders<small>Chain waypoints &amp; actions in sequence.</small></div></div>
+  <div class="row"><div class="keys"><kbd>A</kbd></div><div class="desc">Attack-move<small>Advance and engage anything in the way.</small></div></div>
+  <div class="row"><div class="keys"><kbd>S</kbd></div><div class="desc">Stop</div></div>
+  <div class="row"><div class="keys"><kbd>H</kbd></div><div class="desc">Hold position</div></div>
+  <div class="row"><div class="keys"><kbd>C</kbd></div><div class="desc">Chop — send pets to gather wood</div></div>
+  <div class="row"><div class="keys"><kbd>V</kbd></div><div class="desc">Mine — send pets to gather minerals</div></div>
+  <div class="row"><div class="keys"><kbd>F</kbd></div><div class="desc">Pet follow / heal · soldiers march forward<small>Context-sensitive: pets return to follow you; soldiers push the lane.</small></div></div>
+ </section>
+
+ <section class="card v">
+  <h2><span class="ic">✦</span> Hero Abilities &amp; Items</h2>
+  <div class="row"><div class="keys"><kbd>Q</kbd><kbd>W</kbd><kbd>E</kbd></div><div class="desc">Cast abilities</div></div>
+  <div class="row"><div class="keys"><kbd>R</kbd></div><div class="desc">Ultimate<small>Hold Shift to invert quick-cast for this cast.</small></div></div>
+  <div class="row"><div class="keys"><kbd>D</kbd></div><div class="desc">Flash — short blink</div></div>
+  <div class="row"><div class="keys"><kbd>P</kbd></div><div class="desc">Potion</div></div>
+  <div class="row"><div class="keys"><kbd>G</kbd></div><div class="desc">Recall to base</div></div>
+  <div class="row"><div class="keys"><kbd>N</kbd></div><div class="desc">Quick-cast toggle<small>Quick-cast (cast on key) vs aim-then-click.</small></div></div>
+ </section>
+
+ <section class="card">
+  <h2><span class="ic">🖥</span> Interface</h2>
+  <div class="row"><div class="keys"><kbd>B</kbd></div><div class="desc">Open / close the shop</div></div>
+  <div class="row"><div class="keys"><kbd>Tab</kbd></div><div class="desc">Scoreboard (hold)<small>Per-hero Level / K / D / CS / items, both teams.</small></div></div>
+  <div class="row"><div class="keys"><kbd>J</kbd></div><div class="desc">Cycle HP-bar display<small>All → Hurt only → Off.</small></div></div>
+  <div class="row"><div class="keys"><kbd>Y</kbd></div><div class="desc">Emote</div></div>
+  <div class="row"><div class="keys"><kbd class="mouse">R-Click hold</kbd></div><div class="desc">Ping / signal wheel<small>Help · Attack · Defend · Gather · Omw · Retreat.</small></div></div>
+ </section>
+
+ <section class="card a">
+  <h2><span class="ic">📱</span> Mobile / Touch</h2>
+  <div class="row"><div class="keys"><kbd class="mouse">Tap</kbd></div><div class="desc">Select a unit · tap ground to move</div></div>
+  <div class="row"><div class="keys"><kbd class="mouse">Drag</kbd></div><div class="desc">Pan the camera (when Follow is off)</div></div>
+  <div class="row"><div class="keys"><kbd class="mouse">◐ Buttons</kbd></div><div class="desc">On-screen ability &amp; command buttons mirror Q/W/E/R, A, S, H and the shop</div></div>
+  <div class="row"><div class="keys"><kbd class="mouse">📣</kbd></div><div class="desc">Ping wheel<small>Same six signals as right-click-hold on desktop.</small></div></div>
+  <div class="row"><div class="keys"><kbd class="mouse">🎥</kbd></div><div class="desc">Follow / camera-lock toggle</div></div>
+ </section>
+
+</div>
+
+<footer>
+ <b>EF MOBA</b> — controls are additive and may grow between patches. Shortcuts are ignored while you type in chat or name fields.<br>
+ Generated from the live in-game key handlers · standalone reference, no external libraries.<br>
+ Last generated 2026-06-30T01:10Z.
+</footer>
+</div>
+</body>
+</html>
