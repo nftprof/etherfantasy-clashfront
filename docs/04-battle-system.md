@@ -319,18 +319,19 @@ sides. AI-vs-AI battles run the SAME simulation with **accelerated ticks** (fast
 different resolver). The overworld's instant WarScore resolution is an acknowledged placeholder
 until battle-engine M1+; LIVE pacing then follows match reality (≈20–40 min occupying the parcel).
 
-**Battle anatomy (owner, 2026-07-02): ANCHOR vs RUSH — asymmetric MOBA.**
-- **The INVADER is the anchor side**: on engagement, Force A (attacker) erects its BASE — the
-  temporary command center + towers from carried gold/wood (§7c) — a foothold on hostile ground.
-- **The defending side is the rush side**: Force B has NO base on open/unfortified ground — it
-  fields unit waves that RUSH the invader's base, trying to overwhelm the foothold before it
-  takes hold. (Defending your land = the swarm; invading = tower-defense from the attacker's
-  seat: dig in, hold, grind.)
-- **Fortified ground (SIEGE)**: the defender ALSO has an anchor (their real walls/towers/keep —
-  the parcel's built structures), making sieges dual-anchor: CC camp vs castle.
-- **Win conditions**: destroy the enemy anchor (invader's CC ⇒ invasion repelled; defender's
-  keep ⇒ ground taken) or rout the enemy force; food clock expiry without a decisive kill = TIE
-  (§7c: attacker withdraws).
+**Battle anatomy (owner, 2026-07-02, corrected same day): DUAL-BASE MOBA.**
+- **Both sides have a base and towers — MOBA-style.** The DEFENDER fights "as now" (the current
+  MOBA design): base + towers; on developed parcels the parcel's built structures ARE that base's
+  fortifications, on open ground it's a standard defender camp. The ATTACKER'S base is the
+  temporary **command center** erected from carried gold/wood (§7c) — its tier sets its
+  camp/towers.
+- **Decisive loss = your base is destroyed.** Defender's base down ⇒ the defender ENTIRELY
+  loses — the ground is taken (PostVictoryAction). Attacker's CC down ⇒ the invasion is repelled.
+- **Non-decisive end** (food clock / match timeout, no base killed): the battle finishes and the
+  ATTACKER chooses — **assault again** (a new wave; requires provisions, §7c), **hold for
+  reinforcements** (stay engaged, more armies merge in), **or retreat** — back the way they came
+  or to nearby empty land (the §7c retreat resolution). Sieges are thus naturally multi-wave
+  campaigns of full MOBA matches.
 - **The battle resolves ON the game map** — a real simulation of these forces, never a stat
   formula. Fully **spectatable** (watch live or review the replay), and players may **drop in
   controlling a Master as the hero unit** (MOBA-style command); the player's own Hero — embodied
