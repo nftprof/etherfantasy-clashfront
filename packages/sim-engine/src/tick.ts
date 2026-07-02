@@ -30,6 +30,7 @@ import {
   newId,
 } from '@clashfront/shared';
 import type { Army, BattleInstance, GovernorKind, Territory } from '@clashfront/shared';
+import { creditWallet, flushYieldJournal } from './economy';
 import { updateIntelMemory } from './intel';
 import { battleFoodNeed, enduranceMultiplier, marchFoodPerStep, troopCount } from './logistics';
 import { type ArmyRetreatRecord, type BattleLogisticsRecord, sortedIds, type WorldState } from './state';
@@ -118,19 +119,26 @@ export function runTick(
  * Phase 1 — PRODUCTION (docs/01 §6.1, formulas in docs/02 §6/§3/§5).
  * Territories yield food/CT/prosperity; structures & nodes produce.
  *
- * LIVE (Feature Set 2 F4):
+ * LIVE (Feature Set 2 F4, Feature Set 3 E2/E3/E5):
  *   - AGRI food production accrues per tick with an INTEGER carry (docs/02 §6
  *     fractional accumulation): carry += floor(perDay); foodStock += carry div
  *     TICKS_PER_DAY — low levels produce correctly instead of flooring to 0.
- *   - ECON trickles ⚙ econCtUnitsPerLevelPerDay × level to the governor's CT
- *     wallet per tick, same integer-carry scheme per governor.
+ *   - ECON trickles ⚙ econCtUnitsPerLevelPerDay × level per tick to the
+ *     governor's wallet, DRAWN FROM the territory's own ctTreasury (E5: yield
+ *     is redistribution, never a mint — an empty treasury pays nothing; loot
+ *     inflows from nearby spending refill town/wild treasuries).
+ *   - E3 enrichment pools pay ⚙ enrichYieldPctPerDay of themselves per tick
+ *     (integer carry) to the CURRENT governor; SYSTEM-held pools accumulate.
+ *   - E2 TRAINING sub-phase: mustering armies materialize queued soldiers.
+ *   - E5: batched yield REWARDs flush into the settlement journal every
+ *     ⚙ journalYieldBatchTicks.
  *
  * TODO(02 §6): structure bonuses, granary cap.
  * TODO(02 §3): prosperity target computation & per-tick movement (growth/decay).
  * TODO(02 §5): tax cycle every TAX_CYCLE_TICKS via double-entry LedgerEntry
  *   (economy package owns the ledger; this phase only requests draws).
  */
-function phaseProduction(state: WorldState, _tick: number, _rng: Rng, balance: Balance): void {
+function phaseProduction(state: WorldState, tick: number, _rng: Rng, balance: Balance): void {
   for (const id of sortedIds(state.territories)) {
     const t = state.territories.get(id)!;
     // Food (AGRI): integer-carry accrual — deterministic, never fractional stock.
@@ -145,15 +153,72 @@ function phaseProduction(state: WorldState, _tick: number, _rng: Rng, balance: B
       t.foodStock += Math.floor(carry / TICKS_PER_DAY);
       state.foodCarry.set(id, carry % TICKS_PER_DAY);
     }
-    // CT trickle (ECON, F4): governed territories pay their governor's wallet.
+    // CT trickle (ECON, F4 + E5): the territory's treasury pays its governor —
+    // redistribution, capped at what the larder holds (no mint).
     const econ = t.development.ECONOMY;
     if (econ > 0 && t.governorKind !== 'SYSTEM' && state.ctBalances?.has(t.governorId) === true) {
       state.econCarry ??= new Map();
-      const carry = (state.econCarry.get(t.governorId) ?? 0) + econ * balance.developmentEffects.econCtUnitsPerLevelPerDay;
-      const pay = Math.floor(carry / TICKS_PER_DAY);
-      if (pay > 0) state.ctBalances.set(t.governorId, state.ctBalances.get(t.governorId)! + pay);
-      state.econCarry.set(t.governorId, carry % TICKS_PER_DAY);
+      const carry = (state.econCarry.get(id) ?? 0) + econ * balance.developmentEffects.econCtUnitsPerLevelPerDay;
+      const pay = Math.min(Math.floor(carry / TICKS_PER_DAY), t.ctTreasury);
+      if (pay > 0) {
+        t.ctTreasury -= pay;
+        creditWallet(state, t.governorId, pay, 'econ_yield', 'territory_treasury', { batch: true });
+      }
+      state.econCarry.set(id, carry % TICKS_PER_DAY);
     }
+    // Enrichment payout (E3): the pool pays the CURRENT governor per tick with
+    // an integer carry; wild/SYSTEM parcels accumulate (pay no one).
+    const pool = state.enrichmentPools?.get(id) ?? 0;
+    if (pool > 0 && t.governorKind !== 'SYSTEM' && state.ctBalances?.has(t.governorId) === true) {
+      state.enrichCarry ??= new Map();
+      const perDayCt = Math.floor(pool * balance.economy.enrichYieldPctPerDay);
+      const carry = (state.enrichCarry.get(id) ?? 0) + perDayCt;
+      const pay = Math.min(Math.floor(carry / TICKS_PER_DAY), pool);
+      if (pay > 0) {
+        state.enrichmentPools!.set(id, pool - pay);
+        creditWallet(state, t.governorId, pay, 'enrich_yield', 'enrichment_pool', { batch: true });
+      }
+      state.enrichCarry.set(id, carry % TICKS_PER_DAY);
+      // Prosperity nudge while the pool works (docs/briefs/FEATURESET-3 E3).
+      if (tick % TICKS_PER_DAY === 0) {
+        t.prosperity = Math.min(CONSTANTS.PROSPERITY_MAX, t.prosperity + 1);
+      }
+    }
+  }
+  runTraining(state, balance);
+  if (balance.economy.journalYieldBatchTicks > 0 && tick % balance.economy.journalYieldBatchTicks === 0) {
+    flushYieldJournal(state, tick);
+  }
+}
+
+/**
+ * E2 TRAINING sub-phase (inside PRODUCTION — the canonical phase order is
+ * untouched): each mustering army materializes ⚙ ratePerTick soldiers per
+ * tick, filling its stacks in order. The queue dissolves when empty (or when
+ * its army died mid-muster — the queued soldiers are lost with it; the CT was
+ * spent up-front through the splitter, so nothing leaks).
+ */
+function runTraining(state: WorldState, _balance: Balance): void {
+  if (state.trainingQueues === undefined) return;
+  for (const armyId of sortedIds(state.trainingQueues)) {
+    const q = state.trainingQueues.get(armyId)!;
+    const a = state.armies.get(armyId);
+    if (a === undefined || a.state === 'DISBANDED') {
+      state.trainingQueues.delete(armyId);
+      continue;
+    }
+    let budget = q.ratePerTick;
+    for (const slot of q.remaining) {
+      if (budget === 0) break;
+      if (slot.count === 0) continue;
+      const trained = Math.min(slot.count, budget);
+      slot.count -= trained;
+      budget -= trained;
+      const stack = a.units.find((s) => s.unitClass === slot.unitClass);
+      if (stack !== undefined) stack.count += trained;
+    }
+    if (q.remaining.every((s) => s.count === 0)) state.trainingQueues.delete(armyId);
+    a.version += 1;
   }
 }
 
@@ -496,7 +561,11 @@ function sideScore(state: WorldState, side: Army[], balance: Balance): { army: n
   let army = 0;
   let hero = 0;
   for (const a of side) {
-    const s = armyStrength(a, balance);
+    let s = armyStrength(a, balance);
+    // E2: caught mid-muster — the half-trained ranks fight at ⚙ musterPenalty.
+    if (state.trainingQueues?.get(a.id)?.remaining.some((r) => r.count > 0) === true) {
+      s *= balance.training.musterPenalty;
+    }
     army += s;
     hero += heroTerm(state, a, s);
   }
@@ -745,7 +814,7 @@ function drainProvisions(side: Army[], key: 'food' | 'gold' | 'wood', amount: nu
   }
 }
 
-/** Remove an army from play, releasing garrison slot + monster display name. */
+/** Remove an army from play, releasing garrison slot + monster display name + training queue. */
 function disbandArmy(state: WorldState, a: Army): void {
   a.state = 'DISBANDED';
   delete a.path;
@@ -753,6 +822,8 @@ function disbandArmy(state: WorldState, a: Army): void {
   const terr = territoryAt(state, a.hexId);
   if (terr?.garrisonArmyId === a.id) delete terr.garrisonArmyId;
   if (state.monsterNames?.has(a.id) === true) state.monsterNames.delete(a.id);
+  // E2: an army wiped mid-muster loses its queued soldiers (CT stays spent).
+  if (state.trainingQueues?.has(a.id) === true) state.trainingQueues.delete(a.id);
 }
 
 /**
@@ -891,16 +962,28 @@ export function pickOfficer(state: WorldState, gov: string, overseerId?: string)
 }
 
 /**
- * PILLAGE a territory for `gov` (docs/02 §9): loot = treasury share + per-pop
- * scavenge into the governor's CT wallet; canon PILLAGE_INFRA_LOSS /
- * PILLAGE_POP_LOSS hits. Returns the loot (ct_units). Never changes the governor.
+ * PILLAGE a territory for `gov` (docs/02 §9 + E3/E5): loot = treasury share +
+ * per-pop scavenge (CAPPED at what the treasury still holds — pillage is
+ * redistribution, never a mint) + ⚙ enrichLootPct of the parcel's enrichment
+ * pool; canon PILLAGE_INFRA_LOSS / PILLAGE_POP_LOSS hits. Returns the loot
+ * (ct_units). Never changes the governor.
  */
 function pillageTerritory(state: WorldState, territory: Territory, gov: string, balance: Balance): number {
   state.ctBalances ??= new Map();
   const lootTreasury = Math.floor(territory.ctTreasury * balance.pillageOccupy.pillageLootTreasuryPct);
-  const lootScavenge = territory.population * balance.pillageOccupy.pillageLootCtUnitsPerPop;
-  territory.ctTreasury -= lootTreasury;
-  state.ctBalances.set(gov, (state.ctBalances.get(gov) ?? 0) + lootTreasury + lootScavenge);
+  const lootScavenge = Math.min(
+    territory.population * balance.pillageOccupy.pillageLootCtUnitsPerPop,
+    territory.ctTreasury - lootTreasury,
+  );
+  territory.ctTreasury -= lootTreasury + lootScavenge;
+  creditWallet(state, gov, lootTreasury + lootScavenge, 'pillage_loot', 'territory_treasury');
+  // E3: raiders carry off a share of the land's enrichment pool too.
+  const pool = state.enrichmentPools?.get(territory.id) ?? 0;
+  const lootPool = Math.floor(pool * balance.economy.enrichLootPct);
+  if (lootPool > 0) {
+    state.enrichmentPools!.set(territory.id, pool - lootPool);
+    creditWallet(state, gov, lootPool, 'pillage_enrichment', 'enrichment_pool');
+  }
   for (const track of Object.keys(territory.development) as (keyof Territory['development'])[]) {
     territory.development[track] = Math.floor(territory.development[track] * (1 - CONSTANTS.PILLAGE_INFRA_LOSS));
   }
@@ -910,7 +993,7 @@ function pillageTerritory(state: WorldState, territory: Territory, gov: string, 
     Math.floor(territory.prosperity * (1 - CONSTANTS.PILLAGE_INFRA_LOSS)),
   );
   territory.version += 1;
-  return lootTreasury + lootScavenge;
+  return lootTreasury + lootScavenge + lootPool;
 }
 
 /**
@@ -931,7 +1014,9 @@ function occupyTerritory(
   state.ctBalances ??= new Map();
   const seized = Math.floor(territory.ctTreasury * balance.pillageOccupy.occupySeizeTreasuryPct);
   territory.ctTreasury -= seized;
-  state.ctBalances.set(gov, (state.ctBalances.get(gov) ?? 0) + seized);
+  creditWallet(state, gov, seized, 'occupy_seize', 'territory_treasury');
+  // E3: the enrichment pool is attached to the LAND — the conqueror inherits
+  // whatever remains in it (no transfer needed; it is keyed by territory id).
   // Free the evicted holder's overseer — otherwise that officer stays assigned
   // to a territory its governor no longer holds (officer leak against the
   // MAX_OVERSEEN_TERRITORIES cap).

@@ -7,7 +7,8 @@
  * (docs/briefs/MVP-JULY7.md): they live on WorldState (engine-owned container),
  * NOT on the canonical docs/08 entity interfaces, so canon stays untouched.
  */
-import type { Army, BattleInstance, GovernorKind, Hex, LandNFT, Region, Territory, World } from '@clashfront/shared';
+import type { Army, BattleInstance, DevelopmentTrack, GovernorKind, Hex, LandNFT, Region, Territory, World } from '@clashfront/shared';
+import type { EconomyState } from './economy';
 
 /**
  * MVP demo officer — stands in for a Hero/Master mirror (docs/08) until the live
@@ -135,8 +136,40 @@ export interface WorldState {
   wildRaids?: Map<string, WildRaidRecord>;
   /** F4 AGRI: territoryId → fractional food-production carry (integer, /TICKS_PER_DAY units). */
   foodCarry?: Map<string, number>;
-  /** F4 ECON: governorId → fractional CT-trickle carry (integer ct_units·ticks, /TICKS_PER_DAY units). */
+  /** F4 ECON: territoryId → fractional CT-trickle carry (integer ct_units·ticks, /TICKS_PER_DAY units). */
   econCarry?: Map<string, number>;
+  // ── Feature Set 3: circular economy (docs/briefs/FEATURESET-3-ECONOMY.md) ──
+  /** E1/E5 economy container: supply totals, flow telemetry, settlement journal. */
+  economy?: EconomyState;
+  /**
+   * E3 enrichment pools: territoryId → pooled ct_units. Attached to LAND, not
+   * the payer — conquest inherits, PILLAGE loots ⚙ enrichLootPct. Engine
+   * container field (canonical docs/08 Territory untouched), like foodCarry.
+   */
+  enrichmentPools?: Map<string, number>;
+  /** E3: territoryId → fractional enrich-payout carry (integer ct_units·ticks, /TICKS_PER_DAY units). */
+  enrichCarry?: Map<string, number>;
+  /** E2 training queues: armyId → mustering queue (one active queue per territory ⚙). */
+  trainingQueues?: Map<string, TrainingQueue>;
+  /** E4: territoryId → invested ct_units per development track (raze salvage basis). */
+  devInvestedCt?: Map<string, Partial<Record<DevelopmentTrack, number>>>;
+}
+
+/**
+ * A mustering army's training queue (Feature Set 3 E2): the full cost was paid
+ * up-front (through the flow splitter); soldiers materialize `ratePerTick` per
+ * tick in the PRODUCTION phase's TRAINING sub-phase. The army cannot march
+ * while `remaining` is nonempty; attacked mid-muster it fights with the troops
+ * trained so far × ⚙ training.musterPenalty.
+ */
+export interface TrainingQueue {
+  armyId: string;
+  territoryId: string;
+  /** Soldiers still to materialize, per stack (same order as army.units). */
+  remaining: { unitClass: string; count: number }[];
+  /** Soldiers materialized per tick (⚙ baseRatePerTick × (1 + MIL × milRateBonus)). */
+  ratePerTick: number;
+  startedTick: number;
 }
 
 /**

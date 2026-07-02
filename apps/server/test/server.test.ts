@@ -154,15 +154,27 @@ test('e2e: join → claim adjacent → raise → march into each other → battl
     const badPreset = await api(base, '/api/raise', { token: a.token, body: { territoryId: terrA, preset: 'DOOMSTACK' } });
     assert.equal(badPreset.json.error.code, 'BAD_PRESET');
     const a1 = (await api(base, '/api/raise', { token: a.token, body: { territoryId: terrA, preset: 'STANDARD' } })).json;
-    const a2 = (await api(base, '/api/raise', { token: a.token, body: { territoryId: terrA, preset: 'STANDARD' } })).json;
-    const b1 = (await api(base, '/api/raise', { token: b.token, body: { territoryId: terrB, preset: 'STANDARD' } })).json;
     assert.ok(a1.army.heroName, 'auto-assigned officer should lead the army');
-    assert.ok(a2.ctUnits < a1.ctUnits, 'raising must charge the wallet');
+
+    // E2 — training takes time: the army spawns MUSTERING (full cost paid up-front)
+    assert.equal(a1.army.troops, 0, 'the shell starts empty');
+    assert.equal(a1.army.mustering.remainingTroops, 200, 'STANDARD = 200 soldiers in the queue');
+    assert.ok(a1.army.mustering.ratePerTick >= 1 && a1.army.mustering.readyTick > game.state.world.tick);
+    // one active queue per territory (⚙ training.queuesPerTerritory)
+    const busy = await api(base, '/api/raise', { token: a.token, body: { territoryId: terrA, preset: 'STANDARD' } });
+    assert.equal(busy.status, 409);
+    assert.equal(busy.json.error.code, 'QUEUE_BUSY');
+    // ...and a mustering army cannot march
+    const tooSoon = await api(base, '/api/march', { token: a.token, body: { armyId: a1.army.id, toTerritoryId: terrB } });
+    assert.equal(tooSoon.status, 409);
+    assert.equal(tooSoon.json.error.code, 'MUSTERING');
 
     // battle logistics (docs/04 §7c): raise exposes the cost breakdown + the standard pack
     assert.equal(a1.cost.totalCtUnits, a1.cost.unitsCtUnits + a1.cost.provisionsCtUnits);
     assert.deepEqual(a1.army.provisions, a1.cost.provisions);
-    assert.ok(a1.army.provisions.food > 0 && a1.army.foodPerStep >= 1);
+    assert.ok(a1.army.provisions.food > 0);
+
+    const b1 = (await api(base, '/api/raise', { token: b.token, body: { territoryId: terrB, preset: 'STANDARD' } })).json;
 
     // /api/provision: ownership + amounts enforced; CT charged at balance prices
     const foodPrice = loadBalance().provisions.ctUnitsPerFood;
@@ -175,7 +187,18 @@ test('e2e: join → claim adjacent → raise → march into each other → battl
     const prov = (await api(base, '/api/provision', { token: a.token, body: { armyId: a1.army.id, food: 10 } })).json;
     assert.equal(prov.costCtUnits, 10 * foodPrice);
     assert.equal(prov.army.provisions.food, a1.army.provisions.food + 10);
-    assert.equal(prov.ctUnits, a2.ctUnits - prov.costCtUnits);
+    assert.equal(prov.ctUnits, a1.ctUnits - prov.costCtUnits);
+
+    // muster everyone, then raise + muster Alice's second army (queue freed)
+    let musterEvents: string[] = [];
+    for (let i = 0; i < 30 && (game.state.trainingQueues?.size ?? 0) > 0; i++) {
+      musterEvents.push(...server.tickOnce().events.map((e) => e.type));
+    }
+    assert.ok(musterEvents.includes('army_mustered'), 'training completion emits army_mustered');
+    assert.equal(game.state.armies.get(a1.army.id)!.units.reduce((n: number, u: any) => n + u.count, 0), 200);
+    const a2 = (await api(base, '/api/raise', { token: a.token, body: { territoryId: terrA, preset: 'STANDARD' } })).json;
+    assert.ok(a2.ctUnits < a1.ctUnits, 'raising must charge the wallet');
+    for (let i = 0; i < 30 && (game.state.trainingQueues?.size ?? 0) > 0; i++) server.tickOnce();
 
     // WS: bad token refused; good token gets hello
     const wsMsgs: any[] = [];
@@ -200,7 +223,8 @@ test('e2e: join → claim adjacent → raise → march into each other → battl
     const marchEnemyArmy = await api(base, '/api/march', { token: a.token, body: { armyId: b1.army.id, toTerritoryId: terrA } });
     assert.equal(marchEnemyArmy.status, 403);
     const m1 = (await api(base, '/api/march', { token: a.token, body: { armyId: a1.army.id, toTerritoryId: terrB } })).json;
-    assert.equal(m1.etaTick, game.state.world.tick + 1);
+    const marchTick = game.state.world.tick;
+    assert.equal(m1.etaTick, marchTick + 1);
     assert.deepEqual(m1.army.path, [parcelB]);
     assert.equal((await api(base, '/api/march', { token: a.token, body: { armyId: a2.army.id, toTerritoryId: terrB } })).status, 200);
 
@@ -211,7 +235,7 @@ test('e2e: join → claim adjacent → raise → march into each other → battl
 
     // tick → arrival + same-tick AUTO battle
     const r1 = server.tickOnce();
-    assert.equal(r1.tick, 1);
+    assert.equal(r1.tick, marchTick + 1);
     const battleEv = r1.events.find((e) => e.type === 'battle_resolved') as any;
     assert.ok(battleEv, `expected a battle, got events: ${r1.events.map((e) => e.type).join(',')}`);
     assert.equal(battleEv.parcelId, parcelB);
@@ -251,7 +275,7 @@ test('e2e: join → claim adjacent → raise → march into each other → battl
     // WS client saw the whole story
     await until(() => wsMsgs.filter((m) => m.t === 'tick').length >= 2, 'two tick broadcasts');
     const tickMsgs = wsMsgs.filter((m) => m.t === 'tick');
-    assert.deepEqual(tickMsgs.map((m) => m.tick), [1, 2]);
+    assert.deepEqual(tickMsgs.map((m) => m.tick), [marchTick + 1, marchTick + 2]);
     const allEvents = tickMsgs.flatMap((m) => m.events.map((e: any) => e.type));
     for (const expected of ['army_arrived', 'battle_resolved', 'choice_pending', 'territory_occupied']) {
       assert.ok(allEvents.includes(expected), `WS client missed ${expected} (saw: ${allEvents.join(',')})`);
@@ -296,19 +320,26 @@ test('NPC kingdom: seeded at boot on a cluster edge, expands deterministically e
 
   const events1: string[] = [];
   const events2: string[] = [];
-  for (let i = 0; i < 5; i++) {
+  // E2 — training takes time: raise at tick 5 (queue), muster over 8 ticks,
+  // dispatch at the next NPC cycle after completion (tick 15).
+  for (let i = 0; i < 15; i++) {
     events1.push(...g1.tick().events.map((e) => e.type));
     events2.push(...g2.tick().events.map((e) => e.type));
   }
-  assert.ok(events1.includes('npc_expand'), `NPC must act at tick 5 (saw: ${events1.join(',')})`);
+  assert.ok(events1.includes('army_mustered'), `NPC levy must muster (saw: ${events1.join(',')})`);
+  assert.ok(events1.includes('npc_expand'), `NPC must dispatch its mustered column (saw: ${events1.join(',')})`);
   assert.deepEqual(events1, events2, 'NPC behavior must be deterministic from seed + tick');
   assert.deepStrictEqual(g1.state, g2.state, 'two same-seed worlds must stay bit-identical');
 
   const npcArmies = [...g1.state.armies.values()].filter(
     (a) => a.ownerGovernorId === g1.npcGovernorId && a.state !== 'DISBANDED',
   );
-  assert.equal(npcArmies.length, 1);
-  assert.equal(npcArmies[0]!.state, 'MARCHING', 'the raised army must be marching at wild land');
+  assert.equal(npcArmies.length, 2, 'one marching column + the next levy mustering');
+  assert.ok(npcArmies.some((a) => a.state === 'MARCHING'), 'the mustered army must be marching at wild land');
+  assert.ok(
+    npcArmies.some((a) => g1.state.trainingQueues!.has(a.id)),
+    'the next levy is already in the queue',
+  );
   // it pays from the same wallet mechanics as players — no special powers
   assert.ok(g1.state.ctBalances!.get(g1.npcGovernorId)! < 20_000 * CT);
 });

@@ -9,6 +9,7 @@
  * Pure integer money (ct_units); no randomness — fully deterministic.
  */
 import { type Army, type Balance, loadBalance } from '@clashfront/shared';
+import { spendCT } from './economy';
 import type { WorldState } from './state';
 
 /** A provision purchase / carried-stock triple. Integers ≥ 0. */
@@ -99,6 +100,8 @@ export function provisionArmy(
   if (wallet < costCtUnits) throw new Error(`provisionArmy: insufficient CT (${wallet} < ${costCtUnits} ct_units)`);
 
   state.ctBalances!.set(a.ownerGovernorId, wallet - costCtUnits);
+  // E1: the provisioning spend flows back into the world around the army's parcel.
+  spendCT(state, a.ownerGovernorId, costCtUnits, a.hexId, 'provision', balance);
   a.provisions.food += order.food;
   a.provisions.gold += order.gold;
   a.provisions.wood += order.wood;

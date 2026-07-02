@@ -69,6 +69,12 @@ function distancesFrom(game: Game, fromHex: string): Map<string, number> {
 
 const hexOf = (game: Game, terrId: string): string => game.state.territories.get(terrId)!.hexIds[0]!;
 
+/** E2: tick until every training queue has mustered (bounded — fails loudly if stuck). */
+function musterAll(game: Game): void {
+  for (let i = 0; i < 30 && (game.state.trainingQueues?.size ?? 0) > 0; i++) game.tick();
+  assert.equal(game.state.trainingQueues?.size ?? 0, 0, 'armies must finish mustering');
+}
+
 // ── F1: fog-filtered /api/state shapes ────────────────────────────────────────
 
 test('F1 fog: ownership public everywhere; military detail gated by intel grade', () => {
@@ -161,8 +167,10 @@ test('F1 fog: battles are ACCURATE for participants, banded on FUZZY, dropped on
   game.claim(carol.governorId, farForCarol);
 
   const a1 = game.raise(alice.governorId, pair.a, 'STANDARD');
-  const a2 = game.raise(alice.governorId, pair.a, 'STANDARD');
   game.raise(bob.governorId, pair.b, 'STANDARD');
+  musterAll(game); // E2: training takes time — one queue per parcel
+  const a2 = game.raise(alice.governorId, pair.a, 'STANDARD');
+  musterAll(game);
   game.march(alice.governorId, a1.army.id, pair.b);
   game.march(alice.governorId, a2.army.id, pair.b);
 
@@ -214,6 +222,7 @@ test('F1 fog: an army marching out of sight sends a {hidden:true} tombstone delt
   game.claim(alice.governorId, home);
   game.claim(bob.governorId, bobHome);
   const raised = game.raise(bob.governorId, bobHome, 'STANDARD');
+  musterAll(game); // E2: a mustering army cannot march
 
   // Prime Alice's delta cache: she currently sees Bob's army (adjacent = ACCURATE).
   const first = game.deltasFor(alice.governorId);
@@ -274,6 +283,7 @@ test('F2 towns: walk-in emits town_entered, resolves via /api/choice with the ch
 
   game.claim(alice.governorId, homeId);
   const raised = game.raise(alice.governorId, homeId, 'STANDARD');
+  musterAll(game); // E2: muster before marching
   game.march(alice.governorId, raised.army.id, townId);
   const result = game.tick();
 
@@ -362,9 +372,10 @@ test('F4 develop: the NPC kingdom invests round-robin in its strongest territory
   }
   assert.ok(events.includes('territory_developed'), 'NPC must develop');
   assert.ok(tracksSeen.size >= 3, `round-robin across tracks (saw: ${[...tracksSeen].join(',')})`);
-  const npcHome = [...game.state.territories.values()].find((t) => t.governorId === game.npcGovernorId)!;
-  const total = Object.values(npcHome.development).reduce((n, l) => n + l, 0);
-  assert.ok(total >= 3, 'levels actually landed on the NPC home');
+  const totals = [...game.state.territories.values()]
+    .filter((t) => t.governorId === game.npcGovernorId)
+    .map((t) => Object.values(t.development).reduce((n, l) => n + l, 0));
+  assert.ok(Math.max(...totals) >= 3, 'levels actually landed on an NPC holding');
 });
 
 test('F1 fog: intel memory survives the snapshot save/load roundtrip', () => {

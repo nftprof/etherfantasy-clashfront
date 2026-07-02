@@ -30,6 +30,7 @@ import {
   type Balance,
   newId,
 } from '@clashfront/shared';
+import { recordMint, spendCT } from './economy';
 import { defaultProvisionsFor, provisionCostCtUnits, type ProvisionOrder } from './logistics';
 import type { DemoOfficer, WorldState } from './state';
 import { stepTicks, type TickOptions } from './tick';
@@ -263,7 +264,7 @@ export function loadDemoWorld(file: DemoWorldFile, rng: Rng, options: LoadDemoWo
     terr.foodStock = terr.population * towns.foodPerPop;
   }
 
-  return {
+  const state: WorldState = {
     world,
     regions: new Map([[region.id, region]]),
     hexes,
@@ -283,7 +284,18 @@ export function loadDemoWorld(file: DemoWorldFile, rng: Rng, options: LoadDemoWo
     wildRaids: new Map(),
     foodCarry: new Map(),
     econCarry: new Map(),
+    enrichmentPools: new Map(),
+    enrichCarry: new Map(),
+    trainingQueues: new Map(),
+    devInvestedCt: new Map(),
   };
+
+  // Genesis CT is a marked faucet (E5): the seeded territory/town treasuries
+  // are the world's initial supply — one DEPOSIT journal entry covers them all.
+  let genesisTreasuries = 0;
+  for (const t of territories.values()) genesisTreasuries += t.ctTreasury;
+  recordMint(state, 'system:genesis', genesisTreasuries, 'genesis_treasuries', 'territory_treasury');
+  return state;
 }
 
 // ── Governors, claiming, armies, marching ────────────────────────────────────
@@ -322,6 +334,8 @@ export function addGovernor(
   state.governorKinds.set(governorId, options.kind);
   state.ctBalances.set(governorId, options.ctUnits);
   state.officers.set(governorId, officers);
+  // Starting wallets are marked faucets (E5): join grants / the NPC war chest.
+  recordMint(state, governorId, options.ctUnits, options.kind === 'PLAYER' ? 'join_grant' : 'npc_seed', 'wallet');
   return { governorId, officers };
 }
 
@@ -428,6 +442,8 @@ export function claimTerritory(
       );
     }
     state.ctBalances!.set(governorId, bal - cost);
+    // E1: the claim fee flows back into the world around the claimed parcel.
+    spendCT(state, governorId, cost, t.hexIds[0]!, 'claim', balance);
   }
   t.governorId = governorId;
   t.governorKind = kind;
@@ -470,14 +486,55 @@ export function raiseCost(preset: DemoArmyPreset, balance = loadBalance(), milit
   return { unitsCtUnits, milDiscountPct, provisionsCtUnits, totalCtUnits: unitsCtUnits + provisionsCtUnits, provisions };
 }
 
+/** E2: soldiers/tick a territory's MIL level trains at (⚙ balance.training). */
+export function trainingRatePerTick(militaryLevel: number, balance: Balance = loadBalance()): number {
+  const tr = balance.training;
+  return Math.max(1, Math.round(tr.baseRatePerTick * (1 + Math.max(0, militaryLevel) * tr.milRateBonus)));
+}
+
+/** E2: true while the army still has soldiers in its training queue. */
+export function isMustering(state: WorldState, armyId: string): boolean {
+  const q = state.trainingQueues?.get(armyId);
+  return q !== undefined && q.remaining.some((s) => s.count > 0);
+}
+
+/**
+ * E2 (tests/tools): instantly materialize a training queue — the deterministic
+ * shortcut for fixtures that need a battle-ready army without ticking the
+ * world. Production armies muster through the PRODUCTION phase.
+ */
+export function completeTraining(state: WorldState, armyId: string): void {
+  const q = state.trainingQueues?.get(armyId);
+  if (q === undefined) return;
+  const a = state.armies.get(armyId);
+  if (a !== undefined && a.state !== 'DISBANDED') {
+    for (const slot of q.remaining) {
+      const stack = a.units.find((s) => s.unitClass === slot.unitClass);
+      if (stack !== undefined) stack.count += slot.count;
+      slot.count = 0;
+    }
+    a.version += 1;
+  }
+  state.trainingQueues!.delete(armyId);
+}
+
 /**
  * Raise an army from a demo preset in a territory the governor controls.
  * Cost = training (Σ balance.units.trainCtUnitsPerSoldier × count) + the
  * standard provision pack (docs/04 §7c.1 — the army marches out provisioned),
- * paid from the MVP per-governor CT wallet (no ledger — brief OUT list).
- * Throws (without mutating) on insufficient funds. Optional `heroId` puts one
- * of the governor's officers in command (feeds the WarScore hero term, capped
- * at HERO_IMPACT_MAX).
+ * paid IN FULL up-front from the governor's CT wallet and routed through the
+ * flow splitter (E1). Throws (without mutating) on insufficient funds.
+ *
+ * E2 — training takes TIME (the anti-whale wall): the army spawns as a
+ * MUSTERING shell (0 soldiers, full provisions) with a training queue;
+ * soldiers materialize at ⚙ trainingRatePerTick in the PRODUCTION phase. One
+ * active queue per territory (⚙ training.queuesPerTerritory). A mustering army
+ * cannot march (see orderMarch); attacked mid-muster it fights with the troops
+ * trained so far × ⚙ musterPenalty — and if it dies, the still-queued soldiers
+ * die with it (rushing a muster is valid strategy; the CT stays spent).
+ *
+ * Optional `heroId` puts one of the governor's officers in command (feeds the
+ * WarScore hero term, capped at HERO_IMPACT_MAX).
  */
 export function raiseArmy(
   state: WorldState,
@@ -502,7 +559,19 @@ export function raiseArmy(
     const officer = state.officers?.get(gov)?.find((o) => o.id === heroId);
     if (officer === undefined) throw new Error(`raiseArmy: ${heroId} is not an officer of ${gov}`);
   }
+  // E2 queue cap: one active training queue per territory (⚙).
+  let active = 0;
+  for (const q of state.trainingQueues?.values() ?? []) {
+    if (q.territoryId === territoryId && q.remaining.some((s) => s.count > 0)) active++;
+  }
+  if (active >= balance.training.queuesPerTerritory) {
+    throw new Error(`raiseArmy: training queue busy on ${t.name} (⚙ ${balance.training.queuesPerTerritory} per territory)`);
+  }
   state.ctBalances!.set(gov, wallet - cost.totalCtUnits);
+  // E1: training + provision money flows back into the world around the parcel.
+  const homeHex = t.hexIds[0]!;
+  spendCT(state, gov, cost.unitsCtUnits, homeHex, 'raise_training', balance);
+  spendCT(state, gov, cost.provisionsCtUnits, homeHex, 'raise_provisions', balance);
 
   const army: Army = {
     id: newId('army', { time: state.world.tick, random: () => rng.next() }),
@@ -511,7 +580,8 @@ export function raiseArmy(
     ...(heroId !== undefined ? { heroId } : {}),
     state: 'GARRISON',
     hexId: t.hexIds[0]!,
-    units: spec.map((s) => ({ unitClass: s.unitClass, count: s.count, veterancy: 0, hp: 100 })),
+    // E2: the shell starts empty — soldiers materialize through the queue.
+    units: spec.map((s) => ({ unitClass: s.unitClass, count: 0, veterancy: 0, hp: 100 })),
     provisions: { ...cost.provisions },
     supply: CONSTANTS.SUPPLY_MAX_DEFAULT,
     supplyMax: CONSTANTS.SUPPLY_MAX_DEFAULT,
@@ -520,6 +590,14 @@ export function raiseArmy(
     version: 1,
   };
   state.armies.set(army.id, army);
+  state.trainingQueues ??= new Map();
+  state.trainingQueues.set(army.id, {
+    armyId: army.id,
+    territoryId,
+    remaining: spec.map((s) => ({ unitClass: s.unitClass, count: s.count })),
+    ratePerTick: trainingRatePerTick(t.development.MILITARY, balance),
+    startedTick: state.world.tick,
+  });
   if (t.garrisonArmyId === undefined) t.garrisonArmyId = army.id;
   return army;
 }
@@ -533,6 +611,9 @@ export function raiseArmy(
 export function orderMarch(state: WorldState, armyId: string, path: readonly string[], options?: TickOptions): void {
   const a = state.armies.get(armyId);
   if (a === undefined || a.state === 'DISBANDED') throw new Error(`orderMarch: no such army ${armyId}`);
+  // E2: a mustering army holds its ground until the last soldier is trained
+  // (the simpler rule — no partial-strength sorties; documented in the brief).
+  if (isMustering(state, armyId)) throw new Error(`orderMarch: army ${armyId} is still mustering`);
   if (path.length === 0) throw new Error('orderMarch: empty path');
   if (state.adjacency === undefined) throw new Error('orderMarch: world has no adjacency graph');
   let from = a.hexId;

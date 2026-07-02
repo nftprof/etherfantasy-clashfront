@@ -12,6 +12,7 @@ import { type Army, CONSTANTS, createRng, loadBalance, type Rng } from '@clashfr
 import {
   addGovernor,
   claimTerritory,
+  completeTraining,
   type DemoWorldFile,
   loadDemoWorld,
   orderMarch,
@@ -108,6 +109,8 @@ function twoKingdoms(seed: string, grid = makeGrid(3, 3)): TwoKingdoms {
   claimTerritory(state, terrB, govB);
   const defender = raiseArmy(state, terrB, 'STANDARD', orders);
   const attacker = raiseArmy(state, terrA, 'STANDARD', orders);
+  completeTraining(state, defender.id); // E2: muster instantly — this suite tests battle logistics
+  completeTraining(state, attacker.id);
   state.territories.get(terrB)!.foodStock = 10_000; // well-fed defender by default
   return { state, rng, govA, govB, terrA, hexA, terrB, hexB, attacker, defender };
 }
@@ -276,17 +279,18 @@ test('scatter: a beaten attacker with no friendly/neutral adjacent parcel takes 
   const cornerTerr = [...state.territories.keys()].sort()[0]!;
   const cornerHex = state.territories.get(cornerTerr)!.hexIds[0]!;
   claimTerritory(state, cornerTerr, govB);
-  raiseArmy(state, cornerTerr, 'STANDARD', orders);
+  completeTraining(state, raiseArmy(state, cornerTerr, 'STANDARD', orders).id);
   for (const n of state.adjacency!.get(cornerHex)!) {
     const t = state.territories.get(state.hexes.get(n)!.territoryId!)!;
     claimTerritory(state, t.id, govB);
-    raiseArmy(state, t.id, 'STANDARD', orders);
+    completeTraining(state, raiseArmy(state, t.id, 'STANDARD', orders).id);
   }
   state.territories.get(cornerTerr)!.foodStock = 10_000;
   // A's raiding party is dropped on the corner, out of supplies (test teleport).
   const farTerr = [...state.territories.keys()].sort().find((id) => state.territories.get(id)!.governorKind === 'SYSTEM')!;
   claimTerritory(state, farTerr, govA);
   const raider = raiseArmy(state, farTerr, 'SCOUTS', orders);
+  completeTraining(state, raider.id);
   delete state.territories.get(farTerr)!.garrisonArmyId; // teleport: hand back the home garrison slot
   raider.hexId = cornerHex;
   raider.provisions = { food: 0, gold: 0, wood: 0 };

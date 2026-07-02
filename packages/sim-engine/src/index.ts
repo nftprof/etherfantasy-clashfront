@@ -9,3 +9,4 @@ export * from './demoWorld';
 export * from './logistics';
 export * from './intel';
 export * from './develop';
+export * from './economy';

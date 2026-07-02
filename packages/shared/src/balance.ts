@@ -192,6 +192,48 @@ export interface Balance {
     /** A lair below this many soldiers never splits a raid. */
     minRaidTroops: number;
   };
+  /** Circular war economy ⚙ — Feature Set 3 E1/E3/E4/E5 (docs/briefs/FEATURESET-3-ECONOMY.md). */
+  economy: {
+    /** spendCT bucket: share to town/wild-parcel treasuries near the spend parcel (warzone gold rush). */
+    lootShare: number;
+    /** spendCT bucket: share into enrichment pools of the spend parcel + ring-1 neighbors. */
+    landYieldShare: number;
+    /** spendCT bucket: landlord share — escrowed in unclaimedLordYield until NFT landlord settlement. */
+    lordsLandlordShare: number;
+    /** spendCT bucket: estate/region-seat share — MVP proxy: richest TOWN treasury in radius. */
+    lordsSeatShare: number;
+    /** spendCT bucket: destroyed (documentation only — burn is computed as the integer remainder). */
+    burnShare: number;
+    /** spendCT bucket: system:treasury (dev/protocol). */
+    treasuryShare: number;
+    /** Adjacency-step radius for LOOT targets and the LORDS seat town. */
+    lootRadiusSteps: number;
+    /** Fraction of the LANDYIELD bucket that enriches the spend parcel itself (rest → ring-1). */
+    landYieldSelfPct: number;
+    /** Enrichment pool pays this fraction of itself per day (integer carry) to the current governor. */
+    enrichYieldPctPerDay: number;
+    /** PILLAGE loots this fraction of the parcel's enrichment pool. */
+    enrichLootPct: number;
+    /** Raze recovers this fraction of a level's original cost to the razer; the rest burns. */
+    razeSalvagePct: number;
+    /** $-purchase faucet cap per account per epoch, ct_units (stub — /api/buy-ct is 501). */
+    purchaseCapCtPerEpoch: number;
+    /** Rolling tick window for the /api/economy loot-inflow heatmap. */
+    lootWindowTicks: number;
+    /** Per-governor yield REWARDs flush into the settlement journal every N ticks. */
+    journalYieldBatchTicks: number;
+  };
+  /** Training queues ⚙ — Feature Set 3 E2 (docs/briefs/FEATURESET-3-ECONOMY.md). */
+  training: {
+    /** Soldiers materialized per tick at MIL level 0. */
+    baseRatePerTick: number;
+    /** Training-rate bonus per MILITARY level of the raising parcel. */
+    milRateBonus: number;
+    /** Strength multiplier a MUSTERING army fights at when attacked. */
+    musterPenalty: number;
+    /** Active training queues allowed per territory. */
+    queuesPerTerritory: number;
+  };
   /** Fog of war ⚙ — Feature Set 2 F1 (docs/briefs/FEATURESET-2.md). */
   intel: {
     /** Ticks a scouted parcel stays ACCURATE after last sight before decaying to FUZZY memory. */
@@ -212,7 +254,7 @@ export interface Balance {
 const REQUIRED_SECTIONS: readonly (keyof Balance)[] = [
   'travel', 'development', 'tax', 'prosperity', 'food', 'population',
   'supply', 'morale', 'desertion', 'upkeep', 'units', 'pillageOccupy', 'draft', 'provisions', 'claims',
-  'intel', 'towns', 'wildRaids', 'developmentEffects',
+  'intel', 'towns', 'wildRaids', 'developmentEffects', 'economy', 'training',
 ];
 
 function resolveBalancePath(): string {
