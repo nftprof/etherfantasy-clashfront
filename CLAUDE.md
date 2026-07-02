@@ -62,10 +62,17 @@ export can be converted to the documented format. See `data/README.md`.
    codebase or a land DB/API export. Parcel sizes are PERMANENT: snapshot as `data/parcels.json`
    (format already defined — `data/README.md`); the importer to canonical `Hex`/`Territory` is
    DONE and tested. This snapshot unblocks everything else.
-2. Inspect the MOBA repo's match-server API → concretize the battle handoff contract (`docs/09`)
-   against real code; scope per-hex battlefield loading (square map → hex-component battlefields).
-3. Confirm whether `games-etherfantasy-backend` is the source of truth for accounts/heroes.
-4. Then continue roadmap T1 (`docs/10`): flesh out tick-engine phases against real map data.
+2. ~~Inspect the MOBA repo's match-server API~~ **DONE 2026-07-02** — see
+   `docs/reports/BATTLE-ENGINE-DISCOVERY.md` + `REPURPOSING-PLAN.md`. Key: server sim is
+   deterministic/headless-proven (keep as kernel); no match API/result callback/pathfinding/army
+   scale yet (plan items A–G, milestones M1–M5). **M1 (headless battles) is unblocked NOW** —
+   placeholder hex radius, zero client work, delivers AUTO/ACCELERATED battle resolution to the
+   tick engine. Canon conflict to resolve: `BATTLE_TICK_MS=100` vs real engine 30 Hz (33 ms).
+3. ~~Confirm accounts/heroes SoT~~ **DONE** — `games-etherfantasy-backend` confirmed via live
+   Masters API (`docs/09` §7).
+4. Battle-engine implementation (in the MOBA repo, per REPURPOSING-PLAN): start M1 = B1 strip-MOBA
+   + A1 battlefield model + D1 allocate + D3 headless runner + D2 result callback.
+5. Then continue roadmap T1 (`docs/10`): flesh out tick-engine phases against real map data.
 
 **Open design questions for the product owner** (do not decide unilaterally):
 - Estate sieges: can defenders counterattack components to push the front back? (recommended yes)
