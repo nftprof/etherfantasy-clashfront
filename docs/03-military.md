@@ -163,11 +163,24 @@ per [`04-battle-system.md`](./04-battle-system.md)).
 
 ---
 
-## 5. Officers: Heroes leading armies on the map
+## 5. Officers: Masters leading armies on the map
 
-A `Hero` attached as `Army.heroId` is the army's **officer**. Map-layer officer effects are
+> Canon 2026-07: officers are **Masters** — EF character NFTs the player owns or **rents**
+> (README glossary; live roster/KO API in [`09-api-contracts.md`](./09-api-contracts.md) §7).
+> `Hero`/`heroId` remain the schema names for now.
+
+A Master attached as `Army.heroId` is the army's **officer**. Map-layer officer effects are
 **completely separate from in-battle HeroImpact** (which applies only inside a `BattleInstance` and
 is clamped by `HERO_IMPACT_MAX = 0.20`, Invariant 4).
+
+**Master tenure & KO gates (authoritative: EF Masters API):**
+- Attach requires the Master to be on the player's active roster (`/masters/active/{wallet}`),
+  `alive: true`, and not KO'd (`/masters/ko/{masterId}`).
+- **Rental expiry** (`rentalExpires` past) auto-detaches the officer wherever the army is — the army
+  becomes AI-led on the spot (conservative doctrine below). Plan campaigns around your lease.
+- A Master **KO'd in battle** (reported via `POST /masters/result`) stops officering until `koUntil`
+  passes or a limited **revive** is spent (`revivesRemaining`) — losing a general mid-campaign is a
+  real strategic cost, exactly as in RoTK.
 
 Officer effects derive from a computed **Leadership score** `L` (0–100) from `Hero.fame` tier,
 `titleIds`, and command-type equipment — consistent with the canon rule that Clash Front does not

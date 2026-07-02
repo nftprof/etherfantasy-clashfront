@@ -220,6 +220,21 @@ earners ≥ 25%, and sink/source 0.9–1.1).
 
 ---
 
+## 9. Creature canon (2026-07, char list incoming)
+
+The world is a **fantasy setting**. Three creature layers on the overworld (assets already exist):
+
+- **Masters** — the generals players command (owned/rented character NFTs) — README glossary, `09` §7.
+- **Wild monsters & BOSSes** — hostile PvE; **bosses occupy WILD estates**: a boss is the "castle
+  component" of a wild estate's taming campaign (§2.1 escalated to estate scale — clear the
+  components, then the boss lair). Ties directly to `04` §7b estate mechanics.
+- **Pets** — element-aligned helper species (Pokémon-flavored) that **occupy territories/zones by
+  element** and assist their controller. ❓ OPEN: element list, occupancy rules (one pet per
+  territory? per zone type?), what "assist" grants (yield %, defense, scouting?) — awaiting the
+  full character list from the product owner. Do NOT invent mechanics.
+
+---
+
 ## Cross-references
 
 - [`README.md`](./README.md) — canonical glossary (`ZoneType WILD`, `Territory`, `Hero`, CT,

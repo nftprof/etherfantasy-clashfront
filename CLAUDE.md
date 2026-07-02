@@ -27,6 +27,11 @@ branch is `claude/clash-front-overworld-mkcyia`.
    components with an adjacency-gated internal front; castle = final component. See `docs/04` §7b.
 5. Only estates have pre-designed castle/city-wall maps (real-world castle design references).
 6. Chain = Pentagon Chain. Hero impact cap = 20% (`HERO_IMPACT_MAX`). Landlord tax share default 30%.
+7. **Masters = the RoTK generals** (owned/RENTED character NFTs, KO/revive lifecycle). LIVE API on
+   `api.etherfantasy.com` — endpoints + samples in `docs/09` §7. This CONFIRMS
+   `games-etherfantasy-backend` as character source of truth (old open question #3 → answered).
+8. Creature layers: wild monsters + BOSSes occupy WILD estates; element-aligned Pets occupy
+   territories/zones (`docs/05` §9). Fantasy world. Full character list incoming from product owner.
 
 **Sibling repos (the real system landscape — see `docs/AGENTS.md` table):**
 - `blockchainsuperheroes/etherfantasy-browser-moba-game` — battle engine (3D client + authoritative server)

@@ -99,12 +99,23 @@ PvE, EF MOBA supplies the combat, Clash Front supplies the persistent map those 
 Single source of truth for names. All docs, code, and schemas MUST use these exact terms.
 
 ### Actors
-- **Player** — a human account. Owns one or more **Heroes** and a **CT** wallet.
-- **Hero** — the avatar a player controls in battle and moves on the map (RoTK officer + LoL champion). Skill-driven, not permanently leveled by Clash Front.
+- **Player** — a human account. Commands a roster of **Masters** and holds a **CT** wallet.
+- **Master** — an EF character NFT the player **owns or rents** — the RoTK *general* of Clash Front.
+  Masters lead armies as officers on the map and are the avatar a player controls when dropping into
+  battles. Live source of truth: `games-etherfantasy-backend` Masters API (`docs/09` §7) — roster
+  (`joinChance`, `source: owned|rented`, `rentalExpires`), KO state (`koUntil`), limited revives.
+  Skill-driven, not permanently leveled by Clash Front.
+- **Hero** — legacy/code name for a Master in schemas (`Hero`, `heroId`, `HERO_IMPACT_MAX`); the
+  in-battle avatar aspect of a Master. New docs/text should say **Master**; a schema rename is
+  deferred until the full character list lands (❓ OPEN).
 - **Landlord** — holder of a **Land NFT**. Earns tax/prosperity yield. Does **not** automatically control the territory.
 - **Governor** — the entity that *controls* a **Territory** (trains units, upgrades, declares war). May be a player, guild, alliance, or **NPC Kingdom**.
 - **NPC Kingdom** — an AI-run faction that owns/controls territory and acts autonomously.
 - **Guild / Alliance** — player organizations that can hold governorship and diplomacy.
+- **Wild Monster / Boss** — PvE creatures; **bosses occupy WILD estates** and must be defeated to tame
+  them (`05-pve-integration.md`). The world is a fantasy setting.
+- **Pet** — element-aligned helper species (Pokémon-flavored) that occupy territories/zones by
+  element and assist their controller (❓ OPEN: full species list & mechanics — char list incoming).
 
 ### World
 - **World** — the persistent shard. One authoritative simulation.

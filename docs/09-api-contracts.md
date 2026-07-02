@@ -427,6 +427,51 @@ Off-chain trades (§2.6) settle instantly in the ledger; the chain mirror follow
 
 ---
 
+## 7. EF Masters API (DEPLOYED — games-etherfantasy-backend)
+
+> Canon 2026-07: **Masters are the RoTK generals** players command (owned or rented character NFTs)
+> — see README glossary and the `Hero` mirror schema in [`08-data-models.md`](./08-data-models.md).
+> These endpoints are **live on `api.etherfantasy.com`** and are the authoritative character source.
+> Clash Front is a CONSUMER: it mirrors rosters and reports battle results; it never mutates
+> ownership. (Product page: https://etherfantasy.com/masters)
+
+| # | Endpoint | Method | Status | Clash Front usage |
+|---|----------|--------|--------|-------------------|
+| 1 | `/api/character/minted?owner={wallet}` | GET | ✅ live | Full character inventory for a wallet (onboarding sync). |
+| 2 | `/api/gameplay/masters/active/{wallet}` | GET | ✅ live | **Roster sync** — the Masters a player can currently command (owned + unexpired rentals). Refresh on login, army-officer attach, and battle join. |
+| 3 | `/api/gameplay/masters/ko/{masterId}` | GET | ✅ live | **KO gate** — checked before a Master may lead an army or join a `BattleInstance`. |
+| 4 | `/api/gameplay/masters/result` | POST | ✅ live | **Result report** — Battle Orchestration posts each participating Master's outcome (incl. KO events) at `RESOLVED`. |
+| 5 | `/api/gameplay/masters/revive` | POST | ✅ live | Player-initiated revive (limited uses); Clash Front proxies the action from the overworld UI. |
+
+Sample payloads (as deployed):
+
+```jsonc
+// GET /api/gameplay/masters/active/{wallet}
+{ "wallet": "0x61c8…35d09", "masters": [
+  { "masterId": 3001, "tokenId": 52, "name": "Choco", "slug": "choco",
+    "joinChance": 28, "alive": true, "koUntil": null,
+    "source": "rented", "rentalExpires": "2026-07-31T09:31:50.000Z" } ] }
+
+// GET /api/gameplay/masters/ko/{masterId}
+{ "masterId": "3001", "isKO": false, "koUntil": null, "ko_total_count": 0,
+  "revivesUsed": 0, "revivesRemaining": 2, "nextReviveAvailableAt": null }
+```
+
+**Integration rules:**
+1. **Roster is externally owned.** `source`, `rentalExpires`, KO and revive state come from this API;
+   Clash Front caches with a short TTL and re-validates at every gameplay gate (attach/join/revive).
+2. **Rental expiry** (`rentalExpires` past) ⇒ the Master immediately detaches as army officer
+   (army becomes AI-led, [`03-military.md`](./03-military.md) §5) and is barred from new battles.
+3. **KO flow:** a Master KO'd inside a battle is reported via endpoint 4; while `koUntil` is in the
+   future the Master cannot officer or join (endpoint 3 is the gate). Revives (endpoint 5) are
+   limited (`revivesRemaining`) — a real strategic resource, exactly like losing a general in RoTK.
+4. ❓ OPEN: exact `joinChance` semantics (availability roll when a battle spawns vs. per-wave);
+   confirm with product owner + backend code once repo access lands.
+5. ❓ OPEN: full character list & attributes — incoming from product owner; will extend the
+   `Hero` mirror schema (do NOT invent stats).
+
+---
+
 ## Cross-references
 
 - [`README.md`](./README.md) — canon glossary, pillars, `HERO_IMPACT_MAX` firewall

@@ -83,11 +83,28 @@ interface Player {
   createdAt: number; lastSeenAt: number;
 }
 
+// A Hero record mirrors a MASTER (RoTK general) from the EF platform. AUTHORITATIVE source:
+// games-etherfantasy-backend Masters API (09 §7) — Clash Front caches/mirrors, never owns.
+// "Hero" is the legacy schema name; new prose says Master (README glossary).
 interface Hero {
-  id: string;                 // hero_…
-  ownerPlayerId: string;
+  id: string;                 // hero_…  (internal mirror id)
+  ownerPlayerId: string;      // commanding player (owner OR renter)
   name: string;
-  // Clash Front does NOT permanently level heroes. These are equipment/fame, not power creep.
+  // ---- Master identity & tenure (from EF Masters API) ----
+  masterId: number;           // EF masterId (e.g. 3001)
+  tokenId: number;            // character NFT token
+  slug: string;               // e.g. 'choco'
+  source: 'OWNED' | 'RENTED';
+  rentalExpiresAt?: number;   // epoch ms; RENTED only — on expiry the Master detaches everywhere
+  joinChance: number;         // % — Master's availability roll to join a spawning battle (❓ OPEN semantics)
+  // ---- KO / revive lifecycle (from EF Masters API) ----
+  alive: boolean;
+  koUntil?: number;           // epoch ms; KO'd Masters cannot lead armies or join battles
+  revivesUsed: number;
+  revivesRemaining: number;
+  nextReviveAvailableAt?: number;
+  // ---- Clash Front-side (not in EF API) ----
+  // Clash Front does NOT permanently level Masters. These are equipment/fame, not power creep.
   fame: number;               // reputation; unlocks contracts/titles, cosmetic, soft influence
   equipmentIds: string[];     // affects HeroImpact within HERO_IMPACT_MAX cap only
   efMobaProfileId: string;    // link to EF MOBA account for LIVE battles
