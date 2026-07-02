@@ -53,6 +53,50 @@ export function ccTierFor(troops, gold, wood) {
   return best;
 }
 
+/** balance.json `development` + `developmentEffects` ⚙ mirror (F4) — previews only. */
+export const DEV = {
+  maxLevel: 10,
+  growth: 1.6,
+  base: { AGRICULTURE: 1_000_000, ECONOMY: 1_200_000, DEFENSE: 1_500_000, MILITARY: 1_300_000 },
+};
+
+/** Display metadata for the four development tracks (docs/08 DevelopmentTrack). */
+export const DEV_TRACKS = [
+  { track: 'AGRICULTURE', icon: '🌾', label: 'Agriculture', effect: '+400 🍞/day per level' },
+  { track: 'DEFENSE', icon: '🛡', label: 'Defense', effect: '+10%/lvl garrison defense' },
+  { track: 'ECONOMY', icon: '💰', label: 'Economy', effect: '+14 CT/day per level' },
+  { track: 'MILITARY', icon: '⚔', label: 'Military', effect: '−5%/lvl raise cost (max 30%)' },
+];
+
+/** CT cost (ct_units) of the NEXT level on a track (⚙ base × growth^level). */
+export function devCostCtUnits(track, level) {
+  return Math.round(DEV.base[track] * Math.pow(DEV.growth, level));
+}
+
+/** "~lo–hi" fuzzy-band label (F1). */
+export function fmtBand(b) {
+  return `~${b.lo}–${b.hi}`;
+}
+
+/** Band midpoint (the client's working estimate for fuzzy strengths). */
+export function bandMid(b) {
+  return Math.round((b.lo + b.hi) / 2);
+}
+
+/** Best-known strength of an ArmyView: exact, else fuzzy-band midpoint (F1). */
+export function strengthEst(a) {
+  if (a.strength !== undefined) return a.strength;
+  if (a.strengthBand) return bandMid(a.strengthBand);
+  return 0;
+}
+
+/** Best-known troop count (fuzzy views only carry strength; ≈10 strength/soldier). */
+export function troopsEst(a) {
+  if (a.troops !== undefined) return a.troops;
+  if (a.strengthBand) return Math.max(1, Math.round(bandMid(a.strengthBand) / 10));
+  return 0;
+}
+
 /** Marching steps the army's carried food covers. */
 export function foodSteps(a) {
   return a.foodPerStep > 0 ? Math.floor(a.provisions.food / a.foodPerStep) : 999;

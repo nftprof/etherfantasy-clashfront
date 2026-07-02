@@ -537,27 +537,37 @@ export function createFTUE({ store, map, ui }) {
   // callout (no dim/spotlight), each fires ONCE per player (localStorage
   // `tip:<playerId>:<key>`), dismissible, auto-hides. Data-driven registry —
   // adding a tip is one entry: presence tips fire when their anchor first
-  // appears in the DOM; event tips are fired via ftue.tip(key) / onEvents.
+  // appears in the DOM (optionally gated by `when`); event tips are fired via
+  // ftue.tip(key) / onEvents. `group` + `summary` feed the 📖 library (F5).
   const TIPS = [
-    { key: 'scouts', presence: true,
+    { key: 'scouts', presence: true, group: 'Armies & Provisions', summary: 'Cheap, fast, fragile — a moving reveal brush',
       anchor: () => document.querySelector('#card [data-act="raise"][data-preset="SCOUTS"]'),
       title: '🐎 Scout riders', text: scoutsTipText },
-    { key: 'provision', presence: true,
+    { key: 'provision', presence: true, group: 'Armies & Provisions', summary: 'Food is the battle clock; gold + wood build the camp',
       anchor: () => document.querySelector('#card .prov-form'),
       title: '🛒 Provisions',
       text: 'Food = how long your army can fight (and march). Gold + wood = the command center it builds on the battlefield.' },
-    { key: 'low-food', presence: true,
+    { key: 'low-food', presence: true, group: 'Armies & Provisions', summary: 'Underfed armies fight weak and starve mid-march',
       anchor: () => [...document.querySelectorAll('#march-popover .warn')].find((el) => el.textContent.includes('Low food')),
       title: '🍞 Low food',
       text: 'An underfed army fights weak and can starve mid-march. Provision before long campaigns — food is the battle clock.' },
-    { key: 'stalemate',
+    { key: 'stalemate', group: 'Combat & Intel', summary: 'Even odds end in a draw — bring 1.5× strength',
       anchor: () => document.querySelector('#toasts .toast') ?? document.getElementById('toasts'),
       title: '🏳 Stalemate',
       text: 'Evenly matched battles end in stalemate — the attackers withdraw. Bring 1.5× strength or don’t march.' },
-    { key: 'interception',
+    { key: 'interception', group: 'Combat & Intel', summary: 'Hostile parcels stop a march dead',
       anchor: () => document.querySelector('#toasts .toast') ?? document.getElementById('toasts'),
       title: '⚠ Intercepted',
       text: 'Hostile parcels stop a march — an enemy can be your destination, never your shortcut. Route around threats or clear them first.' },
+    { key: 'fog', presence: true, group: 'Combat & Intel', summary: 'Why distant parcels show ??',
+      anchor: () => document.querySelector('#tooltip:not([hidden]) .tt-unknown'),
+      title: '🌫 Fog of war',
+      text: 'You can’t see what defends distant land — scouts reveal it. Adjacent land and your armies grant accurate intel; one ring out is fuzzy; beyond is ??.' },
+    { key: 'develop', presence: true, group: 'Towns & Development', summary: 'Spend CT on your parcels — defense, economy, food, cheaper armies',
+      anchor: () => document.querySelector('#card .dev-sec'),
+      when: () => store.ctBalance >= 800 * 10_000, // only pitch investing when there is CT to invest
+      title: '🏗 Develop your land',
+      text: 'Invest CT in your land — DEF makes it defensible, ECON pays you back. AGRI feeds garrisons, MIL trains armies cheaper.' },
   ];
   const tipEl = document.createElement('div');
   tipEl.id = 'tip-card';
@@ -570,19 +580,27 @@ export function createFTUE({ store, map, ui }) {
   function tipSeen(key) {
     try { return localStorage.getItem(`tip:${store.me?.governorId}:${key}`) === '1'; } catch { return true; }
   }
-  /** Fire a one-shot tip (no-op while the main tutorial runs, or if already seen). */
-  function fireTip(key) {
-    if (active || !store.me || tipShown) return;
+  /**
+   * Fire a one-shot tip (no-op while the main tutorial runs, or if already
+   * seen). `force` = library replay: bypasses seen/shown gates and falls back
+   * to a map-center anchor when the tip's natural anchor isn't on screen.
+   */
+  function fireTip(key, force = false) {
+    if (!store.me) return;
+    if (!force && (active || tipShown)) return;
     const t = TIPS.find((x) => x.key === key);
-    if (!t || tipSeen(key)) return;
-    const anchor = t.anchor();
+    if (!t) return;
+    if (!force && (tipSeen(key) || t.when?.() === false)) return;
+    const fallback = () => (force ? document.getElementById('btn-library') : null);
+    const anchor = t.anchor() ?? fallback();
     if (!anchor) return;
     try { localStorage.setItem(`tip:${store.me.governorId}:${key}`, '1'); } catch { /* private mode */ }
+    if (tipShown) hideTip();
     tipShown = key;
     tipEl.innerHTML = `<button class="tclose" title="Dismiss">✕</button><h5>${t.title}</h5><p>${txt(t.text)}</p>`;
     tipEl.hidden = false;
     placeTip(anchor);
-    tipFollow = setInterval(() => { const a = t.anchor(); if (a) placeTip(a); }, 300);
+    tipFollow = setInterval(() => { const a = t.anchor() ?? fallback(); if (a) placeTip(a); }, 300);
     tipHide = setTimeout(hideTip, TIP_HIDE_MS);
   }
   function placeTip(anchor) {
@@ -608,9 +626,78 @@ export function createFTUE({ store, map, ui }) {
   setInterval(() => { // presence-triggered tips: anchor just appeared in the DOM
     if (active || !store.me || tipShown) return;
     for (const t of TIPS) {
-      if (t.presence && !tipSeen(t.key) && t.anchor()) { fireTip(t.key); break; }
+      if (t.presence && !tipSeen(t.key) && t.when?.() !== false && t.anchor()) { fireTip(t.key); break; }
     }
   }, 800);
+
+  // ── 📖 tutorial library (F5) ─────────────────────────────────────────────────
+  // Browsable, replayable index of EVERYTHING teachable: the guided-tutorial
+  // steps + every contextual tip, grouped by system, seen/unseen badged.
+  // Data-driven off the `steps` script and the TIPS registry above.
+  const STEP_LIB = { // step id → library row metadata
+    welcome: { group: 'Basics', title: '⚔ Welcome to Clash Front', summary: 'A persistent war over real land — it moves while you sleep' },
+    council: { group: 'Basics', title: '🏛 Your war council', summary: 'Treasury, officers, and why they limit your empire' },
+    claim: { group: 'Claiming & Land', title: '🏳 Claim your first land', summary: 'Pick a home parcel and plant the flag' },
+    claimed: { group: 'Claiming & Land', title: '⚑ Officers govern land', summary: 'One officer per territory, one per army' },
+    raise: { group: 'Armies & Provisions', title: '⚔ Raise your army', summary: 'Troops plus the food, gold and wood that keep them fighting' },
+    march: { group: 'Armies & Provisions', title: '🥾 March to war', summary: 'Select an army, pick a destination, read the odds preview' },
+    battle: { group: 'Combat & Intel', title: '🔥 Battle resolution', summary: 'Strength, food and morale decide it — distance is a weapon' },
+    choice: { group: 'Combat & Intel', title: '🏰 Pillage or occupy', summary: 'Loot now and burn it, or govern it forever' },
+    finale: { group: 'Basics', title: '🗺 The war goes on', summary: 'Expand, provision, watch your borders' },
+  };
+  const LIB_GROUPS = ['Basics', 'Claiming & Land', 'Armies & Provisions', 'Combat & Intel', 'Towns & Development'];
+
+  const libEl = document.createElement('div');
+  libEl.id = 'library';
+  libEl.hidden = true;
+  document.body.appendChild(libEl);
+
+  /** A tutorial step counts as seen once the player has moved past it (or finished/skipped the run). */
+  function stepSeen(ix) {
+    const saved = loadSaved();
+    if (saved?.done) return true;
+    return ix < (active ? stepIx : (saved?.step ?? 0));
+  }
+
+  function openLibrary() {
+    const byGroup = new Map(LIB_GROUPS.map((g) => [g, []]));
+    steps.forEach((s, ix) => {
+      const m = STEP_LIB[s.id];
+      if (m) byGroup.get(m.group)?.push({ act: `step:${ix}`, title: m.title, summary: m.summary, seen: stepSeen(ix) });
+    });
+    for (const t of TIPS) {
+      byGroup.get(t.group ?? 'Basics')?.push({
+        act: `tip:${t.key}`, title: `${t.title} <span class="lib-kind">tip</span>`,
+        summary: typeof t.summary === 'string' ? t.summary : '', seen: tipSeen(t.key),
+      });
+    }
+    let html = `<div class="lib-box"><button class="close" data-lib="close">✕</button>` +
+      `<h2>📖 Tutorial library</h2>` +
+      `<p class="sub">Every lesson and tip, replayable any time. ` +
+      `<button class="lib-all" data-lib="tutorial">▶ Replay full tutorial</button></p><div class="lib-scroll">`;
+    for (const g of LIB_GROUPS) {
+      const items = byGroup.get(g);
+      if (!items?.length) continue;
+      html += `<h3>${g}</h3>` + items.map((it) =>
+        `<div class="lib-row"><span class="lib-badge ${it.seen ? 'seen' : 'unseen'}" title="${it.seen ? 'seen' : 'not seen yet'}">${it.seen ? '✓' : '●'}</span>` +
+        `<div class="lib-mid"><div class="lib-title">${it.title}</div><div class="lib-sum">${it.summary}</div></div>` +
+        `<button data-lib="${it.act}">Replay</button></div>`).join('');
+    }
+    libEl.innerHTML = html + `</div></div>`;
+    libEl.hidden = false;
+  }
+  function closeLibrary() { libEl.hidden = true; }
+
+  libEl.addEventListener('click', (e) => {
+    if (e.target === libEl) { closeLibrary(); return; } // backdrop click
+    const btn = e.target.closest('[data-lib]');
+    if (!btn) return;
+    const v = btn.dataset.lib;
+    if (v === 'close') closeLibrary();
+    else if (v === 'tutorial') { closeLibrary(); restart(); }
+    else if (v.startsWith('step:')) { closeLibrary(); start(Number(v.slice(5)), false); }
+    else if (v.startsWith('tip:')) { closeLibrary(); fireTip(v.slice(4), true); }
+  });
 
   // ── WS event hook (called from app.js handleEvents) ─────────────────────────
   function onEvents(events) {
@@ -738,7 +825,7 @@ export function createFTUE({ store, map, ui }) {
   window.addEventListener('resize', () => { if (active) lastChipAt = 0; });
 
   return {
-    maybeStart, restart, skip, onEvents,
+    maybeStart, restart, skip, onEvents, openLibrary,
     tip: fireTip, // one-shot contextual tips (app.js fires event-driven ones)
     get active() { return active; },
     get step() { return steps[stepIx]?.id; },

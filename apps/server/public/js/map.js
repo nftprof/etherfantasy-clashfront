@@ -17,7 +17,7 @@
  * badge with incoming count + soonest ETA.
  */
 import { createTerrain } from './terrain.js';
-import { easeInOut, pointInPoly, rgba } from './util.js';
+import { easeInOut, pointInPoly, rgba, troopsEst } from './util.js';
 
 const FIRE_MS = 30_000;
 const SMOKE_MS = 18_000;
@@ -54,6 +54,10 @@ export function createMap(canvas, store, handlers) {
   // {armyId?, parcels?: [{id, kind: 'candidate'|'recommended'}], tag?: {parcelId, text}}
   // or null. Purely visual — never intercepts input.
   let guide = null;
+  // Fog of war (F1): one combined Path2D over every UNKNOWN parcel — a subtle
+  // veil (terrain + owner color stay readable per canon). Rebuilt on store change.
+  let fogPath = null;
+  let fogStale = true;
 
   // per-parcel precomputed geometry
   const paths = new Map();         // parcelId → Path2D (world coords)
@@ -276,6 +280,37 @@ export function createMap(canvas, store, handlers) {
     }
   }
 
+  /** One combined Path2D over every parcel the viewer has NO intel on (F1). */
+  function rebuildFog() {
+    fogPath = null;
+    if (!store.me) return; // pre-join: no fog (nothing to contrast against)
+    for (const t of store.terrByParcel.values()) {
+      if ((t.intel ?? 'ACCURATE') !== 'UNKNOWN') continue;
+      const path = paths.get(t.parcelId);
+      if (!path) continue;
+      if (!fogPath) fogPath = new Path2D();
+      fogPath.addPath(path);
+    }
+  }
+
+  /** Small vector town glyph (F2) — a gabled house, crisp at any zoom, no emoji font needed. */
+  function townGlyph(x, y, s, lw) {
+    ctx.fillStyle = '#e3cf96';
+    ctx.beginPath();
+    ctx.moveTo(x - s, y + s * 0.85);
+    ctx.lineTo(x - s, y - s * 0.05);
+    ctx.lineTo(x, y - s);
+    ctx.lineTo(x + s, y - s * 0.05);
+    ctx.lineTo(x + s, y + s * 0.85);
+    ctx.closePath();
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(24,20,12,0.85)';
+    ctx.lineWidth = lw(0.8);
+    ctx.stroke();
+    ctx.fillStyle = 'rgba(24,20,12,0.85)'; // door
+    ctx.fillRect(x - s * 0.22, y + s * 0.15, s * 0.44, s * 0.7);
+  }
+
   // ── draw ───────────────────────────────────────────────────────────────────
   function draw(now) {
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -294,6 +329,16 @@ export function createMap(canvas, store, handlers) {
     // ground: barrens plate + parcel floors + tints + strokes — ONE baked blit
     const base = terrain.ensure(cam.s, dpr, { w, h, cx: cam.cx, cy: cam.cy });
     if (base) ctx.drawImage(base.canvas, base.x0, base.y0, base.wWu, base.hWu);
+
+    // fog veil (F1): UNKNOWN parcels get a subtle desaturating wash — the map
+    // stays readable (ownership is public), only certainty drains out of it.
+    if (fogStale) { rebuildFog(); fogStale = false; }
+    if (fogPath) {
+      ctx.fillStyle = 'rgba(96,104,118,0.14)'; // gray mid-tone: desaturates both light + dark ground
+      ctx.fill(fogPath);
+      ctx.fillStyle = 'rgba(8,11,17,0.20)';    // then a whisper of dusk
+      ctx.fill(fogPath);
+    }
 
     // pillage smolder (animated fade — kept live on top of the baked ground)
     for (const [pid, sm] of smolders) {
@@ -342,22 +387,47 @@ export function createMap(canvas, store, handlers) {
       ctx.stroke(paths.get(hoverParcel));
     }
 
+    // town glyphs (F2): every TOWN parcel wears a small house — occupied or not
+    // (ownership reads from the parcel tint; the glyph marks the settlement).
+    const townS = cap(0.17, 9);
+    if (townS * cam.s > 3.5) { // sub-4px glyphs are just noise at far zoom
+      for (const t of store.terrByParcel.values()) {
+        if (t.zoneType !== 'TOWN') continue;
+        const c = store.parcels.get(t.parcelId)?.center;
+        if (!c) continue;
+        townGlyph(c[0], c[1] - 0.3, townS, lw);
+      }
+    }
+
     // garrison markers: friend/foe colored, sized by troop count, co-located
     // armies fanned on a ring (never stacked); ×N badge when 3+ share a parcel
     // (or 2+ collapsed at far zoom). Badges render screen-space after the pass.
+    // FUZZY armies (F1) render at band-midpoint size with a dashed ring + "?".
     const gl = garrisonLayout();
     const badges = []; // {sx, sy, text, color, alpha}
+    const fuzzyMarks = []; // screen-space "?" affixes for fuzzy-intel markers
+    const fuzzyRing = (x, y, r) => {
+      ctx.setLineDash([lw(3), lw(2.6)]);
+      ctx.strokeStyle = 'rgba(230,238,248,0.75)';
+      ctx.lineWidth = lw(1.1);
+      ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.stroke();
+      ctx.setLineDash([]);
+    };
     for (const [pid, g] of gl.groups) {
       for (const a of g) {
         const p = gl.pos.get(a.id);
         if (!p) continue; // hidden sibling of a collapsed group
-        const k = sizeK(a.troops);
+        const k = sizeK(troopsEst(a));
         if (a.monsterName) { // wild monster: dark maw + red eye
           dot(p[0], p[1], cap(0.16 * k, 9 * k), '#26161a', '#5c1f1f', lw(0.8));
           ctx.fillStyle = FOE_UNIT;
           ctx.beginPath(); ctx.arc(p[0], p[1], cap(0.055 * k, 3.5 * k), 0, 7); ctx.fill();
         } else {
           dot(p[0], p[1], cap(0.14 * k, 8 * k), unitColor(a.governorId), unitRing(a.governorId), lw(1));
+        }
+        if (a.strengthBand) { // fuzzy intel: dashed halo + "?" (F1)
+          fuzzyRing(p[0], p[1], cap(0.22 * k, 12.5 * k));
+          fuzzyMarks.push(toScreen(p[0], p[1]));
         }
       }
       if (g.length >= (gl.collapsed.has(pid) ? 2 : 3)) {
@@ -403,7 +473,11 @@ export function createMap(canvas, store, handlers) {
         ctx.restore();
       }
       chevron(x, y, Math.atan2(next[1] - y, next[0] - x), unitColor(a.governorId), unitRing(a.governorId),
-        a.governorId === me, lw, Math.min(1, 55 / cam.s) * sizeK(a.troops));
+        a.governorId === me, lw, Math.min(1, 55 / cam.s) * sizeK(troopsEst(a)));
+      if (a.strengthBand) { // fuzzy marching army (e.g. distant raider): dashed halo + "?"
+        fuzzyRing(x, y, cap(0.24, 13));
+        fuzzyMarks.push(toScreen(x, y));
+      }
     }
     for (const [pid, g] of converge) {
       if (g.n < 2) continue;
@@ -525,6 +599,27 @@ export function createMap(canvas, store, handlers) {
       ctx.textBaseline = 'alphabetic';
     }
 
+    // fuzzy-intel "?" affixes (F1) — small screen-space marks beside fuzzy markers
+    if (fuzzyMarks.length) {
+      ctx.font = '700 10px "Segoe UI", system-ui, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      for (const [sx, sy] of fuzzyMarks) {
+        if (sx < -20 || sx > w + 20 || sy < -20 || sy > h + 20) continue;
+        ctx.beginPath();
+        ctx.arc(sx + 9, sy - 9, 6, 0, 7);
+        ctx.fillStyle = 'rgba(13,17,23,0.92)';
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(230,238,248,0.7)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        ctx.fillStyle = '#e8eef6';
+        ctx.fillText('?', sx + 9, sy - 8.5);
+      }
+      ctx.textAlign = 'start';
+      ctx.textBaseline = 'alphabetic';
+    }
+
     // FTUE tag chip ("⚔ recommended") — screen-space so it stays crisp at any zoom
     if (guide?.tag) {
       const c = store.parcels.get(guide.tag.parcelId)?.center;
@@ -637,7 +732,7 @@ export function createMap(canvas, store, handlers) {
     requestAnimationFrame(frame);
   }
 
-  store.onChange(() => { terrain.onStateChange(); dirty = true; });
+  store.onChange(() => { terrain.onStateChange(); fogStale = true; dirty = true; });
   window.addEventListener('resize', resize);
   resize();
   requestAnimationFrame(frame);

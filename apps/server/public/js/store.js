@@ -30,6 +30,11 @@ export function createStore() {
     ctBalance: 0,
     officers: [],              // DemoOfficer[] (roster is static per player)
     selfResolvedBattles: new Set(), // loot already applied via POST /api/choice response
+    // My pending PILLAGE/OCCUPY decisions (FS2): choiceId → {choiceId, battleId?,
+    // walkIn, armyId?, territoryId, parcelId, expiresTick, zoneType?}. Seeded from
+    // /api/state my.pendingChoices, then maintained from WS events + POST responses.
+    pendingChoices: new Map(),
+    dismissedChoices: new Set(), // walk-in modals the player closed ("leave it")
 
     onChange(fn) { listeners.add(fn); return () => listeners.delete(fn); },
     emit() { for (const fn of listeners) fn(); },
@@ -68,16 +73,22 @@ export function createStore() {
       if (state.my) {
         this.ctBalance = state.my.ctBalance;
         this.officers = state.my.officers;
+        this.pendingChoices.clear();
+        for (const c of state.my.pendingChoices ?? []) this.pendingChoices.set(c.choiceId, c);
       }
       this.emit();
     },
 
+    // Fog note (F1): views are server-filtered per viewer — always REPLACE
+    // wholesale so a parcel degrading to FUZZY/UNKNOWN drops stale ACCURATE
+    // fields (garrison/development) with the latest delta.
     putTerritory(t) {
       this.territories.set(t.id, t);
       this.terrByParcel.set(t.parcelId, t);
     },
     putArmy(a) {
-      if (a.state === 'DISBANDED') this.armies.delete(a.id);
+      // {id, hidden:true} = fog tombstone (army left my intel) — drop the marker.
+      if (a.hidden || a.state === 'DISBANDED') this.armies.delete(a.id);
       else this.armies.set(a.id, a);
     },
 
@@ -92,14 +103,45 @@ export function createStore() {
         if (ev.type === 'player_joined') {
           this.players.set(ev.governorId, { governorId: ev.governorId, name: ev.name, color: ev.color, kind: 'PLAYER' });
         }
-        // loot from choices resolved server-side (timeouts / instant NPC picks)
-        if ((ev.type === 'territory_pillaged' || ev.type === 'territory_occupied') &&
-            ev.governorId === this.me?.governorId && !this.selfResolvedBattles.has(ev.battleId)) {
-          this.selfResolvedBattles.add(ev.battleId);
-          this.ctBalance += ev.lootCt;
+        // pending decisions (FS2): battle victories + bloodless town walk-ins
+        if (ev.type === 'choice_pending' && ev.governorId === this.me?.governorId) {
+          this.pendingChoices.set(ev.battleId, {
+            choiceId: ev.battleId, battleId: ev.battleId, walkIn: false,
+            territoryId: ev.territoryId, parcelId: ev.parcelId, expiresTick: ev.expiresTick,
+          });
+        }
+        if (ev.type === 'town_entered' && ev.governorId === this.me?.governorId) {
+          this.pendingChoices.set(ev.choiceId, {
+            choiceId: ev.choiceId, walkIn: true, armyId: ev.armyId, zoneType: ev.zoneType,
+            territoryId: ev.territoryId, parcelId: ev.parcelId, expiresTick: ev.expiresTick,
+          });
+        }
+        if (ev.type === 'territory_pillaged' || ev.type === 'territory_occupied') {
+          this.pendingChoices.delete(ev.battleId); // battleId doubles as choiceId for walk-ins
+          // loot from choices resolved server-side (timeouts / instant NPC picks)
+          if (ev.governorId === this.me?.governorId && !this.selfResolvedBattles.has(ev.battleId)) {
+            this.selfResolvedBattles.add(ev.battleId);
+            this.ctBalance += ev.lootCt;
+          }
         }
       }
+      this.prunePendingChoices();
       this.emit();
+    },
+
+    /**
+     * Drop pending choices the server will no longer honor: expired (server
+     * default already fired) or walk-ins whose army left the parcel (the
+     * server cancels those silently).
+     */
+    prunePendingChoices() {
+      for (const [id, c] of this.pendingChoices) {
+        if (this.tick >= c.expiresTick) { this.pendingChoices.delete(id); continue; }
+        if (c.walkIn && c.armyId) {
+          const a = this.armies.get(c.armyId);
+          if (!a || a.parcelId !== c.parcelId || a.state === 'MARCHING') this.pendingChoices.delete(id);
+        }
+      }
     },
 
     // ── derived ──────────────────────────────────────────────────────────────
@@ -126,12 +168,10 @@ export function createStore() {
     freeOfficerCount() {
       return this.officers.filter((o) => this.officerDuty(o.id) === undefined).length;
     },
+    /** My live PILLAGE/OCCUPY decisions (battle victories + town walk-ins), soonest-expiry first. */
     myPendingChoices() {
-      const out = [];
-      for (const b of this.battles.values()) {
-        if (b.pendingChoice && this.isMine(b.pendingChoice.governorId)) out.push(b);
-      }
-      return out.sort((x, y) => x.pendingChoice.expiresTick - y.pendingChoice.expiresTick);
+      this.prunePendingChoices();
+      return [...this.pendingChoices.values()].sort((x, y) => x.expiresTick - y.expiresTick);
     },
     /** Hostile GARRISON armies on a parcel (defenders you would fight). */
     hostilesAt(parcelId) {

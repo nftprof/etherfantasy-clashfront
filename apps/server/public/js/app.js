@@ -17,14 +17,33 @@ let ws = null;
 const marchDest = new Map(); // armyId → ordered destination parcelId (interception detection)
 
 // ── orders (POST responses are authoritative — applied to the store directly) ──
+/** BAD_OFFICER/OFFICER_BUSY come from an explicit overseer pick — say so plainly. */
+function officerErrText(e) {
+  if (e.code === 'BAD_OFFICER' || e.code === 'OFFICER_BUSY') {
+    return `${esc(e.message)} — pick another officer or use Auto.`;
+  }
+  return esc(e.message);
+}
+
 const orders = {
-  async claim(territoryId) {
+  async claim(territoryId, overseerId) {
     try {
-      const { territory } = await api('/api/claim', { token, body: { territoryId } });
+      const body = { territoryId, ...(overseerId ? { overseerId } : {}) };
+      const { territory } = await api('/api/claim', { token, body });
       store.putTerritory(territory);
       store.emit();
       ui.toast('Land claimed', `${esc(territory.name)} flies your banner.`, 'good', territory.parcelId);
-    } catch (e) { ui.toast('Claim failed', esc(e.message), 'bad'); }
+    } catch (e) { ui.toast('Claim failed', officerErrText(e), 'bad'); }
+  },
+  /** POST /api/develop — raise one development track on an owned parcel (F4). */
+  async develop(territoryId, track) {
+    try {
+      const res = await api('/api/develop', { token, body: { territoryId, track } });
+      store.putTerritory(res.territory);
+      store.ctBalance = res.ctUnits;
+      store.emit();
+      ui.toast('🏗 Developed', `${esc(res.territory.name)} — ${res.track.toLowerCase()} level ${res.level} (${fmtCT(res.costCtUnits)}).`, 'good', res.territory.parcelId);
+    } catch (e) { ui.toast('Develop failed', esc(e.message), 'bad'); }
   },
   async raise(territoryId, preset) {
     try {
@@ -55,15 +74,34 @@ const orders = {
       return true;
     } catch (e) { ui.toast('Provisioning failed', esc(e.message), 'bad'); return false; }
   },
-  async choice(battleId, action) {
+  /**
+   * Resolve a pending PILLAGE/OCCUPY decision. `choiceId` = battle id for
+   * post-victory choices, walk-in choiceId for bloodless town entries (F2).
+   * Returns true on success (the modal closes only then).
+   */
+  async choice(choiceId, action, overseerId) {
+    const pc = store.pendingChoices.get(choiceId);
     try {
-      const { battle, ctUnits } = await api('/api/choice', { token, body: { battleId, action } });
-      store.selfResolvedBattles.add(battleId);
-      store.battles.set(battle.id, battle);
-      store.ctBalance = ctUnits;
+      const body = { battleId: choiceId, action, ...(overseerId ? { overseerId } : {}) };
+      const res = await api('/api/choice', { token, body });
+      store.selfResolvedBattles.add(choiceId);
+      store.pendingChoices.delete(choiceId);
+      if (res.battle) store.battles.set(res.battle.id, res.battle);
+      if (res.territory) store.putTerritory(res.territory);
+      store.ctBalance = res.ctUnits;
       store.emit();
-      if (action === 'PILLAGE') ui.toast('Pillaged!', `Looted ${fmtCT(battle.lootCt ?? 0)}. The land smolders.`, 'gold', battle.parcelId);
-    } catch (e) { ui.toast('Choice failed', esc(e.message), 'bad'); }
+      const parcelId = res.battle?.parcelId ?? res.territory?.parcelId;
+      const name = esc(res.territory?.name ?? store.territories.get(pc?.territoryId)?.name ?? 'the land');
+      if (res.action === 'CANCELLED') {
+        ui.toast('Nothing to decide', 'Your army had already moved on.', 'info');
+      } else if (action === 'PILLAGE') {
+        const loot = res.lootCt ?? res.battle?.lootCt ?? 0;
+        ui.toast('🔥 Pillaged!', `Looted ${fmtCT(loot)}. ${pc?.walkIn ? `The town of ${name} burns.` : 'The land smolders.'}`, 'gold', parcelId);
+      } else if (pc?.walkIn) {
+        ui.toast(`🏘 ${name} is yours`, 'The town opened its gates — bloodless conquest.', 'good', parcelId);
+      }
+      return true;
+    } catch (e) { ui.toast('Choice failed', officerErrText(e), 'bad'); return false; }
   },
 };
 
@@ -87,6 +125,10 @@ const ftue = createFTUE({ store, map, ui });
 document.getElementById('btn-tutorial').addEventListener('click', (e) => {
   e.preventDefault();
   ftue.restart();
+});
+document.getElementById('btn-library').addEventListener('click', (e) => {
+  e.preventDefault();
+  ftue.openLibrary(); // F5 — browsable tutorial/tip library
 });
 
 document.addEventListener('keydown', (e) => {
@@ -169,6 +211,27 @@ function handleEvents(events) {
       case 'choice_pending':
         if (store.isMine(ev.governorId)) ui.openChoiceModal(ev.battleId);
         break;
+      case 'town_entered': // private — only the arriving governor receives it (F2)
+        if (store.isMine(ev.governorId)) {
+          ui.feedPush(`🏘 Your army enters the town of ${parcelName(ev.parcelId)}`, 't-gold', ev.parcelId);
+          ui.openChoiceModal(ev.choiceId);
+        }
+        break;
+      case 'territory_developed': { // F4 — visible per fog; own upgrades already toasted by the POST
+        const trackName = ev.track.charAt(0) + ev.track.slice(1).toLowerCase();
+        ui.feedPush(`🏗 ${esc(store.playerName(ev.governorId))} developed ${parcelName(ev.parcelId)} — ${trackName} ${ev.level}`, 't-good', ev.parcelId);
+        break;
+      }
+      case 'wild_raid': { // F3 — the frontier bites back
+        const target = store.terrByParcel.get(ev.toParcelId);
+        const mine = target && store.isMine(target.governorId);
+        const who = esc(ev.monsterName ?? 'Wild');
+        ui.toast(`🐺 ${who} raiders sighted!`, `Marching on ${parcelName(ev.toParcelId)}${mine ? ' — YOUR land!' : ''}`,
+          mine ? 'raid urgent' : 'raid', ev.toParcelId, mine ? 12_000 : 8000);
+        ui.feedPush(`🐺 ${who} raiders march on ${parcelName(ev.toParcelId)}${mine ? ' ⚠' : ''}`, 't-battle', ev.toParcelId);
+        if (mine) ui.raidAlert(ev.armyId, ev.toParcelId, who);
+        break;
+      }
       case 'army_arrived': {
         if (movedByBattle.has(ev.armyId)) { marchDest.delete(ev.armyId); break; } // retreat/scatter toast covers it
         const dest = marchDest.get(ev.armyId);
@@ -266,7 +329,7 @@ function enterWorld() {
 }
 
 // Debug/demo hook (also used by the scripted Playwright walkthrough).
-window.CF = { store, map, orders, ftue };
+window.CF = { store, map, orders, ftue, ui };
 
 boot().catch((e) => {
   console.error('[client] boot failed:', e);
