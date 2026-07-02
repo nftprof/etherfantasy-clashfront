@@ -12,6 +12,7 @@ import { CONSTANTS, createRng, loadBalance, type Rng } from '@clashfront/shared'
 import {
   addGovernor,
   claimTerritory,
+  completeTraining,
   type DemoWorldFile,
   findPath,
   loadDemoWorld,
@@ -94,6 +95,7 @@ function walkInFixture(seed: string, kind: 'PLAYER' | 'NPC_KINGDOM' = 'PLAYER'):
   town.ctTreasury = 200 * CT;
   town.prosperity = 60;
   const army = raiseArmy(state, homeId, 'STANDARD', orders);
+  completeTraining(state, army.id); // E2: muster instantly — this suite tests walk-ins
   orderMarch(state, army.id, [townHex], OPTS);
   runTick(state, 1, rng.fork('sim'), BALANCE, OPTS);
   return { state, rng, governorId, homeId, townId: town.id, townHex, armyId: army.id };
@@ -158,16 +160,25 @@ test('walk-in PILLAGE: the town burns — existing loot math, no capture', () =>
   const f = walkInFixture('walkin-pillage');
   const choice = [...f.state.pendingChoices!.values()].find((c) => c.territoryId === f.townId)!;
   const before = structuredClone(f.state.territories.get(f.townId)!);
+  // The raise spend's LANDYIELD ring already seeded the town's enrichment pool (E1/E3).
+  const pool0 = f.state.enrichmentPools!.get(f.townId) ?? 0;
   const wallet0 = f.state.ctBalances!.get(f.governorId)!;
 
   resolvePostVictory(f.state, choice.id, 'PILLAGE', BALANCE);
   const town = f.state.territories.get(f.townId)!;
   assert.equal(town.governorKind, 'SYSTEM', 'pillage never captures');
   assert.equal(town.population, Math.floor(before.population * (1 - CONSTANTS.PILLAGE_POP_LOSS)));
+  // E5: the per-pop scavenge is CAPPED at what the treasury still holds after
+  // the treasury share — pillage is redistribution, never a mint. E3: the
+  // pillager also carries off ⚙ enrichLootPct of the enrichment pool.
+  const lootTreasury = Math.floor(before.ctTreasury * BALANCE.pillageOccupy.pillageLootTreasuryPct);
+  const lootPool = Math.floor(pool0 * BALANCE.economy.enrichLootPct);
   const loot =
-    Math.floor(before.ctTreasury * BALANCE.pillageOccupy.pillageLootTreasuryPct) +
-    before.population * BALANCE.pillageOccupy.pillageLootCtUnitsPerPop;
+    lootTreasury +
+    Math.min(before.population * BALANCE.pillageOccupy.pillageLootCtUnitsPerPop, before.ctTreasury - lootTreasury) +
+    lootPool;
   assert.equal(f.state.ctBalances!.get(f.governorId), wallet0 + loot);
+  assert.equal(f.state.enrichmentPools!.get(f.townId), pool0 - lootPool, 'the rest of the pool stays with the land');
   const outcome = f.state.walkInOutcomes!.find((o) => o.choiceId === choice.id)!;
   assert.equal(outcome.action, 'PILLAGE');
   assert.equal(outcome.lootCt, loot);
@@ -219,6 +230,7 @@ test('ordinary wild hamlets (pop < ⚙ walkInMinPopulation) do NOT trigger walk-
   const wild = state.territories.get(state.hexes.get(wildHex)!.territoryId!)!;
   assert.ok(wild.population < BALANCE.towns.walkInMinPopulation, 'fixture: a plain wild hamlet');
   const army = raiseArmy(state, homeId, 'STANDARD', orders);
+  completeTraining(state, army.id);
   orderMarch(state, army.id, [wildHex], OPTS);
   runTick(state, 1, rng.fork('sim'), BALANCE, OPTS);
   assert.equal(state.pendingChoices!.size, 0, 'no choice on a plain wild parcel');
@@ -249,6 +261,7 @@ test('a garrison-free FOREIGN town falls to a walk-in too (bloodless conquest of
   assert.ok(bobOverseer !== undefined);
 
   const army = raiseArmy(state, homeId, 'STANDARD', orders);
+  completeTraining(state, army.id);
   const path = findPath(state, army.hexId, townHex, alice.governorId)!;
   orderMarch(state, army.id, path, OPTS);
   runTick(state, 1, rng.fork('sim'), BALANCE, OPTS);

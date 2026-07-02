@@ -26,6 +26,7 @@ import {
   type PostVictoryAction,
   type Rng,
   type Territory,
+  TICKS_PER_DAY,
   loadBalance,
 } from '@clashfront/shared';
 import {
@@ -39,9 +40,13 @@ import {
   type DemoArmyPreset,
   type DemoOfficer,
   type DemoWorldFile,
+  type EconomyState,
+  enrichTerritory,
+  ensureEconomy,
   findPath,
   type IntelGrade,
   intelGrade,
+  isMustering,
   loadDemoWorld,
   marchFoodPerStep,
   orderMarch,
@@ -49,11 +54,15 @@ import {
   raiseArmy,
   raiseCost,
   type RaiseCostBreakdown,
+  razeTerritory,
   resolvePostVictory,
   runTick,
+  type SettlementRecord,
   sortedIds,
   stepTicks,
+  supplyComponents,
   type TickOptions,
+  type TrainingQueue,
   troopCount,
   type WalkInOutcome,
   type WildRaidRecord,
@@ -101,6 +110,10 @@ function translateSimError(e: unknown): ApiError {
   if (msg.includes('must be in GARRISON')) return new ApiError(409, 'NOT_IN_GARRISON', msg);
   if (msg.includes('not at a friendly territory')) return new ApiError(409, 'NOT_FRIENDLY_TERRITORY', msg);
   if (msg.includes('non-negative integer')) return new ApiError(400, 'BAD_AMOUNT', msg);
+  if (msg.includes('positive integer')) return new ApiError(400, 'BAD_AMOUNT', msg);
+  if (msg.includes('still mustering')) return new ApiError(409, 'MUSTERING', msg);
+  if (msg.includes('training queue busy')) return new ApiError(409, 'QUEUE_BUSY', msg);
+  if (msg.includes('no level to raze')) return new ApiError(409, 'NOTHING_TO_RAZE', msg);
   return new ApiError(400, 'BAD_ORDER', msg);
 }
 
@@ -186,6 +199,39 @@ export type GameEvent =
       track: string;
       level: number;
       costCtUnits: number;
+    }
+  | {
+      /** E2: an army finished mustering — its training queue is empty and it may march. */
+      type: 'army_mustered';
+      tick: number;
+      armyId: string;
+      governorId: string;
+      parcelId: string;
+      troops: number;
+    }
+  | {
+      /** E3: a governor enriched a parcel — amountCtUnits went through the splitter, toPoolCtUnits landed in pools. */
+      type: 'territory_enriched';
+      tick: number;
+      territoryId: string;
+      parcelId: string;
+      governorId: string;
+      amountCtUnits: number;
+      /** LANDYIELD share that actually reached enrichment pools (spend parcel + ring-1). */
+      toPoolCtUnits: number;
+    }
+  | {
+      /** E4: a development level was razed for salvage. */
+      type: 'territory_razed';
+      tick: number;
+      territoryId: string;
+      parcelId: string;
+      governorId: string;
+      track: string;
+      /** Level AFTER the raze. */
+      level: number;
+      salvageCtUnits: number;
+      burnedCtUnits: number;
     }
   | {
       /** F3: a monster lair split a raid army that is now marching (visible, interceptable). */
@@ -280,6 +326,12 @@ interface SerializedWorldState {
   /** F4 production/trickle carries. Optional for older saves. */
   foodCarry?: [string, number][];
   econCarry?: [string, number][];
+  /** Feature Set 3 (circular economy). All optional for pre-FS3 saves. */
+  economy?: EconomyState;
+  enrichmentPools?: [string, number][];
+  enrichCarry?: [string, number][];
+  trainingQueues?: [string, TrainingQueue][];
+  devInvestedCt?: [string, Partial<Record<DevelopmentTrack, number>>][];
 }
 
 // ── The game ─────────────────────────────────────────────────────────────────
@@ -554,6 +606,96 @@ export class Game {
     };
   }
 
+  /**
+   * POST /api/enrich — convert wallet CT into the parcel's enrichment pool
+   * (E3). Only on a parcel YOU govern. The amount goes through the flow
+   * splitter: its LANDYIELD share seeds the pools (this parcel ⚙ 60% + ring-1
+   * 40%) — the pool receives less than paid; the leakage is the design.
+   * Body: { territoryId, amountCtUnits } (integer ct_units) — `amountCt`
+   * (whole CT) is accepted as a convenience and converted ×CT_UNITS_PER_CT.
+   */
+  enrich(
+    governorId: string,
+    territoryId: unknown,
+    amountCtUnits: unknown,
+    amountCt?: unknown,
+  ): { territory: TerritoryView; ctUnits: number; amountCtUnits: number; toPoolCtUnits: number } {
+    const t = this.getTerritory(territoryId);
+    if (t.governorId !== governorId) throw new ApiError(403, 'NOT_YOUR_TERRITORY', `${t.name} is not governed by you`);
+    let amount: number;
+    if (amountCtUnits !== undefined) {
+      if (typeof amountCtUnits !== 'number' || !Number.isInteger(amountCtUnits) || amountCtUnits <= 0) {
+        throw new ApiError(400, 'BAD_AMOUNT', 'amountCtUnits must be a positive integer');
+      }
+      amount = amountCtUnits;
+    } else if (typeof amountCt === 'number' && Number.isInteger(amountCt) && amountCt > 0) {
+      amount = amountCt * 10_000; // CT_UNITS_PER_CT
+    } else {
+      throw new ApiError(400, 'BAD_AMOUNT', 'provide amountCtUnits (integer ct_units) or amountCt (whole CT)');
+    }
+    let splits: ReturnType<typeof enrichTerritory>['splits'];
+    try {
+      ({ splits } = enrichTerritory(this.state, t.id, amount, this.balance));
+    } catch (e) {
+      throw translateSimError(e);
+    }
+    this.pendingEvents.push({
+      type: 'territory_enriched',
+      tick: this.state.world.tick,
+      territoryId: t.id,
+      parcelId: this.parcelId(t.hexIds[0]!),
+      governorId,
+      amountCtUnits: amount,
+      toPoolCtUnits: splits.landYield,
+    });
+    return {
+      territory: territoryView(this.state, t, this.parcelByHex, this.balance, this.viewerContext(governorId)),
+      ctUnits: this.state.ctBalances?.get(governorId) ?? 0,
+      amountCtUnits: amount,
+      toPoolCtUnits: splits.landYield,
+    };
+  }
+
+  /**
+   * POST /api/raze — strip one development level for salvage (E4).
+   * Governor-only; ⚙ razeSalvagePct of the level's original cost returns to
+   * the wallet, the rest burns.
+   */
+  raze(
+    governorId: string,
+    territoryId: unknown,
+    track: unknown,
+  ): { territory: TerritoryView; ctUnits: number; track: DevelopmentTrack; level: number; salvageCtUnits: number; burnedCtUnits: number } {
+    const t = this.getTerritory(territoryId);
+    if (t.governorId !== governorId) throw new ApiError(403, 'NOT_YOUR_TERRITORY', `${t.name} is not governed by you`);
+    if (typeof track !== 'string' || !DEVELOPMENT_TRACKS.includes(track as DevelopmentTrack)) {
+      throw new ApiError(400, 'BAD_TRACK', `track must be one of ${DEVELOPMENT_TRACKS.join(', ')}`);
+    }
+    let result: ReturnType<typeof razeTerritory>;
+    try {
+      result = razeTerritory(this.state, t.id, track as DevelopmentTrack, this.balance);
+    } catch (e) {
+      throw translateSimError(e);
+    }
+    this.pendingEvents.push({
+      type: 'territory_razed',
+      tick: this.state.world.tick,
+      territoryId: t.id,
+      parcelId: this.parcelId(t.hexIds[0]!),
+      governorId,
+      track,
+      level: result.level,
+      salvageCtUnits: result.salvageCtUnits,
+      burnedCtUnits: result.burnedCtUnits,
+    });
+    return {
+      territory: territoryView(this.state, t, this.parcelByHex, this.balance, this.viewerContext(governorId)),
+      ctUnits: this.state.ctBalances?.get(governorId) ?? 0,
+      track: track as DevelopmentTrack,
+      ...result,
+    };
+  }
+
   march(governorId: string, armyId: unknown, toTerritoryId: unknown): { army: ArmyView; etaTick: number } {
     if (typeof armyId !== 'string') throw new ApiError(400, 'BAD_ARMY', 'armyId must be a string');
     const a = this.state.armies.get(armyId);
@@ -670,10 +812,26 @@ export class Game {
     const preChoices = new Set(this.state.pendingChoices?.keys() ?? []);
     const preWalkInCount = this.state.walkInOutcomes?.length ?? 0;
     const preRaids = new Set(this.state.wildRaids?.keys() ?? []);
+    const preMustering = new Set(this.state.trainingQueues?.keys() ?? []);
 
     runTick(this.state, tick, this.baseRng.fork('sim'), this.balance, this.config.tickOptions);
 
     const events: GameEvent[] = this.pendingEvents.splice(0);
+
+    // E2: training queues that completed this tick (army still standing).
+    for (const armyId of [...preMustering].sort()) {
+      if (this.state.trainingQueues?.has(armyId) === true) continue;
+      const a = this.state.armies.get(armyId);
+      if (a === undefined || a.state === 'DISBANDED') continue;
+      events.push({
+        type: 'army_mustered',
+        tick,
+        armyId,
+        governorId: a.ownerGovernorId,
+        parcelId: this.parcelId(a.hexId),
+        troops: troopCount(a),
+      });
+    }
 
     // Arrivals: MARCHING → GARRISON this tick.
     for (const id of sortedIds(this.state.armies)) {
@@ -889,33 +1047,52 @@ export class Game {
       // maxed out or the war chest can't afford it — the kingdom skips the upgrade
     }
 
-    let army: Army;
-    try {
-      army = raiseArmy(this.state, best.t.id, 'STANDARD', rng, this.autoPickHero(gov));
-    } catch {
-      return; // war chest empty — the kingdom rests this cycle
-    }
-    const target = this.nearestWildPath(army.hexId);
-    if (target === undefined) return; // no wild land left — map fully tamed
-    // Provision for the campaign (docs/04 §7c.1): the raise already bought the
-    // standard pack; top up march rations to cover the road if affordable.
-    const marchFood = marchFoodPerStep(army, this.balance) * target.path.length;
-    if (marchFood > 0) {
-      try {
-        provisionArmy(this.state, army.id, { food: marchFood, gold: 0, wood: 0 }, this.balance);
-      } catch {
-        // war chest can't cover extra rations — march on the standard pack
+    // E2 — training takes time, for the kingdom too: dispatch ONE fully-
+    // mustered army standing on the muster grounds (the strongest territory,
+    // where raises happen), then queue the next raise. Armies garrisoning
+    // conquered parcels elsewhere stay put.
+    const musterHex = best.t.hexIds[0]!;
+    for (const id of sortedIds(this.state.armies)) {
+      const a = this.state.armies.get(id)!;
+      if (
+        a.ownerGovernorId !== gov ||
+        a.state !== 'GARRISON' ||
+        a.hexId !== musterHex ||
+        isMustering(this.state, a.id) ||
+        troopCount(a) === 0
+      ) {
+        continue;
       }
+      const target = this.nearestWildPath(a.hexId);
+      if (target === undefined) break; // no wild land left — map fully tamed
+      // Provision for the campaign (docs/04 §7c.1): the raise already bought
+      // the standard pack; top up march rations to cover the road if affordable.
+      const marchFood = marchFoodPerStep(a, this.balance) * target.path.length;
+      if (marchFood > 0) {
+        try {
+          provisionArmy(this.state, a.id, { food: marchFood, gold: 0, wood: 0 }, this.balance);
+        } catch {
+          // war chest can't cover extra rations — march on the standard pack
+        }
+      }
+      orderMarch(this.state, a.id, target.path, this.config.tickOptions);
+      events.push({
+        type: 'npc_expand',
+        tick,
+        governorId: gov,
+        armyId: a.id,
+        fromParcelId: this.parcelId(best.t.hexIds[0]!),
+        toParcelId: this.parcelId(target.hexId),
+      });
+      break; // one expansion column per cycle
     }
-    orderMarch(this.state, army.id, target.path, this.config.tickOptions);
-    events.push({
-      type: 'npc_expand',
-      tick,
-      governorId: gov,
-      armyId: army.id,
-      fromParcelId: this.parcelId(best.t.hexIds[0]!),
-      toParcelId: this.parcelId(target.hexId),
-    });
+
+    // Queue the next levy (starts a training queue — ⚙ one per territory).
+    try {
+      raiseArmy(this.state, best.t.id, 'STANDARD', rng, this.autoPickHero(gov));
+    } catch {
+      // war chest empty or the muster grounds are busy — the kingdom waits
+    }
   }
 
   /** Deterministic BFS to the nearest SYSTEM-governed (wild) parcel; path excludes the start hex. */
@@ -996,6 +1173,113 @@ export class Game {
         },
       },
       parcels,
+    };
+  }
+
+  /**
+   * GET /api/economy — public economy telemetry (E5 + settlement addition).
+   * The balance team cannot tune what it cannot see.
+   */
+  economyView(): {
+    tick: number;
+    supply: {
+      minted: number;
+      burned: number;
+      treasury: number;
+      wallets: number;
+      territoryTreasuries: number;
+      enrichmentPools: number;
+      unclaimedLordYield: number;
+      /** wallets + territoryTreasuries + enrichmentPools (CT still in play). */
+      circulating: number;
+    };
+    flowsByReason: Record<string, number>;
+    /** LOOT-bucket inflow per region over the last ⚙ lootWindowTicks. */
+    topRegionsByLootInflow: { regionId: string; regionName: string; lootCtUnits: number }[];
+    /** Same rollup per parcel (warzone heatmap), top 20. */
+    topParcelsByLootInflow: { parcelId: string; territoryId: string; lootCtUnits: number }[];
+    lootWindowTicks: number;
+    journal: { headSeq: number; checksum: string; last24hByKind: Record<string, number> };
+    purchaseCapCtPerEpoch: number;
+  } {
+    const eco = ensureEconomy(this.state);
+    const s = supplyComponents(this.state);
+    const tick = this.state.world.tick;
+
+    const byTerritory = new Map<string, number>();
+    for (const r of eco.recentLoot) {
+      if (r.tick < tick - this.balance.economy.lootWindowTicks) continue;
+      byTerritory.set(r.territoryId, (byTerritory.get(r.territoryId) ?? 0) + r.amountCtUnits);
+    }
+    const byRegion = new Map<string, number>();
+    for (const [terrId, amt] of byTerritory) {
+      const regionId = this.state.territories.get(terrId)?.regionId ?? 'unknown';
+      byRegion.set(regionId, (byRegion.get(regionId) ?? 0) + amt);
+    }
+    const topRegionsByLootInflow = [...byRegion.entries()]
+      .sort((a, b) => b[1] - a[1] || (a[0] < b[0] ? -1 : 1))
+      .slice(0, 10)
+      .map(([regionId, lootCtUnits]) => ({
+        regionId,
+        regionName: this.state.regions.get(regionId)?.name ?? regionId,
+        lootCtUnits,
+      }));
+    const topParcelsByLootInflow = [...byTerritory.entries()]
+      .sort((a, b) => b[1] - a[1] || (a[0] < b[0] ? -1 : 1))
+      .slice(0, 20)
+      .map(([territoryId, lootCtUnits]) => ({
+        parcelId: this.parcelId(this.state.territories.get(territoryId)?.hexIds[0] ?? territoryId),
+        territoryId,
+        lootCtUnits,
+      }));
+
+    const last24hByKind: Record<string, number> = {};
+    const dayCutoff = tick - TICKS_PER_DAY;
+    for (let i = eco.settlementJournal.length - 1; i >= 0; i--) {
+      const r = eco.settlementJournal[i]!;
+      if (r.tick < dayCutoff) break;
+      last24hByKind[r.kind] = (last24hByKind[r.kind] ?? 0) + r.amountCtUnits;
+    }
+
+    return {
+      tick,
+      supply: {
+        minted: s.mintedTotal,
+        burned: s.burnedTotal,
+        treasury: s.treasuryTotal,
+        wallets: s.wallets,
+        territoryTreasuries: s.territoryTreasuries,
+        enrichmentPools: s.enrichmentPools,
+        unclaimedLordYield: s.unclaimedLordYield,
+        circulating: s.wallets + s.territoryTreasuries + s.enrichmentPools,
+      },
+      flowsByReason: { ...eco.flowsByReason },
+      topRegionsByLootInflow,
+      topParcelsByLootInflow,
+      lootWindowTicks: this.balance.economy.lootWindowTicks,
+      journal: {
+        headSeq: eco.settlementJournal[eco.settlementJournal.length - 1]?.seq ?? -1,
+        checksum: eco.journalChecksum,
+        last24hByKind,
+      },
+      purchaseCapCtPerEpoch: this.balance.economy.purchaseCapCtPerEpoch,
+    };
+  }
+
+  /**
+   * GET /internal/economy/settlement?afterSeq=N — the exportable settlement
+   * journal slice for the future chain-settlement worker (PlayEscrow vault,
+   * backend as operator). Records are append-only with monotonic seq; the
+   * checksum is the running FNV-1a chain over the WHOLE journal — the worker
+   * verifies it against its own replayed chain head.
+   */
+  settlementSlice(afterSeq: number): { headSeq: number; checksum: string; records: SettlementRecord[] } {
+    const eco = ensureEconomy(this.state);
+    const records = eco.settlementJournal.filter((r) => r.seq > afterSeq);
+    return {
+      headSeq: eco.settlementJournal[eco.settlementJournal.length - 1]?.seq ?? -1,
+      checksum: eco.journalChecksum,
+      records,
     };
   }
 
@@ -1274,6 +1558,11 @@ export class Game {
     return this.parcelByHex.get(hexId) ?? hexId;
   }
 
+  /** ⚙ balance.economy.purchaseCapCtPerEpoch — surfaced by the /api/buy-ct stub. */
+  purchaseCapCtPerEpoch(): number {
+    return this.balance.economy.purchaseCapCtPerEpoch;
+  }
+
   /** Total march ticks for a path (used for ETA echoes). */
   pathTicks(path: readonly string[]): number {
     return path.reduce((n, hexId) => n + stepTicks(this.state, hexId, this.config.tickOptions), 0);
@@ -1305,6 +1594,11 @@ function serializeWorldState(state: WorldState): SerializedWorldState {
     wildRaids: [...(state.wildRaids ?? new Map<string, WildRaidRecord>()).entries()],
     foodCarry: [...(state.foodCarry ?? new Map<string, number>()).entries()],
     econCarry: [...(state.econCarry ?? new Map<string, number>()).entries()],
+    economy: ensureEconomy(state),
+    enrichmentPools: [...(state.enrichmentPools ?? new Map<string, number>()).entries()],
+    enrichCarry: [...(state.enrichCarry ?? new Map<string, number>()).entries()],
+    trainingQueues: [...(state.trainingQueues ?? new Map<string, TrainingQueue>()).entries()],
+    devInvestedCt: [...(state.devInvestedCt ?? new Map()).entries()] as [string, Partial<Record<DevelopmentTrack, number>>][],
   };
 }
 
@@ -1337,6 +1631,11 @@ function deserializeWorldState(s: SerializedWorldState): WorldState {
     wildRaids: new Map(s.wildRaids ?? []),
     foodCarry: new Map(s.foodCarry ?? []),
     econCarry: new Map(s.econCarry ?? []),
+    ...(s.economy !== undefined ? { economy: s.economy } : {}),
+    enrichmentPools: new Map(s.enrichmentPools ?? []),
+    enrichCarry: new Map(s.enrichCarry ?? []),
+    trainingQueues: new Map(s.trainingQueues ?? []),
+    devInvestedCt: new Map(s.devInvestedCt ?? []),
   };
 }
 

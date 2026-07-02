@@ -12,6 +12,7 @@ import {
   addGovernor,
   armyStrength,
   claimTerritory,
+  completeTraining,
   type DemoWorldFile,
   loadDemoWorld,
   raiseArmy,
@@ -111,6 +112,7 @@ function raidFixture(seed: string, lairTroops = 200): RaidFixture {
   const farmHex = state.adjacency!.get(lairHex)![0]!;
   const farmId = state.hexes.get(farmHex)!.territoryId!;
   claimTerritory(state, farmId, governorId);
+  state.territories.get(farmId)!.ctTreasury = 100 * CT; // loot bait independent of genesis rolls
   return { state, rng, governorId, wildGov, lair, lairHex, farmId, farmHex };
 }
 
@@ -150,6 +152,7 @@ test('defended territories (garrison ≥ ⚙ threshold) are NEVER raided', () =>
   const f = raidFixture('raid-defended');
   // Garrison the farm hard: two STANDARD armies merged strength ≥ threshold.
   const g1 = raiseArmy(f.state, f.farmId, 'STANDARD', f.rng.fork('g1'));
+  completeTraining(f.state, g1.id); // E2: muster instantly — this suite tests raids
   g1.morale = 100;
   assert.ok(armyStrength(g1, BALANCE) >= RAIDY.wildRaids.defendedStrengthThreshold, 'fixture: hard target');
   runTick(f.state, 1, f.rng.fork('sim'), RAIDY, OPTS);
@@ -199,6 +202,7 @@ test('raid into a weak garrison: normal battle rules; decisive raiders PILLAGE (
   const f = raidFixture('raid-battle', 400); // big lair → raid of 200 infantry
   // A thin scout screen guards the farm — below the threshold, so raidable.
   const screen = raiseArmy(f.state, f.farmId, 'SCOUTS', f.rng.fork('screen'));
+  completeTraining(f.state, screen.id);
   assert.ok(armyStrength(screen, BALANCE) < RAIDY.wildRaids.defendedStrengthThreshold);
   f.state.territories.get(f.farmId)!.foodStock = 10_000; // fed defenders — still outnumbered
 
@@ -218,7 +222,7 @@ test('raid into a weak garrison: normal battle rules; decisive raiders PILLAGE (
 test('wild raids are deterministic (bit-identical replays, fork per (tick, territoryId))', () => {
   const run = (): WorldState => {
     const f = raidFixture('raid-golden', 300);
-    raiseArmy(f.state, f.farmId, 'SCOUTS', f.rng.fork('screen'));
+    completeTraining(f.state, raiseArmy(f.state, f.farmId, 'SCOUTS', f.rng.fork('screen')).id);
     for (let t = 1; t <= 12; t++) runTick(f.state, t, f.rng.fork('sim'), RAIDY, OPTS);
     return f.state;
   };

@@ -16,6 +16,7 @@ import {
   addGovernor,
   armyStrength,
   claimTerritory,
+  completeTraining,
   type DemoWorldFile,
   findPath,
   loadDemoWorld,
@@ -135,6 +136,7 @@ function runScenario(
   const target = weakestMonster(state);
   const leader = officers.find((o) => o.assignedTerritoryId === undefined);
   const army = raiseArmy(state, homeId, 'STANDARD', orders, leader?.id);
+  completeTraining(state, army.id); // E2: muster instantly — this scenario tests the battle loop
   const path = findPath(state, army.hexId, target.hexId);
   assert.ok(path !== undefined && path.length > 0, 'no path to the monster parcel');
   orderMarch(state, army.id, path, OPTS);

@@ -9,6 +9,7 @@ import { test } from 'node:test';
 import { CONSTANTS, createRng, loadBalance, type Balance } from '@clashfront/shared';
 import {
   addGovernor,
+  completeTraining,
   claimTerritory,
   clusterSightRadius,
   computeIntel,
@@ -142,8 +143,11 @@ test('armies see 1 step; cavalry-majority scout screens (SCOUTS preset) see 3', 
   const homeTerrId = state.hexes.get(home!)!.territoryId!;
 
   const standard = raiseArmy(state, homeTerrId, 'STANDARD', rng);
+  completeTraining(state, standard.id); // E2: muster instantly — this suite tests sight
   assert.equal(isScoutScreen(standard), false, 'STANDARD (20% cavalry) is not a scout screen');
+  delete state.territories.get(homeTerrId)!.garrisonArmyId; // free the slot for the scouts
   const scouts = raiseArmy(state, homeTerrId, 'SCOUTS', rng);
+  completeTraining(state, scouts.id);
   assert.equal(isScoutScreen(scouts), true, 'SCOUTS (pure cavalry) is a scout screen');
 
   // Teleport each far from home (test-only) and measure its reveal radius.
@@ -176,6 +180,7 @@ test('scout-reveal memory: seen parcels stay ACCURATE for decayTicks, then decay
   const rng = createRng('memory-run');
   const homeTerrId = state.hexes.get(home!)!.territoryId!;
   const scouts = raiseArmy(state, homeTerrId, 'SCOUTS', rng);
+  completeTraining(state, scouts.id);
 
   const far = [...state.hexes.keys()].sort().find((h) => (distances(state, [home!]).get(h) ?? 0) >= 9)!;
   scouts.hexId = far;
@@ -223,7 +228,7 @@ test('intel memory is snapshot-safe and tick-deterministic', () => {
     const { state, governorId } = gridWorld('intel-golden');
     const owned = claimBlock(state, governorId, 12, 2);
     const rng = createRng('intel-golden-run');
-    raiseArmy(state, state.hexes.get(owned[0]!)!.territoryId!, 'SCOUTS', rng);
+    completeTraining(state, raiseArmy(state, state.hexes.get(owned[0]!)!.territoryId!, 'SCOUTS', rng).id);
     for (let t = 1; t <= 5; t++) runTick(state, t, rng.fork('sim'), BALANCE, OPTS);
     return state;
   };

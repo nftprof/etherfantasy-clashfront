@@ -17,9 +17,11 @@
  *   - battles: participants always see everything; otherwise full on ACCURATE,
  *     winner + score bands on FUZZY, omitted on UNKNOWN.
  */
-import type { Army, Balance, BattleInstance, Territory } from '@clashfront/shared';
+import type { Army, Balance, BattleInstance, DevelopmentTrack, Territory } from '@clashfront/shared';
+import { DEVELOPMENT_TRACKS } from '@clashfront/shared';
 import {
   armyStrength,
+  developCostCtUnits,
   fuzzyBand,
   intelGrade,
   type IntelGrade,
@@ -54,6 +56,13 @@ export interface TerritoryView {
   intel?: IntelGrade;
   /** Development levels per track — own parcels or ACCURATE intel only (F4). */
   development?: Record<string, number>;
+  /** E3 enrichment pool (ct_units) — own parcels or ACCURATE intel only. */
+  enrichmentPool?: number;
+  /**
+   * E4 raze preview — OWN parcels only: salvage (ct_units) recovered for
+   * razing the TOP level of each track right now (0 when the track is level 0).
+   */
+  razeSalvage?: Record<string, number>;
   /** Full garrison detail — own parcels or ACCURATE intel only. */
   garrison?: {
     armyId: string;
@@ -91,6 +100,12 @@ export interface ArmyView {
   strength?: number;
   /** FUZZY intel: strength known only as a deterministic band. */
   strengthBand?: { lo: number; hi: number };
+  /**
+   * E2: present while the army is MUSTERING (training queue nonempty) — own
+   * armies or ACCURATE intel (a scout can see a half-empty camp). troops/units
+   * above report the soldiers trained SO FAR.
+   */
+  mustering?: { remainingTroops: number; ratePerTick: number; readyTick: number };
   /** Carried battle logistics (docs/04 §7c) — OWN armies only. */
   provisions?: { food: number; gold: number; wood: number };
   /** Food burned per adjacency step while MARCHING — OWN armies only. */
@@ -214,6 +229,17 @@ export function territoryView(
 
   if (grade === 'ACCURATE') {
     view.development = { ...t.development };
+    const pool = state.enrichmentPools?.get(t.id) ?? 0;
+    if (pool > 0) view.enrichmentPool = pool;
+    if (own || viewer === undefined) {
+      const salvage: Record<string, number> = {};
+      for (const track of DEVELOPMENT_TRACKS) {
+        const level = t.development[track as DevelopmentTrack];
+        salvage[track] =
+          level > 0 ? Math.floor(developCostCtUnits(track as DevelopmentTrack, level - 1, balance) * balance.economy.razeSalvagePct) : 0;
+      }
+      view.razeSalvage = salvage;
+    }
     if (live !== undefined) {
       view.garrison = {
         armyId: live.id,
@@ -273,6 +299,18 @@ export function armyView(
     strength: Math.round(armyStrength(a, balance)),
   };
   if (viewer !== undefined) view.intel = grade;
+  // E2: surface the training queue while mustering (own or ACCURATE views).
+  const queue = state.trainingQueues?.get(a.id);
+  if (queue !== undefined) {
+    const remainingTroops = queue.remaining.reduce((n, s) => n + s.count, 0);
+    if (remainingTroops > 0) {
+      view.mustering = {
+        remainingTroops,
+        ratePerTick: queue.ratePerTick,
+        readyTick: state.world.tick + Math.ceil(remainingTroops / queue.ratePerTick),
+      };
+    }
+  }
   if (a.heroId !== undefined) {
     view.heroId = a.heroId;
     const officer = state.officers?.get(a.ownerGovernorId)?.find((o) => o.id === a.heroId);

@@ -10,6 +10,7 @@ import { CONSTANTS, createRng, loadBalance, TICKS_PER_DAY, type Rng } from '@cla
 import {
   addGovernor,
   claimTerritory,
+  completeTraining,
   developCostCtUnits,
   developTerritory,
   type DemoWorldFile,
@@ -114,18 +115,28 @@ test('AGRI: food production lands per tick via the integer carry (no more floor-
   assert.ok(t.foodStock > food0, 'low-level production must not floor to zero anymore');
 });
 
-test('ECON: CT trickles to the governor wallet per tick (integer, carry-exact)', () => {
+test('ECON: the territory treasury pays the governor per tick (integer, carry-exact, never a mint)', () => {
   const { state, rng, governorId, homeId } = fixture('dev-econ');
   const t = state.territories.get(homeId)!;
   t.development.ECONOMY = 3;
   t.population = 0;
+  t.ctTreasury = 1_000_000; // stocked larder — E5: ECON yield is REDISTRIBUTION from the treasury
+  const treasury0 = t.ctTreasury;
   const wallet0 = state.ctBalances!.get(governorId)!;
   const N = 25;
   for (let i = 1; i <= N; i++) runTick(state, i, rng.fork('sim'), BALANCE, OPTS);
   const expected = Math.floor((N * 3 * DE.econCtUnitsPerLevelPerDay) / TICKS_PER_DAY);
   assert.equal(state.ctBalances!.get(governorId), wallet0 + expected);
-  assert.ok(expected > 0, 'the faucet actually drips');
+  assert.equal(t.ctTreasury, treasury0 - expected, 'every ct_unit paid came out of the treasury');
+  assert.ok(expected > 0, 'the yield actually drips');
   assert.ok(Number.isInteger(state.ctBalances!.get(governorId)!), 'integer money');
+
+  // A drained treasury pays nothing (no mint, capped at what the larder holds).
+  t.ctTreasury = 0;
+  const wallet1 = state.ctBalances!.get(governorId)!;
+  for (let i = N + 1; i <= N + 10; i++) runTick(state, i, rng.fork('sim'), BALANCE, OPTS);
+  assert.equal(state.ctBalances!.get(governorId), wallet1, 'empty treasury ⇒ no yield');
+  assert.equal(t.ctTreasury, 0, 'treasury never goes negative');
 });
 
 test('DEF: defender WarScore ×(1 + 0.1×level) turns an even fight into a defender win', () => {
@@ -141,8 +152,9 @@ test('DEF: defender WarScore ×(1 + 0.1×level) turns an even fight into a defen
     const terrB = state.territories.get(state.hexes.get(hexB)!.territoryId!)!;
     claimTerritory(state, terrA.id, a.governorId);
     claimTerritory(state, terrB.id, b.governorId);
-    raiseArmy(state, terrB.id, 'STANDARD', orders); // defender
+    completeTraining(state, raiseArmy(state, terrB.id, 'STANDARD', orders).id); // defender
     const attacker = raiseArmy(state, terrA.id, 'STANDARD', orders);
+    completeTraining(state, attacker.id);
     terrB.foodStock = 10_000; // fed defender
     terrB.development.DEFENSE = defenseLevel;
     orderMarch(state, attacker.id, [hexB], OPTS);

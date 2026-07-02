@@ -6,7 +6,9 @@
  * by hand for fully deterministic end-to-end runs.
  *
  * HTTP:  POST /api/join · GET /api/world (ETag) · GET /api/state (fog-filtered) ·
- *        POST /api/claim · /api/raise · /api/march · /api/provision · /api/develop · /api/choice
+ *        GET /api/economy (public, 10 s cache) · GET /internal/economy/settlement (journal export) ·
+ *        POST /api/claim · /api/raise · /api/march · /api/provision · /api/develop ·
+ *        /api/enrich · /api/raze · /api/choice · /api/buy-ct (501 stub)
  * WS:    /ws?token=…  → {t:'hello'} on connect, {t:'tick'} broadcast per tick
  * Static: ./public — the overworld client (MVP item 4): vanilla ES modules +
  *         one CSS file, no build step (js/app.js entry, Canvas2D map).
@@ -51,6 +53,8 @@ export class ClashServer {
   private readonly worldEtag: string;
   private tickTimer?: NodeJS.Timeout;
   private saveTimer?: NodeJS.Timeout;
+  /** /api/economy response cache (10 s wall clock — server boundary, never the sim). */
+  private economyCache?: { body: string; at: number };
 
   constructor(private readonly config: ServerConfig) {
     this.game = config.game;
@@ -196,6 +200,25 @@ export class ClashServer {
       res.end(this.worldBody);
       return;
     }
+    if (path === '/api/economy' && method === 'GET') {
+      // Public telemetry, cached 10 s (skipped when tickMs is null — tests drive ticks by hand).
+      const now = Date.now();
+      if (this.config.tickMs === null || this.economyCache === undefined || now - this.economyCache.at > 10_000) {
+        this.economyCache = { body: JSON.stringify(this.game.economyView()), at: now };
+      }
+      res.writeHead(200, { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'public, max-age=10' });
+      res.end(this.economyCache.body);
+      return;
+    }
+    if (path === '/internal/economy/settlement' && method === 'GET') {
+      // Settlement-journal export for the future chain-settlement worker
+      // (PlayEscrow vault). /internal is a deployment boundary — do not expose
+      // it on the public ingress.
+      const afterSeq = Number(url.searchParams.get('afterSeq') ?? '-1');
+      if (!Number.isInteger(afterSeq)) throw new ApiError(400, 'BAD_SEQ', 'afterSeq must be an integer');
+      sendJson(res, 200, this.game.settlementSlice(afterSeq));
+      return;
+    }
     if (path === '/api/state' && method === 'GET') {
       const session = this.game.sessionByToken(bearerToken(req));
       // Fog of war (F1): the snapshot is filtered by the viewer's intel;
@@ -223,6 +246,20 @@ export class ClashServer {
         case '/api/develop':
           sendJson(res, 200, this.game.develop(session.governorId, body.territoryId, body.track));
           return;
+        case '/api/enrich':
+          sendJson(res, 200, this.game.enrich(session.governorId, body.territoryId, body.amountCtUnits, body.amountCt));
+          return;
+        case '/api/raze':
+          sendJson(res, 200, this.game.raze(session.governorId, body.territoryId, body.track));
+          return;
+        case '/api/buy-ct':
+          // E5 purchase-cap stub: real payments are out of scope; the cap that
+          // WILL apply per account per epoch is ⚙ balance.economy.purchaseCapCtPerEpoch.
+          throw new ApiError(
+            501,
+            'NOT_ENABLED',
+            `CT purchases are not enabled yet; when they are, buys are capped at ${this.game.purchaseCapCtPerEpoch()} ct_units per account per epoch`,
+          );
         case '/api/choice':
           sendJson(res, 200, this.game.choice(session.governorId, body.battleId, body.action, body.overseerId));
           return;

@@ -224,6 +224,30 @@
     "raidRangeSteps": 2,
     "minRaidTroops": 20
   },
+  "economy": {
+    "_note": "Circular war economy ⚙ (Feature Set 3, docs/briefs/FEATURESET-3-ECONOMY.md E1/E3/E4/E5). Every wallet→world spend is split by spendCT: LOOT → town/wild-parcel treasuries within lootRadiusSteps of the spend parcel (inverse-distance weighted; no eligible target ⇒ that share burns); LANDYIELD → enrichment pools of the spend parcel (landYieldSelfPct) + its ring-1 neighbors (rest, equal split); LORDS = lordsLandlordShare escrowed in unclaimedLordYield (no NFT landlords yet) + lordsSeatShare to the richest TOWN treasury in radius (none ⇒ burn); BURN destroyed; TREASURY → system:treasury. Integer split, remainder to burn — shares must sum to 1.0. enrichYieldPctPerDay: enrichment pool pays this fraction of itself per day (integer carry) to the parcel's CURRENT governor. enrichLootPct: PILLAGE loots this share of the pool. razeSalvagePct: raze recovers this share of a level's original cost (rest burns). purchaseCapCtPerEpoch: $-purchase faucet cap stub (ct_units, /api/buy-ct is 501 until payments land). lootWindowTicks: rolling window for the /api/economy warzone loot heatmap. journalYieldBatchTicks: per-governor yield REWARDs are batched into the settlement journal every N ticks (anti-spam).",
+    "lootShare": 0.30,
+    "landYieldShare": 0.20,
+    "lordsLandlordShare": 0.15,
+    "lordsSeatShare": 0.10,
+    "burnShare": 0.20,
+    "treasuryShare": 0.05,
+    "lootRadiusSteps": 3,
+    "landYieldSelfPct": 0.6,
+    "enrichYieldPctPerDay": 0.10,
+    "enrichLootPct": 0.35,
+    "razeSalvagePct": 0.40,
+    "purchaseCapCtPerEpoch": 50000000,
+    "lootWindowTicks": 1440,
+    "journalYieldBatchTicks": 20
+  },
+  "training": {
+    "_note": "Training takes time ⚙ (Feature Set 3 E2 — the anti-whale wall). Raising an army pays the FULL cost up-front (through the splitter) but spawns a MUSTERING shell: soldiers materialize at baseRatePerTick × (1 + MIL_level × milRateBonus) per tick (TRAINING sub-phase of PRODUCTION). One active queue per territory. A mustering army cannot march; if attacked it fights with the troops trained so far × musterPenalty. baseRatePerTick 25 ⇒ a STANDARD army (200 soldiers) completes in 8 demo ticks (≈40 s at the 5 s demo tick).",
+    "baseRatePerTick": 25,
+    "milRateBonus": 0.10,
+    "musterPenalty": 0.7,
+    "queuesPerTerritory": 1
+  },
   "intel": {
     "_note": "Fog of war ⚙ (Feature Set 2 F1). Territory sight radius per contiguous cluster = 1 + floor(sqrt(clusterSize)/2), capped at clusterRadiusCap. Armies see armySight steps; cavalry-majority screens (SCOUTS preset) see scoutSight. Parcels seen by an army stay ACCURATE for decayTicks after last sight, then decay to FUZZY (remembered) forever. FUZZY strengths render as deterministic bands ±fuzzyBandPct, rerolled every fuzzyPeriodTicks ('a day').",
     "decayTicks": 1000,
