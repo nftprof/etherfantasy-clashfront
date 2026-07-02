@@ -7,6 +7,7 @@ import { api, connectWS } from './net.js';
 import { createStore } from './store.js';
 import { createMap } from './map.js';
 import { createUI } from './ui.js';
+import { createFTUE } from './ftue.js';
 import { esc, fmtCT, fmtProv } from './util.js';
 
 const TOKEN_KEY = 'cf_token';
@@ -81,6 +82,12 @@ const map = createMap(document.getElementById('map'), store, {
   onClickVoid: () => { ui.closePopover(); ui.closeCard(); },
 });
 const ui = createUI({ store, map, orders });
+const ftue = createFTUE({ store, map, ui });
+
+document.getElementById('btn-tutorial').addEventListener('click', (e) => {
+  e.preventDefault();
+  ftue.restart();
+});
 
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') { ui.selectArmy(null); ui.closePopover(); ui.closeCard(); }
@@ -97,6 +104,7 @@ function parcelName(parcelId) {
 const CC_NAMES = ['', 'camp', 'palisade', 'fortified camp'];
 
 function handleEvents(events) {
+  ftue.onEvents(events); // tutorial steps advance off the same real events
   const battleParcelsThisTick = new Set(
     events.filter((e) => e.type === 'battle_resolved').map((e) => e.parcelId),
   );
@@ -253,10 +261,11 @@ function enterWorld() {
   // fly to my land (or a claimable frontier spot) so the player lands somewhere meaningful
   const mine = store.myTerritories()[0];
   if (mine) map.gotoParcel(mine.parcelId);
+  ftue.maybeStart(); // first login → guided tutorial (per-player, resumable, skippable)
 }
 
 // Debug/demo hook (also used by the scripted Playwright walkthrough).
-window.CF = { store, map, orders };
+window.CF = { store, map, orders, ftue };
 
 boot().catch((e) => {
   console.error('[client] boot failed:', e);

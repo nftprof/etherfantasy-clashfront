@@ -449,6 +449,17 @@ export function createMap(canvas, store, handlers) {
       const c = store.parcels.get(parcelId)?.center;
       return c ? toScreen(c[0], c[1]) : [w / 2, h / 2];
     },
+    /** World → canvas-local screen px (FTUE coach-marks track map targets with this). */
+    worldToScreen(x, y) { return toScreen(x, y); },
+    /** Canvas-local screen bbox of a parcel ({x,y,w,h}), or null. */
+    parcelRectOf(parcelId) {
+      const b = bboxes.get(parcelId);
+      if (!b) return null;
+      const [x0, y0] = toScreen(b[0], b[1]);
+      const [x1, y1] = toScreen(b[2], b[3]);
+      return { x: x0, y: y0, w: x1 - x0, h: y1 - y0 };
+    },
+    get flying() { return flight !== null; },
     get texturesReady() { return terrain.texturesReady; },
     get terrainReady() { return terrain.fieldReady; },
     /** Debug/perf hook: average full-frame draw cost in ms over n frames (blit path). */
