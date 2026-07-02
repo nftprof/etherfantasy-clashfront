@@ -319,18 +319,33 @@ sides. AI-vs-AI battles run the SAME simulation with **accelerated ticks** (fast
 different resolver). The overworld's instant WarScore resolution is an acknowledged placeholder
 until battle-engine M1+; LIVE pacing then follows match reality (≈20–40 min occupying the parcel).
 
-**Battle anatomy (owner, 2026-07-02, final): CONTEXTUAL BASES — you have a base if you have
-something to anchor.**
-- **The ATTACKER always brings a base**: the temporary **command center** erected from carried
-  gold/wood (§7c) — its tier sets its camp/towers.
-- **A DEFENDER of held land fights "as now"** (the current MOBA design): base + towers; on
-  developed parcels the built structures ARE the fortifications.
-- **The WILD has nothing**: fighting wild monsters is EXACTLY the classic MOBA asymmetry — one
-  side towers + structures (the invading player), the other side pure units rushing.
-- **Layout: ONE lane/path between the sides by default** (not three) — it fits the
-  single-parcel map size; path count may scale with parcel size/estate components ⚙.
-- **The battlefield IS the parcel's own saved map** (§7b design layer) — the exact map the
-  armies stand on in the overworld. Every battle map is therefore unique.
+**Battle anatomy (owner, 2026-07-02, FINAL): the ATTACKER is the WAVES — structures belong to
+the LAND HOLDER.**
+
+- **The attacker spawns waves.** Invading ANY land, you arrive with no fortifications — at most
+  a minimal **command center camp** (spawn anchor; gold/wood tier ⚙ sets its durability/spawn
+  quality, never towers). Your army stock IS your wave budget: waves and waves of spawns push
+  the lane until you **run out** or you win. Your Masters revive per normal MOBA respawn rules
+  (limited "runs").
+- **Attacker lose conditions (two):** (1) you run out of runs — army waves + Master revives
+  exhausted; (2) your CC camp is destroyed.
+- **Structures belong to whoever HOLDS the land:**
+
+| Ground | Defender has | Lanes | Attacker win condition |
+|---|---|---|---|
+| **WILD** | towers + mobs on the map, NO CC | 1 | defeat all mobs OR destroy their towers |
+| **Player parcel** | CC + towers ("normal map") + **hired troops placed on the map**; the defender EDITS their defensive layout (buy/upgrade/place towers) within **LIMITED BUILDING SPOTS** (as in the current MOBA's build pads); only estates get more | 1 | destroy the defender's CC |
+| **Estate** | extra build spots: **walls + functional city buildings** (marketplace/crafting etc. — pillageable), multiple **defense rings** (1–3 lines, castle-like; StarCraft-base feel) | **3**, bigger map | fight through the rings to the capital/CC |
+
+- **Estate fallback for browser weight**: if multi-ring single maps are too heavy, break the
+  estate into **separate zones fought through sequentially** to reach the capital — i.e. the
+  existing per-component campaign model (§7b estates).
+- **Defense editing is the defender's game**: spend CT/materials on towers, upgrades, hired
+  troop placements — capped by build spots, so estates are structurally (not just numerically)
+  stronger.
+- **The battlefield IS the parcel's own saved map** (§7b design layer) — every battle map unique.
+- Non-decisive end (clock/timeout, no win condition met): attacker chooses — re-assault,
+  reinforce, or retreat (origin or nearby empty land, §7c).
 - **Decisive loss = your base is destroyed.** Defender's base down ⇒ the defender ENTIRELY
   loses — the ground is taken (PostVictoryAction). Attacker's CC down ⇒ the invasion is repelled.
 - **Non-decisive end** (food clock / match timeout, no base killed): the battle finishes and the

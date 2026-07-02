@@ -32,16 +32,18 @@
 
 ## M1 deliverables (from the repurposing plan, unchanged in shape)
 
-- **B1**: repurpose the MOBA furniture per the CONTEXTUAL-BASES anatomy (docs/04 §7b of the
-  canon repo) — close to the existing two-team core+towers design: ATTACKER always spawns a
-  base = command center + camp towers (tier from carried gold/wood); DEFENDER of held land gets
-  base + towers "as now" (fortification stats from the parcel's structures when developed);
-  WILD side gets NO base — pure rushing units (classic MOBA asymmetry, monsters as the swarm).
-  Map layout: ONE lane/path between sides by default (path count a battlefield-schema param).
-  Win = enemy base destroyed (defender base down ⇒ ground taken; attacker CC down ⇒ invasion
-  repelled) or force routed / swarm exhausted. Food-clock/timeout with no decisive kill =
-  NON-DECISIVE: report it — the overworld lets the attacker re-assault, reinforce, or retreat.
-  Strip only: 3-lane layout/minion-wave economy/shop/draft (armies come from the battle context).
+- **B1**: repurpose the MOBA furniture per the FINAL anatomy (docs/04 §7b of the canon repo):
+  **the ATTACKER is the wave side** — their army stock feeds the minion-wave system (waves
+  spawn from a minimal CC camp: spawn anchor, no towers; gold/wood tier ⚙ = durability/spawn
+  quality); attacker loses when waves+Master-revives are exhausted OR the CC camp dies.
+  **Structures belong to the land holder**: WILD = towers + mobs, no CC (win = clear all mobs
+  or kill towers); player parcel = defender CC + towers + placed hired troops, fed from the
+  parcel's built structures, LIMITED build spots (reuse the client's build-pad concept
+  server-side); estate = more spots, walls, 3 lanes, defense rings (or sequential component
+  zones). Default 1 lane (3 for estates — lane count is a battlefield-schema param).
+  Non-decisive (clock/timeout): report — overworld handles re-assault/reinforce/retreat.
+  This REUSES: minion-wave spawner (attacker army), towers/cores (defender), respawn rules
+  (Master revives). Strip only: shop/draft/passive gold (armies come from the battle context).
 - **A1**: `Battlefield` JSON schema (bounds polygon, obstacles, terrain costs, spawn zones,
   structure anchors) consumed by sim + (later) renderer; placeholder seeded generator.
 - **D1**: `POST /internal/v1/matches/allocate` — battle context in (armies as unit stacks +
