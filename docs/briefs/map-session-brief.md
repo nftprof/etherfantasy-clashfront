@@ -35,9 +35,11 @@ Key facts that constrain your work:
    explicitly if any parcels could not be extracted and why.
 3. **Renderer assessment.** Briefly assess whether the existing map renderer could be reused/embedded
    as the war-game overworld client (tech, coupling, licensing of assets), vs. rebuilding on its data.
-4. **Deliver:** commit `parcels.json` + a `MAP-EXTRACTION-REPORT.md` (findings from 1 & 3) to a
-   feature branch of the maps repo, or if write access is unavailable, output them as files for
-   manual transfer to `etherfantasy-clashfront/data/`.
+4. **Deliver into `etherfantasy-clashfront`** (it should be in your session scope) on a NEW branch
+   `claude/map-extraction` (do NOT push to `claude/clash-front-overworld-mkcyia`):
+   - `data/parcels.json` — the permanent parcel snapshot
+   - `docs/reports/MAP-EXTRACTION-REPORT.md` — findings from 1 & 3
+   If clashfront is not in scope, output both as files for manual transfer.
 
 ## Rules
 - Do NOT modify existing map/site code or data — read-only extraction.

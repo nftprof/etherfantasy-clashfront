@@ -52,6 +52,21 @@ branch is `claude/clash-front-overworld-mkcyia`.
 - Biome designations on the main map; estate threshold (`ESTATE_MIN_HEXES = 7` is a proposal).
 - Battle join-window length (minutes-scale lobby vs hours-scale asynchronous).
 
+## Repo layout convention (delivery hub)
+
+This repo is the delivery hub for the whole Clash Front project — ALL known assets, extracted data,
+and cross-repo reports are delivered into subfolders here:
+
+- `docs/` — the design bible (canon)
+- `docs/briefs/` — mission briefs for satellite work-stream sessions (maps, battle engine, …)
+- `docs/reports/` — discovery/extraction reports delivered by those sessions
+- `data/` — permanent extracted assets (e.g. `parcels.json` — the hexagone-city parcel snapshot)
+- `packages/` — the monorepo code (shared canon, sim-engine, …)
+
+Satellite sessions deliver on their OWN branches (`claude/map-extraction`,
+`claude/battle-engine-discovery`) — never directly on `claude/clash-front-overworld-mkcyia`;
+a core session merges them.
+
 ## Working rules
 
 - Follow `docs/AGENTS.md` (prime directives: determinism, integer money, canon names, doc-first).
