@@ -166,6 +166,17 @@ export interface Balance {
     /** SYSTEM parcels at/above this population trigger the bloodless walk-in choice (TOWNs always do). */
     walkInMinPopulation: number;
   };
+  /** Development effects ⚙ — Feature Set 2 F4 (docs/briefs/FEATURESET-2.md). */
+  developmentEffects: {
+    /** Defender WarScore multiplier: 1 + x × DEFENSE level (battles on the parcel). */
+    defenseWarScorePerLevel: number;
+    /** CT trickle (ct_units/day) to the governor per ECONOMY level — paid per tick with integer carry. */
+    econCtUnitsPerLevelPerDay: number;
+    /** Training-cost discount per MILITARY level of the raising parcel… */
+    milRaiseDiscountPerLevel: number;
+    /** …capped here. */
+    milRaiseDiscountMax: number;
+  };
   /** Active wild raids ⚙ — Feature Set 2 F3 (docs/briefs/FEATURESET-2.md). */
   wildRaids: {
     /** Monster lairs roll a raid every N ticks (0 disables raids). */
@@ -201,7 +212,7 @@ export interface Balance {
 const REQUIRED_SECTIONS: readonly (keyof Balance)[] = [
   'travel', 'development', 'tax', 'prosperity', 'food', 'population',
   'supply', 'morale', 'desertion', 'upkeep', 'units', 'pillageOccupy', 'draft', 'provisions', 'claims',
-  'intel', 'towns', 'wildRaids',
+  'intel', 'towns', 'wildRaids', 'developmentEffects',
 ];
 
 function resolveBalancePath(): string {

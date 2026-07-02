@@ -118,9 +118,14 @@ export function runTick(
  * Phase 1 — PRODUCTION (docs/01 §6.1, formulas in docs/02 §6/§3/§5).
  * Territories yield food/CT/prosperity; structures & nodes produce.
  *
- * TODO(02 §6): full food production — FOOD_BASE_PER_LEVEL × dev_AGRICULTURE ×
- *   (1 + structure bonuses) × (0.5 + 0.5·prosperity/100), granary cap, fractional
- *   accumulation across ticks instead of per-tick floor.
+ * LIVE (Feature Set 2 F4):
+ *   - AGRI food production accrues per tick with an INTEGER carry (docs/02 §6
+ *     fractional accumulation): carry += floor(perDay); foodStock += carry div
+ *     TICKS_PER_DAY — low levels produce correctly instead of flooring to 0.
+ *   - ECON trickles ⚙ econCtUnitsPerLevelPerDay × level to the governor's CT
+ *     wallet per tick, same integer-carry scheme per governor.
+ *
+ * TODO(02 §6): structure bonuses, granary cap.
  * TODO(02 §3): prosperity target computation & per-tick movement (growth/decay).
  * TODO(02 §5): tax cycle every TAX_CYCLE_TICKS via double-entry LedgerEntry
  *   (economy package owns the ledger; this phase only requests draws).
@@ -128,11 +133,27 @@ export function runTick(
 function phaseProduction(state: WorldState, _tick: number, _rng: Rng, balance: Balance): void {
   for (const id of sortedIds(state.territories)) {
     const t = state.territories.get(id)!;
-    const perDay =
+    // Food (AGRI): integer-carry accrual — deterministic, never fractional stock.
+    const perDay = Math.floor(
       balance.food.productionBasePerAgriLevelPerDay *
-      t.development.AGRICULTURE *
-      (0.5 + 0.5 * (t.prosperity / 100));
-    t.foodStock += Math.floor(perDay / TICKS_PER_DAY); // placeholder rounding; see TODO
+        t.development.AGRICULTURE *
+        (0.5 + 0.5 * (t.prosperity / 100)),
+    );
+    if (perDay > 0) {
+      state.foodCarry ??= new Map();
+      const carry = (state.foodCarry.get(id) ?? 0) + perDay;
+      t.foodStock += Math.floor(carry / TICKS_PER_DAY);
+      state.foodCarry.set(id, carry % TICKS_PER_DAY);
+    }
+    // CT trickle (ECON, F4): governed territories pay their governor's wallet.
+    const econ = t.development.ECONOMY;
+    if (econ > 0 && t.governorKind !== 'SYSTEM' && state.ctBalances?.has(t.governorId) === true) {
+      state.econCarry ??= new Map();
+      const carry = (state.econCarry.get(t.governorId) ?? 0) + econ * balance.developmentEffects.econCtUnitsPerLevelPerDay;
+      const pay = Math.floor(carry / TICKS_PER_DAY);
+      if (pay > 0) state.ctBalances.set(t.governorId, state.ctBalances.get(t.governorId)! + pay);
+      state.econCarry.set(t.governorId, carry % TICKS_PER_DAY);
+    }
   }
 }
 
@@ -533,8 +554,16 @@ function resolveFieldBattle(
     }
   }
 
+  // DEF development (F4): the holder's garrison fights behind its earthworks —
+  // defender WarScore × (1 + ⚙ defenseWarScorePerLevel × DEFENSE level) when
+  // the defending side actually governs the parcel.
+  const defenseDev =
+    territory !== undefined && defenders.some((d) => d.ownerGovernorId === territory.governorId)
+      ? 1 + balance.developmentEffects.defenseWarScorePerLevel * territory.development.DEFENSE
+      : 1;
+
   const attackerScore = (atk.army + atk.hero) * terrainMod * atkEndurance * (1 + ccBonus);
-  const defenderScore = (def.army + def.hero) * terrainMod * defEndurance;
+  const defenderScore = (def.army + def.hero) * terrainMod * defEndurance * defenseDev;
   if (attackerScore === 0 && defenderScore === 0) return; // nothing to fight with
 
   // Logistics are SPENT whether the battle is won or lost (docs/04 §7c.2–3).
@@ -560,6 +589,7 @@ function resolveFieldBattle(
       attackerEndurance: atkEndurance,
       defenderEndurance: defEndurance,
       structures: ccBonus,
+      defenseDev,
     },
   };
 

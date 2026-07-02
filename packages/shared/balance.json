@@ -208,6 +208,13 @@
     "foodPerPop": 2,
     "walkInMinPopulation": 500
   },
+  "developmentEffects": {
+    "_note": "Feature Set 2 F4 ⚙ — how development tracks bite in the sim. AGRI production uses food.productionBasePerAgriLevelPerDay, applied per tick with an integer carry. defenseWarScorePerLevel: defender WarScore × (1 + x × DEFENSE level) in battles on the parcel. econCtUnitsPerLevelPerDay: CT trickle (ct_units) to the governor per ECONOMY level (integer carry per governor). milRaiseDiscountPerLevel: training-cost discount per MILITARY level of the raising parcel, capped at milRaiseDiscountMax. Level cap = development.maxLevel.",
+    "defenseWarScorePerLevel": 0.1,
+    "econCtUnitsPerLevelPerDay": 144000,
+    "milRaiseDiscountPerLevel": 0.05,
+    "milRaiseDiscountMax": 0.3
+  },
   "wildRaids": {
     "_note": "Active wild enemies ⚙ (Feature Set 2 F3). Every everyTicks each monster lair rolls chance = baseChance + edgeChanceBonus × normalized-distance-from-center; on a hit HALF the garrison marches (visible, interceptable) at the weakest player/NPC territory within raidRangeSteps (ungarrisoned preferred; garrisons at/above defendedStrengthThreshold are NEVER picked). Raiders auto-PILLAGE on victory/arrival (never occupy owned land); survivors auto-march home and re-merge into the lair.",
     "everyTicks": 50,

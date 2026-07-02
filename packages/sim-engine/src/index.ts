@@ -8,3 +8,4 @@ export * from './parcels';
 export * from './demoWorld';
 export * from './logistics';
 export * from './intel';
+export * from './develop';

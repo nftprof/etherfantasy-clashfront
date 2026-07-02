@@ -12,8 +12,8 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
 import { CONSTANTS, loadBalance } from '@clashfront/shared';
-import { armyStrength, type DemoWorldFile } from '@clashfront/sim-engine';
-import { Game, type GameConfig, parseMasterNames } from '../src/index';
+import { armyStrength, developCostCtUnits, type DemoWorldFile } from '@clashfront/sim-engine';
+import { ClashServer, Game, type GameConfig, parseMasterNames } from '../src/index';
 
 const CT = CONSTANTS.CT_UNITS_PER_CT;
 const BALANCE = loadBalance();
@@ -298,6 +298,73 @@ test('F2 towns: walk-in emits town_entered, resolves via /api/choice with the ch
     (e) => e.type === 'territory_occupied' && (e as any).battleId === entered.choiceId,
   );
   assert.ok(occupiedEv, 'territory_occupied event carries the choiceId');
+});
+
+// ── F4: development over the API + NPC investment ─────────────────────────────
+
+test('F4 develop: POST /api/develop — auth, ownership, track validation, cost, event, view', async () => {
+  const game = new Game(gameConfig({ seed: 'fs2-develop' }));
+  const server = new ClashServer({ game, port: 0, tickMs: null, saveMs: null });
+  const port = await server.start();
+  const base = `http://127.0.0.1:${port}`;
+  try {
+    const join = await fetch(`${base}/api/join`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ name: 'Alice' }),
+    }).then((r) => r.json() as any);
+    const home = claimableIds(game)[0]!;
+    game.claim(join.governorId, home);
+
+    const post = (body: unknown, token = join.token) =>
+      fetch(`${base}/api/develop`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', authorization: `Bearer ${token}` },
+        body: JSON.stringify(body),
+      });
+
+    assert.equal((await post({ territoryId: home, track: 'ECONOMY' }, 'nope')).status, 401);
+    const badTrack = await post({ territoryId: home, track: 'VIBES' });
+    assert.equal(badTrack.status, 400);
+    assert.equal((await badTrack.json() as any).error.code, 'BAD_TRACK');
+    const foreign = claimableIds(game)[1]!;
+    assert.equal((await post({ territoryId: foreign, track: 'ECONOMY' })).status, 403);
+
+    const wallet0 = game.state.ctBalances!.get(join.governorId)!;
+    const ok = await post({ territoryId: home, track: 'ECONOMY' });
+    assert.equal(ok.status, 200);
+    const body = (await ok.json()) as any;
+    assert.equal(body.level, 1);
+    assert.equal(body.track, 'ECONOMY');
+    assert.equal(body.costCtUnits, developCostCtUnits('ECONOMY', 0, BALANCE));
+    assert.equal(body.ctUnits, wallet0 - body.costCtUnits);
+    assert.equal(body.territory.development.ECONOMY, 1, 'TerritoryView exposes the new level');
+    const result = game.tick();
+    const ev = result.events.find((e) => e.type === 'territory_developed') as any;
+    assert.ok(ev, 'territory_developed event expected');
+    assert.equal(ev.governorId, join.governorId);
+    assert.equal(ev.track, 'ECONOMY');
+    assert.equal(ev.level, 1);
+  } finally {
+    await server.stop();
+  }
+});
+
+test('F4 develop: the NPC kingdom invests round-robin in its strongest territory', () => {
+  const game = new Game(gameConfig({ seed: 'fs2-npc-dev', npcEveryTicks: 2 }));
+  const events: string[] = [];
+  const tracksSeen = new Set<string>();
+  for (let i = 0; i < 16; i++) {
+    for (const e of game.tick().events) {
+      events.push(e.type);
+      if (e.type === 'territory_developed') tracksSeen.add((e as any).track);
+    }
+  }
+  assert.ok(events.includes('territory_developed'), 'NPC must develop');
+  assert.ok(tracksSeen.size >= 3, `round-robin across tracks (saw: ${[...tracksSeen].join(',')})`);
+  const npcHome = [...game.state.territories.values()].find((t) => t.governorId === game.npcGovernorId)!;
+  const total = Object.values(npcHome.development).reduce((n, l) => n + l, 0);
+  assert.ok(total >= 3, 'levels actually landed on the NPC home');
 });
 
 test('F1 fog: intel memory survives the snapshot save/load roundtrip', () => {

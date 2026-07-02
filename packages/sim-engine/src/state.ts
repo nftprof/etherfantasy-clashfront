@@ -133,6 +133,10 @@ export interface WorldState {
   walkInOutcomes?: WalkInOutcome[];
   /** Live wild-raid provenance (F3): raid armyId → home lair record. Snapshot-safe. */
   wildRaids?: Map<string, WildRaidRecord>;
+  /** F4 AGRI: territoryId → fractional food-production carry (integer, /TICKS_PER_DAY units). */
+  foodCarry?: Map<string, number>;
+  /** F4 ECON: governorId → fractional CT-trickle carry (integer ct_units·ticks, /TICKS_PER_DAY units). */
+  econCarry?: Map<string, number>;
 }
 
 /**

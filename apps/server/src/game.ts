@@ -20,6 +20,8 @@ import {
   type Army,
   type Balance,
   createRng,
+  DEVELOPMENT_TRACKS,
+  type DevelopmentTrack,
   type GovernorKind,
   type PostVictoryAction,
   type Rng,
@@ -33,6 +35,7 @@ import {
   claimTerritory,
   computeIntel,
   DEMO_ARMY_PRESETS,
+  developTerritory,
   type DemoArmyPreset,
   type DemoOfficer,
   type DemoWorldFile,
@@ -91,6 +94,8 @@ function translateSimError(e: unknown): ApiError {
   if (msg.includes('oversight cap')) return new ApiError(409, 'OVERSIGHT_CAP', msg);
   if (msg.includes('no free officer')) return new ApiError(409, 'NO_FREE_OFFICER', msg);
   if (msg.includes('insufficient CT')) return new ApiError(400, 'INSUFFICIENT_CT', msg);
+  if (msg.includes('already at max level')) return new ApiError(409, 'MAX_DEV_LEVEL', msg);
+  if (msg.includes('ungoverned wilds')) return new ApiError(409, 'UNGOVERNED', msg);
   if (msg.includes('not adjacent')) return new ApiError(400, 'BAD_PATH', msg);
   if (msg.includes('is not an officer')) return new ApiError(400, 'BAD_HERO', msg);
   if (msg.includes('must be in GARRISON')) return new ApiError(409, 'NOT_IN_GARRISON', msg);
@@ -171,6 +176,17 @@ export type GameEvent =
   | { type: 'territory_occupied'; tick: number; battleId: string; territoryId: string; parcelId: string; governorId: string; lootCt: number }
   | { type: 'territory_pillaged'; tick: number; battleId: string; territoryId: string; parcelId: string; governorId: string; lootCt: number }
   | { type: 'npc_expand'; tick: number; governorId: string; armyId: string; fromParcelId: string; toParcelId: string }
+  | {
+      /** F4: a development track leveled up (player order or NPC round-robin). */
+      type: 'territory_developed';
+      tick: number;
+      territoryId: string;
+      parcelId: string;
+      governorId: string;
+      track: string;
+      level: number;
+      costCtUnits: number;
+    }
   | {
       /** F3: a monster lair split a raid army that is now marching (visible, interceptable). */
       type: 'wild_raid';
@@ -261,6 +277,9 @@ interface SerializedWorldState {
   walkInOutcomes?: WalkInOutcome[];
   /** Live wild-raid provenance (F3). Optional for older saves. */
   wildRaids?: [string, WildRaidRecord][];
+  /** F4 production/trickle carries. Optional for older saves. */
+  foodCarry?: [string, number][];
+  econCarry?: [string, number][];
 }
 
 // ── The game ─────────────────────────────────────────────────────────────────
@@ -453,8 +472,9 @@ export class Game {
     return {
       army: armyView(this.state, army, this.parcelByHex, this.balance, this.config.tickOptions, this.viewerContext(governorId))!,
       ctUnits: this.state.ctBalances?.get(governorId) ?? 0,
-      // Training + standard provision pack breakdown (docs/04 §7c.1).
-      cost: raiseCost(preset as DemoArmyPreset, this.balance),
+      // Training + standard provision pack breakdown (docs/04 §7c.1),
+      // including the parcel's F4 MIL-track training discount.
+      cost: raiseCost(preset as DemoArmyPreset, this.balance, t.development.MILITARY),
     };
   }
 
@@ -491,6 +511,46 @@ export class Game {
       army: armyView(this.state, a, this.parcelByHex, this.balance, this.config.tickOptions, this.viewerContext(governorId))!,
       ctUnits: this.state.ctBalances?.get(governorId) ?? 0,
       costCtUnits,
+    };
+  }
+
+  /**
+   * POST /api/develop — raise one development track on an owned territory (F4).
+   * CT cost = ⚙ base × growth^currentLevel, cap ⚙ development.maxLevel.
+   */
+  develop(
+    governorId: string,
+    territoryId: unknown,
+    track: unknown,
+  ): { territory: TerritoryView; ctUnits: number; costCtUnits: number; track: DevelopmentTrack; level: number } {
+    const t = this.getTerritory(territoryId);
+    if (t.governorId !== governorId) throw new ApiError(403, 'NOT_YOUR_TERRITORY', `${t.name} is not governed by you`);
+    if (typeof track !== 'string' || !DEVELOPMENT_TRACKS.includes(track as DevelopmentTrack)) {
+      throw new ApiError(400, 'BAD_TRACK', `track must be one of ${DEVELOPMENT_TRACKS.join(', ')}`);
+    }
+    let level: number;
+    let costCtUnits: number;
+    try {
+      ({ level, costCtUnits } = developTerritory(this.state, t.id, track as DevelopmentTrack, this.balance));
+    } catch (e) {
+      throw translateSimError(e);
+    }
+    this.pendingEvents.push({
+      type: 'territory_developed',
+      tick: this.state.world.tick,
+      territoryId: t.id,
+      parcelId: this.parcelId(t.hexIds[0]!),
+      governorId,
+      track,
+      level,
+      costCtUnits,
+    });
+    return {
+      territory: territoryView(this.state, t, this.parcelByHex, this.balance, this.viewerContext(governorId)),
+      ctUnits: this.state.ctBalances?.get(governorId) ?? 0,
+      costCtUnits,
+      track: track as DevelopmentTrack,
+      level,
     };
   }
 
@@ -810,6 +870,24 @@ export class Game {
       }
     }
     if (best === undefined) return; // kingdom wiped out
+
+    // F4: the kingdom invests too — strongest territory, round-robin across tracks.
+    const track = DEVELOPMENT_TRACKS[Math.floor(tick / this.config.npcEveryTicks) % DEVELOPMENT_TRACKS.length]!;
+    try {
+      const dev = developTerritory(this.state, best.t.id, track, this.balance);
+      events.push({
+        type: 'territory_developed',
+        tick,
+        territoryId: best.t.id,
+        parcelId: this.parcelId(best.t.hexIds[0]!),
+        governorId: gov,
+        track,
+        level: dev.level,
+        costCtUnits: dev.costCtUnits,
+      });
+    } catch {
+      // maxed out or the war chest can't afford it — the kingdom skips the upgrade
+    }
 
     let army: Army;
     try {
@@ -1225,6 +1303,8 @@ function serializeWorldState(state: WorldState): SerializedWorldState {
     ),
     walkInOutcomes: [...(state.walkInOutcomes ?? [])],
     wildRaids: [...(state.wildRaids ?? new Map<string, WildRaidRecord>()).entries()],
+    foodCarry: [...(state.foodCarry ?? new Map<string, number>()).entries()],
+    econCarry: [...(state.econCarry ?? new Map<string, number>()).entries()],
   };
 }
 
@@ -1255,6 +1335,8 @@ function deserializeWorldState(s: SerializedWorldState): WorldState {
     intel: new Map((s.intel ?? []).map(([gov, mem]) => [gov, new Map(mem)])),
     walkInOutcomes: s.walkInOutcomes ?? [],
     wildRaids: new Map(s.wildRaids ?? []),
+    foodCarry: new Map(s.foodCarry ?? []),
+    econCarry: new Map(s.econCarry ?? []),
   };
 }
 
