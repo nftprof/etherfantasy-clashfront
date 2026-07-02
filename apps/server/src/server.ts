@@ -43,7 +43,8 @@ const MIME: Record<string, string> = {
 export class ClashServer {
   readonly http: http.Server;
   private readonly wss = new WebSocketServer({ noServer: true });
-  private readonly clients = new Set<WebSocket>();
+  /** socket → viewing governorId (fog filtering is per governor — F1). */
+  private readonly clients = new Map<WebSocket, string>();
   private readonly game: Game;
   private readonly publicDir: string;
   private readonly worldBody: string;
@@ -102,12 +103,27 @@ export class ClashServer {
     });
   }
 
-  /** Advance one world tick and broadcast the delta to every WS client. */
+  /**
+   * Advance one world tick and broadcast per-viewer fog-filtered deltas (F1).
+   * The returned TickResult stays OMNISCIENT (server-side/test use); each WS
+   * client receives events + deltas filtered by ITS governor's intel.
+   */
   tickOnce(): TickResult {
     const result = this.game.tick();
-    const msg = JSON.stringify({ t: 'tick', tick: result.tick, events: result.events, deltas: result.deltas });
-    for (const ws of this.clients) {
-      if (ws.readyState === ws.OPEN) ws.send(msg);
+    const perGovernor = new Map<string, string>(); // governorId → serialized payload
+    for (const [ws, governorId] of this.clients) {
+      if (ws.readyState !== ws.OPEN) continue;
+      let msg = perGovernor.get(governorId);
+      if (msg === undefined) {
+        msg = JSON.stringify({
+          t: 'tick',
+          tick: result.tick,
+          events: this.game.eventsFor(governorId, result.events),
+          deltas: this.game.deltasFor(governorId),
+        });
+        perGovernor.set(governorId, msg);
+      }
+      ws.send(msg);
     }
     return result;
   }
@@ -121,7 +137,7 @@ export class ClashServer {
     } catch (e) {
       console.error('[server] final snapshot failed:', e);
     }
-    for (const ws of this.clients) ws.terminate();
+    for (const ws of this.clients.keys()) ws.terminate();
     this.clients.clear();
     await new Promise<void>((resolve) => {
       this.wss.close(() => resolve());
@@ -146,7 +162,7 @@ export class ClashServer {
       return;
     }
     this.wss.handleUpgrade(req, socket, head, (ws) => {
-      this.clients.add(ws);
+      this.clients.set(ws, session.governorId);
       ws.on('close', () => this.clients.delete(ws));
       ws.on('error', () => this.clients.delete(ws));
       ws.send(JSON.stringify({ t: 'hello', tick: this.game.state.world.tick, playerId: session.playerId }));
@@ -182,7 +198,9 @@ export class ClashServer {
     }
     if (path === '/api/state' && method === 'GET') {
       const session = this.game.sessionByToken(bearerToken(req));
-      const state = this.game.publicState();
+      // Fog of war (F1): the snapshot is filtered by the viewer's intel;
+      // anonymous spectators get ownership/prosperity only (all-UNKNOWN).
+      const state = this.game.stateFor(session?.governorId);
       sendJson(res, 200, session === undefined ? state : { ...state, my: this.game.myState(session.governorId) });
       return;
     }

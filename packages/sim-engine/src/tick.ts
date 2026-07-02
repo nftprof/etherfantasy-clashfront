@@ -30,6 +30,7 @@ import {
   newId,
 } from '@clashfront/shared';
 import type { Army, BattleInstance, Territory } from '@clashfront/shared';
+import { updateIntelMemory } from './intel';
 import { battleFoodNeed, enduranceMultiplier, marchFoodPerStep, troopCount } from './logistics';
 import { type ArmyRetreatRecord, type BattleLogisticsRecord, sortedIds, type WorldState } from './state';
 
@@ -891,9 +892,12 @@ export function freeOfficer(state: WorldState, gov: string) {
  * NPC Kingdom governors + army AI issue next-tick orders. AI acts LAST, on a
  * settled world; its orders take effect next tick, submitted like a player's.
  *
- * TODO(06): governor/military/diplomacy/economy AI. This hook only collects
- *   orders into the command queue — it must never mutate sim state directly.
+ * LIVE (Feature Set 2): intel-memory bookkeeping (F1 scout reveal/decay) runs
+ * here on the settled world — pure per-governor sight recording.
+ *
+ * TODO(06): governor/military/diplomacy/economy AI (the NPC kingdom currently
+ *   lives in the server layer and reads raw state — it may cheat on fog for now).
  */
-function phaseAiHook(_state: WorldState, _tick: number, _rng: Rng, _balance: Balance): void {
-  // Stub — ai package plugs in here.
+function phaseAiHook(state: WorldState, tick: number, _rng: Rng, balance: Balance): void {
+  updateIntelMemory(state, tick, balance);
 }

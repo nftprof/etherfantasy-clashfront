@@ -99,6 +99,13 @@ export interface WorldState {
   monsterNames?: Map<string, string>;
   /** battleId → logistics outcome (endurance/CC terms, TIE, retreat resolution — docs/04 §7c). */
   battleLogistics?: Map<string, BattleLogisticsRecord>;
+  /**
+   * Intel memory (F1 fog of war): governorId → hexId → last tick the parcel was
+   * inside one of the governor's ACCURATE sources. Within balance.intel.decayTicks
+   * the memory still grades ACCURATE; older entries grade FUZZY forever.
+   * Updated once per tick in the AI phase; snapshot-safe.
+   */
+  intel?: Map<string, Map<string, number>>;
 }
 
 /**

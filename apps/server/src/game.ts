@@ -31,11 +31,14 @@ import {
   armyStrength,
   type BattleLogisticsRecord,
   claimTerritory,
+  computeIntel,
   DEMO_ARMY_PRESETS,
   type DemoArmyPreset,
   type DemoOfficer,
   type DemoWorldFile,
   findPath,
+  type IntelGrade,
+  intelGrade,
   loadDemoWorld,
   marchFoodPerStep,
   orderMarch,
@@ -59,6 +62,7 @@ import {
   buildParcelByHex,
   territoryView,
   type TerritoryView,
+  type ViewerContext,
   type WorldParcelView,
 } from './views';
 
@@ -220,6 +224,8 @@ interface SerializedWorldState {
   monsterNames: [string, string][];
   /** Optional for pre-logistics saves (Stream B, docs/04 §7c). */
   battleLogistics?: [string, BattleLogisticsRecord][];
+  /** Intel memory (F1): governorId → [hexId, lastAccurateTick][]. Optional for pre-fog saves. */
+  intel?: [string, [string, number][]][];
 }
 
 // ── The game ─────────────────────────────────────────────────────────────────
@@ -233,6 +239,7 @@ export class Game {
   private readonly baseRng: Rng;
   private readonly balance: Balance = loadBalance();
   private readonly parcelByHex: Map<string, string>;
+  private readonly hexByParcel = new Map<string, string>();
   private orderSeq = 0;
   private pendingEvents: GameEvent[] = [];
   /** Battles whose territory outcome event has already been emitted (rebuilt on load). */
@@ -242,6 +249,11 @@ export class Game {
     armies: new Map<string, string>(),
     battles: new Map<string, string>(),
   };
+  /** Per-viewer delta caches (F1 fog): governorId → view JSON caches. */
+  private readonly viewerLastViews = new Map<
+    string,
+    { territories: Map<string, string>; armies: Map<string, string>; battles: Map<string, string> }
+  >();
 
   constructor(private readonly config: GameConfig) {
     this.baseRng = createRng(config.seed);
@@ -261,6 +273,7 @@ export class Game {
       if (config.npcEveryTicks > 0) this.seedNpcKingdom();
     }
     this.parcelByHex = buildParcelByHex(this.state);
+    for (const [hexId, parcelId] of this.parcelByHex) this.hexByParcel.set(parcelId, hexId);
   }
 
   // ── Boot-time governors ────────────────────────────────────────────────────
@@ -371,7 +384,7 @@ export class Game {
       parcelId: this.parcelId(t.hexIds[0]!),
       governorId,
     });
-    return territoryView(this.state, t, this.parcelByHex);
+    return territoryView(this.state, t, this.parcelByHex, this.balance, this.viewerContext(governorId));
   }
 
   raise(
@@ -403,7 +416,7 @@ export class Game {
       preset,
     });
     return {
-      army: armyView(this.state, army, this.parcelByHex, this.balance, this.config.tickOptions),
+      army: armyView(this.state, army, this.parcelByHex, this.balance, this.config.tickOptions, this.viewerContext(governorId))!,
       ctUnits: this.state.ctBalances?.get(governorId) ?? 0,
       // Training + standard provision pack breakdown (docs/04 §7c.1).
       cost: raiseCost(preset as DemoArmyPreset, this.balance),
@@ -440,7 +453,7 @@ export class Game {
       throw translateSimError(e);
     }
     return {
-      army: armyView(this.state, a, this.parcelByHex, this.balance, this.config.tickOptions),
+      army: armyView(this.state, a, this.parcelByHex, this.balance, this.config.tickOptions, this.viewerContext(governorId))!,
       ctUnits: this.state.ctBalances?.get(governorId) ?? 0,
       costCtUnits,
     };
@@ -462,7 +475,7 @@ export class Game {
     } catch (e) {
       throw translateSimError(e);
     }
-    const view = armyView(this.state, a, this.parcelByHex, this.balance, this.config.tickOptions);
+    const view = armyView(this.state, a, this.parcelByHex, this.balance, this.config.tickOptions, this.viewerContext(governorId))!;
     const etaTick = view.etaTick ?? this.state.world.tick;
     this.pendingEvents.push({
       type: 'march_ordered',
@@ -512,7 +525,7 @@ export class Game {
     }
     this.emitOutcomeEvent(battleId, this.state.world.tick);
     return {
-      battle: battleView(this.state, this.state.battles.get(battleId)!, this.parcelByHex),
+      battle: battleView(this.state, this.state.battles.get(battleId)!, this.parcelByHex, this.balance, this.viewerContext(governorId))!,
       ctUnits: this.state.ctBalances?.get(governorId) ?? 0,
     };
   }
@@ -551,7 +564,7 @@ export class Game {
     // logistics outcomes (tie / retreat / scatter).
     for (const id of sortedIds(this.state.battles)) {
       if (preBattles.has(id)) continue;
-      const v = battleView(this.state, this.state.battles.get(id)!, this.parcelByHex);
+      const v = battleView(this.state, this.state.battles.get(id)!, this.parcelByHex, this.balance)!;
       events.push({
         type: 'battle_resolved',
         tick,
@@ -561,8 +574,8 @@ export class Game {
         ...(v.outcome !== undefined ? { outcome: v.outcome } : {}),
         attackerGovernorIds: v.attackerGovernorIds,
         defenderGovernorIds: v.defenderGovernorIds,
-        attackerScore: v.attackerScore,
-        defenderScore: v.defenderScore,
+        attackerScore: v.attackerScore ?? 0,
+        defenderScore: v.defenderScore ?? 0,
       });
       const logi: BattleLogisticsRecord | undefined = this.state.battleLogistics?.get(id);
       if (logi === undefined) continue;
@@ -788,25 +801,43 @@ export class Game {
     };
   }
 
-  /** Full public dynamic state (GET /api/state); `my` block appended by the caller when authed. */
-  publicState(): {
+  /**
+   * Per-viewer intel context (F1 fog): grades computed fresh from live state
+   * so order responses reflect ownership changes immediately. `undefined`
+   * governorId = anonymous spectator — everything grades UNKNOWN (ownership/
+   * prosperity stay public on territory views).
+   */
+  viewerContext(governorId?: string): ViewerContext {
+    const period = Math.floor(this.state.world.tick / this.balance.intel.fuzzyPeriodTicks);
+    if (governorId === undefined) return { grades: new Map<string, IntelGrade>(), period };
+    return { governorId, grades: computeIntel(this.state, governorId, this.balance), period };
+  }
+
+  /**
+   * Full dynamic state (GET /api/state), fog-filtered for `viewerGovernorId`
+   * (undefined = anonymous spectator: ownership/prosperity only, no military).
+   */
+  stateFor(viewerGovernorId?: string): {
     tick: number;
     players: GovernorMeta[];
     territories: TerritoryView[];
     armies: ArmyView[];
     battles: BattleView[];
   } {
+    const viewer = this.viewerContext(viewerGovernorId);
     const territories = sortedIds(this.state.territories).map((id) =>
-      territoryView(this.state, this.state.territories.get(id)!, this.parcelByHex),
+      territoryView(this.state, this.state.territories.get(id)!, this.parcelByHex, this.balance, viewer),
     );
     const armies: ArmyView[] = [];
     for (const id of sortedIds(this.state.armies)) {
       const a = this.state.armies.get(id)!;
       if (a.state === 'DISBANDED') continue;
-      armies.push(armyView(this.state, a, this.parcelByHex, this.balance, this.config.tickOptions));
+      const v = armyView(this.state, a, this.parcelByHex, this.balance, this.config.tickOptions, viewer);
+      if (v !== undefined) armies.push(v);
     }
     const battles = sortedIds(this.state.battles)
-      .map((id) => battleView(this.state, this.state.battles.get(id)!, this.parcelByHex))
+      .map((id) => battleView(this.state, this.state.battles.get(id)!, this.parcelByHex, this.balance, viewer))
+      .filter((v): v is BattleView => v !== undefined)
       .sort((a, b) => b.resolvedTick - a.resolvedTick || (a.id < b.id ? -1 : 1))
       .slice(0, 25);
     return {
@@ -854,11 +885,11 @@ export class Game {
 
   // ── Deltas ────────────────────────────────────────────────────────────────
 
-  /** Changed-subset views since the last broadcast (JSON-string compare — cheap at 648 parcels). */
+  /** OMNISCIENT changed-subset views since the last tick (tickOnce() return value / server-side use). */
   private computeDeltas(): TickDeltas {
     const territories: TerritoryView[] = [];
     for (const id of sortedIds(this.state.territories)) {
-      const v = territoryView(this.state, this.state.territories.get(id)!, this.parcelByHex);
+      const v = territoryView(this.state, this.state.territories.get(id)!, this.parcelByHex, this.balance);
       const s = JSON.stringify(v);
       if (this.lastViews.territories.get(id) !== s) {
         this.lastViews.territories.set(id, s);
@@ -867,7 +898,7 @@ export class Game {
     }
     const armies: ArmyView[] = [];
     for (const id of sortedIds(this.state.armies)) {
-      const v = armyView(this.state, this.state.armies.get(id)!, this.parcelByHex, this.balance, this.config.tickOptions);
+      const v = armyView(this.state, this.state.armies.get(id)!, this.parcelByHex, this.balance, this.config.tickOptions)!;
       const s = JSON.stringify(v);
       if (this.lastViews.armies.get(id) !== s) {
         this.lastViews.armies.set(id, s);
@@ -876,7 +907,7 @@ export class Game {
     }
     const battles: BattleView[] = [];
     for (const id of sortedIds(this.state.battles)) {
-      const v = battleView(this.state, this.state.battles.get(id)!, this.parcelByHex);
+      const v = battleView(this.state, this.state.battles.get(id)!, this.parcelByHex, this.balance)!;
       const s = JSON.stringify(v);
       if (this.lastViews.battles.get(id) !== s) {
         this.lastViews.battles.set(id, s);
@@ -884,6 +915,88 @@ export class Game {
       }
     }
     return { territories, armies, battles };
+  }
+
+  /**
+   * Fog-filtered changed-subset views for one viewer (F1). Each viewer has its
+   * own compare cache, so intel-grade transitions (army marches into/out of
+   * sight, scout memory decays) surface as deltas even when the underlying
+   * entity did not change. An army leaving the viewer's intel is sent ONCE as
+   * `{id, hidden:true}` so the client drops its marker.
+   */
+  deltasFor(viewerGovernorId: string): TickDeltas {
+    const viewer = this.viewerContext(viewerGovernorId);
+    let cache = this.viewerLastViews.get(viewerGovernorId);
+    if (cache === undefined) {
+      cache = { territories: new Map(), armies: new Map(), battles: new Map() };
+      this.viewerLastViews.set(viewerGovernorId, cache);
+    }
+    const territories: TerritoryView[] = [];
+    for (const id of sortedIds(this.state.territories)) {
+      const v = territoryView(this.state, this.state.territories.get(id)!, this.parcelByHex, this.balance, viewer);
+      const s = JSON.stringify(v);
+      if (cache.territories.get(id) !== s) {
+        cache.territories.set(id, s);
+        territories.push(v);
+      }
+    }
+    const armies: ArmyView[] = [];
+    const HIDDEN = 'hidden';
+    for (const id of sortedIds(this.state.armies)) {
+      const a = this.state.armies.get(id)!;
+      const v = armyView(this.state, a, this.parcelByHex, this.balance, this.config.tickOptions, viewer);
+      if (v === undefined) {
+        // Out of intel: tombstone once if the viewer had previously seen it.
+        const prev = cache.armies.get(id);
+        if (prev !== undefined && prev !== HIDDEN) {
+          cache.armies.set(id, HIDDEN);
+          armies.push({ id, hidden: true });
+        }
+        continue;
+      }
+      const s = JSON.stringify(v);
+      if (cache.armies.get(id) !== s) {
+        cache.armies.set(id, s);
+        armies.push(v);
+      }
+    }
+    const battles: BattleView[] = [];
+    for (const id of sortedIds(this.state.battles)) {
+      const v = battleView(this.state, this.state.battles.get(id)!, this.parcelByHex, this.balance, viewer);
+      if (v === undefined) continue;
+      const s = JSON.stringify(v);
+      if (cache.battles.get(id) !== s) {
+        cache.battles.set(id, s);
+        battles.push(v);
+      }
+    }
+    return { territories, armies, battles };
+  }
+
+  /**
+   * Fog-filter a tick's event list for one viewer (F1). An event passes when
+   * the viewer is involved (their governorId appears in it), or every viewer-
+   * private type check passes and at least one referenced parcel is ACCURATE.
+   * choice_pending is strictly private to the choosing governor.
+   */
+  eventsFor(viewerGovernorId: string, events: readonly GameEvent[]): GameEvent[] {
+    const viewer = this.viewerContext(viewerGovernorId);
+    const accurate = (parcelId: unknown): boolean => {
+      if (typeof parcelId !== 'string') return false;
+      const hexId = this.hexByParcel.get(parcelId);
+      return hexId !== undefined && intelGrade(viewer.grades, hexId) === 'ACCURATE';
+    };
+    return events.filter((e) => {
+      const rec = e as unknown as Record<string, unknown>;
+      const involved =
+        rec['governorId'] === viewerGovernorId ||
+        (Array.isArray(rec['attackerGovernorIds']) && (rec['attackerGovernorIds'] as string[]).includes(viewerGovernorId)) ||
+        (Array.isArray(rec['defenderGovernorIds']) && (rec['defenderGovernorIds'] as string[]).includes(viewerGovernorId));
+      if (e.type === 'choice_pending') return rec['governorId'] === viewerGovernorId;
+      if (involved) return true;
+      if (e.type === 'player_joined') return true;
+      return accurate(rec['parcelId']) || accurate(rec['fromParcelId']) || accurate(rec['toParcelId']);
+    });
   }
 
   // ── Persistence (JSON snapshot, atomic write) ─────────────────────────────
@@ -966,6 +1079,9 @@ function serializeWorldState(state: WorldState): SerializedWorldState {
     pendingChoices: [...(state.pendingChoices ?? new Map()).entries()],
     monsterNames: [...(state.monsterNames ?? new Map<string, string>()).entries()],
     battleLogistics: [...(state.battleLogistics ?? new Map<string, BattleLogisticsRecord>()).entries()],
+    intel: [...(state.intel ?? new Map<string, Map<string, number>>()).entries()].map(
+      ([gov, mem]) => [gov, [...mem.entries()]] as [string, [string, number][]],
+    ),
   };
 }
 
@@ -985,6 +1101,7 @@ function deserializeWorldState(s: SerializedWorldState): WorldState {
     pendingChoices: new Map(s.pendingChoices) as WorldState['pendingChoices'],
     monsterNames: new Map(s.monsterNames),
     battleLogistics: new Map(s.battleLogistics ?? []),
+    intel: new Map((s.intel ?? []).map(([gov, mem]) => [gov, new Map(mem)])),
   };
 }
 

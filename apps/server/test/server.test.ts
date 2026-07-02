@@ -121,20 +121,24 @@ test('e2e: join → claim adjacent → raise → march into each other → battl
     const cached = await api(base, '/api/world', { headers: { 'if-none-match': etag } });
     assert.equal(cached.status, 304);
 
-    // pick two adjacent claimable parcels off the public state
+    // pick two adjacent claimable parcels straight off the sim state — the
+    // public state is fog-filtered now (F1), so garrison-freeness of far
+    // parcels is deliberately NOT visible over the API.
     const state0 = (await api(base, '/api/state', { token: a.token })).json;
     assert.equal(state0.my.ctBalance, 2000 * CT);
-    const terrByParcel = new Map<string, any>(state0.territories.map((t: any) => [t.parcelId, t]));
+    const parcelViewById = new Map<string, any>(world.json.parcels.map((p: any) => [p.id, p]));
     const free = (pid: string): boolean => {
-      const t = terrByParcel.get(pid);
-      return t !== undefined && t.governorKind === 'SYSTEM' && t.garrison === undefined;
+      const p = parcelViewById.get(pid);
+      if (p === undefined) return false;
+      const t = game.state.territories.get(p.territoryId);
+      return t !== undefined && t.governorKind === 'SYSTEM' && t.garrisonArmyId === undefined;
     };
     const pair = world.json.parcels.find((p: any) => free(p.id) && p.neighbors.some(free));
     assert.ok(pair, 'no adjacent free parcel pair in the demo world');
     const parcelA = pair.id as string;
     const parcelB = pair.neighbors.find(free) as string;
-    const terrA = terrByParcel.get(parcelA)!.id as string;
-    const terrB = terrByParcel.get(parcelB)!.id as string;
+    const terrA = parcelViewById.get(parcelA)!.territoryId as string;
+    const terrB = parcelViewById.get(parcelB)!.territoryId as string;
 
     // claim: auth required, double-claim rejected
     assert.equal((await api(base, '/api/claim', { body: { territoryId: terrA } })).status, 401);

@@ -147,11 +147,27 @@ export interface Balance {
     /** Attacker temporary command-center tiers (camp → palisade → fortified camp); requirements scale per 100 attacker soldiers; the tier cost is SPENT win or lose. */
     commandCenterTiers: { goldPer100: number; woodPer100: number; bonus: number }[];
   };
+  /** Fog of war ⚙ — Feature Set 2 F1 (docs/briefs/FEATURESET-2.md). */
+  intel: {
+    /** Ticks a scouted parcel stays ACCURATE after last sight before decaying to FUZZY memory. */
+    decayTicks: number;
+    /** Fuzzy display bands reroll every this many ticks ("a day" for band stability). */
+    fuzzyPeriodTicks: number;
+    /** Cap on the territory-cluster sight radius 1 + floor(sqrt(clusterSize)/2). */
+    clusterRadiusCap: number;
+    /** Sight (adjacency steps) of a regular army. */
+    armySight: number;
+    /** Sight of a cavalry-majority scout screen (SCOUTS preset). */
+    scoutSight: number;
+    /** Fuzzy band half-width as a fraction of true strength (±35% default). */
+    fuzzyBandPct: number;
+  };
 }
 
 const REQUIRED_SECTIONS: readonly (keyof Balance)[] = [
   'travel', 'development', 'tax', 'prosperity', 'food', 'population',
   'supply', 'morale', 'desertion', 'upkeep', 'units', 'pillageOccupy', 'draft', 'provisions', 'claims',
+  'intel',
 ];
 
 function resolveBalancePath(): string {
