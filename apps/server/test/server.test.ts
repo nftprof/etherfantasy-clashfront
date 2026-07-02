@@ -13,7 +13,7 @@ import { existsSync, mkdtempSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
-import { CONSTANTS } from '@clashfront/shared';
+import { CONSTANTS, loadBalance } from '@clashfront/shared';
 import type { DemoWorldFile } from '@clashfront/sim-engine';
 import { ClashServer, Game, type GameConfig, HERO_NAMES, officerNamesForJoin, parseMasterNames } from '../src/index';
 
@@ -155,6 +155,24 @@ test('e2e: join → claim adjacent → raise → march into each other → battl
     assert.ok(a1.army.heroName, 'auto-assigned officer should lead the army');
     assert.ok(a2.ctUnits < a1.ctUnits, 'raising must charge the wallet');
 
+    // battle logistics (docs/04 §7c): raise exposes the cost breakdown + the standard pack
+    assert.equal(a1.cost.totalCtUnits, a1.cost.unitsCtUnits + a1.cost.provisionsCtUnits);
+    assert.deepEqual(a1.army.provisions, a1.cost.provisions);
+    assert.ok(a1.army.provisions.food > 0 && a1.army.foodPerStep >= 1);
+
+    // /api/provision: ownership + amounts enforced; CT charged at balance prices
+    const foodPrice = loadBalance().provisions.ctUnitsPerFood;
+    const notYourArmy = await api(base, '/api/provision', { token: a.token, body: { armyId: b1.army.id, food: 10 } });
+    assert.equal(notYourArmy.status, 403);
+    assert.equal(notYourArmy.json.error.code, 'NOT_YOUR_ARMY');
+    const badAmount = await api(base, '/api/provision', { token: a.token, body: { armyId: a1.army.id, food: -5 } });
+    assert.equal(badAmount.status, 400);
+    assert.equal(badAmount.json.error.code, 'BAD_AMOUNT');
+    const prov = (await api(base, '/api/provision', { token: a.token, body: { armyId: a1.army.id, food: 10 } })).json;
+    assert.equal(prov.costCtUnits, 10 * foodPrice);
+    assert.equal(prov.army.provisions.food, a1.army.provisions.food + 10);
+    assert.equal(prov.ctUnits, a2.ctUnits - prov.costCtUnits);
+
     // WS: bad token refused; good token gets hello
     const wsMsgs: any[] = [];
     const badWs = new WebSocket(`ws://127.0.0.1:${port}/ws?token=nope`);
@@ -182,6 +200,11 @@ test('e2e: join → claim adjacent → raise → march into each other → battl
     assert.deepEqual(m1.army.path, [parcelB]);
     assert.equal((await api(base, '/api/march', { token: a.token, body: { armyId: a2.army.id, toTerritoryId: terrB } })).status, 200);
 
+    // provisioning is a GARRISON-only order — a marching army refuses
+    const marchingProv = await api(base, '/api/provision', { token: a.token, body: { armyId: a1.army.id, food: 1 } });
+    assert.equal(marchingProv.status, 409);
+    assert.equal(marchingProv.json.error.code, 'NOT_IN_GARRISON');
+
     // tick → arrival + same-tick AUTO battle
     const r1 = server.tickOnce();
     assert.equal(r1.tick, 1);
@@ -189,6 +212,7 @@ test('e2e: join → claim adjacent → raise → march into each other → battl
     assert.ok(battleEv, `expected a battle, got events: ${r1.events.map((e) => e.type).join(',')}`);
     assert.equal(battleEv.parcelId, parcelB);
     assert.equal(battleEv.winner, 'ATTACKER');
+    assert.equal(battleEv.outcome, 'DECISIVE_ATTACKER');
     assert.deepEqual(battleEv.attackerGovernorIds, [a.governorId]);
     assert.deepEqual(battleEv.defenderGovernorIds, [b.governorId]);
     assert.ok(r1.events.some((e) => e.type === 'army_arrived' && (e as any).armyId === a1.army.id));

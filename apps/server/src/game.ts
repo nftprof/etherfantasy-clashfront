@@ -29,6 +29,7 @@ import {
 import {
   addGovernor,
   armyStrength,
+  type BattleLogisticsRecord,
   claimTerritory,
   DEMO_ARMY_PRESETS,
   type DemoArmyPreset,
@@ -36,8 +37,12 @@ import {
   type DemoWorldFile,
   findPath,
   loadDemoWorld,
+  marchFoodPerStep,
   orderMarch,
+  provisionArmy,
   raiseArmy,
+  raiseCost,
+  type RaiseCostBreakdown,
   resolvePostVictory,
   runTick,
   sortedIds,
@@ -81,6 +86,9 @@ function translateSimError(e: unknown): ApiError {
   if (msg.includes('insufficient CT')) return new ApiError(400, 'INSUFFICIENT_CT', msg);
   if (msg.includes('not adjacent')) return new ApiError(400, 'BAD_PATH', msg);
   if (msg.includes('is not an officer')) return new ApiError(400, 'BAD_HERO', msg);
+  if (msg.includes('must be in GARRISON')) return new ApiError(409, 'NOT_IN_GARRISON', msg);
+  if (msg.includes('not at a friendly territory')) return new ApiError(409, 'NOT_FRIENDLY_TERRITORY', msg);
+  if (msg.includes('non-negative integer')) return new ApiError(400, 'BAD_AMOUNT', msg);
   return new ApiError(400, 'BAD_ORDER', msg);
 }
 
@@ -97,11 +105,43 @@ export type GameEvent =
       tick: number;
       battleId: string;
       parcelId: string;
+      /** 'ATTACKER' | 'DEFENDER' | 'DRAW'. */
       winner: string;
+      /** docs/04 §7c.6 outcome kind (DECISIVE_ATTACKER | DECISIVE_DEFENDER | TIE). */
+      outcome?: 'DECISIVE_ATTACKER' | 'DECISIVE_DEFENDER' | 'TIE';
       attackerGovernorIds: string[];
       defenderGovernorIds: string[];
       attackerScore: number;
       defenderScore: number;
+    }
+  | {
+      /** Battle clock expired below TIE_THRESHOLD — no territory change; the attacker retreats (docs/04 §7c.4). */
+      type: 'battle_tied';
+      tick: number;
+      battleId: string;
+      parcelId: string;
+      attackerGovernorIds: string[];
+      defenderGovernorIds: string[];
+    }
+  | {
+      /** A failed/tied attacker army fell back to an adjacent parcel (docs/04 §7c.5). */
+      type: 'army_retreated';
+      tick: number;
+      battleId: string;
+      armyId: string;
+      governorId: string;
+      fromParcelId: string;
+      toParcelId: string;
+    }
+  | {
+      /** A failed/tied attacker army had no retreat line: SCATTER_CASUALTY_PCT extra losses, morale collapse; disbanded = true when < ⚙10% remained. */
+      type: 'army_scattered';
+      tick: number;
+      battleId: string;
+      armyId: string;
+      governorId: string;
+      parcelId: string;
+      disbanded: boolean;
     }
   | { type: 'choice_pending'; tick: number; battleId: string; governorId: string; territoryId: string; parcelId: string; expiresTick: number }
   | { type: 'territory_occupied'; tick: number; battleId: string; territoryId: string; parcelId: string; governorId: string; lootCt: number }
@@ -178,6 +218,8 @@ interface SerializedWorldState {
   officers: [string, DemoOfficer[]][];
   pendingChoices: [string, unknown][];
   monsterNames: [string, string][];
+  /** Optional for pre-logistics saves (Stream B, docs/04 §7c). */
+  battleLogistics?: [string, BattleLogisticsRecord][];
 }
 
 // ── The game ─────────────────────────────────────────────────────────────────
@@ -331,7 +373,12 @@ export class Game {
     return territoryView(this.state, t, this.parcelByHex);
   }
 
-  raise(governorId: string, territoryId: unknown, preset: unknown, heroId?: unknown): { army: ArmyView; ctUnits: number } {
+  raise(
+    governorId: string,
+    territoryId: unknown,
+    preset: unknown,
+    heroId?: unknown,
+  ): { army: ArmyView; ctUnits: number; cost: RaiseCostBreakdown } {
     const t = this.getTerritory(territoryId);
     if (t.governorId !== governorId) throw new ApiError(403, 'NOT_YOUR_TERRITORY', `${t.name} is not governed by you`);
     if (typeof preset !== 'string' || !(preset in DEMO_ARMY_PRESETS)) {
@@ -357,6 +404,44 @@ export class Game {
     return {
       army: armyView(this.state, army, this.parcelByHex, this.balance, this.config.tickOptions),
       ctUnits: this.state.ctBalances?.get(governorId) ?? 0,
+      // Training + standard provision pack breakdown (docs/04 §7c.1).
+      cost: raiseCost(preset as DemoArmyPreset, this.balance),
+    };
+  }
+
+  /**
+   * POST /api/provision — buy food/gold/wood for an army with CT (docs/04 §7c.1).
+   * Only the owner may provision; the sim enforces GARRISON-at-friendly-territory.
+   */
+  provision(
+    governorId: string,
+    armyId: unknown,
+    food: unknown,
+    gold: unknown,
+    wood: unknown,
+  ): { army: ArmyView; ctUnits: number; costCtUnits: number } {
+    if (typeof armyId !== 'string') throw new ApiError(400, 'BAD_ARMY', 'armyId must be a string');
+    const a = this.state.armies.get(armyId);
+    if (a === undefined || a.state === 'DISBANDED') throw new ApiError(404, 'UNKNOWN_ARMY', `no such army ${armyId}`);
+    if (a.ownerGovernorId !== governorId) throw new ApiError(403, 'NOT_YOUR_ARMY', `${armyId} is not your army`);
+    const amount = (v: unknown, name: string): number => {
+      if (v === undefined) return 0;
+      if (typeof v !== 'number' || !Number.isInteger(v) || v < 0) {
+        throw new ApiError(400, 'BAD_AMOUNT', `${name} must be a non-negative integer`);
+      }
+      return v;
+    };
+    const order = { food: amount(food, 'food'), gold: amount(gold, 'gold'), wood: amount(wood, 'wood') };
+    let costCtUnits: number;
+    try {
+      ({ costCtUnits } = provisionArmy(this.state, a.id, order, this.balance));
+    } catch (e) {
+      throw translateSimError(e);
+    }
+    return {
+      army: armyView(this.state, a, this.parcelByHex, this.balance, this.config.tickOptions),
+      ctUnits: this.state.ctBalances?.get(governorId) ?? 0,
+      costCtUnits,
     };
   }
 
@@ -440,7 +525,8 @@ export class Game {
       }
     }
 
-    // New battles (MVP battles resolve the tick they spawn).
+    // New battles (MVP battles resolve the tick they spawn) + their §7c
+    // logistics outcomes (tie / retreat / scatter).
     for (const id of sortedIds(this.state.battles)) {
       if (preBattles.has(id)) continue;
       const v = battleView(this.state, this.state.battles.get(id)!, this.parcelByHex);
@@ -450,11 +536,48 @@ export class Game {
         battleId: id,
         parcelId: v.parcelId,
         winner: v.winner,
+        ...(v.outcome !== undefined ? { outcome: v.outcome } : {}),
         attackerGovernorIds: v.attackerGovernorIds,
         defenderGovernorIds: v.defenderGovernorIds,
         attackerScore: v.attackerScore,
         defenderScore: v.defenderScore,
       });
+      const logi: BattleLogisticsRecord | undefined = this.state.battleLogistics?.get(id);
+      if (logi === undefined) continue;
+      if (logi.outcomeKind === 'TIE') {
+        events.push({
+          type: 'battle_tied',
+          tick,
+          battleId: id,
+          parcelId: v.parcelId,
+          attackerGovernorIds: v.attackerGovernorIds,
+          defenderGovernorIds: v.defenderGovernorIds,
+        });
+      }
+      for (const r of logi.retreats) {
+        const governorId = this.state.armies.get(r.armyId)?.ownerGovernorId ?? 'unknown';
+        if (r.result === 'RETREATED' && r.toHexId !== undefined) {
+          events.push({
+            type: 'army_retreated',
+            tick,
+            battleId: id,
+            armyId: r.armyId,
+            governorId,
+            fromParcelId: v.parcelId,
+            toParcelId: this.parcelId(r.toHexId),
+          });
+        } else {
+          events.push({
+            type: 'army_scattered',
+            tick,
+            battleId: id,
+            armyId: r.armyId,
+            governorId,
+            parcelId: v.parcelId,
+            disbanded: r.result === 'DISBANDED',
+          });
+        }
+      }
     }
 
     // Newly pending PILLAGE/OCCUPY choices.
@@ -541,6 +664,16 @@ export class Game {
     }
     const target = this.nearestWildPath(army.hexId);
     if (target === undefined) return; // no wild land left — map fully tamed
+    // Provision for the campaign (docs/04 §7c.1): the raise already bought the
+    // standard pack; top up march rations to cover the road if affordable.
+    const marchFood = marchFoodPerStep(army, this.balance) * target.path.length;
+    if (marchFood > 0) {
+      try {
+        provisionArmy(this.state, army.id, { food: marchFood, gold: 0, wood: 0 }, this.balance);
+      } catch {
+        // war chest can't cover extra rations — march on the standard pack
+      }
+    }
     orderMarch(this.state, army.id, target.path, this.config.tickOptions);
     events.push({
       type: 'npc_expand',
@@ -805,6 +938,7 @@ function serializeWorldState(state: WorldState): SerializedWorldState {
     officers: [...(state.officers ?? new Map<string, DemoOfficer[]>()).entries()],
     pendingChoices: [...(state.pendingChoices ?? new Map()).entries()],
     monsterNames: [...(state.monsterNames ?? new Map<string, string>()).entries()],
+    battleLogistics: [...(state.battleLogistics ?? new Map<string, BattleLogisticsRecord>()).entries()],
   };
 }
 
@@ -823,6 +957,7 @@ function deserializeWorldState(s: SerializedWorldState): WorldState {
     officers: new Map(s.officers),
     pendingChoices: new Map(s.pendingChoices) as WorldState['pendingChoices'],
     monsterNames: new Map(s.monsterNames),
+    battleLogistics: new Map(s.battleLogistics ?? []),
   };
 }
 
