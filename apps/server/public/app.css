@@ -231,3 +231,16 @@ button.danger  { background: #4a2320; border-color: #7a3a33; }
 /* march step phase A: the army's rail row glows alongside its ringed map marker */
 .rail-row.ftue-mark { outline: 1px solid var(--gold); background: rgba(217, 164, 65, 0.1);
   box-shadow: 0 0 8px rgba(217, 164, 65, 0.35); }
+/* one-shot contextual tips (js/ftue.js TIPS registry) */
+#tip-card { position: fixed; z-index: 60; width: 252px; background: var(--panel);
+  border: 1px solid var(--line); border-left: 3px solid var(--gold); border-radius: 8px;
+  padding: 9px 12px; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6); }
+#tip-card h5 { margin: 0 22px 4px 0; font-size: 13px; color: var(--gold); }
+#tip-card p { margin: 0; font-size: 12px; color: var(--ink); }
+#tip-card .tclose { position: absolute; top: 4px; right: 6px; border: none; background: none;
+  color: var(--ink-faint); font-size: 13px; padding: 2px 5px; }
+#tip-card .tclose:hover { color: #fff; }
+#tooltip .tt-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%;
+  margin-right: 5px; vertical-align: 1px; }
+#tooltip .tt-dot.friend { background: #4da3ff; }
+#tooltip .tt-dot.foe { background: #e0483c; }

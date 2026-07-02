@@ -11,6 +11,10 @@
  * smoke only (docs/04 §7c TIE — nothing burned, nobody won), retreats = fading
  * dashed line + sliding chevron, pillage = smoldering tint (~60s), occupation =
  * color pulse; monster garrisons keep the red-eye dot on top of their stain.
+ * Unit markers read friend/foe (viewer's = blue, everyone else = red with an
+ * owner-color ring), scale with troop count, fan out when co-located (×N badge,
+ * collapsing at far zoom), and shared march destinations get a ⚔ convergence
+ * badge with incoming count + soonest ETA.
  */
 import { createTerrain } from './terrain.js';
 import { easeInOut, pointInPoly, rgba } from './util.js';
@@ -113,13 +117,53 @@ export function createMap(canvas, store, handlers) {
     return null;
   }
 
-  /** Nearest own army dot within `px` screen pixels (marching armies picked over garrisons). */
+  /**
+   * Fan-out layout for garrison markers: N co-located armies never stack — they
+   * spread on a small ring around the parcel anchor (deterministic id order).
+   * At far zoom (ring would be sub-pixel) a parcel collapses to its largest
+   * marker + a ×N badge. Returns {groups: parcelId→Army[], pos: armyId→[x,y],
+   * collapsed: Set<parcelId>}.
+   */
+  function garrisonLayout() {
+    const groups = new Map();
+    for (const a of store.armies.values()) {
+      if (a.state !== 'GARRISON') continue;
+      let g = groups.get(a.parcelId);
+      if (g === undefined) groups.set(a.parcelId, g = []);
+      g.push(a);
+    }
+    const pos = new Map();
+    const collapsed = new Set();
+    for (const [pid, g] of groups) {
+      const c = store.parcels.get(pid)?.center;
+      if (!c) { groups.delete(pid); continue; }
+      g.sort((x, y) => (x.id < y.id ? -1 : x.id > y.id ? 1 : 0));
+      if (g.length === 1) { pos.set(g[0].id, c); continue; }
+      const R = Math.min(0.34, 18 / cam.s); // ring radius, px-clamped like markers
+      if (R * cam.s < 9) {                  // far zoom: badge + largest marker only
+        collapsed.add(pid);
+        let big = g[0];
+        for (const a of g) if (a.troops > big.troops) big = a;
+        pos.set(big.id, c);
+        continue;
+      }
+      g.forEach((a, i) => {
+        const ang = -Math.PI / 2 + (i * 2 * Math.PI) / g.length;
+        pos.set(a.id, [c[0] + R * Math.cos(ang), c[1] + R * Math.sin(ang)]);
+      });
+    }
+    return { groups, pos, collapsed };
+  }
+
+  /** Nearest own army marker within `px` screen pixels (fan-out aware; marching picked over garrisons). */
   function pickArmy(sx, sy, px = 13) {
+    const gl = garrisonLayout();
     let best = null, bestD = px;
     for (const a of store.armies.values()) {
       if (!store.isMine(a.governorId)) continue;
-      const [x, y] = store.armyPos(a);
-      const [ax, ay] = toScreen(x, y);
+      const wp = a.state === 'GARRISON' ? gl.pos.get(a.id) : store.armyPos(a);
+      if (!wp) continue; // hidden sibling of a collapsed far-zoom group → parcel click resolves it
+      const [ax, ay] = toScreen(wp[0], wp[1]);
       const d = Math.hypot(ax - sx, ay - sy) - (a.state === 'MARCHING' ? 3 : 0);
       if (d < bestD) { bestD = d; best = a.id; }
     }
@@ -289,39 +333,56 @@ export function createMap(canvas, store, handlers) {
       ctx.stroke(paths.get(hoverParcel));
     }
 
-    // garrison presence dots (friend/foe colored, sized by troop count)
-    for (const t of store.terrByParcel.values()) {
-      const c = store.parcels.get(t.parcelId)?.center;
-      if (!c || !t.garrison) continue;
-      const k = sizeK(t.garrison.troops);
-      if (t.garrison.monsterName) { // wild monster: dark maw + red eye
-        dot(c[0], c[1], cap(0.16 * k, 9 * k), '#26161a', '#5c1f1f', lw(0.8));
-        ctx.fillStyle = FOE_UNIT;
-        ctx.beginPath(); ctx.arc(c[0], c[1], cap(0.055 * k, 3.5 * k), 0, 7); ctx.fill();
-      } else {
-        dot(c[0], c[1], cap(0.14 * k, 8 * k), unitColor(t.garrison.governorId),
-          unitRing(t.garrison.governorId), lw(1));
+    // garrison markers: friend/foe colored, sized by troop count, co-located
+    // armies fanned on a ring (never stacked); ×N badge when 3+ share a parcel
+    // (or 2+ collapsed at far zoom). Badges render screen-space after the pass.
+    const gl = garrisonLayout();
+    const badges = []; // {sx, sy, text, color, alpha}
+    for (const [pid, g] of gl.groups) {
+      for (const a of g) {
+        const p = gl.pos.get(a.id);
+        if (!p) continue; // hidden sibling of a collapsed group
+        const k = sizeK(a.troops);
+        if (a.monsterName) { // wild monster: dark maw + red eye
+          dot(p[0], p[1], cap(0.16 * k, 9 * k), '#26161a', '#5c1f1f', lw(0.8));
+          ctx.fillStyle = FOE_UNIT;
+          ctx.beginPath(); ctx.arc(p[0], p[1], cap(0.055 * k, 3.5 * k), 0, 7); ctx.fill();
+        } else {
+          dot(p[0], p[1], cap(0.14 * k, 8 * k), unitColor(a.governorId), unitRing(a.governorId), lw(1));
+        }
       }
-    }
-    // extra own garrisons stacked on a parcel (beyond the territory garrison slot)
-    for (const a of store.armies.values()) {
-      if (a.state !== 'GARRISON') continue;
-      const t = store.terrByParcel.get(a.parcelId);
-      if (t?.garrison?.armyId === a.id) continue;
-      const c = store.parcels.get(a.parcelId)?.center;
-      const k = sizeK(a.troops);
-      if (c) {
-        dot(c[0] + cap(0.22, 12), c[1] - cap(0.18, 10), cap(0.11 * k, 6.5 * k),
-          unitColor(a.governorId), unitRing(a.governorId), lw(1));
+      if (g.length >= (gl.collapsed.has(pid) ? 2 : 3)) {
+        const c = store.parcels.get(pid).center;
+        const [sx, sy] = toScreen(c[0], c[1]);
+        badges.push({ sx: sx + 13, sy: sy - 14, text: `×${g.length}`, color: '#9fb0c4', alpha: 1 });
       }
     }
 
-    // marching armies: dotted remaining path (mine) + chevron
+    // marching armies: dotted remaining path (mine, offset per shared target so
+    // parallel/crossing paths stay distinguishable) + chevron; destinations with
+    // 2+ incoming armies get a pulsing ⚔ convergence badge (screen-space below).
+    const converge = new Map(); // destPid → {n, eta, hostile}
+    for (const a of store.armies.values()) {
+      if (a.state !== 'MARCHING' || !a.path?.length) continue;
+      const dest = a.path[a.path.length - 1];
+      let g = converge.get(dest);
+      if (g === undefined) converge.set(dest, g = { n: 0, eta: Infinity, hostile: false });
+      g.n++;
+      if (a.etaTick !== undefined) g.eta = Math.min(g.eta, a.etaTick);
+      if (a.governorId !== me) g.hostile = true;
+    }
+    const pathSeq = new Map(); // destPid → how many path hints already drawn
     for (const a of store.armies.values()) {
       if (a.state !== 'MARCHING' || !a.path?.length) continue;
       const [x, y] = store.armyPos(a);
       const next = store.parcels.get(a.path[0])?.center ?? [x, y];
       if (a.governorId === me || a.id === selectedArmyId) {
+        const dest = a.path[a.path.length - 1];
+        const i = pathSeq.get(dest) ?? 0;
+        pathSeq.set(dest, i + 1);
+        const off = Math.ceil(i / 2) * (i % 2 === 1 ? 1 : -1); // 0, +1, -1, +2, …
+        ctx.save();
+        ctx.translate(off * lw(2.6), off * lw(1.8));
         ctx.setLineDash([lw(4), lw(5)]);
         ctx.strokeStyle = rgba(unitColor(a.governorId), 0.55);
         ctx.lineWidth = lw(1.2);
@@ -330,19 +391,35 @@ export function createMap(canvas, store, handlers) {
         for (const pid of a.path) { const c = store.parcels.get(pid)?.center; if (c) ctx.lineTo(c[0], c[1]); }
         ctx.stroke();
         ctx.setLineDash([]);
+        ctx.restore();
       }
       chevron(x, y, Math.atan2(next[1] - y, next[0] - x), unitColor(a.governorId), unitRing(a.governorId),
         a.governorId === me, lw, Math.min(1, 55 / cam.s) * sizeK(a.troops));
     }
+    for (const [pid, g] of converge) {
+      if (g.n < 2) continue;
+      const c = store.parcels.get(pid)?.center;
+      if (!c) continue;
+      const [sx, sy] = toScreen(c[0], c[1]);
+      if (sx < -60 || sx > w + 60 || sy < -60 || sy > h + 60) continue;
+      const ms = Number.isFinite(g.eta) ? Math.max(0, store.ticksToMs(g.eta - store.tickFloat())) : null;
+      const clock = ms === null ? '' : ` · ${Math.floor(ms / 60000)}:${String(Math.floor((ms % 60000) / 1000)).padStart(2, '0')}`;
+      badges.push({
+        sx, sy: sy - 26,
+        text: `⚔ ${g.n} incoming${clock}`,
+        color: g.hostile ? FOE_UNIT : MY_UNIT, // red if ANY incoming is hostile to the viewer
+        alpha: 0.72 + 0.28 * Math.sin(now / 260),
+      });
+    }
 
-    // selected army ring
+    // selected army ring (fan-out aware)
     if (selectedArmyId) {
       const a = store.armies.get(selectedArmyId);
       if (a) {
-        const [x, y] = store.armyPos(a);
+        const wp = (a.state === 'GARRISON' ? gl.pos.get(a.id) : null) ?? store.armyPos(a);
         ctx.strokeStyle = '#6fd6e8';
         ctx.lineWidth = lw(1.6);
-        ctx.beginPath(); ctx.arc(x, y, cap(0.3, 17) + 0.04 * Math.sin(now / 180), 0, 7); ctx.stroke();
+        ctx.beginPath(); ctx.arc(wp[0], wp[1], cap(0.3, 17) + 0.04 * Math.sin(now / 180), 0, 7); ctx.stroke();
       }
     }
 
@@ -415,6 +492,29 @@ export function createMap(canvas, store, handlers) {
       drawSmoke(s, age / SMOKE_MS, now);
     }
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    // marker badges (×N stacks, ⚔ convergence) — screen-space pills, crisp at any zoom
+    for (const b of badges) {
+      ctx.font = '600 10.5px "Segoe UI", system-ui, sans-serif';
+      const tw = ctx.measureText(b.text).width;
+      const bw = tw + 12, bh = 16;
+      const bx = b.sx - bw / 2, by = b.sy - bh / 2;
+      ctx.globalAlpha = b.alpha;
+      ctx.beginPath();
+      ctx.roundRect(bx, by, bw, bh, 8);
+      ctx.fillStyle = 'rgba(13,17,23,0.92)';
+      ctx.fill();
+      ctx.strokeStyle = b.color;
+      ctx.lineWidth = 1;
+      ctx.stroke();
+      ctx.fillStyle = '#e8eef6';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(b.text, b.sx, by + bh / 2 + 0.5);
+      ctx.globalAlpha = 1;
+      ctx.textAlign = 'start';
+      ctx.textBaseline = 'alphabetic';
+    }
 
     // FTUE tag chip ("⚔ recommended") — screen-space so it stays crisp at any zoom
     if (guide?.tag) {

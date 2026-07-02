@@ -14,12 +14,22 @@
  * ftue overlay (95) < join overlay (100). Dim panels are pointer-events:none —
  * the tutorial guides, it never traps: every real control stays clickable.
  */
-import { fmtDur, PRESETS, PROV, strengthOf } from './util.js';
+import { fmtDur, PRESETS, presetCostCt, PROV, strengthOf } from './util.js';
 
 const GOLD = '#d9a441';
 const RING_PAD = 7;      // px of breathing room around the spotlit rect
 const BATTLE_DWELL_MS = 2600; // how long the "Battle!" beat holds before the choice step
-const STANDARD_STRENGTH = strengthOf(PRESETS.STANDARD.units.map(([c, k]) => ({ unitClass: c, count: k })));
+const TIP_HIDE_MS = 15_000;   // contextual tips auto-dismiss after this
+const presetStrength = (p) => strengthOf(PRESETS[p].units.map(([c, k]) => ({ unitClass: c, count: k })));
+const STANDARD_STRENGTH = presetStrength('STANDARD');
+
+/** Scouts tip copy derived from the ACTUAL preset numbers (stays true if balance shifts). */
+function scoutsTipText() {
+  const n = PRESETS.SCOUTS.units.reduce((s, [, k]) => s + k, 0);
+  const frac = Math.max(2, Math.round(STANDARD_STRENGTH / Math.max(1, presetStrength('SCOUTS'))));
+  return `${n} cavalry for ${presetCostCt('SCOUTS')} CT — cheap and expendable, about 1/${frac} of a ` +
+    'Standard army’s strength. For grabbing ground and screening borders, not for fighting.';
+}
 
 export function createFTUE({ store, map, ui }) {
   const $ = (id) => document.getElementById(id);
@@ -522,8 +532,94 @@ export function createFTUE({ store, map, ui }) {
     }, BATTLE_DWELL_MS);
   }
 
+  // ── one-shot contextual tips ─────────────────────────────────────────────────
+  // Just-in-time explainers, independent of the main tutorial: small anchored
+  // callout (no dim/spotlight), each fires ONCE per player (localStorage
+  // `tip:<playerId>:<key>`), dismissible, auto-hides. Data-driven registry —
+  // adding a tip is one entry: presence tips fire when their anchor first
+  // appears in the DOM; event tips are fired via ftue.tip(key) / onEvents.
+  const TIPS = [
+    { key: 'scouts', presence: true,
+      anchor: () => document.querySelector('#card [data-act="raise"][data-preset="SCOUTS"]'),
+      title: '🐎 Scout riders', text: scoutsTipText },
+    { key: 'provision', presence: true,
+      anchor: () => document.querySelector('#card .prov-form'),
+      title: '🛒 Provisions',
+      text: 'Food = how long your army can fight (and march). Gold + wood = the command center it builds on the battlefield.' },
+    { key: 'low-food', presence: true,
+      anchor: () => [...document.querySelectorAll('#march-popover .warn')].find((el) => el.textContent.includes('Low food')),
+      title: '🍞 Low food',
+      text: 'An underfed army fights weak and can starve mid-march. Provision before long campaigns — food is the battle clock.' },
+    { key: 'stalemate',
+      anchor: () => document.querySelector('#toasts .toast') ?? document.getElementById('toasts'),
+      title: '🏳 Stalemate',
+      text: 'Evenly matched battles end in stalemate — the attackers withdraw. Bring 1.5× strength or don’t march.' },
+    { key: 'interception',
+      anchor: () => document.querySelector('#toasts .toast') ?? document.getElementById('toasts'),
+      title: '⚠ Intercepted',
+      text: 'Hostile parcels stop a march — an enemy can be your destination, never your shortcut. Route around threats or clear them first.' },
+  ];
+  const tipEl = document.createElement('div');
+  tipEl.id = 'tip-card';
+  tipEl.hidden = true;
+  document.body.appendChild(tipEl);
+  let tipShown = null;   // key currently on screen
+  let tipFollow = null;  // re-anchor interval while shown
+  let tipHide = null;
+
+  function tipSeen(key) {
+    try { return localStorage.getItem(`tip:${store.me?.governorId}:${key}`) === '1'; } catch { return true; }
+  }
+  /** Fire a one-shot tip (no-op while the main tutorial runs, or if already seen). */
+  function fireTip(key) {
+    if (active || !store.me || tipShown) return;
+    const t = TIPS.find((x) => x.key === key);
+    if (!t || tipSeen(key)) return;
+    const anchor = t.anchor();
+    if (!anchor) return;
+    try { localStorage.setItem(`tip:${store.me.governorId}:${key}`, '1'); } catch { /* private mode */ }
+    tipShown = key;
+    tipEl.innerHTML = `<button class="tclose" title="Dismiss">✕</button><h5>${t.title}</h5><p>${txt(t.text)}</p>`;
+    tipEl.hidden = false;
+    placeTip(anchor);
+    tipFollow = setInterval(() => { const a = t.anchor(); if (a) placeTip(a); }, 300);
+    tipHide = setTimeout(hideTip, TIP_HIDE_MS);
+  }
+  function placeTip(anchor) {
+    const r = anchor.getBoundingClientRect();
+    const cw = tipEl.offsetWidth || 252, ch = tipEl.offsetHeight || 92, m = 10;
+    let x, y = r.top + r.height / 2 - ch / 2;
+    if (r.left - cw - m >= 8) x = r.left - cw - m;              // prefer left (cards live at the right edge)
+    else if (r.right + m + cw <= innerWidth - 8) x = r.right + m;
+    else {                                                       // no side room: below, else above
+      x = r.left;
+      y = r.bottom + m + ch <= innerHeight - 8 ? r.bottom + m : r.top - ch - m;
+    }
+    tipEl.style.left = Math.max(8, Math.min(x, innerWidth - cw - 8)) + 'px';
+    tipEl.style.top = Math.max(8, Math.min(y, innerHeight - ch - 8)) + 'px';
+  }
+  function hideTip() {
+    tipShown = null;
+    tipEl.hidden = true;
+    clearInterval(tipFollow); tipFollow = null;
+    clearTimeout(tipHide); tipHide = null;
+  }
+  tipEl.addEventListener('click', (e) => { if (e.target.closest('.tclose')) hideTip(); });
+  setInterval(() => { // presence-triggered tips: anchor just appeared in the DOM
+    if (active || !store.me || tipShown) return;
+    for (const t of TIPS) {
+      if (t.presence && !tipSeen(t.key) && t.anchor()) { fireTip(t.key); break; }
+    }
+  }, 800);
+
   // ── WS event hook (called from app.js handleEvents) ─────────────────────────
   function onEvents(events) {
+    const meAlways = store.me?.governorId;
+    for (const ev of events) { // contextual tips fire with or without the tutorial
+      const tied = ev.type === 'battle_tied' ||
+        (ev.type === 'battle_resolved' && (ev.winner === 'DRAW' || ev.outcome === 'TIE'));
+      if (tied && ev.attackerGovernorIds?.includes(meAlways)) fireTip('stalemate');
+    }
     if (!active) return;
     const me = store.me?.governorId;
     for (const ev of events) {
@@ -643,6 +739,7 @@ export function createFTUE({ store, map, ui }) {
 
   return {
     maybeStart, restart, skip, onEvents,
+    tip: fireTip, // one-shot contextual tips (app.js fires event-driven ones)
     get active() { return active; },
     get step() { return steps[stepIx]?.id; },
     get stepIndex() { return stepIx; },

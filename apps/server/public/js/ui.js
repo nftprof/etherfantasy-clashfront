@@ -118,9 +118,17 @@ export function createUI({ store, map, orders }) {
     if (!t) { tooltip.hidden = true; return; }
     const wild = t.governorKind === 'SYSTEM';
     const owner = wild ? 'Wild land' : `${esc(store.playerName(t.governorId))}${t.governorKind === 'NPC_KINGDOM' ? ' (NPC)' : ''}`;
-    const garr = t.garrison
-      ? `<div class="tt-sub">${t.garrison.monsterName ? `☠ ${esc(t.garrison.monsterName)}` : 'Garrisoned'} — ${t.garrison.troops} troops</div>`
-      : '';
+    // Armies present: a single garrison keeps the short line; co-located armies
+    // (fanned-out markers on the map) are listed individually, friend/foe dotted.
+    const here = store.armiesAt(parcelId);
+    const garr = here.length > 1
+      ? here.map((a) =>
+          `<div class="tt-sub"><span class="tt-dot ${store.isMine(a.governorId) ? 'friend' : 'foe'}"></span>` +
+          `${esc(a.heroName ?? a.monsterName ?? shortId(a.id))} — ${a.troops}⚔` +
+          `${store.isMine(a.governorId) ? ' (yours)' : ''}</div>`).join('')
+      : t.garrison
+        ? `<div class="tt-sub">${t.garrison.monsterName ? `☠ ${esc(t.garrison.monsterName)}` : 'Garrisoned'} — ${t.garrison.troops} troops</div>`
+        : '';
     tooltip.innerHTML = `<div class="tt-name">${esc(t.name)}</div>` +
       `<div class="tt-sub">${owner} · prosperity ${t.prosperity}</div>${garr}`;
     tooltip.hidden = false;
