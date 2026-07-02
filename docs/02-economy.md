@@ -378,6 +378,11 @@ token**: earned by players across the EF games, NOT freely traded outside the ch
 ecosystem-wide earn vs Clash Front burn — there is no open-market whale problem, only an
 earn-rate one. The economy is a game of **skill and time**, never wallet size.
 
+**Phasing (product owner 2026-07-02): TESTING = free demo CT** (join grants, no chain calls) —
+exactly the current build. On-chain CT arrives later by swapping the faucet (join grant → AA
+wallet deposit) and turning on the settlement worker; the splitter, ledger, and journal are
+identical in both phases, so no economy code changes at cutover.
+
 **Settlement rails:** the EF stack already has **per-user AA (account-abstraction) / internal
 wallets** — the same wallet system that tracks NPCs. Spends/rewards settle through these
 existing rails (backend as operator), moving CT between user wallets and game bucket wallets
