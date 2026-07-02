@@ -35,3 +35,6 @@ Thumbs.db
 # runtime world snapshot (apps/server persistence — never canon data)
 data/save.json
 data/save.json.tmp
+
+# Claude Code session-local files (agent worktrees, local settings)
+.claude/
