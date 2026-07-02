@@ -592,6 +592,13 @@ function applyPostVictory(
     const seized = Math.floor(territory.ctTreasury * balance.pillageOccupy.occupySeizeTreasuryPct);
     territory.ctTreasury -= seized;
     state.ctBalances.set(gov, (state.ctBalances.get(gov) ?? 0) + seized);
+    // Free the evicted holder's overseer — otherwise that officer stays assigned
+    // to a territory its governor no longer holds (officer leak against the
+    // MAX_OVERSEEN_TERRITORIES cap).
+    if (territory.overseerId !== undefined) {
+      const prev = state.officers?.get(territory.governorId)?.find((o) => o.id === territory.overseerId);
+      if (prev?.assignedTerritoryId === territory.id) delete prev.assignedTerritoryId;
+    }
     territory.governorId = gov;
     territory.governorKind = kind;
     delete territory.overseerId;

@@ -1,0 +1,25 @@
+{
+  "name": "@clashfront/server",
+  "version": "0.0.1",
+  "private": true,
+  "description": "MVP game server (docs/briefs/MVP-JULY7.md item 3): node:http + ws wrapping the deterministic tick engine; in-memory world, JSON snapshot persistence, session login, order API, WS tick deltas, NPC kingdom AI.",
+  "main": "dist/src/index.js",
+  "types": "dist/src/index.d.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "node --test \"dist/test/**/*.test.js\"",
+    "start": "node dist/src/main.js",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@clashfront/shared": "workspace:*",
+    "@clashfront/sim-engine": "workspace:*",
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.0",
+    "@types/node": "^22.0.0",
+    "@types/ws": "^8.5.12"
+  }
+}
