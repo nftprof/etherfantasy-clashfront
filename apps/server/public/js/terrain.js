@@ -1,5 +1,5 @@
 /**
- * Terrain base layer v2 — continuous procedural landscape (docs/map-engine/01
+ * Terrain base layer v3 — continuous procedural landscape (docs/map-engine/01
  * §2b–2d; RTK14 benchmark: ONE lit landscape, the parcel grid is a thin overlay
  * that terrain ignores; the per-parcel texture "quilt" of v1 is gone).
  *
@@ -7,18 +7,33 @@
  *   heightfield  — masks (landmass plate / parcel cluster) → chamfer distance
  *                  transforms → multi-octave value noise. Three bands:
  *                  SEA (outside the plate, smooth coast falloff), LOWLAND (the
- *                  habitable parcel zone — mild relief only), HILLS (the
- *                  non-parcel barrens rise into ridges — impassability reads
- *                  as geography).
+ *                  habitable parcel zone — mild relief only), MOUNTAINS (the
+ *                  non-parcel barrens are STRUCTURED RANGES, not texture —
+ *                  impassability reads as geography).
+ *   ranges (v3)  — the barren strips carry medial-spine mountain chains: the
+ *                  parcel distance field is blurred and its gradient collapses
+ *                  on the strip centerline (|∇sd|→0 = the medial axis), which
+ *                  becomes a continuous CRESTLINE; massif height scales with
+ *                  strip width (sd), low-freq noise modulates summits vs
+ *                  passes along the chain, and contour-parallel foothill ranks
+ *                  ripple the flanks (triangle wave of sd). Crests climb into
+ *                  a bare-rock → snow-dust band well above the old hills;
+ *                  the transition into parcel lowland stays smooth.
  *   hypsometry   — muted palette: deep water → shallow → sand shore → olive
- *                  plains (moisture-varied) → tan-brown hills → pale ridges.
+ *                  plains (moisture-varied) → tan foothills → brown rock →
+ *                  bare gray → pale snow-dust crests. Forests darken the
+ *                  ground as mottled density patches (baked into the raster).
  *   hillshading  — per-cell lambert from the height gradient, light from NW,
  *                  computed on a fixed 1280-long-side world grid and
  *                  smooth-scaled into the buckets (slopes MUST read).
- *   props        — painterly trees (broadleaf/conifer/bush blob clusters with
- *                  SE shadows) + rocks, seeded jittered-grid scatter: clusters
- *                  on hillsides, sparse in plains, none inside parcels; wild
- *                  parcels get their own few trees (vanish when settled).
+ *   props        — LOD'd trees + rocks in seeded organic groves (forest
+ *                  density field drives both the baked ground tint and the
+ *                  scatter). Far zoom: NO sprites — density patches only.
+ *                  Mid zoom (w1): soft canopy-mass splats. Close zoom (vb):
+ *                  full sprites — multi-lobe broadleaf canopies with hue
+ *                  jitter, layered conifer fronds, soft base-hugging ellipse
+ *                  shadows. Wild parcels keep a few trees (vanish when
+ *                  settled), same LOD rules.
  *
  * Parcel overlay (the grid feel): thin translucent borders everywhere;
  * ownership = translucent color wash (strongest on the zoomed-out bucket —
@@ -51,18 +66,23 @@ const OCEAN_TILE_WU = 9;          // ocean noise is a large, low-contrast tile
 const PLATE_PAD = 2.6;            // world buckets/field extend past the bbox (sea room)
 const MAX_SIDE = 4096;            // long-side budget per offscreen bucket
 const W0_SIDE = 1536;             // zoomed-out whole-world bucket side
-const FIELD_SIDE = 1280;          // heightfield grid long side (smooth-scaled up)
+const FIELD_SIDE = 1536;          // heightfield grid long side (smooth-scaled up)
 const PRESTIGE_PROSPERITY = 70;   // docs: high-prosperity gold accent
 const FRONTIER = 0.65;            // dist/maxDist ≥ this → desert accent band
 const PATCH_MAX = 48;             // bigger ownership diffs → full bucket rebuild
 
 // ── heightfield tuning (world units / e-units) ──────────────────────────────
 const COAST_FALL = 1.15;          // shore → deep water over this distance
-const HILL_START = 0.16;          // relief starts this far from any parcel
-const HILL_FULL = 0.85;           // …and reaches full ridge amplitude here
+const HILL_START = 0.14;          // relief starts this far from any parcel
+const HILL_FULL = 0.90;           // …and reaches full range amplitude here
+const SPINE_BLUR = 0.45;          // parcelD blur radius (wu) — medial-axis detector
+const RANGE_REF = 0.85;           // strip half-width (wu) reaching full massif height
+const E_MAX = 1.25;               // elevation clamp (snow-dust crest ceiling)
 const Z_SCALE = 1.1;              // e-gradient → slope steepness for shading
 const LX = -0.551, LY = -0.551, LZ = 0.627; // light from NW (normalized)
-const PROP_SPACING = 0.16;        // scatter-grid cell (wu)
+const PROP_SPACING = 0.19;        // scatter-grid cell (wu)
+const SPLAT_PPU = 80;             // below: forests are baked density tint only
+const SPRITE_PPU = 200;           // below: canopy-mass splats; above: full sprites
 
 function fnv(id) {
   let h = 2166136261;
@@ -115,6 +135,21 @@ function sstep(v, a, b) {
   return t * t * (3 - 2 * t);
 }
 const clamp255 = (v) => v < 0 ? 0 : v > 255 ? 255 : v;
+const frac = (v) => v - Math.floor(v);
+
+/**
+ * Forest density [0,1] at a world point — ONE field drives both the baked
+ * ground mottling and the grove scatter, so patches and sprites always agree.
+ * Grove archipelago (low-freq blobs) × internal clearings (high-freq gaps),
+ * fading in off the beach and thinning out on high slopes; city zone clean.
+ */
+function forestDensity(wx, wy, ev, pd) {
+  if (ev < 0.055 || ev > 0.72 || pd < 0.05) return 0;
+  const grove = fbm(wx * 0.85, wy * 0.85, 57, 2);
+  const gaps = fbm(wx * 3.0, wy * 3.0, 61, 2);
+  return sstep(grove, 0.46, 0.68) * (0.40 + 0.60 * sstep(gaps, 0.30, 0.60))
+    * sstep(ev, 0.055, 0.10) * (1 - sstep(ev, 0.50, 0.72)); // conifers climb the flanks
+}
 
 export function createTerrain(store, onUpdate) {
   const patterns = new Map();     // texture name → world-anchored CanvasPattern
@@ -248,7 +283,7 @@ export function createTerrain(store, onUpdate) {
       const x = ax + rnd() * (bx - ax), y = ay + rnd() * (by - ay);
       if (!pointInPoly(p.polygon, x, y)) continue;
       const h = rnd();
-      out.push({ x, y, r: 0.034 + rnd() * 0.028, k: h < 0.55 ? 0 : h < 0.85 ? 2 : 1, h: rnd() });
+      out.push({ x, y, r: 0.026 + rnd() * 0.020, k: h < 0.55 ? 0 : h < 0.85 ? 2 : 1, h: rnd() });
     }
     return out;
   }
@@ -361,21 +396,65 @@ export function createTerrain(store, onUpdate) {
     const shadeA = new Float32Array(N).fill(1);
     const img = new ImageData(gw, gh);
 
-    const heightRows = (r0, r1) => {
+    // blurred parcel distance — the range "massif body" field. Its gradient
+    // magnitude collapses to ~0 on the strip centerline (medial axis) → that
+    // locus becomes the continuous crestline of each mountain chain.
+    const R = Math.max(2, Math.round(SPINE_BLUR / cell));
+    const tmp = new Float32Array(N);
+    const sd = new Float32Array(N);
+    const blurHRows = (r0, r1) => {
+      for (let y = r0; y < r1; y++) {
+        const yR = y * gw;
+        for (let x = 0; x < gw; x++) {
+          let s = 0;
+          for (let k = -R; k <= R; k++) s += parcelD[yR + Math.min(gw - 1, Math.max(0, x + k))];
+          tmp[yR + x] = s / (2 * R + 1);
+        }
+      }
+    };
+    const blurVRows = (r0, r1) => {
       for (let y = r0; y < r1; y++) {
         const wy = y0 + (y + 0.5) * cell;
         for (let x = 0; x < gw; x++) {
-          const i = y * gw + x;
+          let s = 0;
+          for (let k = -R; k <= R; k++) s += tmp[Math.min(gh - 1, Math.max(0, y + k)) * gw + x];
+          const wx = x0 + (x + 0.5) * cell;
+          // low-freq warp wobbles the medial axis → crests meander like real ranges
+          sd[y * gw + x] = s / (2 * R + 1) + (fbm(wx * 0.7, wy * 0.7, 91, 2) - 0.5) * 0.22;
+        }
+      }
+    };
+
+    const heightRows = (r0, r1) => {
+      for (let y = r0; y < r1; y++) {
+        const wy = y0 + (y + 0.5) * cell;
+        const yR = y * gw, yU = Math.max(0, y - 1) * gw, yD = Math.min(gh - 1, y + 1) * gw;
+        for (let x = 0; x < gw; x++) {
+          const i = yR + x;
           const wx = x0 + (x + 0.5) * cell;
           if (!land[i]) {
             e[i] = -sstep(seaD[i], 0, COAST_FALL);
             continue;
           }
           const pn = fbm(wx * 0.55, wy * 0.55, 11, 3);            // gentle lowland undulation
-          const hm = sstep(parcelD[i], HILL_START, HILL_FULL);
-          const rg = hm > 0.01 ? ridged(wx * 0.7, wy * 0.7, 23, 3) : 0;
           const low = Math.max(0.02, 0.09 + 0.10 * (pn - 0.5) * 2);
-          e[i] = sstep(landIn[i], 0, 0.30) * low + sstep(landIn[i], 0.05, 0.55) * hm * (0.22 + 0.52 * rg);
+          const hm = sstep(parcelD[i], HILL_START, HILL_FULL);
+          let range = 0;
+          if (hm > 0.004) {
+            // medial-spine range model (see header): crest = where |∇sd| dies
+            const gx = (sd[yR + Math.min(gw - 1, x + 1)] - sd[yR + Math.max(0, x - 1)]) / (2 * cell);
+            const gy = (sd[yD + x] - sd[yU + x]) / (2 * cell);
+            const gm = Math.hypot(gx, gy);
+            const spine = sstep(1 - gm, 0.30, 0.70);
+            const mass = sstep(sd[i], 0.05, RANGE_REF);           // wider strip → taller massif
+            const pk = 0.25 + 0.75 * sstep(fbm(wx * 0.5, wy * 0.5, 71, 2), 0.35, 0.72); // massif envelope
+            const rg = ridged(wx * 0.7, wy * 0.7, 23, 3);         // rocky detail
+            const serr = ridged(wx * 0.75, wy * 0.75, 83, 2);     // crest serration → summits, not a ribbon
+            range = 0.10 + 0.30 * mass + rg * (0.14 + 0.26 * mass)
+              + spine * pk * (0.30 + 0.70 * serr) * (0.12 + 0.42 * mass);
+          }
+          e[i] = Math.min(E_MAX,
+            sstep(landIn[i], 0, 0.30) * low + sstep(landIn[i], 0.15, 0.90) * hm * range);
           moist[i] = 255 * (0.6 * fbm(wx * 0.28, wy * 0.28, 37, 2) + 0.4 * fbm(wx * 1.5, wy * 1.5, 41, 2));
         }
       }
@@ -389,7 +468,8 @@ export function createTerrain(store, onUpdate) {
           const gx = (e[yR + Math.min(gw - 1, x + 1)] - e[yR + Math.max(0, x - 1)]) / (2 * cell) * Z_SCALE;
           const gy = (e[yD + x] - e[yU + x]) / (2 * cell) * Z_SCALE;
           const lam = (-gx * LX - gy * LY + LZ) / Math.sqrt(gx * gx + gy * gy + 1);
-          shadeA[i] = Math.min(1.5, Math.max(0.45, 0.30 + 0.70 * (lam / LZ)));
+          const amp = 0.60 + 0.28 * sstep(e[i], 0.42, 0.88); // crest flanks shade harder
+          shadeA[i] = Math.min(1.5, Math.max(0.42, (1 - amp) + amp * (lam / LZ)));
         }
       }
     };
@@ -414,10 +494,19 @@ export function createTerrain(store, onUpdate) {
             const m = moist[i] / 255;
             const pr = 101 + (72 - 101) * m, pg = 101 + (94 - 101) * m, pb = 63 + (55 - 63) * m; // dry↔lush plains
             if (ev < 0.05) { const t = ev / 0.05; r = 121 + (pr - 121) * t; g = 106 + (pg - 106) * t; b = 78 + (pb - 78) * t; } // sand shore
-            else if (ev < 0.30) { const t = (ev - 0.05) / 0.25 * 0.35; r = pr + (88 - pr) * t; g = pg + (90 - pg) * t; b = pb + (58 - pb) * t; }
-            else if (ev < 0.50) { const t = (ev - 0.30) / 0.20; r = 92 + (120 - 92) * t; g = 91 + (101 - 91) * t; b = 60 + (70 - 60) * t; }   // → tan-brown hills
-            else if (ev < 0.72) { const t = (ev - 0.50) / 0.22; r = 120 + (134 - 120) * t; g = 101 + (124 - 101) * t; b = 70 + (106 - 70) * t; } // → rock
-            else { const t = Math.min(1, (ev - 0.72) / 0.18); r = 134 + (158 - 134) * t; g = 124 + (152 - 124) * t; b = 106 + (138 - 106) * t; } // → pale ridge
+            else if (ev < 0.30) { const t = (ev - 0.05) / 0.25 * 0.35; r = pr + (96 - pr) * t; g = pg + (97 - pg) * t; b = pb + (62 - pb) * t; }
+            else if (ev < 0.52) { const t = (ev - 0.30) / 0.22; r = 96 + (126 - 96) * t; g = 97 + (110 - 97) * t; b = 62 + (76 - 62) * t; }   // → tan foothills
+            else if (ev < 0.74) { const t = (ev - 0.52) / 0.22; r = 126 + (141 - 126) * t; g = 110 + (128 - 110) * t; b = 76 + (105 - 76) * t; } // → brown rock
+            else if (ev < 0.94) { const t = (ev - 0.74) / 0.20; r = 141 + (164 - 141) * t; g = 128 + (159 - 128) * t; b = 105 + (149 - 105) * t; } // → bare gray
+            else { const t = Math.min(1, (ev - 0.94) / 0.22); r = 164 + (218 - 164) * t; g = 159 + (220 - 159) * t; b = 149 + (218 - 149) * t; } // → snow-dust crest
+            if (ev < 0.74) { // forest density patches — mottled dark green baked into the ground
+              const wx = x0 + (x + 0.5) * cell, wy = y0 + (y + 0.5) * cell;
+              const fd = forestDensity(wx, wy, ev, parcelD[i]);
+              if (fd > 0) {
+                const k = 0.45 * fd;
+                r += (34 - r) * k; g += (56 - g) * k; b += (30 - b) * k;
+              }
+            }
             const s = shadeA[i], dth = (hash2(x, y, 7) - 0.5) * 8;
             r = r * s + dth; g = g * s + dth; b = b * s + dth;
           }
@@ -426,8 +515,8 @@ export function createTerrain(store, onUpdate) {
       }
     };
 
-    // run the three passes in idle chunks (~9 ms budget), then finalize once
-    const stages = [heightRows, shadeRows, composeRows];
+    // run the passes in idle chunks (~9 ms budget), then finalize once
+    const stages = [blurHRows, blurVRows, heightRows, shadeRows, composeRows];
     let si = 0, row = 0;
     const step = () => {
       if (myGen !== gen) return; // superseded by a new prepare()
@@ -455,7 +544,9 @@ export function createTerrain(store, onUpdate) {
     step();
   }
 
-  /** Seeded jittered-grid scatter OUTSIDE parcels: hillside clusters, plains dots, ridge rocks. */
+  /** Grove-driven scatter OUTSIDE parcels: the forestDensity field places trees
+   *  into organic woods with clearings; sparse lone trees between; boulders on
+   *  the high bare-rock band. Fewer, better — density patches carry far zooms. */
   function buildProps(gw, gh, cell, e, parcelD) {
     props = [];
     const x0 = worldBBox[0], y0 = worldBBox[1];
@@ -469,33 +560,59 @@ export function createTerrain(store, onUpdate) {
     };
     for (let j = 0; j < rows; j++) {
       for (let i = 0; i < cols; i++) {
-        const wx = x0 + (i + 0.12 + 0.76 * hash2(i, j, 101)) * PROP_SPACING;
-        const wy = y0 + (j + 0.12 + 0.76 * hash2(i, j, 103)) * PROP_SPACING;
+        const wx = x0 + (i + 0.10 + 0.80 * hash2(i, j, 101)) * PROP_SPACING;
+        const wy = y0 + (j + 0.10 + 0.80 * hash2(i, j, 103)) * PROP_SPACING;
         const ev = sample(e, wx, wy);
         if (ev < 0.055) continue;                       // sea/shore: nothing
-        if (sample(parcelD, wx, wy) < 0.07) continue;   // keep out of the city zone
-        const c = fbm(wx * 1.3, wy * 1.3, 57, 2);       // cluster mask
+        const pd = sample(parcelD, wx, wy);
+        if (pd < 0.07) continue;                        // keep out of the city zone
         const h = hash2(i, j, 107);
-        let p, rock = false;
-        if (ev > 0.70) { p = 0.10; rock = h < 0.8; }                              // ridges: mostly rocks
-        else if (ev > 0.30) { p = 0.08 + 0.55 * sstep(c, 0.42, 0.78); rock = h < 0.16; } // hillside clusters
-        else { p = 0.14 * sstep(c, 0.55, 0.85); }                                 // plains: sparse copses
+        if (ev > 0.74) {                                // bare-rock band: sparse boulders only
+          if (hash2(i, j, 109) > 0.07) continue;
+          props.push({ x: wx, y: wy, r: 0.028 + 0.026 * hash2(i, j, 113), k: 3, h });
+          continue;
+        }
+        const fd = forestDensity(wx, wy, ev, pd);
+        const p = fd + 0.015;                           // groves + rare lone trees
         if (hash2(i, j, 109) > p) continue;
-        const r = (ev > 0.3 ? 0.044 : 0.037) + 0.034 * hash2(i, j, 113);
-        const k = rock ? 3 : ev > 0.3 ? (h > 0.5 ? 1 : 0) : (h > 0.7 ? 2 : 0);
-        props.push({ x: wx, y: wy, r, k, h });
+        if (h < 0.05 && ev > 0.35) {                    // occasional hillside boulder
+          props.push({ x: wx, y: wy, r: 0.026 + 0.022 * hash2(i, j, 113), k: 3, h });
+          continue;
+        }
+        const r = (0.027 + 0.022 * hash2(i, j, 113)) * (0.9 + 0.4 * fd); // ±40% size variety
+        const conifer = h < 0.12 + 0.72 * sstep(ev, 0.20, 0.50);
+        const k = conifer ? 1 : hash2(i, j, 127) < 0.15 && ev < 0.25 ? 2 : 0;
+        props.push({ x: wx, y: wy, r, k, h: hash2(i, j, 131) });
       }
     }
   }
 
-  /** Painterly prop: k = 0 broadleaf, 1 conifer, 2 bush, 3 rock. Light from NW. */
-  function drawProp(ctx, p) {
+  /**
+   * LOD prop: k = 0 broadleaf, 1 conifer, 2 bush, 3 rock. Light from NW.
+   *   ppu < SPLAT_PPU   — nothing (baked density patches carry the forest)
+   *   ppu < SPRITE_PPU  — soft canopy-mass splat (forest texture, no lollipops)
+   *   else              — full sprite: irregular multi-lobe canopy / layered
+   *                       fronds + soft base-hugging ellipse shadow
+   */
+  function drawProp(ctx, p, ppu) {
     const { x, y, r, k, h } = p;
-    ctx.fillStyle = 'rgba(8,12,9,0.28)'; // SE ground shadow
-    ctx.beginPath();
-    ctx.ellipse(x + r * 0.45, y + r * 0.5, r * 1.05, r * 0.5, 0, 0, 7);
-    ctx.fill();
-    if (k === 3) { // rock: gray slab, darker SE facet, NW glint
+    if (ppu < SPLAT_PPU) return;
+    if (ppu < SPRITE_PPU) {
+      if (k === 3) return; // rocks only read at close zoom
+      const g = 42 + h * 14 | 0;
+      ctx.fillStyle = k === 1 ? 'rgba(26,44,34,0.30)' : `rgba(${g - 14},${g + 12},${g - 16},0.30)`;
+      ctx.beginPath(); // 3 overlapping soft blobs — canopy mass, not a tree
+      ctx.arc(x, y, r * 1.25, 0, 7);
+      ctx.arc(x + r * (0.6 + h * 0.6), y - r * 0.35, r * 0.9, 0, 7);
+      ctx.arc(x - r * (0.5 + h * 0.6), y + r * 0.3, r * 0.8, 0, 7);
+      ctx.fill();
+      return;
+    }
+    if (k === 3) { // rock: gray slab, darker SE facet
+      ctx.fillStyle = 'rgba(10,14,10,0.16)';
+      ctx.beginPath();
+      ctx.ellipse(x + r * 0.2, y + r * 0.28, r * 0.95, r * 0.4, 0, 0, 7);
+      ctx.fill();
       const v = 92 + h * 26 | 0;
       ctx.fillStyle = `rgb(${v},${v - 3},${v - 9})`;
       ctx.beginPath();
@@ -505,39 +622,62 @@ export function createTerrain(store, onUpdate) {
       ctx.lineTo(x + r, y + r * 0.35);
       ctx.closePath();
       ctx.fill();
-      ctx.fillStyle = 'rgba(30,28,26,0.45)';
+      ctx.fillStyle = 'rgba(30,28,26,0.40)';
       ctx.beginPath();
       ctx.moveTo(x + r, y + r * 0.35); ctx.lineTo(x + r * 0.45, y - r * 0.75); ctx.lineTo(x + r * 0.2, y + r * 0.4);
       ctx.closePath();
       ctx.fill();
       return;
     }
-    if (k === 1) { // conifer: tall dark-teal wedge + lit NW edge
-      ctx.fillStyle = `rgb(${30 + h * 12 | 0},${54 + h * 14 | 0},${42 + h * 8 | 0})`;
-      ctx.beginPath();
-      ctx.moveTo(x, y - r * 2.1); ctx.lineTo(x - r * 0.72, y + r * 0.32); ctx.lineTo(x + r * 0.72, y + r * 0.32);
-      ctx.closePath();
-      ctx.fill();
-      ctx.fillStyle = 'rgba(96,124,78,0.55)';
-      ctx.beginPath();
-      ctx.moveTo(x, y - r * 2.1); ctx.lineTo(x - r * 0.55, y + r * 0.2); ctx.lineTo(x - r * 0.1, y + r * 0.1);
-      ctx.closePath();
-      ctx.fill();
+    // soft ellipse ground shadow hugging the base (no hard offset stamp)
+    ctx.fillStyle = 'rgba(10,14,10,0.16)';
+    ctx.beginPath();
+    ctx.ellipse(x + r * 0.15, y + r * 0.18, r * 0.95, r * 0.38, 0, 0, 7);
+    ctx.fill();
+    if (k === 1) { // conifer: 3 layered fronds with drooping curved skirts, lit NW edge
+      for (let L = 0; L < 3; L++) {
+        const wl = r * (1.05 - L * 0.27), yy = y + r * 0.22 - L * r * 0.58;
+        const apex = yy - r * (1.05 - L * 0.14);
+        const v = 22 + L * 9 + h * 10;
+        ctx.fillStyle = `rgb(${v | 0},${v + 20 + L * 4 | 0},${v + 10 | 0})`;
+        ctx.beginPath();
+        ctx.moveTo(x - wl, yy);
+        ctx.quadraticCurveTo(x, yy + r * 0.26, x + wl, yy); // drooping skirt
+        ctx.lineTo(x, apex);
+        ctx.closePath();
+        ctx.fill();
+        ctx.fillStyle = `rgba(${86 + h * 20 | 0},${112 + h * 16 | 0},70,0.35)`; // NW-lit edge
+        ctx.beginPath();
+        ctx.moveTo(x, apex);
+        ctx.lineTo(x - wl * 0.72, yy - r * 0.03);
+        ctx.lineTo(x - wl * 0.2, yy - r * 0.06);
+        ctx.closePath();
+        ctx.fill();
+      }
       return;
     }
-    // broadleaf / bush: canopy blob cluster, lighter NW highlight blob
-    const s = k === 2 ? 0.75 : 1;
-    ctx.fillStyle = `rgb(${42 + h * 14 | 0},${64 + h * 16 | 0},${38 + h * 10 | 0})`;
+    // broadleaf / bush: 3–5 irregular offset lobes, 3 green shades, hue jitter
+    const s = k === 2 ? 0.72 : 1;
+    const j = (h - 0.5) * 20;
+    const lobes = k === 2 ? 3 : 3 + ((h * 997) | 0) % 3;
+    ctx.fillStyle = `rgb(${30 + j * 0.5 | 0},${50 + j | 0},${29 + j * 0.3 | 0})`; // under-canopy
     ctx.beginPath();
-    ctx.arc(x, y - r * 0.3 * s, r * s, 0, 7);
-    if (k === 0) {
-      ctx.arc(x - r * 0.55, y - r * 0.05, r * 0.68, 0, 7);
-      ctx.arc(x + r * 0.5, y - r * 0.1, r * 0.62, 0, 7);
-    }
+    ctx.arc(x, y - r * 0.32 * s, r * 0.9 * s, 0, 7);
     ctx.fill();
-    ctx.fillStyle = 'rgba(104,134,72,0.6)';
+    for (let L = 0; L < lobes; L++) { // irregular offset lobes, two alternating greens
+      const a = h * 7 + L * (6.283 / lobes);
+      const d = r * s * (0.34 + 0.30 * frac(h * 13 + L * 0.61));
+      const rr = r * s * (0.36 + 0.28 * frac(h * 29 + L * 0.37));
+      const dk = L % 2 ? 9 : 0;
+      ctx.fillStyle = `rgb(${58 + j * 0.6 - dk | 0},${84 + j - dk | 0},${44 + j * 0.4 - dk * 0.6 | 0})`;
+      ctx.beginPath();
+      ctx.arc(x + Math.cos(a) * d, y - r * 0.36 * s + Math.sin(a) * d * 0.75, rr, 0, 7);
+      ctx.fill();
+    }
+    ctx.fillStyle = `rgba(${96 + j | 0},${124 + j | 0},${62 + j * 0.5 | 0},0.85)`; // NW light
     ctx.beginPath();
-    ctx.arc(x - r * 0.32 * s, y - r * 0.55 * s, r * 0.5 * s, 0, 7);
+    ctx.arc(x - r * 0.28 * s, y - r * 0.6 * s, r * 0.38 * s, 0, 7);
+    ctx.arc(x - r * 0.02 * s, y - r * (0.5 + 0.14 * frac(h * 5)) * s, r * 0.26 * s, 0, 7);
     ctx.fill();
   }
 
@@ -577,7 +717,7 @@ export function createTerrain(store, onUpdate) {
         ctx.fill(path);
         ctx.restore();
       }
-      if (fieldReady) for (const t of parcelTrees.get(id) ?? []) drawProp(ctx, t);
+      if (fieldReady) for (const t of parcelTrees.get(id) ?? []) drawProp(ctx, t, ppu);
       return;
     }
     const pat = texReady ? patterns.get(stoneTex.get(id)) : null; // settled plaza accent
@@ -701,8 +841,8 @@ export function createTerrain(store, onUpdate) {
         ctx.restore();
       }
     }
-    if (fieldReady) for (const p of props) {
-      if (p.x >= b.x0 - 0.3 && p.x <= b.x1 + 0.3 && p.y >= b.y0 - 0.3 && p.y <= b.y1 + 0.3) drawProp(ctx, p);
+    if (fieldReady && ppu >= SPLAT_PPU) for (const p of props) { // far zoom: density patches only
+      if (p.x >= b.x0 - 0.3 && p.x <= b.x1 + 0.3 && p.y >= b.y0 - 0.3 && p.y <= b.y1 + 0.3) drawProp(ctx, p, ppu);
     }
     for (const p of store.parcels.values()) if (intersects(b, p.id)) fillOverlay(ctx, p.id, ppu);
     for (const p of store.parcels.values()) if (intersects(b, p.id)) strokeParcel(ctx, p.id, ppu);
