@@ -1201,6 +1201,24 @@ export class Game {
     lootWindowTicks: number;
     journal: { headSeq: number; checksum: string; last24hByKind: Record<string, number> };
     purchaseCapCtPerEpoch: number;
+    /**
+     * ⚙ splitter shares + enrich/raze knobs (balance.economy) — clients render
+     * spend leakage honestly from server truth instead of hardcoded mirrors.
+     */
+    shares: {
+      loot: number;
+      landYield: number;
+      lordsLandlord: number;
+      lordsSeat: number;
+      burn: number;
+      treasury: number;
+      landYieldSelfPct: number;
+      enrichYieldPctPerDay: number;
+      enrichLootPct: number;
+      razeSalvagePct: number;
+    };
+    /** ⚙ training.musterPenalty — mustering armies fight at this fraction of strength. */
+    musterPenalty: number;
   } {
     const eco = ensureEconomy(this.state);
     const s = supplyComponents(this.state);
@@ -1263,6 +1281,19 @@ export class Game {
         last24hByKind,
       },
       purchaseCapCtPerEpoch: this.balance.economy.purchaseCapCtPerEpoch,
+      shares: {
+        loot: this.balance.economy.lootShare,
+        landYield: this.balance.economy.landYieldShare,
+        lordsLandlord: this.balance.economy.lordsLandlordShare,
+        lordsSeat: this.balance.economy.lordsSeatShare,
+        burn: this.balance.economy.burnShare,
+        treasury: this.balance.economy.treasuryShare,
+        landYieldSelfPct: this.balance.economy.landYieldSelfPct,
+        enrichYieldPctPerDay: this.balance.economy.enrichYieldPctPerDay,
+        enrichLootPct: this.balance.economy.enrichLootPct,
+        razeSalvagePct: this.balance.economy.razeSalvagePct,
+      },
+      musterPenalty: this.balance.training.musterPenalty,
     };
   }
 
