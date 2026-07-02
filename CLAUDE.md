@@ -71,6 +71,12 @@ export can be converted to the documented format. See `data/README.md`.
 - `blockchainsuperheroes/hexagon-crons` — existing land/yield cron jobs (Python)
 - `_archive-infra-hexr-backend` — archived, reference only
 
+## 📜 v0.2 VISION BIBLE (2026-07-02): `docs/VISION-BIBLE-v0.2.md` + `docs/ADDENDUM-E-PentaPet-Species-Affinity.pdf`
+Overarching new spec from the product owner: PentaPets = the living population (workers/soldiers/
+units, species affinities), terraforming, geology/materials, blueprint NFTs, living cities.
+Reconciliation vs locked canon + open questions: `docs/reports/V02-RECONCILIATION.md`. Canon
+edits happen only after the owner answers its questions; integration phases A–D defined there.
+
 ## 🎯 TOP PRIORITY: MVP playable by 2026-07-07
 
 Scope contract: `docs/briefs/MVP-JULY7.md`. Everything else yields to it. Map data is DELIVERED
