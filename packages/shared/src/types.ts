@@ -113,10 +113,29 @@ export interface Territory {
 }
 
 export interface StructureState {
-  key: string;                // e.g. 'walls','granary','market','barracks'
+  key: string;                // module: 'WALL','TOWER','GATE','TRAP','GRANARY','PET_DEN', or
+                              // development-track builds ('granary','market','barracks',…)
   track: DevelopmentTrack;
   level: number;
-  hp: number; maxHp: number;  // damaged in siege; repaired with CT
+  hp: number; maxHp: number;  // damaged in siege/base assault; repaired with CT
+  anchor?: [number, number];  // player-placed position on the parcel battlefield, normalized 0–1
+                              // (CoC layer, docs/04 §7b rule 2b); absent ⇒ auto-placed by generator
+}
+
+// A helper companion (Palworld model, docs/05 §9). Owned by a player, assignable to an occupied
+// territory to GATHER (yield boost) and GUARD (fights raiders on the battlefield).
+export interface Pet {
+  id: string;                 // pet_…
+  ownerPlayerId: string;
+  dexNumber: number;          // roster number (data/PETS_ROSTER.csv), e.g. 90
+  name: string;               // e.g. 'Barkindle'
+  element?: string;           // ❓ OPEN — element list pending
+  battleReady: boolean;       // cosmetic-only pets gather but cannot guard
+  flying: boolean;            // extends territory scouting/vision radius (docs/01 §9)
+  assignedTerritoryId?: string; // occupied territory this pet works/guards (cap: MAX_PETS_PER_TERRITORY)
+  condition: number;          // 0–100; beaten down in raids — at 0 the pet is KO'd and auto-returns
+                              // to the owner's roster (NEVER killed/lost), recovers over cooldown ⚙
+  koRecoverAt?: number;       // epoch ms
 }
 
 // ── Land NFT & economy ledger ────────────────────────────────────────────────

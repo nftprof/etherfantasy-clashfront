@@ -315,6 +315,17 @@ armies collide against natural terrain** — no lanes, towers, or creep conventi
 2. **Parcel interiors are SEEDED** — each hex's battlefield terrain is procedurally generated,
    deterministic from `seed = f(hexId, terrain, zoneType, development, structures)`. Same hex → same
    battlefield, forever (until its macro state changes it).
+   **Lazy materialization (2026-07):** a battlefield is not generated until the FIRST player visit —
+   determinism makes this pure caching (same seed ⇒ same result whenever computed). Unvisited
+   parcels store nothing.
+2b. **Occupied parcels are buildable bases (Clash-of-Clans layer, 2026-07).** The occupying player
+   places **structure modules** on their parcel's battlefield (anchored positions, see
+   `StructureState.anchor` in [`08`](./08-data-models.md)). Starter module set ⚙: `WALL` segment,
+   `TOWER` (ranged), `GATE`, `TRAP`, `GRANARY` (protects a food/CT % from pillage), `PET_DEN`
+   (raises pet-guard cap). Modules cost CT, have persistent HP, appear physically in every battle
+   on that parcel, and can be destroyed by attackers (repair with CT). Defense layout is the
+   player's tower-defense expression; attacking an occupied parcel plays as a base assault.
+   Guard **Pets** defend alongside structures — see [`05`](./05-pve-integration.md) §9 raid rules.
 3. **Biome overrides** — the main map may designate regions as biomes (mountain ranges, etc.) that
    constrain the seed inputs. ❓ OPEN: biome designation list, review with product owner.
 4. **Component size is capped** — one battle map = the size of the **smallest parcel**. Larger holdings

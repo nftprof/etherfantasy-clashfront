@@ -23,6 +23,9 @@ export const CONSTANTS = {
   REWILD_GRACE_DAYS: 14,        // untrodden days before overgrowth starts
   REWILD_RATE_PER_DAY: 3,       // overgrowth points/day after grace
   HEX_ACRES: 2,                 // real-world scale of one L3 hexagon (≈8,900 m²)
+  // Pets & base-building (canon 2026-07, docs/04 §7b rule 2b + docs/05 §9) — ⚙ proposals:
+  MAX_PETS_PER_TERRITORY: 3,    // base cap; +1 per PET_DEN level
+  PET_RECOVERY_HOURS: 8,        // KO'd pet recovery cooldown
   TAX_SPLIT_LANDLORD_DEFAULT: 0.30, // landlord share of tax before leases
   PILLAGE_INFRA_LOSS: 0.50,     // fraction of development destroyed on pillage
   PILLAGE_POP_LOSS: 0.25,

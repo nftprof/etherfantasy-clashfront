@@ -244,8 +244,24 @@ self-identity** (their own persistent character — Irene/Kai/Leah avatar base),
 in battles; **Masters are the commanded generals**. Both can officer armies and be played in a
 battle (`docs/08` — split `Hero` / `Master` schemas; officer fields accept either).
 
-**❓ OPEN — pet mechanics:** element list & per-pet element assignment (not in the sheet), occupancy
-rules (one per territory? per zone type?), and what "assist" grants (yield %, defense, scouting?).
+**Pet mechanics (canon 2026-07 — Palworld model):** a player assigns owned Pets to territories
+they occupy. Assigned pets do two jobs at once:
+- **GATHER** — boost the territory's resource collection (food/CT yield bonus per pet ⚙,
+  battle-ready pets gather AND guard; cosmetic-only pets gather only).
+- **GUARD** — pets physically defend the parcel's battlefield alongside the player's defense
+  structures (`04` §7b rule 2b) and garrison.
+
+**Raid rule:** an attacking player fights the guard pets as part of the battle and can beat them
+down **to a certain degree — never kill them**: a pet whose `condition` hits 0 is KO'd and
+auto-returns to its owner's roster with a recovery cooldown ⚙ (pets are companions/NFT-friendly —
+they are never lost or transferred by combat). Once pets are KO'd and the garrison/structures are
+beaten, the attacker may **occupy** the territory as normal (`04` §8).
+
+Caps ⚙: `MAX_PETS_PER_TERRITORY = 3` base, +1 per `PET_DEN` structure level. Flying pets (24 in
+roster) additionally extend the territory's scouting/vision radius (`01` §9).
+
+**❓ OPEN — remaining:** element list & per-pet element assignment (not in the sheet; element↔biome
+matching should modulate gather/guard efficiency), and exact yield/guard-strength numbers (balance.json).
 
 ---
 

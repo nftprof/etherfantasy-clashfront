@@ -49,6 +49,12 @@ export can be converted to the documented format. See `data/README.md`.
 7. **Masters = the RoTK generals** (owned/RENTED character NFTs, KO/revive lifecycle). LIVE API on
    `api.etherfantasy.com` — endpoints + samples in `docs/09` §7. This CONFIRMS
    `games-etherfantasy-backend` as character source of truth (old open question #3 → answered).
+9. Battlefields materialize LAZILY (first player visit; pure seeded function = safe caching).
+   Occupied parcels are buildable bases (CoC layer): placeable defense modules (WALL/TOWER/GATE/
+   TRAP/GRANARY/PET_DEN) with HP + battlefield anchors (`docs/04` §7b 2b). Pets (Palworld model):
+   assigned to occupied territories to GATHER (yield boost) + GUARD (fight raiders); raiders beat
+   pets down to KO — pets are NEVER lost, auto-return + recover; then territory can be occupied
+   (`docs/05` §9, `Pet` schema in `docs/08`).
 8. Creature layers: wild monsters + BOSSes occupy WILD estates; element-aligned Pets occupy
    territories/zones (`docs/05` §9). Fantasy world. **Rosters DELIVERED 2026-07-02** →
    `data/CHARACTER_ROSTER.csv` (47 Masters, 10 Bosses, 51 Monsters, 3 MOBA Heroes) and

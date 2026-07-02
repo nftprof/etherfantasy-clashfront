@@ -12,7 +12,7 @@ Population, Supply are whole integers. Prosperity/Morale are integers 0–100.
 
 ## 1. IDs & conventions
 
-- All entity IDs are ULIDs (sortable) prefixed by type: `player_…`, `hero_…`, `master_…`, `terr_…`, `army_…`, `battle_…`, `nft_…`, `hex_…`.
+- All entity IDs are ULIDs (sortable) prefixed by type: `player_…`, `hero_…`, `master_…`, `pet_…`, `terr_…`, `army_…`, `battle_…`, `nft_…`, `hex_…`.
 - Timestamps are UTC epoch milliseconds (`bigint`).
 - `version` (integer) on every mutable simulated entity for optimistic concurrency.
 - Soft-delete via `deleted_at` where relevant; the world never hard-deletes territories.
@@ -44,6 +44,9 @@ export const CONSTANTS = {
   REWILD_GRACE_DAYS: 14,        // untrodden days before overgrowth starts
   REWILD_RATE_PER_DAY: 3,       // overgrowth points/day after grace
   HEX_ACRES: 2,                 // real-world scale of one L3 hexagon (≈8,900 m²)
+  // Pets & base-building (canon 2026-07, 04 §7b rule 2b + 05 §9) — ⚙ proposals:
+  MAX_PETS_PER_TERRITORY: 3,    // base cap; +1 per PET_DEN level
+  PET_RECOVERY_HOURS: 8,        // KO'd pet recovery cooldown
   TAX_SPLIT_LANDLORD_DEFAULT: 0.30, // landlord share of tax before leases
   PILLAGE_INFRA_LOSS: 0.50,     // fraction of development destroyed on pillage
   PILLAGE_POP_LOSS: 0.25,
@@ -194,10 +197,29 @@ interface Territory {
 }
 
 interface StructureState {
-  key: string;                // e.g. 'walls','granary','market','barracks'
+  key: string;                // module: 'WALL','TOWER','GATE','TRAP','GRANARY','PET_DEN', or
+                              // development-track builds ('granary','market','barracks',…)
   track: DevelopmentTrack;
   level: number;
-  hp: number; maxHp: number;  // damaged in siege; repaired with CT
+  hp: number; maxHp: number;  // damaged in siege/base assault; repaired with CT
+  anchor?: [number, number];  // player-placed position on the parcel battlefield, normalized 0–1
+                              // (CoC layer, 04 §7b rule 2b); absent ⇒ auto-placed by generator
+}
+
+// A helper companion (Palworld model, 05 §9). Owned by a player, assignable to an occupied
+// territory to GATHER (yield boost) and GUARD (fights raiders on the battlefield).
+interface Pet {
+  id: string;                 // pet_…
+  ownerPlayerId: string;
+  dexNumber: number;          // roster number (data/PETS_ROSTER.csv), e.g. 90
+  name: string;               // e.g. 'Barkindle'
+  element?: string;           // ❓ OPEN — element list pending
+  battleReady: boolean;       // cosmetic-only pets gather but cannot guard
+  flying: boolean;            // extends territory scouting/vision radius (01 §9)
+  assignedTerritoryId?: string; // occupied territory this pet works/guards (cap: MAX_PETS_PER_TERRITORY)
+  condition: number;          // 0–100; beaten down in raids — at 0 the pet is KO'd and auto-returns
+                              // to the owner's roster (NEVER killed/lost), recovers over cooldown ⚙
+  koRecoverAt?: number;       // epoch ms
 }
 ```
 
