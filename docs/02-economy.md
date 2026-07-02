@@ -363,7 +363,11 @@ on their land, never idleness; **BURN 20%** → destroyed; **TREASURY 5%**.
    nets a burn — the structural sink.
 
 **Faucet governance:** in-world actions only REDISTRIBUTE or BURN — nothing in-world mints.
-Mints are exclusively cross-game earnings + capped $ purchases (`purchaseCapCtPerEpoch` ⚙).
+CT is a LIVE Pentagon Chain token (product owner 2026-07-02): players DEPOSIT into the game and
+WITHDRAW out (escrow; the MOBA's PlayEscrow is the proven pattern). "Mint" in-game = deposit +
+cross-game earnings, capped per epoch (`depositCapCtPerEpoch` ⚙) — you can hold unlimited CT
+on-chain, but the WORLD only absorbs so much per epoch. The BURN bucket settles as real periodic
+on-chain burns from escrow — the game is structurally deflationary for the token.
 **Conservation invariant (tested):** wallets + territory treasuries + enrichment pools +
 burned + treasury + unclaimedLordYield === minted, exactly, every tick.
 

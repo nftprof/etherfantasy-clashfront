@@ -45,8 +45,10 @@ export can be converted to the documented format. See `data/README.md`.
     1 MOBA-map-sized battlefield, bounds polygon = the parcel's actual shape normalized to arena
     scale. LOCKED 2026-07-02: 1 engine unit = 1 m; SINGLE ≈ 240×240 m ≈ 14.2 acres; ladder
     SMALL 27.7× … EPIC 480.3× (≈6,800 acres, ~480 components); world ≈ 29,900 km² (`docs/04` §7b).
-6. Chains (CORRECTED by map extraction): estates(L2)=Ethereum, parcels(L3)=Polygon,
-   Pentagon Chain=characters/MOBA only. Hero impact cap = 20% (`HERO_IMPACT_MAX`). Landlord tax 30%.
+6. Chains (CORRECTED ×2): estates(L2)=Ethereum, parcels(L3)=Polygon, Pentagon Chain =
+   characters + MOBA escrow + **the CT token itself (live on-chain)**. Game = deposit/withdraw
+   escrow economy; deposit caps = the P2W faucet cap; burns settle on-chain (`docs/02` §13).
+   Hero impact cap = 20% (`HERO_IMPACT_MAX`). Landlord tax 30%.
 7. **Masters = the RoTK generals** (owned/RENTED character NFTs, KO/revive lifecycle). LIVE API on
    `api.etherfantasy.com` — endpoints + samples in `docs/09` §7. This CONFIRMS
    `games-etherfantasy-backend` as character source of truth (old open question #3 → answered).
