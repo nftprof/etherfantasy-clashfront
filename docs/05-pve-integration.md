@@ -220,18 +220,33 @@ earners ≥ 25%, and sink/source 0.9–1.1).
 
 ---
 
-## 9. Creature canon (2026-07, char list incoming)
+## 9. Creature canon (2026-07 — rosters delivered)
 
-The world is a **fantasy setting**. Three creature layers on the overworld (assets already exist):
+The world is a **fantasy setting**. Rosters are in the delivery hub:
+`data/CHARACTER_ROSTER.csv` (Masters/Bosses/Monsters/Heroes + asset export status) and
+`data/PETS_ROSTER.csv` + `data/EF_Moba_Pets_3D.xlsx` (pets + rig/animation status).
 
-- **Masters** — the generals players command (owned/rented character NFTs) — README glossary, `09` §7.
-- **Wild monsters & BOSSes** — hostile PvE; **bosses occupy WILD estates**: a boss is the "castle
-  component" of a wild estate's taming campaign (§2.1 escalated to estate scale — clear the
-  components, then the boss lair). Ties directly to `04` §7b estate mechanics.
-- **Pets** — element-aligned helper species (Pokémon-flavored) that **occupy territories/zones by
-  element** and assist their controller. ❓ OPEN: element list, occupancy rules (one pet per
-  territory? per zone type?), what "assist" grants (yield %, defense, scouting?) — awaiting the
-  full character list from the product owner. Do NOT invent mechanics.
+| Layer | Count | Overworld role |
+|---|---|---|
+| **Masters** | **47** named (e.g. Choco, Baron, Gwen, Death_Jinook; +6 `Type_` variants unprocessed) | The generals players command (owned/rented NFTs) — README glossary, `09` §7. |
+| **Bosses** | **10** (4 elemental champions: Centaur Fire/Water, Sunwon Fire, Zouwan Fire; World_1–4; Raid_LeeKoon; Elemental) | **Occupy WILD estates** — the boss is the "castle component" of a wild estate's taming campaign (§2.1 at estate scale; ties to `04` §7b). `World_N` bosses anchor §6 world events; `Raid_` = raid-tier. |
+| **Monsters** | **51**, themed by episode | WILD-zone garrisons & spawns. Episode themes map naturally to **biomes**: base (goblin/gnoll/skeleton/golem) → temperate; Ep02 ice (gargoyles, wolves, snowmen) → snow; Ep03 kobolds/moles → mines & hills; Ep04 mummies → desert; Ep05 statues/minotaur → ancient ruins; Ep06 werewolf → forest; Ep11 robots/engineers → a tech region. ❓ OPEN: confirm episode→biome mapping with map biome designations. |
+| **Heroes (MOBA)** | **3** playable battle avatars (Irene + variants, Kai, Leah) | ❓ OPEN: relationship to Masters — see below. |
+| **Pets** | **128** rigged (dex-numbered 1–252, sparse; **122 battle-ready**, 6 cosmetic-only, **24 flying**) | Element-aligned helpers that **occupy territories/zones by element**. Flying pets are a natural scouting/naval-spotting hook (❓ OPEN). |
+
+**Asset-readiness note (from the roster):** only ~8 Masters are ship-ready today (7 clean +
+1 scale-normalized); 12 are static T-pose, 16 have rig deform issues, 6 unexported. Battle-engine
+milestones that render Masters (M3+) should sequence against re-export progress; headless M1/M2
+don't care.
+
+**❓ OPEN — Hero vs Master reconciliation:** the roster lists Heroes (Irene/Kai/Leah) as a separate
+category from Masters. Working hypothesis: *Heroes are the player's own battle avatar (EF MOBA
+mains); Masters are the commanded generals.* If confirmed, drop-in = play your Hero, while Masters
+join per `joinChance` as AI/possessable officers — the `docs/08` `Hero` mirror schema then needs a
+split (`Avatar` vs `Master`). Do not implement either way without product-owner confirmation.
+
+**❓ OPEN — pet mechanics:** element list & per-pet element assignment (not in the sheet), occupancy
+rules (one per territory? per zone type?), and what "assist" grants (yield %, defense, scouting?).
 
 ---
 

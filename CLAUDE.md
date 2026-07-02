@@ -46,7 +46,10 @@ export can be converted to the documented format. See `data/README.md`.
    `api.etherfantasy.com` — endpoints + samples in `docs/09` §7. This CONFIRMS
    `games-etherfantasy-backend` as character source of truth (old open question #3 → answered).
 8. Creature layers: wild monsters + BOSSes occupy WILD estates; element-aligned Pets occupy
-   territories/zones (`docs/05` §9). Fantasy world. Full character list incoming from product owner.
+   territories/zones (`docs/05` §9). Fantasy world. **Rosters DELIVERED 2026-07-02** →
+   `data/CHARACTER_ROSTER.csv` (47 Masters, 10 Bosses, 51 Monsters, 3 MOBA Heroes) and
+   `data/PETS_ROSTER.csv` (128 pets, 122 battle-ready, 24 flying). Full breakdown + open
+   questions (Hero-vs-Master split, pet elements, episode→biome mapping): `docs/05` §9.
 
 **Sibling repos (the real system landscape — see `docs/AGENTS.md` table):**
 - `blockchainsuperheroes/etherfantasy-browser-moba-game` — battle engine (3D client + authoritative server)
