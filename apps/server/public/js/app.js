@@ -136,7 +136,7 @@ function handleEvents(events) {
         break;
       }
       case 'army_retreated': {
-        map.retreatFlash(ev.fromParcelId, ev.toParcelId, store.color(ev.governorId));
+        map.retreatFlash(ev.fromParcelId, ev.toParcelId, ev.governorId); // friend/foe colored in map.js
         const who = store.isMine(ev.governorId) ? 'Your army' : `${esc(store.playerName(ev.governorId))}'s army`;
         if (store.isMine(ev.governorId)) {
           ui.toast('↩ Retreat!', `Your army falls back to ${parcelName(ev.toParcelId)}.`, 'bad', ev.toParcelId, 8000);
@@ -179,6 +179,7 @@ function handleEvents(events) {
               `Your army stopped at ${parcelName(ev.parcelId)}${battle ? ' — battle joined!' : ''}`,
               'bad', ev.parcelId, 8000);
             if (battle) ui.feedPush(`⚠ Your army was intercepted at ${parcelName(ev.parcelId)}`, 't-battle', ev.parcelId);
+            ftue.tip('interception'); // one-shot just-in-time explainer
           } else if (!battleParcelsThisTick.has(ev.parcelId)) {
             ui.toast('Army arrived', `Holding ${parcelName(ev.parcelId)}.`, 'info', ev.parcelId);
           }
