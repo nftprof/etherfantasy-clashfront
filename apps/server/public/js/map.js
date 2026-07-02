@@ -43,6 +43,7 @@ export function createMap(canvas, store, handlers) {
   let dirty = true;
   let hoverParcel = null;
   let selectedArmyId = null;
+  let selectedParcelId = null; // mirrors the open parcel card (ui.openCard/closeCard)
 
   const fires = [];                // {x,y,t0,seed}
   const smokes = [];               // {x,y,t0,seed} — stalemate: smoke only, no fire
@@ -327,7 +328,15 @@ export function createMap(canvas, store, handlers) {
     }
 
     // hover / selection outlines
-    if (hoverParcel) {
+    if (selectedParcelId) { // gold: the parcel whose card is open (rail or map click)
+      const sp = paths.get(selectedParcelId);
+      if (sp) {
+        ctx.strokeStyle = 'rgba(217,164,65,0.95)';
+        ctx.lineWidth = lw(2);
+        ctx.stroke(sp);
+      }
+    }
+    if (hoverParcel && hoverParcel !== selectedParcelId) {
       ctx.strokeStyle = 'rgba(255,255,255,0.75)';
       ctx.lineWidth = lw(1.4);
       ctx.stroke(paths.get(hoverParcel));
@@ -637,6 +646,9 @@ export function createMap(canvas, store, handlers) {
     prepare, resize, gotoParcel, flyTo, fireAt, smokeAt, smolderAt, pulseAt, retreatFlash,
     setSelectedArmy(id) { selectedArmyId = id; canvas.classList.toggle('targeting', id !== null); dirty = true; },
     get selectedArmyId() { return selectedArmyId; },
+    /** Gold outline mirroring the open parcel card (rail/map selection share it). */
+    setSelectedParcel(id) { selectedParcelId = id; dirty = true; },
+    get selectedParcelId() { return selectedParcelId; },
     toScreenOf(parcelId) {
       const c = store.parcels.get(parcelId)?.center;
       return c ? toScreen(c[0], c[1]) : [w / 2, h / 2];

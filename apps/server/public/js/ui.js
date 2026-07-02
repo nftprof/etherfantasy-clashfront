@@ -81,7 +81,7 @@ export function createUI({ store, map, orders }) {
       const duty = store.officerDuty(o.id);
       const meta = duty === undefined ? 'free' : duty.kind === 'leads' ? 'leads army' : 'oversees';
       const target = duty?.kind === 'leads' ? `data-army="${duty.army.id}"`
-        : duty?.kind === 'oversees' ? `data-parcel="${duty.territory.parcelId}"` : '';
+        : duty?.kind === 'oversees' ? `data-parcel="${duty.territory.parcelId}"` : `data-officer="${o.id}"`;
       return row(target, duty ? '#7d8a99' : '#58b06b', esc(o.name), meta);
     }).join('');
     html += sec(`Officers (${free}/${store.officers.length} free)`, officers);
@@ -93,17 +93,27 @@ export function createUI({ store, map, orders }) {
     rail.innerHTML = html;
   }
 
+  // Rail rows center AND select (PO 2026-07-02): territory -> card + map
+  // highlight, army -> the same selection a map-marker click sets, officer ->
+  // resolves to the entity they lead/oversee (idle officers just flash).
+  // Double-click naturally repeats the same idempotent action.
   rail.addEventListener('click', (e) => {
-    const el = e.target.closest('[data-parcel],[data-army],[data-choice],[data-feed]');
+    const el = e.target.closest('[data-parcel],[data-army],[data-choice],[data-feed],[data-officer]');
     if (!el) return;
-    if (el.dataset.parcel) { map.gotoParcel(el.dataset.parcel); openCard(el.dataset.parcel); }
-    else if (el.dataset.army) {
+    if (el.dataset.parcel) {
+      map.gotoParcel(el.dataset.parcel);
+      openCard(el.dataset.parcel); // openCard drives the map's selected-parcel outline
+    } else if (el.dataset.army) {
       const a = store.armies.get(el.dataset.army);
       if (a) { map.gotoParcel(a.parcelId); if (a.state === 'GARRISON') selectArmy(a.id); }
     } else if (el.dataset.choice) openChoiceModal(el.dataset.choice);
     else if (el.dataset.feed) {
       const f = feed[Number(el.dataset.feed)];
-      if (f?.parcelId) map.gotoParcel(f.parcelId);
+      if (f?.parcelId) { map.gotoParcel(f.parcelId); map.pulseAt(f.parcelId, '#d9a441'); }
+    } else if (el.dataset.officer) { // free officer: nothing on the map to select
+      el.classList.remove('row-flash');
+      void el.offsetWidth; // restart the CSS animation
+      el.classList.add('row-flash');
     }
   });
 
@@ -140,9 +150,10 @@ export function createUI({ store, map, orders }) {
   // ── parcel card ────────────────────────────────────────────────────────────
   function openCard(parcelId) {
     cardParcelId = parcelId;
+    map.setSelectedParcel(parcelId); // gold outline on the map mirrors the open card
     renderCard();
   }
-  function closeCard() { cardParcelId = null; card.hidden = true; }
+  function closeCard() { cardParcelId = null; card.hidden = true; map.setSelectedParcel(null); }
 
   function renderCard() {
     const t = cardParcelId && store.terrByParcel.get(cardParcelId);

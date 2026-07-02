@@ -244,3 +244,6 @@ button.danger  { background: #4a2320; border-color: #7a3a33; }
   margin-right: 5px; vertical-align: 1px; }
 #tooltip .tt-dot.friend { background: #4da3ff; }
 #tooltip .tt-dot.foe { background: #e0483c; }
+/* rail-row flash for idle officers (click resolves to nothing on the map) */
+.rail-row.row-flash { animation: row-flash 0.8s ease-out; }
+@keyframes row-flash { 0% { background: rgba(217, 164, 65, 0.35); } 100% { background: transparent; } }
