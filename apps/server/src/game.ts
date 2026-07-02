@@ -778,6 +778,11 @@ export class Game {
         sliceBBox: this.config.worldFile.meta.sliceBBox,
         seed: this.config.seed,
         travelTicksPerStep: this.config.tickOptions.travelTicksPerStep,
+        // Claim-cost rule (docs/02): adjacent to your land = free; farther = CT/step.
+        claims: {
+          freeRadiusSteps: this.balance.claims.freeRadiusSteps,
+          costCtUnitsPerStep: this.balance.claims.costCtUnitsPerStep,
+        },
       },
       parcels,
     };

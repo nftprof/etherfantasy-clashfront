@@ -100,6 +100,12 @@ export interface Balance {
     armyMaxStacks: number;
     shipCapacitySoldiers: number;
   };
+  claims: {
+    /** steps from nearest own territory that stay free (1 = adjacent block) */
+    freeRadiusSteps: number;
+    /** ct_units charged per step beyond the free radius */
+    costCtUnitsPerStep: number;
+  };
   pillageOccupy: {
     pillageLootTreasuryPct: number;
     pillageLootCtUnitsPerPop: number;
@@ -145,7 +151,7 @@ export interface Balance {
 
 const REQUIRED_SECTIONS: readonly (keyof Balance)[] = [
   'travel', 'development', 'tax', 'prosperity', 'food', 'population',
-  'supply', 'morale', 'desertion', 'upkeep', 'units', 'pillageOccupy', 'draft', 'provisions',
+  'supply', 'morale', 'desertion', 'upkeep', 'units', 'pillageOccupy', 'draft', 'provisions', 'claims',
 ];
 
 function resolveBalancePath(): string {

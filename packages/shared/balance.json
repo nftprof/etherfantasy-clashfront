@@ -29,7 +29,7 @@
   "tax": {
     "cycleTicks": 1440,
     "baseTaxCtUnitsPerPop": 200,
-    "economyTrackBonusPerLevel": 0.10
+    "economyTrackBonusPerLevel": 0.1
   },
   "prosperity": {
     "growthPerDay": 24,
@@ -86,22 +86,43 @@
     "supplyCutMult": 2.0,
     "hungerMult": 1.5,
     "retreatingMult": 1.5,
-    "hardCapPerDay": 0.20,
+    "hardCapPerDay": 0.2,
     "desertersReturnToPopulationPct": 0.5,
     "desertersReturnToWildBanditPct": 0.1
   },
   "upkeep": {
     "perUnitClassPer100PerDay": {
-      "INFANTRY": { "food": 100, "ctUnits": 10000 },
-      "ARCHER": { "food": 100, "ctUnits": 15000 },
-      "CAVALRY": { "food": 150, "ctUnits": 30000 },
-      "SPEAR": { "food": 100, "ctUnits": 10000 },
-      "SIEGE": { "food": 120, "ctUnits": 40000 },
-      "MARINE": { "food": 110, "ctUnits": 20000 },
-      "SHIP": { "food": 0, "ctUnits": 60000 }
+      "INFANTRY": {
+        "food": 100,
+        "ctUnits": 10000
+      },
+      "ARCHER": {
+        "food": 100,
+        "ctUnits": 15000
+      },
+      "CAVALRY": {
+        "food": 150,
+        "ctUnits": 30000
+      },
+      "SPEAR": {
+        "food": 100,
+        "ctUnits": 10000
+      },
+      "SIEGE": {
+        "food": 120,
+        "ctUnits": 40000
+      },
+      "MARINE": {
+        "food": 110,
+        "ctUnits": 20000
+      },
+      "SHIP": {
+        "food": 0,
+        "ctUnits": 60000
+      }
     },
     "distanceFactorPerHex": 0.05,
-    "empireFactorPer50kSoldiers": 0.10
+    "empireFactorPer50kSoldiers": 0.1
   },
   "units": {
     "classBase": {
@@ -128,7 +149,7 @@
   "pillageOccupy": {
     "pillageLootTreasuryPct": 0.8,
     "pillageLootCtUnitsPerPop": 500,
-    "occupySeizeTreasuryPct": 0.20
+    "occupySeizeTreasuryPct": 0.2
   },
   "draft": {
     "draftBasePctOfPop": 0.05,
@@ -153,9 +174,26 @@
     "scatterMoraleFloor": 10,
     "scatterDisbandRemainingPct": 0.1,
     "commandCenterTiers": [
-      { "goldPer100": 50, "woodPer100": 50, "bonus": 0.05 },
-      { "goldPer100": 100, "woodPer100": 100, "bonus": 0.1 },
-      { "goldPer100": 200, "woodPer100": 200, "bonus": 0.15 }
+      {
+        "goldPer100": 50,
+        "woodPer100": 50,
+        "bonus": 0.05
+      },
+      {
+        "goldPer100": 100,
+        "woodPer100": 100,
+        "bonus": 0.1
+      },
+      {
+        "goldPer100": 200,
+        "woodPer100": 200,
+        "bonus": 0.15
+      }
     ]
+  },
+  "claims": {
+    "_": "Land claiming (product owner 2026-07-02): adjacent to your holdings = free; farther = CT per step (dispatching a Master). First-ever claim free (founding). ⚙ demo values.",
+    "freeRadiusSteps": 1,
+    "costCtUnitsPerStep": 500000
   }
 }

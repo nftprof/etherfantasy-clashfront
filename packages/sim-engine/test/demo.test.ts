@@ -274,13 +274,53 @@ test('occupation converts to pillage when the player has no free officer', () =>
 
 // ── Oversight cap ─────────────────────────────────────────────────────────────
 
+test('claim cost: founding free, adjacent free, distance charges CT, broke governor rejected', () => {
+  const rng = createRng('claimcost');
+  const state = loadDemoWorld(makeGrid(8, 8), rng.fork('worldgen'), { monsterParcelPct: 0 });
+  const balance = loadBalance();
+  const perStep = balance.claims.costCtUnitsPerStep;
+  const { governorId } = addGovernor(state, rng.fork('gov'), {
+    name: 'Founder', kind: 'PLAYER', ctUnits: perStep * 20, officerNames: ['A', 'B', 'C', 'D'],
+  });
+  // grid ids sort row-major: pick a corner, its neighbor, and a far corner
+  const ids = [...state.territories.keys()].sort();
+  const corner = state.territories.get(ids[0]!)!;
+  const cornerHex = corner.hexIds[0]!;
+  const neighborHex = state.adjacency!.get(cornerHex)![0]!;
+  const neighbor = [...state.territories.values()].find((t) => t.hexIds[0] === neighborHex)!;
+  const far = ids[ids.length - 1]!; // opposite corner of an 8x8 grid — well past free radius
+
+  claimTerritory(state, corner.id, governorId); // founding — free
+  assert.equal(state.ctBalances!.get(governorId), perStep * 20);
+  claimTerritory(state, neighbor.id, governorId); // adjacent — free
+  assert.equal(state.ctBalances!.get(governorId), perStep * 20);
+  const before = state.ctBalances!.get(governorId)!;
+  claimTerritory(state, far, governorId); // distant — charged
+  const charged = before - state.ctBalances!.get(governorId)!;
+  assert.ok(charged > 0 && charged % perStep === 0, `charged ${charged} should be a positive multiple of ${perStep}`);
+  // a broke governor cannot claim far land
+  const broke = addGovernor(state, rng.fork('gov2'), {
+    name: 'Pauper', kind: 'PLAYER', ctUnits: 0, officerNames: ['X', 'Y'],
+  });
+  claimTerritory(state, ids[1]!, broke.governorId); // founding free
+  const farForPauper = [...state.territories.values()].find(
+    (t) => t.governorId !== broke.governorId && t.governorKind === 'SYSTEM' && t.id > ids[40]!,
+  )!;
+  assert.throws(() => claimTerritory(state, farForPauper.id, broke.governorId), /too far from your lands/);
+  // and the failed claim must not leak the overseer
+  const officers = state.officers!.get(broke.governorId)!;
+  assert.equal(officers.filter((o) => o.assignedTerritoryId !== undefined).length, 1);
+});
+
 test(`oversight cap: claim #${CONSTANTS.MAX_OVERSEEN_TERRITORIES + 1} rejected even with free officers`, () => {
   const rng = createRng('cap');
   const state = loadDemoWorld(makeGrid(8, 8), rng.fork('worldgen'), { monsterParcelPct: 0 });
   const { governorId } = addGovernor(state, rng.fork('gov'), {
     name: 'Empress',
     kind: 'PLAYER',
-    ctUnits: 0,
+    // Enough CT that distance-based claim costs (docs/02, claims balance) never
+    // gate this test — it targets the OVERSIGHT CAP, not the wallet.
+    ctUnits: 1_000_000_000,
     officerNames: Array.from({ length: CONSTANTS.MAX_OVERSEEN_TERRITORIES + 1 }, (_, i) => `Officer${i}`),
   });
   const ids = [...state.territories.keys()].sort();

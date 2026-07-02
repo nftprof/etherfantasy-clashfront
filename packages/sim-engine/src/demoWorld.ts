@@ -27,6 +27,7 @@ import {
   type UnitStack,
   type World,
   loadBalance,
+  type Balance,
   newId,
 } from '@clashfront/shared';
 import { defaultProvisionsFor, provisionCostCtUnits, type ProvisionOrder } from './logistics';
@@ -302,11 +303,52 @@ export function addGovernor(
  * (docs/01 §11.3); the officer is auto-assigned as overseer. The claimed parcel
  * becomes the governor's supply source (demo rule so home-raised armies are fed).
  */
+/**
+ * CT cost to claim `territoryId` for `governorId` (product owner 2026-07-02):
+ * BFS distance from the governor's NEAREST holding; steps ≤ freeRadiusSteps are
+ * free (the "immediate block"), each step beyond costs costCtUnitsPerStep.
+ * A governor with NO holdings claims free anywhere (founding).
+ */
+export function claimCostCtUnits(
+  state: WorldState,
+  territoryId: string,
+  governorId: string,
+  balance: Balance = loadBalance(),
+): number {
+  const target = state.territories.get(territoryId);
+  if (target === undefined || state.adjacency === undefined) return 0;
+  const own = new Set(
+    [...state.territories.values()].filter((t) => t.governorId === governorId).map((t) => t.hexIds[0]!),
+  );
+  if (own.size === 0) return 0; // founding claim
+  // BFS outward from the target until we touch a holding.
+  const start = target.hexIds[0]!;
+  let frontier = [start];
+  const seen = new Set(frontier);
+  for (let d = 1; frontier.length > 0; d++) {
+    const next: string[] = [];
+    for (const h of frontier) {
+      for (const n of state.adjacency.get(h) ?? []) {
+        if (seen.has(n)) continue;
+        seen.add(n);
+        if (own.has(n)) {
+          const over = d - balance.claims.freeRadiusSteps;
+          return over > 0 ? over * balance.claims.costCtUnitsPerStep : 0;
+        }
+        next.push(n);
+      }
+    }
+    frontier = next;
+  }
+  return Number.MAX_SAFE_INTEGER; // disconnected — effectively unclaimable remotely
+}
+
 export function claimTerritory(
   state: WorldState,
   territoryId: string,
   governorId: string,
   overseerId?: string,
+  balance: Balance = loadBalance(),
 ): void {
   const t = state.territories.get(territoryId);
   if (t === undefined) throw new Error(`claimTerritory: unknown territory ${territoryId}`);
@@ -340,6 +382,24 @@ export function claimTerritory(
     }
     free.assignedTerritoryId = t.id;
     t.overseerId = free.id;
+  }
+  // Distance-based claim cost (docs/02; adjacent block free). Charged for any
+  // wallet-bearing governor (players AND NPC kingdoms — the AI pays too).
+  const cost = claimCostCtUnits(state, territoryId, governorId, balance);
+  if (cost > 0) {
+    const bal = state.ctBalances?.get(governorId) ?? 0;
+    if (bal < cost) {
+      // roll back the overseer assignment made above before failing
+      if (t.overseerId !== undefined) {
+        const o = (state.officers?.get(governorId) ?? []).find((x) => x.id === t.overseerId);
+        if (o !== undefined) delete o.assignedTerritoryId;
+        delete t.overseerId;
+      }
+      throw new Error(
+        `claimTerritory: too far from your lands — costs ${Math.floor(cost / 10_000)} CT (you have ${Math.floor(bal / 10_000)})`,
+      );
+    }
+    state.ctBalances!.set(governorId, bal - cost);
   }
   t.governorId = governorId;
   t.governorKind = kind;

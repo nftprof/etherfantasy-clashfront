@@ -21,6 +21,13 @@ const SMOLDER_MS = 60_000;
 const PULSE_MS = 1500;
 const RETREAT_MS = 4200;
 
+// Friend/foe unit colors (PO 2026-07-02 "blue vs red"): the VIEWER's units are
+// always blue, everyone else's (players, NPC kingdoms, monsters) are red.
+// Territory ownership keeps per-player colors; an owner-color ring on red
+// markers keeps empires identifiable.
+const MY_UNIT = '#4da3ff';
+const FOE_UNIT = '#e0483c';
+
 export function createMap(canvas, store, handlers) {
   const ctx = canvas.getContext('2d');
   const terrain = createTerrain(store, () => { dirty = true; }); // heightfield lands async
@@ -46,6 +53,12 @@ export function createMap(canvas, store, handlers) {
   // per-parcel precomputed geometry
   const paths = new Map();         // parcelId → Path2D (world coords)
   const bboxes = new Map();        // parcelId → [minx,miny,maxx,maxy]
+
+  // friend/foe + army-size marker helpers (see MY_UNIT/FOE_UNIT above)
+  const unitColor = (gid) => (store.isMine(gid) ? MY_UNIT : FOE_UNIT);
+  const unitRing = (gid) => (store.isMine(gid) ? 'rgba(255,255,255,0.65)' : rgba(store.color(gid), 0.95));
+  /** Marker scale by troop count: sqrt ramp, ~0.8× at 30 troops → 1.6× at 600+ (still px-clamped at zoom). */
+  const sizeK = (troops) => 0.6 + Math.min(1, Math.sqrt((troops || 0) / 600));
 
   // ── geometry prep ───────────────────────────────────────────────────────────
   let worldBBox = null; // [mnx,mny,mxx,mxy]
@@ -208,11 +221,14 @@ export function createMap(canvas, store, handlers) {
     const c = store.parcels.get(parcelId)?.center;
     if (c) { smokes.push({ x: c[0], y: c[1], t0: performance.now(), seed: Math.random() * 7 }); dirty = true; }
   }
-  /** Brief flash of an army's retreat line (fromParcel → toParcel). */
-  function retreatFlash(fromParcelId, toParcelId, color) {
+  /** Brief flash of an army's retreat line (fromParcel → toParcel), friend/foe colored. */
+  function retreatFlash(fromParcelId, toParcelId, governorId) {
     const f = store.parcels.get(fromParcelId)?.center;
     const t = store.parcels.get(toParcelId)?.center;
-    if (f && t) { retreats.push({ fx: f[0], fy: f[1], tx: t[0], ty: t[1], t0: performance.now(), color }); dirty = true; }
+    if (f && t) {
+      retreats.push({ fx: f[0], fy: f[1], tx: t[0], ty: t[1], t0: performance.now(), governorId });
+      dirty = true;
+    }
   }
 
   // ── draw ───────────────────────────────────────────────────────────────────
@@ -273,16 +289,18 @@ export function createMap(canvas, store, handlers) {
       ctx.stroke(paths.get(hoverParcel));
     }
 
-    // garrison presence dots
+    // garrison presence dots (friend/foe colored, sized by troop count)
     for (const t of store.terrByParcel.values()) {
       const c = store.parcels.get(t.parcelId)?.center;
       if (!c || !t.garrison) continue;
+      const k = sizeK(t.garrison.troops);
       if (t.garrison.monsterName) { // wild monster: dark maw + red eye
-        dot(c[0], c[1], cap(0.16, 9), '#26161a', '#5c1f1f', lw(0.8));
-        ctx.fillStyle = '#e0483c';
-        ctx.beginPath(); ctx.arc(c[0], c[1], cap(0.055, 3.5), 0, 7); ctx.fill();
+        dot(c[0], c[1], cap(0.16 * k, 9 * k), '#26161a', '#5c1f1f', lw(0.8));
+        ctx.fillStyle = FOE_UNIT;
+        ctx.beginPath(); ctx.arc(c[0], c[1], cap(0.055 * k, 3.5 * k), 0, 7); ctx.fill();
       } else {
-        dot(c[0], c[1], cap(0.14, 8), store.color(t.garrison.governorId), 'rgba(0,0,0,0.55)', lw(0.8));
+        dot(c[0], c[1], cap(0.14 * k, 8 * k), unitColor(t.garrison.governorId),
+          unitRing(t.garrison.governorId), lw(1));
       }
     }
     // extra own garrisons stacked on a parcel (beyond the territory garrison slot)
@@ -291,7 +309,11 @@ export function createMap(canvas, store, handlers) {
       const t = store.terrByParcel.get(a.parcelId);
       if (t?.garrison?.armyId === a.id) continue;
       const c = store.parcels.get(a.parcelId)?.center;
-      if (c) dot(c[0] + cap(0.22, 12), c[1] - cap(0.18, 10), cap(0.11, 6.5), store.color(a.governorId), 'rgba(0,0,0,0.55)', lw(0.8));
+      const k = sizeK(a.troops);
+      if (c) {
+        dot(c[0] + cap(0.22, 12), c[1] - cap(0.18, 10), cap(0.11 * k, 6.5 * k),
+          unitColor(a.governorId), unitRing(a.governorId), lw(1));
+      }
     }
 
     // marching armies: dotted remaining path (mine) + chevron
@@ -301,7 +323,7 @@ export function createMap(canvas, store, handlers) {
       const next = store.parcels.get(a.path[0])?.center ?? [x, y];
       if (a.governorId === me || a.id === selectedArmyId) {
         ctx.setLineDash([lw(4), lw(5)]);
-        ctx.strokeStyle = rgba(store.color(a.governorId), 0.5);
+        ctx.strokeStyle = rgba(unitColor(a.governorId), 0.55);
         ctx.lineWidth = lw(1.2);
         ctx.beginPath();
         ctx.moveTo(x, y);
@@ -309,8 +331,8 @@ export function createMap(canvas, store, handlers) {
         ctx.stroke();
         ctx.setLineDash([]);
       }
-      chevron(x, y, Math.atan2(next[1] - y, next[0] - x), store.color(a.governorId), a.governorId === me, lw,
-        Math.min(1, 55 / cam.s));
+      chevron(x, y, Math.atan2(next[1] - y, next[0] - x), unitColor(a.governorId), unitRing(a.governorId),
+        a.governorId === me, lw, Math.min(1, 55 / cam.s) * sizeK(a.troops));
     }
 
     // selected army ring
@@ -366,14 +388,16 @@ export function createMap(canvas, store, handlers) {
       const r = retreats[i];
       const k = (now - r.t0) / RETREAT_MS;
       if (k >= 1) { retreats.splice(i, 1); continue; }
+      const rc = unitColor(r.governorId);
       ctx.setLineDash([lw(3), lw(4)]);
-      ctx.strokeStyle = rgba(r.color, 0.85 * (1 - k));
+      ctx.strokeStyle = rgba(rc, 0.85 * (1 - k));
       ctx.lineWidth = lw(1.6);
       ctx.beginPath(); ctx.moveTo(r.fx, r.fy); ctx.lineTo(r.tx, r.ty); ctx.stroke();
       ctx.setLineDash([]);
       const p = Math.min(1, k * 1.6); // chevron reaches the refuge early, then the line fades
       chevron(r.fx + (r.tx - r.fx) * p, r.fy + (r.ty - r.fy) * p,
-        Math.atan2(r.ty - r.fy, r.tx - r.fx), r.color, false, lw, Math.min(1, 55 / cam.s));
+        Math.atan2(r.ty - r.fy, r.tx - r.fx), rc, unitRing(r.governorId),
+        store.isMine(r.governorId), lw, Math.min(1, 55 / cam.s));
     }
 
     // fire + smoke (battle bursts, ~30 s fade)
@@ -426,7 +450,7 @@ export function createMap(canvas, store, handlers) {
     ctx.stroke();
   }
 
-  function chevron(x, y, ang, color, mine, lw, k = 1) {
+  function chevron(x, y, ang, color, ring, mine, lw, k = 1) {
     ctx.save();
     ctx.translate(x, y);
     ctx.rotate(ang);
@@ -436,8 +460,8 @@ export function createMap(canvas, store, handlers) {
     ctx.moveTo(0.26, 0); ctx.lineTo(-0.16, 0.15); ctx.lineTo(-0.07, 0); ctx.lineTo(-0.16, -0.15);
     ctx.closePath();
     ctx.fill();
-    ctx.strokeStyle = mine ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.5)';
-    ctx.lineWidth = lw(mine ? 1.1 : 0.7);
+    ctx.strokeStyle = ring; // white for mine, owner color for foes (empire identity)
+    ctx.lineWidth = lw(mine ? 1.1 : 0.8);
     ctx.stroke();
     ctx.restore();
   }
