@@ -117,6 +117,10 @@ a core session merges them.
 
 ## Working rules
 
+- **Retry differently (product owner 2026-07-02):** when anything fails, do NOT repeat the same
+  attempt — change the approach each retry (different tool/method, smaller scope, isolated
+  worktree, alternate data source, or restructure the step). Escalate to the product owner only
+  after materially different attempts have failed.
 - Follow `docs/AGENTS.md` (prime directives: determinism, integer money, canon names, doc-first).
 - Never edit canon (names/schemas/constants) without updating `docs/README.md` + `docs/08` in the same PR.
 - Commit and push to `claude/clash-front-overworld-mkcyia`; never force-push others' work away.
