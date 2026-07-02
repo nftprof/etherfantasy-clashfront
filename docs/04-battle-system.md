@@ -365,6 +365,38 @@ hexagone-city (land sizes are permanent — snapshot under `data/` once repo acc
 
 ---
 
+## 7c. Battle logistics: provisions, command center, timer, ties, retreat (canon 2026-07-02)
+
+> Product-owner rules: most battle maps have NO on-map resources; battle time is limited by food;
+> attackers bring Gold+Wood to build a temporary command center; ties are possible; failed
+> invaders must retreat somewhere. CT (earned across all EF game modes) is what buys provisions.
+
+1. **Provisioning (CT sink).** Before marching, an army is provisioned at a friendly territory:
+   CT buys **Food** (operating time), **Gold** and **Wood** (battlefield construction budget) —
+   `Army.provisions` ([`08`](./08-data-models.md)). Carry capacity scales with army size and
+   supply trains ⚙. Most battlefields have NO harvestable resources — you fight with what you
+   carried (❓ OPEN: rare resource-rich biomes as exceptions).
+2. **Temporary Command Center.** On engagement the attacker erects a CC from carried Gold+Wood —
+   tiers ⚙ (camp → palisade → fortified camp w/ watchtower & siege workshop). The CC is the
+   attacker's reinforcement anchor, hero drop-in spawn, and **loseable core structure**. The
+   defender's core = their keep/base (occupied parcel structures) or garrison camp (wild).
+3. **The battle clock.** Battle duration budget = attacker's carried Food (defenders consume the
+   territory's `foodStock` — home advantage is literal). Food exhausted ⇒ the battle ENDS.
+4. **Outcomes.**
+   - **Decisive**: a core structure falls (CC or keep) or an army routs → normal §8 flow.
+   - **TIE**: clock expires, neither core down, WarScore gap below `TIE_THRESHOLD` ⚙ → NO
+     territory change; casualties stand; attacker must retreat (below). Defender "wins by
+     endurance" — starving the invader IS a defensive strategy.
+5. **Retreat.** A failed/tied attacker retreats to an adjacent friendly or neutral parcel of
+   their choice; if none is reachable, the army **scatters** (heavy casualties, morale collapse,
+   officer KO risk ⚙). Plan your retreat line BEFORE you invade.
+6. **AUTO/ACCELERATED mapping.** The resolver reads the same inputs: Food ⇒ endurance term &
+   max duration; Gold+Wood ⇒ attacker structure term; WarScore gap vs `TIE_THRESHOLD` ⇒
+   decisive-or-tie; tie ⇒ retreat resolution. Mode-invariance (§3) holds — LIVE play shifts
+   outcomes only within the hero cap.
+
+---
+
 ## 8. Post-victory: PILLAGE vs OCCUPY, and settlement
 
 Applied atomically at `RESOLVED`, in order:

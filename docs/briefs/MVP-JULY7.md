@@ -1,4 +1,17 @@
-# MVP — Playable by July 7 (hard deadline)
+# MVP — Playable by July 7 (hard deadline) — COMPRESSED TO JULY 5 (v2, 2026-07-02)
+
+> **v2 update (product owner):** target pulled in to ~3 days via PARALLEL build streams; battle
+> logistics (docs/04 §7c: provisions, command center, clock, TIE, retreat) added to scope as
+> stream B. Coordination contract: all streams build against the SAME server API views
+> (`apps/server/src/views.ts`) and canon types; the orchestrator session merges streams and owns
+> integration. Stream plan:
+>
+> | Stream | What | When |
+> |---|---|---|
+> | A — Client | item 4 map UI (running) | Jul 2 |
+> | B — Battle economy | provisions (food/gold/wood bought with CT), battle clock, TIE outcome, retreat/scatter, provision API + NPC provisioning | Jul 2, parallel (worktree) |
+> | C — Integration | merge A+B: provision UI, battle timer/tie/retreat surfacing, direction arrows, polish | Jul 3 |
+> | D — Deploy + playtest | single box, 2-browser test, balance | Jul 4 → ship Jul 5, Jul 6–7 buffer |
 
 > Product owner directive 2026-07-02: **first playable MVP by 2026-07-07** (5 days). Focus on top
 > features, lowest-hanging fruit; **demo units are fine**. This brief is the scope contract —

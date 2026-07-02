@@ -55,6 +55,14 @@ Rules: ambient effects are driven by the SAME state fields the battlefield gener
 layer (§2), not baked into tiles. Battles-on-fire are the loudest signal on the map by design —
 war must be visible from far away.
 
+**Units on the map (product owner 2026-07-02):** symbolic ≠ static — **your units and allied
+units are ALWAYS visible, marching, with direction** (chevron + heading + path hint + ETA).
+Enemy/neutral visibility is governed by **fog of war** (`docs/01` §9): seen only where you have
+vision (own/allied territory, army sight radius, flying-pet scout bonus). **Scout indicators**
+mark your vision sources (watchtower/army/pet 👁 badges) so players understand WHY they can see
+an area. MVP ships own-unit direction arrows with no fog (full visibility); fog + scout badges
+land in v0.3 (§6).
+
 ## 3. Camera & UX model (the "follow your units" contract)
 
 - **Home rail** (always on screen): the player's armies, territories, battles — each with a

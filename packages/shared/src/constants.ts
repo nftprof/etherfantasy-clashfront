@@ -36,6 +36,9 @@ export const CONSTANTS = {
   PILLAGE_POP_LOSS: 0.25,
   REBELLION_FOOD_THRESHOLD: 0,  // food stock at/below → rebellion risk rises
   DESERTION_MORALE_THRESHOLD: 25,
+  // Battle logistics (canon 2026-07-02, docs/04 §7c) — ⚙ proposals:
+  TIE_THRESHOLD: 0.15,          // WarScore gap (fraction) below which an expired clock ⇒ TIE
+  SCATTER_CASUALTY_PCT: 0.30,   // extra losses when a retreating army has nowhere to go
   CT_UNITS_PER_CT: 10_000,
 } as const;
 

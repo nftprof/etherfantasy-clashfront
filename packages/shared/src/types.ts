@@ -181,6 +181,8 @@ export interface Army {
   path?: string[];            // remaining hexIds when MARCHING
   arrivalTick?: number;       // tick at next hex / destination
   units: UnitStack[];
+  provisions: { food: number; gold: number; wood: number }; // carried battle logistics (docs/04 §7c):
+                              // food = battle clock; gold+wood = temporary command-center budget.
   supply: number;             // 0..supplyMax
   supplyMax: number;
   morale: number;             // 0–100
