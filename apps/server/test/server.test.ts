@@ -234,6 +234,28 @@ test('e2e: join → claim adjacent → raise → march into each other → battl
   }
 });
 
+// ── Static client (MVP item 4) ────────────────────────────────────────────────
+
+test('client: / serves the overworld app shell and its module entry', async () => {
+  const game = new Game(gameConfig({ npcEveryTicks: 0 }));
+  const server = new ClashServer({ game, port: 0, tickMs: null, saveMs: null });
+  const port = await server.start();
+  const base = `http://127.0.0.1:${port}`;
+  try {
+    const index = await fetch(base + '/');
+    assert.equal(index.status, 200);
+    assert.match(index.headers.get('content-type') ?? '', /text\/html/);
+    const html = await index.text();
+    assert.ok(html.includes('id="app"'), 'index.html must contain the app mount');
+    assert.ok(html.includes('/js/app.js'), 'index.html must load the client module');
+    const entry = await fetch(base + '/js/app.js');
+    assert.equal(entry.status, 200);
+    assert.match(entry.headers.get('content-type') ?? '', /javascript/);
+  } finally {
+    await server.stop();
+  }
+});
+
 // ── NPC kingdom AI ────────────────────────────────────────────────────────────
 
 test('NPC kingdom: seeded at boot on a cluster edge, expands deterministically every N ticks', () => {

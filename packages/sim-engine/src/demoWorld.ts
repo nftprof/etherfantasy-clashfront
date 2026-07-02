@@ -223,6 +223,7 @@ export function loadDemoWorld(file: DemoWorldFile, rng: Rng, options: LoadDemoWo
       state: 'GARRISON',
       hexId,
       units,
+      provisions: { food: 0, gold: 0, wood: 0 }, // battle logistics (docs/04 §7c) — not provisioned in the MVP
       supply: CONSTANTS.SUPPLY_MAX_DEFAULT,
       supplyMax: CONSTANTS.SUPPLY_MAX_DEFAULT,
       morale: 60,
@@ -367,6 +368,7 @@ export function raiseArmy(
     state: 'GARRISON',
     hexId: t.hexIds[0]!,
     units: spec.map((s) => ({ unitClass: s.unitClass, count: s.count, veterancy: 0, hp: 100 })),
+    provisions: { food: 0, gold: 0, wood: 0 }, // battle logistics (docs/04 §7c) — not provisioned in the MVP
     supply: CONSTANTS.SUPPLY_MAX_DEFAULT,
     supplyMax: CONSTANTS.SUPPLY_MAX_DEFAULT,
     morale: 70,
