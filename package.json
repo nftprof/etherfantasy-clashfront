@@ -11,7 +11,8 @@
     "build": "pnpm -r build",
     "test": "pnpm -r test",
     "typecheck": "pnpm -r typecheck",
-    "clean": "pnpm -r clean"
+    "clean": "pnpm -r clean",
+    "dev:server": "pnpm -r build && pnpm --filter @clashfront/server start"
   },
   "devDependencies": {
     "typescript": "^5.5.0",
