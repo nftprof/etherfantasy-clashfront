@@ -340,6 +340,36 @@ reputation a cash value without power creep.
 
 ---
 
+## 13. The Circular War Economy (canon 2026-07-02 — product owner)
+
+> Working spec: `briefs/FEATURESET-3-ECONOMY.md`. The durable laws:
+
+**Every wallet→world spend SPLITS — nothing vanishes except the deliberate burn.** Canonical
+buckets ⚙ (`balance.economy`): **LOOT 30%** → treasuries of towns/wilds NEAR the spend (war
+spending seeds the battlefields with loot — warzones become gold rushes); **LAND-YIELD 20%** →
+enrichment pools of the spend neighborhood (pays the CURRENT land holder over time);
+**LORDS 25%** → landlord (15%) + estate/region seat (10%) — the NFT class earns from activity
+on their land, never idleness; **BURN 20%** → destroyed; **TREASURY 5%**.
+
+**The three anti-pay-to-win laws:**
+1. **Time gates power, money never does.** Soldiers TRAIN over time (per-territory queues; MIL
+   raises rate; per-parcel throughput caps). No instant armies at any price. Mustering armies
+   caught mid-training fight at a penalty ⚙.
+2. **Money buys STAKES, not strength.** Everything purchasable lives on the map and is losable:
+   enrichment pools attach to LAND (conquest inherits them; pillage loots a share) — whale-
+   enriched land is everyone's hunting ground; structures are plunderable; provisions burn.
+3. **Infrastructure is a CT battery with leakage.** RAZE any development level/structure you
+   hold: salvage ⚙ (~40%) of invested CT back, the rest burns. Every build→conquer→raze cycle
+   nets a burn — the structural sink.
+
+**Faucet governance:** in-world actions only REDISTRIBUTE or BURN — nothing in-world mints.
+Mints are exclusively cross-game earnings + capped $ purchases (`purchaseCapCtPerEpoch` ⚙).
+**Conservation invariant (tested):** wallets + territory treasuries + enrichment pools +
+burned + treasury + unclaimedLordYield === minted, exactly, every tick.
+
+**Telemetry is a feature:** `/api/economy` exposes supply, burn, flows-by-reason, and loot-inflow
+heat — the balance team cannot tune what it cannot see.
+
 ## Cross-references
 
 - [`README.md`](./README.md) — Glossary (CT, Food, Population, Prosperity, Tax, Morale), Pillars 1/4/9/10/11.
