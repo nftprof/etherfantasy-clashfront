@@ -41,9 +41,10 @@ export can be converted to the documented format. See `data/README.md`.
 4. One battle map = smallest parcel size. Estates (100s–10,000 hexes) fight as linked per-hex
    components with an adjacency-gated internal front; castle = final component. See `docs/04` §7b.
 5. Only estates have pre-designed castle/city-wall maps (real-world castle design references).
-5b. SCALE LAWS: overworld game map = the source SVG verbatim (exact geometry, our unit scaling);
-    1 L3 parcel = 1 MOBA-map-sized battlefield, bounds polygon = the parcel's actual shape
-    normalized to arena scale (`docs/04` §7b).
+5b. SCALE LAWS: overworld game map = the source SVG verbatim (exact geometry); 1 L3 parcel =
+    1 MOBA-map-sized battlefield, bounds polygon = the parcel's actual shape normalized to arena
+    scale. LOCKED 2026-07-02: 1 engine unit = 1 m; SINGLE ≈ 240×240 m ≈ 14.2 acres; ladder
+    SMALL 27.7× … EPIC 480.3× (≈6,800 acres, ~480 components); world ≈ 29,900 km² (`docs/04` §7b).
 6. Chains (CORRECTED by map extraction): estates(L2)=Ethereum, parcels(L3)=Polygon,
    Pentagon Chain=characters/MOBA only. Hero impact cap = 20% (`HERO_IMPACT_MAX`). Landlord tax 30%.
 7. **Masters = the RoTK generals** (owned/RENTED character NFTs, KO/revive lifecycle). LIVE API on

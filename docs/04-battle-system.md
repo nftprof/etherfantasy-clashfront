@@ -305,8 +305,11 @@ armies collide against natural terrain** — no lanes, towers, or creep conventi
 - **The overworld game map = the source SVG, verbatim** — the extracted hexagon-city geometry
   (`data/hexagon-city-source/`) IS the world map: exact parcel shapes, positions, proportions.
   Unit scaling (world-units per SVG-unit) is an engineering choice; the geometry is not.
-- **1 L3 parcel = 1 MOBA-map-sized battlefield** (the battle engine's existing ~240×240-unit
-  arena ≈ 2 acres). The battlefield **bounds polygon = the parcel's actual shape**, normalized to
+- **1 L3 parcel = 1 MOBA-map-sized battlefield** (the battle engine's existing 240×240-unit
+  arena). **Scale LOCKED 2026-07-02: 1 engine unit = 1 meter** ⇒ a SINGLE parcel ≈ 240×240 m
+  ≈ **14.2 acres**; heroes are human-sized, armies and castles fit at real proportions. Size
+  ladder (median polygon area vs SINGLE): SMALL 27.7×, MEDIUM 116.7×, LARGE 201.5×, GIANT 302.5×,
+  EPIC 480.3× (≈6,800 acres ⇒ ~480 battle components). Whole world ≈ 29,900 km². The battlefield **bounds polygon = the parcel's actual shape**, normalized to
   arena scale — you fight on the outline of the land being taken. (Battle-engine plan item A1's
   bounds-polygon model covers this; "hex" boundaries are a special case, not a requirement.)
 

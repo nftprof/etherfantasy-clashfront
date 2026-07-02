@@ -22,7 +22,12 @@ export const CONSTANTS = {
   // Rewilding (canon 2026-07, docs/01 §11.2) — ⚙ proposals, tune in balance.json:
   REWILD_GRACE_DAYS: 14,        // untrodden days before overgrowth starts
   REWILD_RATE_PER_DAY: 3,       // overgrowth points/day after grace
-  HEX_ACRES: 2,                 // real-world scale of one L3 hexagon (≈8,900 m²)
+  // World scale (LOCKED 2026-07-02): 1 engine unit = 1 meter; one SINGLE (L3) parcel = one
+  // 240x240m MOBA arena ~= 14.2 acres. Ladder (median polygon area, x SINGLE): SMALL 27.7,
+  // MEDIUM 116.7, LARGE 201.5, GIANT 302.5, EPIC 480.3 (~6,800 acres). Whole world ~= 29,900 km2.
+  METERS_PER_ENGINE_UNIT: 1,
+  ARENA_UNITS: 240,             // battlefield side length in engine units (existing MOBA arena)
+  PARCEL_SINGLE_ACRES: 14.2,    // 240m x 240m = 57,600 m2
   // Pets & base-building (canon 2026-07, docs/04 §7b rule 2b + docs/05 §9) — ⚙ proposals:
   MAX_PETS_PER_TERRITORY: 3,    // base cap; +1 per PET_DEN level
   PET_RECOVERY_HOURS: 8,        // KO'd pet recovery cooldown

@@ -382,8 +382,9 @@ Numbers reference [`08-data-models.md` §5](./08-data-models.md#5-invariants-mus
 ### 11.1 The real map (from hexagone-city extraction; detail report incoming)
 
 - **292,766 unique land parcels** total: **284,284 L3** + **8,482 L2**.
-- **L3 = the smallest division = ONE hexagon ≈ 2 acres** (~8,900 m², ~90 m across) — exactly the
-  battle-map unit (`04` §7b rule 4). L2 = larger multi-hex parcels (the estate tier;
+- **L3 = the smallest division = ONE parcel ≈ 14.2 acres** (240×240 m at the LOCKED scale
+  1 engine unit = 1 m, `04` §7b) — exactly the battle-map unit (`04` §7b rule 4). Whole world
+  ≈ 7.4 M acres ≈ 29,900 km² (Belgium-sized continent); largest EPIC estate ≈ 6,800 acres. L2 = larger multi-hex parcels (the estate tier;
   hex-composition detail in the forthcoming map report).
 - The map is FIXED; these counts are permanent. Snapshot lands in `data/parcels.json`.
 
