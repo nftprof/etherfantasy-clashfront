@@ -14,6 +14,7 @@ export const CONSTANTS = {
   SUPPLY_MAX_DEFAULT: 100,
   SUPPLY_BREAK_PENALTY: 0.35,   // combat power lost when supply cut
   LAUNCH_NPC_TERRITORY_PCT: 0.95,
+  ESTATE_MIN_HEXES: 7,          // ❓ OPEN proposal — Territory.hexIds.length ≥ this ⇒ estate battle mode (04 §7b)
   TAX_SPLIT_LANDLORD_DEFAULT: 0.30, // landlord share of tax before leases
   PILLAGE_INFRA_LOSS: 0.50,     // fraction of development destroyed on pillage
   PILLAGE_POP_LOSS: 0.25,

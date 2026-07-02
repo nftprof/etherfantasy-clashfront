@@ -1,0 +1,53 @@
+{
+  "source": {
+    "kind": "sample",
+    "notes": "FORMAT EXAMPLE ONLY — not real hexagone-city data. The real snapshot lands as data/parcels.json (see data/README.md). Parcel footprints are PERMANENT once snapshotted."
+  },
+  "coordinateSystem": "axial",
+  "parcels": [
+    {
+      "parcelId": "hc-0001",
+      "name": "Meadow Rise",
+      "landType": "small",
+      "zone": "Meadow District",
+      "hexes": [{ "q": 0, "r": 0 }]
+    },
+    {
+      "parcelId": "hc-0002",
+      "landType": "small",
+      "zone": "Meadow District",
+      "hexes": [{ "q": 1, "r": 0 }]
+    },
+    {
+      "parcelId": "hc-0003",
+      "name": "Fisher's Rest",
+      "landType": "medium",
+      "zone": "Harbor District",
+      "chainId": 1,
+      "contract": "0x0000000000000000000000000000000000000000",
+      "tokenId": "3",
+      "ownerAddress": "0x0000000000000000000000000000000000000001",
+      "hexes": [
+        { "q": 4, "r": 0, "terrain": "COAST" },
+        { "q": 5, "r": 0, "terrain": "COAST" },
+        { "q": 4, "r": 1 }
+      ]
+    },
+    {
+      "parcelId": "hc-0004",
+      "name": "Highkeep Estate",
+      "landType": "estate",
+      "zone": "Harbor District",
+      "hexes": [
+        { "q": 10, "r": 0 },
+        { "q": 11, "r": 0 },
+        { "q": 9, "r": 1 },
+        { "q": 10, "r": 1 },
+        { "q": 11, "r": 1, "terrain": "HILLS" },
+        { "q": 9, "r": 2 },
+        { "q": 10, "r": 2 },
+        { "q": 11, "r": 2, "terrain": "MOUNTAIN" }
+      ]
+    }
+  ]
+}

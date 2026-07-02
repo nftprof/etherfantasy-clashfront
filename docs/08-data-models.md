@@ -173,6 +173,7 @@ interface LandNFT {
   id: string;                 // nft_…
   territoryId: string;
   chainId?: number; contract?: string; tokenId?: string; // on-chain settlement (optional/mirrored)
+  sourceParcelId?: string;    // hexagone-city parcel id (import provenance — data/parcels.json)
   ownerPlayerId?: string;     // undefined ⇒ SYSTEM-owned (buyable)
   leaseId?: string;           // active lease, if any
   taxSplitLandlord: number;   // landlord share of tax (default CONSTANTS.TAX_SPLIT_LANDLORD_DEFAULT)

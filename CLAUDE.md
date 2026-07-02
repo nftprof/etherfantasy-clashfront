@@ -11,12 +11,27 @@ branch is `claude/clash-front-overworld-mkcyia`.
 
 **Done:**
 - Complete design bible in `docs/` (00–10 + AGENTS.md + README canon). Consistency-reviewed.
-- Monorepo scaffold, builds green, 13/13 tests passing:
+- Monorepo scaffold, builds green, 22/22 tests passing:
   - `packages/shared` — canon in code: constants, enums, all 18 interfaces from `docs/08`,
     prefix-typed ULIDs, seeded RNG (no Math.random in sim), `balance.json` + typed loader.
   - `packages/sim-engine` — deterministic tick engine skeleton (exact phase order from `docs/01` §6),
     seeded test world, golden-master determinism + invariant tests (node:test, zero deps).
   - `pnpm install && pnpm -r build && pnpm -r test` must stay green.
+- **Parcel import pipeline** (`packages/sim-engine/src/parcels.ts`, map-import session 2026-07-02):
+  `data/parcels.json` snapshot format (documented in `data/README.md` + `data/parcels.sample.json`)
+  → `importParcels()` → canonical `Hex`/`Territory`/`LandNFT`/`Region` genesis world. Deterministic,
+  order-insensitive, invariant-2 enforced, estate classification via `ESTATE_MIN_HEXES`.
+  `LandNFT.sourceParcelId` added to `docs/08` + shared types for import provenance.
+
+**⚠ Map-source finding (2026-07-02, supersedes the assumption in next-step 1 below):**
+`hexagone-city-website` does NOT contain the map — it is the marketing/auth/Polygon-staking
+site. The real hex map + land marketplace is a separate app at **`map.hexagon.city`**
+(header link with `land_type`/`zone`/`chain_ids` filters); its codebase is not in any session
+scope so far, and the sandbox network policy blocks its API. `hexagon-crons` = MATIC staking
+sync (no land tables); `games-etherfantasy-backend` = accounts/heroes/gameplay (no land).
+**The real `data/parcels.json` snapshot is therefore still missing** — it needs the
+map.hexagon.city codebase (or a land DB/API export) in scope; any parcel-id → hex-coords
+export can be converted to the documented format. See `data/README.md`.
 
 **Key decisions locked with the product owner (beyond what's in docs):**
 1. Overworld map is FIXED — exact hexagone-city geometry, never regenerated.
@@ -42,10 +57,11 @@ branch is `claude/clash-front-overworld-mkcyia`.
 
 ## Immediate next steps (in order)
 
-1. **Requires sibling-repo access in session scope:** read `hexagone-city-website` (+ backend) and
-   extract the parcel table — all land parcels, sizes (small parcel ↔ estate), positions, estate
-   boundaries. Parcel sizes are PERMANENT: snapshot as `data/parcels.json` in this repo, then write
-   the importer → canonical `Hex`/`Territory` model (`docs/08`). This unblocks everything else.
+1. **Requires map.hexagon.city access (see finding above):** obtain the parcel table — all land
+   parcels, sizes (small parcel ↔ estate), positions, estate boundaries — from the map.hexagon.city
+   codebase or a land DB/API export. Parcel sizes are PERMANENT: snapshot as `data/parcels.json`
+   (format already defined — `data/README.md`); the importer to canonical `Hex`/`Territory` is
+   DONE and tested. This snapshot unblocks everything else.
 2. Inspect the MOBA repo's match-server API → concretize the battle handoff contract (`docs/09`)
    against real code; scope per-hex battlefield loading (square map → hex-component battlefields).
 3. Confirm whether `games-etherfantasy-backend` is the source of truth for accounts/heroes.
