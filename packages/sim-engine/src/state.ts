@@ -34,6 +34,43 @@ export interface PendingChoice {
   expiresTick: number;          // tick at which the default action is applied
 }
 
+/** How a failed/tied attacker army left the field (docs/04 §7c.5). */
+export type RetreatResult = 'RETREATED' | 'SCATTERED' | 'DISBANDED';
+
+export interface ArmyRetreatRecord {
+  armyId: string;
+  result: RetreatResult;
+  /** Destination hex when result = RETREATED (absent for SCATTERED/DISBANDED — the army stays/dies on the battle hex). */
+  toHexId?: string;
+}
+
+/**
+ * Battle-logistics outcome record (docs/04 §7c.6) — endurance/structure terms,
+ * outcome kind and retreat resolution for one resolved battle. Kept in a
+ * WorldState map (battleId → record) instead of on BattleInstance so the
+ * canonical docs/08 battle schema is not extended for the MVP resolver.
+ */
+export interface BattleLogisticsRecord {
+  battleId: string;
+  outcomeKind: 'DECISIVE_ATTACKER' | 'DECISIVE_DEFENDER' | 'TIE';
+  /** Endurance multipliers actually applied (enduranceFloor..1). */
+  attackerEndurance: number;
+  defenderEndurance: number;
+  /** Temporary command center erected from carried gold+wood: 0 = none, 1..N = balance.provisions.commandCenterTiers index+1. */
+  commandCenterTier: number;
+  /** Attacker score bonus fraction from the command center. */
+  structureBonus: number;
+  /** Carried food the attacker side burned (spent win or lose). */
+  attackerFoodConsumed: number;
+  /** Territory foodStock the defender side ate (home advantage is literal). */
+  defenderFoodConsumed: number;
+  /** Gold/wood spent erecting the command center (spent win or lose). */
+  goldSpent: number;
+  woodSpent: number;
+  /** Retreat resolution per failed/tied attacker army. */
+  retreats: ArmyRetreatRecord[];
+}
+
 export interface WorldState {
   world: World;
   regions: Map<string, Region>;
@@ -60,6 +97,8 @@ export interface WorldState {
   pendingChoices?: Map<string, PendingChoice>;
   /** armyId → monster display name (roster-flavored wild garrisons; display only). */
   monsterNames?: Map<string, string>;
+  /** battleId → logistics outcome (endurance/CC terms, TIE, retreat resolution — docs/04 §7c). */
+  battleLogistics?: Map<string, BattleLogisticsRecord>;
 }
 
 /**

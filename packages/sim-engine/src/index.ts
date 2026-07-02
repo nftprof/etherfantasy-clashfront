@@ -6,3 +6,4 @@ export * from './tick';
 export * from './seed';
 export * from './parcels';
 export * from './demoWorld';
+export * from './logistics';
