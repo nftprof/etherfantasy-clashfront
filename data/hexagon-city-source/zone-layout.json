@@ -1,0 +1,165 @@
+{
+  "source": {
+    "kind": "hexagon-city (formerly Cryptoverse) SVG land map",
+    "repo": "blockchainsuperheroes/_archive-cryptoverse-frontend",
+    "files": "public/svg/l2/<ZONE>.svg",
+    "extractionDate": "2026-07-02",
+    "extractor": "scratchpad/extract_map.py (SVG <path> anchor-point evaluation)",
+    "notes": "Parcels are irregular SVG polygons. NO hex grid / axial q,r in source. center/bbox are in each zone's OWN svg viewBox coordinate space (anchor-point mean; control-point overshoot ignored - approximate). Use zone-layout.json worldOffset to place zones relative to each other (source assembles zones in 3D with a 90deg X rotation; there is no single unified 2D source grid)."
+  },
+  "coordinateSystem": "svg-polygon-per-zone (NOT axial-hex)",
+  "tokenEncoding": {
+    "L2": "sizeDigit(1) + zoneCode(2) + sourceIndex(4)   e.g. SMALL/ENT/#0 = '5'+'03'+'0000' = 5030000",
+    "L3": "'6' + zoneCode(2) + parentIndex(4) + subIndex(4)  (13 digits)",
+    "sizeMapper": {
+      "EPIC": "1",
+      "GIANT": "2",
+      "LARGE": "3",
+      "MEDIUM": "4",
+      "SMALL": "5",
+      "SINGLE": "6"
+    },
+    "zoneMapper": {
+      "BUS": "00",
+      "CGI": "01",
+      "EDU": "02",
+      "ENT": "03",
+      "HS1": "04",
+      "HS2": "05",
+      "HS3": "06",
+      "HUB": "07",
+      "KOL": "08",
+      "UW1": "09",
+      "UW2": "10",
+      "UW3": "11"
+    },
+    "colors": {
+      "EPIC": "#E4E700",
+      "GIANT": "#D5D5D5",
+      "LARGE": "#D39476",
+      "MEDIUM": "#5DDEFC",
+      "SMALL": "#E3A9E5",
+      "SINGLE": "#19FCD5"
+    }
+  },
+  "sizeClassCounts": {
+    "SMALL": 6787,
+    "MEDIUM": 1082,
+    "LARGE": 393,
+    "GIANT": 172,
+    "EPIC": 48
+  },
+  "zoneLayout": {
+    "BUS": {
+      "viewBox": "0 0 354.05 242.41",
+      "transform": "translate(-179.3, -126.5)",
+      "worldOffset": {
+        "x": 40,
+        "y": 0,
+        "z": -200
+      },
+      "zoneCode": "00",
+      "l2Count": 1187
+    },
+    "EDU": {
+      "viewBox": "0 0 155.77 148.06",
+      "transform": "translate(-74.5, -78)",
+      "worldOffset": {
+        "x": 100,
+        "y": 0,
+        "z": 150
+      },
+      "zoneCode": "02",
+      "l2Count": 372
+    },
+    "ENT": {
+      "viewBox": "0 0 289.56 525.86",
+      "transform": "translate(-144.8,-260.95)",
+      "worldOffset": {
+        "x": -190,
+        "y": 0,
+        "z": -10
+      },
+      "zoneCode": "03",
+      "l2Count": 1492
+    },
+    "HS1": {
+      "viewBox": "0 0 113.62 116.02",
+      "transform": "translate(-56.8015,-58.003)",
+      "worldOffset": {
+        "x": 300,
+        "y": 0,
+        "z": 100
+      },
+      "zoneCode": "04",
+      "l2Count": 346
+    },
+    "HS2": {
+      "viewBox": "0 0 118.01 116.48",
+      "transform": "translate(-59,-58.25)",
+      "worldOffset": {
+        "x": 425,
+        "y": 0,
+        "z": 175
+      },
+      "zoneCode": "05",
+      "l2Count": 451
+    },
+    "HS3": {
+      "viewBox": "0 0 114.68 117.21",
+      "transform": "translate(-57.35,-58.6)",
+      "worldOffset": {
+        "x": 300,
+        "y": 0,
+        "z": 245
+      },
+      "zoneCode": "06",
+      "l2Count": 464
+    },
+    "HUB": {
+      "viewBox": "0 0 358.16 231.1",
+      "transform": "translate(-179.1, -113.55)",
+      "worldOffset": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "zoneCode": "07",
+      "l2Count": 1744
+    },
+    "UW1": {
+      "viewBox": "0 0 150.51 150.52",
+      "transform": "translate(-75,-75)",
+      "worldOffset": {
+        "x": 310,
+        "y": 0,
+        "z": -210
+      },
+      "zoneCode": "09",
+      "l2Count": 1233
+    },
+    "UW2": {
+      "viewBox": "0 0 150.48 150.52",
+      "transform": "translate(-75,-75)",
+      "worldOffset": {
+        "x": 475,
+        "y": 0,
+        "z": -210
+      },
+      "zoneCode": "10",
+      "l2Count": 1101
+    },
+    "UW3": {
+      "viewBox": "0 0 63.29 64.04",
+      "transform": "translate(-32,-32)",
+      "worldOffset": {
+        "x": 600,
+        "y": 0,
+        "z": -210
+      },
+      "zoneCode": "11",
+      "l2Count": 92
+    }
+  },
+  "worldLayoutNote": "Each zone has its own SVG viewBox coord space. To assemble the full map, place each zone group at worldOffset (x,y,z; y up) then rotate 0.5*pi about X so the XZ plane is the ground (per vendors/LandMap/LandMap.js). There is no single unified 2D source grid."
+}

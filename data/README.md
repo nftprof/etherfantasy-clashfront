@@ -1,6 +1,15 @@
 # data/ — Imported world data
 
-## `parcels.json` (NOT YET PRESENT — extraction blocked on repo scope)
+## `parcels.json` (NOT YET GENERATED — source snapshot delivered, axial conversion pending a design decision)
+
+> **Update 2026-07-02 — extraction UNBLOCKED.** The hexagon-city (formerly Cryptoverse) map has been
+> located and fully extracted into [`hexagon-city-source/`](./hexagon-city-source/) — 8,482 estates/
+> parcels (L2) + 284,284 unique singles (L3) across 10 zones, with geometry, token IDs, and on-chain
+> refs. See [`hexagon-city-source/MAP-EXTRACTION-REPORT.md`](./hexagon-city-source/MAP-EXTRACTION-REPORT.md)
+> and the root [`../AGENT.md`](../AGENT.md). **Key catch:** the source map is **irregular SVG polygons,
+> not hexes** — there are no `q,r` coordinates to import. Producing `parcels.json` requires a signed-off
+> "hexes-per-parcel" rule and a rasterization/packing step (report §9); it was intentionally NOT
+> fabricated because footprints are permanent once committed.
 
 The permanent snapshot of the hexagone-city land map: every parcel, its hex footprint
 (axial `q,r`), source zone, and on-chain reference. **Parcel sizes are PERMANENT**
@@ -16,20 +25,15 @@ re-extraction may only add provenance fields or fill in owners/terrain.
 - **Validation:** `parseParcelsFile` / `loadParcelsFile` reject duplicate parcel ids,
   duplicate hex coordinates across parcels, empty footprints, and non-axial coordinates.
 
-### Why the real snapshot isn't here yet (2026-07-02 findings)
+### Where the map actually was (2026-07-02, resolved)
 
-The `hexagone-city-website` repo does **not** contain the map: it is the marketing /
-account / Polygon-staking site. The actual hex map + land marketplace is a separate app
-at **`map.hexagon.city`** (linked from the site header with `land_type` / `zone` /
-`chain_ids` filters), whose codebase is not in this session's repo scope, and the remote
-execution environment's network policy blocks fetching its API directly. `hexagon-crons`
-is MATIC-staking sync (no land tables); `games-etherfantasy-backend` is accounts/heroes/
-gameplay (no land either).
-
-**Unblock paths (product owner):** add the map.hexagon.city codebase (or its land DB/API
-export) to a session's repo scope, or hand over a raw export — any JSON/CSV with
-parcel id → hex coordinates (+ zone, land type, chain refs) can be converted to this
-format with a small script.
+The `hexagone-city-website` repo is the marketing / account / Polygon-staking site and does **not**
+contain the map. The real map is the **archived Cryptoverse frontend**
+(`blockchainsuperheroes/_archive-cryptoverse-frontend`, `public/svg/{l1,l2,l3}`) — a Three.js +
+`SVGLoader` parcel picker — backed by `cryptoverse-backend-revamp` / `cryptoverse-graphql` (land DB +
+APIs) and `cryptoverse-scripts-python` (token encoding + Covalent ownership sync). `hexagon-crons` is
+MATIC-staking (no land); `games-etherfantasy-backend` is characters/gameplay on Pentagon Chain (no land).
+All of it is now extracted into [`hexagon-city-source/`](./hexagon-city-source/).
 
 ### Source-field mapping (importer)
 
