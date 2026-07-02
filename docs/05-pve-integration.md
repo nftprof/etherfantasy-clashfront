@@ -239,11 +239,10 @@ The world is a **fantasy setting**. Rosters are in the delivery hub:
 milestones that render Masters (M3+) should sequence against re-export progress; headless M1/M2
 don't care.
 
-**❓ OPEN — Hero vs Master reconciliation:** the roster lists Heroes (Irene/Kai/Leah) as a separate
-category from Masters. Working hypothesis: *Heroes are the player's own battle avatar (EF MOBA
-mains); Masters are the commanded generals.* If confirmed, drop-in = play your Hero, while Masters
-join per `joinChance` as AI/possessable officers — the `docs/08` `Hero` mirror schema then needs a
-split (`Avatar` vs `Master`). Do not implement either way without product-owner confirmation.
+**✅ RESOLVED (product owner, 2026-07) — Hero vs Master:** the **Hero is the player's main
+self-identity** (their own persistent character — Irene/Kai/Leah avatar base), **still playable**
+in battles; **Masters are the commanded generals**. Both can officer armies and be played in a
+battle (`docs/08` — split `Hero` / `Master` schemas; officer fields accept either).
 
 **❓ OPEN — pet mechanics:** element list & per-pet element assignment (not in the sheet), occupancy
 rules (one per territory? per zone type?), and what "assist" grants (yield %, defense, scouting?).

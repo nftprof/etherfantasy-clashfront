@@ -163,13 +163,14 @@ per [`04-battle-system.md`](./04-battle-system.md)).
 
 ---
 
-## 5. Officers: Masters leading armies on the map
+## 5. Officers: Heroes & Masters leading armies on the map
 
-> Canon 2026-07: officers are **Masters** — EF character NFTs the player owns or **rents**
-> (README glossary; live roster/KO API in [`09-api-contracts.md`](./09-api-contracts.md) §7).
-> `Hero`/`heroId` remain the schema names for now.
+> Canon 2026-07: an officer is either the player's own **Hero** (self-identity avatar, `hero_…`) or
+> a commanded **Master** — an EF character NFT the player owns or **rents** (`master_…`; README
+> glossary; live roster/KO API in [`09-api-contracts.md`](./09-api-contracts.md) §7). `Army.heroId`
+> accepts both; the Master tenure/KO gates below apply to Masters only (your Hero is always yours).
 
-A Master attached as `Army.heroId` is the army's **officer**. Map-layer officer effects are
+A Hero or Master attached as `Army.heroId` is the army's **officer**. Map-layer officer effects are
 **completely separate from in-battle HeroImpact** (which applies only inside a `BattleInstance` and
 is clamped by `HERO_IMPACT_MAX = 0.20`, Invariant 4).
 

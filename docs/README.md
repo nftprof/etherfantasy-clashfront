@@ -99,15 +99,16 @@ PvE, EF MOBA supplies the combat, Clash Front supplies the persistent map those 
 Single source of truth for names. All docs, code, and schemas MUST use these exact terms.
 
 ### Actors
-- **Player** — a human account. Commands a roster of **Masters** and holds a **CT** wallet.
-- **Master** — an EF character NFT the player **owns or rents** — the RoTK *general* of Clash Front.
-  Masters lead armies as officers on the map and are the avatar a player controls when dropping into
-  battles. Live source of truth: `games-etherfantasy-backend` Masters API (`docs/09` §7) — roster
-  (`joinChance`, `source: owned|rented`, `rentalExpires`), KO state (`koUntil`), limited revives.
-  Skill-driven, not permanently leveled by Clash Front.
-- **Hero** — legacy/code name for a Master in schemas (`Hero`, `heroId`, `HERO_IMPACT_MAX`); the
-  in-battle avatar aspect of a Master. New docs/text should say **Master**; a schema rename is
-  deferred until the full character list lands (❓ OPEN).
+- **Player** — a human account. Has a **Hero** (their self), commands **Masters**, holds a **CT** wallet.
+- **Hero** — the player's **main self-identity**: their own persistent character (an EF MOBA avatar
+  — Irene/Kai/Leah base), **still fully playable** in battles. Skill-driven, not permanently leveled
+  by Clash Front. *Who you are.*
+- **Master** — an EF character NFT the player **owns or rents** — the RoTK *general* of Clash Front
+  (47 in the roster). Masters lead armies as officers and can be played/possessed in battles. Live
+  source of truth: `games-etherfantasy-backend` Masters API (`docs/09` §7) — roster (`joinChance`,
+  `source: owned|rented`, `rentalExpires`), KO state (`koUntil`), limited revives. *Who you command.*
+  Officer fields (`heroId`) accept either a Hero or a Master (prefix-typed ids); `HERO_IMPACT_MAX`
+  applies identically to both.
 - **Landlord** — holder of a **Land NFT**. Earns tax/prosperity yield. Does **not** automatically control the territory.
 - **Governor** — the entity that *controls* a **Territory** (trains units, upgrades, declares war). May be a player, guild, alliance, or **NPC Kingdom**.
 - **NPC Kingdom** — an AI-run faction that owns/controls territory and acts autonomously.

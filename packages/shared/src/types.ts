@@ -28,20 +28,44 @@ export interface Player {
   handle: string;
   walletAddress?: string;     // EVM address for CT / NFTs
   ctBalance: number;          // ct_units, mirrored from ledger (authoritative = ledger)
-  heroIds: string[];
+  heroIds: string[];          // the player's own self-identity avatar(s)
+  masterIds: string[];        // mirror ids of commanded Masters (owned + active rentals)
   guildId?: string;
   createdAt: number; lastSeenAt: number;
 }
 
+// The player's SELF — persistent identity avatar. Playable in battles like any officer.
+// Clash Front does NOT permanently level Heroes. These are equipment/fame, not power creep.
 export interface Hero {
   id: string;                 // hero_…
   ownerPlayerId: string;
   name: string;
-  // Clash Front does NOT permanently level heroes. These are equipment/fame, not power creep.
+  avatarSlug: string;         // EF MOBA playable character base (e.g. 'irene','kai','leah' + variant)
   fame: number;               // reputation; unlocks contracts/titles, cosmetic, soft influence
   equipmentIds: string[];     // affects HeroImpact within HERO_IMPACT_MAX cap only
   efMobaProfileId: string;    // link to EF MOBA account for LIVE battles
   titleIds: string[];
+}
+
+// A commanded GENERAL — mirror of a Master from the EF platform. AUTHORITATIVE source:
+// games-etherfantasy-backend Masters API (docs/09 §7) — Clash Front caches/mirrors, never owns.
+// Officer fields (Army.heroId, BattleParticipant.heroId) accept hero_… OR master_… ids.
+export interface Master {
+  id: string;                 // master_…  (internal mirror id)
+  commanderPlayerId: string;  // commanding player (owner OR renter)
+  name: string;               // e.g. 'Choco'
+  masterId: number;           // EF masterId (e.g. 3001)
+  tokenId: number;            // character NFT token
+  slug: string;               // e.g. 'choco'
+  source: 'OWNED' | 'RENTED';
+  rentalExpiresAt?: number;   // epoch ms; RENTED only — on expiry the Master detaches everywhere
+  joinChance: number;         // % — availability roll to join a spawning battle (semantics ❓ OPEN)
+  alive: boolean;
+  koUntil?: number;           // epoch ms; KO'd Masters cannot lead armies or join battles
+  revivesUsed: number;
+  revivesRemaining: number;
+  nextReviveAvailableAt?: number;
+  fame: number;               // per-Master renown (battles won under this general)
 }
 
 // ── World / Region / Territory / Hex ─────────────────────────────────────────
