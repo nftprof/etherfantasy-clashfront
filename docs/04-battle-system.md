@@ -301,6 +301,15 @@ Combat mechanics are EF MOBA's; this table defines only what each type **reads f
 **The battlefield is not a MOBA map.** The battle engine's square map becomes a **battlefield where
 armies collide against natural terrain** — no lanes, towers, or creep conventions. Hero drop-in remains.
 
+**Scale laws (product owner, 2026-07-02):**
+- **The overworld game map = the source SVG, verbatim** — the extracted hexagon-city geometry
+  (`data/hexagon-city-source/`) IS the world map: exact parcel shapes, positions, proportions.
+  Unit scaling (world-units per SVG-unit) is an engineering choice; the geometry is not.
+- **1 L3 parcel = 1 MOBA-map-sized battlefield** (the battle engine's existing ~240×240-unit
+  arena ≈ 2 acres). The battlefield **bounds polygon = the parcel's actual shape**, normalized to
+  arena scale — you fight on the outline of the land being taken. (Battle-engine plan item A1's
+  bounds-polygon model covers this; "hex" boundaries are a special case, not a requirement.)
+
 **Generation rules:**
 1. **The overworld map is FIXED** — hexagone-city geometry is immutable; we never regenerate it.
 2. **Parcel interiors are SEEDED** — each hex's battlefield terrain is procedurally generated,
