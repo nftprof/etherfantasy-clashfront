@@ -254,6 +254,8 @@ export function importParcels(
       development: { AGRICULTURE: 0, ECONOMY: 0, DEFENSE: 0, MILITARY: 0 },
       structures: [],
       supplySource: false,
+      lastTroddenTick: 0,
+      overgrowth: 0,
       version: 1,
       updatedAt: 0,
     };

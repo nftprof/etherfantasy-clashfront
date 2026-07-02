@@ -377,6 +377,57 @@ Numbers reference [`08-data-models.md` §5](./08-data-models.md#5-invariants-mus
 
 ---
 
+## 11. World scale & rewilding (canon 2026-07)
+
+### 11.1 The real map (from hexagone-city extraction; detail report incoming)
+
+- **292,766 unique land parcels** total: **284,284 L3** + **8,482 L2**.
+- **L3 = the smallest division = ONE hexagon ≈ 2 acres** (~8,900 m², ~90 m across) — exactly the
+  battle-map unit (`04` §7b rule 4). L2 = larger multi-hex parcels (the estate tier;
+  hex-composition detail in the forthcoming map report).
+- The map is FIXED; these counts are permanent. Snapshot lands in `data/parcels.json`.
+
+### 11.2 Rewilding — the world gardens itself
+
+Untrodden land does not sit frozen: **if no owner/officer/army crosses a parcel, it overgrows** —
+bush and wild growth take root, and **monsters move in** (rosters: `data/CHARACTER_ROSTER.csv`,
+biome themes `05` §9). The server continuously repopulates the untrodden frontier.
+
+Mechanics (numbers ⚙ in `balance.json`, marked proposal):
+- Every Territory tracks `lastTroddenTick` — refreshed whenever a friendly/owner army or officer
+  enters any of its hexes, or the governor performs any action on it.
+- After `REWILD_GRACE_DAYS` ⚙ (proposal 14) untrodden, `overgrowth` (0–100) rises by
+  `REWILD_RATE_PER_DAY` ⚙ (proposal 3). Overgrowth suppresses yields (`× (1 − overgrowth/200)`),
+  then at thresholds: 40 → wild-growth props appear on the battlefield seed; 70 → a monster
+  garrison spawns (biome-themed); **100 → an unowned, SYSTEM-governed territory reverts to
+  `zoneType: WILD`** (a boss may claim L2-tier reverted land). NFT-owned parcels never change
+  hands by rewilding — they just get overgrown and monster-infested until reclaimed (clearing =
+  a small PvE battle + CT clean-up cost).
+- Rewilding is the PvE faucet's geography: the frontier is always regrowing content near players.
+
+**Scalability rule (with `07` §4): rewilding is lazy.** Untrodden parcels are by definition ones
+nobody is looking at — they are **not** simulated per tick. `overgrowth` is computed on demand
+from `now − lastTroddenTick` when a parcel is next observed (scouted/entered/queried), and a slow
+background cohort job (e.g. 1/1000th of dormant parcels per tick) materializes monster garrisons
+so the world *looks* alive on approach. 292k parcels cost ~0 while dormant.
+
+### 11.3 Officer oversight cap (occupation limit)
+
+A player may hold at most `MAX_MASTERS_PER_PLAYER = 52` Masters + `MAX_HEROES_PER_PLAYER = 3`
+Heroes = **55 officers**. **Every occupied territory must be over-sighted by an assigned officer**
+⇒ **a single player can occupy at most `MAX_OVERSEEN_TERRITORIES = 55` territories at a time.**
+
+- Oversight is an assignment (`Territory.overseerId` → `hero_…|master_…`); one officer oversees
+  exactly one territory. Officers leading marching armies are NOT overseeing (choose: expand or
+  govern — the RoTK dilemma).
+- Losing an officer (KO, rental expiry) drops oversight: the territory gets a grace window ⚙,
+  then decays toward SYSTEM governance / rewilding (§11.2).
+- **Ownership is unaffected** — you can own any number of Land NFTs (landlord income needs no
+  officer). The cap binds *occupation/governorship*, keeping 292k parcels safe from any single
+  empire and making guild coordination the only road to big nations.
+
+---
+
 ## Cross-references
 
 - [`README.md`](./README.md) — canon glossary, pillars, constants excerpt

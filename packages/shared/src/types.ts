@@ -105,6 +105,10 @@ export interface Territory {
   garrisonArmyId?: string;
   supplySource: boolean;      // can this territory originate supply for armies?
   underSiegeBattleId?: string;
+  // Oversight & rewilding (docs/01 §11) ————————————————————————————
+  overseerId?: string;        // hero_…|master_… assigned overseer; REQUIRED while occupied by a player.
+  lastTroddenTick: number;    // last tick an owner/officer/army touched any hex (or governor acted)
+  overgrowth: number;         // 0–100, lazy-computed from lastTroddenTick; 100 ⇒ WILD reversion (unowned only)
   version: number; updatedAt: number;
 }
 

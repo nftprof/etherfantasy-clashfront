@@ -36,6 +36,14 @@ export const CONSTANTS = {
   SUPPLY_BREAK_PENALTY: 0.35,   // combat power lost when supply cut
   LAUNCH_NPC_TERRITORY_PCT: 0.95,
   ESTATE_MIN_HEXES: 7,          // ❓ OPEN proposal — Territory.hexIds.length ≥ this ⇒ estate battle mode (04 §7b)
+  // Officer oversight cap (canon 2026-07, see 01 §11.3): occupation requires an assigned officer.
+  MAX_MASTERS_PER_PLAYER: 52,
+  MAX_HEROES_PER_PLAYER: 3,
+  MAX_OVERSEEN_TERRITORIES: 55, // = MAX_MASTERS + MAX_HEROES; hard cap on simultaneous occupation
+  // Rewilding (canon 2026-07, see 01 §11.2) — ⚙ proposals, tune in balance.json:
+  REWILD_GRACE_DAYS: 14,        // untrodden days before overgrowth starts
+  REWILD_RATE_PER_DAY: 3,       // overgrowth points/day after grace
+  HEX_ACRES: 2,                 // real-world scale of one L3 hexagon (≈8,900 m²)
   TAX_SPLIT_LANDLORD_DEFAULT: 0.30, // landlord share of tax before leases
   PILLAGE_INFRA_LOSS: 0.50,     // fraction of development destroyed on pillage
   PILLAGE_POP_LOSS: 0.25,
@@ -176,6 +184,12 @@ interface Territory {
   garrisonArmyId?: string;
   supplySource: boolean;      // can this territory originate supply for armies?
   underSiegeBattleId?: string;
+  // Oversight & rewilding (01 §11) ————————————————————————————————
+  overseerId?: string;        // hero_…|master_… assigned overseer; REQUIRED while occupied by a player.
+                              // One officer ⇒ one territory ⇒ MAX_OVERSEEN_TERRITORIES cap.
+  lastTroddenTick: number;    // last tick an owner/officer/army touched any hex (or governor acted)
+  overgrowth: number;         // 0–100, lazy-computed from lastTroddenTick (01 §11.2); 100 ⇒ WILD
+                              // reversion for unowned land; NFT-owned land only overgrows.
   version: number; updatedAt: number;
 }
 

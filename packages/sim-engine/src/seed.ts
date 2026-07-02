@@ -144,6 +144,8 @@ export function seedWorld(config: SeedConfig, rng: Rng): WorldState {
       development: { ...spec.development },
       structures: [],
       supplySource: spec.supplySource,
+      lastTroddenTick: 0,
+      overgrowth: 0,
       version: 1,
       updatedAt: 0,
     };
