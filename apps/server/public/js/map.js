@@ -38,6 +38,10 @@ export function createMap(canvas, store, handlers) {
   const smolders = new Map();      // parcelId → t0
   const pulses = [];               // {parcelId,t0,color}
   const retreats = [];             // {fx,fy,tx,ty,t0,color} — retreat path flash
+  // FTUE guide marks (world-anchored, animated, drawn every frame while set):
+  // {armyId?, parcels?: [{id, kind: 'candidate'|'recommended'}], tag?: {parcelId, text}}
+  // or null. Purely visual — never intercepts input.
+  let guide = null;
 
   // per-parcel precomputed geometry
   const paths = new Map();         // parcelId → Path2D (world coords)
@@ -320,6 +324,43 @@ export function createMap(canvas, store, handlers) {
       }
     }
 
+    // FTUE guide marks: dashed boxes on candidate parcels, pulsing gold+fire on
+    // the recommended one, big pulsing ring on the army the player must select
+    if (guide) {
+      const k = 0.5 + 0.5 * Math.sin(now / 280);
+      for (const g of guide.parcels ?? []) {
+        const path = paths.get(g.id);
+        if (!path) continue;
+        if (g.kind === 'recommended') {
+          ctx.strokeStyle = `rgba(226,96,63,${0.45 * (1 - k)})`; // fire halo breathing out
+          ctx.lineWidth = lw(4 + 6 * k);
+          ctx.stroke(path);
+          ctx.strokeStyle = `rgba(217,164,65,${0.6 + 0.35 * k})`; // solid gold core
+          ctx.lineWidth = lw(2 + 1.4 * k);
+          ctx.stroke(path);
+        } else {
+          ctx.setLineDash([lw(5), lw(4)]);
+          ctx.strokeStyle = 'rgba(190,212,238,0.55)';
+          ctx.lineWidth = lw(1.3);
+          ctx.stroke(path);
+          ctx.setLineDash([]);
+        }
+      }
+      if (guide.armyId) {
+        const a = store.armies.get(guide.armyId);
+        if (a) {
+          const [x, y] = store.armyPos(a);
+          const r = cap(0.6, 36) * (1 + 0.14 * k);
+          ctx.strokeStyle = `rgba(217,164,65,${0.95 - 0.35 * k})`;
+          ctx.lineWidth = lw(2.4);
+          ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.stroke();
+          ctx.strokeStyle = 'rgba(255,255,255,0.55)';
+          ctx.lineWidth = lw(1);
+          ctx.beginPath(); ctx.arc(x, y, r * 0.72, 0, 7); ctx.stroke();
+        }
+      }
+    }
+
     // retreat path flashes (dashed fading line + sliding chevron)
     for (let i = retreats.length - 1; i >= 0; i--) {
       const r = retreats[i];
@@ -350,6 +391,32 @@ export function createMap(canvas, store, handlers) {
       drawSmoke(s, age / SMOKE_MS, now);
     }
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    // FTUE tag chip ("⚔ recommended") — screen-space so it stays crisp at any zoom
+    if (guide?.tag) {
+      const c = store.parcels.get(guide.tag.parcelId)?.center;
+      if (c) {
+        const [sx, sy] = toScreen(c[0], c[1]);
+        ctx.font = '600 11px "Segoe UI", system-ui, sans-serif';
+        const tw = ctx.measureText(guide.tag.text).width;
+        const bw = tw + 16, bh = 19;
+        const bx = Math.max(4, Math.min(sx - bw / 2, w - bw - 4));
+        const by = Math.max(4, sy - 36);
+        ctx.beginPath();
+        ctx.roundRect(bx, by, bw, bh, 9);
+        ctx.fillStyle = 'rgba(17,22,29,0.95)';
+        ctx.fill();
+        ctx.strokeStyle = '#d9a441';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        ctx.fillStyle = '#f0d9a8';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(guide.tag.text, bx + bw / 2, by + bh / 2 + 0.5);
+        ctx.textAlign = 'start';
+        ctx.textBaseline = 'alphabetic';
+      }
+    }
   }
 
   function dot(x, y, r, fill, ring, ringW) {
@@ -417,6 +484,7 @@ export function createMap(canvas, store, handlers) {
 
   // ── frame loop (draw only when needed) ─────────────────────────────────────
   function animating() {
+    if (guide) return true; // FTUE marks pulse continuously while set
     if (flight || fires.length || smokes.length || retreats.length || pulses.length || smolders.size) return true;
     for (const a of store.armies.values()) if (a.state === 'MARCHING') return true;
     return false;
@@ -460,6 +528,8 @@ export function createMap(canvas, store, handlers) {
       return { x: x0, y: y0, w: x1 - x0, h: y1 - y0 };
     },
     get flying() { return flight !== null; },
+    /** FTUE guide marks (see `guide` above); pass null to clear. */
+    setGuide(g) { guide = g; dirty = true; },
     get texturesReady() { return terrain.texturesReady; },
     get terrainReady() { return terrain.fieldReady; },
     /** Debug/perf hook: average full-frame draw cost in ms over n frames (blit path). */

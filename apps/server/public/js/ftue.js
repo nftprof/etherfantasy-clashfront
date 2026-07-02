@@ -17,7 +17,6 @@
 import { fmtDur, PRESETS, PROV, strengthOf } from './util.js';
 
 const GOLD = '#d9a441';
-const FIRE = '#e2603f';
 const RING_PAD = 7;      // px of breathing room around the spotlit rect
 const BATTLE_DWELL_MS = 2600; // how long the "Battle!" beat holds before the choice step
 const STANDARD_STRENGTH = strengthOf(PRESETS.STANDARD.units.map(([c, k]) => ({ unitClass: c, count: k })));
@@ -45,6 +44,8 @@ export function createFTUE({ store, map, ui }) {
   // tutorial-run working state (not persisted — reconcile() rebuilds it on resume)
   let suggestedClaim = null;   // parcelId the heuristic picked for step CLAIM
   let suggestedTarget = null;  // weak monster parcelId for step MARCH
+  let marchPhase = null;       // march step: null | 'select' (click your army) | 'target' (pick a destination)
+  let marchCandidates = [];    // marchable parcelIds within 1–2 steps — phase-B click-space
   let lastClaimedParcelId = null;
   let battleParcel = null;
   let battlePhase = 'wait';    // battle step: 'wait' (marching) | 'fired' (resolved beat)
@@ -207,6 +208,49 @@ export function createFTUE({ store, map, ui }) {
     suggestedTarget = best?.parcelId ?? null;
   }
 
+  /** Phase-B click-space: every marchable parcel within 1–2 steps of the army. */
+  function pickCandidates() {
+    marchCandidates = [];
+    const army = store.myArmies().find((a) => a.state === 'GARRISON') ?? store.myArmies()[0];
+    if (!army) return;
+    for (const [pid, d] of bfsDistances(army.parcelId, 2)) {
+      if (d > 0 && pid !== suggestedTarget) marchCandidates.push(pid);
+    }
+  }
+
+  const myGarrisonArmy = () => store.myArmies().find((a) => a.state === 'GARRISON') ?? store.myArmies()[0];
+
+  /**
+   * March step guide sync (runs every frame while on the step): phase A rings
+   * the army marker on the map (+ its rail row), phase B outlines the candidate
+   * destinations and burns the recommended one. World-anchored via map.setGuide.
+   */
+  function syncMarchGuide() {
+    const phase = map.selectedArmyId ? 'target' : 'select';
+    const army = myGarrisonArmy();
+    if (phase !== marchPhase) {
+      marchPhase = phase;
+      if (phase === 'select') {
+        map.setGuide(army ? { armyId: army.id } : null);
+      } else {
+        const parcels = marchCandidates.map((id) => ({ id, kind: 'candidate' }));
+        if (suggestedTarget) parcels.push({ id: suggestedTarget, kind: 'recommended' });
+        map.setGuide({
+          parcels,
+          ...(suggestedTarget ? { tag: { parcelId: suggestedTarget, text: '⚔ recommended' } } : {}),
+        });
+        clearRailMark();
+      }
+    }
+    // rail re-renders wipe classes — re-mark the army row each frame in phase A
+    if (phase === 'select' && army) {
+      document.querySelector(`#rail-body .rail-row[data-army="${army.id}"]`)?.classList.add('ftue-mark');
+    }
+  }
+  function clearRailMark() {
+    for (const el of document.querySelectorAll('.ftue-mark')) el.classList.remove('ftue-mark');
+  }
+
   function homeParcel() {
     if (lastClaimedParcelId && store.isMine(store.terrByParcel.get(lastClaimedParcelId)?.governorId)) {
       return lastClaimedParcelId;
@@ -276,20 +320,27 @@ export function createFTUE({ store, map, ui }) {
       done: () => flags.raised || store.myArmies().length > 0,
     },
     {
-      id: 'march', goal: 'March to war',
-      title: 'March to war', action: 'Order the march',
-      body: () => !suggestedTarget
-        ? 'Click your army dot, then any weak monster parcel. Check the odds preview — <b>never attack even odds</b>.'
-        : map.selectedArmyId
-          ? 'Now click the marked monster parcel, check the odds preview, and press <b>March</b>.'
-          : 'Click your army dot first, then the marked monster parcel. <b>Never attack even odds</b> — the preview shows yours.',
-      target: () => elRect('#march-popover [data-march]') ?? parcelRect(suggestedTarget) ?? armyRect() ?? elRect('#map-wrap'),
+      // Two-phase beat (PO feedback 2026-07-02: "doesn't show who to click"):
+      // A) ring the army until it's selected, B) outline the whole click-space.
+      id: 'march',
+      goal: () => (map.selectedArmyId ? 'March to war' : 'Select your army'),
+      title: () => (map.selectedArmyId ? 'March to war' : 'Select your army'),
+      action: () => (map.selectedArmyId ? 'Order the march' : 'Click the ringed army'),
+      body: () => !map.selectedArmyId
+        ? 'First, click your army — the <b>gold-ringed banner</b> on your parcel (or its glowing row in the rail).'
+        : suggestedTarget
+          ? 'March somewhere — the outlined parcels are in reach, and the <b>⚔ marked one is a fight you can win</b>. Click it, then press March.'
+          : 'March somewhere — click an outlined parcel and check the odds preview. <b>Never attack even odds.</b>',
+      target: () => elRect('#march-popover [data-march]')
+        ?? (map.selectedArmyId ? (parcelRect(suggestedTarget) ?? armyRect()) : armyRect())
+        ?? elRect('#map-wrap'),
       onEnter() {
         ui.closeCard();
         pickTarget();
-        if (suggestedTarget) startPulse(() => suggestedTarget, FIRE);
+        pickCandidates();
+        marchPhase = null; // syncMarchGuide (per-frame) installs the phase-A/B marks
       },
-      onExit() { stopPulse(); },
+      onExit() { marchPhase = null; map.setGuide(null); clearRailMark(); },
       done: () => flags.marched || store.myArmies().some((a) => a.state === 'MARCHING'),
     },
     {
@@ -366,7 +417,7 @@ export function createFTUE({ store, map, ui }) {
       `<div class="ftue-btns"><a href="#" class="ftue-skip" data-ftue="skip">Skip tutorial</a>` +
       (s.next
         ? `<button class="primary" data-ftue="next">${s.next}</button>`
-        : `<span class="ftue-hint">${s.action ?? 'Do it on the map'}<a href="#" data-ftue="step-skip" title="Skip this step">skip ›</a></span>`) +
+        : `<span class="ftue-hint">${txt(s.action) ?? 'Do it on the map'}<a href="#" data-ftue="step-skip" title="Skip this step">skip ›</a></span>`) +
       `</div>`;
   }
 
@@ -411,6 +462,7 @@ export function createFTUE({ store, map, ui }) {
   function follow() {
     if (!active) return;
     const s = steps[stepIx];
+    if (s.id === 'march') syncMarchGuide(); // phase A/B marks track selection + camera
     const key = `${stepIx}|${txt(s.title)}|${txt(s.body)}`;
     if (key !== lastCardKey) { lastCardKey = key; renderCard(); }
     layout(s.target() ?? fullRect());
@@ -546,6 +598,9 @@ export function createFTUE({ store, map, ui }) {
     active = false;
     dwellToken++;
     stopPulse();
+    map.setGuide(null);
+    clearRailMark();
+    marchPhase = null;
     cancelAnimationFrame(rafId);
     root.hidden = true;
     if (hideChip) chip.hidden = true;

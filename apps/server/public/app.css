@@ -228,3 +228,6 @@ button.danger  { background: #4a2320; border-color: #7a3a33; }
 .ftue-hint { margin-left: auto; font-size: 11.5px; color: #9cc4f5; }
 .ftue-hint a { color: var(--ink-faint); text-decoration: none; margin-left: 7px; }
 .ftue-hint a:hover { color: var(--ink-dim); }
+/* march step phase A: the army's rail row glows alongside its ringed map marker */
+.rail-row.ftue-mark { outline: 1px solid var(--gold); background: rgba(217, 164, 65, 0.1);
+  box-shadow: 0 0 8px rgba(217, 164, 65, 0.35); }
