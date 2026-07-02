@@ -568,6 +568,20 @@ export function createFTUE({ store, map, ui }) {
       when: () => store.ctBalance >= 800 * 10_000, // only pitch investing when there is CT to invest
       title: '🏗 Develop your land',
       text: 'Invest CT in your land — DEF makes it defensible, ECON pays you back. AGRI feeds garrisons, MIL trains armies cheaper.' },
+    // FS3 — the circular war economy
+    { key: 'training', group: 'Armies & Provisions', summary: 'Armies train over time — plan ahead, mid-muster attacks hurt',
+      anchor: () => document.querySelector('#card .muster-prog') ??
+        document.querySelector('#rail-body .rail-sub.muster') ?? document.getElementById('toasts'),
+      title: '⏳ Armies train over time',
+      text: () => `Soldiers muster tick by tick — plan campaigns ahead. Attacked mid-muster, an army fights at ${Math.round(store.musterPenalty() * 100)}% with only the troops trained so far.` },
+    { key: 'enrich', presence: true, group: 'Towns & Development', summary: 'Turn CT into land yield — that anyone can conquer',
+      anchor: () => document.querySelector('#card .enrich-sec'),
+      title: '✨ Enrich the land',
+      text: 'CT poured into a parcel becomes a yield pool that pays its HOLDER daily. The pool stays with the land — conquer an enriched parcel, inherit the gold.' },
+    { key: 'raze', presence: true, group: 'Towns & Development', summary: 'Strip conquered infrastructure for CT salvage',
+      anchor: () => document.querySelector('#card .raze-btn'),
+      title: '🔥 Raze for salvage',
+      text: 'Conquered infrastructure can be razed for CT salvage — you recover part of what was invested; the rest burns forever. Strip-mine what you cannot hold.' },
   ];
   const tipEl = document.createElement('div');
   tipEl.id = 'tip-card';

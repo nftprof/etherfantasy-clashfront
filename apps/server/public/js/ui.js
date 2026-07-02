@@ -27,6 +27,8 @@ export function createUI({ store, map, orders }) {
   let modalChoiceId = null;
   let railQueued = false;
   let provDraft = null; // {armyId, food, gold, wood} — open provision form on the parcel card
+  let enrichDraft = null; // {territoryId, amount(CT)} — open enrich form on the parcel card (E3)
+  let razeDraft = null;   // {territoryId, track} — raze confirm expanded on the parcel card (E4)
   const raidBanner = $('raid-banner');
   const activeRaids = new Map(); // armyId → {parcelId, who} — wild raids on MY land (F3)
 
@@ -63,12 +65,20 @@ export function createUI({ store, map, orders }) {
 
     html += sec(`Armies (${armies.length})`, armies.map((a) => {
       const here = store.terrByParcel.get(a.parcelId);
-      const meta = a.state === 'MARCHING'
-        ? `→ ${fmtDur(store.ticksToMs((a.etaTick ?? tf) - tf))}`
-        : `${a.troops}⚔`;
+      const must = a.mustering; // E2: training queue still filling this army
+      const meta = must
+        ? `${a.troops}/${store.musterTotal(a)}⚔`
+        : a.state === 'MARCHING'
+          ? `→ ${fmtDur(store.ticksToMs((a.etaTick ?? tf) - tf))}`
+          : `${a.troops}⚔`;
       const label = a.state === 'MARCHING'
         ? `${esc(a.heroName ?? shortId(a.id))} marching`
         : `${esc(a.heroName ?? shortId(a.id))} @ ${esc(here?.name ?? a.parcelId)}`;
+      if (must) {
+        return row(`data-army="${a.id}"`, store.color(a.governorId), label, meta) +
+          `<div class="rail-sub muster" data-army="${a.id}">` +
+          `⏳ Mustering ${a.troops}/${store.musterTotal(a)} · ready ~${fmtDur(store.ticksToMs(must.readyTick - tf))}</div>`;
+      }
       const steps = foodSteps(a);
       const low = a.state === 'MARCHING' && a.path && steps < a.path.length; // starves before arrival
       return row(`data-army="${a.id}"`, store.color(a.governorId), label, meta) +
@@ -124,8 +134,10 @@ export function createUI({ store, map, orders }) {
     }
   });
 
-  setInterval(() => { // ETA countdowns + choice timers
-    if (store.myArmies().some((a) => a.state === 'MARCHING') || store.myPendingChoices().length) scheduleRail();
+  setInterval(() => { // ETA countdowns + choice/muster timers
+    if (store.myArmies().some((a) => a.state === 'MARCHING' || a.mustering) || store.myPendingChoices().length) scheduleRail();
+    // live "ready ~m:ss" on the open card while a muster runs there
+    if (cardParcelId && store.armiesAt(cardParcelId).some((a) => a.mustering)) renderCard();
   }, 1000);
 
   // ── tooltip ────────────────────────────────────────────────────────────────
@@ -149,9 +161,10 @@ export function createUI({ store, map, orders }) {
         `<div class="tt-sub"><span class="tt-dot ${store.isMine(a.governorId) ? 'friend' : 'foe'}"></span>` +
         `${esc(a.heroName ?? a.monsterName ?? shortId(a.id))} — ` +
         (a.strengthBand ? `${fmtBand(a.strengthBand)} str<b class="tt-fuzzy">?</b>` : `${a.troops}⚔`) +
-        `${store.isMine(a.governorId) ? ' (yours)' : ''}</div>`).join('');
+        `${a.mustering ? ' ⏳ mustering' : ''}${store.isMine(a.governorId) ? ' (yours)' : ''}</div>`).join('');
     } else if (t.garrison) {
-      garr = `<div class="tt-sub">${t.garrison.monsterName ? `☠ ${esc(t.garrison.monsterName)}` : 'Garrisoned'} — ${t.garrison.troops} troops</div>`;
+      const mustering = store.armies.get(t.garrison.armyId)?.mustering; // E2 — visible own/ACCURATE
+      garr = `<div class="tt-sub">${t.garrison.monsterName ? `☠ ${esc(t.garrison.monsterName)}` : 'Garrisoned'} — ${t.garrison.troops} troops${mustering ? ' · ⏳ mustering' : ''}</div>`;
     } else if (t.garrisonBand) {
       garr = `<div class="tt-sub">${t.garrisonBand.monsterName ? `☠ ${esc(t.garrisonBand.monsterName)}` : 'Garrisoned'}` +
         ` — ${fmtBand(t.garrisonBand.band)} strength<b class="tt-fuzzy">?</b></div>`;
@@ -193,8 +206,13 @@ export function createUI({ store, map, orders }) {
   function renderCard() {
     const t = cardParcelId && store.terrByParcel.get(cardParcelId);
     if (!t) { card.hidden = true; return; }
+    // Don't steal focus (or wipe a half-typed amount) while the player types
+    // in the enrich input — the next store change after blur repaints.
+    if (document.activeElement?.id === 'enrich-amt' && card.contains(document.activeElement)) return;
     const wild = t.governorKind === 'SYSTEM';
     const mine = store.isMine(t.governorId);
+    if (enrichDraft && (enrichDraft.territoryId !== t.id || !mine)) enrichDraft = null;
+    if (razeDraft && (razeDraft.territoryId !== t.id || !mine)) razeDraft = null;
     const grade = mine ? 'ACCURATE' : (t.intel ?? 'ACCURATE'); // F1
     const color = store.color(t.governorId);
     const owner = wild ? 'Wild land — unclaimed' :
@@ -223,17 +241,35 @@ export function createUI({ store, map, orders }) {
     }
 
     // My garrisoned armies here: provisions readout + Provision form (own army
-    // in GARRISON at a friendly territory — docs/04 §7c.1).
+    // in GARRISON at a friendly territory — docs/04 §7c.1). Mustering armies
+    // (E2) show training progress + the ready countdown instead of strength.
     const myHere = store.armiesAt(cardParcelId).filter((a) => store.isMine(a.governorId));
     if (provDraft && !myHere.some((a) => a.id === provDraft.armyId && mine)) provDraft = null;
     for (const a of myHere) {
+      const must = a.mustering;
+      const total = store.musterTotal(a);
       html += `<div class="army-box"><div class="ab-head"><b>${esc(a.heroName ?? shortId(a.id))}</b>` +
-        `<span>${a.troops}⚔ · str ${a.strength}</span></div>` +
-        `<div class="ab-prov">${fmtProv(a.provisions)} · ${a.foodPerStep}🍞/step · ` +
+        `<span>${must ? `${a.troops}/${total}⚔` : `${a.troops}⚔ · str ${a.strength}`}</span></div>`;
+      if (must) {
+        const pct = total > 0 ? Math.round(((a.troops ?? 0) / total) * 100) : 0;
+        html += `<div class="muster-prog"><div class="mp-bar"><span style="width:${pct}%"></span></div>` +
+          `<div class="mp-txt">⏳ Mustering: ${a.troops}/${total} · ready ~${fmtDur(store.ticksToMs(must.readyTick - store.tickFloat()))}</div>` +
+          `<div class="mp-warn">Attacked mid-muster it fights at ${Math.round(store.musterPenalty() * 100)}% — it cannot march yet.</div></div>`;
+      }
+      html += `<div class="ab-prov">${fmtProv(a.provisions)} · ${a.foodPerStep}🍞/step · ` +
         `${foodSteps(a)} steps of food</div>`;
       if (mine && provDraft?.armyId === a.id) html += provisionFormHtml();
       else if (mine) html += `<button data-act="prov-open" data-army="${a.id}">🛒 Provision army</button>`;
       html += `</div>`;
+    }
+
+    // E3: an enriched pool is attached to the LAND — visible to anyone with
+    // ACCURATE intel; the yield warning is the invasion incentive by design.
+    if (grade === 'ACCURATE' && (t.enrichmentPool ?? 0) > 0) {
+      const sh = store.shares();
+      const perDay = Math.floor(t.enrichmentPool * sh.enrichYieldPctPerDay);
+      html += `<div class="enrich-pool">✨ Enriched soil — pool <b>${fmtCT(t.enrichmentPool)}</b>` +
+        `<div class="ep-sub">pays ~${fmtCT(perDay)}/day to <b>whoever holds this land</b>${mine ? '' : ' — take it, inherit the pool'}</div></div>`;
     }
 
     const actions = [];
@@ -246,15 +282,19 @@ export function createUI({ store, map, orders }) {
         `<span>🏳 Claim this land</span><span class="cost">${canClaim ? 'free officer' : 'no officer'}</span></button>`);
     }
     if (mine) {
+      // E2: ⚙ one training queue per territory — a running muster blocks the next levy.
+      const busy = store.queueBusyAt(cardParcelId);
       for (const p of Object.keys(PRESETS)) {
         const cost = presetCostCt(p);
         const afford = store.ctBalance / 10_000 >= cost;
-        actions.push(`<button data-act="raise" data-preset="${p}" ${afford ? '' : 'disabled'}>` +
-          `<span>⚔ Raise ${PRESETS[p].label}</span><span class="cost">${cost} CT</span></button>`);
+        actions.push(`<button data-act="raise" data-preset="${p}" ${afford && !busy ? '' : 'disabled'}` +
+          `${busy ? ' title="Training queue busy — one muster per territory; wait for it to finish"' : ''}>` +
+          `<span>⚔ Raise ${PRESETS[p].label}</span><span class="cost">${busy ? 'queue busy ⏳' : `${cost} CT`}</span></button>`);
       }
     }
     if (actions.length) html += `<div class="actions">${actions.join('')}</div>`;
-    if (mine) html += devSectionHtml(t); // F4 — Develop tracks
+    if (mine) html += devSectionHtml(t); // F4 — Develop tracks (+ E4 raze)
+    if (mine) html += enrichSectionHtml(t); // E3 — Enrich
     else if (grade === 'ACCURATE' && t.development) {
       const lv = DEV_TRACKS.filter((d) => (t.development[d.track] ?? 0) > 0)
         .map((d) => `${d.icon}${t.development[d.track]}`).join(' ');
@@ -265,7 +305,11 @@ export function createUI({ store, map, orders }) {
     card.hidden = false;
   }
 
-  /** F4 Develop section: 4 tracks × level pips + next-level cost + effect line. */
+  /**
+   * F4 Develop section: 4 tracks × level pips + next-level cost + effect line.
+   * E4: developed tracks grow a small 🔻 Raze affordance — exact salvage from
+   * the server's razeSalvage preview, destructive confirm expanded inline.
+   */
   function devSectionHtml(t) {
     const rows = DEV_TRACKS.map((d) => {
       const lvl = t.development?.[d.track] ?? 0;
@@ -273,13 +317,51 @@ export function createUI({ store, map, orders }) {
       const cost = maxed ? 0 : devCostCtUnits(d.track, lvl);
       const afford = !maxed && store.ctBalance >= cost;
       const pips = '●'.repeat(lvl) + '○'.repeat(DEV.maxLevel - lvl);
-      return `<div class="dev-track"><div class="dt-mid">` +
+      const salvage = t.razeSalvage?.[d.track] ?? 0;
+      let row = `<div class="dev-track"><div class="dt-mid">` +
         `<div class="dt-name">${d.icon} ${d.label} <span class="pips" title="level ${lvl}/${DEV.maxLevel}">${pips}</span></div>` +
         `<div class="dt-eff">${d.effect}</div></div>` +
+        (lvl > 0
+          ? `<button class="raze-btn" data-raze="${d.track}" title="Raze one ${d.label} level — salvage ${fmtCT(salvage)}, the rest burns">🔥</button>`
+          : '') +
         `<button data-dev="${d.track}" ${afford ? '' : 'disabled'} title="${maxed ? 'Max level' : `Level ${lvl + 1}`}">` +
         `${maxed ? 'MAX' : `▲ ${fmtCT(cost)}`}</button></div>`;
+      if (razeDraft?.track === d.track && lvl > 0) {
+        row += `<div class="raze-confirm">Raze <b>${d.label} L${lvl}</b> → salvage <b>${fmtCT(salvage)}</b>` +
+          ` — the rest of the invested CT <b>burns forever</b>.` +
+          `<div class="pf-btns"><button data-act="raze-cancel">Keep it</button>` +
+          `<button class="danger" data-act="raze-confirm" data-track="${d.track}">🔥 Raze it</button></div></div>`;
+      }
+      return row;
     }).join('');
     return `<div class="dev-sec"><h4>🏗 Develop</h4>${rows}</div>`;
+  }
+
+  /**
+   * E3 Enrich section (own parcels): pour wallet CT into the land's yield pool.
+   * The leakage preview is HONEST — shares come from /api/economy (⚙ balance),
+   * only ~landYield% of the spend reaches pools (self + ring-1), the rest
+   * flows to nearby treasuries, lords and the burn. Server stays authoritative.
+   */
+  function enrichSectionHtml(t) {
+    const sh = store.shares();
+    if (enrichDraft?.territoryId !== t.id) {
+      return `<div class="enrich-sec"><button data-act="enrich-open">✨ Enrich this land</button></div>`;
+    }
+    const amt = Math.max(0, Math.floor(enrichDraft.amount));
+    const pct = (x) => Math.round(x * 100);
+    const toSelf = Math.floor(amt * sh.landYield * sh.landYieldSelfPct);
+    const toRing = Math.floor(amt * sh.landYield) - toSelf;
+    const short = amt * 10_000 > store.ctBalance;
+    return `<div class="enrich-sec open"><h4>✨ Enrich</h4>` +
+      `<div class="en-row"><span>Amount</span><input id="enrich-amt" type="number" inputmode="numeric" min="1" step="1" value="${amt}"><span>CT</span>` +
+      `<button data-en="100">+100</button><button data-en="500">+500</button></div>` +
+      `<div class="en-note">~${pct(sh.landYield)}% reaches the land's pools: <b>${toSelf} CT</b> here + ${toRing} CT to neighbors — ` +
+      `the rest flows to the region's treasuries (${pct(sh.loot)}%), the lords (${pct(sh.lordsLandlord + sh.lordsSeat)}%) and the burn (${pct(sh.burn)}%).</div>` +
+      `<div class="en-note gold">The pool pays ${pct(sh.enrichYieldPctPerDay)}%/day — to <b>whoever holds this land</b>. Lose the parcel, lose the pool.</div>` +
+      (short ? `<div class="en-note why">Not enough CT (${fmtCT(store.ctBalance)} in the treasury).</div>` : '') +
+      `<div class="pf-btns"><button data-act="enrich-cancel">Cancel</button>` +
+      `<button class="primary" data-act="enrich-buy" ${amt > 0 && !short ? '' : 'disabled'}>Enrich ${amt.toLocaleString('en-US')} CT</button></div></div>`;
   }
 
   /** Stepper + quick-pack provision form with live CT cost (server authoritative). */
@@ -303,6 +385,17 @@ export function createUI({ store, map, orders }) {
     if (e.target.id === 'ov-claim') ovClaimSel = e.target.value; // survive re-renders
   });
 
+  // Enrich amount typing: keep the draft current without re-rendering (the
+  // focus guard in renderCard() protects the input; blur repaints the preview).
+  card.addEventListener('input', (e) => {
+    if (e.target.id === 'enrich-amt' && enrichDraft) {
+      enrichDraft.amount = Math.max(0, Math.floor(Number(e.target.value) || 0));
+    }
+  });
+  card.addEventListener('focusout', (e) => {
+    if (e.target.id === 'enrich-amt') renderCard(); // repaint the leakage preview
+  });
+
   card.addEventListener('click', async (e) => {
     const btn = e.target.closest('button');
     if (!btn) return;
@@ -321,6 +414,29 @@ export function createUI({ store, map, orders }) {
       const { armyId, food, gold, wood } = provDraft;
       if (await orders.provision(armyId, { food, gold, wood })) { provDraft = null; renderCard(); }
     }
+    // E3 — enrich form
+    else if (btn.dataset.act === 'enrich-open' && t) { enrichDraft = { territoryId: t.id, amount: 100 }; renderCard(); }
+    else if (btn.dataset.act === 'enrich-cancel') { enrichDraft = null; renderCard(); }
+    else if (btn.dataset.en && enrichDraft) {
+      enrichDraft.amount = Math.max(0, Math.floor(enrichDraft.amount)) + Number(btn.dataset.en);
+      renderCard();
+    } else if (btn.dataset.act === 'enrich-buy' && enrichDraft && t) {
+      const amt = Math.max(0, Math.floor(Number(document.getElementById('enrich-amt')?.value) || enrichDraft.amount));
+      btn.disabled = true; // no double-spend before the response lands
+      if (await orders.enrich(t.id, amt)) { enrichDraft = null; }
+      renderCard();
+    }
+    // E4 — raze confirm (destructive: always a two-step)
+    else if (btn.dataset.raze && t) {
+      razeDraft = razeDraft?.track === btn.dataset.raze ? null : { territoryId: t.id, track: btn.dataset.raze };
+      renderCard();
+    } else if (btn.dataset.act === 'raze-cancel') { razeDraft = null; renderCard(); }
+    else if (btn.dataset.act === 'raze-confirm' && t) {
+      const track = btn.dataset.track;
+      razeDraft = null;
+      btn.disabled = true;
+      orders.raze(t.id, track);
+    }
   });
 
   // ── army selection + march popover ─────────────────────────────────────────
@@ -330,6 +446,7 @@ export function createUI({ store, map, orders }) {
     banner.hidden = !a;
     if (a) {
       banner.innerHTML = `Ordering <b>${esc(a.heroName ?? shortId(a.id))}</b> (${a.troops}⚔, str ${a.strength})` +
+        `${a.mustering ? ' — <b>⏳ still mustering</b>' : ''}` +
         ` — click a destination parcel <button data-cancel>cancel</button>`;
     }
     closePopover();
@@ -356,6 +473,13 @@ export function createUI({ store, map, orders }) {
         `<div class="row"><span>Intel</span><b>${INTEL_CHIP[grade]}</b></div>`;
       const hostiles = store.hostilesAt(parcelId);
       const expectBattle = hostiles.length > 0 || grade === 'UNKNOWN';
+      // E2: a mustering army holds its ground — March is blocked with the reason
+      // (the server would refuse with MUSTERING anyway).
+      const must = a.mustering;
+      if (must) {
+        html += `<div class="warn">⏳ Still mustering (${a.troops}/${store.musterTotal(a)}) — this army can march ` +
+          `in ~${fmtDur(store.ticksToMs(must.readyTick - store.tickFloat()))}.</div>`;
+      }
       // Logistics preview (docs/04 §7c — approximate, server authoritative):
       // trip rations + expected battle need, and the CC tier gold+wood affords.
       const tripFood = a.foodPerStep * path.length;
@@ -386,10 +510,15 @@ export function createUI({ store, map, orders }) {
           (Math.abs(a.strength - theirs) / Math.max(a.strength, theirs, 1) < PROV.tieThreshold
             ? `<div class="warn">⚔ Evenly matched — likely stalemate (tied attackers withdraw).</div>`
             : '') +
+          // E2: mustering intel is ACCURATE-only — when you can see a half-empty
+          // camp, say so: rushing a muster is valid strategy.
+          (hostiles.some((x) => x.mustering)
+            ? `<div class="warn muster">⏳ Defenders still mustering — they fight at ${Math.round(store.musterPenalty() * 100)}% strength. Strike now.</div>`
+            : '') +
           `</div>`;
       }
       html += `<div class="btns"><button data-close>Cancel</button>` +
-        `<button class="primary" data-march="${t.id}">March</button></div>`;
+        `<button class="primary" data-march="${t.id}" ${a.mustering ? 'disabled title="Still mustering — armies march when training completes"' : ''}>March</button></div>`;
     }
     popover.innerHTML = html;
     popover.hidden = false;
@@ -517,11 +646,30 @@ export function createUI({ store, map, orders }) {
     scheduleRail();
   }
 
+  /**
+   * Brief ✓ flash on the goal chip (E2 "army ready" etc.) — only when the FTUE
+   * doesn't own the chip (tutorial inactive ⇒ the chip is hidden).
+   */
+  let goalFlashToken = 0;
+  function flashGoal(text) {
+    const chip = $('goal-chip');
+    if (!chip.hidden) return; // chip visible ⇒ the FTUE owns it — its chip, its story
+    const token = ++goalFlashToken;
+    chip.hidden = false;
+    chip.classList.add('gc-done');
+    chip.innerHTML = `<span class="gc-ico">✓</span>${text}`;
+    setTimeout(() => {
+      if (token !== goalFlashToken) return;
+      chip.classList.remove('gc-done');
+      chip.hidden = true;
+    }, 1600);
+  }
+
   store.onChange(() => { scheduleRail(); renderCard(); syncModal(); syncRaidBanner(); });
 
   return {
     scheduleRail, showTooltip, openCard, closeCard, selectArmy, openMarchPopover, closePopover,
-    openChoiceModal, toast, feedPush, raidAlert,
+    openChoiceModal, toast, feedPush, raidAlert, flashGoal,
     setConn(status) {
       const pip = $('conn-pip');
       pip.className = `pip ${status}`;

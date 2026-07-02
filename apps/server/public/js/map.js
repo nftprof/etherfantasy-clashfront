@@ -263,7 +263,8 @@ export function createMap(canvas, store, handlers) {
     const c = store.parcels.get(parcelId)?.center;
     if (c) { fires.push({ x: c[0], y: c[1], t0: performance.now(), seed: Math.random() * 7 }); dirty = true; }
   }
-  function smolderAt(parcelId) { smolders.set(parcelId, performance.now()); dirty = true; }
+  /** Pillage char (k=1) or the lighter raze scorch (E4, k≈0.5 — shorter, fainter). */
+  function smolderAt(parcelId, k = 1) { smolders.set(parcelId, { t0: performance.now(), k }); dirty = true; }
   function pulseAt(parcelId, color) { pulses.push({ parcelId, t0: performance.now(), color }); dirty = true; }
   /** Stalemate marker: gray smoke plume, no flames (docs/04 §7c.4 TIE). */
   function smokeAt(parcelId) {
@@ -340,12 +341,30 @@ export function createMap(canvas, store, handlers) {
       ctx.fill(fogPath);
     }
 
-    // pillage smolder (animated fade — kept live on top of the baked ground)
+    // enriched soil (E3): golden wash + twinkling sparkle on parcels whose
+    // enrichment pool is visible (own/ACCURATE intel) — the gold rush reads on the map.
+    const sparkS = cap(0.15, 8);
+    if (sparkS * cam.s > 2.5) {
+      for (const t of store.terrByParcel.values()) {
+        if (!(t.enrichmentPool > 0)) continue;
+        const path = paths.get(t.parcelId);
+        const c = store.parcels.get(t.parcelId)?.center;
+        if (!path || !c) continue;
+        ctx.fillStyle = 'rgba(217,164,65,0.085)';
+        ctx.fill(path);
+        const tw = 0.55 + 0.4 * Math.sin(now / 640 + c[0] * 3.1 + c[1] * 1.7);
+        sparkle(c[0] + sparkS * 2.1, c[1] - sparkS * 2.1, sparkS, tw);
+        sparkle(c[0] + sparkS * 3.1, c[1] - sparkS * 0.9, sparkS * 0.5, 1 - tw * 0.8);
+      }
+    }
+
+    // pillage smolder (animated fade — kept live on top of the baked ground);
+    // raze scorch (E4) reuses it fainter + shorter via its k factor.
     for (const [pid, sm] of smolders) {
-      const k = 1 - (now - sm) / SMOLDER_MS;
+      const k = 1 - (now - sm.t0) / (SMOLDER_MS * sm.k);
       if (k <= 0) { smolders.delete(pid); continue; }
       const path = paths.get(pid);
-      if (path) { ctx.fillStyle = `rgba(12,6,4,${0.62 * k})`; ctx.fill(path); }
+      if (path) { ctx.fillStyle = `rgba(12,6,4,${0.62 * sm.k * k})`; ctx.fill(path); }
     }
 
     // bright rims on my parcels (screen-constant width — ownership must pop)
@@ -422,6 +441,11 @@ export function createMap(canvas, store, handlers) {
           dot(p[0], p[1], cap(0.16 * k, 9 * k), '#26161a', '#5c1f1f', lw(0.8));
           ctx.fillStyle = FOE_UNIT;
           ctx.beginPath(); ctx.arc(p[0], p[1], cap(0.055 * k, 3.5 * k), 0, 7); ctx.fill();
+        } else if (a.mustering) {
+          // E2: a mustering camp — hollow pulsing marker + gold training-progress arc
+          const total = store.musterTotal(a);
+          musterDot(p[0], p[1], cap(0.14 * sizeK(total), 8 * sizeK(total)),
+            unitColor(a.governorId), lw, now, total > 0 ? (a.troops ?? 0) / total : 0);
         } else {
           dot(p[0], p[1], cap(0.14 * k, 8 * k), unitColor(a.governorId), unitRing(a.governorId), lw(1));
         }
@@ -647,6 +671,41 @@ export function createMap(canvas, store, handlers) {
     }
   }
 
+  /**
+   * E2 mustering marker: hollow (dark-filled) circle whose rim pulses in the
+   * friend/foe color, ringed by a gold arc showing training progress (12
+   * o'clock, clockwise). Reads as "camp forming", not a fielded army.
+   */
+  function musterDot(x, y, r, color, lw, now, frac) {
+    const pulse = 0.45 + 0.4 * Math.sin(now / 300);
+    ctx.fillStyle = 'rgba(10,14,19,0.78)';
+    ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fill();
+    ctx.strokeStyle = rgba(color, 0.45 + pulse * 0.55);
+    ctx.lineWidth = lw(1.4);
+    ctx.beginPath(); ctx.arc(x, y, r * 0.94, 0, 7); ctx.stroke();
+    ctx.strokeStyle = 'rgba(217,164,65,0.28)'; // track
+    ctx.lineWidth = lw(2);
+    ctx.beginPath(); ctx.arc(x, y, r * 1.45, 0, 7); ctx.stroke();
+    if (frac > 0) {
+      ctx.strokeStyle = '#d9a441'; // progress
+      ctx.lineWidth = lw(2);
+      ctx.beginPath(); ctx.arc(x, y, r * 1.45, -Math.PI / 2, -Math.PI / 2 + frac * 2 * Math.PI);
+      ctx.stroke();
+    }
+  }
+
+  /** E3 sparkle: 4-point star (concave diamond), gold, for enriched parcels. */
+  function sparkle(x, y, s, alpha) {
+    ctx.fillStyle = `rgba(240,217,168,${Math.max(0, Math.min(1, alpha)).toFixed(3)})`;
+    ctx.beginPath();
+    ctx.moveTo(x, y - s);
+    ctx.quadraticCurveTo(x, y, x + s, y);
+    ctx.quadraticCurveTo(x, y, x, y + s);
+    ctx.quadraticCurveTo(x, y, x - s, y);
+    ctx.quadraticCurveTo(x, y, x, y - s);
+    ctx.fill();
+  }
+
   function dot(x, y, r, fill, ring, ringW) {
     ctx.fillStyle = fill;
     ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fill();
@@ -714,7 +773,7 @@ export function createMap(canvas, store, handlers) {
   function animating() {
     if (guide) return true; // FTUE marks pulse continuously while set
     if (flight || fires.length || smokes.length || retreats.length || pulses.length || smolders.size) return true;
-    for (const a of store.armies.values()) if (a.state === 'MARCHING') return true;
+    for (const a of store.armies.values()) if (a.state === 'MARCHING' || a.mustering) return true; // muster markers pulse
     return false;
   }
 

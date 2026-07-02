@@ -6,7 +6,7 @@
  * value is ctBalance, updated from POST responses + loot events (deduped).
  */
 
-import { innerPoint } from './util.js';
+import { ECON, innerPoint, MUSTER_PENALTY } from './util.js';
 
 export function createStore() {
   const listeners = new Set();
@@ -24,6 +24,9 @@ export function createStore() {
     terrByParcel: new Map(),   // parcelId → TerritoryView
     armies: new Map(),         // armyId → ArmyView (live only)
     battles: new Map(),        // battleId → BattleView
+
+    // economy telemetry (FS3): latest GET /api/economy payload (boot + dashboard refresh)
+    econ: null,
 
     // me
     me: null,                  // {governorId, name}
@@ -145,6 +148,19 @@ export function createStore() {
     },
 
     // ── derived ──────────────────────────────────────────────────────────────
+    /** ⚙ splitter shares — live from /api/economy, balance-mirror fallback (FS3). */
+    shares() { return this.econ?.shares ?? ECON; },
+    /** ⚙ training.musterPenalty — live from /api/economy, mirror fallback (E2). */
+    musterPenalty() { return this.econ?.musterPenalty ?? MUSTER_PENALTY; },
+    /** Full roster size of a mustering army (trained so far + still queued). */
+    musterTotal(a) { return (a.troops ?? 0) + (a.mustering?.remainingTroops ?? 0); },
+    /** E2: is this parcel's training queue busy (⚙ one per territory)? */
+    queueBusyAt(parcelId) {
+      return [...this.armies.values()].some(
+        (a) => a.parcelId === parcelId && a.state === 'GARRISON' && a.mustering,
+      );
+    },
+
     color(governorId) { return this.players.get(governorId)?.color ?? '#6b7280'; },
     playerName(governorId) { return this.players.get(governorId)?.name ?? 'Unknown'; },
     isMine(governorId) { return governorId === this.me?.governorId; },

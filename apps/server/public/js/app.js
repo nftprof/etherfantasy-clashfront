@@ -8,7 +8,8 @@ import { createStore } from './store.js';
 import { createMap } from './map.js';
 import { createUI } from './ui.js';
 import { createFTUE } from './ftue.js';
-import { esc, fmtCT, fmtProv } from './util.js';
+import { createEcon } from './econ.js';
+import { esc, fmtCT, fmtDur, fmtProv } from './util.js';
 
 const TOKEN_KEY = 'cf_token';
 const store = createStore();
@@ -51,8 +52,45 @@ const orders = {
       store.putArmy(army);
       store.ctBalance = ctUnits;
       store.emit();
-      ui.toast('Army raised', `${esc(army.heroName ?? 'A commander')} leads ${army.troops} troops.`, 'good', army.parcelId);
-    } catch (e) { ui.toast('Cannot raise army', esc(e.message), 'bad'); }
+      // E2 — armies muster over time: the shell exists now, soldiers trickle in.
+      if (army.mustering) {
+        const total = store.musterTotal(army);
+        ui.toast('⏳ Mustering', `${esc(army.heroName ?? 'A commander')} drills ${total} recruits — ready in ~${fmtDur(store.ticksToMs(army.mustering.readyTick - store.tickFloat()))}.`, 'good', army.parcelId);
+        ftue.tip('training'); // one-shot: plan ahead, mid-muster attacks hurt
+      } else {
+        ui.toast('Army raised', `${esc(army.heroName ?? 'A commander')} leads ${army.troops} troops.`, 'good', army.parcelId);
+      }
+    } catch (e) {
+      ui.toast('Cannot raise army', e.code === 'QUEUE_BUSY'
+        ? 'The training queue is busy — one muster per territory. Wait for the current army to finish.'
+        : esc(e.message), 'bad');
+    }
+  },
+  /** POST /api/enrich — pour wallet CT into the parcel's yield pool (E3). Returns true on success. */
+  async enrich(territoryId, amountCt) {
+    try {
+      const res = await api('/api/enrich', { token, body: { territoryId, amountCt } });
+      store.putTerritory(res.territory);
+      store.ctBalance = res.ctUnits;
+      store.emit();
+      ui.toast('✨ Land enriched', `${fmtCT(res.toPoolCtUnits)} of your ${fmtCT(res.amountCtUnits)} reached the pools — the rest fed the region, lords and the burn.`, 'gold', res.territory.parcelId);
+      return true;
+    } catch (e) { ui.toast('Enrich failed', esc(e.message), 'bad'); return false; }
+  },
+  /** POST /api/raze — strip one development level for salvage (E4). Returns true on success. */
+  async raze(territoryId, track) {
+    try {
+      const res = await api('/api/raze', { token, body: { territoryId, track } });
+      store.putTerritory(res.territory);
+      store.ctBalance = res.ctUnits;
+      store.emit();
+      map.smolderAt(res.territory.parcelId, 0.5); // raze scorch — lighter than a pillage
+      ui.toast('🔥 Razed', `${res.track.toLowerCase()} → level ${res.level} — salvaged ${fmtCT(res.salvageCtUnits)}, ${fmtCT(res.burnedCtUnits)} burned forever.`, 'gold', res.territory.parcelId);
+      return true;
+    } catch (e) {
+      ui.toast('Raze failed', e.code === 'NOTHING_TO_RAZE' ? 'Nothing left to raze on that track.' : esc(e.message), 'bad');
+      return false;
+    }
   },
   async march(armyId, toTerritoryId) {
     try {
@@ -121,6 +159,7 @@ const map = createMap(document.getElementById('map'), store, {
 });
 const ui = createUI({ store, map, orders });
 const ftue = createFTUE({ store, map, ui });
+const econ = createEcon({ store, map, ui }); // FS3 — 💰 economy dashboard
 
 document.getElementById('btn-tutorial').addEventListener('click', (e) => {
   e.preventDefault();
@@ -129,6 +168,10 @@ document.getElementById('btn-tutorial').addEventListener('click', (e) => {
 document.getElementById('btn-library').addEventListener('click', (e) => {
   e.preventDefault();
   ftue.openLibrary(); // F5 — browsable tutorial/tip library
+});
+document.getElementById('btn-economy').addEventListener('click', (e) => {
+  e.preventDefault();
+  econ.toggle();
 });
 
 document.addEventListener('keydown', (e) => {
@@ -222,6 +265,22 @@ function handleEvents(events) {
         ui.feedPush(`🏗 ${esc(store.playerName(ev.governorId))} developed ${parcelName(ev.parcelId)} — ${trackName} ${ev.level}`, 't-good', ev.parcelId);
         break;
       }
+      case 'army_mustered': // E2 — the training queue emptied; the army may march
+        if (store.isMine(ev.governorId)) {
+          ui.toast('⚔ Army ready', `${ev.troops} troops stand at ${parcelName(ev.parcelId)} — free to march.`, 'good', ev.parcelId);
+          ui.flashGoal(`Army ready at ${parcelName(ev.parcelId)}`);
+          ui.feedPush(`⚔ Your army mustered at ${parcelName(ev.parcelId)} (${ev.troops}⚔)`, 't-good', ev.parcelId);
+        }
+        break;
+      case 'territory_enriched': // E3 — visible per fog; own enrich already toasted by the POST
+        ui.feedPush(`✨ ${esc(store.playerName(ev.governorId))} enriched ${parcelName(ev.parcelId)} (+${fmtCT(ev.toPoolCtUnits)} to the land)`, 't-gold', ev.parcelId);
+        break;
+      case 'territory_razed': { // E4 — smolder-lite scorch; own raze already toasted by the POST
+        map.smolderAt(ev.parcelId, 0.5);
+        const razeTrack = ev.track.charAt(0) + ev.track.slice(1).toLowerCase();
+        ui.feedPush(`🔥 ${esc(store.playerName(ev.governorId))} razed ${razeTrack} at ${parcelName(ev.parcelId)} (salvaged ${fmtCT(ev.salvageCtUnits)})`, 't-battle', ev.parcelId);
+        break;
+      }
       case 'wild_raid': { // F3 — the frontier bites back
         const target = store.terrByParcel.get(ev.toParcelId);
         const mine = target && store.isMine(target.governorId);
@@ -285,6 +344,9 @@ async function boot() {
   const world = await api('/api/world');
   store.loadWorld(world);
   map.prepare();
+  // FS3: live ⚙ splitter shares for the enrich/raze previews (non-blocking —
+  // the balance mirrors in util.js cover a failed fetch).
+  api('/api/economy').then((eco) => { store.econ = eco; store.emit(); }).catch(() => {});
 
   if (token) {
     try {
@@ -329,7 +391,7 @@ function enterWorld() {
 }
 
 // Debug/demo hook (also used by the scripted Playwright walkthrough).
-window.CF = { store, map, orders, ftue, ui };
+window.CF = { store, map, orders, ftue, ui, econ };
 
 boot().catch((e) => {
   console.error('[client] boot failed:', e);

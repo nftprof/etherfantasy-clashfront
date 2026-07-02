@@ -73,6 +73,19 @@ export function devCostCtUnits(track, level) {
   return Math.round(DEV.base[track] * Math.pow(DEV.growth, level));
 }
 
+/**
+ * balance.json `economy` + `training` ⚙ mirror (FS3) — FALLBACK only: the live
+ * values arrive on GET /api/economy (`shares` + `musterPenalty`) and win when
+ * present (store.econ). Kept in sync so the enrich/raze previews degrade
+ * gracefully if that fetch fails.
+ */
+export const ECON = {
+  loot: 0.3, landYield: 0.2, lordsLandlord: 0.15, lordsSeat: 0.1, burn: 0.2, treasury: 0.05,
+  landYieldSelfPct: 0.6, enrichYieldPctPerDay: 0.1, enrichLootPct: 0.35, razeSalvagePct: 0.4,
+};
+/** balance.json training.musterPenalty ⚙ mirror — mustering armies fight at this fraction. */
+export const MUSTER_PENALTY = 0.7;
+
 /** "~lo–hi" fuzzy-band label (F1). */
 export function fmtBand(b) {
   return `~${b.lo}–${b.hi}`;

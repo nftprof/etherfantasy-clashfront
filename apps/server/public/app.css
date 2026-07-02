@@ -297,6 +297,91 @@ button.danger  { background: #4a2320; border-color: #7a3a33; }
 #raid-banner b { color: #fff; }
 #raid-banner .rb-ico { margin-right: 6px; }
 
+/* ── FS3: training queues (E2) ── */
+.rail-sub.muster { color: #7fb4e8; }
+.muster-prog { margin: 2px 0 6px; }
+.muster-prog .mp-bar { height: 5px; border-radius: 3px; background: #202a36; overflow: hidden; }
+.muster-prog .mp-bar span { display: block; height: 100%; background: linear-gradient(90deg, #35608c, #4f8fe8);
+  border-radius: 3px; transition: width 0.5s ease; }
+.muster-prog .mp-txt { margin-top: 3px; font: var(--mono); font-size: 11px; color: #7fb4e8; }
+.muster-prog .mp-warn { font-size: 10.5px; color: var(--ink-faint); }
+#march-popover .warn.muster { color: #7fb4e8; }
+
+/* ── FS3: enrich (E3) ── */
+.enrich-pool { background: rgba(217, 164, 65, 0.08); border: 1px solid #3a2c1c; border-radius: 6px;
+  padding: 6px 8px; font-size: 12px; margin-bottom: 8px; color: #e8d9b0; }
+.enrich-pool b { color: var(--gold); font: var(--mono); font-size: 12px; }
+.enrich-pool .ep-sub { color: var(--ink-dim); font-size: 11px; margin-top: 1px; }
+.enrich-sec { border-top: 1px dotted var(--line); margin-top: 9px; padding-top: 7px; }
+.enrich-sec h4 { margin: 0 0 5px; font-size: 11px; letter-spacing: 1.2px; text-transform: uppercase;
+  color: var(--ink-faint); font-weight: 600; }
+.enrich-sec > button { width: 100%; font-size: 12px; padding: 4px 8px; }
+.enrich-sec .en-row { display: flex; align-items: center; gap: 6px; font-size: 12px;
+  color: var(--ink-dim); margin-bottom: 5px; }
+.enrich-sec .en-row input { width: 70px; font: var(--mono); font-size: 12px; padding: 3px 6px;
+  background: var(--panel-2); color: var(--gold); border: 1px solid var(--line); border-radius: 6px; }
+.enrich-sec .en-row input:focus { outline: none; border-color: var(--gold); }
+.enrich-sec .en-row button { font-size: 11px; padding: 2px 8px; }
+.enrich-sec .en-note { font-size: 10.5px; color: var(--ink-faint); margin: 4px 0; }
+.enrich-sec .en-note b { color: var(--ink); font: var(--mono); font-size: 10.5px; }
+.enrich-sec .en-note.gold { color: #b39967; }
+.enrich-sec .en-note.gold b { color: var(--gold); font: inherit; font-weight: 600; }
+.enrich-sec .en-note.why { color: var(--bad); }
+.enrich-sec .pf-btns { display: flex; gap: 6px; margin-top: 5px; }
+.enrich-sec .pf-btns button { flex: 1; font-size: 12px; padding: 4px; }
+
+/* ── FS3: raze (E4) ── */
+.dev-track .raze-btn { min-width: 0; padding: 3px 6px; font-size: 11px; border-color: #4a2320;
+  opacity: 0.75; }
+.dev-track .raze-btn:hover:not(:disabled) { border-color: #7a3a33; background: #2c1512; opacity: 1; }
+.raze-confirm { background: rgba(74, 35, 32, 0.35); border: 1px solid #4a2320; border-radius: 6px;
+  padding: 6px 8px; margin: 3px 0 5px; font-size: 11.5px; color: #e0b8ae; }
+.raze-confirm b { color: #fff; }
+.raze-confirm .pf-btns { display: flex; gap: 6px; margin-top: 6px; }
+.raze-confirm .pf-btns button { flex: 1; font-size: 12px; padding: 3px; }
+
+/* ── FS3: 💰 economy dashboard ── */
+#econ { position: fixed; inset: 0; background: rgba(5, 7, 10, 0.72); z-index: 92;
+  display: flex; align-items: center; justify-content: center; }
+#econ .eco-box { position: relative; width: 500px; max-height: 84vh; display: flex;
+  flex-direction: column; background: var(--panel); border: 1px solid #3a2c1c; border-radius: 10px;
+  padding: 16px 18px; box-shadow: 0 0 60px rgba(217, 164, 65, 0.12); }
+#econ h2 { margin: 0 0 2px; font-size: 16px; color: var(--gold); }
+#econ .sub { color: var(--ink-dim); font-size: 11.5px; margin: 0 0 6px; }
+#econ .sub b { color: var(--ink); }
+#econ h3 { margin: 12px 0 5px; font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase;
+  color: var(--ink-faint); font-weight: 600; }
+#econ .eco-scroll { overflow-y: auto; padding-right: 4px; }
+#econ .num { font: var(--mono); font-size: 11.5px; }
+#econ .dim { color: var(--ink-faint); font-weight: 400; text-transform: none; letter-spacing: 0; }
+#econ .gold { color: var(--gold); }
+#econ .eco-bar { display: flex; height: 14px; border-radius: 4px; overflow: hidden;
+  background: #202a36; margin: 2px 0 7px; }
+#econ .eco-bar span { display: block; height: 100%; min-width: 0; }
+#econ .eco-row { display: flex; align-items: center; gap: 8px; padding: 2.5px 0; font-size: 12px;
+  color: var(--ink-dim); }
+#econ .eco-row .dot { width: 8px; height: 8px; border-radius: 2px; flex: none; }
+#econ .eco-row .grow { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  color: var(--ink); }
+#econ .eco-row .num { color: var(--ink); flex: none; }
+#econ .eco-row .num.dim { color: var(--ink-faint); min-width: 42px; text-align: right; }
+#econ .eco-row .fbar { flex: none; width: 120px; height: 7px; border-radius: 3px;
+  background: #202a36; overflow: hidden; }
+#econ .eco-row .fbar span { display: block; height: 100%; background: #35608c; border-radius: 3px; }
+#econ .eco-row.hot { cursor: pointer; margin: 0 -6px; padding: 3px 6px; border-radius: 5px; }
+#econ .eco-row.hot:hover { background: var(--panel-2); }
+#econ .eco-row .rank { flex: none; width: 16px; text-align: right; font: var(--mono);
+  font-size: 10.5px; color: var(--fire); }
+#econ .eco-kinds { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 4px; }
+#econ .eco-kinds .chip { background: var(--panel-2); border: 1px solid var(--line); border-radius: 10px;
+  padding: 2px 9px; font-size: 10.5px; color: var(--ink-dim); }
+#econ .eco-kinds .chip b { color: var(--ink); }
+#econ .eco-empty { color: var(--ink-faint); font-size: 12px; padding: 3px 0; }
+#econ .eco-err { color: var(--bad); font-size: 12px; padding: 6px 0; }
+#econ .close { position: absolute; top: 8px; right: 10px; border: none; background: none;
+  color: var(--ink-faint); font-size: 15px; padding: 2px 5px; }
+#econ .close:hover { color: #fff; }
+
 /* ── 📖 tutorial library (F5) ── */
 #library { position: fixed; inset: 0; background: rgba(5, 7, 10, 0.72); z-index: 92;
   display: flex; align-items: center; justify-content: center; }
