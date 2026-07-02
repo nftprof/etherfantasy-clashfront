@@ -1,0 +1,47 @@
+name: Deploy MVP to cf.etherfantasy.com
+
+# Trigger: manual button (Actions tab) or any push to the deploy branch.
+on:
+  workflow_dispatch:
+  push:
+    branches: [deploy/cf-mvp]
+
+concurrency: deploy-cf   # never two deploys at once
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with: { version: 10 }
+      - uses: actions/setup-node@v4
+        with: { node-version: 20, cache: pnpm }
+
+      - name: Build & test
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm -r build
+          pnpm -r test
+
+      - name: Prepare SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -p "${{ secrets.DEPLOY_SSH_PORT || 22 }}" -H "${{ secrets.DEPLOY_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: Sync to server
+        run: |
+          rsync -az --delete \
+            -e "ssh -i ~/.ssh/deploy_key -p ${{ secrets.DEPLOY_SSH_PORT || 22 }}" \
+            --exclude '.git' --exclude 'node_modules' --exclude '**/node_modules' \
+            --exclude 'data/hexagon-city-source' --exclude 'data/save.json' --exclude 'docs' \
+            ./ "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:~/clashfront-mvp/"
+
+      - name: Install, build, (re)start on server
+        run: |
+          ssh -i ~/.ssh/deploy_key -p "${{ secrets.DEPLOY_SSH_PORT || 22 }}" \
+            "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" \
+            'bash ~/clashfront-mvp/deploy/remote-deploy.sh'

@@ -2,6 +2,31 @@
 
 One process serves everything (world sim + API + WS + client). Needs: **Node 20+** or Docker.
 
+## Option 0 — EF EC2 box + cf.etherfantasy.com (the chosen MVP path)
+
+Run from a session WITH SSH access to the EF server (e.g. local Claude Code). Steps:
+
+```bash
+# 1. On the box: get the code (first time; later deploys just fetch/reset)
+git clone -b claude/clash-front-overworld-mkcyia <repo-url> ~/clashfront-mvp
+# 2. Deploy/restart (idempotent; APP_PORT defaults to 8130, no conflict with MOBA 8080/8090)
+bash ~/clashfront-mvp/deploy/remote-deploy.sh
+# 3. Nginx vhost (first time only)
+sudo cp ~/clashfront-mvp/deploy/nginx-cf.etherfantasy.com.conf /etc/nginx/sites-available/cf.etherfantasy.com
+sudo ln -sf /etc/nginx/sites-available/cf.etherfantasy.com /etc/nginx/sites-enabled/
+sudo nginx -t && sudo systemctl reload nginx
+# 4. DNS: A/CNAME record  cf.etherfantasy.com → this box   (registrar/Cloudflare)
+# 5. TLS (after DNS resolves):
+sudo certbot --nginx -d cf.etherfantasy.com
+```
+
+Redeploy after new commits: `cd ~/clashfront-mvp && git pull && bash deploy/remote-deploy.sh`
+(world state in `data/save.json` survives deploys; delete it to reset the world).
+
+Optional push-to-deploy later: `.github/workflows/deploy.yml` does the same via GitHub Actions —
+add repo secrets `DEPLOY_HOST`, `DEPLOY_USER`, `DEPLOY_SSH_KEY` (+`DEPLOY_SSH_PORT` if not 22) and
+push to branch `deploy/cf-mvp`. Keys live ONLY in GitHub secrets — never in chat/repo.
+
 ## Option A — Docker (recommended)
 
 ```bash
