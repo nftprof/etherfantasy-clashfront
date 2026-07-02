@@ -324,11 +324,17 @@ armies collide against natural terrain** — no lanes, towers, or creep conventi
 2b. **Occupied parcels are buildable bases (Clash-of-Clans layer, 2026-07).** The occupying player
    places **structure modules** on their parcel's battlefield (anchored positions, see
    `StructureState.anchor` in [`08`](./08-data-models.md)). Starter module set ⚙: `WALL` segment,
-   `TOWER` (ranged), `GATE`, `TRAP`, `GRANARY` (protects a food/CT % from pillage), `PET_DEN`
-   (raises pet-guard cap). Modules cost CT, have persistent HP, appear physically in every battle
-   on that parcel, and can be destroyed by attackers (repair with CT). Defense layout is the
-   player's tower-defense expression; attacking an occupied parcel plays as a base assault.
-   Guard **Pets** defend alongside structures — see [`05`](./05-pve-integration.md) §9 raid rules.
+   `GATE`, `TRAP`, `GRANARY` (protects a food/CT % from pillage), `PET_DEN` (raises pet-guard cap).
+   **`TOWER` (ranged defense towers) are ESTATE-ONLY** (product owner 2026-07-02) — single L3
+   parcels defend with walls/traps, garrison, and pets; towers are part of what makes estates
+   fortress-tier. ❓ OPEN: whether any other module is estate-gated. Modules cost CT, have
+   persistent HP, appear physically in every battle on that parcel, and can be destroyed by
+   attackers (repair with CT). Attacking an occupied parcel plays as a base assault — capturing
+   enemy territory is storming their base camp, MOBA-style. Guard **Pets** defend alongside
+   structures — see [`05`](./05-pve-integration.md) §9 raid rules; **only Masters (and the
+   player's Hero) invade** — pets never attack.
+   The overworld map mirrors all of this ambiently (fire/smoke for battles, structure silhouettes,
+   overgrowth) — see `map-engine/01` §2b: one state, two fidelities.
 3. **Biome overrides** — the main map may designate regions as biomes (mountain ranges, etc.) that
    constrain the seed inputs. ❓ OPEN: biome designation list, review with product owner.
 4. **Component size is capped** — one battle map = the size of the **smallest parcel**. Larger holdings

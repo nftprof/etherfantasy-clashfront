@@ -37,6 +37,24 @@ Static tiles never change; game state rides on top by parcel id:
 - Fog of war (`docs/01` §9) is enforced server-side in the subscription — the client only ever
   receives what the player may see.
 
+## 2b. Ambient state visualization (map ↔ battle contract, canon 2026-07-02)
+
+The overworld map is a **symbolic, ambient view** of the same state the battle session renders in
+detail — the player should *feel* the world from orbit and *confirm* it on the ground:
+
+| World state | Overworld map shows | Battle session shows |
+|---|---|---|
+| Battle RUNNING on a parcel | 🔥 fire + smoke plume on that parcel (visible from Z1+) | the actual fight |
+| Recently pillaged | smoldering/darkened parcel, fading over days | wrecked structures, burnt props |
+| Major structures (estate castle/walls, developed bases) | simplified silhouette/icon at Z2+, generic marker at Z1 | the real placed structures (CoC layout) |
+| Overgrowth / rewilded | bush/wild texture creep by `overgrowth` level | wild-growth props, monster spawns |
+| Garrison/pets present | small presence pips on parcel card | the actual defenders on the field |
+
+Rules: ambient effects are driven by the SAME state fields the battlefield generator reads
+(`docs/04` §7b seed inputs) — one source of truth, two fidelities. Effects are part of the dynamic
+layer (§2), not baked into tiles. Battles-on-fire are the loudest signal on the map by design —
+war must be visible from far away.
+
 ## 3. Camera & UX model (the "follow your units" contract)
 
 - **Home rail** (always on screen): the player's armies, territories, battles — each with a

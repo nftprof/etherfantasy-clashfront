@@ -244,8 +244,11 @@ self-identity** (their own persistent character — Irene/Kai/Leah avatar base),
 in battles; **Masters are the commanded generals**. Both can officer armies and be played in a
 battle (`docs/08` — split `Hero` / `Master` schemas; officer fields accept either).
 
-**Pet mechanics (canon 2026-07 — Palworld model):** a player assigns owned Pets to territories
-they occupy. Assigned pets do two jobs at once:
+**Pet mechanics (canon 2026-07 — Palworld model):** Pets are **NFTs a player owns directly**
+(distinct from rented Masters), and wild pets can be **captured and raised** (capture = PvE
+encounter in the wild ⚙ mechanics TBD). **Pets are strictly defensive/economic — they NEVER join
+attacks or invasions; only Masters (and the player's Hero) invade.** A player assigns owned Pets
+to territories they occupy. Assigned pets do two jobs at once:
 - **GATHER** — boost the territory's resource collection (food/CT yield bonus per pet ⚙,
   battle-ready pets gather AND guard; cosmetic-only pets gather only).
 - **GUARD** — pets physically defend the parcel's battlefield alongside the player's defense
