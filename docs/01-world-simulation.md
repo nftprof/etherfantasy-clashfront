@@ -388,7 +388,26 @@ Numbers reference [`08-data-models.md` §5](./08-data-models.md#5-invariants-mus
   hex-composition detail in the forthcoming map report).
 - The map is FIXED; these counts are permanent. Snapshot lands in `data/parcels.json`.
 
-### 11.2 Rewilding — the world gardens itself
+### 11.1b Non-ownable map space & special regions (canon 2026-07-02)
+
+The map is not only parcels. The original hexagon-city map defines **non-hexagon, non-ownable
+areas**, and Clash Front inherits them as strategic geography:
+
+1. **OCEAN** — open water surrounding and separating landmasses. Non-ownable. **Navigable by
+   fleets** (NAVAL canon, `docs/04`); sea lanes and harbor blockades live here. Rendered as deep
+   water on the map.
+2. **WILD BARRENS (non-navigable)** — the in-between wilderness separating zones. Non-ownable and
+   **impassable**: no army may path through. These are the world's natural walls — they shape
+   fronts, funnel invasions through the navigable gaps, and make zone borders defensible. Rendered
+   as dark impassable scrub/wilderness, visually distinct from claimable WILD parcels.
+
+**Special regions (canon; details ❓ OPEN with product owner):**
+- **3 Floating Islands** — sky landmasses. Presumed reachable only by special means (flying pets
+  as scouts? sky routes? events). Non-standard traversal; likely late-game/prestige content.
+- **3 Underworld zones** — subterranean regions (the marketplace's "Underworld" zone category).
+  Dark-biome battlefields (grave/stone palettes); presumed gated by entrances/portals.
+❓ OPEN: exact access mechanics, ownability, and how they connect to the surface graph — do not
+implement beyond rendering until the product owner specs them.
 
 Untrodden land does not sit frozen: **if no owner/officer/army crosses a parcel, it overgrows** —
 bush and wild growth take root, and **monsters move in** (rosters: `data/CHARACTER_ROSTER.csv`,

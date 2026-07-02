@@ -63,6 +63,27 @@ mark your vision sources (watchtower/army/pet 👁 badges) so players understand
 an area. MVP ships own-unit direction arrows with no fog (full visibility); fog + scout badges
 land in v0.3 (§6).
 
+## 2c. Non-parcel space (ocean, barrens, special regions)
+
+Per `docs/01` §11.1b, the space between parcels is designed, not empty:
+
+- **Ocean** — deep-water base layer (deterministic wave banding; shimmer only if free). Navigable
+  by fleets later (NAVAL); non-interactive until then.
+- **Wild barrens** — impassable wilderness between zones: dark desaturated scrub, no strokes, no
+  hover, visually distinct from claimable wild parcels. These are natural walls — render them so
+  borders *read* as defensible geography.
+- **Composition**: ocean base → organic landmass plate (padded, noised hull around the parcel
+  cluster — never a tight bbox) → parcels. All baked into the static layer.
+- **3 Floating Islands** — **heavenly palette** (product owner 2026-07-02): luminous whites/golds/
+  sky-blues, cloud ring + drop shadow at Z0–Z1 (post-MVP; access mechanics ❓ OPEN).
+- **3 Underworld zones** — **descending hell/sin palette** (product owner 2026-07-02): each level
+  down gets more infernal — **L1: desert tinted purple-black → L2: deep obsidian/ember reds →
+  L3: red scorching lava**. The desert/grave textures tinted per level are the starting point;
+  portal markers at entrances (post-MVP).
+- The vertical color story: heaven-bright above ⇢ mortal greens/stones at the surface ⇢
+  darkening sins below. Altitude IS palette.
+- Picking/hover ignores all non-parcel space (deselect at most).
+
 ## 3. Camera & UX model (the "follow your units" contract)
 
 - **Home rail** (always on screen): the player's armies, territories, battles — each with a
