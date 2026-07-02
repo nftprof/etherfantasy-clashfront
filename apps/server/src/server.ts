@@ -8,7 +8,8 @@
  * HTTP:  POST /api/join · GET /api/world (ETag) · GET /api/state ·
  *        POST /api/claim · /api/raise · /api/march · /api/choice
  * WS:    /ws?token=…  → {t:'hello'} on connect, {t:'tick'} broadcast per tick
- * Static: ./public (apps/web lands there — smoke page for now)
+ * Static: ./public — the overworld client (MVP item 4): vanilla ES modules +
+ *         one CSS file, no build step (js/app.js entry, Canvas2D map).
  */
 import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
