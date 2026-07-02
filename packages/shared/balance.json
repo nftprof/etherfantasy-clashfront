@@ -195,5 +195,42 @@
     "_": "Land claiming (product owner 2026-07-02): adjacent to your holdings = free; farther = CT per step (dispatching a Master). First-ever claim free (founding). ⚙ demo values.",
     "freeRadiusSteps": 1,
     "costCtUnitsPerStep": 500000
+  },
+  "towns": {
+    "_note": "Neutral towns ⚙ (Feature Set 2 F2). pct of garrison-free SYSTEM parcels become TOWNs at genesis; population/treasury/prosperity scale with normalized distance from the slice center (frontier towns are richer). walkInMinPopulation: an army ENDING its march on a garrison-free foreign/SYSTEM TOWN — or any SYSTEM parcel at/above this population — takes it WITHOUT battle via the PILLAGE/OCCUPY walk-in choice (ordinary wild hamlets sit below the threshold; set to 1 to make every populated SYSTEM parcel walk-in-able).",
+    "pct": 0.06,
+    "popBase": 800,
+    "popDistanceBonus": 1600,
+    "treasuryCtUnitsBase": 1000000,
+    "treasuryCtUnitsDistanceBonus": 4000000,
+    "prosperityBase": 55,
+    "prosperityDistanceBonus": 25,
+    "foodPerPop": 2,
+    "walkInMinPopulation": 500
+  },
+  "developmentEffects": {
+    "_note": "Feature Set 2 F4 ⚙ — how development tracks bite in the sim. AGRI production uses food.productionBasePerAgriLevelPerDay, applied per tick with an integer carry. defenseWarScorePerLevel: defender WarScore × (1 + x × DEFENSE level) in battles on the parcel. econCtUnitsPerLevelPerDay: CT trickle (ct_units) to the governor per ECONOMY level (integer carry per governor). milRaiseDiscountPerLevel: training-cost discount per MILITARY level of the raising parcel, capped at milRaiseDiscountMax. Level cap = development.maxLevel.",
+    "defenseWarScorePerLevel": 0.1,
+    "econCtUnitsPerLevelPerDay": 144000,
+    "milRaiseDiscountPerLevel": 0.05,
+    "milRaiseDiscountMax": 0.3
+  },
+  "wildRaids": {
+    "_note": "Active wild enemies ⚙ (Feature Set 2 F3). Every everyTicks each monster lair rolls chance = baseChance + edgeChanceBonus × normalized-distance-from-center; on a hit HALF the garrison marches (visible, interceptable) at the weakest player/NPC territory within raidRangeSteps (ungarrisoned preferred; garrisons at/above defendedStrengthThreshold are NEVER picked). Raiders auto-PILLAGE on victory/arrival (never occupy owned land); survivors auto-march home and re-merge into the lair.",
+    "everyTicks": 50,
+    "baseChance": 0.1,
+    "edgeChanceBonus": 0.4,
+    "defendedStrengthThreshold": 1800,
+    "raidRangeSteps": 2,
+    "minRaidTroops": 20
+  },
+  "intel": {
+    "_note": "Fog of war ⚙ (Feature Set 2 F1). Territory sight radius per contiguous cluster = 1 + floor(sqrt(clusterSize)/2), capped at clusterRadiusCap. Armies see armySight steps; cavalry-majority screens (SCOUTS preset) see scoutSight. Parcels seen by an army stay ACCURATE for decayTicks after last sight, then decay to FUZZY (remembered) forever. FUZZY strengths render as deterministic bands ±fuzzyBandPct, rerolled every fuzzyPeriodTicks ('a day').",
+    "decayTicks": 1000,
+    "fuzzyPeriodTicks": 1000,
+    "clusterRadiusCap": 4,
+    "armySight": 1,
+    "scoutSight": 3,
+    "fuzzyBandPct": 0.35
   }
 }

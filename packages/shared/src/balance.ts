@@ -147,11 +147,72 @@ export interface Balance {
     /** Attacker temporary command-center tiers (camp → palisade → fortified camp); requirements scale per 100 attacker soldiers; the tier cost is SPENT win or lose. */
     commandCenterTiers: { goldPer100: number; woodPer100: number; bonus: number }[];
   };
+  /** Neutral towns ⚙ — Feature Set 2 F2 (docs/briefs/FEATURESET-2.md). */
+  towns: {
+    /** Fraction of garrison-free SYSTEM parcels seeded as TOWNs at genesis. */
+    pct: number;
+    /** Town population at the slice center… */
+    popBase: number;
+    /** …plus this much at the far frontier (× normalized distance). */
+    popDistanceBonus: number;
+    /** Town treasury (ct_units) at the center… */
+    treasuryCtUnitsBase: number;
+    /** …plus this much at the far frontier (× normalized distance). */
+    treasuryCtUnitsDistanceBonus: number;
+    prosperityBase: number;
+    prosperityDistanceBonus: number;
+    /** Town foodStock = population × this. */
+    foodPerPop: number;
+    /** SYSTEM parcels at/above this population trigger the bloodless walk-in choice (TOWNs always do). */
+    walkInMinPopulation: number;
+  };
+  /** Development effects ⚙ — Feature Set 2 F4 (docs/briefs/FEATURESET-2.md). */
+  developmentEffects: {
+    /** Defender WarScore multiplier: 1 + x × DEFENSE level (battles on the parcel). */
+    defenseWarScorePerLevel: number;
+    /** CT trickle (ct_units/day) to the governor per ECONOMY level — paid per tick with integer carry. */
+    econCtUnitsPerLevelPerDay: number;
+    /** Training-cost discount per MILITARY level of the raising parcel… */
+    milRaiseDiscountPerLevel: number;
+    /** …capped here. */
+    milRaiseDiscountMax: number;
+  };
+  /** Active wild raids ⚙ — Feature Set 2 F3 (docs/briefs/FEATURESET-2.md). */
+  wildRaids: {
+    /** Monster lairs roll a raid every N ticks (0 disables raids). */
+    everyTicks: number;
+    /** Raid chance at the slice center… */
+    baseChance: number;
+    /** …plus this much at the far frontier (× normalized distance from center). */
+    edgeChanceBonus: number;
+    /** Targets with a live garrison at/above this WarScore strength are never raided. */
+    defendedStrengthThreshold: number;
+    /** Raids reach adjacent-or-N-step territories. */
+    raidRangeSteps: number;
+    /** A lair below this many soldiers never splits a raid. */
+    minRaidTroops: number;
+  };
+  /** Fog of war ⚙ — Feature Set 2 F1 (docs/briefs/FEATURESET-2.md). */
+  intel: {
+    /** Ticks a scouted parcel stays ACCURATE after last sight before decaying to FUZZY memory. */
+    decayTicks: number;
+    /** Fuzzy display bands reroll every this many ticks ("a day" for band stability). */
+    fuzzyPeriodTicks: number;
+    /** Cap on the territory-cluster sight radius 1 + floor(sqrt(clusterSize)/2). */
+    clusterRadiusCap: number;
+    /** Sight (adjacency steps) of a regular army. */
+    armySight: number;
+    /** Sight of a cavalry-majority scout screen (SCOUTS preset). */
+    scoutSight: number;
+    /** Fuzzy band half-width as a fraction of true strength (±35% default). */
+    fuzzyBandPct: number;
+  };
 }
 
 const REQUIRED_SECTIONS: readonly (keyof Balance)[] = [
   'travel', 'development', 'tax', 'prosperity', 'food', 'population',
   'supply', 'morale', 'desertion', 'upkeep', 'units', 'pillageOccupy', 'draft', 'provisions', 'claims',
+  'intel', 'towns', 'wildRaids', 'developmentEffects',
 ];
 
 function resolveBalancePath(): string {

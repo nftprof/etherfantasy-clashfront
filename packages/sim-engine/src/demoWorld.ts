@@ -240,6 +240,29 @@ export function loadDemoWorld(file: DemoWorldFile, rng: Rng, options: LoadDemoWo
     monsterNames.set(army.id, mRng.pick(DEMO_MONSTER_NAMES));
   }
 
+  // Neutral TOWNs (F2, ⚙ balance.towns): a share of garrison-free SYSTEM
+  // parcels become settled towns — population/treasury/prosperity grow with
+  // distance from the slice center (frontier towns are richer). Never on
+  // monster-garrisoned parcels; bloodless walk-in targets (docs/briefs/FEATURESET-2.md).
+  const towns = balance.towns;
+  for (const p of parcels) {
+    const tRng = rng.fork(`town:${p.parcelId}`);
+    if (tRng.next() >= towns.pct) continue;
+    const terr = territories.get(hexes.get(hexIdByParcel.get(p.parcelId)!)!.territoryId!)!;
+    if (terr.garrisonArmyId !== undefined) continue; // monsters keep their lairs
+    const distNorm = Math.hypot(p.center[0] - cx, p.center[1] - cy) / maxDist;
+    terr.zoneType = 'TOWN';
+    terr.population = Math.floor((towns.popBase + towns.popDistanceBonus * distNorm) * (0.85 + 0.3 * tRng.next()));
+    terr.ctTreasury = Math.floor(
+      (towns.treasuryCtUnitsBase + towns.treasuryCtUnitsDistanceBonus * distNorm) * (0.85 + 0.3 * tRng.next()),
+    );
+    terr.prosperity = Math.min(
+      CONSTANTS.PROSPERITY_MAX,
+      towns.prosperityBase + Math.floor(towns.prosperityDistanceBonus * distNorm),
+    );
+    terr.foodStock = terr.population * towns.foodPerPop;
+  }
+
   return {
     world,
     regions: new Map([[region.id, region]]),
@@ -255,6 +278,11 @@ export function loadDemoWorld(file: DemoWorldFile, rng: Rng, options: LoadDemoWo
     pendingChoices: new Map(),
     monsterNames,
     battleLogistics: new Map(),
+    intel: new Map(),
+    walkInOutcomes: [],
+    wildRaids: new Map(),
+    foodCarry: new Map(),
+    econCarry: new Map(),
   };
 }
 
@@ -410,8 +438,10 @@ export function claimTerritory(
 
 /** CT cost breakdown of raising a preset army: training + the standard provision pack (docs/04 §7c.1). */
 export interface RaiseCostBreakdown {
-  /** Training cost, ct_units (Σ trainCtUnitsPerSoldier × count). */
+  /** Training cost, ct_units (Σ trainCtUnitsPerSoldier × count, after the MIL discount). */
   unitsCtUnits: number;
+  /** F4 MIL-track discount applied to the training cost (fraction, ⚙ capped). */
+  milDiscountPct: number;
   /** Standard provision pack cost, ct_units (⚙ balance.provisions defaults × prices). */
   provisionsCtUnits: number;
   totalCtUnits: number;
@@ -419,17 +449,25 @@ export interface RaiseCostBreakdown {
   provisions: ProvisionOrder;
 }
 
-/** Cost of raising `preset`, including its default provision pack. */
-export function raiseCost(preset: DemoArmyPreset, balance = loadBalance()): RaiseCostBreakdown {
+/**
+ * Cost of raising `preset`, including its default provision pack.
+ * `militaryLevel` = the raising territory's MILITARY development (F4): each
+ * level discounts the TRAINING cost by ⚙ milRaiseDiscountPerLevel, capped at
+ * ⚙ milRaiseDiscountMax (provisions are bought at market price regardless).
+ */
+export function raiseCost(preset: DemoArmyPreset, balance = loadBalance(), militaryLevel = 0): RaiseCostBreakdown {
   const spec = DEMO_ARMY_PRESETS[preset];
-  const unitsCtUnits = spec.reduce(
+  const de = balance.developmentEffects;
+  const milDiscountPct = Math.min(de.milRaiseDiscountMax, de.milRaiseDiscountPerLevel * Math.max(0, militaryLevel));
+  const rawUnits = spec.reduce(
     (sum, s) => sum + balance.units.trainCtUnitsPerSoldier[s.unitClass] * s.count,
     0,
   );
+  const unitsCtUnits = Math.floor(rawUnits * (1 - milDiscountPct));
   const troops = spec.reduce((n, s) => n + s.count, 0);
   const provisions = defaultProvisionsFor(troops, balance);
   const provisionsCtUnits = provisionCostCtUnits(provisions, balance);
-  return { unitsCtUnits, provisionsCtUnits, totalCtUnits: unitsCtUnits + provisionsCtUnits, provisions };
+  return { unitsCtUnits, milDiscountPct, provisionsCtUnits, totalCtUnits: unitsCtUnits + provisionsCtUnits, provisions };
 }
 
 /**
@@ -453,7 +491,8 @@ export function raiseArmy(
   const gov = t.governorId;
   const balance = loadBalance();
   const spec = DEMO_ARMY_PRESETS[preset];
-  const cost = raiseCost(preset, balance);
+  // F4: the parcel's MILITARY development discounts training on home ground.
+  const cost = raiseCost(preset, balance, t.development.MILITARY);
   const wallet = state.ctBalances?.get(gov);
   if (wallet === undefined) throw new Error(`raiseArmy: governor ${gov} has no CT wallet`);
   if (wallet < cost.totalCtUnits) {

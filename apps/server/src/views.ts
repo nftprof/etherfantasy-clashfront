@@ -3,22 +3,58 @@
  * WS tick deltas share. Views are plain JSON objects keyed by ids; the client
  * joins them onto the static geometry of /api/world by `parcelId`.
  *
- * No fog of war for the MVP (brief OUT list): every view here is public. The
- * only private data is the per-player `my` block assembled in game.ts.
+ * FOG OF WAR (Feature Set 2 F1): every builder takes an optional ViewerContext.
+ * Without it the view is OMNISCIENT (server-internal use only). With it, views
+ * are filtered by the viewer's intel grades:
+ *   - territory ownership / zoneType / prosperity / morale / population are
+ *     ALWAYS public (NFT record + map readability);
+ *   - garrison + development detail only on ACCURATE (or own parcels);
+ *   - FUZZY parcels expose garrison presence as a deterministic strength band;
+ *   - UNKNOWN parcels expose no military contents at all (client renders "??");
+ *   - foreign armies: full composition on ACCURATE (minus path/provisions —
+ *     intent and logistics stay private), position + strength band on FUZZY,
+ *     omitted entirely on UNKNOWN (deltas send {id, hidden:true} tombstones);
+ *   - battles: participants always see everything; otherwise full on ACCURATE,
+ *     winner + score bands on FUZZY, omitted on UNKNOWN.
  */
 import type { Army, Balance, BattleInstance, Territory } from '@clashfront/shared';
-import { armyStrength, marchFoodPerStep, stepTicks, type TickOptions, type WorldState } from '@clashfront/sim-engine';
+import {
+  armyStrength,
+  fuzzyBand,
+  intelGrade,
+  type IntelGrade,
+  marchFoodPerStep,
+  stepTicks,
+  type TickOptions,
+  type WorldState,
+} from '@clashfront/sim-engine';
+
+/** Per-viewer fog context. Omit the whole context for omniscient (internal) views. */
+export interface ViewerContext {
+  /** Viewing governor; undefined = anonymous spectator (everything UNKNOWN). */
+  governorId?: string;
+  /** hexId → intel grade (absent = UNKNOWN). */
+  grades: ReadonlyMap<string, IntelGrade>;
+  /** Fuzzy-band period index = floor(tick / ⚙ balance.intel.fuzzyPeriodTicks). */
+  period: number;
+}
 
 export interface TerritoryView {
   id: string;
   parcelId: string;
   name: string;
+  /** WILD | TOWN | … (docs/08 ZoneType) — public, terrain-like. */
+  zoneType: string;
   governorId: string;
   governorKind: string;
   prosperity: number;
   morale: number;
   population: number;
-  /** Present iff a live army garrisons the parcel (monster or player/NPC). */
+  /** Present on per-viewer filtered views (ACCURATE | FUZZY | UNKNOWN). */
+  intel?: IntelGrade;
+  /** Development levels per track — own parcels or ACCURATE intel only (F4). */
+  development?: Record<string, number>;
+  /** Full garrison detail — own parcels or ACCURATE intel only. */
   garrison?: {
     armyId: string;
     governorId: string;
@@ -26,32 +62,47 @@ export interface TerritoryView {
     /** Wild-monster display name (roster-flavored), when the garrison is a monster. */
     monsterName?: string;
   };
+  /** FUZZY intel: a garrison is present, strength known only as a band. */
+  garrisonBand?: {
+    governorId: string;
+    band: { lo: number; hi: number };
+    monsterName?: string;
+  };
   overseerId?: string;
 }
 
 export interface ArmyView {
   id: string;
-  governorId: string;
+  /**
+   * Delta tombstone: the army left the viewer's intel — drop it from the map.
+   * All other fields absent when set.
+   */
+  hidden?: true;
+  /** Present on per-viewer filtered views. */
+  intel?: IntelGrade;
+  governorId?: string;
   /** GARRISON | MARCHING | DISBANDED (DISBANDED views appear once in deltas so clients can drop them). */
-  state: string;
-  parcelId: string;
-  hexId: string;
-  troops: number;
-  morale: number;
-  units: { unitClass: string; count: number }[];
-  strength: number;
-  /** Carried battle logistics (docs/04 §7c): food = battle clock + march rations; gold+wood = command-center budget. */
-  provisions: { food: number; gold: number; wood: number };
-  /** Food this army burns per adjacency step while MARCHING (⚙ marchFoodPerStepPer100). */
-  foodPerStep: number;
+  state?: string;
+  parcelId?: string;
+  hexId?: string;
+  troops?: number;
+  morale?: number;
+  units?: { unitClass: string; count: number }[];
+  strength?: number;
+  /** FUZZY intel: strength known only as a deterministic band. */
+  strengthBand?: { lo: number; hi: number };
+  /** Carried battle logistics (docs/04 §7c) — OWN armies only. */
+  provisions?: { food: number; gold: number; wood: number };
+  /** Food burned per adjacency step while MARCHING — OWN armies only. */
+  foodPerStep?: number;
   heroId?: string;
   heroName?: string;
   monsterName?: string;
-  /** Remaining march path as parcelIds (MARCHING only). */
+  /** Remaining march path as parcelIds — OWN armies only. */
   path?: string[];
-  /** Tick the army steps onto path[0] (MARCHING only). */
+  /** Tick the army steps onto path[0] — OWN armies only. */
   nextArrivalTick?: number;
-  /** Tick the army reaches the final parcel of its path (MARCHING only). */
+  /** Tick the army reaches the final parcel of its path — OWN armies only. */
   etaTick?: number;
 }
 
@@ -60,23 +111,27 @@ export interface BattleView {
   parcelId: string;
   resolvedTick: number;
   winner: string;
+  /** Present on per-viewer filtered views. */
+  intel?: IntelGrade;
   attackerGovernorIds: string[];
   defenderGovernorIds: string[];
-  attackerScore: number;
-  defenderScore: number;
-  /** armyId → soldiers lost (includes scatter losses). */
-  casualties: Record<string, number>;
-  /** docs/04 §7c.6 outcome kind (present for battles resolved by the v2 resolver). */
+  /** Exact scores — participants or ACCURATE intel only. */
+  attackerScore?: number;
+  defenderScore?: number;
+  /** FUZZY intel: scores as deterministic bands. */
+  scoreBands?: { attacker: { lo: number; hi: number }; defender: { lo: number; hi: number } };
+  /** armyId → soldiers lost (includes scatter losses) — participants/ACCURATE only. */
+  casualties?: Record<string, number>;
+  /** docs/04 §7c.6 outcome kind — participants/ACCURATE only. */
   outcome?: 'DECISIVE_ATTACKER' | 'DECISIVE_DEFENDER' | 'TIE';
-  /** Retreat resolution per failed/tied attacker army (docs/04 §7c.5). */
+  /** Retreat resolution per failed/tied attacker army — participants/ACCURATE only. */
   retreats?: {
     armyId: string;
     governorId: string;
     result: 'RETREATED' | 'SCATTERED' | 'DISBANDED';
-    /** Destination parcel when result = RETREATED. */
     toParcelId?: string;
   }[];
-  /** Endurance/structure terms the resolver applied (docs/04 §7c.6). */
+  /** Endurance/structure terms — participants/ACCURATE only. */
   logistics?: {
     commandCenterTier: number;
     structureBonus: number;
@@ -90,7 +145,7 @@ export interface BattleView {
   territoryOutcome?: string;
   postVictoryAction?: string;
   lootCt?: number;
-  /** Present while the winner still has to pick PILLAGE | OCCUPY. */
+  /** Present only for the winner who still has to pick PILLAGE | OCCUPY. */
   pendingChoice?: { governorId: string; territoryId: string; expiresTick: number };
 }
 
@@ -123,29 +178,58 @@ export function buildParcelByHex(state: WorldState): Map<string, string> {
   return byHex;
 }
 
-export function territoryView(state: WorldState, t: Territory, parcelByHex: ParcelIndex): TerritoryView {
+/** Viewer's grade at a hex; omniscient (no context) reads as ACCURATE. */
+function gradeAt(viewer: ViewerContext | undefined, hexId: string): IntelGrade {
+  if (viewer === undefined) return 'ACCURATE';
+  return intelGrade(viewer.grades, hexId);
+}
+
+export function territoryView(
+  state: WorldState,
+  t: Territory,
+  parcelByHex: ParcelIndex,
+  balance: Balance,
+  viewer?: ViewerContext,
+): TerritoryView {
+  const hexId = t.hexIds[0]!;
+  const parcelId = parcelByHex.get(hexId) ?? t.id;
+  const own = viewer !== undefined && viewer.governorId !== undefined && t.governorId === viewer.governorId;
+  const grade: IntelGrade = own ? 'ACCURATE' : gradeAt(viewer, hexId);
+
   const view: TerritoryView = {
     id: t.id,
-    parcelId: parcelByHex.get(t.hexIds[0]!) ?? t.id,
+    parcelId,
     name: t.name,
+    zoneType: t.zoneType,
     governorId: t.governorId,
     governorKind: t.governorKind,
     prosperity: t.prosperity,
     morale: t.morale,
     population: t.population,
   };
-  if (t.garrisonArmyId !== undefined) {
-    const g = state.armies.get(t.garrisonArmyId);
-    if (g !== undefined && g.state !== 'DISBANDED') {
+  if (viewer !== undefined) view.intel = grade;
+
+  const g = t.garrisonArmyId === undefined ? undefined : state.armies.get(t.garrisonArmyId);
+  const live = g !== undefined && g.state !== 'DISBANDED' ? g : undefined;
+
+  if (grade === 'ACCURATE') {
+    view.development = { ...t.development };
+    if (live !== undefined) {
       view.garrison = {
-        armyId: g.id,
-        governorId: g.ownerGovernorId,
-        troops: g.units.reduce((n, s) => n + s.count, 0),
-        ...(state.monsterNames?.has(g.id) === true ? { monsterName: state.monsterNames.get(g.id)! } : {}),
+        armyId: live.id,
+        governorId: live.ownerGovernorId,
+        troops: live.units.reduce((n, s) => n + s.count, 0),
+        ...(state.monsterNames?.has(live.id) === true ? { monsterName: state.monsterNames.get(live.id)! } : {}),
       };
     }
+    if (t.overseerId !== undefined) view.overseerId = t.overseerId;
+  } else if (grade === 'FUZZY' && live !== undefined) {
+    view.garrisonBand = {
+      governorId: live.ownerGovernorId,
+      band: fuzzyBand(armyStrength(live, balance), parcelId, viewer?.period ?? 0, balance.intel.fuzzyBandPct),
+      ...(state.monsterNames?.has(live.id) === true ? { monsterName: state.monsterNames.get(live.id)! } : {}),
+    };
   }
-  if (t.overseerId !== undefined) view.overseerId = t.overseerId;
   return view;
 }
 
@@ -155,51 +239,103 @@ export function armyView(
   parcelByHex: ParcelIndex,
   balance: Balance,
   options?: TickOptions,
-): ArmyView {
+  viewer?: ViewerContext,
+): ArmyView | undefined {
+  const parcelId = parcelByHex.get(a.hexId) ?? a.hexId;
+  const own = viewer !== undefined && viewer.governorId !== undefined && a.ownerGovernorId === viewer.governorId;
+  const grade: IntelGrade = own ? 'ACCURATE' : gradeAt(viewer, a.hexId);
+  if (viewer !== undefined && !own && grade === 'UNKNOWN') return undefined;
+
+  const monsterName = state.monsterNames?.get(a.id);
+
+  if (viewer !== undefined && !own && grade === 'FUZZY') {
+    return {
+      id: a.id,
+      intel: 'FUZZY',
+      governorId: a.ownerGovernorId,
+      state: a.state,
+      parcelId,
+      hexId: a.hexId,
+      strengthBand: fuzzyBand(armyStrength(a, balance), parcelId, viewer.period, balance.intel.fuzzyBandPct),
+      ...(monsterName !== undefined ? { monsterName } : {}),
+    };
+  }
+
   const view: ArmyView = {
     id: a.id,
     governorId: a.ownerGovernorId,
     state: a.state,
-    parcelId: parcelByHex.get(a.hexId) ?? a.hexId,
+    parcelId,
     hexId: a.hexId,
     troops: a.units.reduce((n, s) => n + s.count, 0),
     morale: a.morale,
     units: a.units.map((s) => ({ unitClass: s.unitClass, count: s.count })),
     strength: Math.round(armyStrength(a, balance)),
-    provisions: { ...a.provisions },
-    foodPerStep: marchFoodPerStep(a, balance),
   };
+  if (viewer !== undefined) view.intel = grade;
   if (a.heroId !== undefined) {
     view.heroId = a.heroId;
     const officer = state.officers?.get(a.ownerGovernorId)?.find((o) => o.id === a.heroId);
     if (officer !== undefined) view.heroName = officer.name;
   }
-  const monsterName = state.monsterNames?.get(a.id);
   if (monsterName !== undefined) view.monsterName = monsterName;
-  if (a.state === 'MARCHING' && a.path !== undefined && a.arrivalTick !== undefined) {
-    view.path = a.path.map((h) => parcelByHex.get(h) ?? h);
-    view.nextArrivalTick = a.arrivalTick;
-    let eta = a.arrivalTick;
-    for (let i = 1; i < a.path.length; i++) eta += stepTicks(state, a.path[i]!, options);
-    view.etaTick = eta;
+
+  // Logistics + intent are private: own armies (or omniscient views) only.
+  if (own || viewer === undefined) {
+    view.provisions = { ...a.provisions };
+    view.foodPerStep = marchFoodPerStep(a, balance);
+    if (a.state === 'MARCHING' && a.path !== undefined && a.arrivalTick !== undefined) {
+      view.path = a.path.map((h) => parcelByHex.get(h) ?? h);
+      view.nextArrivalTick = a.arrivalTick;
+      let eta = a.arrivalTick;
+      for (let i = 1; i < a.path.length; i++) eta += stepTicks(state, a.path[i]!, options);
+      view.etaTick = eta;
+    }
   }
   return view;
 }
 
-export function battleView(state: WorldState, b: BattleInstance, parcelByHex: ParcelIndex): BattleView {
+export function battleView(
+  state: WorldState,
+  b: BattleInstance,
+  parcelByHex: ParcelIndex,
+  balance: Balance,
+  viewer?: ViewerContext,
+): BattleView | undefined {
   const owners = (armyIds: readonly string[]): string[] =>
     [...new Set(armyIds.map((id) => state.armies.get(id)?.ownerGovernorId ?? 'unknown'))].sort();
+  const parcelId = parcelByHex.get(b.hexId) ?? b.hexId;
+  const attackerGovernorIds = owners(b.attackerArmyIds);
+  const defenderGovernorIds = owners(b.defenderArmyIds);
+  const participant =
+    viewer?.governorId !== undefined &&
+    (attackerGovernorIds.includes(viewer.governorId) || defenderGovernorIds.includes(viewer.governorId));
+  // Battles the viewer participates in are always ACCURATE (brief F1).
+  const grade: IntelGrade = viewer === undefined || participant ? 'ACCURATE' : gradeAt(viewer, b.hexId);
+  if (viewer !== undefined && grade === 'UNKNOWN') return undefined;
+
   const view: BattleView = {
     id: b.id,
-    parcelId: parcelByHex.get(b.hexId) ?? b.hexId,
+    parcelId,
     resolvedTick: b.result?.resolvedTick ?? b.scheduledStartTick,
     winner: b.result?.winner ?? 'UNRESOLVED',
-    attackerGovernorIds: owners(b.attackerArmyIds),
-    defenderGovernorIds: owners(b.defenderArmyIds),
-    attackerScore: Math.round(b.warScore?.attacker ?? 0),
-    defenderScore: Math.round(b.warScore?.defender ?? 0),
-    casualties: b.result?.casualties ?? {},
+    attackerGovernorIds,
+    defenderGovernorIds,
   };
+  if (viewer !== undefined) view.intel = grade;
+
+  if (viewer !== undefined && grade === 'FUZZY') {
+    view.scoreBands = {
+      attacker: fuzzyBand(b.warScore?.attacker ?? 0, `${parcelId}:atk`, viewer.period, balance.intel.fuzzyBandPct),
+      defender: fuzzyBand(b.warScore?.defender ?? 0, `${parcelId}:def`, viewer.period, balance.intel.fuzzyBandPct),
+    };
+    if (b.result?.territoryOutcome !== undefined) view.territoryOutcome = b.result.territoryOutcome;
+    return view;
+  }
+
+  view.attackerScore = Math.round(b.warScore?.attacker ?? 0);
+  view.defenderScore = Math.round(b.warScore?.defender ?? 0);
+  view.casualties = b.result?.casualties ?? {};
   const logi = state.battleLogistics?.get(b.id);
   if (logi !== undefined) {
     view.outcome = logi.outcomeKind;
@@ -224,7 +360,8 @@ export function battleView(state: WorldState, b: BattleInstance, parcelByHex: Pa
   if (b.result?.postVictoryAction !== undefined) view.postVictoryAction = b.result.postVictoryAction;
   if (b.result?.lootCt !== undefined) view.lootCt = b.result.lootCt;
   const choice = state.pendingChoices?.get(b.id);
-  if (choice !== undefined) {
+  // The pending choice is the winner's private decision.
+  if (choice !== undefined && (viewer === undefined || viewer.governorId === choice.governorId)) {
     view.pendingChoice = {
       governorId: choice.governorId,
       territoryId: choice.territoryId,

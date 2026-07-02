@@ -22,16 +22,39 @@ export interface DemoOfficer {
 }
 
 /**
- * Post-victory decision pending on a battle winner (PILLAGE | OCCUPY).
+ * A pending PILLAGE | OCCUPY decision — post-victory on a battle winner, OR a
+ * bloodless walk-in (F2 neutral towns: an army ends its march on a garrison-
+ * free foreign/SYSTEM TOWN or populated SYSTEM settlement — no battle).
  * Kept in a WorldState map instead of on BattleInstance so the canonical
  * docs/08 battle schema is not extended for an MVP-only mechanism.
  */
 export interface PendingChoice {
-  battleId: string;
-  governorId: string;           // winning governor who must choose
+  /** Map key: = battleId for post-battle choices, `walkin:<armyId>:<tick>` for walk-ins. */
+  id: string;
+  /** Present for post-battle choices only. */
+  battleId?: string;
+  /** Walk-ins only: the arriving army — it must still stand on the territory when the choice resolves. */
+  armyId?: string;
+  governorId: string;           // governor who must choose
   territoryId: string;
   createdTick: number;
   expiresTick: number;          // tick at which the default action is applied
+}
+
+/**
+ * Resolved bloodless outcome (walk-in PILLAGE/OCCUPY, wild-raid auto-pillage) —
+ * the battle-less counterpart of BattleResult.territoryOutcome, appended so the
+ * server can derive events after the fact (snapshot-safe).
+ */
+export interface WalkInOutcome {
+  /** The PendingChoice id (or `raid:<armyId>:<tick>` for wild-raid auto-pillage). */
+  choiceId: string;
+  territoryId: string;
+  governorId: string;
+  armyId?: string;
+  action: 'PILLAGE' | 'OCCUPY';
+  lootCt: number;
+  tick: number;
 }
 
 /** How a failed/tied attacker army left the field (docs/04 §7c.5). */
@@ -99,6 +122,36 @@ export interface WorldState {
   monsterNames?: Map<string, string>;
   /** battleId → logistics outcome (endurance/CC terms, TIE, retreat resolution — docs/04 §7c). */
   battleLogistics?: Map<string, BattleLogisticsRecord>;
+  /**
+   * Intel memory (F1 fog of war): governorId → hexId → last tick the parcel was
+   * inside one of the governor's ACCURATE sources. Within balance.intel.decayTicks
+   * the memory still grades ACCURATE; older entries grade FUZZY forever.
+   * Updated once per tick in the AI phase; snapshot-safe.
+   */
+  intel?: Map<string, Map<string, number>>;
+  /** Bloodless PILLAGE/OCCUPY outcomes (F2 walk-ins, F3 raid sackings) — append-only log. */
+  walkInOutcomes?: WalkInOutcome[];
+  /** Live wild-raid provenance (F3): raid armyId → home lair record. Snapshot-safe. */
+  wildRaids?: Map<string, WildRaidRecord>;
+  /** F4 AGRI: territoryId → fractional food-production carry (integer, /TICKS_PER_DAY units). */
+  foodCarry?: Map<string, number>;
+  /** F4 ECON: governorId → fractional CT-trickle carry (integer ct_units·ticks, /TICKS_PER_DAY units). */
+  econCarry?: Map<string, number>;
+}
+
+/**
+ * A wild raid in flight (F3 active wild enemies): half a monster lair's
+ * garrison marching at a player/NPC territory. Survivors auto-march back to
+ * homeHexId and re-merge into the lair garrison; the record is dropped when
+ * the raid army dies, merges, or replaces a fallen lair.
+ */
+export interface WildRaidRecord {
+  armyId: string;
+  /** The lair garrison the raid split from (survivors re-merge into it). */
+  lairArmyId: string;
+  homeHexId: string;
+  targetHexId: string;
+  spawnedTick: number;
 }
 
 /**

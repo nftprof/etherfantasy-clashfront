@@ -29,7 +29,8 @@ import {
   loadBalance,
   newId,
 } from '@clashfront/shared';
-import type { Army, BattleInstance, Territory } from '@clashfront/shared';
+import type { Army, BattleInstance, GovernorKind, Territory } from '@clashfront/shared';
+import { updateIntelMemory } from './intel';
 import { battleFoodNeed, enduranceMultiplier, marchFoodPerStep, troopCount } from './logistics';
 import { type ArmyRetreatRecord, type BattleLogisticsRecord, sortedIds, type WorldState } from './state';
 
@@ -117,9 +118,14 @@ export function runTick(
  * Phase 1 — PRODUCTION (docs/01 §6.1, formulas in docs/02 §6/§3/§5).
  * Territories yield food/CT/prosperity; structures & nodes produce.
  *
- * TODO(02 §6): full food production — FOOD_BASE_PER_LEVEL × dev_AGRICULTURE ×
- *   (1 + structure bonuses) × (0.5 + 0.5·prosperity/100), granary cap, fractional
- *   accumulation across ticks instead of per-tick floor.
+ * LIVE (Feature Set 2 F4):
+ *   - AGRI food production accrues per tick with an INTEGER carry (docs/02 §6
+ *     fractional accumulation): carry += floor(perDay); foodStock += carry div
+ *     TICKS_PER_DAY — low levels produce correctly instead of flooring to 0.
+ *   - ECON trickles ⚙ econCtUnitsPerLevelPerDay × level to the governor's CT
+ *     wallet per tick, same integer-carry scheme per governor.
+ *
+ * TODO(02 §6): structure bonuses, granary cap.
  * TODO(02 §3): prosperity target computation & per-tick movement (growth/decay).
  * TODO(02 §5): tax cycle every TAX_CYCLE_TICKS via double-entry LedgerEntry
  *   (economy package owns the ledger; this phase only requests draws).
@@ -127,11 +133,27 @@ export function runTick(
 function phaseProduction(state: WorldState, _tick: number, _rng: Rng, balance: Balance): void {
   for (const id of sortedIds(state.territories)) {
     const t = state.territories.get(id)!;
-    const perDay =
+    // Food (AGRI): integer-carry accrual — deterministic, never fractional stock.
+    const perDay = Math.floor(
       balance.food.productionBasePerAgriLevelPerDay *
-      t.development.AGRICULTURE *
-      (0.5 + 0.5 * (t.prosperity / 100));
-    t.foodStock += Math.floor(perDay / TICKS_PER_DAY); // placeholder rounding; see TODO
+        t.development.AGRICULTURE *
+        (0.5 + 0.5 * (t.prosperity / 100)),
+    );
+    if (perDay > 0) {
+      state.foodCarry ??= new Map();
+      const carry = (state.foodCarry.get(id) ?? 0) + perDay;
+      t.foodStock += Math.floor(carry / TICKS_PER_DAY);
+      state.foodCarry.set(id, carry % TICKS_PER_DAY);
+    }
+    // CT trickle (ECON, F4): governed territories pay their governor's wallet.
+    const econ = t.development.ECONOMY;
+    if (econ > 0 && t.governorKind !== 'SYSTEM' && state.ctBalances?.has(t.governorId) === true) {
+      state.econCarry ??= new Map();
+      const carry = (state.econCarry.get(t.governorId) ?? 0) + econ * balance.developmentEffects.econCtUnitsPerLevelPerDay;
+      const pay = Math.floor(carry / TICKS_PER_DAY);
+      if (pay > 0) state.ctBalances.set(t.governorId, state.ctBalances.get(t.governorId)! + pay);
+      state.econCarry.set(t.governorId, carry % TICKS_PER_DAY);
+    }
   }
 }
 
@@ -194,15 +216,85 @@ function phaseMovement(
 
     const hostile = hostileArmiesAt(state, next, a.ownerGovernorId).length > 0;
     if (a.path.length === 0 || hostile) {
+      const atDestination = a.path.length === 0;
       haltArmy(a);
-      // Attach as garrison when halting on a friendly, garrison-less territory.
-      if (!hostile && terr !== undefined && terr.governorId === a.ownerGovernorId && terr.garrisonArmyId === undefined) {
-        terr.garrisonArmyId = a.id;
+      if (!hostile && atDestination && terr !== undefined) {
+        if (terr.governorId === a.ownerGovernorId) {
+          // Attach as garrison when arriving on a friendly, garrison-less territory.
+          if (terr.garrisonArmyId === undefined) terr.garrisonArmyId = a.id;
+        } else {
+          // Bloodless arrival on someone else's/unowned ground (F2 walk-in,
+          // F3 raid sacking) — never fires mid-path or on interception.
+          maybeWalkIn(state, a, terr, tick, balance, options);
+        }
       }
     } else {
       a.arrivalTick = tick + stepTicks(state, a.path[0]!, options);
     }
   }
+}
+
+/**
+ * Bloodless arrival resolution (docs/briefs/FEATURESET-2.md F2/F3). The army
+ * ENDED its march on a garrison-free territory it does not govern:
+ *
+ * - SYSTEM (wild raider) on OWNED land → automatic PILLAGE ("raiders never
+ *   OCCUPY owned land"); on SYSTEM land → nothing.
+ * - PLAYER on a foreign/SYSTEM TOWN, or a SYSTEM settlement with population ≥
+ *   ⚙ towns.walkInMinPopulation → pendingChoice WITHOUT battle (walk-in);
+ *   defaults to PILLAGE on timeout like a battle choice.
+ * - NPC_KINGDOM ditto, resolved instantly as OCCUPY (existing default).
+ */
+function maybeWalkIn(
+  state: WorldState,
+  army: Army,
+  terr: Territory,
+  tick: number,
+  balance: Balance,
+  options: Required<TickOptions>,
+): void {
+  const garrison = terr.garrisonArmyId === undefined ? undefined : state.armies.get(terr.garrisonArmyId);
+  if (garrison !== undefined && garrison.state !== 'DISBANDED') return; // defended — battles handle it
+  const kind = state.governorKinds?.get(army.ownerGovernorId);
+  if (kind === undefined) return;
+
+  if (kind === 'SYSTEM') {
+    // F3: wild raiders sack unguarded owned land on arrival — pillage-only, automatic.
+    if (terr.governorKind !== 'SYSTEM') {
+      const lootCt = pillageTerritory(state, terr, army.ownerGovernorId, balance);
+      state.walkInOutcomes ??= [];
+      state.walkInOutcomes.push({
+        choiceId: `raid:${army.id}:${tick}`,
+        territoryId: terr.id,
+        governorId: army.ownerGovernorId,
+        armyId: army.id,
+        action: 'PILLAGE',
+        lootCt,
+        tick,
+      });
+    }
+    return;
+  }
+
+  const isTown = terr.zoneType === 'TOWN';
+  const isSettlement = terr.governorKind === 'SYSTEM' && terr.population >= balance.towns.walkInMinPopulation;
+  if (!isTown && !isSettlement) return;
+  // One pending decision per territory at a time.
+  for (const c of state.pendingChoices?.values() ?? []) {
+    if (c.territoryId === terr.id) return;
+  }
+  const choiceId = `walkin:${army.id}:${tick}`;
+  state.pendingChoices ??= new Map();
+  state.pendingChoices.set(choiceId, {
+    id: choiceId,
+    armyId: army.id,
+    governorId: army.ownerGovernorId,
+    territoryId: terr.id,
+    createdTick: tick,
+    expiresTick: tick + (kind === 'NPC_KINGDOM' ? 0 : options.choiceTimeoutTicks),
+  });
+  // NPCs decide instantly: bloodless conquest defaults to OCCUPY.
+  if (kind === 'NPC_KINGDOM') applyChoice(state, choiceId, 'OCCUPY', tick, balance);
 }
 
 function haltArmy(a: Army): void {
@@ -346,13 +438,13 @@ function phaseBattleSpawning(
   balance: Balance,
   options: Required<TickOptions>,
 ): void {
-  // 1 — expire pending post-victory choices.
+  // 1 — expire pending choices (post-victory AND walk-ins share the default).
   if (state.pendingChoices !== undefined) {
-    for (const battleId of sortedIds(state.pendingChoices)) {
-      const choice = state.pendingChoices.get(battleId)!;
+    for (const choiceId of sortedIds(state.pendingChoices)) {
+      const choice = state.pendingChoices.get(choiceId)!;
       if (tick < choice.expiresTick) continue;
       const kind = state.governorKinds?.get(choice.governorId);
-      applyPostVictory(state, battleId, kind === 'NPC_KINGDOM' ? 'OCCUPY' : 'PILLAGE', tick, balance);
+      applyChoice(state, choiceId, kind === 'NPC_KINGDOM' ? 'OCCUPY' : 'PILLAGE', tick, balance);
     }
   }
 
@@ -462,8 +554,16 @@ function resolveFieldBattle(
     }
   }
 
+  // DEF development (F4): the holder's garrison fights behind its earthworks —
+  // defender WarScore × (1 + ⚙ defenseWarScorePerLevel × DEFENSE level) when
+  // the defending side actually governs the parcel.
+  const defenseDev =
+    territory !== undefined && defenders.some((d) => d.ownerGovernorId === territory.governorId)
+      ? 1 + balance.developmentEffects.defenseWarScorePerLevel * territory.development.DEFENSE
+      : 1;
+
   const attackerScore = (atk.army + atk.hero) * terrainMod * atkEndurance * (1 + ccBonus);
-  const defenderScore = (def.army + def.hero) * terrainMod * defEndurance;
+  const defenderScore = (def.army + def.hero) * terrainMod * defEndurance * defenseDev;
   if (attackerScore === 0 && defenderScore === 0) return; // nothing to fight with
 
   // Logistics are SPENT whether the battle is won or lost (docs/04 §7c.2–3).
@@ -489,6 +589,7 @@ function resolveFieldBattle(
       attackerEndurance: atkEndurance,
       defenderEndurance: defEndurance,
       structures: ccBonus,
+      defenseDev,
     },
   };
 
@@ -612,14 +713,21 @@ function resolveFieldBattle(
   }
   const kind = state.governorKinds?.get(claimingGov);
   if (kind === 'SYSTEM' || kind === undefined) {
-    // Wild monsters (or unregistered governors) hold the field but never capture.
+    if (kind === 'SYSTEM' && territory.governorKind !== 'SYSTEM') {
+      // F3: victorious wild raiders sack the land they cannot hold — raiders
+      // never OCCUPY owned land; pillage-only, automatic.
+      queueChoice(state, battle, claimingGov, territory.id, tick, 0);
+      applyChoice(state, battle.id, 'PILLAGE', tick, balance);
+      return;
+    }
+    // Unregistered governors (or monsters on wild ground) hold the field but never capture.
     battle.result!.territoryOutcome = 'HELD';
     return;
   }
   if (kind === 'NPC_KINGDOM') {
     // NPCs decide instantly: default OCCUPY (brief item 2).
     queueChoice(state, battle, claimingGov, territory.id, tick, 0);
-    applyPostVictory(state, battle.id, 'OCCUPY', tick, balance);
+    applyChoice(state, battle.id, 'OCCUPY', tick, balance);
     return;
   }
   // Player: expose the pending choice; defaults to PILLAGE on timeout.
@@ -735,6 +843,7 @@ function queueChoice(
 ): void {
   state.pendingChoices ??= new Map();
   state.pendingChoices.set(battle.id, {
+    id: battle.id,
     battleId: battle.id,
     governorId,
     territoryId,
@@ -744,8 +853,9 @@ function queueChoice(
 }
 
 /**
- * Resolve a pending post-victory choice (server order API calls this on the
- * winner's behalf; the BATTLE SPAWNING phase calls it on timeout with the default).
+ * Resolve a pending choice — post-victory (choiceId = battleId) or a bloodless
+ * walk-in (F2). The server order API calls this on the chooser's behalf; the
+ * BATTLE SPAWNING phase calls applyChoice on timeout with the default.
  *
  * PILLAGE — winner's CT balance gains loot (treasury share + per-pop scavenge);
  *   territory takes the canon PILLAGE_INFRA_LOSS / PILLAGE_POP_LOSS hits.
@@ -755,15 +865,15 @@ function queueChoice(
  */
 export function resolvePostVictory(
   state: WorldState,
-  battleId: string,
+  choiceId: string,
   action: PostVictoryAction,
   balance: Balance = loadBalance(),
   overseerId?: string,
 ): void {
-  if (state.pendingChoices?.has(battleId) !== true) {
-    throw new Error(`no pending post-victory choice for battle ${battleId}`);
+  if (state.pendingChoices?.has(choiceId) !== true) {
+    throw new Error(`no pending post-victory choice for battle ${choiceId}`);
   }
-  applyPostVictory(state, battleId, action, state.world.tick, balance, overseerId);
+  applyChoice(state, choiceId, action, state.world.tick, balance, overseerId);
 }
 
 /**
@@ -780,93 +890,147 @@ export function pickOfficer(state: WorldState, gov: string, overseerId?: string)
   return officer;
 }
 
-function applyPostVictory(
+/**
+ * PILLAGE a territory for `gov` (docs/02 §9): loot = treasury share + per-pop
+ * scavenge into the governor's CT wallet; canon PILLAGE_INFRA_LOSS /
+ * PILLAGE_POP_LOSS hits. Returns the loot (ct_units). Never changes the governor.
+ */
+function pillageTerritory(state: WorldState, territory: Territory, gov: string, balance: Balance): number {
+  state.ctBalances ??= new Map();
+  const lootTreasury = Math.floor(territory.ctTreasury * balance.pillageOccupy.pillageLootTreasuryPct);
+  const lootScavenge = territory.population * balance.pillageOccupy.pillageLootCtUnitsPerPop;
+  territory.ctTreasury -= lootTreasury;
+  state.ctBalances.set(gov, (state.ctBalances.get(gov) ?? 0) + lootTreasury + lootScavenge);
+  for (const track of Object.keys(territory.development) as (keyof Territory['development'])[]) {
+    territory.development[track] = Math.floor(territory.development[track] * (1 - CONSTANTS.PILLAGE_INFRA_LOSS));
+  }
+  territory.population = Math.floor(territory.population * (1 - CONSTANTS.PILLAGE_POP_LOSS));
+  territory.prosperity = Math.max(
+    CONSTANTS.PROSPERITY_MIN,
+    Math.floor(territory.prosperity * (1 - CONSTANTS.PILLAGE_INFRA_LOSS)),
+  );
+  territory.version += 1;
+  return lootTreasury + lootScavenge;
+}
+
+/**
+ * OCCUPY a territory for `gov` (docs/02 §9): seize the treasury share, switch
+ * governor, free the evicted holder's overseer, assign `officer` as overseer
+ * (players), garrison the first surviving own army on the hex. Returns the
+ * seized ct_units. Oversight gating happens in applyChoice — not here.
+ */
+function occupyTerritory(
   state: WorldState,
-  battleId: string,
+  territory: Territory,
+  gov: string,
+  kind: GovernorKind,
+  tick: number,
+  balance: Balance,
+  officer?: { id: string; assignedTerritoryId?: string },
+): number {
+  state.ctBalances ??= new Map();
+  const seized = Math.floor(territory.ctTreasury * balance.pillageOccupy.occupySeizeTreasuryPct);
+  territory.ctTreasury -= seized;
+  state.ctBalances.set(gov, (state.ctBalances.get(gov) ?? 0) + seized);
+  // Free the evicted holder's overseer — otherwise that officer stays assigned
+  // to a territory its governor no longer holds (officer leak against the
+  // MAX_OVERSEEN_TERRITORIES cap).
+  if (territory.overseerId !== undefined) {
+    const prev = state.officers?.get(territory.governorId)?.find((o) => o.id === territory.overseerId);
+    if (prev?.assignedTerritoryId === territory.id) delete prev.assignedTerritoryId;
+  }
+  territory.governorId = gov;
+  territory.governorKind = kind;
+  delete territory.overseerId;
+  if (kind === 'PLAYER' && officer !== undefined) {
+    officer.assignedTerritoryId = territory.id;
+    territory.overseerId = officer.id;
+  }
+  territory.morale = Math.max(
+    CONSTANTS.MORALE_MIN,
+    territory.morale - balance.morale.occupiedCivilMoraleLoss,
+  );
+  territory.lastTroddenTick = tick;
+  // New holder's first surviving army on the hex garrisons the holding.
+  delete territory.garrisonArmyId;
+  for (const id of sortedIds(state.armies)) {
+    const a = state.armies.get(id)!;
+    if (a.state !== 'DISBANDED' && a.ownerGovernorId === gov && territory.hexIds.includes(a.hexId)) {
+      territory.garrisonArmyId = a.id;
+      break;
+    }
+  }
+  territory.version += 1;
+  return seized;
+}
+
+/**
+ * Apply a pending PILLAGE/OCCUPY choice — post-battle (records onto
+ * battle.result) or walk-in (records into state.walkInOutcomes). A walk-in
+ * whose arriving army no longer stands on the territory is CANCELLED silently
+ * (no loot from afar).
+ */
+function applyChoice(
+  state: WorldState,
+  choiceId: string,
   action: PostVictoryAction,
   tick: number,
   balance: Balance,
   overseerId?: string,
 ): void {
-  const choice = state.pendingChoices?.get(battleId);
-  const battle = state.battles.get(battleId);
-  if (choice === undefined || battle?.result === undefined) {
-    throw new Error(`applyPostVictory: no pending choice/battle ${battleId}`);
+  const choice = state.pendingChoices?.get(choiceId);
+  if (choice === undefined) throw new Error(`applyPostVictory: no pending choice/battle ${choiceId}`);
+  const battle = choice.battleId === undefined ? undefined : state.battles.get(choice.battleId);
+  if (choice.battleId !== undefined && battle?.result === undefined) {
+    throw new Error(`applyPostVictory: no pending choice/battle ${choiceId}`);
   }
   const territory = state.territories.get(choice.territoryId);
   if (territory === undefined) throw new Error(`applyPostVictory: territory ${choice.territoryId} gone`);
-  state.pendingChoices!.delete(battleId);
+  state.pendingChoices!.delete(choiceId);
+
+  // Walk-in guard: the arriving army must still be standing on the territory.
+  if (choice.armyId !== undefined) {
+    const a = state.armies.get(choice.armyId);
+    if (a === undefined || a.state === 'DISBANDED' || !territory.hexIds.includes(a.hexId)) return;
+  }
 
   const gov = choice.governorId;
   const kind = state.governorKinds?.get(gov) ?? 'PLAYER';
-  state.ctBalances ??= new Map();
 
+  let officer: ReturnType<typeof pickOfficer>;
   if (action === 'OCCUPY' && kind === 'PLAYER') {
     // Officer oversight gate (docs/01 §11.3, CONSTANTS.MAX_OVERSEEN_TERRITORIES).
     // pickOfficer THROWS on an invalid explicit choice (surfaces to the API);
     // with no explicit choice, no-free-officer converts the occupation to pillage.
     const overseen = countOverseen(state, gov);
-    const chosen = pickOfficer(state, gov, overseerId);
-    if (overseen >= CONSTANTS.MAX_OVERSEEN_TERRITORIES || chosen === undefined) {
+    officer = pickOfficer(state, gov, overseerId);
+    if (overseen >= CONSTANTS.MAX_OVERSEEN_TERRITORIES || officer === undefined) {
       action = 'PILLAGE'; // occupation converts to pillage — no overseer available
+      officer = undefined;
     }
   }
 
-  if (action === 'PILLAGE') {
-    const lootTreasury = Math.floor(territory.ctTreasury * balance.pillageOccupy.pillageLootTreasuryPct);
-    const lootScavenge = territory.population * balance.pillageOccupy.pillageLootCtUnitsPerPop;
-    territory.ctTreasury -= lootTreasury;
-    state.ctBalances.set(gov, (state.ctBalances.get(gov) ?? 0) + lootTreasury + lootScavenge);
-    for (const track of Object.keys(territory.development) as (keyof Territory['development'])[]) {
-      territory.development[track] = Math.floor(territory.development[track] * (1 - CONSTANTS.PILLAGE_INFRA_LOSS));
-    }
-    territory.population = Math.floor(territory.population * (1 - CONSTANTS.PILLAGE_POP_LOSS));
-    territory.prosperity = Math.max(
-      CONSTANTS.PROSPERITY_MIN,
-      Math.floor(territory.prosperity * (1 - CONSTANTS.PILLAGE_INFRA_LOSS)),
-    );
-    battle.result.postVictoryAction = 'PILLAGE';
-    battle.result.territoryOutcome = 'PILLAGED';
-    battle.result.lootCt = lootTreasury + lootScavenge;
+  const lootCt =
+    action === 'PILLAGE'
+      ? pillageTerritory(state, territory, gov, balance)
+      : occupyTerritory(state, territory, gov, kind, tick, balance, officer);
+
+  if (battle?.result !== undefined) {
+    battle.result.postVictoryAction = action;
+    battle.result.territoryOutcome = action === 'PILLAGE' ? 'PILLAGED' : 'OCCUPIED';
+    battle.result.lootCt = lootCt;
   } else {
-    // OCCUPY
-    const seized = Math.floor(territory.ctTreasury * balance.pillageOccupy.occupySeizeTreasuryPct);
-    territory.ctTreasury -= seized;
-    state.ctBalances.set(gov, (state.ctBalances.get(gov) ?? 0) + seized);
-    // Free the evicted holder's overseer — otherwise that officer stays assigned
-    // to a territory its governor no longer holds (officer leak against the
-    // MAX_OVERSEEN_TERRITORIES cap).
-    if (territory.overseerId !== undefined) {
-      const prev = state.officers?.get(territory.governorId)?.find((o) => o.id === territory.overseerId);
-      if (prev?.assignedTerritoryId === territory.id) delete prev.assignedTerritoryId;
-    }
-    territory.governorId = gov;
-    territory.governorKind = kind;
-    delete territory.overseerId;
-    if (kind === 'PLAYER') {
-      const officer = pickOfficer(state, gov, overseerId)!; // gated above
-      officer.assignedTerritoryId = territory.id;
-      territory.overseerId = officer.id;
-    }
-    territory.morale = Math.max(
-      CONSTANTS.MORALE_MIN,
-      territory.morale - balance.morale.occupiedCivilMoraleLoss,
-    );
-    territory.lastTroddenTick = tick;
-    // Winner's first surviving army on the hex garrisons the new holding.
-    delete territory.garrisonArmyId;
-    for (const id of sortedIds(state.armies)) {
-      const a = state.armies.get(id)!;
-      if (a.state !== 'DISBANDED' && a.ownerGovernorId === gov && territory.hexIds.includes(a.hexId)) {
-        territory.garrisonArmyId = a.id;
-        break;
-      }
-    }
-    battle.result.postVictoryAction = 'OCCUPY';
-    battle.result.territoryOutcome = 'OCCUPIED';
-    battle.result.lootCt = seized;
+    state.walkInOutcomes ??= [];
+    state.walkInOutcomes.push({
+      choiceId,
+      territoryId: territory.id,
+      governorId: gov,
+      ...(choice.armyId !== undefined ? { armyId: choice.armyId } : {}),
+      action,
+      lootCt,
+      tick,
+    });
   }
-  territory.version += 1;
 }
 
 /** Territories currently occupied by `gov` that hold an assigned overseer. */
@@ -891,9 +1055,272 @@ export function freeOfficer(state: WorldState, gov: string) {
  * NPC Kingdom governors + army AI issue next-tick orders. AI acts LAST, on a
  * settled world; its orders take effect next tick, submitted like a player's.
  *
- * TODO(06): governor/military/diplomacy/economy AI. This hook only collects
- *   orders into the command queue — it must never mutate sim state directly.
+ * LIVE (Feature Set 2):
+ *   1. F3 wild-raid survivors auto-march home / re-merge into their lair;
+ *   2. F3 monster lairs roll seeded raids every ⚙ wildRaids.everyTicks;
+ *   3. F1 intel-memory bookkeeping (scout reveal/decay) on the settled world.
+ *
+ * TODO(06): governor/military/diplomacy/economy AI (the NPC kingdom currently
+ *   lives in the server layer and reads raw state — it may cheat on fog for now).
  */
-function phaseAiHook(_state: WorldState, _tick: number, _rng: Rng, _balance: Balance): void {
-  // Stub — ai package plugs in here.
+function phaseAiHook(
+  state: WorldState,
+  tick: number,
+  rng: Rng,
+  balance: Balance,
+  options: Required<TickOptions>,
+): void {
+  returnWildRaiders(state, tick, balance, options);
+  spawnWildRaids(state, tick, rng.fork('wildRaids'), balance, options);
+  updateIntelMemory(state, tick, balance);
+}
+
+// ── F3: active wild raids (docs/briefs/FEATURESET-2.md) ──────────────────────
+
+/** Raid chance for a lair at normalized distance-from-center (⚙ wildRaids). */
+export function wildRaidChance(distNorm: number, balance: Balance): number {
+  const wr = balance.wildRaids;
+  return wr.baseChance + wr.edgeChanceBonus * Math.max(0, Math.min(1, distNorm));
+}
+
+/** True when `armyId`'s owner is a SYSTEM (wild) governor. */
+function isWildArmy(state: WorldState, army: Army): boolean {
+  return state.governorKinds?.get(army.ownerGovernorId) === 'SYSTEM';
+}
+
+/**
+ * Monster-passable transit: no territory, or SYSTEM-governed ground without a
+ * live foreign garrison. Owned (player/NPC) land is a blockade for raiders too
+ * — it may only be a raid's terminal destination.
+ */
+function wildTransitOk(state: WorldState, hexId: string, owner: string): boolean {
+  const terr = territoryAt(state, hexId);
+  if (terr === undefined) return true;
+  if (terr.governorKind !== 'SYSTEM') return false;
+  if (terr.garrisonArmyId === undefined) return true;
+  const g = state.armies.get(terr.garrisonArmyId);
+  return g === undefined || g.state === 'DISBANDED' || g.ownerGovernorId === owner;
+}
+
+/** BFS path over monster-passable ground; destination allowed regardless. Excludes the start hex. */
+function wildPath(state: WorldState, fromHex: string, toHex: string, owner: string): string[] | undefined {
+  if (fromHex === toHex) return [];
+  const prev = new Map<string, string>();
+  const seen = new Set([fromHex]);
+  const queue = [fromHex];
+  for (let qi = 0; qi < queue.length; qi++) {
+    const cur = queue[qi]!;
+    for (const n of state.adjacency?.get(cur) ?? []) {
+      if (seen.has(n)) continue;
+      seen.add(n);
+      if (n !== toHex && !wildTransitOk(state, n, owner)) continue;
+      prev.set(n, cur);
+      if (n === toHex) {
+        const path: string[] = [n];
+        let p = cur;
+        while (p !== fromHex) {
+          path.push(p);
+          p = prev.get(p)!;
+        }
+        return path.reverse();
+      }
+      queue.push(n);
+    }
+  }
+  return undefined;
+}
+
+/** Put an army on the march along `path` (raid logistics — mirrors orderMarch without the order-API guards). */
+function marchWild(state: WorldState, a: Army, path: string[], tick: number, options: Required<TickOptions>): void {
+  const here = territoryAt(state, a.hexId);
+  if (here?.garrisonArmyId === a.id) delete here.garrisonArmyId;
+  a.state = 'MARCHING';
+  a.path = [...path];
+  a.arrivalTick = tick + stepTicks(state, path[0]!, options);
+  a.version += 1;
+}
+
+/**
+ * F3 step 1 — survivors head home and re-merge. A raid army halted anywhere
+ * but home marches back; at home it merges its stacks + provisions into the
+ * lair garrison (or BECOMES the garrison when the lair fell while it was out).
+ */
+function returnWildRaiders(
+  state: WorldState,
+  tick: number,
+  _balance: Balance,
+  options: Required<TickOptions>,
+): void {
+  if (state.wildRaids === undefined) return;
+  for (const armyId of [...state.wildRaids.keys()].sort()) {
+    const rec = state.wildRaids.get(armyId)!;
+    const a = state.armies.get(armyId);
+    if (a === undefined || a.state === 'DISBANDED') {
+      state.wildRaids.delete(armyId); // the raid died on the road / in battle
+      continue;
+    }
+    if (a.state !== 'GARRISON') continue; // still marching
+
+    if (a.hexId !== rec.homeHexId) {
+      // Halted away from home (raid done, retreated, or intercepted) — march back.
+      const path = wildPath(state, a.hexId, rec.homeHexId, a.ownerGovernorId);
+      if (path !== undefined && path.length > 0) marchWild(state, a, path, tick, options);
+      else state.wildRaids.delete(armyId); // stranded — it squats where it stands
+      continue;
+    }
+
+    // Home again: merge into the lair (or inherit it).
+    const lair = state.armies.get(rec.lairArmyId);
+    if (lair !== undefined && lair.state === 'GARRISON' && lair.hexId === rec.homeHexId) {
+      for (const s of a.units) {
+        if (s.count === 0) continue;
+        const dst = lair.units.find((u) => u.unitClass === s.unitClass);
+        if (dst !== undefined) dst.count += s.count;
+        else lair.units.push({ ...s });
+      }
+      lair.provisions.food += a.provisions.food;
+      lair.provisions.gold += a.provisions.gold;
+      lair.provisions.wood += a.provisions.wood;
+      lair.version += 1;
+      disbandArmy(state, a);
+    } else {
+      // The lair fell while the raiders were out — the survivors are the new lair.
+      const terr = territoryAt(state, rec.homeHexId);
+      if (terr !== undefined && terr.governorId === a.ownerGovernorId && terr.garrisonArmyId === undefined) {
+        terr.garrisonArmyId = a.id;
+      }
+    }
+    state.wildRaids.delete(armyId);
+  }
+}
+
+/**
+ * F3 step 2 — every ⚙ wildRaids.everyTicks each monster lair rolls a seeded
+ * chance (fork per (tick, territoryId), scaled by distance-from-center) to
+ * split HALF its garrison into a raid army that marches — visibly,
+ * interceptably, by the normal MOVEMENT rules — at the weakest player/NPC
+ * territory within ⚙ raidRangeSteps. Garrisons at/above
+ * ⚙ defendedStrengthThreshold are never picked; ungarrisoned land is preferred
+ * (strength 0 sorts first).
+ */
+function spawnWildRaids(
+  state: WorldState,
+  tick: number,
+  rng: Rng,
+  balance: Balance,
+  options: Required<TickOptions>,
+): void {
+  const wr = balance.wildRaids;
+  if (wr.everyTicks <= 0 || tick % wr.everyTicks !== 0) return;
+  if (state.adjacency === undefined) return;
+
+  // Normalized distance-from-center over the hex display centers (q, r).
+  let cx = 0;
+  let cy = 0;
+  for (const h of state.hexes.values()) {
+    cx += h.q;
+    cy += h.r;
+  }
+  cx /= Math.max(1, state.hexes.size);
+  cy /= Math.max(1, state.hexes.size);
+  let maxDist = 1e-9;
+  for (const h of state.hexes.values()) maxDist = Math.max(maxDist, Math.hypot(h.q - cx, h.r - cy));
+
+  // Lairs already raiding sit the round out.
+  const raidingLairs = new Set([...(state.wildRaids?.values() ?? [])].map((r) => r.lairArmyId));
+
+  for (const terrId of sortedIds(state.territories)) {
+    const t = state.territories.get(terrId)!;
+    if (t.governorKind !== 'SYSTEM' || t.garrisonArmyId === undefined) continue;
+    const lair = state.armies.get(t.garrisonArmyId);
+    if (lair === undefined || lair.state !== 'GARRISON' || !isWildArmy(state, lair)) continue;
+    if (raidingLairs.has(lair.id)) continue;
+    if (troopCount(lair) < wr.minRaidTroops) continue;
+
+    const r = rng.fork(terrId); // PRNG(world.seed, tick, 'ai/wildRaids', territoryId)
+    const hex = state.hexes.get(lair.hexId)!;
+    const distNorm = Math.hypot(hex.q - cx, hex.r - cy) / maxDist;
+    if (r.next() >= wildRaidChance(distNorm, balance)) continue;
+
+    // Target hunt: BFS ≤ raidRangeSteps over monster-passable ground; owned
+    // territories are terminal candidates.
+    const candidates: { terrId: string; hexId: string; steps: number; strength: number }[] = [];
+    const depth = new Map<string, number>([[lair.hexId, 0]]);
+    const queue = [lair.hexId];
+    for (let qi = 0; qi < queue.length; qi++) {
+      const cur = queue[qi]!;
+      const d = depth.get(cur)!;
+      if (d >= wr.raidRangeSteps) continue;
+      for (const n of state.adjacency.get(cur) ?? []) {
+        if (depth.has(n)) continue;
+        depth.set(n, d + 1);
+        const nt = territoryAt(state, n);
+        if (nt !== undefined && (nt.governorKind === 'PLAYER' || nt.governorKind === 'NPC_KINGDOM')) {
+          const g = nt.garrisonArmyId === undefined ? undefined : state.armies.get(nt.garrisonArmyId);
+          const strength = g !== undefined && g.state !== 'DISBANDED' ? armyStrength(g, balance) : 0;
+          if (strength < wr.defendedStrengthThreshold) {
+            candidates.push({ terrId: nt.id, hexId: n, steps: d + 1, strength });
+          }
+          continue; // owned land is terminal — raiders cannot path through it
+        }
+        if (wildTransitOk(state, n, lair.ownerGovernorId)) queue.push(n);
+      }
+    }
+    if (candidates.length === 0) continue;
+    candidates.sort(
+      (x, y) => x.strength - y.strength || x.steps - y.steps || (x.terrId < y.terrId ? -1 : 1),
+    );
+    const target = candidates[0]!;
+    const path = wildPath(state, lair.hexId, target.hexId, lair.ownerGovernorId);
+    if (path === undefined || path.length === 0) continue;
+
+    // Split HALF the lair (floor per stack) + half its provisions into the raid.
+    const raidUnits: UnitStack[] = [];
+    for (const s of lair.units) {
+      const half = Math.floor(s.count / 2);
+      if (half === 0) continue;
+      s.count -= half;
+      raidUnits.push({ ...s, count: half });
+    }
+    if (raidUnits.length === 0) continue;
+    const halfProv = {
+      food: Math.floor(lair.provisions.food / 2),
+      gold: Math.floor(lair.provisions.gold / 2),
+      wood: Math.floor(lair.provisions.wood / 2),
+    };
+    lair.provisions.food -= halfProv.food;
+    lair.provisions.gold -= halfProv.gold;
+    lair.provisions.wood -= halfProv.wood;
+    lair.version += 1;
+
+    const raid: Army = {
+      id: newId('army', { time: tick, random: () => r.next() }),
+      worldId: state.world.id,
+      ownerGovernorId: lair.ownerGovernorId,
+      state: 'GARRISON',
+      hexId: lair.hexId,
+      units: raidUnits,
+      provisions: halfProv,
+      supply: lair.supply,
+      supplyMax: lair.supplyMax,
+      morale: lair.morale,
+      supplyTrainIds: [],
+      version: 1,
+    };
+    state.armies.set(raid.id, raid);
+    const name = state.monsterNames?.get(lair.id);
+    if (name !== undefined) {
+      state.monsterNames ??= new Map();
+      state.monsterNames.set(raid.id, name);
+    }
+    marchWild(state, raid, path, tick, options);
+    state.wildRaids ??= new Map();
+    state.wildRaids.set(raid.id, {
+      armyId: raid.id,
+      lairArmyId: lair.id,
+      homeHexId: lair.hexId,
+      targetHexId: target.hexId,
+      spawnedTick: tick,
+    });
+  }
 }
