@@ -208,6 +208,15 @@
     "foodPerPop": 2,
     "walkInMinPopulation": 500
   },
+  "wildRaids": {
+    "_note": "Active wild enemies ⚙ (Feature Set 2 F3). Every everyTicks each monster lair rolls chance = baseChance + edgeChanceBonus × normalized-distance-from-center; on a hit HALF the garrison marches (visible, interceptable) at the weakest player/NPC territory within raidRangeSteps (ungarrisoned preferred; garrisons at/above defendedStrengthThreshold are NEVER picked). Raiders auto-PILLAGE on victory/arrival (never occupy owned land); survivors auto-march home and re-merge into the lair.",
+    "everyTicks": 50,
+    "baseChance": 0.1,
+    "edgeChanceBonus": 0.4,
+    "defendedStrengthThreshold": 1800,
+    "raidRangeSteps": 2,
+    "minRaidTroops": 20
+  },
   "intel": {
     "_note": "Fog of war ⚙ (Feature Set 2 F1). Territory sight radius per contiguous cluster = 1 + floor(sqrt(clusterSize)/2), capped at clusterRadiusCap. Armies see armySight steps; cavalry-majority screens (SCOUTS preset) see scoutSight. Parcels seen by an army stay ACCURATE for decayTicks after last sight, then decay to FUZZY (remembered) forever. FUZZY strengths render as deterministic bands ±fuzzyBandPct, rerolled every fuzzyPeriodTicks ('a day').",
     "decayTicks": 1000,

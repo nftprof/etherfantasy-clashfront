@@ -166,6 +166,21 @@ export interface Balance {
     /** SYSTEM parcels at/above this population trigger the bloodless walk-in choice (TOWNs always do). */
     walkInMinPopulation: number;
   };
+  /** Active wild raids ⚙ — Feature Set 2 F3 (docs/briefs/FEATURESET-2.md). */
+  wildRaids: {
+    /** Monster lairs roll a raid every N ticks (0 disables raids). */
+    everyTicks: number;
+    /** Raid chance at the slice center… */
+    baseChance: number;
+    /** …plus this much at the far frontier (× normalized distance from center). */
+    edgeChanceBonus: number;
+    /** Targets with a live garrison at/above this WarScore strength are never raided. */
+    defendedStrengthThreshold: number;
+    /** Raids reach adjacent-or-N-step territories. */
+    raidRangeSteps: number;
+    /** A lair below this many soldiers never splits a raid. */
+    minRaidTroops: number;
+  };
   /** Fog of war ⚙ — Feature Set 2 F1 (docs/briefs/FEATURESET-2.md). */
   intel: {
     /** Ticks a scouted parcel stays ACCURATE after last sight before decaying to FUZZY memory. */
@@ -186,7 +201,7 @@ export interface Balance {
 const REQUIRED_SECTIONS: readonly (keyof Balance)[] = [
   'travel', 'development', 'tax', 'prosperity', 'food', 'population',
   'supply', 'morale', 'desertion', 'upkeep', 'units', 'pillageOccupy', 'draft', 'provisions', 'claims',
-  'intel', 'towns',
+  'intel', 'towns', 'wildRaids',
 ];
 
 function resolveBalancePath(): string {

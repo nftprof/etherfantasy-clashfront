@@ -280,6 +280,7 @@ export function loadDemoWorld(file: DemoWorldFile, rng: Rng, options: LoadDemoWo
     battleLogistics: new Map(),
     intel: new Map(),
     walkInOutcomes: [],
+    wildRaids: new Map(),
   };
 }
 

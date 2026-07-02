@@ -131,6 +131,23 @@ export interface WorldState {
   intel?: Map<string, Map<string, number>>;
   /** Bloodless PILLAGE/OCCUPY outcomes (F2 walk-ins, F3 raid sackings) — append-only log. */
   walkInOutcomes?: WalkInOutcome[];
+  /** Live wild-raid provenance (F3): raid armyId → home lair record. Snapshot-safe. */
+  wildRaids?: Map<string, WildRaidRecord>;
+}
+
+/**
+ * A wild raid in flight (F3 active wild enemies): half a monster lair's
+ * garrison marching at a player/NPC territory. Survivors auto-march back to
+ * homeHexId and re-merge into the lair garrison; the record is dropped when
+ * the raid army dies, merges, or replaces a fallen lair.
+ */
+export interface WildRaidRecord {
+  armyId: string;
+  /** The lair garrison the raid split from (survivors re-merge into it). */
+  lairArmyId: string;
+  homeHexId: string;
+  targetHexId: string;
+  spawnedTick: number;
 }
 
 /**

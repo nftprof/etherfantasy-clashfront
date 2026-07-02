@@ -683,7 +683,14 @@ function resolveFieldBattle(
   }
   const kind = state.governorKinds?.get(claimingGov);
   if (kind === 'SYSTEM' || kind === undefined) {
-    // Wild monsters (or unregistered governors) hold the field but never capture.
+    if (kind === 'SYSTEM' && territory.governorKind !== 'SYSTEM') {
+      // F3: victorious wild raiders sack the land they cannot hold — raiders
+      // never OCCUPY owned land; pillage-only, automatic.
+      queueChoice(state, battle, claimingGov, territory.id, tick, 0);
+      applyChoice(state, battle.id, 'PILLAGE', tick, balance);
+      return;
+    }
+    // Unregistered governors (or monsters on wild ground) hold the field but never capture.
     battle.result!.territoryOutcome = 'HELD';
     return;
   }
@@ -1018,12 +1025,272 @@ export function freeOfficer(state: WorldState, gov: string) {
  * NPC Kingdom governors + army AI issue next-tick orders. AI acts LAST, on a
  * settled world; its orders take effect next tick, submitted like a player's.
  *
- * LIVE (Feature Set 2): intel-memory bookkeeping (F1 scout reveal/decay) runs
- * here on the settled world — pure per-governor sight recording.
+ * LIVE (Feature Set 2):
+ *   1. F3 wild-raid survivors auto-march home / re-merge into their lair;
+ *   2. F3 monster lairs roll seeded raids every ⚙ wildRaids.everyTicks;
+ *   3. F1 intel-memory bookkeeping (scout reveal/decay) on the settled world.
  *
  * TODO(06): governor/military/diplomacy/economy AI (the NPC kingdom currently
  *   lives in the server layer and reads raw state — it may cheat on fog for now).
  */
-function phaseAiHook(state: WorldState, tick: number, _rng: Rng, balance: Balance): void {
+function phaseAiHook(
+  state: WorldState,
+  tick: number,
+  rng: Rng,
+  balance: Balance,
+  options: Required<TickOptions>,
+): void {
+  returnWildRaiders(state, tick, balance, options);
+  spawnWildRaids(state, tick, rng.fork('wildRaids'), balance, options);
   updateIntelMemory(state, tick, balance);
+}
+
+// ── F3: active wild raids (docs/briefs/FEATURESET-2.md) ──────────────────────
+
+/** Raid chance for a lair at normalized distance-from-center (⚙ wildRaids). */
+export function wildRaidChance(distNorm: number, balance: Balance): number {
+  const wr = balance.wildRaids;
+  return wr.baseChance + wr.edgeChanceBonus * Math.max(0, Math.min(1, distNorm));
+}
+
+/** True when `armyId`'s owner is a SYSTEM (wild) governor. */
+function isWildArmy(state: WorldState, army: Army): boolean {
+  return state.governorKinds?.get(army.ownerGovernorId) === 'SYSTEM';
+}
+
+/**
+ * Monster-passable transit: no territory, or SYSTEM-governed ground without a
+ * live foreign garrison. Owned (player/NPC) land is a blockade for raiders too
+ * — it may only be a raid's terminal destination.
+ */
+function wildTransitOk(state: WorldState, hexId: string, owner: string): boolean {
+  const terr = territoryAt(state, hexId);
+  if (terr === undefined) return true;
+  if (terr.governorKind !== 'SYSTEM') return false;
+  if (terr.garrisonArmyId === undefined) return true;
+  const g = state.armies.get(terr.garrisonArmyId);
+  return g === undefined || g.state === 'DISBANDED' || g.ownerGovernorId === owner;
+}
+
+/** BFS path over monster-passable ground; destination allowed regardless. Excludes the start hex. */
+function wildPath(state: WorldState, fromHex: string, toHex: string, owner: string): string[] | undefined {
+  if (fromHex === toHex) return [];
+  const prev = new Map<string, string>();
+  const seen = new Set([fromHex]);
+  const queue = [fromHex];
+  for (let qi = 0; qi < queue.length; qi++) {
+    const cur = queue[qi]!;
+    for (const n of state.adjacency?.get(cur) ?? []) {
+      if (seen.has(n)) continue;
+      seen.add(n);
+      if (n !== toHex && !wildTransitOk(state, n, owner)) continue;
+      prev.set(n, cur);
+      if (n === toHex) {
+        const path: string[] = [n];
+        let p = cur;
+        while (p !== fromHex) {
+          path.push(p);
+          p = prev.get(p)!;
+        }
+        return path.reverse();
+      }
+      queue.push(n);
+    }
+  }
+  return undefined;
+}
+
+/** Put an army on the march along `path` (raid logistics — mirrors orderMarch without the order-API guards). */
+function marchWild(state: WorldState, a: Army, path: string[], tick: number, options: Required<TickOptions>): void {
+  const here = territoryAt(state, a.hexId);
+  if (here?.garrisonArmyId === a.id) delete here.garrisonArmyId;
+  a.state = 'MARCHING';
+  a.path = [...path];
+  a.arrivalTick = tick + stepTicks(state, path[0]!, options);
+  a.version += 1;
+}
+
+/**
+ * F3 step 1 — survivors head home and re-merge. A raid army halted anywhere
+ * but home marches back; at home it merges its stacks + provisions into the
+ * lair garrison (or BECOMES the garrison when the lair fell while it was out).
+ */
+function returnWildRaiders(
+  state: WorldState,
+  tick: number,
+  _balance: Balance,
+  options: Required<TickOptions>,
+): void {
+  if (state.wildRaids === undefined) return;
+  for (const armyId of [...state.wildRaids.keys()].sort()) {
+    const rec = state.wildRaids.get(armyId)!;
+    const a = state.armies.get(armyId);
+    if (a === undefined || a.state === 'DISBANDED') {
+      state.wildRaids.delete(armyId); // the raid died on the road / in battle
+      continue;
+    }
+    if (a.state !== 'GARRISON') continue; // still marching
+
+    if (a.hexId !== rec.homeHexId) {
+      // Halted away from home (raid done, retreated, or intercepted) — march back.
+      const path = wildPath(state, a.hexId, rec.homeHexId, a.ownerGovernorId);
+      if (path !== undefined && path.length > 0) marchWild(state, a, path, tick, options);
+      else state.wildRaids.delete(armyId); // stranded — it squats where it stands
+      continue;
+    }
+
+    // Home again: merge into the lair (or inherit it).
+    const lair = state.armies.get(rec.lairArmyId);
+    if (lair !== undefined && lair.state === 'GARRISON' && lair.hexId === rec.homeHexId) {
+      for (const s of a.units) {
+        if (s.count === 0) continue;
+        const dst = lair.units.find((u) => u.unitClass === s.unitClass);
+        if (dst !== undefined) dst.count += s.count;
+        else lair.units.push({ ...s });
+      }
+      lair.provisions.food += a.provisions.food;
+      lair.provisions.gold += a.provisions.gold;
+      lair.provisions.wood += a.provisions.wood;
+      lair.version += 1;
+      disbandArmy(state, a);
+    } else {
+      // The lair fell while the raiders were out — the survivors are the new lair.
+      const terr = territoryAt(state, rec.homeHexId);
+      if (terr !== undefined && terr.governorId === a.ownerGovernorId && terr.garrisonArmyId === undefined) {
+        terr.garrisonArmyId = a.id;
+      }
+    }
+    state.wildRaids.delete(armyId);
+  }
+}
+
+/**
+ * F3 step 2 — every ⚙ wildRaids.everyTicks each monster lair rolls a seeded
+ * chance (fork per (tick, territoryId), scaled by distance-from-center) to
+ * split HALF its garrison into a raid army that marches — visibly,
+ * interceptably, by the normal MOVEMENT rules — at the weakest player/NPC
+ * territory within ⚙ raidRangeSteps. Garrisons at/above
+ * ⚙ defendedStrengthThreshold are never picked; ungarrisoned land is preferred
+ * (strength 0 sorts first).
+ */
+function spawnWildRaids(
+  state: WorldState,
+  tick: number,
+  rng: Rng,
+  balance: Balance,
+  options: Required<TickOptions>,
+): void {
+  const wr = balance.wildRaids;
+  if (wr.everyTicks <= 0 || tick % wr.everyTicks !== 0) return;
+  if (state.adjacency === undefined) return;
+
+  // Normalized distance-from-center over the hex display centers (q, r).
+  let cx = 0;
+  let cy = 0;
+  for (const h of state.hexes.values()) {
+    cx += h.q;
+    cy += h.r;
+  }
+  cx /= Math.max(1, state.hexes.size);
+  cy /= Math.max(1, state.hexes.size);
+  let maxDist = 1e-9;
+  for (const h of state.hexes.values()) maxDist = Math.max(maxDist, Math.hypot(h.q - cx, h.r - cy));
+
+  // Lairs already raiding sit the round out.
+  const raidingLairs = new Set([...(state.wildRaids?.values() ?? [])].map((r) => r.lairArmyId));
+
+  for (const terrId of sortedIds(state.territories)) {
+    const t = state.territories.get(terrId)!;
+    if (t.governorKind !== 'SYSTEM' || t.garrisonArmyId === undefined) continue;
+    const lair = state.armies.get(t.garrisonArmyId);
+    if (lair === undefined || lair.state !== 'GARRISON' || !isWildArmy(state, lair)) continue;
+    if (raidingLairs.has(lair.id)) continue;
+    if (troopCount(lair) < wr.minRaidTroops) continue;
+
+    const r = rng.fork(terrId); // PRNG(world.seed, tick, 'ai/wildRaids', territoryId)
+    const hex = state.hexes.get(lair.hexId)!;
+    const distNorm = Math.hypot(hex.q - cx, hex.r - cy) / maxDist;
+    if (r.next() >= wildRaidChance(distNorm, balance)) continue;
+
+    // Target hunt: BFS ≤ raidRangeSteps over monster-passable ground; owned
+    // territories are terminal candidates.
+    const candidates: { terrId: string; hexId: string; steps: number; strength: number }[] = [];
+    const depth = new Map<string, number>([[lair.hexId, 0]]);
+    const queue = [lair.hexId];
+    for (let qi = 0; qi < queue.length; qi++) {
+      const cur = queue[qi]!;
+      const d = depth.get(cur)!;
+      if (d >= wr.raidRangeSteps) continue;
+      for (const n of state.adjacency.get(cur) ?? []) {
+        if (depth.has(n)) continue;
+        depth.set(n, d + 1);
+        const nt = territoryAt(state, n);
+        if (nt !== undefined && (nt.governorKind === 'PLAYER' || nt.governorKind === 'NPC_KINGDOM')) {
+          const g = nt.garrisonArmyId === undefined ? undefined : state.armies.get(nt.garrisonArmyId);
+          const strength = g !== undefined && g.state !== 'DISBANDED' ? armyStrength(g, balance) : 0;
+          if (strength < wr.defendedStrengthThreshold) {
+            candidates.push({ terrId: nt.id, hexId: n, steps: d + 1, strength });
+          }
+          continue; // owned land is terminal — raiders cannot path through it
+        }
+        if (wildTransitOk(state, n, lair.ownerGovernorId)) queue.push(n);
+      }
+    }
+    if (candidates.length === 0) continue;
+    candidates.sort(
+      (x, y) => x.strength - y.strength || x.steps - y.steps || (x.terrId < y.terrId ? -1 : 1),
+    );
+    const target = candidates[0]!;
+    const path = wildPath(state, lair.hexId, target.hexId, lair.ownerGovernorId);
+    if (path === undefined || path.length === 0) continue;
+
+    // Split HALF the lair (floor per stack) + half its provisions into the raid.
+    const raidUnits: UnitStack[] = [];
+    for (const s of lair.units) {
+      const half = Math.floor(s.count / 2);
+      if (half === 0) continue;
+      s.count -= half;
+      raidUnits.push({ ...s, count: half });
+    }
+    if (raidUnits.length === 0) continue;
+    const halfProv = {
+      food: Math.floor(lair.provisions.food / 2),
+      gold: Math.floor(lair.provisions.gold / 2),
+      wood: Math.floor(lair.provisions.wood / 2),
+    };
+    lair.provisions.food -= halfProv.food;
+    lair.provisions.gold -= halfProv.gold;
+    lair.provisions.wood -= halfProv.wood;
+    lair.version += 1;
+
+    const raid: Army = {
+      id: newId('army', { time: tick, random: () => r.next() }),
+      worldId: state.world.id,
+      ownerGovernorId: lair.ownerGovernorId,
+      state: 'GARRISON',
+      hexId: lair.hexId,
+      units: raidUnits,
+      provisions: halfProv,
+      supply: lair.supply,
+      supplyMax: lair.supplyMax,
+      morale: lair.morale,
+      supplyTrainIds: [],
+      version: 1,
+    };
+    state.armies.set(raid.id, raid);
+    const name = state.monsterNames?.get(lair.id);
+    if (name !== undefined) {
+      state.monsterNames ??= new Map();
+      state.monsterNames.set(raid.id, name);
+    }
+    marchWild(state, raid, path, tick, options);
+    state.wildRaids ??= new Map();
+    state.wildRaids.set(raid.id, {
+      armyId: raid.id,
+      lairArmyId: lair.id,
+      homeHexId: lair.hexId,
+      targetHexId: target.hexId,
+      spawnedTick: tick,
+    });
+  }
 }

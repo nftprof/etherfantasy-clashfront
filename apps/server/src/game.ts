@@ -51,7 +51,9 @@ import {
   sortedIds,
   stepTicks,
   type TickOptions,
+  troopCount,
   type WalkInOutcome,
+  type WildRaidRecord,
   type WorldState,
 } from '@clashfront/sim-engine';
 import { GOVERNOR_PALETTE, NPC_COLOR, officerNamesForJoin, WILD_COLOR } from './roster';
@@ -168,7 +170,18 @@ export type GameEvent =
   /** battleId doubles as the choiceId for bloodless (walk-in / raid-sacking) outcomes. */
   | { type: 'territory_occupied'; tick: number; battleId: string; territoryId: string; parcelId: string; governorId: string; lootCt: number }
   | { type: 'territory_pillaged'; tick: number; battleId: string; territoryId: string; parcelId: string; governorId: string; lootCt: number }
-  | { type: 'npc_expand'; tick: number; governorId: string; armyId: string; fromParcelId: string; toParcelId: string };
+  | { type: 'npc_expand'; tick: number; governorId: string; armyId: string; fromParcelId: string; toParcelId: string }
+  | {
+      /** F3: a monster lair split a raid army that is now marching (visible, interceptable). */
+      type: 'wild_raid';
+      tick: number;
+      armyId: string;
+      governorId: string;
+      monsterName?: string;
+      troops: number;
+      fromParcelId: string;
+      toParcelId: string;
+    };
 
 export interface TickDeltas {
   territories: TerritoryView[];
@@ -246,6 +259,8 @@ interface SerializedWorldState {
   intel?: [string, [string, number][]][];
   /** Bloodless PILLAGE/OCCUPY outcome log (F2/F3). Optional for older saves. */
   walkInOutcomes?: WalkInOutcome[];
+  /** Live wild-raid provenance (F3). Optional for older saves. */
+  wildRaids?: [string, WildRaidRecord][];
 }
 
 // ── The game ─────────────────────────────────────────────────────────────────
@@ -594,6 +609,7 @@ export class Game {
     const preBattles = new Set(this.state.battles.keys());
     const preChoices = new Set(this.state.pendingChoices?.keys() ?? []);
     const preWalkInCount = this.state.walkInOutcomes?.length ?? 0;
+    const preRaids = new Set(this.state.wildRaids?.keys() ?? []);
 
     runTick(this.state, tick, this.baseRng.fork('sim'), this.balance, this.config.tickOptions);
 
@@ -721,6 +737,24 @@ export class Game {
       const outcome = this.state.battles.get(id)!.result?.territoryOutcome;
       if (outcome === undefined || this.emittedOutcomes.has(id)) continue;
       this.emitOutcomeEvent(id, tick, events);
+    }
+
+    // Wild raids spawned this tick (F3) — the frontier bites back.
+    for (const [raidId, rec] of this.state.wildRaids ?? []) {
+      if (preRaids.has(raidId)) continue;
+      const raid = this.state.armies.get(raidId);
+      if (raid === undefined) continue;
+      const monsterName = this.state.monsterNames?.get(raidId);
+      events.push({
+        type: 'wild_raid',
+        tick,
+        armyId: raidId,
+        governorId: raid.ownerGovernorId,
+        ...(monsterName !== undefined ? { monsterName } : {}),
+        troops: troopCount(raid),
+        fromParcelId: this.parcelId(rec.homeHexId),
+        toParcelId: this.parcelId(rec.targetHexId),
+      });
     }
 
     // NPC kingdom acts on the settled world (its orders resolve next tick).
@@ -1190,6 +1224,7 @@ function serializeWorldState(state: WorldState): SerializedWorldState {
       ([gov, mem]) => [gov, [...mem.entries()]] as [string, [string, number][]],
     ),
     walkInOutcomes: [...(state.walkInOutcomes ?? [])],
+    wildRaids: [...(state.wildRaids ?? new Map<string, WildRaidRecord>()).entries()],
   };
 }
 
@@ -1219,6 +1254,7 @@ function deserializeWorldState(s: SerializedWorldState): WorldState {
     battleLogistics: new Map(s.battleLogistics ?? []),
     intel: new Map((s.intel ?? []).map(([gov, mem]) => [gov, new Map(mem)])),
     walkInOutcomes: s.walkInOutcomes ?? [],
+    wildRaids: new Map(s.wildRaids ?? []),
   };
 }
 
