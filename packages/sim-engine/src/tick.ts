@@ -29,7 +29,7 @@ import {
   loadBalance,
   newId,
 } from '@clashfront/shared';
-import type { Army, BattleInstance, Territory } from '@clashfront/shared';
+import type { Army, BattleInstance, GovernorKind, Territory } from '@clashfront/shared';
 import { updateIntelMemory } from './intel';
 import { battleFoodNeed, enduranceMultiplier, marchFoodPerStep, troopCount } from './logistics';
 import { type ArmyRetreatRecord, type BattleLogisticsRecord, sortedIds, type WorldState } from './state';
@@ -195,15 +195,85 @@ function phaseMovement(
 
     const hostile = hostileArmiesAt(state, next, a.ownerGovernorId).length > 0;
     if (a.path.length === 0 || hostile) {
+      const atDestination = a.path.length === 0;
       haltArmy(a);
-      // Attach as garrison when halting on a friendly, garrison-less territory.
-      if (!hostile && terr !== undefined && terr.governorId === a.ownerGovernorId && terr.garrisonArmyId === undefined) {
-        terr.garrisonArmyId = a.id;
+      if (!hostile && atDestination && terr !== undefined) {
+        if (terr.governorId === a.ownerGovernorId) {
+          // Attach as garrison when arriving on a friendly, garrison-less territory.
+          if (terr.garrisonArmyId === undefined) terr.garrisonArmyId = a.id;
+        } else {
+          // Bloodless arrival on someone else's/unowned ground (F2 walk-in,
+          // F3 raid sacking) — never fires mid-path or on interception.
+          maybeWalkIn(state, a, terr, tick, balance, options);
+        }
       }
     } else {
       a.arrivalTick = tick + stepTicks(state, a.path[0]!, options);
     }
   }
+}
+
+/**
+ * Bloodless arrival resolution (docs/briefs/FEATURESET-2.md F2/F3). The army
+ * ENDED its march on a garrison-free territory it does not govern:
+ *
+ * - SYSTEM (wild raider) on OWNED land → automatic PILLAGE ("raiders never
+ *   OCCUPY owned land"); on SYSTEM land → nothing.
+ * - PLAYER on a foreign/SYSTEM TOWN, or a SYSTEM settlement with population ≥
+ *   ⚙ towns.walkInMinPopulation → pendingChoice WITHOUT battle (walk-in);
+ *   defaults to PILLAGE on timeout like a battle choice.
+ * - NPC_KINGDOM ditto, resolved instantly as OCCUPY (existing default).
+ */
+function maybeWalkIn(
+  state: WorldState,
+  army: Army,
+  terr: Territory,
+  tick: number,
+  balance: Balance,
+  options: Required<TickOptions>,
+): void {
+  const garrison = terr.garrisonArmyId === undefined ? undefined : state.armies.get(terr.garrisonArmyId);
+  if (garrison !== undefined && garrison.state !== 'DISBANDED') return; // defended — battles handle it
+  const kind = state.governorKinds?.get(army.ownerGovernorId);
+  if (kind === undefined) return;
+
+  if (kind === 'SYSTEM') {
+    // F3: wild raiders sack unguarded owned land on arrival — pillage-only, automatic.
+    if (terr.governorKind !== 'SYSTEM') {
+      const lootCt = pillageTerritory(state, terr, army.ownerGovernorId, balance);
+      state.walkInOutcomes ??= [];
+      state.walkInOutcomes.push({
+        choiceId: `raid:${army.id}:${tick}`,
+        territoryId: terr.id,
+        governorId: army.ownerGovernorId,
+        armyId: army.id,
+        action: 'PILLAGE',
+        lootCt,
+        tick,
+      });
+    }
+    return;
+  }
+
+  const isTown = terr.zoneType === 'TOWN';
+  const isSettlement = terr.governorKind === 'SYSTEM' && terr.population >= balance.towns.walkInMinPopulation;
+  if (!isTown && !isSettlement) return;
+  // One pending decision per territory at a time.
+  for (const c of state.pendingChoices?.values() ?? []) {
+    if (c.territoryId === terr.id) return;
+  }
+  const choiceId = `walkin:${army.id}:${tick}`;
+  state.pendingChoices ??= new Map();
+  state.pendingChoices.set(choiceId, {
+    id: choiceId,
+    armyId: army.id,
+    governorId: army.ownerGovernorId,
+    territoryId: terr.id,
+    createdTick: tick,
+    expiresTick: tick + (kind === 'NPC_KINGDOM' ? 0 : options.choiceTimeoutTicks),
+  });
+  // NPCs decide instantly: bloodless conquest defaults to OCCUPY.
+  if (kind === 'NPC_KINGDOM') applyChoice(state, choiceId, 'OCCUPY', tick, balance);
 }
 
 function haltArmy(a: Army): void {
@@ -347,13 +417,13 @@ function phaseBattleSpawning(
   balance: Balance,
   options: Required<TickOptions>,
 ): void {
-  // 1 — expire pending post-victory choices.
+  // 1 — expire pending choices (post-victory AND walk-ins share the default).
   if (state.pendingChoices !== undefined) {
-    for (const battleId of sortedIds(state.pendingChoices)) {
-      const choice = state.pendingChoices.get(battleId)!;
+    for (const choiceId of sortedIds(state.pendingChoices)) {
+      const choice = state.pendingChoices.get(choiceId)!;
       if (tick < choice.expiresTick) continue;
       const kind = state.governorKinds?.get(choice.governorId);
-      applyPostVictory(state, battleId, kind === 'NPC_KINGDOM' ? 'OCCUPY' : 'PILLAGE', tick, balance);
+      applyChoice(state, choiceId, kind === 'NPC_KINGDOM' ? 'OCCUPY' : 'PILLAGE', tick, balance);
     }
   }
 
@@ -620,7 +690,7 @@ function resolveFieldBattle(
   if (kind === 'NPC_KINGDOM') {
     // NPCs decide instantly: default OCCUPY (brief item 2).
     queueChoice(state, battle, claimingGov, territory.id, tick, 0);
-    applyPostVictory(state, battle.id, 'OCCUPY', tick, balance);
+    applyChoice(state, battle.id, 'OCCUPY', tick, balance);
     return;
   }
   // Player: expose the pending choice; defaults to PILLAGE on timeout.
@@ -736,6 +806,7 @@ function queueChoice(
 ): void {
   state.pendingChoices ??= new Map();
   state.pendingChoices.set(battle.id, {
+    id: battle.id,
     battleId: battle.id,
     governorId,
     territoryId,
@@ -745,8 +816,9 @@ function queueChoice(
 }
 
 /**
- * Resolve a pending post-victory choice (server order API calls this on the
- * winner's behalf; the BATTLE SPAWNING phase calls it on timeout with the default).
+ * Resolve a pending choice — post-victory (choiceId = battleId) or a bloodless
+ * walk-in (F2). The server order API calls this on the chooser's behalf; the
+ * BATTLE SPAWNING phase calls applyChoice on timeout with the default.
  *
  * PILLAGE — winner's CT balance gains loot (treasury share + per-pop scavenge);
  *   territory takes the canon PILLAGE_INFRA_LOSS / PILLAGE_POP_LOSS hits.
@@ -756,15 +828,15 @@ function queueChoice(
  */
 export function resolvePostVictory(
   state: WorldState,
-  battleId: string,
+  choiceId: string,
   action: PostVictoryAction,
   balance: Balance = loadBalance(),
   overseerId?: string,
 ): void {
-  if (state.pendingChoices?.has(battleId) !== true) {
-    throw new Error(`no pending post-victory choice for battle ${battleId}`);
+  if (state.pendingChoices?.has(choiceId) !== true) {
+    throw new Error(`no pending post-victory choice for battle ${choiceId}`);
   }
-  applyPostVictory(state, battleId, action, state.world.tick, balance, overseerId);
+  applyChoice(state, choiceId, action, state.world.tick, balance, overseerId);
 }
 
 /**
@@ -781,93 +853,147 @@ export function pickOfficer(state: WorldState, gov: string, overseerId?: string)
   return officer;
 }
 
-function applyPostVictory(
+/**
+ * PILLAGE a territory for `gov` (docs/02 §9): loot = treasury share + per-pop
+ * scavenge into the governor's CT wallet; canon PILLAGE_INFRA_LOSS /
+ * PILLAGE_POP_LOSS hits. Returns the loot (ct_units). Never changes the governor.
+ */
+function pillageTerritory(state: WorldState, territory: Territory, gov: string, balance: Balance): number {
+  state.ctBalances ??= new Map();
+  const lootTreasury = Math.floor(territory.ctTreasury * balance.pillageOccupy.pillageLootTreasuryPct);
+  const lootScavenge = territory.population * balance.pillageOccupy.pillageLootCtUnitsPerPop;
+  territory.ctTreasury -= lootTreasury;
+  state.ctBalances.set(gov, (state.ctBalances.get(gov) ?? 0) + lootTreasury + lootScavenge);
+  for (const track of Object.keys(territory.development) as (keyof Territory['development'])[]) {
+    territory.development[track] = Math.floor(territory.development[track] * (1 - CONSTANTS.PILLAGE_INFRA_LOSS));
+  }
+  territory.population = Math.floor(territory.population * (1 - CONSTANTS.PILLAGE_POP_LOSS));
+  territory.prosperity = Math.max(
+    CONSTANTS.PROSPERITY_MIN,
+    Math.floor(territory.prosperity * (1 - CONSTANTS.PILLAGE_INFRA_LOSS)),
+  );
+  territory.version += 1;
+  return lootTreasury + lootScavenge;
+}
+
+/**
+ * OCCUPY a territory for `gov` (docs/02 §9): seize the treasury share, switch
+ * governor, free the evicted holder's overseer, assign `officer` as overseer
+ * (players), garrison the first surviving own army on the hex. Returns the
+ * seized ct_units. Oversight gating happens in applyChoice — not here.
+ */
+function occupyTerritory(
   state: WorldState,
-  battleId: string,
+  territory: Territory,
+  gov: string,
+  kind: GovernorKind,
+  tick: number,
+  balance: Balance,
+  officer?: { id: string; assignedTerritoryId?: string },
+): number {
+  state.ctBalances ??= new Map();
+  const seized = Math.floor(territory.ctTreasury * balance.pillageOccupy.occupySeizeTreasuryPct);
+  territory.ctTreasury -= seized;
+  state.ctBalances.set(gov, (state.ctBalances.get(gov) ?? 0) + seized);
+  // Free the evicted holder's overseer — otherwise that officer stays assigned
+  // to a territory its governor no longer holds (officer leak against the
+  // MAX_OVERSEEN_TERRITORIES cap).
+  if (territory.overseerId !== undefined) {
+    const prev = state.officers?.get(territory.governorId)?.find((o) => o.id === territory.overseerId);
+    if (prev?.assignedTerritoryId === territory.id) delete prev.assignedTerritoryId;
+  }
+  territory.governorId = gov;
+  territory.governorKind = kind;
+  delete territory.overseerId;
+  if (kind === 'PLAYER' && officer !== undefined) {
+    officer.assignedTerritoryId = territory.id;
+    territory.overseerId = officer.id;
+  }
+  territory.morale = Math.max(
+    CONSTANTS.MORALE_MIN,
+    territory.morale - balance.morale.occupiedCivilMoraleLoss,
+  );
+  territory.lastTroddenTick = tick;
+  // New holder's first surviving army on the hex garrisons the holding.
+  delete territory.garrisonArmyId;
+  for (const id of sortedIds(state.armies)) {
+    const a = state.armies.get(id)!;
+    if (a.state !== 'DISBANDED' && a.ownerGovernorId === gov && territory.hexIds.includes(a.hexId)) {
+      territory.garrisonArmyId = a.id;
+      break;
+    }
+  }
+  territory.version += 1;
+  return seized;
+}
+
+/**
+ * Apply a pending PILLAGE/OCCUPY choice — post-battle (records onto
+ * battle.result) or walk-in (records into state.walkInOutcomes). A walk-in
+ * whose arriving army no longer stands on the territory is CANCELLED silently
+ * (no loot from afar).
+ */
+function applyChoice(
+  state: WorldState,
+  choiceId: string,
   action: PostVictoryAction,
   tick: number,
   balance: Balance,
   overseerId?: string,
 ): void {
-  const choice = state.pendingChoices?.get(battleId);
-  const battle = state.battles.get(battleId);
-  if (choice === undefined || battle?.result === undefined) {
-    throw new Error(`applyPostVictory: no pending choice/battle ${battleId}`);
+  const choice = state.pendingChoices?.get(choiceId);
+  if (choice === undefined) throw new Error(`applyPostVictory: no pending choice/battle ${choiceId}`);
+  const battle = choice.battleId === undefined ? undefined : state.battles.get(choice.battleId);
+  if (choice.battleId !== undefined && battle?.result === undefined) {
+    throw new Error(`applyPostVictory: no pending choice/battle ${choiceId}`);
   }
   const territory = state.territories.get(choice.territoryId);
   if (territory === undefined) throw new Error(`applyPostVictory: territory ${choice.territoryId} gone`);
-  state.pendingChoices!.delete(battleId);
+  state.pendingChoices!.delete(choiceId);
+
+  // Walk-in guard: the arriving army must still be standing on the territory.
+  if (choice.armyId !== undefined) {
+    const a = state.armies.get(choice.armyId);
+    if (a === undefined || a.state === 'DISBANDED' || !territory.hexIds.includes(a.hexId)) return;
+  }
 
   const gov = choice.governorId;
   const kind = state.governorKinds?.get(gov) ?? 'PLAYER';
-  state.ctBalances ??= new Map();
 
+  let officer: ReturnType<typeof pickOfficer>;
   if (action === 'OCCUPY' && kind === 'PLAYER') {
     // Officer oversight gate (docs/01 §11.3, CONSTANTS.MAX_OVERSEEN_TERRITORIES).
     // pickOfficer THROWS on an invalid explicit choice (surfaces to the API);
     // with no explicit choice, no-free-officer converts the occupation to pillage.
     const overseen = countOverseen(state, gov);
-    const chosen = pickOfficer(state, gov, overseerId);
-    if (overseen >= CONSTANTS.MAX_OVERSEEN_TERRITORIES || chosen === undefined) {
+    officer = pickOfficer(state, gov, overseerId);
+    if (overseen >= CONSTANTS.MAX_OVERSEEN_TERRITORIES || officer === undefined) {
       action = 'PILLAGE'; // occupation converts to pillage — no overseer available
+      officer = undefined;
     }
   }
 
-  if (action === 'PILLAGE') {
-    const lootTreasury = Math.floor(territory.ctTreasury * balance.pillageOccupy.pillageLootTreasuryPct);
-    const lootScavenge = territory.population * balance.pillageOccupy.pillageLootCtUnitsPerPop;
-    territory.ctTreasury -= lootTreasury;
-    state.ctBalances.set(gov, (state.ctBalances.get(gov) ?? 0) + lootTreasury + lootScavenge);
-    for (const track of Object.keys(territory.development) as (keyof Territory['development'])[]) {
-      territory.development[track] = Math.floor(territory.development[track] * (1 - CONSTANTS.PILLAGE_INFRA_LOSS));
-    }
-    territory.population = Math.floor(territory.population * (1 - CONSTANTS.PILLAGE_POP_LOSS));
-    territory.prosperity = Math.max(
-      CONSTANTS.PROSPERITY_MIN,
-      Math.floor(territory.prosperity * (1 - CONSTANTS.PILLAGE_INFRA_LOSS)),
-    );
-    battle.result.postVictoryAction = 'PILLAGE';
-    battle.result.territoryOutcome = 'PILLAGED';
-    battle.result.lootCt = lootTreasury + lootScavenge;
+  const lootCt =
+    action === 'PILLAGE'
+      ? pillageTerritory(state, territory, gov, balance)
+      : occupyTerritory(state, territory, gov, kind, tick, balance, officer);
+
+  if (battle?.result !== undefined) {
+    battle.result.postVictoryAction = action;
+    battle.result.territoryOutcome = action === 'PILLAGE' ? 'PILLAGED' : 'OCCUPIED';
+    battle.result.lootCt = lootCt;
   } else {
-    // OCCUPY
-    const seized = Math.floor(territory.ctTreasury * balance.pillageOccupy.occupySeizeTreasuryPct);
-    territory.ctTreasury -= seized;
-    state.ctBalances.set(gov, (state.ctBalances.get(gov) ?? 0) + seized);
-    // Free the evicted holder's overseer — otherwise that officer stays assigned
-    // to a territory its governor no longer holds (officer leak against the
-    // MAX_OVERSEEN_TERRITORIES cap).
-    if (territory.overseerId !== undefined) {
-      const prev = state.officers?.get(territory.governorId)?.find((o) => o.id === territory.overseerId);
-      if (prev?.assignedTerritoryId === territory.id) delete prev.assignedTerritoryId;
-    }
-    territory.governorId = gov;
-    territory.governorKind = kind;
-    delete territory.overseerId;
-    if (kind === 'PLAYER') {
-      const officer = pickOfficer(state, gov, overseerId)!; // gated above
-      officer.assignedTerritoryId = territory.id;
-      territory.overseerId = officer.id;
-    }
-    territory.morale = Math.max(
-      CONSTANTS.MORALE_MIN,
-      territory.morale - balance.morale.occupiedCivilMoraleLoss,
-    );
-    territory.lastTroddenTick = tick;
-    // Winner's first surviving army on the hex garrisons the new holding.
-    delete territory.garrisonArmyId;
-    for (const id of sortedIds(state.armies)) {
-      const a = state.armies.get(id)!;
-      if (a.state !== 'DISBANDED' && a.ownerGovernorId === gov && territory.hexIds.includes(a.hexId)) {
-        territory.garrisonArmyId = a.id;
-        break;
-      }
-    }
-    battle.result.postVictoryAction = 'OCCUPY';
-    battle.result.territoryOutcome = 'OCCUPIED';
-    battle.result.lootCt = seized;
+    state.walkInOutcomes ??= [];
+    state.walkInOutcomes.push({
+      choiceId,
+      territoryId: territory.id,
+      governorId: gov,
+      ...(choice.armyId !== undefined ? { armyId: choice.armyId } : {}),
+      action,
+      lootCt,
+      tick,
+    });
   }
-  territory.version += 1;
 }
 
 /** Territories currently occupied by `gov` that hold an assigned overseer. */

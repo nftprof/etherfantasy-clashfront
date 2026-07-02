@@ -147,6 +147,25 @@ export interface Balance {
     /** Attacker temporary command-center tiers (camp → palisade → fortified camp); requirements scale per 100 attacker soldiers; the tier cost is SPENT win or lose. */
     commandCenterTiers: { goldPer100: number; woodPer100: number; bonus: number }[];
   };
+  /** Neutral towns ⚙ — Feature Set 2 F2 (docs/briefs/FEATURESET-2.md). */
+  towns: {
+    /** Fraction of garrison-free SYSTEM parcels seeded as TOWNs at genesis. */
+    pct: number;
+    /** Town population at the slice center… */
+    popBase: number;
+    /** …plus this much at the far frontier (× normalized distance). */
+    popDistanceBonus: number;
+    /** Town treasury (ct_units) at the center… */
+    treasuryCtUnitsBase: number;
+    /** …plus this much at the far frontier (× normalized distance). */
+    treasuryCtUnitsDistanceBonus: number;
+    prosperityBase: number;
+    prosperityDistanceBonus: number;
+    /** Town foodStock = population × this. */
+    foodPerPop: number;
+    /** SYSTEM parcels at/above this population trigger the bloodless walk-in choice (TOWNs always do). */
+    walkInMinPopulation: number;
+  };
   /** Fog of war ⚙ — Feature Set 2 F1 (docs/briefs/FEATURESET-2.md). */
   intel: {
     /** Ticks a scouted parcel stays ACCURATE after last sight before decaying to FUZZY memory. */
@@ -167,7 +186,7 @@ export interface Balance {
 const REQUIRED_SECTIONS: readonly (keyof Balance)[] = [
   'travel', 'development', 'tax', 'prosperity', 'food', 'population',
   'supply', 'morale', 'desertion', 'upkeep', 'units', 'pillageOccupy', 'draft', 'provisions', 'claims',
-  'intel',
+  'intel', 'towns',
 ];
 
 function resolveBalancePath(): string {

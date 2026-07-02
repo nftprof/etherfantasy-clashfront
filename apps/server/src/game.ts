@@ -51,6 +51,7 @@ import {
   sortedIds,
   stepTicks,
   type TickOptions,
+  type WalkInOutcome,
   type WorldState,
 } from '@clashfront/sim-engine';
 import { GOVERNOR_PALETTE, NPC_COLOR, officerNamesForJoin, WILD_COLOR } from './roster';
@@ -148,6 +149,23 @@ export type GameEvent =
       disbanded: boolean;
     }
   | { type: 'choice_pending'; tick: number; battleId: string; governorId: string; territoryId: string; parcelId: string; expiresTick: number }
+  | {
+      /**
+       * F2 walk-in: an army ended its march on a garrison-free town/settlement —
+       * bloodless PILLAGE/OCCUPY choice, no battle. Resolve via POST /api/choice
+       * with { battleId: choiceId }. Private to the arriving governor.
+       */
+      type: 'town_entered';
+      tick: number;
+      choiceId: string;
+      armyId: string;
+      governorId: string;
+      territoryId: string;
+      parcelId: string;
+      zoneType: string;
+      expiresTick: number;
+    }
+  /** battleId doubles as the choiceId for bloodless (walk-in / raid-sacking) outcomes. */
   | { type: 'territory_occupied'; tick: number; battleId: string; territoryId: string; parcelId: string; governorId: string; lootCt: number }
   | { type: 'territory_pillaged'; tick: number; battleId: string; territoryId: string; parcelId: string; governorId: string; lootCt: number }
   | { type: 'npc_expand'; tick: number; governorId: string; armyId: string; fromParcelId: string; toParcelId: string };
@@ -226,6 +244,8 @@ interface SerializedWorldState {
   battleLogistics?: [string, BattleLogisticsRecord][];
   /** Intel memory (F1): governorId → [hexId, lastAccurateTick][]. Optional for pre-fog saves. */
   intel?: [string, [string, number][]][];
+  /** Bloodless PILLAGE/OCCUPY outcome log (F2/F3). Optional for older saves. */
+  walkInOutcomes?: WalkInOutcome[];
 }
 
 // ── The game ─────────────────────────────────────────────────────────────────
@@ -504,12 +524,19 @@ export class Game {
     return overseerId;
   }
 
+  /**
+   * Resolve a pending PILLAGE/OCCUPY choice. `battleId` is the choice key:
+   * the battle id for post-victory choices, the `choiceId` of a town_entered
+   * event for bloodless F2 walk-ins. Returns `battle` for the former,
+   * `territory` + `action`/`lootCt` for the latter (action 'CANCELLED' when
+   * the walk-in army left the parcel before deciding).
+   */
   choice(
     governorId: string,
     battleId: unknown,
     action: unknown,
     overseerId?: unknown,
-  ): { battle: BattleView; ctUnits: number } {
+  ): { ctUnits: number; battle?: BattleView; territory?: TerritoryView; action?: string; lootCt?: number } {
     if (typeof battleId !== 'string') throw new ApiError(400, 'BAD_BATTLE', 'battleId must be a string');
     if (action !== 'PILLAGE' && action !== 'OCCUPY') {
       throw new ApiError(400, 'BAD_ACTION', "action must be 'PILLAGE' or 'OCCUPY'");
@@ -523,10 +550,35 @@ export class Game {
     } catch (e) {
       throw translateSimError(e);
     }
-    this.emitOutcomeEvent(battleId, this.state.world.tick);
+    const ctUnits = this.state.ctBalances?.get(governorId) ?? 0;
+    if (pending.battleId !== undefined) {
+      this.emitOutcomeEvent(pending.battleId, this.state.world.tick);
+      return {
+        battle: battleView(this.state, this.state.battles.get(pending.battleId)!, this.parcelByHex, this.balance, this.viewerContext(governorId))!,
+        ctUnits,
+      };
+    }
+    // Walk-in (F2): surface the bloodless outcome now; the WS event follows.
+    const outcome = (this.state.walkInOutcomes ?? []).find((o) => o.choiceId === battleId);
+    const terr = this.state.territories.get(pending.territoryId);
+    if (outcome !== undefined && terr !== undefined) {
+      this.pendingEvents.push({
+        type: outcome.action === 'OCCUPY' ? 'territory_occupied' : 'territory_pillaged',
+        tick: this.state.world.tick,
+        battleId,
+        territoryId: terr.id,
+        parcelId: this.parcelId(terr.hexIds[0]!),
+        governorId: outcome.governorId,
+        lootCt: outcome.lootCt,
+      });
+    }
     return {
-      battle: battleView(this.state, this.state.battles.get(battleId)!, this.parcelByHex, this.balance, this.viewerContext(governorId))!,
-      ctUnits: this.state.ctBalances?.get(governorId) ?? 0,
+      ctUnits,
+      ...(terr !== undefined
+        ? { territory: territoryView(this.state, terr, this.parcelByHex, this.balance, this.viewerContext(governorId)) }
+        : {}),
+      action: outcome?.action ?? 'CANCELLED',
+      ...(outcome !== undefined ? { lootCt: outcome.lootCt } : {}),
     };
   }
 
@@ -541,6 +593,7 @@ export class Game {
     for (const [id, a] of this.state.armies) preArmyStates.set(id, a.state);
     const preBattles = new Set(this.state.battles.keys());
     const preChoices = new Set(this.state.pendingChoices?.keys() ?? []);
+    const preWalkInCount = this.state.walkInOutcomes?.length ?? 0;
 
     runTick(this.state, tick, this.baseRng.fork('sim'), this.balance, this.config.tickOptions);
 
@@ -615,18 +668,51 @@ export class Game {
       }
     }
 
-    // Newly pending PILLAGE/OCCUPY choices.
-    for (const [battleId, c] of this.state.pendingChoices ?? []) {
-      if (preChoices.has(battleId)) continue;
+    // Newly pending PILLAGE/OCCUPY choices — battle victories get choice_pending,
+    // bloodless F2 walk-ins get town_entered (both private to the chooser).
+    for (const [choiceId, c] of this.state.pendingChoices ?? []) {
+      if (preChoices.has(choiceId)) continue;
       const terr = this.state.territories.get(c.territoryId);
+      const parcelId = terr === undefined ? c.territoryId : this.parcelId(terr.hexIds[0]!);
+      if (c.battleId !== undefined) {
+        events.push({
+          type: 'choice_pending',
+          tick,
+          battleId: c.battleId,
+          governorId: c.governorId,
+          territoryId: c.territoryId,
+          parcelId,
+          expiresTick: c.expiresTick,
+        });
+      } else {
+        events.push({
+          type: 'town_entered',
+          tick,
+          choiceId,
+          armyId: c.armyId ?? '',
+          governorId: c.governorId,
+          territoryId: c.territoryId,
+          parcelId,
+          zoneType: terr?.zoneType ?? 'WILD',
+          expiresTick: c.expiresTick,
+        });
+      }
+    }
+
+    // Bloodless outcomes decided during the tick (walk-in resolutions/timeouts,
+    // NPC instant walk-ins, wild-raid sackings) — battleId carries the choiceId.
+    const walkIns = this.state.walkInOutcomes ?? [];
+    for (let i = preWalkInCount; i < walkIns.length; i++) {
+      const o = walkIns[i]!;
+      const terr = this.state.territories.get(o.territoryId);
       events.push({
-        type: 'choice_pending',
+        type: o.action === 'OCCUPY' ? 'territory_occupied' : 'territory_pillaged',
         tick,
-        battleId,
-        governorId: c.governorId,
-        territoryId: c.territoryId,
-        parcelId: terr === undefined ? c.territoryId : this.parcelId(terr.hexIds[0]!),
-        expiresTick: c.expiresTick,
+        battleId: o.choiceId,
+        territoryId: o.territoryId,
+        parcelId: terr === undefined ? o.territoryId : this.parcelId(terr.hexIds[0]!),
+        governorId: o.governorId,
+        lootCt: o.lootCt,
       });
     }
 
@@ -856,7 +942,20 @@ export class Game {
     officers: DemoOfficer[];
     territoryIds: string[];
     armyIds: string[];
-    pendingChoices: { battleId: string; territoryId: string; expiresTick: number }[];
+    /**
+     * Pending PILLAGE/OCCUPY decisions. `battleId` is the /api/choice key
+     * (equal to `choiceId`); `walkIn: true` marks bloodless F2 town entries
+     * (no battle behind them — resolve exactly the same way).
+     */
+    pendingChoices: {
+      battleId: string;
+      choiceId: string;
+      territoryId: string;
+      parcelId: string;
+      expiresTick: number;
+      walkIn: boolean;
+      armyId?: string;
+    }[];
   } {
     const territoryIds: string[] = [];
     for (const id of sortedIds(this.state.territories)) {
@@ -867,11 +966,19 @@ export class Game {
       const a = this.state.armies.get(id)!;
       if (a.state !== 'DISBANDED' && a.ownerGovernorId === governorId) armyIds.push(id);
     }
-    const pendingChoices: { battleId: string; territoryId: string; expiresTick: number }[] = [];
-    for (const [battleId, c] of this.state.pendingChoices ?? []) {
-      if (c.governorId === governorId) {
-        pendingChoices.push({ battleId, territoryId: c.territoryId, expiresTick: c.expiresTick });
-      }
+    const pendingChoices: ReturnType<Game['myState']>['pendingChoices'] = [];
+    for (const [choiceId, c] of this.state.pendingChoices ?? []) {
+      if (c.governorId !== governorId) continue;
+      const terr = this.state.territories.get(c.territoryId);
+      pendingChoices.push({
+        battleId: choiceId,
+        choiceId,
+        territoryId: c.territoryId,
+        parcelId: terr === undefined ? c.territoryId : this.parcelId(terr.hexIds[0]!),
+        expiresTick: c.expiresTick,
+        walkIn: c.battleId === undefined,
+        ...(c.armyId !== undefined ? { armyId: c.armyId } : {}),
+      });
     }
     return {
       governorId,
@@ -1082,10 +1189,19 @@ function serializeWorldState(state: WorldState): SerializedWorldState {
     intel: [...(state.intel ?? new Map<string, Map<string, number>>()).entries()].map(
       ([gov, mem]) => [gov, [...mem.entries()]] as [string, [string, number][]],
     ),
+    walkInOutcomes: [...(state.walkInOutcomes ?? [])],
   };
 }
 
 function deserializeWorldState(s: SerializedWorldState): WorldState {
+  // Migration: pre-F2 saves keyed pendingChoices by battleId without an `id`.
+  const pendingChoices = new Map(s.pendingChoices) as NonNullable<WorldState['pendingChoices']>;
+  for (const [key, c] of pendingChoices) {
+    if (c.id === undefined) {
+      c.id = key;
+      c.battleId ??= key;
+    }
+  }
   return {
     world: s.world,
     regions: new Map(s.regions) as WorldState['regions'],
@@ -1098,10 +1214,11 @@ function deserializeWorldState(s: SerializedWorldState): WorldState {
     governorKinds: new Map(s.governorKinds),
     ctBalances: new Map(s.ctBalances),
     officers: new Map(s.officers),
-    pendingChoices: new Map(s.pendingChoices) as WorldState['pendingChoices'],
+    pendingChoices,
     monsterNames: new Map(s.monsterNames),
     battleLogistics: new Map(s.battleLogistics ?? []),
     intel: new Map((s.intel ?? []).map(([gov, mem]) => [gov, new Map(mem)])),
+    walkInOutcomes: s.walkInOutcomes ?? [],
   };
 }
 

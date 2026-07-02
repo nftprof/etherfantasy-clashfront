@@ -240,6 +240,29 @@ export function loadDemoWorld(file: DemoWorldFile, rng: Rng, options: LoadDemoWo
     monsterNames.set(army.id, mRng.pick(DEMO_MONSTER_NAMES));
   }
 
+  // Neutral TOWNs (F2, ⚙ balance.towns): a share of garrison-free SYSTEM
+  // parcels become settled towns — population/treasury/prosperity grow with
+  // distance from the slice center (frontier towns are richer). Never on
+  // monster-garrisoned parcels; bloodless walk-in targets (docs/briefs/FEATURESET-2.md).
+  const towns = balance.towns;
+  for (const p of parcels) {
+    const tRng = rng.fork(`town:${p.parcelId}`);
+    if (tRng.next() >= towns.pct) continue;
+    const terr = territories.get(hexes.get(hexIdByParcel.get(p.parcelId)!)!.territoryId!)!;
+    if (terr.garrisonArmyId !== undefined) continue; // monsters keep their lairs
+    const distNorm = Math.hypot(p.center[0] - cx, p.center[1] - cy) / maxDist;
+    terr.zoneType = 'TOWN';
+    terr.population = Math.floor((towns.popBase + towns.popDistanceBonus * distNorm) * (0.85 + 0.3 * tRng.next()));
+    terr.ctTreasury = Math.floor(
+      (towns.treasuryCtUnitsBase + towns.treasuryCtUnitsDistanceBonus * distNorm) * (0.85 + 0.3 * tRng.next()),
+    );
+    terr.prosperity = Math.min(
+      CONSTANTS.PROSPERITY_MAX,
+      towns.prosperityBase + Math.floor(towns.prosperityDistanceBonus * distNorm),
+    );
+    terr.foodStock = terr.population * towns.foodPerPop;
+  }
+
   return {
     world,
     regions: new Map([[region.id, region]]),
@@ -256,6 +279,7 @@ export function loadDemoWorld(file: DemoWorldFile, rng: Rng, options: LoadDemoWo
     monsterNames,
     battleLogistics: new Map(),
     intel: new Map(),
+    walkInOutcomes: [],
   };
 }
 

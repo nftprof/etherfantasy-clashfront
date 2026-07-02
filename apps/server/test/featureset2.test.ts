@@ -248,6 +248,58 @@ test('F1 fog: an army marching out of sight sends a {hidden:true} tombstone delt
   assert.equal(sawTombstone, 1, 'exactly one tombstone when it leaves her intel');
 });
 
+// ── F2: neutral towns over the game API ───────────────────────────────────────
+
+test('F2 towns: walk-in emits town_entered, resolves via /api/choice with the choiceId', () => {
+  const game = new Game(gameConfig({ seed: 'fs2-town' }));
+  const alice = game.join('Alice');
+
+  // A TOWN with an adjacent claimable parcel (the real demo world seeds ~6%).
+  const towns = [...game.state.territories.values()].filter((t) => t.zoneType === 'TOWN');
+  assert.ok(towns.length > 0, 'demo world must seed towns');
+  let townId = '';
+  let homeId = '';
+  for (const town of towns) {
+    for (const n of game.state.adjacency!.get(town.hexIds[0]!) ?? []) {
+      const nt = game.state.territories.get(game.state.hexes.get(n)!.territoryId!)!;
+      if (nt.governorKind === 'SYSTEM' && nt.garrisonArmyId === undefined && nt.zoneType !== 'TOWN') {
+        townId = town.id;
+        homeId = nt.id;
+        break;
+      }
+    }
+    if (townId !== '') break;
+  }
+  assert.ok(townId !== '', 'need a town with a claimable neighbor');
+
+  game.claim(alice.governorId, homeId);
+  const raised = game.raise(alice.governorId, homeId, 'STANDARD');
+  game.march(alice.governorId, raised.army.id, townId);
+  const result = game.tick();
+
+  assert.ok(!result.events.some((e) => e.type === 'battle_resolved'), 'bloodless — no battle');
+  const entered = result.events.find((e) => e.type === 'town_entered') as any;
+  assert.ok(entered, 'town_entered event expected');
+  assert.equal(entered.governorId, alice.governorId);
+  assert.equal(entered.armyId, raised.army.id);
+  assert.equal(entered.zoneType, 'TOWN');
+
+  const my = game.myState(alice.governorId);
+  const pending = my.pendingChoices.find((c) => c.choiceId === entered.choiceId)!;
+  assert.equal(pending.walkIn, true);
+  assert.equal(pending.battleId, entered.choiceId, 'battleId doubles as the /api/choice key');
+
+  const resolved = game.choice(alice.governorId, entered.choiceId, 'OCCUPY');
+  assert.equal(resolved.territory?.governorId, alice.governorId, 'bloodless conquest');
+  assert.equal(resolved.action, 'OCCUPY');
+  assert.ok((resolved.lootCt ?? 0) >= 0);
+  const followUp = game.tick();
+  const occupiedEv = [...result.events, ...followUp.events].find(
+    (e) => e.type === 'territory_occupied' && (e as any).battleId === entered.choiceId,
+  );
+  assert.ok(occupiedEv, 'territory_occupied event carries the choiceId');
+});
+
 test('F1 fog: intel memory survives the snapshot save/load roundtrip', () => {
   const dir = mkdtempSync(join(tmpdir(), 'clashfront-fs2-'));
   const savePath = join(dir, 'save.json');
