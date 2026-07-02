@@ -1,6 +1,6 @@
 {
   "_note": "balance.json v0 — designer-tunable numbers (docs mark these ⚙). Sources: docs/01 (terrain, supply, desertion), docs/02 (prosperity, population, tax, food, development, pillage/occupy), docs/03 (upkeep, units, morale events). Canon CONSTANTS (HERO_IMPACT_MAX, TICK_SECONDS, PILLAGE_*, TAX_SPLIT_LANDLORD_DEFAULT, …) live in code (shared/src/constants.ts per docs/08 §2) and are NOT duplicated here. INVENTED PLACEHOLDERS (not given in docs, flag before tuning around them): supply.drainPer1000Troops (back-derived from 01 §5.3's '1000-troop army holds ~50 min' example), population.basePopCap.WILD/SEA (0), desertion.desertersReturnToWildBanditPct. KNOWN DOC CONFLICT: 01 §5.2 says +5 supply-range hexes per active train, 03 §7 says +3 (chainable up to 3 trains) — using 01's value 5; ❓ OPEN to resolve in docs.",
-  "version": 0,
+  "version": 1,
   "travel": {
     "moveCostByTerrain": {
       "PLAINS": 1.0,
@@ -134,5 +134,28 @@
     "draftBasePctOfPop": 0.05,
     "draftPerMilitaryLevel": 0.03,
     "disbandReturnPct": 0.9
+  },
+  "provisions": {
+    "_note": "Battle logistics ⚙ (docs/04 §7c). CT prices per carried unit (ct_units, integer money). defaults* = the standard pack bought at raiseArmy per soldier. battleFoodNeedPer100 = food a battle consumes per 100 soldiers (attacker carries it, defender eats territory foodStock). enduranceFloor = score multiplier at zero food. commandCenterTiers = camp → palisade → fortified camp, requirements scale per 100 attacker soldiers, cost is SPENT win or lose.",
+    "ctUnitsPerFood": 1000,
+    "ctUnitsPerGold": 2000,
+    "ctUnitsPerWood": 2000,
+    "defaultFoodPerSoldier": 5,
+    "defaultGoldPerSoldier": 1,
+    "defaultWoodPerSoldier": 1,
+    "marchFoodPerStepPer100": 2,
+    "battleFoodNeedPer100": 400,
+    "enduranceFloor": 0.6,
+    "starvationMoralePerTick": 1,
+    "starvationDesertionPctPerTick": 0.02,
+    "tieCasualtyFrac": 0.15,
+    "tieMoraleLoss": 10,
+    "scatterMoraleFloor": 10,
+    "scatterDisbandRemainingPct": 0.1,
+    "commandCenterTiers": [
+      { "goldPer100": 50, "woodPer100": 50, "bonus": 0.05 },
+      { "goldPer100": 100, "woodPer100": 100, "bonus": 0.1 },
+      { "goldPer100": 200, "woodPer100": 200, "bonus": 0.15 }
+    ]
   }
 }
