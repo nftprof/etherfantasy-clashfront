@@ -55,7 +55,10 @@ export class ClashServer {
     this.publicDir = config.publicDir ?? join(__dirname, '..', '..', 'public');
 
     // /api/world is static for the life of the world — render once, ETag it.
-    this.worldBody = JSON.stringify(this.game.worldGeometry());
+    // tickMs is server config (wall-clock boundary), stapled on so clients can
+    // convert tick ETAs to real time.
+    const geo = this.game.worldGeometry();
+    this.worldBody = JSON.stringify({ ...geo, meta: { ...geo.meta, tickMs: config.tickMs } });
     this.worldEtag = `"${createHash('sha1').update(this.worldBody).digest('hex')}"`;
 
     this.http = http.createServer((req, res) => {

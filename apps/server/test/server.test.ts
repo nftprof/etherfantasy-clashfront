@@ -114,6 +114,8 @@ test('e2e: join → claim adjacent → raise → march into each other → battl
     const world = await api(base, '/api/world');
     assert.equal(world.status, 200);
     assert.equal(world.json.parcels.length, 648);
+    assert.equal(world.json.meta.tickMs, null, 'server tick pacing is exposed to clients');
+    assert.equal(world.json.meta.travelTicksPerStep, 1);
     assert.ok(world.json.parcels[0].territoryId.startsWith('terr_'));
     const etag = world.headers.get('etag')!;
     const cached = await api(base, '/api/world', { headers: { 'if-none-match': etag } });
