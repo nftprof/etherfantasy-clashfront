@@ -33,7 +33,12 @@
 ## M1 deliverables (from the repurposing plan, unchanged in shape)
 
 - **B1**: strip MOBA furniture behind a mode flag (lanes/waves/towers/cores/shop/draft) with
-  pluggable win conditions (FIELD: rout/annihilation/timeout; core-structure kill).
+  pluggable win conditions per the ANCHOR-vs-RUSH anatomy (docs/04 §7b of the canon repo):
+  invader spawns WITH its command-center base + towers (tier from carried gold/wood); the
+  defending side on open ground has NO base and fields rushing unit waves; SIEGE = defender
+  anchor (real structures) vs attacker CC. Win = enemy anchor destroyed or force routed;
+  food-clock expiry without decisive kill = TIE. (The old core/tower code is thus REUSED, not
+  deleted: the invader CC is a relocated "core", towers are the attacker's now.)
 - **A1**: `Battlefield` JSON schema (bounds polygon, obstacles, terrain costs, spawn zones,
   structure anchors) consumed by sim + (later) renderer; placeholder seeded generator.
 - **D1**: `POST /internal/v1/matches/allocate` — battle context in (armies as unit stacks +

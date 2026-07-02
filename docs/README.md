@@ -100,8 +100,9 @@ Single source of truth for names. All docs, code, and schemas MUST use these exa
 
 ### Actors
 - **Player** — a human account. Has a **Hero** (their self), commands **Masters**, holds a **CT** wallet.
-- **Hero** — the player's **main self-identity**: their own persistent character (an EF MOBA avatar
-  — Irene/Kai/Leah base), **still fully playable** in battles. Skill-driven, not permanently leveled
+- **Hero** — the player's **main self-identity**: YOU, embodied as one of the playable characters
+  (Irene/Kai/Leah base), **fully playable** in battles — and Masters are equally playable as
+  drop-in hero units (you command a general like a MOBA hero). Skill-driven, not permanently leveled
   by Clash Front. *Who you are.*
 - **Master** — an EF character NFT the player **owns or rents** — the RoTK *general* of Clash Front
   (47 in the roster). Masters lead armies as officers and can be played/possessed in battles. Live

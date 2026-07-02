@@ -319,6 +319,23 @@ sides. AI-vs-AI battles run the SAME simulation with **accelerated ticks** (fast
 different resolver). The overworld's instant WarScore resolution is an acknowledged placeholder
 until battle-engine M1+; LIVE pacing then follows match reality (≈20–40 min occupying the parcel).
 
+**Battle anatomy (owner, 2026-07-02): ANCHOR vs RUSH — asymmetric MOBA.**
+- **The INVADER is the anchor side**: on engagement, Force A (attacker) erects its BASE — the
+  temporary command center + towers from carried gold/wood (§7c) — a foothold on hostile ground.
+- **The defending side is the rush side**: Force B has NO base on open/unfortified ground — it
+  fields unit waves that RUSH the invader's base, trying to overwhelm the foothold before it
+  takes hold. (Defending your land = the swarm; invading = tower-defense from the attacker's
+  seat: dig in, hold, grind.)
+- **Fortified ground (SIEGE)**: the defender ALSO has an anchor (their real walls/towers/keep —
+  the parcel's built structures), making sieges dual-anchor: CC camp vs castle.
+- **Win conditions**: destroy the enemy anchor (invader's CC ⇒ invasion repelled; defender's
+  keep ⇒ ground taken) or rout the enemy force; food clock expiry without a decisive kill = TIE
+  (§7c: attacker withdraws).
+- **The battle resolves ON the game map** — a real simulation of these forces, never a stat
+  formula. Fully **spectatable** (watch live or review the replay), and players may **drop in
+  controlling a Master as the hero unit** (MOBA-style command); the player's own Hero — embodied
+  as one of the playable characters (Irene/Kai/Leah) — plays the same way.
+
 **Parcel map design layer (owner, 2026-07-02 v0.2):**
 - Parcel GEOMETRY never changes; each parcel's **battle terrain is a designed map** (trees,
   water, boulders — fixed MOBA-style map design per parcel).
