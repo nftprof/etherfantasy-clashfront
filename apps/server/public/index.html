@@ -2,53 +2,48 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Clash Front — server smoke page</title>
-  <style>
-    body { font: 14px/1.5 monospace; background: #12141a; color: #d7dce3; margin: 2rem; }
-    h1 { font-size: 1.1rem; }
-    #log { white-space: pre-wrap; border: 1px solid #333; padding: 0.75rem; max-height: 60vh; overflow-y: auto; }
-    .ok { color: #6fcf7c; }
-    .err { color: #e46a6a; }
-  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Clash Front</title>
+  <link rel="stylesheet" href="/app.css">
 </head>
 <body>
-  <h1>Clash Front MVP server — integration smoke page</h1>
-  <p>apps/web replaces this page. It joins as a throwaway player, fetches <code>/api/world</code>, opens the WS, and logs ticks.</p>
-  <div id="log"></div>
-  <script>
-    const logEl = document.getElementById('log');
-    const log = (msg, cls) => {
-      const line = document.createElement('div');
-      if (cls) line.className = cls;
-      line.textContent = `[${new Date().toISOString().slice(11, 19)}] ${msg}`;
-      logEl.appendChild(line);
-      logEl.scrollTop = logEl.scrollHeight;
-    };
-    (async () => {
-      try {
-        const world = await (await fetch('/api/world')).json();
-        log(`world: zone ${world.meta.zone}, ${world.parcels.length} parcels, seed '${world.meta.seed}'`, 'ok');
-        const join = await (await fetch('/api/join', {
-          method: 'POST',
-          headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ name: 'smoke-' + Math.random().toString(36).slice(2, 8) }),
-        })).json();
-        log(`joined as ${join.playerId} with ${join.officers.length} officers (${join.officers.map(o => o.name).join(', ')})`, 'ok');
-        const proto = location.protocol === 'https:' ? 'wss' : 'ws';
-        const ws = new WebSocket(`${proto}://${location.host}/ws?token=${join.token}`);
-        ws.onopen = () => log('ws open', 'ok');
-        ws.onclose = () => log('ws closed', 'err');
-        ws.onmessage = (e) => {
-          const m = JSON.parse(e.data);
-          if (m.t === 'hello') log(`hello: tick ${m.tick}, player ${m.playerId}`, 'ok');
-          else if (m.t === 'tick') log(`tick ${m.tick}: ${m.events.length} events, deltas t/a/b = ` +
-            `${m.deltas.territories.length}/${m.deltas.armies.length}/${m.deltas.battles.length}` +
-            (m.events.length ? ' — ' + m.events.map(ev => ev.type).join(', ') : ''));
-        };
-      } catch (e) {
-        log('smoke failed: ' + e.message, 'err');
-      }
-    })();
-  </script>
+  <div id="app">
+    <!-- left: home rail -->
+    <aside id="rail">
+      <header id="rail-head">
+        <span id="conn-pip" class="pip connecting" title="connection"></span>
+        <span id="rail-title">CLASH FRONT</span>
+        <span id="rail-player"></span>
+      </header>
+      <div id="rail-body"></div>
+    </aside>
+
+    <!-- map -->
+    <main id="map-wrap">
+      <canvas id="map"></canvas>
+      <div id="tooltip" hidden></div>
+      <div id="march-popover" hidden></div>
+      <div id="select-banner" hidden></div>
+      <div id="toasts"></div>
+    </main>
+
+    <!-- right: parcel card -->
+    <aside id="card" hidden></aside>
+
+    <!-- join overlay -->
+    <div id="join" hidden>
+      <form id="join-form">
+        <h1>CLASH FRONT</h1>
+        <p class="sub">The overworld is at war. Name your banner.</p>
+        <input id="join-name" maxlength="24" placeholder="your name" autocomplete="off" required>
+        <button type="submit">Enter the war</button>
+        <p id="join-err" class="err"></p>
+      </form>
+    </div>
+
+    <!-- pillage/occupy modal -->
+    <div id="modal" hidden></div>
+  </div>
+  <script type="module" src="/js/app.js"></script>
 </body>
 </html>
