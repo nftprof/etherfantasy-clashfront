@@ -454,7 +454,7 @@ export class Game {
     const t = this.getTerritory(toTerritoryId);
     const toHex = t.hexIds[0]!;
     if (a.hexId === toHex) throw new ApiError(400, 'ALREADY_THERE', 'army is already on that parcel');
-    const path = findPath(this.state, a.hexId, toHex);
+    const path = findPath(this.state, a.hexId, toHex, governorId); // hostile parcels block transit
     if (path === undefined || path.length === 0) throw new ApiError(400, 'UNREACHABLE', `no path to ${t.name}`);
     const fromParcelId = this.parcelId(a.hexId);
     try {

@@ -462,9 +462,33 @@ export function orderMarch(state: WorldState, armyId: string, path: readonly str
  * or undefined if unreachable. Neighbor order is the stored sorted order,
  * so equal-length paths tie-break identically on every run.
  */
-export function findPath(state: WorldState, fromHexId: string, toHexId: string): string[] | undefined {
+/**
+ * True if `hexId`'s territory is hostile ground for `governorId`: an armed
+ * garrison (wild monsters or another governor's troops) holds it. Product-owner
+ * rule (2026-07-02): armies cannot walk PAST enemies — hostile parcels never
+ * appear mid-path; they may only be a march's FINAL destination (= attack).
+ * Own/allied-garrison and empty parcels are passable.
+ */
+export function isHostileGround(state: WorldState, hexId: string, governorId: string): boolean {
+  const t = [...state.territories.values()].find((x) => x.hexIds[0] === hexId);
+  if (t === undefined) return false;
+  if (t.garrisonArmyId === undefined) return false;
+  const g = state.armies.get(t.garrisonArmyId);
+  return g !== undefined && g.state !== 'DISBANDED' && g.ownerGovernorId !== governorId;
+}
+
+export function findPath(
+  state: WorldState,
+  fromHexId: string,
+  toHexId: string,
+  governorId?: string,
+): string[] | undefined {
   if (state.adjacency === undefined) throw new Error('findPath: world has no adjacency graph');
   if (fromHexId === toHexId) return [];
+  // Hostile-held parcels block transit (see isHostileGround) — traversable only
+  // as the terminal node. No governorId = raw geometric path (internal callers).
+  const blocked = (h: string): boolean =>
+    governorId !== undefined && h !== toHexId && isHostileGround(state, h, governorId);
   const prev = new Map<string, string>();
   const queue = [fromHexId];
   const seen = new Set([fromHexId]);
@@ -473,6 +497,7 @@ export function findPath(state: WorldState, fromHexId: string, toHexId: string):
     for (const n of state.adjacency.get(cur) ?? []) {
       if (seen.has(n)) continue;
       seen.add(n);
+      if (blocked(n)) continue;
       prev.set(n, cur);
       if (n === toHexId) {
         const path: string[] = [n];
