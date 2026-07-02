@@ -62,7 +62,10 @@ Clash Front builds **on top of existing EF systems**. Integration targets (all u
 | `hexagon-crons` | Scheduled jobs for hexagon city | Python | Reference for existing land/yield cron logic. |
 | `_archive-infra-hexr-backend` | Old hexagon-city backend (**archived**) | C# | Historical reference only — do not build against. |
 
-**Chain:** Pentagon Chain (Land NFTs + CT settlement — see [`07`](./07-backend-architecture.md) chain service).
+**Chains (corrected 2026-07-02 by map extraction):** Land is **NOT** on Pentagon Chain —
+**estates (L2) = ERC-721 on Ethereum (chainId 1); parcels (L3) = ERC-721 on Polygon (chainId 137);
+Pentagon Chain = characters (Masters) + MOBA escrow only.** The chain service ([`07`](./07-backend-architecture.md))
+must be multi-chain; `LandNFT.chainId` already models this per-NFT.
 
 > ❓ OPEN — **Repo access.** These sibling repos must be added to the agent session's repo scope to be
 > readable. Until then, build against the **battle handoff contract** in

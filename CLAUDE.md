@@ -41,7 +41,8 @@ export can be converted to the documented format. See `data/README.md`.
 4. One battle map = smallest parcel size. Estates (100s–10,000 hexes) fight as linked per-hex
    components with an adjacency-gated internal front; castle = final component. See `docs/04` §7b.
 5. Only estates have pre-designed castle/city-wall maps (real-world castle design references).
-6. Chain = Pentagon Chain. Hero impact cap = 20% (`HERO_IMPACT_MAX`). Landlord tax share default 30%.
+6. Chains (CORRECTED by map extraction): estates(L2)=Ethereum, parcels(L3)=Polygon,
+   Pentagon Chain=characters/MOBA only. Hero impact cap = 20% (`HERO_IMPACT_MAX`). Landlord tax 30%.
 7. **Masters = the RoTK generals** (owned/RENTED character NFTs, KO/revive lifecycle). LIVE API on
    `api.etherfantasy.com` — endpoints + samples in `docs/09` §7. This CONFIRMS
    `games-etherfantasy-backend` as character source of truth (old open question #3 → answered).
@@ -57,6 +58,12 @@ export can be converted to the documented format. See `data/README.md`.
 - `blockchainsuperheroes/games-etherfantasy-backend` — EF platform API (accounts/heroes, confirm SoT)
 - `blockchainsuperheroes/hexagon-crons` — existing land/yield cron jobs (Python)
 - `_archive-infra-hexr-backend` — archived, reference only
+
+## 🎯 TOP PRIORITY: MVP playable by 2026-07-07
+
+Scope contract: `docs/briefs/MVP-JULY7.md`. Everything else yields to it. Map data is DELIVERED
+(`data/hexagon-city-source/` — 292,766 parcels; see `MAP-EXTRACTION-REPORT.md` there). MVP runs on
+the parcel graph of ONE zone (hexification deliberately punted — permanent decision, post-MVP).
 
 ## Immediate next steps (in order)
 
