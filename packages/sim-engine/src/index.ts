@@ -4,3 +4,4 @@
 export * from './state';
 export * from './tick';
 export * from './seed';
+export * from './parcels';
