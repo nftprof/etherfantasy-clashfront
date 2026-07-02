@@ -371,6 +371,16 @@ on-chain burns from escrow — the game is structurally deflationary for the tok
 **Conservation invariant (tested):** wallets + territory treasuries + enrichment pools +
 burned + treasury + unclaimedLordYield === minted, exactly, every tick.
 
+**On-chain settlement (product owner 2026-07-02):** CT is the live Pentagon Chain token
+**`0x6a3a8407E6d33cDb63650741Bd1f3a97a1D2D4b9`** (see etherfantasy.com/token). Spends and rewards
+settle through an on-chain **game vault contract** with the backend as authorized operator (the
+MOBA PlayEscrow pattern): deposit/withdraw player-facing; operator `spend`/`reward` calls carry
+the bucket split IN THE CONTRACT (publicly auditable routing + real `burn()`); per-tick
+micro-flows accumulate in the game ledger and settle in batches (per action for large flows,
+per epoch ⚙ for dust). The sim emits an append-only **settlement journal** (every spend/reward
+with exact integer splits); replaying the journal from genesis must reproduce the supply — the
+journal IS the settlement guarantee, and the chain worker is a pure consumer of it.
+
 **Telemetry is a feature:** `/api/economy` exposes supply, burn, flows-by-reason, and loot-inflow
 heat — the balance team cannot tune what it cannot see.
 

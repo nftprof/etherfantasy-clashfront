@@ -68,9 +68,11 @@ MOBA PlayEscrow, and the CT TOKEN itself** (CT is a live on-chain token — prod
 2026-07-02). The chain service ([`07`](./07-backend-architecture.md)) must be multi-chain;
 `LandNFT.chainId` models land per-NFT. CT flow model: players DEPOSIT CT into the game
 (escrow; deposit caps per epoch = the anti-P2W faucet cap) and WITHDRAW out; the in-game
-ledger is authoritative during play, and the economy's BURN bucket settles as REAL periodic
-on-chain burns from escrow ([`02`](./02-economy.md) §13). The MOBA repo's PlayEscrow client is
-the proven integration pattern.
+ledger is authoritative between settlements; spends/rewards settle through an on-chain game
+vault contract (backend = operator; splits + real burns in-contract; batched per action/epoch;
+settlement journal in the sim — [`02`](./02-economy.md) §13). CT token on Pentagon Chain:
+`0x6a3a8407E6d33cDb63650741Bd1f3a97a1D2D4b9`. The MOBA repo's PlayEscrow client is the proven
+integration pattern.
 
 > ❓ OPEN — **Repo access.** These sibling repos must be added to the agent session's repo scope to be
 > readable. Until then, build against the **battle handoff contract** in
