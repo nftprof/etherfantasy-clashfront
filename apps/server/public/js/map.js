@@ -3,13 +3,14 @@
  * no tiling). Camera pan/zoom/goto-fly, HiDPI, and a rAF gate: frames are drawn
  * only when state/camera changed or an animation (march, fire, flight) runs.
  *
- * Ground: terrain.js bakes ocean/barrens/parcel floors (textures + owner tints +
- * strokes) into offscreen world-space buckets — a frame draws the ocean pattern
- * + ONE base blit, then the dynamic overlays live: bright own-parcel rims,
- * battles = fire+smoke burst (~30s fade), stalemates = gray smoke only
- * (docs/04 §7c TIE — nothing burned, nobody won), retreats = fading dashed
- * line + sliding chevron, pillage = smoldering tint (~60s), occupation = color
- * pulse; monster garrisons keep the red-eye dot on top of their grave floor.
+ * Ground: terrain.js bakes ONE continuous procedural landscape (heightfield +
+ * hillshade + props, docs/map-engine/01 §2d) with the parcel grid/ownership
+ * washes as a thin overlay into offscreen world-space buckets — a frame draws
+ * the ocean pattern + ONE base blit, then the dynamic overlays live: bright
+ * own-parcel rims, battles = fire+smoke burst (~30s fade), stalemates = gray
+ * smoke only (docs/04 §7c TIE — nothing burned, nobody won), retreats = fading
+ * dashed line + sliding chevron, pillage = smoldering tint (~60s), occupation =
+ * color pulse; monster garrisons keep the red-eye dot on top of their stain.
  */
 import { createTerrain } from './terrain.js';
 import { easeInOut, pointInPoly, rgba } from './util.js';
@@ -22,7 +23,7 @@ const RETREAT_MS = 4200;
 
 export function createMap(canvas, store, handlers) {
   const ctx = canvas.getContext('2d');
-  const terrain = createTerrain(store);
+  const terrain = createTerrain(store, () => { dirty = true; }); // heightfield lands async
   terrain.loadTextures(() => { dirty = true; }); // flat colors render until then
   let dpr = 1, w = 0, h = 0;
   const cam = { cx: 0, cy: 0, s: 20 };
@@ -449,6 +450,7 @@ export function createMap(canvas, store, handlers) {
       return c ? toScreen(c[0], c[1]) : [w / 2, h / 2];
     },
     get texturesReady() { return terrain.texturesReady; },
+    get terrainReady() { return terrain.fieldReady; },
     /** Debug/perf hook: average full-frame draw cost in ms over n frames (blit path). */
     profileDraw(n = 60) {
       const t0 = performance.now();

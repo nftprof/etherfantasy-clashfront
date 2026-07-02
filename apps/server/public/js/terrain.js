@@ -1,100 +1,153 @@
 /**
- * Terrain base layer for the overworld map (graphics pass; docs/map-engine/01
- * §2b ambient ground reads, §4 rendering).
+ * Terrain base layer v2 — continuous procedural landscape (docs/map-engine/01
+ * §2b–2d; RTK14 benchmark: ONE lit landscape, the parcel grid is a thin overlay
+ * that terrain ignores; the per-parcel texture "quilt" of v1 is gone).
  *
- * Deterministic per-parcel floors (seeded by parcelId hash — same parcel, same
- * look, every session):
- *   wild              → grass_01/02; the outer ~35% frontier (same
- *                       distance-from-slice-center metric that scales monster
- *                       strength) blends desert_01–05 badlands in
- *   monster garrison  → grave_01 (the red-eye dot stays on top, drawn live)
- *   owned             → stone_01–04 plaza + owner color tint on top — COLOR IS
- *                       THE INFORMATION, texture is flavor: the tint is stronger
- *                       on the zoomed-out bucket so empires read from orbit
- *   prestige          → lobby_01 (prosperity ≥ 70, or the NPC kingdom's
- *                       strongest holding — its shining capital)
+ * Ground (deterministic, seeded, world-coords):
+ *   heightfield  — masks (landmass plate / parcel cluster) → chamfer distance
+ *                  transforms → multi-octave value noise. Three bands:
+ *                  SEA (outside the plate, smooth coast falloff), LOWLAND (the
+ *                  habitable parcel zone — mild relief only), HILLS (the
+ *                  non-parcel barrens rise into ridges — impassability reads
+ *                  as geography).
+ *   hypsometry   — muted palette: deep water → shallow → sand shore → olive
+ *                  plains (moisture-varied) → tan-brown hills → pale ridges.
+ *   hillshading  — per-cell lambert from the height gradient, light from NW,
+ *                  computed on a fixed 1280-long-side world grid and
+ *                  smooth-scaled into the buckets (slopes MUST read).
+ *   props        — painterly trees (broadleaf/conifer/bush blob clusters with
+ *                  SE shadows) + rocks, seeded jittered-grid scatter: clusters
+ *                  on hillsides, sparse in plains, none inside parcels; wild
+ *                  parcels get their own few trees (vanish when settled).
  *
- * Non-parcel space (canon: two non-ownable area types):
- *   OCEAN      → procedural seamless deep-water tile, drawn live as ONE
- *                world-anchored pattern fillRect under everything (infinite,
- *                no bucket bounds). Static — no shimmer, keeps the rAF gate idle.
- *   WILD BARRENS → impassable wilderness plate between ocean and parcels: a
- *                blobbed/noised hull around the cluster (organic coast, not a
- *                bbox), filled with heavily darkened scrub (grass+desert mix,
- *                hatched). No strokes, no hover — reads as "you cannot go here".
- *                Interior no-parcel gaps show it too (it underlies the parcels).
+ * Parcel overlay (the grid feel): thin translucent borders everywhere;
+ * ownership = translucent color wash (strongest on the zoomed-out bucket —
+ * empires must read from orbit) + owner-colored border; prestige (prosperity
+ * ≥ 70 / NPC capital) = gold border glow; monster garrisons = dark corrupted
+ * ground stain (the red eye stays on top, drawn live). Floor textures survive
+ * ONLY as faint low-alpha accents (grass on wild, desert toward the frontier,
+ * stone on owned plazas). grave_01/lobby_01 are sprite atlases — never floors.
  *
- * Perf: textures load async — flat colors render FIRST (no blank map, ever).
- * The full static base (barrens plate + pattern fills + tints + strokes) bakes
- * into offscreen canvases in WORLD space at 3 resolution buckets (two
- * whole-world + one viewport-follow for high zoom, each ≤ 4096 px long side);
- * a frame is then ONE drawImage. Buckets re-render only when ownership/
- * prestige/garrison state changes (small diffs are patched in place), when
- * textures arrive, or when zoom crosses a bucket. Patterns tile in WORLD
- * coordinates (~3 repeats per parcel) so textures never swim while panning.
+ * Perf: flat band colors render FIRST; the heightfield generates in idle
+ * chunks (~9 ms budget), then buckets rebuild once. Same bucket/blit contract
+ * as v1: the static base bakes into ≤3 offscreen world-space canvases, a frame
+ * is ONE drawImage; ownership diffs are patched in place (terrain re-blit
+ * clipped to the parcel + wash/border). Nothing terrain-related runs per frame.
  */
-import { rgba, shade } from './util.js';
+import { pointInPoly, rgba } from './util.js';
 
 const VARIANTS = {
   grass: ['grass_01', 'grass_02'],
   desert: ['desert_01', 'desert_02', 'desert_03', 'desert_04', 'desert_05'],
   stone: ['stone_01', 'stone_02', 'stone_03', 'stone_04'],
 };
-const ALL_TEXTURES = [...VARIANTS.grass, ...VARIANTS.desert, ...VARIANTS.stone, 'grave_01', 'lobby_01'];
+const ALL_TEXTURES = [...VARIANTS.grass, ...VARIANTS.desert, ...VARIANTS.stone];
 
-/** Night-grade wash (page-bg colored) baked into each tile — keeps the dark map aesthetic. */
-const DARKEN = { grass: 0.52, desert: 0.5, grave: 0.4, stone: 0.32, lobby: 0.24 };
+/** Flat fallbacks so the map renders before the heightfield/textures arrive. */
+const FLAT = { land: '#3d4832', ocean: '#0d1e2c' };
 
-/** Flat fallbacks so the map renders before textures arrive (progressive enhancement). */
-const FLAT = { grass: '#232f1d', desert: '#38301f', grave: '#251f2b', barrens: '#131a12', ocean: '#0b1420' };
-
-const TILE_WU = 0.24;             // world units per floor-texture repeat (~3 per parcel)
-const BARRENS_TILE_WU = 0.4;      // scrub repeats calmer than parcel floors
+const TILE_WU = 0.24;             // world units per accent-texture repeat
 const OCEAN_TILE_WU = 9;          // ocean noise is a large, low-contrast tile
-const PLATE_PAD = 2.6;            // world buckets extend past the bbox so the coast never clips
+const PLATE_PAD = 2.6;            // world buckets/field extend past the bbox (sea room)
 const MAX_SIDE = 4096;            // long-side budget per offscreen bucket
 const W0_SIDE = 1536;             // zoomed-out whole-world bucket side
-const PRESTIGE_PROSPERITY = 70;   // docs: high-prosperity plaza accent
-const FRONTIER = 0.65;            // dist/maxDist ≥ this → badlands (blend band below)
+const FIELD_SIDE = 1280;          // heightfield grid long side (smooth-scaled up)
+const PRESTIGE_PROSPERITY = 70;   // docs: high-prosperity gold accent
+const FRONTIER = 0.65;            // dist/maxDist ≥ this → desert accent band
 const PATCH_MAX = 48;             // bigger ownership diffs → full bucket rebuild
+
+// ── heightfield tuning (world units / e-units) ──────────────────────────────
+const COAST_FALL = 1.15;          // shore → deep water over this distance
+const HILL_START = 0.16;          // relief starts this far from any parcel
+const HILL_FULL = 0.85;           // …and reaches full ridge amplitude here
+const Z_SCALE = 1.1;              // e-gradient → slope steepness for shading
+const LX = -0.551, LY = -0.551, LZ = 0.627; // light from NW (normalized)
+const PROP_SPACING = 0.16;        // scatter-grid cell (wu)
 
 function fnv(id) {
   let h = 2166136261;
   for (const c of id) h = (h ^ c.charCodeAt(0)) * 16777619 >>> 0;
   return h;
 }
-/** Tiny seeded PRNG (LCG) for procedural tiles / coast noise — deterministic. */
+/** Tiny seeded PRNG (LCG) — parcel trees / ocean tile. Deterministic. */
 function lcg(seed) {
   let s = fnv(seed);
   return () => ((s = (s * 1664525 + 1013904223) >>> 0) >>> 8) / 16777216;
 }
 const pick = (arr, h) => arr[(h >>> 10) % arr.length];
 
-export function createTerrain(store) {
+/** Integer-lattice hash → [0,1). Deterministic, no state. */
+function hash2(x, y, seed) {
+  let h = (Math.imul(x, 374761393) + Math.imul(y, 668265263) + Math.imul(seed, 2246822519)) | 0;
+  h = Math.imul(h ^ (h >>> 13), 1274126177);
+  return ((h ^ (h >>> 16)) >>> 0) / 4294967296;
+}
+/** Smooth value noise on the unit lattice. */
+function vnoise(x, y, seed) {
+  const ix = Math.floor(x), iy = Math.floor(y);
+  let fx = x - ix, fy = y - iy;
+  fx = fx * fx * (3 - 2 * fx);
+  fy = fy * fy * (3 - 2 * fy);
+  const a = hash2(ix, iy, seed), b = hash2(ix + 1, iy, seed);
+  const c = hash2(ix, iy + 1, seed), d = hash2(ix + 1, iy + 1, seed);
+  return a + (b - a) * fx + (c - a) * fy + (a - b - c + d) * fx * fy;
+}
+function fbm(x, y, seed, oct) {
+  let s = 0, amp = 0.5, f = 1, norm = 0;
+  for (let o = 0; o < oct; o++) {
+    s += amp * vnoise(x * f, y * f, seed + o);
+    norm += amp; amp *= 0.5; f *= 2;
+  }
+  return s / norm;
+}
+/** Ridged fbm — sharp crests for the hill band. */
+function ridged(x, y, seed, oct) {
+  let s = 0, amp = 0.55, f = 1, norm = 0;
+  for (let o = 0; o < oct; o++) {
+    const r = 1 - Math.abs(2 * vnoise(x * f, y * f, seed + o) - 1);
+    s += amp * r * r;
+    norm += amp; amp *= 0.5; f *= 2.1;
+  }
+  return s / norm;
+}
+function sstep(v, a, b) {
+  const t = Math.min(1, Math.max(0, (v - a) / (b - a)));
+  return t * t * (3 - 2 * t);
+}
+const clamp255 = (v) => v < 0 ? 0 : v > 255 ? 255 : v;
+
+export function createTerrain(store, onUpdate) {
   const patterns = new Map();     // texture name → world-anchored CanvasPattern
   let oceanPattern = null;
-  let barrensPattern = null;
   let texReady = false;
 
   let paths = null, bboxes = null, worldBBox = null, longSideWu = 1;
-  const wildTex = new Map();      // parcelId → grass/desert variant (static, seeded)
-  const stoneTex = new Map();     // parcelId → stone variant (static, seeded)
-  let platePath = null;           // wild-barrens landmass silhouette (Path2D, world)
+  const wildTex = new Map();      // parcelId → grass/desert accent variant (seeded)
+  const stoneTex = new Map();     // parcelId → stone accent variant (seeded)
+  const parcelTrees = new Map();  // parcelId → props (drawn only while WILD)
+  let platePath = null;           // landmass silhouette (Path2D, world coords)
+  let allParcelsPath = null;      // union of parcel outlines (mask rasterization)
   let lastSig = null;             // parcelId → ownership signature
-  let npcCapitals = new Set();    // strongest holding per NPC kingdom → lobby accent
+  let npcCapitals = new Set();    // strongest holding per NPC kingdom → gold accent
   let stateDirty = false;
   let w0 = null, w1 = null, vb = null; // buckets {canvas,ctx,ppu,x0,y0,x1,y1,wWu,hWu}
+
+  // heightfield state (built async in idle chunks after prepare())
+  let field = null;               // {canvas, x0, y0, w, h} — world-extent RGBA raster
+  let fieldReady = false;
+  let props = [];                 // global scatter (trees/rocks OUTSIDE parcels)
+  let gen = 0;                    // generation token — abandons stale builds
 
   const w0ppu = () => W0_SIDE / longSideWu;
   const w1ppu = () => MAX_SIDE / longSideWu;
   function invalidateAll() { w0 = w1 = vb = null; }
 
-  // ── texture loading (async; one repaint when done) ─────────────────────────
+  // ── texture loading (async; accents only — one repaint when done) ──────────
   function loadTextures(onReady) {
     const jobs = ALL_TEXTURES.map((name) => new Promise((res) => {
       const img = new Image();
       img.onload = () => res({ name, img });
-      img.onerror = () => res(null); // missing texture → that class stays flat
+      img.onerror = () => res(null); // missing texture → that accent is skipped
       img.src = `textures/floors/${name}.png`;
     }));
     Promise.all(jobs).then((loaded) => {
@@ -103,57 +156,25 @@ export function createTerrain(store) {
         pat.setTransform(new DOMMatrix([wu / px, 0, 0, wu / px, 0, 0]));
         return pat;
       };
-      const imgs = new Map();
       for (const it of loaded) {
         if (!it) continue;
-        imgs.set(it.name, it.img);
-        const tile = document.createElement('canvas');
-        tile.width = tile.height = it.img.width;
-        const tc = tile.getContext('2d');
-        tc.drawImage(it.img, 0, 0);
-        tc.fillStyle = `rgba(10,14,19,${DARKEN[it.name.slice(0, it.name.indexOf('_'))]})`;
-        tc.fillRect(0, 0, tile.width, tile.height);
-        patterns.set(it.name, anchor(pctx.createPattern(tile, 'repeat'), TILE_WU, tile.width));
+        patterns.set(it.name, anchor(pctx.createPattern(it.img, 'repeat'), TILE_WU, it.img.width));
       }
-      barrensPattern = anchor(pctx.createPattern(buildBarrensTile(imgs), 'repeat'), BARRENS_TILE_WU, 256);
       oceanPattern = anchor(pctx.createPattern(buildOceanTile(), 'repeat'), OCEAN_TILE_WU, 256);
       texReady = true;
       invalidateAll();
-      // idle-prebuild the whole-world buckets so bucket crossings never hitch mid-flight
-      setTimeout(() => { if (paths) { w0 ??= makeWorldBucket(w0ppu()); w1 ??= makeWorldBucket(w1ppu()); } }, 250);
       onReady?.();
     });
   }
 
-  /** Impassable-scrub tile: dark grass+desert mix with a faint hatch (seamless). */
-  function buildBarrensTile(imgs) {
-    const c = document.createElement('canvas');
-    c.width = c.height = 256;
-    const t = c.getContext('2d');
-    t.fillStyle = FLAT.barrens;
-    t.fillRect(0, 0, 256, 256);
-    const g = imgs.get('grass_02') ?? imgs.get('grass_01');
-    if (g) t.drawImage(g, 0, 0, 256, 256);
-    const d = imgs.get('desert_01');
-    if (d) { t.globalAlpha = 0.3; t.drawImage(d, 0, 0, 256, 256); t.globalAlpha = 1; }
-    t.fillStyle = 'rgba(8,12,10,0.72)'; // heavy darkening — clearly not claimable land
-    t.fillRect(0, 0, 256, 256);
-    t.strokeStyle = 'rgba(0,0,0,0.16)'; // diagonal hatch, spacing divides 256 → seamless
-    t.lineWidth = 3;
-    t.beginPath();
-    for (let i = -256; i < 256; i += 32) { t.moveTo(i, 0); t.lineTo(i + 256, 256); }
-    t.stroke();
-    return c;
-  }
-
-  /** Procedural seamless deep-water tile: layered blues + wave banding (seeded). */
+  /** Procedural seamless deep-water tile, palette-matched to the hypsometric sea. */
   function buildOceanTile() {
     const S = 256;
     const c = document.createElement('canvas');
     c.width = c.height = S;
     const t = c.getContext('2d');
     const rnd = lcg('cf-ocean');
-    t.fillStyle = '#0c1826';
+    t.fillStyle = '#0d1e2c';
     t.fillRect(0, 0, S, S);
     const wrap = (draw) => { // 3×3 stamp so every primitive tiles seamlessly
       for (let dx = -S; dx <= S; dx += S) for (let dy = -S; dy <= S; dy += S) draw(dx, dy);
@@ -162,7 +183,7 @@ export function createTerrain(store) {
       const x = rnd() * S, y = rnd() * S, r = 70 + rnd() * 90, deep = rnd() < 0.5;
       wrap((dx, dy) => {
         const g = t.createRadialGradient(x + dx, y + dy, 0, x + dx, y + dy, r);
-        g.addColorStop(0, deep ? 'rgba(6,14,24,0.22)' : 'rgba(28,58,88,0.14)');
+        g.addColorStop(0, deep ? 'rgba(7,15,24,0.24)' : 'rgba(36,74,98,0.13)');
         g.addColorStop(1, 'rgba(0,0,0,0)');
         t.fillStyle = g;
         t.fillRect(x - r + dx, y - r + dy, r * 2, r * 2);
@@ -171,7 +192,7 @@ export function createTerrain(store) {
     t.lineCap = 'round';
     for (let i = 0; i < 90; i++) { // wave dashes: subtle light banding
       const x = rnd() * S, y = rnd() * S, len = 8 + rnd() * 22, bow = 2 + rnd() * 3;
-      t.strokeStyle = `rgba(120,170,210,${0.03 + rnd() * 0.04})`;
+      t.strokeStyle = `rgba(126,174,206,${0.03 + rnd() * 0.04})`;
       t.lineWidth = 1 + rnd();
       wrap((dx, dy) => {
         t.beginPath();
@@ -195,19 +216,44 @@ export function createTerrain(store) {
     cx /= Math.max(1, n); cy /= Math.max(1, n);
     let maxD = 1e-9;
     for (const p of store.parcels.values()) maxD = Math.max(maxD, Math.hypot(p.center[0] - cx, p.center[1] - cy));
+    allParcelsPath = new Path2D();
     for (const p of store.parcels.values()) {
       const h = fnv(p.id);
       const dn = Math.hypot(p.center[0] - cx, p.center[1] - cy) / maxD;
-      const badlands = (h % 997) / 997 < (dn - (FRONTIER - 0.15)) / 0.15; // outer ring → desert
+      const badlands = (h % 997) / 997 < (dn - (FRONTIER - 0.15)) / 0.15; // outer ring → desert accent
       wildTex.set(p.id, badlands ? pick(VARIANTS.desert, h) : pick(VARIANTS.grass, h));
       stoneTex.set(p.id, pick(VARIANTS.stone, h));
+      allParcelsPath.addPath(paths.get(p.id));
+      parcelTrees.set(p.id, makeParcelTrees(p));
     }
     platePath = buildPlate(cx, cy);
     lastSig = null;
+    fieldReady = false;
+    field = null;
+    props = [];
     invalidateAll();
+    buildField();
   }
 
-  /** Wild-barrens landmass silhouette: noised convex hull of all parcel vertices. */
+  /** 2–4 small seeded trees per parcel — drawn only while the parcel is wild. */
+  function makeParcelTrees(p) {
+    const rnd = lcg(p.id + ':trees');
+    const [ax, ay, bx, by] = [
+      Math.min(...p.polygon.map((v) => v[0])), Math.min(...p.polygon.map((v) => v[1])),
+      Math.max(...p.polygon.map((v) => v[0])), Math.max(...p.polygon.map((v) => v[1])),
+    ];
+    const out = [];
+    const want = 2 + Math.floor(rnd() * 3);
+    for (let tries = 0; tries < 24 && out.length < want; tries++) {
+      const x = ax + rnd() * (bx - ax), y = ay + rnd() * (by - ay);
+      if (!pointInPoly(p.polygon, x, y)) continue;
+      const h = rnd();
+      out.push({ x, y, r: 0.034 + rnd() * 0.028, k: h < 0.55 ? 0 : h < 0.85 ? 2 : 1, h: rnd() });
+    }
+    return out;
+  }
+
+  /** Landmass silhouette: noised convex hull of all parcel vertices. */
   function buildPlate(ccx, ccy) {
     const pts = [];
     for (const p of store.parcels.values()) for (const v of p.polygon) pts.push(v);
@@ -237,7 +283,7 @@ export function createTerrain(store) {
       const k = (d - per[j]) / seg;
       const x = a[0] + (b[0] - a[0]) * k, y = a[1] + (b[1] - a[1]) * k;
       const nl = Math.hypot(x - ccx, y - ccy) || 1;
-      const off = 0.9 + 0.5 * Math.sin(i * 2.39) + rnd() * 0.7; // 0.4–2.1 wu of barrens
+      const off = 0.9 + 0.5 * Math.sin(i * 2.39) + rnd() * 0.7; // 0.4–2.1 wu of hill country
       q.push([x + ((x - ccx) / nl) * off, y + ((y - ccy) / nl) * off]);
     }
     const path = new Path2D();
@@ -248,43 +294,337 @@ export function createTerrain(store) {
     return path;
   }
 
-  // ── per-parcel style (state → texture/tint mapping) ─────────────────────────
-  function styleOf(id) {
-    const t = store.terrByParcel.get(id);
-    if (t?.garrison?.monsterName) return { tex: 'grave_01', flat: FLAT.grave };
-    if (!t || t.governorKind === 'SYSTEM') {
-      const tex = wildTex.get(id) ?? 'grass_01';
-      return { tex, flat: tex[0] === 'd' ? FLAT.desert : FLAT.grass };
-    }
-    const prestige = t.prosperity >= PRESTIGE_PROSPERITY || npcCapitals.has(id);
-    return { tex: prestige ? 'lobby_01' : stoneTex.get(id), tint: store.color(t.governorId) };
+  // ── heightfield build (idle-chunked; flat colors render until done) ─────────
+  function buildField() {
+    if (!platePath) return;
+    const myGen = ++gen;
+    const x0 = worldBBox[0], y0 = worldBBox[1];
+    const wuW = worldBBox[2] - x0, wuH = worldBBox[3] - y0;
+    const gw = wuW >= wuH ? FIELD_SIDE : Math.round(FIELD_SIDE * wuW / wuH);
+    const cell = wuW / gw;                       // square cells
+    const gh = Math.ceil(wuH / cell);
+    const N = gw * gh;
+
+    // masks via canvas rasterization (GPU) — landmass plate + parcel cluster
+    const mc = document.createElement('canvas');
+    mc.width = gw; mc.height = gh;
+    const mx = mc.getContext('2d', { willReadFrequently: true });
+    const rasterize = (path) => {
+      mx.setTransform(1, 0, 0, 1, 0, 0);
+      mx.clearRect(0, 0, gw, gh);
+      mx.setTransform(1 / cell, 0, 0, 1 / cell, -x0 / cell, -y0 / cell);
+      mx.fillStyle = '#fff';
+      mx.fill(path);
+      const px = mx.getImageData(0, 0, gw, gh).data;
+      const m = new Uint8Array(N);
+      for (let i = 0; i < N; i++) m[i] = px[i * 4 + 3] > 127 ? 1 : 0;
+      return m;
+    };
+    const land = rasterize(platePath);
+    const parcelM = rasterize(allParcelsPath);
+
+    // chamfer distance transforms (two-pass 3/4, result in cell units)
+    const chamfer = (isSeed) => {
+      const d = new Float32Array(N).fill(1e9);
+      for (let i = 0; i < N; i++) if (isSeed(i)) d[i] = 0;
+      for (let y = 0; y < gh; y++) for (let x = 0; x < gw; x++) {
+        const i = y * gw + x;
+        let v = d[i];
+        if (x > 0 && d[i - 1] + 3 < v) v = d[i - 1] + 3;
+        if (y > 0) {
+          if (d[i - gw] + 3 < v) v = d[i - gw] + 3;
+          if (x > 0 && d[i - gw - 1] + 4 < v) v = d[i - gw - 1] + 4;
+          if (x < gw - 1 && d[i - gw + 1] + 4 < v) v = d[i - gw + 1] + 4;
+        }
+        d[i] = v;
+      }
+      for (let y = gh - 1; y >= 0; y--) for (let x = gw - 1; x >= 0; x--) {
+        const i = y * gw + x;
+        let v = d[i];
+        if (x < gw - 1 && d[i + 1] + 3 < v) v = d[i + 1] + 3;
+        if (y < gh - 1) {
+          if (d[i + gw] + 3 < v) v = d[i + gw] + 3;
+          if (x < gw - 1 && d[i + gw + 1] + 4 < v) v = d[i + gw + 1] + 4;
+          if (x > 0 && d[i + gw - 1] + 4 < v) v = d[i + gw - 1] + 4;
+        }
+        d[i] = v;
+      }
+      for (let i = 0; i < N; i++) d[i] = (d[i] / 3) * cell; // → world units
+      return d;
+    };
+    const seaD = chamfer((i) => land[i] === 1);     // sea cells: distance to coast
+    const landIn = chamfer((i) => land[i] === 0);   // land cells: distance inland
+    const parcelD = chamfer((i) => parcelM[i] === 1); // distance to the city zone
+
+    const e = new Float32Array(N);
+    const moist = new Uint8Array(N);
+    const shadeA = new Float32Array(N).fill(1);
+    const img = new ImageData(gw, gh);
+
+    const heightRows = (r0, r1) => {
+      for (let y = r0; y < r1; y++) {
+        const wy = y0 + (y + 0.5) * cell;
+        for (let x = 0; x < gw; x++) {
+          const i = y * gw + x;
+          const wx = x0 + (x + 0.5) * cell;
+          if (!land[i]) {
+            e[i] = -sstep(seaD[i], 0, COAST_FALL);
+            continue;
+          }
+          const pn = fbm(wx * 0.55, wy * 0.55, 11, 3);            // gentle lowland undulation
+          const hm = sstep(parcelD[i], HILL_START, HILL_FULL);
+          const rg = hm > 0.01 ? ridged(wx * 0.7, wy * 0.7, 23, 3) : 0;
+          const low = Math.max(0.02, 0.09 + 0.10 * (pn - 0.5) * 2);
+          e[i] = sstep(landIn[i], 0, 0.30) * low + sstep(landIn[i], 0.05, 0.55) * hm * (0.22 + 0.52 * rg);
+          moist[i] = 255 * (0.6 * fbm(wx * 0.28, wy * 0.28, 37, 2) + 0.4 * fbm(wx * 1.5, wy * 1.5, 41, 2));
+        }
+      }
+    };
+    const shadeRows = (r0, r1) => { // lambert hillshade from the height gradient
+      for (let y = r0; y < r1; y++) {
+        const yU = Math.max(0, y - 1) * gw, yD = Math.min(gh - 1, y + 1) * gw, yR = y * gw;
+        for (let x = 0; x < gw; x++) {
+          const i = yR + x;
+          if (e[i] <= 0) continue; // sea stays unshaded
+          const gx = (e[yR + Math.min(gw - 1, x + 1)] - e[yR + Math.max(0, x - 1)]) / (2 * cell) * Z_SCALE;
+          const gy = (e[yD + x] - e[yU + x]) / (2 * cell) * Z_SCALE;
+          const lam = (-gx * LX - gy * LY + LZ) / Math.sqrt(gx * gx + gy * gy + 1);
+          shadeA[i] = Math.min(1.5, Math.max(0.45, 0.30 + 0.70 * (lam / LZ)));
+        }
+      }
+    };
+    const composeRows = (r0, r1) => { // hypsometric palette × shade → RGBA raster
+      const d = img.data;
+      for (let y = r0; y < r1; y++) {
+        for (let x = 0; x < gw; x++) {
+          const i = y * gw + x, o = i * 4;
+          const ev = e[i];
+          let r, g, b, a = 255;
+          if (ev <= 0) { // water: shallow band fades out over the live ocean pattern
+            const t = Math.min(1, Math.max(0, (ev + 0.6) / 0.6));
+            r = 13 + (38 - 13) * t; g = 30 + (79 - 30) * t; b = 44 + (94 - 44) * t;
+            a = 255 * t * t;
+            const f = Math.max(0, 1 + ev / 0.055); // soft foam line at the coast
+            if (f > 0) {
+              const k = f * f * 0.42;
+              r += (168 - r) * k; g += (192 - g) * k; b += (198 - b) * k;
+              a = Math.max(a, 255 * f * 0.7);
+            }
+          } else {
+            const m = moist[i] / 255;
+            const pr = 101 + (72 - 101) * m, pg = 101 + (94 - 101) * m, pb = 63 + (55 - 63) * m; // dry↔lush plains
+            if (ev < 0.05) { const t = ev / 0.05; r = 121 + (pr - 121) * t; g = 106 + (pg - 106) * t; b = 78 + (pb - 78) * t; } // sand shore
+            else if (ev < 0.30) { const t = (ev - 0.05) / 0.25 * 0.35; r = pr + (88 - pr) * t; g = pg + (90 - pg) * t; b = pb + (58 - pb) * t; }
+            else if (ev < 0.50) { const t = (ev - 0.30) / 0.20; r = 92 + (120 - 92) * t; g = 91 + (101 - 91) * t; b = 60 + (70 - 60) * t; }   // → tan-brown hills
+            else if (ev < 0.72) { const t = (ev - 0.50) / 0.22; r = 120 + (134 - 120) * t; g = 101 + (124 - 101) * t; b = 70 + (106 - 70) * t; } // → rock
+            else { const t = Math.min(1, (ev - 0.72) / 0.18); r = 134 + (158 - 134) * t; g = 124 + (152 - 124) * t; b = 106 + (138 - 106) * t; } // → pale ridge
+            const s = shadeA[i], dth = (hash2(x, y, 7) - 0.5) * 8;
+            r = r * s + dth; g = g * s + dth; b = b * s + dth;
+          }
+          d[o] = clamp255(r); d[o + 1] = clamp255(g); d[o + 2] = clamp255(b); d[o + 3] = clamp255(a);
+        }
+      }
+    };
+
+    // run the three passes in idle chunks (~9 ms budget), then finalize once
+    const stages = [heightRows, shadeRows, composeRows];
+    let si = 0, row = 0;
+    const step = () => {
+      if (myGen !== gen) return; // superseded by a new prepare()
+      const t0 = performance.now();
+      while (si < stages.length) {
+        while (row < gh) {
+          const end = Math.min(gh, row + 8);
+          stages[si](row, end);
+          row = end;
+          if (performance.now() - t0 > 9) { setTimeout(step, 0); return; }
+        }
+        si++; row = 0;
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = gw; canvas.height = gh;
+      canvas.getContext('2d').putImageData(img, 0, 0);
+      field = { canvas, x0, y0, w: gw * cell, h: gh * cell };
+      buildProps(gw, gh, cell, e, parcelD);
+      fieldReady = true;
+      invalidateAll();
+      onUpdate?.();
+      // idle-prebuild the whole-world buckets so bucket crossings never hitch
+      setTimeout(() => { if (paths && myGen === gen) { w0 ??= makeWorldBucket(w0ppu()); w1 ??= makeWorldBucket(w1ppu()); } }, 200);
+    };
+    step();
   }
 
-  function fillParcel(ctx, id, ppu) {
+  /** Seeded jittered-grid scatter OUTSIDE parcels: hillside clusters, plains dots, ridge rocks. */
+  function buildProps(gw, gh, cell, e, parcelD) {
+    props = [];
+    const x0 = worldBBox[0], y0 = worldBBox[1];
+    const cols = Math.floor((gw * cell) / PROP_SPACING), rows = Math.floor((gh * cell) / PROP_SPACING);
+    const sample = (arr, wx, wy) => { // bilinear field sample at a world point
+      const fx = Math.min(gw - 1.001, Math.max(0, (wx - x0) / cell - 0.5));
+      const fy = Math.min(gh - 1.001, Math.max(0, (wy - y0) / cell - 0.5));
+      const ix = Math.floor(fx), iy = Math.floor(fy), tx = fx - ix, ty = fy - iy;
+      const i = iy * gw + ix;
+      return (arr[i] * (1 - tx) + arr[i + 1] * tx) * (1 - ty) + (arr[i + gw] * (1 - tx) + arr[i + gw + 1] * tx) * ty;
+    };
+    for (let j = 0; j < rows; j++) {
+      for (let i = 0; i < cols; i++) {
+        const wx = x0 + (i + 0.12 + 0.76 * hash2(i, j, 101)) * PROP_SPACING;
+        const wy = y0 + (j + 0.12 + 0.76 * hash2(i, j, 103)) * PROP_SPACING;
+        const ev = sample(e, wx, wy);
+        if (ev < 0.055) continue;                       // sea/shore: nothing
+        if (sample(parcelD, wx, wy) < 0.07) continue;   // keep out of the city zone
+        const c = fbm(wx * 1.3, wy * 1.3, 57, 2);       // cluster mask
+        const h = hash2(i, j, 107);
+        let p, rock = false;
+        if (ev > 0.70) { p = 0.10; rock = h < 0.8; }                              // ridges: mostly rocks
+        else if (ev > 0.30) { p = 0.08 + 0.55 * sstep(c, 0.42, 0.78); rock = h < 0.16; } // hillside clusters
+        else { p = 0.14 * sstep(c, 0.55, 0.85); }                                 // plains: sparse copses
+        if (hash2(i, j, 109) > p) continue;
+        const r = (ev > 0.3 ? 0.044 : 0.037) + 0.034 * hash2(i, j, 113);
+        const k = rock ? 3 : ev > 0.3 ? (h > 0.5 ? 1 : 0) : (h > 0.7 ? 2 : 0);
+        props.push({ x: wx, y: wy, r, k, h });
+      }
+    }
+  }
+
+  /** Painterly prop: k = 0 broadleaf, 1 conifer, 2 bush, 3 rock. Light from NW. */
+  function drawProp(ctx, p) {
+    const { x, y, r, k, h } = p;
+    ctx.fillStyle = 'rgba(8,12,9,0.28)'; // SE ground shadow
+    ctx.beginPath();
+    ctx.ellipse(x + r * 0.45, y + r * 0.5, r * 1.05, r * 0.5, 0, 0, 7);
+    ctx.fill();
+    if (k === 3) { // rock: gray slab, darker SE facet, NW glint
+      const v = 92 + h * 26 | 0;
+      ctx.fillStyle = `rgb(${v},${v - 3},${v - 9})`;
+      ctx.beginPath();
+      ctx.moveTo(x - r, y + r * 0.4);
+      ctx.lineTo(x - r * 0.55, y - r * (0.6 + 0.35 * h));
+      ctx.lineTo(x + r * 0.45, y - r * 0.75);
+      ctx.lineTo(x + r, y + r * 0.35);
+      ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = 'rgba(30,28,26,0.45)';
+      ctx.beginPath();
+      ctx.moveTo(x + r, y + r * 0.35); ctx.lineTo(x + r * 0.45, y - r * 0.75); ctx.lineTo(x + r * 0.2, y + r * 0.4);
+      ctx.closePath();
+      ctx.fill();
+      return;
+    }
+    if (k === 1) { // conifer: tall dark-teal wedge + lit NW edge
+      ctx.fillStyle = `rgb(${30 + h * 12 | 0},${54 + h * 14 | 0},${42 + h * 8 | 0})`;
+      ctx.beginPath();
+      ctx.moveTo(x, y - r * 2.1); ctx.lineTo(x - r * 0.72, y + r * 0.32); ctx.lineTo(x + r * 0.72, y + r * 0.32);
+      ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = 'rgba(96,124,78,0.55)';
+      ctx.beginPath();
+      ctx.moveTo(x, y - r * 2.1); ctx.lineTo(x - r * 0.55, y + r * 0.2); ctx.lineTo(x - r * 0.1, y + r * 0.1);
+      ctx.closePath();
+      ctx.fill();
+      return;
+    }
+    // broadleaf / bush: canopy blob cluster, lighter NW highlight blob
+    const s = k === 2 ? 0.75 : 1;
+    ctx.fillStyle = `rgb(${42 + h * 14 | 0},${64 + h * 16 | 0},${38 + h * 10 | 0})`;
+    ctx.beginPath();
+    ctx.arc(x, y - r * 0.3 * s, r * s, 0, 7);
+    if (k === 0) {
+      ctx.arc(x - r * 0.55, y - r * 0.05, r * 0.68, 0, 7);
+      ctx.arc(x + r * 0.5, y - r * 0.1, r * 0.62, 0, 7);
+    }
+    ctx.fill();
+    ctx.fillStyle = 'rgba(104,134,72,0.6)';
+    ctx.beginPath();
+    ctx.arc(x - r * 0.32 * s, y - r * 0.55 * s, r * 0.5 * s, 0, 7);
+    ctx.fill();
+  }
+
+  // ── per-parcel overlay (state → wash/stain/accent mapping) ──────────────────
+  function styleOf(id) {
+    const t = store.terrByParcel.get(id);
+    if (t?.garrison?.monsterName) return { kind: 'monster' };
+    if (!t || t.governorKind === 'SYSTEM') return { kind: 'wild' };
+    return {
+      kind: 'owned',
+      tint: store.color(t.governorId),
+      prestige: t.prosperity >= PRESTIGE_PROSPERITY || npcCapitals.has(id),
+    };
+  }
+
+  /** Overlay ON TOP of the continuous terrain: accents, washes, stains, wild trees. */
+  function fillOverlay(ctx, id, ppu) {
     const path = paths.get(id);
     const st = styleOf(id);
-    const pat = texReady ? patterns.get(st.tex) : null;
+    if (st.kind === 'monster') { // corrupted ground stain (red eye drawn live on top)
+      const [ax, ay, bx, by] = bboxes.get(id);
+      const c = store.parcels.get(id).center;
+      const g = ctx.createRadialGradient(c[0], c[1], 0, c[0], c[1], Math.max(bx - ax, by - ay) * 0.62);
+      g.addColorStop(0, 'rgba(24,8,20,0.5)');
+      g.addColorStop(0.65, 'rgba(28,12,24,0.26)');
+      g.addColorStop(1, 'rgba(28,12,24,0)');
+      ctx.fillStyle = g;
+      ctx.fill(path);
+      return;
+    }
+    if (st.kind === 'wild') {
+      const pat = texReady ? patterns.get(wildTex.get(id)) : null;
+      if (pat) { // faint accent only — desert toward the frontier, grass elsewhere
+        ctx.save();
+        ctx.globalAlpha = wildTex.get(id)[0] === 'd' ? 0.10 : 0.06;
+        ctx.fillStyle = pat;
+        ctx.fill(path);
+        ctx.restore();
+      }
+      if (fieldReady) for (const t of parcelTrees.get(id) ?? []) drawProp(ctx, t);
+      return;
+    }
+    const pat = texReady ? patterns.get(stoneTex.get(id)) : null; // settled plaza accent
     if (pat) {
+      ctx.save();
+      ctx.globalAlpha = 0.10;
       ctx.fillStyle = pat;
       ctx.fill(path);
-      if (st.tint) {
-        // ownership readability first: the further out the bucket, the stronger
-        // the tint (color is information); up close the plaza flavor shows more
-        const a = ppu <= w0ppu() + 0.01 ? 0.48 : ppu <= w1ppu() + 0.01 ? 0.36 : 0.28;
-        ctx.fillStyle = rgba(st.tint, a);
-        ctx.fill(path);
-      }
-    } else {
-      ctx.fillStyle = st.tint ? shade(st.tint, -0.45) : st.flat;
-      ctx.fill(path);
+      ctx.restore();
     }
+    // ownership wash — COLOR IS THE INFORMATION: strongest on the zoomed-out bucket
+    const a = ppu <= w0ppu() + 0.01 ? 0.46 : ppu <= w1ppu() + 0.01 ? 0.34 : 0.26;
+    ctx.fillStyle = rgba(st.tint, a);
+    ctx.fill(path);
   }
 
   function strokeParcel(ctx, id, ppu) {
     const st = styleOf(id);
-    ctx.strokeStyle = st.tint ? rgba(st.tint, 0.5) : 'rgba(160,180,200,0.10)';
-    ctx.lineWidth = 0.9 / ppu; // ~1 bucket px; the bright own-parcel rim is drawn live
-    ctx.stroke(paths.get(id));
+    const path = paths.get(id);
+    if (st.kind === 'owned') {
+      ctx.strokeStyle = rgba(st.tint, 0.55);
+      ctx.lineWidth = 1.1 / ppu;
+      ctx.stroke(path);
+      if (st.prestige) { // gold border glow instead of any special floor
+        ctx.strokeStyle = 'rgba(255,206,110,0.22)';
+        ctx.lineWidth = 2.8 / ppu;
+        ctx.stroke(path);
+        ctx.strokeStyle = 'rgba(255,214,128,0.85)';
+        ctx.lineWidth = 1.1 / ppu;
+        ctx.stroke(path);
+      }
+      return;
+    }
+    ctx.strokeStyle = st.kind === 'monster' ? 'rgba(150,60,60,0.30)' : 'rgba(205,220,235,0.13)';
+    ctx.lineWidth = 0.8 / ppu; // thin grid overlay the terrain ignores
+    ctx.stroke(path);
+  }
+
+  /** Re-blit the continuous terrain inside one parcel, then its overlay (patching). */
+  function repaintParcel(ctx, id, ppu) {
+    const path = paths.get(id);
+    ctx.save();
+    ctx.clip(path);
+    if (fieldReady) ctx.drawImage(field.canvas, field.x0, field.y0, field.w, field.h);
+    else { ctx.fillStyle = FLAT.land; ctx.fill(path); }
+    ctx.restore();
+    fillOverlay(ctx, id, ppu);
   }
 
   // ── ownership signature → patch or rebuild ──────────────────────────────────
@@ -332,7 +672,7 @@ export function createTerrain(store) {
     const vis = [...ids].filter((id) => intersects(b, id));
     if (vis.length === 0) return;
     b.ctx.setTransform(b.ppu, 0, 0, b.ppu, -b.x0 * b.ppu, -b.y0 * b.ppu);
-    for (const id of vis) fillParcel(b.ctx, id, b.ppu);
+    for (const id of vis) repaintParcel(b.ctx, id, b.ppu);
     for (const id of vis) strokeParcel(b.ctx, id, b.ppu);
   }
 
@@ -344,17 +684,27 @@ export function createTerrain(store) {
     const ctx = canvas.getContext('2d');
     const b = { canvas, ctx, ppu, x0, y0, x1, y1, wWu: canvas.width / ppu, hWu: canvas.height / ppu };
     ctx.setTransform(ppu, 0, 0, ppu, -x0 * ppu, -y0 * ppu);
-    if (platePath) { // landmass under the parcels: shallow-water rim, scrub plate, coast line
-      ctx.strokeStyle = 'rgba(110,160,200,0.13)';
-      ctx.lineWidth = 0.55;
-      ctx.stroke(platePath);
-      ctx.fillStyle = (texReady && barrensPattern) || FLAT.barrens;
+    if (fieldReady) { // continuous landscape, smooth-scaled from the field grid
+      ctx.imageSmoothingQuality = 'high';
+      ctx.drawImage(field.canvas, field.x0, field.y0, field.w, field.h);
+    } else if (platePath) { // progressive enhancement: flat landmass until the field lands
+      ctx.fillStyle = FLAT.land;
       ctx.fill(platePath);
-      ctx.strokeStyle = 'rgba(4,8,12,0.5)';
-      ctx.lineWidth = 0.07;
-      ctx.stroke(platePath);
     }
-    for (const p of store.parcels.values()) if (intersects(b, p.id)) fillParcel(ctx, p.id, ppu);
+    if (texReady && platePath) { // faint grass tooth over the whole landmass
+      const g = patterns.get('grass_01');
+      if (g) {
+        ctx.save();
+        ctx.globalAlpha = 0.06;
+        ctx.fillStyle = g;
+        ctx.fill(platePath);
+        ctx.restore();
+      }
+    }
+    if (fieldReady) for (const p of props) {
+      if (p.x >= b.x0 - 0.3 && p.x <= b.x1 + 0.3 && p.y >= b.y0 - 0.3 && p.y <= b.y1 + 0.3) drawProp(ctx, p);
+    }
+    for (const p of store.parcels.values()) if (intersects(b, p.id)) fillOverlay(ctx, p.id, ppu);
     for (const p of store.parcels.values()) if (intersects(b, p.id)) strokeParcel(ctx, p.id, ppu);
     return b;
   }
@@ -393,5 +743,6 @@ export function createTerrain(store) {
     /** Ocean background fill (world-anchored pattern once loaded, flat before). */
     oceanFill() { return oceanPattern ?? FLAT.ocean; },
     get texturesReady() { return texReady; },
+    get fieldReady() { return fieldReady; },
   };
 }
