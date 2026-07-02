@@ -3,23 +3,27 @@
  * no tiling). Camera pan/zoom/goto-fly, HiDPI, and a rAF gate: frames are drawn
  * only when state/camera changed or an animation (march, fire, flight) runs.
  *
- * Ambient viz: battles = fire+smoke burst (~30s fade), stalemates = gray smoke
- * only (docs/04 §7c TIE — nothing burned, nobody won), retreats = fading dashed
+ * Ground: terrain.js bakes ocean/barrens/parcel floors (textures + owner tints +
+ * strokes) into offscreen world-space buckets — a frame draws the ocean pattern
+ * + ONE base blit, then the dynamic overlays live: bright own-parcel rims,
+ * battles = fire+smoke burst (~30s fade), stalemates = gray smoke only
+ * (docs/04 §7c TIE — nothing burned, nobody won), retreats = fading dashed
  * line + sliding chevron, pillage = smoldering tint (~60s), occupation = color
- * pulse; wild parcels get bush speckle; monster garrisons a red-eye dot.
+ * pulse; monster garrisons keep the red-eye dot on top of their grave floor.
  */
-import { easeInOut, pointInPoly, rgba, shade } from './util.js';
+import { createTerrain } from './terrain.js';
+import { easeInOut, pointInPoly, rgba } from './util.js';
 
 const FIRE_MS = 30_000;
 const SMOKE_MS = 18_000;
 const SMOLDER_MS = 60_000;
 const PULSE_MS = 1500;
 const RETREAT_MS = 4200;
-const WILD_FILL = '#1d2420';
-const NEUTRAL_STROKE = 'rgba(160,180,200,0.10)';
 
 export function createMap(canvas, store, handlers) {
   const ctx = canvas.getContext('2d');
+  const terrain = createTerrain(store);
+  terrain.loadTextures(() => { dirty = true; }); // flat colors render until then
   let dpr = 1, w = 0, h = 0;
   const cam = { cx: 0, cy: 0, s: 20 };
   let fitScale = 20;
@@ -37,7 +41,6 @@ export function createMap(canvas, store, handlers) {
   // per-parcel precomputed geometry
   const paths = new Map();         // parcelId → Path2D (world coords)
   const bboxes = new Map();        // parcelId → [minx,miny,maxx,maxy]
-  const bushDots = new Map();      // parcelId → [[x,y,r],…] wild speckle
 
   // ── geometry prep ───────────────────────────────────────────────────────────
   let worldBBox = null; // [mnx,mny,mxx,mxy]
@@ -54,20 +57,9 @@ export function createMap(canvas, store, handlers) {
       }
       bboxes.set(p.id, [ax, ay, bx, by]);
       mnx = Math.min(mnx, ax); mny = Math.min(mny, ay); mxx = Math.max(mxx, bx); mxy = Math.max(mxy, by);
-      // deterministic speckle from parcelId hash (bush/wild texture feel)
-      let hsh = 2166136261;
-      for (const c of p.id) hsh = (hsh ^ c.charCodeAt(0)) * 16777619 >>> 0;
-      const dots = [];
-      for (let i = 0; i < 4; i++) {
-        hsh = (hsh * 1664525 + 1013904223) >>> 0;
-        const fx = ax + ((hsh >>> 8) % 1000) / 1000 * (bx - ax);
-        hsh = (hsh * 1664525 + 1013904223) >>> 0;
-        const fy = ay + ((hsh >>> 8) % 1000) / 1000 * (by - ay);
-        if (pointInPoly(p.polygon, fx, fy)) dots.push([fx, fy, 0.03 + (hsh % 5) * 0.008]);
-      }
-      bushDots.set(p.id, dots);
     }
     worldBBox = [mnx, mny, mxx, mxy];
+    terrain.prepare({ paths, bboxes, worldBBox }); // bakes the ground buckets lazily
     refit();
     cam.cx = (mnx + mxx) / 2; cam.cy = (mny + mxy) / 2; cam.s = fitScale;
     dirty = true;
@@ -228,29 +220,32 @@ export function createMap(canvas, store, handlers) {
     const cap = (worldR, px) => Math.min(worldR, px / cam.s); // clamp marker world-size to a px budget at high zoom
     const me = store.me?.governorId;
 
-    // parcels
-    for (const p of store.parcels.values()) {
-      const t = store.terrByParcel.get(p.id);
-      const path = paths.get(p.id);
-      const wild = !t || t.governorKind === 'SYSTEM';
-      const mine = t && t.governorId === me;
-      let fill = wild ? WILD_FILL : shade(store.color(t.governorId), mine ? -0.28 : -0.5);
-      ctx.fillStyle = fill;
-      ctx.fill(path);
-      const sm = smolders.get(p.id);
-      if (sm !== undefined) {
-        const k = 1 - (now - sm) / SMOLDER_MS;
-        if (k <= 0) smolders.delete(p.id);
-        else { ctx.fillStyle = `rgba(12,6,4,${0.62 * k})`; ctx.fill(path); }
-      }
-      ctx.strokeStyle = mine ? rgba(store.color(t.governorId), 0.95) : wild ? NEUTRAL_STROKE : rgba(store.color(t.governorId), 0.4);
-      ctx.lineWidth = lw(mine ? 1.6 : 0.7);
-      ctx.stroke(path);
-      if (wild) {
-        ctx.fillStyle = 'rgba(96,128,88,0.26)'; // bush speckle
-        for (const [x, y, r] of bushDots.get(p.id) ?? []) {
-          ctx.beginPath(); ctx.arc(x, y, cap(r, 3.5), 0, 7); ctx.fill();
-        }
+    // ocean background (world-anchored pattern, non-interactive, infinite)
+    const [ox0, oy0] = toWorld(0, 0), [ox1, oy1] = toWorld(w, h);
+    ctx.fillStyle = terrain.oceanFill();
+    ctx.fillRect(ox0, oy0, ox1 - ox0, oy1 - oy0);
+
+    // ground: barrens plate + parcel floors + tints + strokes — ONE baked blit
+    const base = terrain.ensure(cam.s, dpr, { w, h, cx: cam.cx, cy: cam.cy });
+    if (base) ctx.drawImage(base.canvas, base.x0, base.y0, base.wWu, base.hWu);
+
+    // pillage smolder (animated fade — kept live on top of the baked ground)
+    for (const [pid, sm] of smolders) {
+      const k = 1 - (now - sm) / SMOLDER_MS;
+      if (k <= 0) { smolders.delete(pid); continue; }
+      const path = paths.get(pid);
+      if (path) { ctx.fillStyle = `rgba(12,6,4,${0.62 * k})`; ctx.fill(path); }
+    }
+
+    // bright rims on my parcels (screen-constant width — ownership must pop)
+    if (me) {
+      for (const t of store.terrByParcel.values()) {
+        if (t.governorId !== me) continue;
+        const path = paths.get(t.parcelId);
+        if (!path) continue;
+        ctx.strokeStyle = rgba(store.color(t.governorId), 0.95);
+        ctx.lineWidth = lw(1.6);
+        ctx.stroke(path);
       }
     }
 
@@ -440,7 +435,7 @@ export function createMap(canvas, store, handlers) {
     requestAnimationFrame(frame);
   }
 
-  store.onChange(() => { dirty = true; });
+  store.onChange(() => { terrain.onStateChange(); dirty = true; });
   window.addEventListener('resize', resize);
   resize();
   requestAnimationFrame(frame);
@@ -452,6 +447,13 @@ export function createMap(canvas, store, handlers) {
     toScreenOf(parcelId) {
       const c = store.parcels.get(parcelId)?.center;
       return c ? toScreen(c[0], c[1]) : [w / 2, h / 2];
+    },
+    get texturesReady() { return terrain.texturesReady; },
+    /** Debug/perf hook: average full-frame draw cost in ms over n frames (blit path). */
+    profileDraw(n = 60) {
+      const t0 = performance.now();
+      for (let i = 0; i < n; i++) draw(performance.now());
+      return (performance.now() - t0) / n;
     },
   };
 }
