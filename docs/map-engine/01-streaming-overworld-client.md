@@ -84,6 +84,24 @@ Per `docs/01` §11.1b, the space between parcels is designed, not empty:
   darkening sins below. Altitude IS palette.
 - Picking/hover ignores all non-parcel space (deselect at most).
 
+## 2d. Terrain art direction (v2, 2026-07-02 — RTK14 benchmark)
+
+Product-owner visual bar: RTK14's campaign map. Its trick: **one continuous lit landscape; the
+grid is a thin overlay that terrain ignores.** Per-parcel texture fills ("quilt") are deprecated.
+
+- **Continuous procedural terrain**: deterministic heightfield → **3 elevation bands
+  (sea / lowland / hills)** → hypsometric palette → **slope-based hillshading** (the single most
+  important realism feature) → moisture variation → scattered painterly props (trees/rocks).
+- **Elevation is meaning**: habitable zones = lowland; impassable barrens = visible hills/ridges;
+  ocean = sea band. The map explains its own rules.
+- **Parcels are overlay**: thin borders + translucent ownership washes (empire colors must stay
+  readable zoomed out); prestige = gold accents, corruption/monsters = ground stains. Stock floor
+  textures only as faint detail accents — never structural. Sprite-sheet assets (grave_01,
+  lobby_01) are UI/prop atlases, not floors.
+- **2.5D roadmap**: hillshade + coast shadows now (Canvas2D, zero cost); true oblique/isometric
+  relief is a WebGL v0.2 item on the tile pyramid (pre-lit terrain baked into tiles; camera tilt
+  as a shader transform). Battle sessions remain the full-3D fidelity layer.
+
 ## 3. Camera & UX model (the "follow your units" contract)
 
 - **Home rail** (always on screen): the player's armies, territories, battles — each with a
