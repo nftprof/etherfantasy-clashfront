@@ -523,15 +523,18 @@ export function orderMarch(state: WorldState, armyId: string, path: readonly str
  * so equal-length paths tie-break identically on every run.
  */
 /**
- * True if `hexId`'s territory is hostile ground for `governorId`: an armed
- * garrison (wild monsters or another governor's troops) holds it. Product-owner
- * rule (2026-07-02): armies cannot walk PAST enemies — hostile parcels never
- * appear mid-path; they may only be a march's FINAL destination (= attack).
- * Own/allied-garrison and empty parcels are passable.
+ * True if `hexId` is blocked ground for `governorId`'s armies. Product-owner
+ * rules (2026-07-02): armies cannot walk PAST enemies, and OWNED LAND IS A
+ * BLOCKADE — foreign territory (another governor's, garrisoned or not) and
+ * hostile-garrisoned wilds never appear mid-path; they may only be a march's
+ * FINAL destination (= attack). Claiming land builds walls of sovereignty.
+ * Own territory and unowned/SYSTEM ungarrisoned parcels are passable.
  */
 export function isHostileGround(state: WorldState, hexId: string, governorId: string): boolean {
   const t = [...state.territories.values()].find((x) => x.hexIds[0] === hexId);
   if (t === undefined) return false;
+  // Foreign owned land blockades transit regardless of garrison.
+  if (t.governorKind !== 'SYSTEM' && t.governorId !== governorId) return true;
   if (t.garrisonArmyId === undefined) return false;
   const g = state.armies.get(t.garrisonArmyId);
   return g !== undefined && g.state !== 'DISBANDED' && g.ownerGovernorId !== governorId;
