@@ -356,10 +356,11 @@ export class Game {
     return { playerId: governorId, token, governorId, officers };
   }
 
-  claim(governorId: string, territoryId: unknown): TerritoryView {
+  claim(governorId: string, territoryId: unknown, overseerId?: unknown): TerritoryView {
     const t = this.getTerritory(territoryId);
+    const overseer = this.validateOverseerParam(governorId, overseerId);
     try {
-      claimTerritory(this.state, t.id, governorId);
+      claimTerritory(this.state, t.id, governorId, overseer);
     } catch (e) {
       throw translateSimError(e);
     }
@@ -475,16 +476,37 @@ export class Game {
     return { army: view, etaTick };
   }
 
-  choice(governorId: string, battleId: unknown, action: unknown): { battle: BattleView; ctUnits: number } {
+  /**
+   * Optional explicit-overseer param (docs/01 §11.3): undefined = auto-assign;
+   * a string must name one of the caller's FREE officers (400/BAD_OFFICER otherwise).
+   */
+  private validateOverseerParam(governorId: string, overseerId: unknown): string | undefined {
+    if (overseerId === undefined || overseerId === null || overseerId === '' || overseerId === 'auto') return undefined;
+    if (typeof overseerId !== 'string') throw new ApiError(400, 'BAD_OFFICER', 'overseerId must be a string');
+    const officer = (this.state.officers?.get(governorId) ?? []).find((o) => o.id === overseerId);
+    if (officer === undefined) throw new ApiError(400, 'BAD_OFFICER', 'that officer is not yours');
+    if (officer.assignedTerritoryId !== undefined) {
+      throw new ApiError(409, 'OFFICER_BUSY', `${officer.name} already oversees a territory`);
+    }
+    return overseerId;
+  }
+
+  choice(
+    governorId: string,
+    battleId: unknown,
+    action: unknown,
+    overseerId?: unknown,
+  ): { battle: BattleView; ctUnits: number } {
     if (typeof battleId !== 'string') throw new ApiError(400, 'BAD_BATTLE', 'battleId must be a string');
     if (action !== 'PILLAGE' && action !== 'OCCUPY') {
       throw new ApiError(400, 'BAD_ACTION', "action must be 'PILLAGE' or 'OCCUPY'");
     }
+    const overseer = action === 'OCCUPY' ? this.validateOverseerParam(governorId, overseerId) : undefined;
     const pending = this.state.pendingChoices?.get(battleId);
     if (pending === undefined) throw new ApiError(404, 'NO_PENDING_CHOICE', `no pending choice for battle ${battleId}`);
     if (pending.governorId !== governorId) throw new ApiError(403, 'NOT_YOUR_CHOICE', 'that victory is not yours to spend');
     try {
-      resolvePostVictory(this.state, battleId, action as PostVictoryAction, this.balance);
+      resolvePostVictory(this.state, battleId, action as PostVictoryAction, this.balance, overseer);
     } catch (e) {
       throw translateSimError(e);
     }

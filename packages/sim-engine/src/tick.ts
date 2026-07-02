@@ -758,11 +758,26 @@ export function resolvePostVictory(
   battleId: string,
   action: PostVictoryAction,
   balance: Balance = loadBalance(),
+  overseerId?: string,
 ): void {
   if (state.pendingChoices?.has(battleId) !== true) {
     throw new Error(`no pending post-victory choice for battle ${battleId}`);
   }
-  applyPostVictory(state, battleId, action, state.world.tick, balance);
+  applyPostVictory(state, battleId, action, state.world.tick, balance, overseerId);
+}
+
+/**
+ * Resolve the overseer for an occupation/claim: explicit officer if given
+ * (must belong to gov and be free), else first free officer (auto-assign).
+ */
+export function pickOfficer(state: WorldState, gov: string, overseerId?: string) {
+  if (overseerId === undefined) return freeOfficer(state, gov);
+  const officer = (state.officers?.get(gov) ?? []).find((o) => o.id === overseerId);
+  if (officer === undefined) throw new Error(`pickOfficer: ${overseerId} is not an officer of ${gov}`);
+  if (officer.assignedTerritoryId !== undefined) {
+    throw new Error(`pickOfficer: ${officer.name} already oversees a territory`);
+  }
+  return officer;
 }
 
 function applyPostVictory(
@@ -771,6 +786,7 @@ function applyPostVictory(
   action: PostVictoryAction,
   tick: number,
   balance: Balance,
+  overseerId?: string,
 ): void {
   const choice = state.pendingChoices?.get(battleId);
   const battle = state.battles.get(battleId);
@@ -787,9 +803,11 @@ function applyPostVictory(
 
   if (action === 'OCCUPY' && kind === 'PLAYER') {
     // Officer oversight gate (docs/01 §11.3, CONSTANTS.MAX_OVERSEEN_TERRITORIES).
+    // pickOfficer THROWS on an invalid explicit choice (surfaces to the API);
+    // with no explicit choice, no-free-officer converts the occupation to pillage.
     const overseen = countOverseen(state, gov);
-    const free = freeOfficer(state, gov);
-    if (overseen >= CONSTANTS.MAX_OVERSEEN_TERRITORIES || free === undefined) {
+    const chosen = pickOfficer(state, gov, overseerId);
+    if (overseen >= CONSTANTS.MAX_OVERSEEN_TERRITORIES || chosen === undefined) {
       action = 'PILLAGE'; // occupation converts to pillage — no overseer available
     }
   }
@@ -826,7 +844,7 @@ function applyPostVictory(
     territory.governorKind = kind;
     delete territory.overseerId;
     if (kind === 'PLAYER') {
-      const officer = freeOfficer(state, gov)!; // gated above
+      const officer = pickOfficer(state, gov, overseerId)!; // gated above
       officer.assignedTerritoryId = territory.id;
       territory.overseerId = officer.id;
     }

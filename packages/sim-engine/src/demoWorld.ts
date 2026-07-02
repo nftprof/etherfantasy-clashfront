@@ -302,7 +302,12 @@ export function addGovernor(
  * (docs/01 §11.3); the officer is auto-assigned as overseer. The claimed parcel
  * becomes the governor's supply source (demo rule so home-raised armies are fed).
  */
-export function claimTerritory(state: WorldState, territoryId: string, governorId: string): void {
+export function claimTerritory(
+  state: WorldState,
+  territoryId: string,
+  governorId: string,
+  overseerId?: string,
+): void {
   const t = state.territories.get(territoryId);
   if (t === undefined) throw new Error(`claimTerritory: unknown territory ${territoryId}`);
   if (t.governorKind !== 'SYSTEM') throw new Error(`claimTerritory: ${t.name} is already governed`);
@@ -319,8 +324,20 @@ export function claimTerritory(state: WorldState, territoryId: string, governorI
       );
     }
     const pool = state.officers?.get(governorId) ?? [];
-    const free = [...pool].sort((a, b) => (a.id < b.id ? -1 : 1)).find((o) => o.assignedTerritoryId === undefined);
-    if (free === undefined) throw new Error('claimTerritory: no free officer to assign as overseer');
+    const free =
+      overseerId !== undefined
+        ? pool.find((o) => o.id === overseerId)
+        : [...pool].sort((a, b) => (a.id < b.id ? -1 : 1)).find((o) => o.assignedTerritoryId === undefined);
+    if (free === undefined) {
+      throw new Error(
+        overseerId !== undefined
+          ? `claimTerritory: ${overseerId} is not an officer of this governor`
+          : 'claimTerritory: no free officer to assign as overseer',
+      );
+    }
+    if (free.assignedTerritoryId !== undefined) {
+      throw new Error(`claimTerritory: ${free.name} already oversees a territory`);
+    }
     free.assignedTerritoryId = t.id;
     t.overseerId = free.id;
   }

@@ -191,7 +191,7 @@ export class ClashServer {
       const body = await readJsonBody(req);
       switch (path) {
         case '/api/claim':
-          sendJson(res, 200, { territory: this.game.claim(session.governorId, body.territoryId) });
+          sendJson(res, 200, { territory: this.game.claim(session.governorId, body.territoryId, body.overseerId) });
           return;
         case '/api/raise':
           sendJson(res, 200, this.game.raise(session.governorId, body.territoryId, body.preset, body.heroId));
@@ -203,7 +203,7 @@ export class ClashServer {
           sendJson(res, 200, this.game.provision(session.governorId, body.armyId, body.food, body.gold, body.wood));
           return;
         case '/api/choice':
-          sendJson(res, 200, this.game.choice(session.governorId, body.battleId, body.action));
+          sendJson(res, 200, this.game.choice(session.governorId, body.battleId, body.action, body.overseerId));
           return;
         default:
           throw new ApiError(404, 'UNKNOWN_ENDPOINT', `no such endpoint ${path}`);
