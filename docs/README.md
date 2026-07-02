@@ -115,8 +115,11 @@ Single source of truth for names. All docs, code, and schemas MUST use these exa
 - **Guild / Alliance** — player organizations that can hold governorship and diplomacy.
 - **Wild Monster / Boss** — PvE creatures; **bosses occupy WILD estates** and must be defeated to tame
   them (`05-pve-integration.md`). The world is a fantasy setting.
-- **Pet** — element-aligned helper species (Pokémon-flavored) that occupy territories/zones by
-  element and assist their controller (❓ OPEN: full species list & mechanics — char list incoming).
+- **PentaPet / Pet** — the creature species of the world AND the army's rank-and-file: **pets are
+  the soldier unit types** (species affinity → unit class; expendable troops, they come and go),
+  while **owned NFT pets** are special individuals that guard/enrich held territories (never
+  permanently lost). Masters command; the Hero is you; PentaPets fill the ranks (`05` §9,
+  Addendum E).
 
 ### World
 - **World** — the persistent shard. One authoritative simulation.

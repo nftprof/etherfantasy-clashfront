@@ -244,11 +244,13 @@ self-identity** (their own persistent character — Irene/Kai/Leah avatar base),
 in battles; **Masters are the commanded generals**. Both can officer armies and be played in a
 battle (`docs/08` — split `Hero` / `Master` schemas; officer fields accept either).
 
-**Pet mechanics (canon 2026-07 — Palworld model):** Pets are **NFTs a player owns directly**
-(distinct from rented Masters), and wild pets can be **captured and raised** (capture = PvE
-encounter in the wild ⚙ mechanics TBD). **Pets are strictly defensive/economic — they NEVER join
-attacks or invasions; only Masters (and the player's Hero) invade.** A player assigns owned Pets
-to territories they occupy. Assigned pets do two jobs at once:
+**Pet mechanics (canon REVISED 2026-07-02 v0.2 — supersedes "defensive-only"):** **PentaPets ARE
+the soldiers — the unit TYPES.** Armies = Masters (officers) commanding PentaPet troops by
+species affinity (Earth→heavy infantry, Wind→cavalry/scouts, Fire→siege, Water→naval/marines,
+Grass→supply/medical, Electric→arcane support — Addendum E). Rank-and-file units are
+**EXPENDABLE — they come and go** (no individual identity/workforce simulation for now, per
+owner). Separately, **owned NFT pets** (captured in EF Hunt, directly owned) remain special:
+a player assigns them to territories they hold, where they do two jobs at once:
 - **GATHER** — boost the territory's resource collection (food/CT yield bonus per pet ⚙,
   battle-ready pets gather AND guard; cosmetic-only pets gather only).
 - **GUARD** — pets physically defend the parcel's battlefield alongside the player's defense

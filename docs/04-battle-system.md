@@ -313,6 +313,26 @@ armies collide against natural terrain** — no lanes, towers, or creep conventi
   arena scale — you fight on the outline of the land being taken. (Battle-engine plan item A1's
   bounds-polygon model covers this; "hex" boundaries are a special case, not a requirement.)
 
+**Battle definition (owner, 2026-07-02 v0.2): every battle is a FULL MOBA match** — a real
+server-run game, 20–40 minutes, with the armies (PentaPet units + officers) fighting on both
+sides. AI-vs-AI battles run the SAME simulation with **accelerated ticks** (fast-forward, not a
+different resolver). The overworld's instant WarScore resolution is an acknowledged placeholder
+until battle-engine M1+; LIVE pacing then follows match reality (≈20–40 min occupying the parcel).
+
+**Parcel map design layer (owner, 2026-07-02 v0.2):**
+- Parcel GEOMETRY never changes; each parcel's **battle terrain is a designed map** (trees,
+  water, boulders — fixed MOBA-style map design per parcel).
+- **AI auto-designer**: the server generates empty/unoccupied parcels' battle terrain (seeded
+  start), then **iterates over time and SAVES designs server-side** — designs are persistent
+  artifacts, not pure functions (supersedes the pure-seed cache for touched parcels; the seed
+  remains the v0 of every design).
+- **Landowner = map designer** (Warcraft-II-editor model): may FREEZE the AI and hand-place
+  terrain elements on their parcel. Without owner intervention the AI keeps gardening.
+- **Occupiers only ADD** — military structures (towers/walls/etc.) on top of the owner's/AI's
+  terrain; destructible during battles; **pillageable after a win to extract materials**.
+- **Thumbnail pipeline**: each saved design renders a small zoomed-out PNG that becomes the
+  parcel's texture on the overworld map — the world map literally shows every parcel's real map.
+
 **Generation rules:**
 1. **The overworld map is FIXED** — hexagone-city geometry is immutable; we never regenerate it.
 2. **Parcel interiors are SEEDED** — each hex's battlefield terrain is procedurally generated,

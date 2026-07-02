@@ -23,7 +23,23 @@
 | "Human attention is limited", AI-first, logistics over micromanagement | ✅ adopt as pillars |
 | Wild terrain launches EF Hunt; travel through wild → Hunt encounters | ✅ fits docs/05; encounter-on-travel is a new hook |
 
-## The big changes (conflicts with locked canon — need owner decisions)
+## ✅ RESOLVED by product owner (2026-07-02, same day)
+
+1. **Pets = the soldier TYPES.** PentaPets ARE the rank-and-file units (not officers); Masters
+   command, Hero = you. Units are EXPENDABLE — "they come and go". The workforce/identity
+   simulation layer is explicitly SKIPPED for now ("let's not overkill this layer").
+2. **Terraforming = terrain design, never geometry.** Each parcel has a designed battle map
+   (trees/water/boulders — fixed MOBA-style map design). AI SERVER auto-designs empty land:
+   builds randomly into battle terrain, ITERATES, SAVES server-side. A zoomed-out small-PNG
+   render of each parcel map becomes its overworld thumbnail/texture overlay. The LANDOWNER may
+   freeze the AI and take over as map designer (Warcraft-II-editor model). OCCUPIERS only ADD
+   (towers/military structures) — destructible in battle, pillageable for materials after a win.
+3. **Battles are full MOBA matches** (20–40 min, armies on both sides, real server build).
+   AI-vs-AI runs the SAME simulation with accelerated ticks. Instant WarScore resolution in the
+   demo = placeholder until battle-engine M1+.
+4. Cohort/materials/blueprint phases deferred accordingly (Phase B skipped for now; C/D later).
+
+## Superseded analysis (kept for the record — need owner decisions)
 
 ### 1. PentaPets replace population — and fight ⚠⚠⚠
 v0.2/Addendum E: PentaPets ARE the population (workers, soldiers, companions, battle units),

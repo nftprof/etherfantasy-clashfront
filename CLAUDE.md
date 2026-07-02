@@ -71,6 +71,14 @@ export can be converted to the documented format. See `data/README.md`.
 - `blockchainsuperheroes/hexagon-crons` — existing land/yield cron jobs (Python)
 - `_archive-infra-hexr-backend` — archived, reference only
 
+10. v0.2 ANSWERS LOCKED (2026-07-02): PentaPets = the soldier unit TYPES (expendable; Masters
+    command; workforce-identity sim SKIPPED for now). Every battle = a FULL MOBA match (20–40
+    min, armies both sides; AI-vs-AI = same sim, accelerated ticks; instant resolve = placeholder).
+    Parcel geometry fixed but terrain is a DESIGNED map: AI auto-designs + iterates + SAVES
+    server-side; landowner can freeze AI and design (WC2-editor); occupiers only ADD structures
+    (destructible/pillageable for materials); parcel-map PNG thumbnails texture the overworld
+    (`docs/04` §7b, `docs/05` §9, reports/V02-RECONCILIATION.md).
+
 ## 📜 v0.2 VISION BIBLE (2026-07-02): `docs/VISION-BIBLE-v0.2.md` + `docs/ADDENDUM-E-PentaPet-Species-Affinity.pdf`
 Overarching new spec from the product owner: PentaPets = the living population (workers/soldiers/
 units, species affinities), terraforming, geology/materials, blueprint NFTs, living cities.
