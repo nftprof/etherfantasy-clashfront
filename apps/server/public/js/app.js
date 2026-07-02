@@ -7,7 +7,7 @@ import { api, connectWS } from './net.js';
 import { createStore } from './store.js';
 import { createMap } from './map.js';
 import { createUI } from './ui.js';
-import { esc, fmtCT } from './util.js';
+import { esc, fmtCT, fmtProv } from './util.js';
 
 const TOKEN_KEY = 'cf_token';
 const store = createStore();
@@ -42,6 +42,17 @@ const orders = {
       if (army.path?.length) marchDest.set(army.id, army.path[army.path.length - 1]);
       ui.toast('March ordered', `${army.troops} troops on the move.`, 'info', army.parcelId);
     } catch (e) { ui.toast('March refused', esc(e.message), 'bad'); }
+  },
+  /** POST /api/provision — buy food/gold/wood with CT (docs/04 §7c.1). Returns true on success. */
+  async provision(armyId, order) {
+    try {
+      const { army, ctUnits, costCtUnits } = await api('/api/provision', { token, body: { armyId, ...order } });
+      store.putArmy(army);
+      store.ctBalance = ctUnits;
+      store.emit();
+      ui.toast('Provisions loaded', `${fmtProv(order)} for ${fmtCT(costCtUnits)}.`, 'good', army.parcelId);
+      return true;
+    } catch (e) { ui.toast('Provisioning failed', esc(e.message), 'bad'); return false; }
   },
   async choice(battleId, action) {
     try {
@@ -83,19 +94,54 @@ function parcelName(parcelId) {
   return esc(store.terrByParcel.get(parcelId)?.name ?? parcelId);
 }
 
+const CC_NAMES = ['', 'camp', 'palisade', 'fortified camp'];
+
 function handleEvents(events) {
   const battleParcelsThisTick = new Set(
     events.filter((e) => e.type === 'battle_resolved').map((e) => e.parcelId),
   );
+  // Armies moved by battle resolution this tick — their army_arrived toast is
+  // superseded by the retreat/scatter surfacing below.
+  const movedByBattle = new Set(
+    events.filter((e) => e.type === 'army_retreated' || e.type === 'army_scattered').map((e) => e.armyId),
+  );
   for (const ev of events) {
     switch (ev.type) {
       case 'battle_resolved': {
+        // DRAW battles never show a winner — battle_tied (same tick) carries the stalemate story.
+        if (ev.winner === 'DRAW' || ev.outcome === 'TIE') break;
         map.fireAt(ev.parcelId);
         const winners = ev.winner === 'ATTACKER' ? ev.attackerGovernorIds : ev.defenderGovernorIds;
         const losers = ev.winner === 'ATTACKER' ? ev.defenderGovernorIds : ev.attackerGovernorIds;
-        const txt = `${nameOf(winners)} crushed ${nameOf(losers)} (${ev.attackerScore}–${ev.defenderScore})`;
+        const ccTier = store.battles.get(ev.battleId)?.logistics?.commandCenterTier ?? 0;
+        const txt = `${nameOf(winners)} crushed ${nameOf(losers)} (${ev.attackerScore}–${ev.defenderScore})` +
+          (ccTier > 0 ? ` — ${CC_NAMES[ccTier]} raised` : '');
         ui.toast(`⚔ Battle at ${parcelName(ev.parcelId)}!`, txt, 'battle', ev.parcelId, 7000);
         ui.feedPush(`<span class="t-battle">⚔</span> ${parcelName(ev.parcelId)}: ${txt}`, 't-battle', ev.parcelId);
+        break;
+      }
+      case 'battle_tied': {
+        map.smokeAt(ev.parcelId); // gray smoke — the battle guttered out, nothing burned down
+        const txt = `${nameOf(ev.attackerGovernorIds)} vs ${nameOf(ev.defenderGovernorIds)} — no ground changed hands`;
+        ui.toast(`⚔️ Stalemate at ${parcelName(ev.parcelId)}`, 'The clock ran out — attackers withdraw.', 'tie', ev.parcelId, 8000);
+        ui.feedPush(`<span class="t-tie">🏳</span> Stalemate at ${parcelName(ev.parcelId)}: ${txt}`, 't-tie', ev.parcelId);
+        break;
+      }
+      case 'army_retreated': {
+        map.retreatFlash(ev.fromParcelId, ev.toParcelId, store.color(ev.governorId));
+        const who = store.isMine(ev.governorId) ? 'Your army' : `${esc(store.playerName(ev.governorId))}'s army`;
+        if (store.isMine(ev.governorId)) {
+          ui.toast('↩ Retreat!', `Your army falls back to ${parcelName(ev.toParcelId)}.`, 'bad', ev.toParcelId, 8000);
+        }
+        ui.feedPush(`↩ ${who} retreated ${parcelName(ev.fromParcelId)} → ${parcelName(ev.toParcelId)}`, 't-tie', ev.toParcelId);
+        break;
+      }
+      case 'army_scattered': {
+        const who = store.isMine(ev.governorId) ? 'Your army' : `${esc(store.playerName(ev.governorId))}'s army`;
+        ui.toast(`💀 ${who} scattered!`, ev.disbanded
+          ? 'No line of retreat — the survivors threw down their arms and disbanded.'
+          : 'No line of retreat — heavy losses, morale collapses.', 'bad', ev.parcelId, 9000);
+        ui.feedPush(`💀 ${who} scattered at ${parcelName(ev.parcelId)}`, 't-battle', ev.parcelId);
         break;
       }
       case 'territory_pillaged':
@@ -116,6 +162,7 @@ function handleEvents(events) {
         if (store.isMine(ev.governorId)) ui.openChoiceModal(ev.battleId);
         break;
       case 'army_arrived': {
+        if (movedByBattle.has(ev.armyId)) { marchDest.delete(ev.armyId); break; } // retreat/scatter toast covers it
         const dest = marchDest.get(ev.armyId);
         if (store.isMine(ev.governorId) && dest !== undefined) {
           if (ev.parcelId !== dest) {

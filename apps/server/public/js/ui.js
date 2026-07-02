@@ -4,7 +4,10 @@
  * re-render is scheduled (once per frame) on store change + a 1 Hz timer for
  * ETA countdowns.
  */
-import { bfsPath, esc, fmtCT, fmtDur, PRESETS, presetCostCt, shortId } from './util.js';
+import {
+  battleFoodNeed, bfsPath, ccTierFor, esc, fmtCT, fmtDur, foodSteps, fmtProv, PRESETS,
+  presetCostCt, PROV, provisionCostCtUnits, shortId,
+} from './util.js';
 
 const MAX_FEED = 10;
 
@@ -22,6 +25,7 @@ export function createUI({ store, map, orders }) {
   let cardParcelId = null;
   let modalBattleId = null;
   let railQueued = false;
+  let provDraft = null; // {armyId, food, gold, wood} — open provision form on the parcel card
 
   // ── rail ───────────────────────────────────────────────────────────────────
   function scheduleRail() {
@@ -61,7 +65,11 @@ export function createUI({ store, map, orders }) {
       const label = a.state === 'MARCHING'
         ? `${esc(a.heroName ?? shortId(a.id))} marching`
         : `${esc(a.heroName ?? shortId(a.id))} @ ${esc(here?.name ?? a.parcelId)}`;
-      return row(`data-army="${a.id}"`, store.color(a.governorId), label, meta);
+      const steps = foodSteps(a);
+      const low = a.state === 'MARCHING' && a.path && steps < a.path.length; // starves before arrival
+      return row(`data-army="${a.id}"`, store.color(a.governorId), label, meta) +
+        `<div class="rail-sub${low ? ' low' : ''}" data-army="${a.id}">` +
+        `${fmtProv(a.provisions)} · ${steps} step${steps === 1 ? '' : 's'} of food${low ? ' ⚠' : ''}</div>`;
     }).join(''));
 
     html += sec(`Territories (${my.length})`, my.map((t) =>
@@ -150,6 +158,20 @@ export function createUI({ store, map, orders }) {
         : `⛨ Garrison of ${esc(store.playerName(t.garrison.governorId))} — ${t.garrison.troops} troops`}</div>`;
     }
 
+    // My garrisoned armies here: provisions readout + Provision form (own army
+    // in GARRISON at a friendly territory — docs/04 §7c.1).
+    const myHere = store.armiesAt(cardParcelId).filter((a) => store.isMine(a.governorId));
+    if (provDraft && !myHere.some((a) => a.id === provDraft.armyId && mine)) provDraft = null;
+    for (const a of myHere) {
+      html += `<div class="army-box"><div class="ab-head"><b>${esc(a.heroName ?? shortId(a.id))}</b>` +
+        `<span>${a.troops}⚔ · str ${a.strength}</span></div>` +
+        `<div class="ab-prov">${fmtProv(a.provisions)} · ${a.foodPerStep}🍞/step · ` +
+        `${foodSteps(a)} steps of food</div>`;
+      if (mine && provDraft?.armyId === a.id) html += provisionFormHtml();
+      else if (mine) html += `<button data-act="prov-open" data-army="${a.id}">🛒 Provision army</button>`;
+      html += `</div>`;
+    }
+
     const actions = [];
     if (wild && !t.garrison) {
       const canClaim = store.freeOfficerCount() > 0;
@@ -170,6 +192,23 @@ export function createUI({ store, map, orders }) {
     card.hidden = false;
   }
 
+  /** Stepper + quick-pack provision form with live CT cost (server authoritative). */
+  function provisionFormHtml() {
+    const d = provDraft;
+    const cost = provisionCostCtUnits(d);
+    const short = cost > store.ctBalance;
+    const stepper = (k, icon, step) =>
+      `<div class="pf-row"><span>${icon} ${k}</span><button data-pf="${k}:-${step}">−</button>` +
+      `<b>${d[k]}</b><button data-pf="${k}:${step}">+</button></div>`;
+    return `<div class="prov-form">` +
+      stepper('food', '🍞', 100) + stepper('gold', '🪙', 10) + stepper('wood', '🪵', 10) +
+      `<div class="pf-quick"><button data-pf="food:500">+500🍞</button>` +
+      `<button data-pf="gold:50">+50🪙</button><button data-pf="wood:50">+50🪵</button></div>` +
+      `<div class="pf-cost">Cost <b>${fmtCT(cost)}</b>${short ? ' <span class="why">— not enough CT</span>' : ''}</div>` +
+      `<div class="pf-btns"><button data-act="prov-cancel">Cancel</button>` +
+      `<button class="primary" data-act="prov-buy" ${cost > 0 && !short ? '' : 'disabled'}>Buy</button></div></div>`;
+  }
+
   card.addEventListener('click', async (e) => {
     const btn = e.target.closest('button');
     if (!btn) return;
@@ -177,6 +216,16 @@ export function createUI({ store, map, orders }) {
     if (btn.dataset.act === 'close') closeCard();
     else if (btn.dataset.act === 'claim' && t) orders.claim(t.id);
     else if (btn.dataset.act === 'raise' && t) orders.raise(t.id, btn.dataset.preset);
+    else if (btn.dataset.act === 'prov-open') { provDraft = { armyId: btn.dataset.army, food: 0, gold: 0, wood: 0 }; renderCard(); }
+    else if (btn.dataset.act === 'prov-cancel') { provDraft = null; renderCard(); }
+    else if (btn.dataset.pf) {
+      const [k, dv] = btn.dataset.pf.split(':');
+      provDraft[k] = Math.max(0, provDraft[k] + Number(dv));
+      renderCard();
+    } else if (btn.dataset.act === 'prov-buy' && provDraft) {
+      const { armyId, food, gold, wood } = provDraft;
+      if (await orders.provision(armyId, { food, gold, wood })) { provDraft = null; renderCard(); }
+    }
   });
 
   // ── army selection + march popover ─────────────────────────────────────────
@@ -207,6 +256,19 @@ export function createUI({ store, map, orders }) {
       html += `<div class="row"><span>Distance</span><b>${path.length} parcel${path.length > 1 ? 's' : ''}</b></div>` +
         `<div class="row"><span>March time</span><b>~${fmtDur(etaMs)}</b></div>`;
       const hostiles = store.hostilesAt(parcelId);
+      // Logistics preview (docs/04 §7c — approximate, server authoritative):
+      // trip rations + expected battle need, and the CC tier gold+wood affords.
+      const tripFood = a.foodPerStep * path.length;
+      const needEst = tripFood + (hostiles.length ? battleFoodNeed(a.troops) : 0);
+      const cc = ccTierFor(a.troops, a.provisions.gold, a.provisions.wood);
+      html += `<div class="row"><span>Food carried</span><b>🍞${a.provisions.food}</b></div>` +
+        `<div class="row"><span>Est. need (trip${hostiles.length ? ' + battle' : ''})</span><b>~🍞${needEst}</b></div>`;
+      if (hostiles.length) {
+        html += `<div class="row"><span>Command center</span><b>${cc.name ?? 'None ⚠'}</b></div>`;
+      }
+      if (a.provisions.food < Math.max(2 * tripFood, needEst)) {
+        html += `<div class="warn">⚠ Low food — provision before marching (estimate).</div>`;
+      }
       if (hostiles.length) {
         const theirs = hostiles.reduce((n, x) => n + x.strength, 0);
         const monster = hostiles.find((x) => x.monsterName);
@@ -214,7 +276,10 @@ export function createUI({ store, map, orders }) {
         html += `<div class="vs">${monster ? `☠ ${esc(monster.monsterName)}` : '⛨ Defenders'} — ${theirs} strength` +
           `<div class="row"><span>You ${a.strength}</span><span>them ${theirs}</span></div>` +
           `<div class="bar"><span style="width:${pct}%;background:#4f8fe8"></span><span style="flex:1;background:#a83a30"></span></div>` +
-          `<div class="warn">Ties favor the defender.</div></div>`;
+          (Math.abs(a.strength - theirs) / Math.max(a.strength, theirs, 1) < PROV.tieThreshold
+            ? `<div class="warn">⚔ Evenly matched — likely stalemate (tied attackers withdraw).</div>`
+            : '') +
+          `</div>`;
       }
       html += `<div class="btns"><button data-close>Cancel</button>` +
         `<button class="primary" data-march="${t.id}">March</button></div>`;

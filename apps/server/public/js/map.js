@@ -3,15 +3,18 @@
  * no tiling). Camera pan/zoom/goto-fly, HiDPI, and a rAF gate: frames are drawn
  * only when state/camera changed or an animation (march, fire, flight) runs.
  *
- * Ambient viz: battles = fire+smoke burst (~30s fade), pillage = smoldering
- * tint (~60s), occupation = color pulse; wild parcels get bush speckle;
- * monster garrisons a red-eye dot; own parcels an ownership rim.
+ * Ambient viz: battles = fire+smoke burst (~30s fade), stalemates = gray smoke
+ * only (docs/04 §7c TIE — nothing burned, nobody won), retreats = fading dashed
+ * line + sliding chevron, pillage = smoldering tint (~60s), occupation = color
+ * pulse; wild parcels get bush speckle; monster garrisons a red-eye dot.
  */
 import { easeInOut, pointInPoly, rgba, shade } from './util.js';
 
 const FIRE_MS = 30_000;
+const SMOKE_MS = 18_000;
 const SMOLDER_MS = 60_000;
 const PULSE_MS = 1500;
+const RETREAT_MS = 4200;
 const WILD_FILL = '#1d2420';
 const NEUTRAL_STROKE = 'rgba(160,180,200,0.10)';
 
@@ -26,8 +29,10 @@ export function createMap(canvas, store, handlers) {
   let selectedArmyId = null;
 
   const fires = [];                // {x,y,t0,seed}
+  const smokes = [];               // {x,y,t0,seed} — stalemate: smoke only, no fire
   const smolders = new Map();      // parcelId → t0
   const pulses = [];               // {parcelId,t0,color}
+  const retreats = [];             // {fx,fy,tx,ty,t0,color} — retreat path flash
 
   // per-parcel precomputed geometry
   const paths = new Map();         // parcelId → Path2D (world coords)
@@ -201,6 +206,17 @@ export function createMap(canvas, store, handlers) {
   }
   function smolderAt(parcelId) { smolders.set(parcelId, performance.now()); dirty = true; }
   function pulseAt(parcelId, color) { pulses.push({ parcelId, t0: performance.now(), color }); dirty = true; }
+  /** Stalemate marker: gray smoke plume, no flames (docs/04 §7c.4 TIE). */
+  function smokeAt(parcelId) {
+    const c = store.parcels.get(parcelId)?.center;
+    if (c) { smokes.push({ x: c[0], y: c[1], t0: performance.now(), seed: Math.random() * 7 }); dirty = true; }
+  }
+  /** Brief flash of an army's retreat line (fromParcel → toParcel). */
+  function retreatFlash(fromParcelId, toParcelId, color) {
+    const f = store.parcels.get(fromParcelId)?.center;
+    const t = store.parcels.get(toParcelId)?.center;
+    if (f && t) { retreats.push({ fx: f[0], fy: f[1], tx: t[0], ty: t[1], t0: performance.now(), color }); dirty = true; }
+  }
 
   // ── draw ───────────────────────────────────────────────────────────────────
   function draw(now) {
@@ -308,12 +324,34 @@ export function createMap(canvas, store, handlers) {
       }
     }
 
+    // retreat path flashes (dashed fading line + sliding chevron)
+    for (let i = retreats.length - 1; i >= 0; i--) {
+      const r = retreats[i];
+      const k = (now - r.t0) / RETREAT_MS;
+      if (k >= 1) { retreats.splice(i, 1); continue; }
+      ctx.setLineDash([lw(3), lw(4)]);
+      ctx.strokeStyle = rgba(r.color, 0.85 * (1 - k));
+      ctx.lineWidth = lw(1.6);
+      ctx.beginPath(); ctx.moveTo(r.fx, r.fy); ctx.lineTo(r.tx, r.ty); ctx.stroke();
+      ctx.setLineDash([]);
+      const p = Math.min(1, k * 1.6); // chevron reaches the refuge early, then the line fades
+      chevron(r.fx + (r.tx - r.fx) * p, r.fy + (r.ty - r.fy) * p,
+        Math.atan2(r.ty - r.fy, r.tx - r.fx), r.color, false, lw, Math.min(1, 55 / cam.s));
+    }
+
     // fire + smoke (battle bursts, ~30 s fade)
     for (let i = fires.length - 1; i >= 0; i--) {
       const f = fires[i];
       const age = now - f.t0;
       if (age > FIRE_MS) { fires.splice(i, 1); continue; }
       drawFire(f, age / FIRE_MS, now);
+    }
+    // stalemate gray smoke (no flames — nothing burned, nobody won)
+    for (let i = smokes.length - 1; i >= 0; i--) {
+      const s = smokes[i];
+      const age = now - s.t0;
+      if (age > SMOKE_MS) { smokes.splice(i, 1); continue; }
+      drawSmoke(s, age / SMOKE_MS, now);
     }
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   }
@@ -366,9 +404,24 @@ export function createMap(canvas, store, handlers) {
     ctx.beginPath(); ctx.arc(f.x, f.y, 0.42 * m, 0, 7); ctx.fill();
   }
 
+  /** Gray-smoke-only variant of drawFire (stalemate — reuses the plume look). */
+  function drawSmoke(s, k, now) {
+    const fade = k < 0.1 ? k / 0.1 : 1 - (k - 0.1) / 0.9;
+    const m = Math.min(1, 90 / cam.s);
+    for (let i = 0; i < 5; i++) {
+      const ph = ((now / 3100 + s.seed + i * 0.23) % 1);
+      const sx = s.x + Math.sin((ph + i) * 8 + s.seed) * 0.14 * m;
+      const sy = s.y - (0.08 + ph * 0.8) * m;
+      ctx.fillStyle = `rgba(128,132,138,${0.26 * fade * (1 - ph)})`;
+      ctx.beginPath(); ctx.arc(sx, sy, (0.12 + ph * 0.24) * m, 0, 7); ctx.fill();
+    }
+    ctx.fillStyle = `rgba(120,124,130,${0.12 * fade})`; // ash pall on the ground
+    ctx.beginPath(); ctx.arc(s.x, s.y, 0.4 * m, 0, 7); ctx.fill();
+  }
+
   // ── frame loop (draw only when needed) ─────────────────────────────────────
   function animating() {
-    if (flight || fires.length || pulses.length || smolders.size) return true;
+    if (flight || fires.length || smokes.length || retreats.length || pulses.length || smolders.size) return true;
     for (const a of store.armies.values()) if (a.state === 'MARCHING') return true;
     return false;
   }
@@ -393,7 +446,7 @@ export function createMap(canvas, store, handlers) {
   requestAnimationFrame(frame);
 
   return {
-    prepare, resize, gotoParcel, flyTo, fireAt, smolderAt, pulseAt,
+    prepare, resize, gotoParcel, flyTo, fireAt, smokeAt, smolderAt, pulseAt, retreatFlash,
     setSelectedArmy(id) { selectedArmyId = id; canvas.classList.toggle('targeting', id !== null); dirty = true; },
     get selectedArmyId() { return selectedArmyId; },
     toScreenOf(parcelId) {

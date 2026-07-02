@@ -23,6 +23,45 @@ export function presetCostCt(preset) {
   return p.units.reduce((n, [c, k]) => n + UNIT_COST[c] * k, 0) / CT_UNITS_PER_CT;
 }
 
+/** balance.json `provisions` ⚙ + TIE_THRESHOLD mirror (docs/04 §7c) — previews only. */
+export const PROV = {
+  ctPerFood: 1000, ctPerGold: 2000, ctPerWood: 2000,
+  battleFoodNeedPer100: 400,
+  ccTiers: [{ gold: 50, wood: 50, name: 'Camp' }, { gold: 100, wood: 100, name: 'Palisade' },
+    { gold: 200, wood: 200, name: 'Fortified camp' }],
+  tieThreshold: 0.15,
+};
+
+/** CT cost (ct_units) of a provision order at balance prices. */
+export function provisionCostCtUnits(o) {
+  return (o.food || 0) * PROV.ctPerFood + (o.gold || 0) * PROV.ctPerGold + (o.wood || 0) * PROV.ctPerWood;
+}
+
+/** Food one battle consumes for a side of `troops` soldiers (⚙ battleFoodNeedPer100). */
+export function battleFoodNeed(troops) {
+  return Math.ceil((troops * PROV.battleFoodNeedPer100) / 100);
+}
+
+/** Highest command-center tier the carried gold+wood affords ({tier:0,name:null} = none). */
+export function ccTierFor(troops, gold, wood) {
+  let best = { tier: 0, name: null };
+  PROV.ccTiers.forEach((t, i) => {
+    if (gold >= Math.ceil((t.gold * troops) / 100) && wood >= Math.ceil((t.wood * troops) / 100)) {
+      best = { tier: i + 1, name: t.name };
+    }
+  });
+  return best;
+}
+
+/** Marching steps the army's carried food covers. */
+export function foodSteps(a) {
+  return a.foodPerStep > 0 ? Math.floor(a.provisions.food / a.foodPerStep) : 999;
+}
+
+export function fmtProv(p) {
+  return `🍞${p.food} 🪙${p.gold} 🪵${p.wood}`;
+}
+
 /** Approximate army strength from unit stacks (× morale/100), like the server's armyStrength. */
 export function strengthOf(units, morale = 100) {
   const base = units.reduce((n, s) => n + (CLASS_WEIGHT[s.unitClass] ?? 8) * s.count, 0);

@@ -55,12 +55,17 @@ button.danger  { background: #4a2320; border-color: #7a3a33; }
 .rail-row.alert { color: #f0c9a0; }
 .rail-row.alert .meta { color: var(--fire); }
 .rail-empty { color: var(--ink-faint); font-size: 12px; padding: 2px 0 4px; }
+.rail-sub { padding: 0 6px 3px 20px; margin: -2px -6px 1px; font: var(--mono); font-size: 10.5px;
+  color: var(--ink-faint); cursor: pointer; white-space: nowrap; overflow: hidden;
+  text-overflow: ellipsis; }
+.rail-sub.low { color: var(--fire); }
 .feed-row { padding: 3px 0; font-size: 12px; color: var(--ink-dim); cursor: pointer;
   border-bottom: 1px dotted #1b232d; }
 .feed-row:hover { color: var(--ink); }
 .feed-row .t-battle { color: var(--fire); }
 .feed-row .t-good { color: var(--ok); }
 .feed-row .t-gold { color: var(--gold); }
+.feed-row .t-tie { color: #9aa4ae; }
 
 /* ── map ── */
 #map-wrap { flex: 1; position: relative; overflow: hidden; }
@@ -105,6 +110,7 @@ button.danger  { background: #4a2320; border-color: #7a3a33; }
 .toast.gold { border-left-color: var(--gold); }
 .toast.good { border-left-color: var(--ok); }
 .toast.bad { border-left-color: var(--bad); }
+.toast.tie { border-left-color: #9aa4ae; background: rgba(26, 29, 33, 0.95); }
 .toast b { color: #fff; }
 .toast .sub { color: var(--ink-dim); font-size: 11.5px; margin-top: 2px; }
 .toast.fading { opacity: 0; transition: opacity 0.6s; }
@@ -126,6 +132,27 @@ button.danger  { background: #4a2320; border-color: #7a3a33; }
 #card .actions { display: flex; flex-direction: column; gap: 6px; }
 #card .actions button { text-align: left; display: flex; justify-content: space-between; }
 #card .actions button .cost { color: var(--gold); font: var(--mono); }
+#card .army-box { background: var(--panel-2); border-radius: 6px; padding: 7px 8px;
+  font-size: 12px; margin-bottom: 8px; }
+#card .army-box .ab-head { display: flex; justify-content: space-between; margin-bottom: 2px; }
+#card .army-box .ab-head span { color: var(--ink-dim); font: var(--mono); font-size: 11px; }
+#card .army-box .ab-prov { color: var(--ink-dim); font: var(--mono); font-size: 11px;
+  margin-bottom: 5px; }
+#card .army-box > button { width: 100%; font-size: 12px; padding: 4px 8px; }
+.prov-form { border-top: 1px dotted var(--line); padding-top: 6px; }
+.prov-form .pf-row { display: flex; align-items: center; gap: 6px; padding: 2px 0;
+  color: var(--ink-dim); }
+.prov-form .pf-row span { flex: 1; text-transform: capitalize; }
+.prov-form .pf-row b { min-width: 42px; text-align: center; color: var(--ink);
+  font: var(--mono); font-size: 12px; }
+.prov-form .pf-row button { padding: 0 8px; font-size: 13px; line-height: 20px; }
+.prov-form .pf-quick { display: flex; gap: 5px; margin: 5px 0; }
+.prov-form .pf-quick button { flex: 1; font-size: 11px; padding: 3px 2px; }
+.prov-form .pf-cost { padding: 3px 0; color: var(--ink-dim); }
+.prov-form .pf-cost b { color: var(--gold); font: var(--mono); font-size: 12px; }
+.prov-form .pf-cost .why { color: var(--bad); font-size: 11px; }
+.prov-form .pf-btns { display: flex; gap: 6px; margin-top: 4px; }
+.prov-form .pf-btns button { flex: 1; font-size: 12px; padding: 4px; }
 #card .close { position: absolute; top: 6px; right: 9px; border: none; background: none;
   color: var(--ink-faint); font-size: 15px; padding: 2px 5px; }
 #card .close:hover { color: #fff; }
