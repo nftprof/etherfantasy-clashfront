@@ -30,7 +30,8 @@ import {
   newId,
 } from '@clashfront/shared';
 import type { Army, BattleInstance, Territory } from '@clashfront/shared';
-import { sortedIds, type WorldState } from './state';
+import { battleFoodNeed, enduranceMultiplier, marchFoodPerStep, troopCount } from './logistics';
+import { type ArmyRetreatRecord, type BattleLogisticsRecord, sortedIds, type WorldState } from './state';
 
 // ── Tick options (demo-tunable knobs; server config overrides these) ──────────
 
@@ -159,6 +160,8 @@ function phaseConsumption(state: WorldState, _tick: number, _rng: Rng, balance: 
  * end, or on stepping onto a hex with hostile presence (interception), the army
  * halts as GARRISON; the BATTLE SPAWNING phase later this same tick resolves any
  * hostile co-location. Step time = travelTicksPerStep × entered hex's moveCost.
+ * Each step burns carried food (docs/04 §7c.1 march rations, ⚙ marchFoodPerStepPer100);
+ * starvation effects (morale bleed + desertion) land in the MORALE phase.
  *
  * TODO(01 §3): ZoC contest & ambush checks, embark/disembark at HARBOR/COAST,
  *   halt orders. TODO(01 §4): route (ROAD/sea-lane) cost discounts.
@@ -167,7 +170,7 @@ function phaseMovement(
   state: WorldState,
   tick: number,
   _rng: Rng,
-  _balance: Balance,
+  balance: Balance,
   options: Required<TickOptions>,
 ): void {
   for (const id of sortedIds(state.armies)) {
@@ -183,6 +186,8 @@ function phaseMovement(
     }
     a.hexId = next;
     a.path = path.slice(1);
+    // March rations (docs/04 §7c.1): each adjacency step burns carried food.
+    a.provisions.food = Math.max(0, a.provisions.food - marchFoodPerStep(a, balance));
     // Trodden bookkeeping (docs/01 §11.2): marching armies trample overgrowth.
     const terr = territoryAt(state, next);
     if (terr !== undefined) terr.lastTroddenTick = tick;
@@ -266,6 +271,9 @@ function isSuppliedPlaceholder(state: WorldState, hexId: string, governorId: str
  *   DESERTION_MORALE_THRESHOLD with the 03 §8 rate formula.
  * Placeholder below: unsupplied ticks bleed morale, supplied garrisons regen —
  *   clamped to [MORALE_MIN, MORALE_MAX] (invariant 6).
+ * LIVE (docs/04 §7c.1 starvation): a MARCHING army with provisions.food = 0
+ *   bleeds ⚙ starvationMoralePerTick; below DESERTION_MORALE_THRESHOLD its
+ *   stacks desert at ⚙ starvationDesertionPctPerTick per tick.
  */
 function phaseMorale(state: WorldState, _tick: number, _rng: Rng, balance: Balance): void {
   for (const id of sortedIds(state.armies)) {
@@ -276,7 +284,23 @@ function phaseMorale(state: WorldState, _tick: number, _rng: Rng, balance: Balan
     } else if (a.state === 'GARRISON') {
       a.morale = Math.min(CONSTANTS.MORALE_MAX, a.morale + balance.morale.regenGarrisonPerTick);
     }
-    // TODO(01 §5.4): desertion — each stack loses ceil(count × DESERTION_RATE)
+    // Starving on the march (docs/04 §7c.1): morale bleeds; desperate men desert.
+    if (a.state === 'MARCHING' && a.provisions.food === 0) {
+      a.morale = Math.max(CONSTANTS.MORALE_MIN, a.morale - balance.provisions.starvationMoralePerTick);
+      if (a.morale < CONSTANTS.DESERTION_MORALE_THRESHOLD) {
+        for (const stack of a.units) {
+          if (stack.count > 0) {
+            stack.count -= Math.ceil(stack.count * balance.provisions.starvationDesertionPctPerTick);
+          }
+        }
+        if (troopCount(a) === 0) {
+          a.state = 'DISBANDED'; // the army starved away on the road
+          delete a.path;
+          delete a.arrivalTick;
+        }
+      }
+    }
+    // TODO(01 §5.4): full desertion — each stack loses ceil(count × DESERTION_RATE)
     // while morale < DESERTION_MORALE_THRESHOLD; deserters may spawn WILD bandits (05).
   }
 }
@@ -298,11 +322,19 @@ function phaseRebellion(_state: WorldState, _tick: number, _rng: Rng, _balance: 
  * 1. Expired PILLAGE/OCCUPY choices are defaulted (NPC → OCCUPY, everyone else →
  *    PILLAGE; monsters/SYSTEM never get a choice — they don't capture land).
  * 2. Hostile co-location → BattleInstance (FIELD) resolved SAME TICK, AUTO mode,
- *    via the docs/04 §5 WarScore math simplified for the demo:
+ *    via the docs/04 §5 WarScore math + the §7c.6 logistics terms:
  *      strength = Σ classBase[unitClass] × count × (morale/100), terrain stub 1.0,
- *      + officer term capped at HERO_IMPACT_MAX (invariant 4).
- *    Winner = higher score; DEFENDER wins ties. Casualties proportional to the
- *    score gap; losing armies are wiped out (DISBANDED) — MVP simplification.
+ *      + officer term capped at HERO_IMPACT_MAX (invariant 4),
+ *      × endurance (attacker: carried food vs battle need; defender: territory
+ *        foodStock — home advantage is literal), attacker × (1 + command-center
+ *        bonus from carried gold+wood, tier cost SPENT win or lose).
+ *    |gap|/max < TIE_THRESHOLD ⇒ TIE (winner 'DRAW'): symmetric smaller
+ *    casualties, NO territory change, attacker retreats. Decisive: casualties
+ *    proportional to the gap; losing DEFENDERS rout (DISBANDED — MVP), losing
+ *    ATTACKERS retreat (adjacent friendly → adjacent neutral without hostiles →
+ *    scatter: SCATTER_CASUALTY_PCT extra losses, morale collapse, disband under
+ *    ⚙ scatterDisbandRemainingPct). Outcome + retreat resolution recorded in
+ *    state.battleLogistics for the server to surface.
  *
  * TODO(04): SIEGE battles vs defenderTerritoryId walls (invariant 9), LOBBY/LIVE
  *   resolution via the EF MOBA, join windows, estate linked-component fronts (§7b).
@@ -389,12 +421,61 @@ function resolveFieldBattle(
   balance: Balance,
   options: Required<TickOptions>,
 ): void {
+  const p = balance.provisions;
   const atk = sideScore(state, attackers, balance);
   const def = sideScore(state, defenders, balance);
   const terrainMod = 1.0; // stub — biome designations land later (locked decision 2)
-  const attackerScore = (atk.army + atk.hero) * terrainMod;
-  const defenderScore = (def.army + def.hero) * terrainMod;
+  const territory = territoryAt(state, hexId);
+
+  // Pre-battle troop counts — the scatter disband threshold reads these (§7c.5).
+  const preTroops = new Map<string, number>();
+  for (const a of [...attackers, ...defenders]) preTroops.set(a.id, troopCount(a));
+
+  // Endurance terms (docs/04 §7c.6): attacker fights on carried food, defender
+  // eats the territory's foodStock — home advantage is literal. No territory
+  // (open filler hex) ⇒ the defender lives off the land (adequacy 1).
+  const atkTroops = attackers.reduce((n, a) => n + troopCount(a), 0);
+  const defTroops = defenders.reduce((n, a) => n + troopCount(a), 0);
+  const atkNeed = battleFoodNeed(atkTroops, balance);
+  const defNeed = battleFoodNeed(defTroops, balance);
+  const atkFoodCarried = attackers.reduce((n, a) => n + a.provisions.food, 0);
+  const atkEndurance = enduranceMultiplier(atkFoodCarried, atkNeed, balance);
+  const defEndurance = territory === undefined ? 1 : enduranceMultiplier(territory.foodStock, defNeed, balance);
+
+  // Attacker structure term (docs/04 §7c.2): the best temporary command-center
+  // tier the carried gold+wood affords (requirements scale per 100 soldiers).
+  const atkGold = attackers.reduce((n, a) => n + a.provisions.gold, 0);
+  const atkWood = attackers.reduce((n, a) => n + a.provisions.wood, 0);
+  let ccTier = 0;
+  let ccBonus = 0;
+  let ccGoldCost = 0;
+  let ccWoodCost = 0;
+  for (let i = 0; i < p.commandCenterTiers.length; i++) {
+    const t = p.commandCenterTiers[i]!;
+    const g = Math.ceil((t.goldPer100 * atkTroops) / 100);
+    const w = Math.ceil((t.woodPer100 * atkTroops) / 100);
+    if (atkGold >= g && atkWood >= w) {
+      ccTier = i + 1;
+      ccBonus = t.bonus;
+      ccGoldCost = g;
+      ccWoodCost = w;
+    }
+  }
+
+  const attackerScore = (atk.army + atk.hero) * terrainMod * atkEndurance * (1 + ccBonus);
+  const defenderScore = (def.army + def.hero) * terrainMod * defEndurance;
   if (attackerScore === 0 && defenderScore === 0) return; // nothing to fight with
+
+  // Logistics are SPENT whether the battle is won or lost (docs/04 §7c.2–3).
+  const atkFoodConsumed = Math.min(atkFoodCarried, atkNeed);
+  drainProvisions(attackers, 'food', atkFoodConsumed);
+  drainProvisions(attackers, 'gold', ccGoldCost);
+  drainProvisions(attackers, 'wood', ccWoodCost);
+  let defFoodConsumed = 0;
+  if (territory !== undefined) {
+    defFoodConsumed = Math.min(territory.foodStock, defNeed);
+    territory.foodStock -= defFoodConsumed;
+  }
 
   const warScore: WarScore = {
     attacker: attackerScore,
@@ -405,18 +486,21 @@ function resolveFieldBattle(
       defenderArmy: def.army,
       defenderHero: def.hero,
       terrain: terrainMod,
+      attackerEndurance: atkEndurance,
+      defenderEndurance: defEndurance,
+      structures: ccBonus,
     },
   };
-  const winner: 'ATTACKER' | 'DEFENDER' = attackerScore > defenderScore ? 'ATTACKER' : 'DEFENDER';
-  const [winSide, loseSide, winScore, loseScore] =
-    winner === 'ATTACKER'
-      ? [attackers, defenders, attackerScore, defenderScore]
-      : [defenders, attackers, defenderScore, attackerScore];
 
-  // Casualties proportional to the score gap (demo curve, deterministic).
-  const gap = (winScore - loseScore) / winScore; // (0..1]
-  const loserFrac = Math.min(0.9, 0.35 + 0.55 * gap);
-  const winnerFrac = Math.max(0.05, 0.25 * (1 - gap));
+  // TIE (docs/04 §7c.4): score gap below TIE_THRESHOLD ⇒ no decisive outcome.
+  const isTie =
+    Math.abs(attackerScore - defenderScore) / Math.max(attackerScore, defenderScore) < CONSTANTS.TIE_THRESHOLD;
+  const winner: 'ATTACKER' | 'DEFENDER' | 'DRAW' = isTie
+    ? 'DRAW'
+    : attackerScore > defenderScore
+      ? 'ATTACKER'
+      : 'DEFENDER';
+
   const casualties: Record<string, number> = {};
   const applyCasualties = (side: Army[], frac: number): void => {
     for (const a of side) {
@@ -429,23 +513,48 @@ function resolveFieldBattle(
       casualties[a.id] = lost;
     }
   };
-  applyCasualties(winSide, winnerFrac);
-  applyCasualties(loseSide, loserFrac);
 
-  const territory = territoryAt(state, hexId);
-  // Losing armies leave the map: casualties fell per the gap curve above, the
-  // remainder scatters (DISBANDED) — retreat pathing is post-MVP (docs/03).
-  for (const a of loseSide) {
-    a.state = 'DISBANDED';
-    if (territory?.garrisonArmyId === a.id) delete territory.garrisonArmyId;
-    if (state.monsterNames?.has(a.id) === true) state.monsterNames.delete(a.id);
-  }
-  for (const a of winSide) {
-    a.morale = Math.min(CONSTANTS.MORALE_MAX, a.morale + balance.morale.victoryDelta);
-    // Winners that wiped a stack down to zero men disband too (mutual destruction).
-    if (a.units.every((s) => s.count === 0)) {
-      a.state = 'DISBANDED';
-      if (territory?.garrisonArmyId === a.id) delete territory.garrisonArmyId;
+  const retreats: ArmyRetreatRecord[] = [];
+
+  if (isTie) {
+    // Symmetric, smaller-than-decisive casualties; both sides shaken; the
+    // attacker failed to take the field and must retreat (§7c.4–5).
+    applyCasualties(attackers, p.tieCasualtyFrac);
+    applyCasualties(defenders, p.tieCasualtyFrac);
+    for (const a of [...attackers, ...defenders]) {
+      a.morale = Math.max(CONSTANTS.MORALE_MIN, a.morale - p.tieMoraleLoss);
+    }
+    for (const a of attackers) retreats.push(retreatArmy(state, a, casualties, preTroops.get(a.id)!, tick, balance));
+    for (const a of defenders) {
+      if (troopCount(a) === 0) disbandArmy(state, a);
+    }
+  } else {
+    const [winSide, loseSide, winScore, loseScore] =
+      winner === 'ATTACKER'
+        ? [attackers, defenders, attackerScore, defenderScore]
+        : [defenders, attackers, defenderScore, attackerScore];
+
+    // Casualties proportional to the score gap (demo curve, deterministic).
+    const gap = (winScore - loseScore) / winScore; // (0..1]
+    applyCasualties(winSide, Math.max(0.05, 0.25 * (1 - gap)));
+    applyCasualties(loseSide, Math.min(0.9, 0.35 + 0.55 * gap));
+
+    for (const a of winSide) {
+      a.morale = Math.min(CONSTANTS.MORALE_MAX, a.morale + balance.morale.victoryDelta);
+      // Winners that wiped a stack down to zero men disband too (mutual destruction).
+      if (troopCount(a) === 0) disbandArmy(state, a);
+    }
+    if (winner === 'ATTACKER') {
+      // Losing DEFENDERS rout off the map — MVP simplification (defender
+      // retreat pathing is post-MVP, docs/03).
+      for (const a of loseSide) disbandArmy(state, a);
+    } else {
+      // Failed invaders retreat with the §7c.5 ladder (replaces the Day-1
+      // "losers scatter to DISBANDED" placeholder for attackers).
+      for (const a of loseSide) {
+        a.morale = Math.max(CONSTANTS.MORALE_MIN, a.morale + balance.morale.defeatDelta);
+        retreats.push(retreatArmy(state, a, casualties, preTroops.get(a.id)!, tick, balance));
+      }
     }
   }
 
@@ -464,22 +573,37 @@ function resolveFieldBattle(
     result: { winner, casualties, resolvedTick: tick },
   };
   state.battles.set(battle.id, battle);
+  state.battleLogistics ??= new Map();
+  state.battleLogistics.set(battle.id, {
+    battleId: battle.id,
+    outcomeKind: isTie ? 'TIE' : winner === 'ATTACKER' ? 'DECISIVE_ATTACKER' : 'DECISIVE_DEFENDER',
+    attackerEndurance: atkEndurance,
+    defenderEndurance: defEndurance,
+    commandCenterTier: ccTier,
+    structureBonus: ccBonus,
+    attackerFoodConsumed: atkFoodConsumed,
+    defenderFoodConsumed: defFoodConsumed,
+    goldSpent: ccGoldCost,
+    woodSpent: ccWoodCost,
+    retreats,
+  });
 
-  // Post-victory (docs/02 §9): only a surviving ATTACKER on someone else's
-  // territory triggers PILLAGE|OCCUPY. Monsters/SYSTEM never capture land.
-  if (winner === 'DEFENDER' || territory === undefined) {
+  // Post-victory (docs/02 §9): only a DECISIVE surviving ATTACKER on someone
+  // else's territory triggers PILLAGE|OCCUPY (ties never change territory —
+  // §7c.4). Monsters/SYSTEM never capture land.
+  if (winner !== 'ATTACKER' || territory === undefined) {
     if (battle.result !== undefined && territory !== undefined) battle.result.territoryOutcome = 'HELD';
     return;
   }
-  const winnerGov = winSide[0]!.ownerGovernorId; // single-owner side by construction… except mixed attackers:
+  const winnerGov = attackers[0]!.ownerGovernorId; // single-owner side by construction… except mixed attackers:
   // with multiple foreign owners the strongest contributor claims the victory (deterministic).
-  const attackerOwners = [...new Set(winSide.map((a) => a.ownerGovernorId))];
+  const attackerOwners = [...new Set(attackers.map((a) => a.ownerGovernorId))];
   const claimingGov = attackerOwners.length === 1
     ? winnerGov
     : attackerOwners
         .map((g) => ({
           g,
-          s: winSide.filter((a) => a.ownerGovernorId === g).reduce((n, a) => n + armyStrength(a, balance), 0),
+          s: attackers.filter((a) => a.ownerGovernorId === g).reduce((n, a) => n + armyStrength(a, balance), 0),
         }))
         .sort((x, y) => y.s - x.s || (x.g < y.g ? -1 : 1))[0]!.g;
   if (claimingGov === territory.governorId) {
@@ -500,6 +624,105 @@ function resolveFieldBattle(
   }
   // Player: expose the pending choice; defaults to PILLAGE on timeout.
   queueChoice(state, battle, claimingGov, territory.id, tick, options.choiceTimeoutTicks);
+}
+
+/** Deduct `amount` of one provision kind across a side, greedily in army-id order (deterministic). */
+function drainProvisions(side: Army[], key: 'food' | 'gold' | 'wood', amount: number): void {
+  let left = amount;
+  for (const a of [...side].sort((x, y) => (x.id < y.id ? -1 : 1))) {
+    if (left === 0) break;
+    const take = Math.min(a.provisions[key], left);
+    a.provisions[key] -= take;
+    left -= take;
+  }
+}
+
+/** Remove an army from play, releasing garrison slot + monster display name. */
+function disbandArmy(state: WorldState, a: Army): void {
+  a.state = 'DISBANDED';
+  delete a.path;
+  delete a.arrivalTick;
+  const terr = territoryAt(state, a.hexId);
+  if (terr?.garrisonArmyId === a.id) delete terr.garrisonArmyId;
+  if (state.monsterNames?.has(a.id) === true) state.monsterNames.delete(a.id);
+}
+
+/**
+ * Retreat resolution for a failed/tied attacker (docs/04 §7c.5), deterministic
+ * (neighbors are stored sorted):
+ *   1. adjacent friendly parcel without hostile presence → RETREATED there;
+ *   2. else adjacent SYSTEM/unassigned parcel without hostile garrison → RETREATED;
+ *   3. else SCATTERED: SCATTER_CASUALTY_PCT extra losses (recorded in the battle
+ *      casualties), morale collapses to ⚙ scatterMoraleFloor, the crippled army
+ *      stays on the field — or DISBANDED when fewer than ⚙ scatterDisbandRemainingPct
+ *      of its pre-battle troops remain.
+ */
+function retreatArmy(
+  state: WorldState,
+  a: Army,
+  casualties: Record<string, number>,
+  preBattleTroops: number,
+  tick: number,
+  balance: Balance,
+): ArmyRetreatRecord {
+  if (troopCount(a) === 0) {
+    disbandArmy(state, a);
+    return { armyId: a.id, result: 'DISBANDED' };
+  }
+  const neighbors = state.adjacency?.get(a.hexId) ?? [];
+  let target: string | undefined;
+  for (const n of neighbors) {
+    const t = territoryAt(state, n);
+    if (t !== undefined && t.governorId === a.ownerGovernorId && hostileArmiesAt(state, n, a.ownerGovernorId).length === 0) {
+      target = n;
+      break;
+    }
+  }
+  if (target === undefined) {
+    for (const n of neighbors) {
+      const t = territoryAt(state, n);
+      const neutral = t === undefined || t.governorKind === 'SYSTEM';
+      if (neutral && hostileArmiesAt(state, n, a.ownerGovernorId).length === 0) {
+        target = n;
+        break;
+      }
+    }
+  }
+  if (target !== undefined) {
+    const here = territoryAt(state, a.hexId);
+    if (here?.garrisonArmyId === a.id) delete here.garrisonArmyId;
+    a.hexId = target;
+    a.state = 'GARRISON';
+    delete a.path;
+    delete a.arrivalTick;
+    a.morale = Math.max(CONSTANTS.MORALE_MIN, a.morale - balance.morale.retreatMoraleLoss);
+    const t = territoryAt(state, target);
+    if (t !== undefined) {
+      t.lastTroddenTick = tick;
+      if (t.governorId === a.ownerGovernorId && t.garrisonArmyId === undefined) t.garrisonArmyId = a.id;
+    }
+    a.version += 1;
+    return { armyId: a.id, result: 'RETREATED', toHexId: target };
+  }
+  // Nowhere to go — scatter.
+  let scattered = 0;
+  for (const stack of a.units) {
+    const l = Math.floor(stack.count * CONSTANTS.SCATTER_CASUALTY_PCT);
+    stack.count -= l;
+    scattered += l;
+  }
+  casualties[a.id] = (casualties[a.id] ?? 0) + scattered;
+  a.morale = Math.max(CONSTANTS.MORALE_MIN, Math.min(a.morale, balance.provisions.scatterMoraleFloor));
+  const remaining = troopCount(a);
+  if (remaining === 0 || (preBattleTroops > 0 && remaining < preBattleTroops * balance.provisions.scatterDisbandRemainingPct)) {
+    disbandArmy(state, a);
+    return { armyId: a.id, result: 'DISBANDED' };
+  }
+  a.state = 'GARRISON'; // crippled remnant holds where it stands
+  delete a.path;
+  delete a.arrivalTick;
+  a.version += 1;
+  return { armyId: a.id, result: 'SCATTERED' };
 }
 
 function queueChoice(

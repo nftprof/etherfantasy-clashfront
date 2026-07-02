@@ -6,7 +6,7 @@
  * by hand for fully deterministic end-to-end runs.
  *
  * HTTP:  POST /api/join · GET /api/world (ETag) · GET /api/state ·
- *        POST /api/claim · /api/raise · /api/march · /api/choice
+ *        POST /api/claim · /api/raise · /api/march · /api/provision · /api/choice
  * WS:    /ws?token=…  → {t:'hello'} on connect, {t:'tick'} broadcast per tick
  * Static: ./public — the overworld client (MVP item 4): vanilla ES modules +
  *         one CSS file, no build step (js/app.js entry, Canvas2D map).
@@ -198,6 +198,9 @@ export class ClashServer {
           return;
         case '/api/march':
           sendJson(res, 200, this.game.march(session.governorId, body.armyId, body.toTerritoryId));
+          return;
+        case '/api/provision':
+          sendJson(res, 200, this.game.provision(session.governorId, body.armyId, body.food, body.gold, body.wood));
           return;
         case '/api/choice':
           sendJson(res, 200, this.game.choice(session.governorId, body.battleId, body.action));

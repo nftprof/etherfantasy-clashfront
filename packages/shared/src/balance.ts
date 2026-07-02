@@ -110,11 +110,42 @@ export interface Balance {
     draftPerMilitaryLevel: number;
     disbandReturnPct: number;
   };
+  /** Battle logistics ⚙ — docs/04 §7c (provisions, command center, tie/retreat tuning). */
+  provisions: {
+    /** CT price per carried unit, in ct_units (integer money — 08 §0). */
+    ctUnitsPerFood: number;
+    ctUnitsPerGold: number;
+    ctUnitsPerWood: number;
+    /** Standard provision pack bought at raiseArmy, per soldier. */
+    defaultFoodPerSoldier: number;
+    defaultGoldPerSoldier: number;
+    defaultWoodPerSoldier: number;
+    /** Food consumed per adjacency step per 100 soldiers while MARCHING. */
+    marchFoodPerStepPer100: number;
+    /** Food one battle consumes per 100 soldiers (attacker: carried; defender: territory foodStock). */
+    battleFoodNeedPer100: number;
+    /** WarScore endurance multiplier at zero food (1.0 at full adequacy). */
+    enduranceFloor: number;
+    /** Morale lost per tick while MARCHING with provisions.food = 0. */
+    starvationMoralePerTick: number;
+    /** Fraction of each stack deserting per starving tick below DESERTION_MORALE_THRESHOLD. */
+    starvationDesertionPctPerTick: number;
+    /** Symmetric casualty fraction applied to BOTH sides on a TIE (smaller than decisive). */
+    tieCasualtyFrac: number;
+    /** Morale lost by both sides on a TIE (docs/04 §9 draw). */
+    tieMoraleLoss: number;
+    /** Morale collapses to (at most) this when an army scatters. */
+    scatterMoraleFloor: number;
+    /** A scattered army disbands when fewer than this fraction of its pre-battle troops remain. */
+    scatterDisbandRemainingPct: number;
+    /** Attacker temporary command-center tiers (camp → palisade → fortified camp); requirements scale per 100 attacker soldiers; the tier cost is SPENT win or lose. */
+    commandCenterTiers: { goldPer100: number; woodPer100: number; bonus: number }[];
+  };
 }
 
 const REQUIRED_SECTIONS: readonly (keyof Balance)[] = [
   'travel', 'development', 'tax', 'prosperity', 'food', 'population',
-  'supply', 'morale', 'desertion', 'upkeep', 'units', 'pillageOccupy', 'draft',
+  'supply', 'morale', 'desertion', 'upkeep', 'units', 'pillageOccupy', 'draft', 'provisions',
 ];
 
 function resolveBalancePath(): string {

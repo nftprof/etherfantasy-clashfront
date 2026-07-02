@@ -173,7 +173,8 @@ export function seedWorld(config: SeedConfig, rng: Rng): WorldState {
       { unitClass: 'INFANTRY', count: 500, veterancy: 0, hp: 100 },
       { unitClass: 'ARCHER', count: 200, veterancy: 0, hp: 100 },
     ],
-    provisions: { food: 0, gold: 0, wood: 0 }, // battle logistics (docs/04 §7c) — not provisioned in the MVP
+    // Home garrison: unprovisioned (defenders eat territory foodStock — docs/04 §7c.3).
+    provisions: { food: 0, gold: 0, wood: 0 },
     supply: CONSTANTS.SUPPLY_MAX_DEFAULT,
     supplyMax: CONSTANTS.SUPPLY_MAX_DEFAULT,
     morale: 70,

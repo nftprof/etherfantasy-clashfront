@@ -7,7 +7,7 @@
  * only private data is the per-player `my` block assembled in game.ts.
  */
 import type { Army, Balance, BattleInstance, Territory } from '@clashfront/shared';
-import { armyStrength, stepTicks, type TickOptions, type WorldState } from '@clashfront/sim-engine';
+import { armyStrength, marchFoodPerStep, stepTicks, type TickOptions, type WorldState } from '@clashfront/sim-engine';
 
 export interface TerritoryView {
   id: string;
@@ -40,6 +40,10 @@ export interface ArmyView {
   morale: number;
   units: { unitClass: string; count: number }[];
   strength: number;
+  /** Carried battle logistics (docs/04 §7c): food = battle clock + march rations; gold+wood = command-center budget. */
+  provisions: { food: number; gold: number; wood: number };
+  /** Food this army burns per adjacency step while MARCHING (⚙ marchFoodPerStepPer100). */
+  foodPerStep: number;
   heroId?: string;
   heroName?: string;
   monsterName?: string;
@@ -60,8 +64,29 @@ export interface BattleView {
   defenderGovernorIds: string[];
   attackerScore: number;
   defenderScore: number;
-  /** armyId → soldiers lost. */
+  /** armyId → soldiers lost (includes scatter losses). */
   casualties: Record<string, number>;
+  /** docs/04 §7c.6 outcome kind (present for battles resolved by the v2 resolver). */
+  outcome?: 'DECISIVE_ATTACKER' | 'DECISIVE_DEFENDER' | 'TIE';
+  /** Retreat resolution per failed/tied attacker army (docs/04 §7c.5). */
+  retreats?: {
+    armyId: string;
+    governorId: string;
+    result: 'RETREATED' | 'SCATTERED' | 'DISBANDED';
+    /** Destination parcel when result = RETREATED. */
+    toParcelId?: string;
+  }[];
+  /** Endurance/structure terms the resolver applied (docs/04 §7c.6). */
+  logistics?: {
+    commandCenterTier: number;
+    structureBonus: number;
+    attackerEndurance: number;
+    defenderEndurance: number;
+    attackerFoodConsumed: number;
+    defenderFoodConsumed: number;
+    goldSpent: number;
+    woodSpent: number;
+  };
   territoryOutcome?: string;
   postVictoryAction?: string;
   lootCt?: number;
@@ -81,6 +106,11 @@ export interface WorldParcelView {
 
 /** hexId → parcelId lookup (built once from LandNFT.sourceParcelId provenance). */
 export type ParcelIndex = ReadonlyMap<string, string>;
+
+/** Stable float rounding for view JSON (endurance multipliers etc.). */
+function round3(x: number): number {
+  return Math.round(x * 1000) / 1000;
+}
 
 export function buildParcelByHex(state: WorldState): Map<string, string> {
   const byHex = new Map<string, string>();
@@ -136,6 +166,8 @@ export function armyView(
     morale: a.morale,
     units: a.units.map((s) => ({ unitClass: s.unitClass, count: s.count })),
     strength: Math.round(armyStrength(a, balance)),
+    provisions: { ...a.provisions },
+    foodPerStep: marchFoodPerStep(a, balance),
   };
   if (a.heroId !== undefined) {
     view.heroId = a.heroId;
@@ -168,6 +200,26 @@ export function battleView(state: WorldState, b: BattleInstance, parcelByHex: Pa
     defenderScore: Math.round(b.warScore?.defender ?? 0),
     casualties: b.result?.casualties ?? {},
   };
+  const logi = state.battleLogistics?.get(b.id);
+  if (logi !== undefined) {
+    view.outcome = logi.outcomeKind;
+    view.retreats = logi.retreats.map((r) => ({
+      armyId: r.armyId,
+      governorId: state.armies.get(r.armyId)?.ownerGovernorId ?? 'unknown',
+      result: r.result,
+      ...(r.toHexId !== undefined ? { toParcelId: parcelByHex.get(r.toHexId) ?? r.toHexId } : {}),
+    }));
+    view.logistics = {
+      commandCenterTier: logi.commandCenterTier,
+      structureBonus: logi.structureBonus,
+      attackerEndurance: round3(logi.attackerEndurance),
+      defenderEndurance: round3(logi.defenderEndurance),
+      attackerFoodConsumed: logi.attackerFoodConsumed,
+      defenderFoodConsumed: logi.defenderFoodConsumed,
+      goldSpent: logi.goldSpent,
+      woodSpent: logi.woodSpent,
+    };
+  }
   if (b.result?.territoryOutcome !== undefined) view.territoryOutcome = b.result.territoryOutcome;
   if (b.result?.postVictoryAction !== undefined) view.postVictoryAction = b.result.postVictoryAction;
   if (b.result?.lootCt !== undefined) view.lootCt = b.result.lootCt;

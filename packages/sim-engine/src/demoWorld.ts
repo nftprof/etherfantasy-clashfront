@@ -29,6 +29,7 @@ import {
   loadBalance,
   newId,
 } from '@clashfront/shared';
+import { defaultProvisionsFor, provisionCostCtUnits, type ProvisionOrder } from './logistics';
 import type { DemoOfficer, WorldState } from './state';
 import { stepTicks, type TickOptions } from './tick';
 
@@ -216,6 +217,7 @@ export function loadDemoWorld(file: DemoWorldFile, rng: Rng, options: LoadDemoWo
       { unitClass: 'INFANTRY', count: Math.max(1, Math.floor(mRng.int(30, 81) * scale)), veterancy: 0, hp: 100 },
       { unitClass: 'ARCHER', count: Math.floor(mRng.int(0, 41) * scale), veterancy: 0, hp: 100 },
     ];
+    const monsterTroops = units.reduce((n, s) => n + s.count, 0);
     const army: Army = {
       id: newId('army', { time: 0, random: () => idRng.next() }),
       worldId: world.id,
@@ -223,7 +225,9 @@ export function loadDemoWorld(file: DemoWorldFile, rng: Rng, options: LoadDemoWo
       state: 'GARRISON',
       hexId,
       units,
-      provisions: { food: 0, gold: 0, wood: 0 }, // battle logistics (docs/04 §7c) — not provisioned in the MVP
+      // Monsters live off the wild: rations only, no command-center budget
+      // (defenders eat the territory foodStock in battle — docs/04 §7c.3).
+      provisions: { food: monsterTroops * balance.provisions.defaultFoodPerSoldier, gold: 0, wood: 0 },
       supply: CONSTANTS.SUPPLY_MAX_DEFAULT,
       supplyMax: CONSTANTS.SUPPLY_MAX_DEFAULT,
       morale: 60,
@@ -249,6 +253,7 @@ export function loadDemoWorld(file: DemoWorldFile, rng: Rng, options: LoadDemoWo
     officers: new Map([[wildGovernorId, []]]),
     pendingChoices: new Map(),
     monsterNames,
+    battleLogistics: new Map(),
   };
 }
 
@@ -326,12 +331,38 @@ export function claimTerritory(state: WorldState, territoryId: string, governorI
   t.version += 1;
 }
 
+/** CT cost breakdown of raising a preset army: training + the standard provision pack (docs/04 §7c.1). */
+export interface RaiseCostBreakdown {
+  /** Training cost, ct_units (Σ trainCtUnitsPerSoldier × count). */
+  unitsCtUnits: number;
+  /** Standard provision pack cost, ct_units (⚙ balance.provisions defaults × prices). */
+  provisionsCtUnits: number;
+  totalCtUnits: number;
+  /** The pack itself — what the army carries at raise. */
+  provisions: ProvisionOrder;
+}
+
+/** Cost of raising `preset`, including its default provision pack. */
+export function raiseCost(preset: DemoArmyPreset, balance = loadBalance()): RaiseCostBreakdown {
+  const spec = DEMO_ARMY_PRESETS[preset];
+  const unitsCtUnits = spec.reduce(
+    (sum, s) => sum + balance.units.trainCtUnitsPerSoldier[s.unitClass] * s.count,
+    0,
+  );
+  const troops = spec.reduce((n, s) => n + s.count, 0);
+  const provisions = defaultProvisionsFor(troops, balance);
+  const provisionsCtUnits = provisionCostCtUnits(provisions, balance);
+  return { unitsCtUnits, provisionsCtUnits, totalCtUnits: unitsCtUnits + provisionsCtUnits, provisions };
+}
+
 /**
  * Raise an army from a demo preset in a territory the governor controls.
- * Cost = Σ balance.units.trainCtUnitsPerSoldier × count, paid from the MVP
- * per-governor CT wallet (no ledger — brief OUT list). Throws (without mutating)
- * on insufficient funds. Optional `heroId` puts one of the governor's officers
- * in command (feeds the WarScore hero term, capped at HERO_IMPACT_MAX).
+ * Cost = training (Σ balance.units.trainCtUnitsPerSoldier × count) + the
+ * standard provision pack (docs/04 §7c.1 — the army marches out provisioned),
+ * paid from the MVP per-governor CT wallet (no ledger — brief OUT list).
+ * Throws (without mutating) on insufficient funds. Optional `heroId` puts one
+ * of the governor's officers in command (feeds the WarScore hero term, capped
+ * at HERO_IMPACT_MAX).
  */
 export function raiseArmy(
   state: WorldState,
@@ -345,20 +376,17 @@ export function raiseArmy(
   const gov = t.governorId;
   const balance = loadBalance();
   const spec = DEMO_ARMY_PRESETS[preset];
-  const cost = spec.reduce(
-    (sum, s) => sum + balance.units.trainCtUnitsPerSoldier[s.unitClass] * s.count,
-    0,
-  );
+  const cost = raiseCost(preset, balance);
   const wallet = state.ctBalances?.get(gov);
   if (wallet === undefined) throw new Error(`raiseArmy: governor ${gov} has no CT wallet`);
-  if (wallet < cost) {
-    throw new Error(`raiseArmy: insufficient CT (${wallet} < ${cost} ct_units)`);
+  if (wallet < cost.totalCtUnits) {
+    throw new Error(`raiseArmy: insufficient CT (${wallet} < ${cost.totalCtUnits} ct_units)`);
   }
   if (heroId !== undefined) {
     const officer = state.officers?.get(gov)?.find((o) => o.id === heroId);
     if (officer === undefined) throw new Error(`raiseArmy: ${heroId} is not an officer of ${gov}`);
   }
-  state.ctBalances!.set(gov, wallet - cost);
+  state.ctBalances!.set(gov, wallet - cost.totalCtUnits);
 
   const army: Army = {
     id: newId('army', { time: state.world.tick, random: () => rng.next() }),
@@ -368,7 +396,7 @@ export function raiseArmy(
     state: 'GARRISON',
     hexId: t.hexIds[0]!,
     units: spec.map((s) => ({ unitClass: s.unitClass, count: s.count, veterancy: 0, hp: 100 })),
-    provisions: { food: 0, gold: 0, wood: 0 }, // battle logistics (docs/04 §7c) — not provisioned in the MVP
+    provisions: { ...cost.provisions },
     supply: CONSTANTS.SUPPLY_MAX_DEFAULT,
     supplyMax: CONSTANTS.SUPPLY_MAX_DEFAULT,
     morale: 70,
