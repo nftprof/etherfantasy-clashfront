@@ -28,10 +28,20 @@ streaming, tiled, game-first map on the extracted data.
 | World sim canon | `docs/01` (travel, fog §9, rewilding §11), `docs/08` (schemas) | the map client renders THIS state |
 | MVP scope | `docs/briefs/MVP-JULY7.md` | the July-7 build is the map client's v0 |
 
-**Do we need the old map.pentagon.games code?** No — extraction already recovered all geometry,
-layouts, and rasters, and the report documents the old renderer's approach (per-parcel SVG meshes —
-the reason zoom was slow). If a copy is cheap to obtain, drop it in `data/` as reference for its
-API/tile behavior; it is NOT a blocker and we should not inherit its rendering strategy.
+**The old map client (LOCATED 2026-07-02):** lives in the archived repo
+`_archive-cryptoverse-frontend` — a Three.js + SVGLoader WebGL explorer:
+`vendors/LandMap/LandMap.js` (engine), mounted by `pages/land-map.tsx` (explore view) and
+`pages/land-selector.tsx` (auth/mint view). Confirmed features: TrackballControls zoom/pan/rotate
+(zoom 20–325), zone → L2 → `showSelectedL3()` drill-in, `goToTokenId({tokenId, zone, zoom})` /
+`goToChild()`, token-id search (`SearchForToken.tsx`), help overlay, minted-status tinting via
+`/land/minted/*` polling.
+
+**Verdict (aligned with extraction report §7): reuse the assets and the UX affordances, rebuild
+the client.** Borrow the *interaction contract* — drill-in hierarchy, `goToTokenId` semantics
+(our `goto(entity)` is its descendant), zoom ranges as tuning reference. Do NOT inherit the
+architecture: it loads ALL l1/l2/l3 SVGs and parses/meshes them at runtime (the slow-zoom cause),
+and it's coupled to the old Next.js app, auth, and `api.cryptoverse.vip`. Our tile-pyramid +
+offline-triangulation design (doc 01) exists precisely to fix that.
 
 ## Non-negotiable principles
 
