@@ -294,6 +294,48 @@ Combat mechanics are EF MOBA's; this table defines only what each type **reads f
 
 ---
 
+## 7b. Battlefield generation & estate sieges (canon)
+
+> Locked with the product owner (2026-07). Supersedes any earlier "MOBA lanes" framing.
+
+**The battlefield is not a MOBA map.** The battle engine's square map becomes a **battlefield where
+armies collide against natural terrain** — no lanes, towers, or creep conventions. Hero drop-in remains.
+
+**Generation rules:**
+1. **The overworld map is FIXED** — hexagone-city geometry is immutable; we never regenerate it.
+2. **Parcel interiors are SEEDED** — each hex's battlefield terrain is procedurally generated,
+   deterministic from `seed = f(hexId, terrain, zoneType, development, structures)`. Same hex → same
+   battlefield, forever (until its macro state changes it).
+3. **Biome overrides** — the main map may designate regions as biomes (mountain ranges, etc.) that
+   constrain the seed inputs. ❓ OPEN: biome designation list, review with product owner.
+4. **Component size is capped** — one battle map = the size of the **smallest parcel**. Larger holdings
+   are NEVER one giant map; they are fought as multiple linked components (see estate sieges below).
+5. **Only estates have pre-designed set pieces** — castles and city walls are hand-authored maps,
+   referencing real-world castle/dungeon design (concentric walls, gatehouse kill-zones, baileys,
+   moats, keeps — e.g. Krak des Chevaliers, Carcassonne, Himeji). Ordinary parcels are pure seeded terrain.
+
+**Estate sieges — linked-component campaign.** An **Estate** is a large contiguous Land-NFT holding
+(hundreds to ~10,000 hexes). Estate battles use a fourth mode built from the existing three:
+
+- Each hex of the estate is one battle-map **component** (rule 4). Its type follows its content:
+  outer farmland → seeded FIELD component; wall districts → pre-designed wall maps; the castle → the
+  hand-authored castle map (final component).
+- **Adjacency gating:** attackers may only assault components adjacent to hexes they already hold —
+  producing a visible **front line inside the estate**, mirroring the overworld war at smaller scale
+  (fractal warfare: same rules at both zoom levels).
+- Each component assault is a normal `BattleInstance` (FIELD or SIEGE rules apply per component);
+  structure damage, casualties, supply and morale persist between components as usual.
+- The estate falls when its **castle component** falls (or garrison starves per the attrition path).
+  `PostVictoryAction` applies to the estate as a whole.
+- Pacing consequence (intended): a large estate is a **multi-day campaign**, not one match.
+
+Schema: `Territory.hexIds.length` ranges 1 → ~10,000 ([`08-data-models.md`](./08-data-models.md));
+an `isEstate` threshold and per-hex `battleMapId` binding govern which mode the scheduler selects.
+❓ OPEN: exact estate threshold (proposal: `hexIds.length ≥ 7`); parcel-size table import from
+hexagone-city (land sizes are permanent — snapshot under `data/` once repo access is granted).
+
+---
+
 ## 8. Post-victory: PILLAGE vs OCCUPY, and settlement
 
 Applied atomically at `RESOLVED`, in order:

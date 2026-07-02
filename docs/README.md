@@ -109,7 +109,8 @@ Single source of truth for names. All docs, code, and schemas MUST use these exa
 ### World
 - **World** — the persistent shard. One authoritative simulation.
 - **Region** — a named cluster of territories (e.g. an archipelago).
-- **Territory** — a controllable land or sea zone; **1 Territory = 1 Land NFT**. Has a **ZoneType**.
+- **Territory** — a controllable land or sea zone; **1 Territory = 1 Land NFT**. Has a **ZoneType**. Spans 1 hex (smallest parcel) up to ~10,000 hexes.
+- **Estate** — a large multi-hex Territory (hundreds–10,000 hexes). Only estates have pre-designed castle/city-wall battle maps; estate sieges are fought as linked hex-sized components with an internal front (see `04` §7b).
 - **Hex** — the atomic map cell. Territories occupy one or more hexes. Movement is hex-to-hex.
 - **ZoneType** — `VILLAGE | TOWN | FORTRESS | HARBOR | CAPITAL | WILD | SEA`.
 - **Node** — a point of interest on a hex (e.g. a resource node, a port, a shrine).
