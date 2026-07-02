@@ -319,12 +319,18 @@ sides. AI-vs-AI battles run the SAME simulation with **accelerated ticks** (fast
 different resolver). The overworld's instant WarScore resolution is an acknowledged placeholder
 until battle-engine M1+; LIVE pacing then follows match reality (≈20–40 min occupying the parcel).
 
-**Battle anatomy (owner, 2026-07-02, corrected same day): DUAL-BASE MOBA.**
-- **Both sides have a base and towers — MOBA-style.** The DEFENDER fights "as now" (the current
-  MOBA design): base + towers; on developed parcels the parcel's built structures ARE that base's
-  fortifications, on open ground it's a standard defender camp. The ATTACKER'S base is the
-  temporary **command center** erected from carried gold/wood (§7c) — its tier sets its
-  camp/towers.
+**Battle anatomy (owner, 2026-07-02, final): CONTEXTUAL BASES — you have a base if you have
+something to anchor.**
+- **The ATTACKER always brings a base**: the temporary **command center** erected from carried
+  gold/wood (§7c) — its tier sets its camp/towers.
+- **A DEFENDER of held land fights "as now"** (the current MOBA design): base + towers; on
+  developed parcels the built structures ARE the fortifications.
+- **The WILD has nothing**: fighting wild monsters is EXACTLY the classic MOBA asymmetry — one
+  side towers + structures (the invading player), the other side pure units rushing.
+- **Layout: ONE lane/path between the sides by default** (not three) — it fits the
+  single-parcel map size; path count may scale with parcel size/estate components ⚙.
+- **The battlefield IS the parcel's own saved map** (§7b design layer) — the exact map the
+  armies stand on in the overworld. Every battle map is therefore unique.
 - **Decisive loss = your base is destroyed.** Defender's base down ⇒ the defender ENTIRELY
   loses — the ground is taken (PostVictoryAction). Attacker's CC down ⇒ the invasion is repelled.
 - **Non-decisive end** (food clock / match timeout, no base killed): the battle finishes and the

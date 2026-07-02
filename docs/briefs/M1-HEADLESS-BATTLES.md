@@ -32,14 +32,16 @@
 
 ## M1 deliverables (from the repurposing plan, unchanged in shape)
 
-- **B1**: repurpose the MOBA furniture per the DUAL-BASE anatomy (docs/04 §7b of the canon
-  repo) — this is CLOSE to the existing two-team core+towers design: DEFENDER base + towers "as
-  now" (fortification stats fed from the parcel's structures when developed; standard camp
-  otherwise); ATTACKER base = command center + camp towers, tier from carried gold/wood.
+- **B1**: repurpose the MOBA furniture per the CONTEXTUAL-BASES anatomy (docs/04 §7b of the
+  canon repo) — close to the existing two-team core+towers design: ATTACKER always spawns a
+  base = command center + camp towers (tier from carried gold/wood); DEFENDER of held land gets
+  base + towers "as now" (fortification stats from the parcel's structures when developed);
+  WILD side gets NO base — pure rushing units (classic MOBA asymmetry, monsters as the swarm).
+  Map layout: ONE lane/path between sides by default (path count a battlefield-schema param).
   Win = enemy base destroyed (defender base down ⇒ ground taken; attacker CC down ⇒ invasion
-  repelled) or force routed. Food-clock/timeout with both bases standing = NON-DECISIVE: report
-  it — the overworld lets the attacker re-assault (new match, new wave), reinforce, or retreat.
-  Strip only: lanes/minion-wave economy/shop/draft (armies come from the battle context instead).
+  repelled) or force routed / swarm exhausted. Food-clock/timeout with no decisive kill =
+  NON-DECISIVE: report it — the overworld lets the attacker re-assault, reinforce, or retreat.
+  Strip only: 3-lane layout/minion-wave economy/shop/draft (armies come from the battle context).
 - **A1**: `Battlefield` JSON schema (bounds polygon, obstacles, terrain costs, spawn zones,
   structure anchors) consumed by sim + (later) renderer; placeholder seeded generator.
 - **D1**: `POST /internal/v1/matches/allocate` — battle context in (armies as unit stacks +
