@@ -193,6 +193,9 @@ async function main() {
       defender: { label: 'Garrison of the Square', troops: 350 },
       arena: { shape: 'square', size: SIZE },
       exhibition: true,
+      // HERO MODE doorway demo: --join-url lights the viewer's ⚡ Take the field
+      // button (the real MOBA server sends its client's match deep-link here).
+      ...(args['join-url'] ? { joinUrl: args['join-url'] } : {}),
     },
   });
   const id = start.battleId;
