@@ -67,7 +67,7 @@ for (let i = 0; i < 8; i++) {
   units.push(unit('squad', 'B', -60 + (i % 4) * 40, 25 + Math.floor(i / 4) * 55, 120, { anchorX: -60 + (i % 4) * 40, anchorZ: 25 + Math.floor(i / 4) * 55, cls: i % 2 ? 'ARCHER' : 'INFANTRY' }));
 }
 // Attacker (A): the Master + waves from the south edge.
-const master = unit('master', 'A', 0, -110, 420, { name: 'Cid the Relayed', cls: 'MASTER' });
+const master = unit('master', 'A', 0, -110, 520, { name: 'Cid the Relayed', cls: 'MASTER' });
 units.push(master);
 let runs = 2;               // Master revives left
 let respawnAtMs = 0;
@@ -82,7 +82,7 @@ let lastSeq = 0;
 function spawnWave(n) {
   for (let i = 0; i < n && waveStock > 0; i++) {
     waveStock--;
-    units.push(unit('squad', 'A', clamp(-30 + Math.random() * 60), -112 + Math.random() * 4, 110, { cls: i % 3 === 1 ? 'ARCHER' : 'INFANTRY' }));
+    units.push(unit('squad', 'A', clamp(-30 + Math.random() * 60), -112 + Math.random() * 4, 180, { cls: i % 3 === 1 ? 'ARCHER' : 'INFANTRY' }));
   }
 }
 
@@ -106,7 +106,7 @@ function step(dtMs) {
   for (const u of alive()) {
     if (u.kind === 'tower' || u.kind === 'core') {
       const tgt = nearestEnemy(u, 34);
-      if (tgt) tgt.hp -= (u.kind === 'core' ? 22 : 16) * dt;
+      if (tgt) tgt.hp -= (u.kind === 'core' ? 16 : 11) * dt;
       continue;
     }
     const speed = u.kind === 'master' ? 16 : 10; // m/s
@@ -225,7 +225,7 @@ async function main() {
         if (c.kind === 'focus') { focusTgt = c.targetId; log(`⇒ command #${c.seq} FOCUS ${c.targetId}`); }
       }
     }
-    if (tick % 80 === 1) spawnWave(4); // a wave every ~8 s
+    if (tick % 50 === 1) spawnWave(4); // a wave every ~5 s
     await new Promise((r) => setTimeout(r, 100));
   }
 
