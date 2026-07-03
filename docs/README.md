@@ -157,6 +157,7 @@ Single source of truth for names. All docs, code, and schemas MUST use these exa
 ### Actions
 - **Pillage** — post-victory: large instant CT/loot, destroys infrastructure & population.
 - **Occupy (Seize)** — post-victory: small instant reward, gain the territory's ongoing yield & position.
+- **Abandon** — a governor voluntarily releases an owned territory to free what occupation ties down: the overseer Master returns to the free pool and any garrison becomes a normal field army. The land reverts to unowned/SYSTEM; **no refund** — development, structures, treasury and the enrichment pool stay with the land (contestable). Blocked while a battle rages on the parcel. See `08-data-models.md` (Territory) and `09` §4 (`territory.TerritoryAbandoned`).
 
 ---
 

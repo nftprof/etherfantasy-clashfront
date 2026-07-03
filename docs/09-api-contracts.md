@@ -344,6 +344,7 @@ pushes (§3) from them after fog filtering.
 | `world.TickCompleted` | tick engine | `tick`, phase timings | AI, ops |
 | `territory.TerritoryDeveloped` | territory svc (phase 1) | `terrId`, `track`, `newLevel`, `costCt` | AI, analytics, WS |
 | `territory.TerritoryPillaged` / `TerritoryOccupied` | battle svc | `terrId`, `battleId`, deltas | economy, AI, WS |
+| `territory.TerritoryAbandoned` | territory svc (player order) | `terrId`, `governorId` (releasing governor) | AI, analytics, WS (public — ownership is never fogged) |
 | `army.ArmyArrived` | movement (phase 3) | `armyId`, `hexId`, `finalDestination: bool` | battle scheduler, AI |
 | `army.SupplyBroken` / `SupplyRestored` | supply (phase 4) | `armyId`, `supply` | AI, WS |
 | `battle.BattleScheduled` | battle spawn (phase 7) | `BattleInstance` projection | EF MOBA allocator, WS |

@@ -93,6 +93,22 @@ const orders = {
       return false;
     }
   },
+  /** POST /api/abandon — release an owned territory; the overseer + garrison are freed, everything built stays with the land. */
+  async abandon(territoryId) {
+    try {
+      const res = await api('/api/abandon', { token, body: { territoryId } });
+      store.putTerritory(res.territory);
+      store.ctBalance = res.ctUnits;
+      store.emit();
+      ui.toast('🏳 Land abandoned', `${esc(res.territory.name)} reverts to the wilds — your officer and garrison are free to serve elsewhere; what you built stays with the land.`, 'info', res.territory.parcelId);
+      return true;
+    } catch (e) {
+      ui.toast('Abandon refused', e.code === 'BATTLE_RAGING'
+        ? 'A battle rages on that land — you cannot walk away from contested ground.'
+        : esc(e.message), 'bad');
+      return false;
+    }
+  },
   async march(armyId, toTerritoryId) {
     try {
       const { army } = await api('/api/march', { token, body: { armyId, toTerritoryId } });
@@ -329,6 +345,13 @@ function handleEvents(events) {
         map.smolderAt(ev.parcelId, 0.5);
         const razeTrack = ev.track.charAt(0) + ev.track.slice(1).toLowerCase();
         ui.feedPush(`🔥 ${esc(store.playerName(ev.governorId))} razed ${razeTrack} at ${parcelName(ev.parcelId)} (salvaged ${fmtCT(ev.salvageCtUnits)})`, 't-battle', ev.parcelId);
+        break;
+      }
+      case 'territory_abandoned': { // public — abandoned land is free to claim; own abandon already toasted by the POST
+        ui.feedPush(`🏳 ${esc(store.playerName(ev.governorId))} abandoned ${parcelName(ev.parcelId)} — the land lies unclaimed`, 't-tie', ev.parcelId);
+        if (!store.isMine(ev.governorId)) {
+          ui.toast(`🏳 ${parcelName(ev.parcelId)} abandoned`, `${esc(store.playerName(ev.governorId))} released this land — free to claim, improvements included.`, 'info', ev.parcelId);
+        }
         break;
       }
       case 'wild_raid': { // F3 — the frontier bites back

@@ -8,7 +8,7 @@
  * HTTP:  POST /api/join · GET /api/world (ETag) · GET /api/state (fog-filtered) ·
  *        GET /api/economy (public, 10 s cache) · GET /internal/economy/settlement (journal export) ·
  *        POST /api/claim · /api/raise · /api/march · /api/provision · /api/develop ·
- *        /api/enrich · /api/raze · /api/choice · /api/buy-ct (501 stub)
+ *        /api/enrich · /api/raze · /api/abandon · /api/choice · /api/buy-ct (501 stub)
  * WS:    /ws?token=…  → {t:'hello'} on connect, {t:'tick'} broadcast per tick
  * Static: ./public — the overworld client (MVP item 4): vanilla ES modules +
  *         one CSS file, no build step (js/app.js entry, Canvas2D map).
@@ -603,6 +603,9 @@ export class ClashServer {
           return;
         case '/api/raze':
           sendJson(res, 200, this.game.raze(session.governorId, body.territoryId, body.track));
+          return;
+        case '/api/abandon':
+          sendJson(res, 200, this.game.abandon(session.governorId, body.territoryId));
           return;
         case '/api/buy-ct':
           // E5 purchase-cap stub: real payments are out of scope; the cap that

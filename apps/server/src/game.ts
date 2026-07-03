@@ -30,6 +30,7 @@ import {
   loadBalance,
 } from '@clashfront/shared';
 import {
+  abandonTerritory,
   addGovernor,
   applyWildBattleCommand,
   armyEngagedIn,
@@ -124,6 +125,7 @@ function translateSimError(e: unknown): ApiError {
   if (msg.includes('engaged in battle')) return new ApiError(409, 'ENGAGED', msg);
   if (msg.includes('training queue busy')) return new ApiError(409, 'QUEUE_BUSY', msg);
   if (msg.includes('no level to raze')) return new ApiError(409, 'NOTHING_TO_RAZE', msg);
+  if (msg.includes('a battle rages')) return new ApiError(409, 'BATTLE_RAGING', msg);
   return new ApiError(400, 'BAD_ORDER', msg);
 }
 
@@ -259,6 +261,19 @@ export type GameEvent =
       level: number;
       salvageCtUnits: number;
       burnedCtUnits: number;
+    }
+  | {
+      /**
+       * A governor ABANDONED a territory — it reverts to unowned wilds; the
+       * overseer and any garrison are freed; development, structures and the
+       * enrichment pool STAY with the land. PUBLIC (ownership changes are
+       * public intel — docs/briefs/FEATURESET-2.md F1).
+       */
+      type: 'territory_abandoned';
+      tick: number;
+      territoryId: string;
+      parcelId: string;
+      governorId: string;
     }
   | {
       /** F3: a monster lair split a raid army that is now marching (visible, interceptable). */
@@ -840,6 +855,35 @@ export class Game {
       ctUnits: this.state.ctBalances?.get(governorId) ?? 0,
       track: track as DevelopmentTrack,
       ...result,
+    };
+  }
+
+  /**
+   * POST /api/abandon — release an owned territory (product owner 2026-07-03):
+   * the land reverts to unowned/SYSTEM, the overseer Master returns to the
+   * free officer pool and any garrison becomes a normal field army standing
+   * there. NO refund — development, structures, treasury and the enrichment
+   * pool stay with the land. 409 BATTLE_RAGING while any battle (live wild /
+   * pending engine, incl. bridge-bound) rages on the parcel.
+   */
+  abandon(governorId: string, territoryId: unknown): { territory: TerritoryView; ctUnits: number } {
+    const t = this.getTerritory(territoryId);
+    if (t.governorId !== governorId) throw new ApiError(403, 'NOT_YOUR_TERRITORY', `${t.name} is not governed by you`);
+    try {
+      abandonTerritory(this.state, t.id, governorId);
+    } catch (e) {
+      throw translateSimError(e);
+    }
+    this.pendingEvents.push({
+      type: 'territory_abandoned',
+      tick: this.state.world.tick,
+      territoryId: t.id,
+      parcelId: this.parcelId(t.hexIds[0]!),
+      governorId,
+    });
+    return {
+      territory: territoryView(this.state, t, this.parcelByHex, this.balance, this.viewerContext(governorId)),
+      ctUnits: this.state.ctBalances?.get(governorId) ?? 0,
     };
   }
 
@@ -2095,6 +2139,9 @@ export class Game {
       if (e.type === 'choice_pending') return rec['governorId'] === viewerGovernorId;
       if (involved) return true;
       if (e.type === 'player_joined') return true;
+      // Ownership changes are PUBLIC intel (F1: ownership is never fogged) —
+      // an abandoned parcel is free land everyone may race to claim.
+      if (e.type === 'territory_abandoned') return true;
       return accurate(rec['parcelId']) || accurate(rec['fromParcelId']) || accurate(rec['toParcelId']);
     });
   }

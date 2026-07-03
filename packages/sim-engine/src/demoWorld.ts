@@ -455,6 +455,69 @@ export function claimTerritory(
   t.version += 1;
 }
 
+/** The world's wild/SYSTEM governor (deterministic: first by sorted id). */
+function wildGovernorId(state: WorldState): string {
+  const ids = [...(state.governorKinds ?? new Map<string, GovernorKind>()).entries()]
+    .filter(([, kind]) => kind === 'SYSTEM')
+    .map(([id]) => id)
+    .sort();
+  if (ids[0] === undefined) throw new Error('abandonTerritory: world has no SYSTEM governor');
+  return ids[0];
+}
+
+/**
+ * ABANDON an owned territory (product owner 2026-07-03: "allow master to
+ * abandon land to free up") — the governor releases what occupation ties down:
+ *
+ *   - the land reverts to unowned/SYSTEM (territories are never hard-deleted —
+ *     docs/08 invariant 7: they change governorId/zoneType instead);
+ *   - the overseer Master returns to the governor's FREE officer pool
+ *     (docs/01 §11.3 oversight cap relief — the point of the feature);
+ *   - any own garrison unbinds into a normal field army standing on the hex
+ *     (it can march away like any other army);
+ *   - supplySource reverts — the wilds feed no one.
+ *
+ * NO refund: the enrichment pool, development levels (and their raze-salvage
+ * basis), treasury, food and structures all STAY with the land — canon says
+ * land value is contestable; the next occupier inherits or pillages it.
+ *
+ * Blocked while ANY battle rages on the parcel — a live wild battle or a
+ * PENDING ENGINE BATTLE locks the hex exactly like it pins armies (bridge-bound
+ * battles ride those same sim records). Deterministic: pure state mutation, no
+ * RNG, no wall clock.
+ */
+export function abandonTerritory(state: WorldState, territoryId: string, governorId: string): void {
+  const t = state.territories.get(territoryId);
+  if (t === undefined) throw new Error(`abandonTerritory: unknown territory ${territoryId}`);
+  if (t.governorKind === 'SYSTEM' || t.governorId !== governorId) {
+    throw new Error(`abandonTerritory: ${t.name} is not governed by ${governorId}`);
+  }
+  // Battle locks (mirrors the orderMarch gates): contested ground cannot be walked away from.
+  const hexes = new Set(t.hexIds);
+  for (const b of state.wildBattles?.values() ?? []) {
+    if (hexes.has(b.hexId)) throw new Error(`abandonTerritory: a battle rages on ${t.name}`);
+  }
+  for (const b of state.engineBattles?.values() ?? []) {
+    if (hexes.has(b.hexId)) throw new Error(`abandonTerritory: a battle rages on ${t.name}`);
+  }
+  // Free the overseer back to the governor's pool.
+  if (t.overseerId !== undefined) {
+    const officer = (state.officers?.get(governorId) ?? []).find((o) => o.id === t.overseerId);
+    if (officer?.assignedTerritoryId === t.id) delete officer.assignedTerritoryId;
+    delete t.overseerId;
+  }
+  // Unbind the garrison — the army stays put as a normal field army. (Only own
+  // garrisons can exist on own land; the owner check is defensive.)
+  if (t.garrisonArmyId !== undefined) {
+    const g = state.armies.get(t.garrisonArmyId);
+    if (g === undefined || g.ownerGovernorId === governorId) delete t.garrisonArmyId;
+  }
+  t.governorId = wildGovernorId(state);
+  t.governorKind = 'SYSTEM';
+  t.supplySource = false;
+  t.version += 1;
+}
+
 /** CT cost breakdown of raising a preset army: training + the standard provision pack (docs/04 §7c.1). */
 export interface RaiseCostBreakdown {
   /** Training cost, ct_units (Σ trainCtUnitsPerSoldier × count, after the MIL discount). */

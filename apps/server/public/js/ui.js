@@ -29,6 +29,7 @@ export function createUI({ store, map, orders }) {
   let provDraft = null; // {armyId, food, gold, wood} — open provision form on the parcel card
   let enrichDraft = null; // {territoryId, amount(CT)} — open enrich form on the parcel card (E3)
   let razeDraft = null;   // {territoryId, track} — raze confirm expanded on the parcel card (E4)
+  let abandonDraft = null; // territoryId — abandon confirm expanded on the parcel card
   const raidBanner = $('raid-banner');
   const activeRaids = new Map(); // armyId → {parcelId, who} — wild raids on MY land (F3)
 
@@ -214,6 +215,7 @@ export function createUI({ store, map, orders }) {
     const mine = store.isMine(t.governorId);
     if (enrichDraft && (enrichDraft.territoryId !== t.id || !mine)) enrichDraft = null;
     if (razeDraft && (razeDraft.territoryId !== t.id || !mine)) razeDraft = null;
+    if (abandonDraft && (abandonDraft !== t.id || !mine)) abandonDraft = null;
     const grade = mine ? 'ACCURATE' : (t.intel ?? 'ACCURATE'); // F1
     const color = store.color(t.governorId);
     const owner = wild ? 'Wild land — unclaimed' :
@@ -311,6 +313,7 @@ export function createUI({ store, map, orders }) {
     if (actions.length) html += `<div class="actions">${actions.join('')}</div>`;
     if (mine) html += devSectionHtml(t); // F4 — Develop tracks (+ E4 raze)
     if (mine) html += enrichSectionHtml(t); // E3 — Enrich
+    if (mine) html += abandonSectionHtml(t); // Abandon — free the overseer + garrison
     else if (grade === 'ACCURATE' && t.development) {
       const lv = DEV_TRACKS.filter((d) => (t.development[d.track] ?? 0) > 0)
         .map((d) => `${d.icon}${t.development[d.track]}`).join(' ');
@@ -366,6 +369,28 @@ export function createUI({ store, map, orders }) {
       return row;
     }).join('');
     return `<div class="dev-sec"><h4>🏗 Develop</h4>${rows}</div>`;
+  }
+
+  /**
+   * Abandon section (own parcels): release the land to free up the overseer
+   * and any garrison for use elsewhere. Destructive two-step in the raze-
+   * confirm style; the warning is HONEST — no refund, development, structures
+   * and the enrichment pool all stay with the land for whoever takes it next.
+   */
+  function abandonSectionHtml(t) {
+    if (abandonDraft !== t.id) {
+      return `<div class="enrich-sec"><button data-act="abandon-open" ` +
+        `title="Release this land — the overseer and garrison are freed; everything built stays behind">🏳 Abandon this land</button></div>`;
+    }
+    const overseer = t.overseerId ? store.officers.find((o) => o.id === t.overseerId) : null;
+    const pool = t.enrichmentPool ?? 0;
+    return `<div class="enrich-sec open"><h4>🏳 Abandon</h4>` +
+      `<div class="raze-confirm">${esc(t.name)} reverts to the wilds` +
+      `${overseer ? ` — <b>${esc(overseer.name)}</b> returns to your free officers` : ''}; any garrison stands down into a field army.` +
+      ` <b>No refund</b>: development, structures${pool > 0 ? `, the ✨ ${fmtCT(pool)} enrichment pool` : ''} and the treasury ` +
+      `<b>stay with the land</b> — whoever claims it next inherits everything.` +
+      `<div class="pf-btns"><button data-act="abandon-cancel">Keep it</button>` +
+      `<button class="danger" data-act="abandon-confirm">🏳 Abandon it</button></div></div></div>`;
   }
 
   /**
@@ -472,6 +497,14 @@ export function createUI({ store, map, orders }) {
       razeDraft = null;
       btn.disabled = true;
       orders.raze(t.id, track);
+    }
+    // Abandon — free the overseer + garrison (destructive: always a two-step)
+    else if (btn.dataset.act === 'abandon-open' && t) { abandonDraft = t.id; renderCard(); }
+    else if (btn.dataset.act === 'abandon-cancel') { abandonDraft = null; renderCard(); }
+    else if (btn.dataset.act === 'abandon-confirm' && t) {
+      abandonDraft = null;
+      btn.disabled = true;
+      orders.abandon(t.id);
     }
   });
 

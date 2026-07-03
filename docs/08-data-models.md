@@ -198,6 +198,15 @@ interface Territory {
   // Oversight & rewilding (01 §11) ————————————————————————————————
   overseerId?: string;        // hero_…|master_… assigned overseer; REQUIRED while occupied by a player.
                               // One officer ⇒ one territory ⇒ MAX_OVERSEEN_TERRITORIES cap.
+                              // ABANDON (voluntary release, owner 2026-07-03): the governor may
+                              // abandon an owned territory at any time NO battle rages on it —
+                              // governorId reverts to SYSTEM (invariant 7: never hard-deleted),
+                              // the overseer returns to the free pool, any garrison unbinds into a
+                              // normal field army, supplySource reverts. NO refund: development,
+                              // structures, treasury and the enrichment pool STAY with the land
+                              // (contestable — the next occupier inherits or pillages them).
+                              // Emits territory.TerritoryAbandoned (09 §4) — ownership changes
+                              // are always public intel.
   lastTroddenTick: number;    // last tick an owner/officer/army touched any hex (or governor acted)
   overgrowth: number;         // 0–100, lazy-computed from lastTroddenTick (01 §11.2); 100 ⇒ WILD
                               // reversion for unowned land; NFT-owned land only overgrows.
