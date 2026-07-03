@@ -560,6 +560,14 @@ export function createFTUE({ store, map, ui }) {
         document.querySelector('#toasts .toast.battle') ?? document.getElementById('toasts'),
       title: '🔥 LIVE battle',
       text: 'Wild battles are real fights: your waves storm the parcel from the map edge against mobs and towers. Watch — or take command: click to move your Master, click an enemy to focus fire, right-click to rally the waves. Unwatched battles fast-forward.' },
+    { key: 'spectate', group: 'Combat & Intel', summary: 'Anyone with intel on a parcel can spectate its battles',
+      anchor: () => document.querySelector('#battle:not([hidden]) .bt-hud') ?? document.getElementById('toasts'),
+      title: '👁 Spectating',
+      text: 'You\u2019re watching live — anyone with intel on a parcel can spectate its battles. Only the attacking commander can steer.' },
+    { key: 'heromode', group: 'Combat & Intel', summary: 'Two control surfaces: command = the general\u2019s chair, hero = take the field',
+      anchor: () => document.querySelector('#battle:not([hidden]) .bt-hero'),
+      title: '⚡ Hero Mode (coming soon)',
+      text: 'Soon: drop INTO this battle as your Master — full MOBA combat, same fight. Command Mode stays available; you\u2019ll switch anytime. Command = the general\u2019s chair; Hero = take the field yourself.' },
     { key: 'stalemate', group: 'Combat & Intel', summary: 'Even odds end in a draw — bring 1.5× strength',
       anchor: () => document.querySelector('#toasts .toast') ?? document.getElementById('toasts'),
       title: '🏳 Stalemate',
@@ -682,11 +690,21 @@ export function createFTUE({ store, map, ui }) {
     return ix < (active ? stepIx : (saved?.step ?? 0));
   }
 
+  /** battle.js registers its Command-Mode mini-coach replay here (app.js wires it). */
+  let battleCoachReplay = null;
+  function registerBattleCoach(fn) { battleCoachReplay = fn; }
+
   function openLibrary() {
     const byGroup = new Map(LIB_GROUPS.map((g) => [g, []]));
     steps.forEach((s, ix) => {
       const m = STEP_LIB[s.id];
       if (m) byGroup.get(m.group)?.push({ act: `step:${ix}`, title: m.title, summary: m.summary, seen: stepSeen(ix) });
+    });
+    // Command-Mode mini-coach (battle.js): replay re-runs it in the open battle
+    // view, or arms it for the next steerable battle.
+    byGroup.get('Combat & Intel')?.push({
+      act: 'coach:cmdmode', title: '🎮 Command Mode <span class="lib-kind">mini-coach</span>',
+      summary: 'Steer a live battle: HUD, Master orders, rally point', seen: tipSeen('cmdmode'),
     });
     for (const t of TIPS) {
       byGroup.get(t.group ?? 'Basics')?.push({
@@ -719,6 +737,7 @@ export function createFTUE({ store, map, ui }) {
     if (v === 'close') closeLibrary();
     else if (v === 'tutorial') { closeLibrary(); restart(); }
     else if (v.startsWith('step:')) { closeLibrary(); start(Number(v.slice(5)), false); }
+    else if (v === 'coach:cmdmode') { closeLibrary(); battleCoachReplay?.(); }
     else if (v.startsWith('tip:')) { closeLibrary(); fireTip(v.slice(4), true); }
   });
 
@@ -848,7 +867,7 @@ export function createFTUE({ store, map, ui }) {
   window.addEventListener('resize', () => { if (active) lastChipAt = 0; });
 
   return {
-    maybeStart, restart, skip, onEvents, openLibrary,
+    maybeStart, restart, skip, onEvents, openLibrary, registerBattleCoach,
     tip: fireTip, // one-shot contextual tips (app.js fires event-driven ones)
     get active() { return active; },
     /** True while the guided tutorial owns the screen (app.js defers auto-overlays). */

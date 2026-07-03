@@ -164,7 +164,8 @@ const ui = createUI({ store, map, orders });
 const ftue = createFTUE({ store, map, ui });
 const econ = createEcon({ store, map, ui }); // FS3 — 💰 economy dashboard
 // LIVE wild-battle viewer (docs/04 §7b) — WS battle channel through the live socket.
-const battle = createBattle({ store, ui, send: (m) => ws?.send(m) });
+const battle = createBattle({ store, ui, send: (m) => ws?.send(m), ftue });
+ftue.registerBattleCoach(() => battle.startCoach(true)); // 📖 library replay hook
 initAvatarMissTracking(); // officer avatars: 404s degrade to medallions, once, silently
 preloadHeroAvatars();
 
@@ -218,10 +219,12 @@ function handleEvents(events) {
           'battle', ev.parcelId, 10_000, openViewer);
         ui.feedPush(`<span class="t-battle">⚔</span> LIVE battle at ${parcelName(ev.parcelId)}${mine ? ' — yours' : ''}`, 't-battle', ev.parcelId);
         if (mine) {
-          ftue.tip('battle_live');
-          // Your assault: jump straight into the fight (unless the tutorial owns
-          // the screen — its coach-marks would fight the overlay; the toast invites instead).
-          if (!ftue.running) openViewer();
+          // Your assault: jump straight into the fight — the in-overlay Command-
+          // Mode mini-coach teaches there. During the tutorial the toast invites
+          // instead (its coach-marks would fight the overlay) and the one-shot
+          // battle_live tip carries the lesson.
+          if (ftue.running) ftue.tip('battle_live');
+          else openViewer();
         }
         break;
       }

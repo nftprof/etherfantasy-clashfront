@@ -20,13 +20,92 @@ const ATK_RING = 'rgba(255,255,255,0.75)';
 const FOE = '#e0483c';
 const GOLD = '#ffd76a';
 
-export function createBattle({ store, ui, send }) {
+export function createBattle({ store, ui, send, ftue }) {
   const root = document.getElementById('battle');
   const hud = root.querySelector('.bt-hud');
   const stage = root.querySelector('.bt-stage');
   const canvas = document.getElementById('battle-canvas');
   const foot = root.querySelector('.bt-foot');
   const ctx = canvas.getContext('2d');
+
+  // ── first-time Command-Mode mini-coach (docs/04 §7b "two control surfaces") ──
+  // 3 beats spotlighting INSIDE the overlay, advancing on REAL actions; once
+  // per player (`tip:<pid>:cmdmode`), replayable from the 📖 library.
+  const COACH_BEATS = [
+    { title: '⚔ Command Mode', next: true,
+      text: 'This battle is <b>live</b>. Your <b>waves</b>, your Master\u2019s <b>runs</b> and the <b>clock</b> are up here.' },
+    { title: '🎮 Your Master',
+      text: '<b>Click the ground</b> to move your Master. <b>Click an enemy</b> to focus fire.', hint: 'try it —' },
+    { title: '🚩 Rally the waves',
+      text: '<b>Right-click</b> sets the rally point for your waves. Win: <b>destroy the towers</b> or <b>clear every mob</b>.', hint: 'right-click —' },
+  ];
+  let coach = null;        // {beat} while the mini-coach runs
+  let coachTimer = null;
+  let coachPending = false; // library replay requested with no steerable view open
+  const coachEl = document.createElement('div');
+  coachEl.className = 'bt-coach';
+  coachEl.hidden = true;
+  stage.appendChild(coachEl);
+
+  const tipKey = (k) => `tip:${store.me?.governorId}:${k}`;
+  const tipSeen = (k) => { try { return localStorage.getItem(tipKey(k)) === '1'; } catch { return true; } };
+  const tipMark = (k) => { try { localStorage.setItem(tipKey(k), '1'); } catch { /* private mode */ } };
+
+  /** Begin (or queue) the coach. `force` = library replay (bypasses seen). */
+  function startCoach(force = false) {
+    if (!force && (tipSeen('cmdmode') || ftue?.running)) return;
+    const mine = openId && store.liveBattles.get(openId)?.mine;
+    if (!mine || ended) { coachPending = true; return; } // next steerable open runs it
+    coachPending = false;
+    tipMark('cmdmode');
+    coach = { beat: 0 };
+    renderCoach();
+  }
+
+  function coachAdvance() {
+    if (!coach) return;
+    clearTimeout(coachTimer);
+    coachTimer = null;
+    if (coach.beat >= COACH_BEATS.length - 1) { finishCoach(); return; }
+    coach = { beat: coach.beat + 1 };
+    if (coach.beat === 2) coachTimer = setTimeout(() => finishCoach(), 6000);
+    renderCoach();
+  }
+
+  /** Coach done (finished or skipped) → the Hero-Mode promise tip follows. */
+  function finishCoach(quiet = false) {
+    if (!coach) return;
+    coach = null;
+    clearTimeout(coachTimer);
+    coachTimer = null;
+    renderCoach();
+    if (!quiet) {
+      // The Hero-Mode promise follows the coach (never simultaneously). Retry
+      // once in case another one-shot tip momentarily holds the slot.
+      ftue?.tip('heromode');
+      setTimeout(() => ftue?.tip('heromode'), 1500);
+    }
+  }
+
+  function renderCoach() {
+    hud.classList.toggle('bc-glow', coach?.beat === 0);
+    if (!coach) { coachEl.hidden = true; return; }
+    const b = COACH_BEATS[coach.beat];
+    const dots = COACH_BEATS.map((_, i) => `<span class="${i === coach.beat ? 'on' : ''}">●</span>`).join('');
+    coachEl.innerHTML = `<div class="bc-dots">${dots}</div><h5>${b.title}</h5><p>${b.text}</p>` +
+      `<div class="bc-btns"><a href="#" data-coach="skip">skip ›</a>` +
+      (b.next ? `<button class="primary" data-coach="next">Next</button>` : `<span class="bc-hint">${b.hint ?? ''} ▶</span>`) +
+      `</div>`;
+    coachEl.classList.toggle('top', coach.beat === 0); // beat 1 sits under the ringed HUD
+    coachEl.hidden = false;
+  }
+  coachEl.addEventListener('click', (e) => {
+    const el = e.target.closest('[data-coach]');
+    if (!el) return;
+    e.preventDefault();
+    if (el.dataset.coach === 'skip') finishCoach(); // skipping still surfaces the Hero-Mode promise
+    else coachAdvance();
+  });
 
   let openId = null;      // battleId currently displayed
   let field = null;       // battle_hello static payload
@@ -63,6 +142,7 @@ export function createBattle({ store, ui, send }) {
     root.hidden = true;
     cancelAnimationFrame(raf);
     if (closeTimer) { clearTimeout(closeTimer); closeTimer = null; }
+    finishCoach(true); // never leak a coach card across views
   }
 
   // ── WS frames ──────────────────────────────────────────────────────────────
@@ -76,6 +156,8 @@ export function createBattle({ store, ui, send }) {
       const lb = store.liveBattles.get(openId);
       if (lb?.mine) steer = true; // your assault — command it by default
       renderHud();
+      if (lb?.mine) startCoach(coachPending); // first steerable view → 3-beat mini-coach
+      else ftue?.tip('spectate');             // watch-only open → one-shot spectate tip
       return;
     }
     if (msg.t === 'battle_tick') {
@@ -110,6 +192,7 @@ export function createBattle({ store, ui, send }) {
   function endBanner(outcome) {
     ended = outcome;
     steer = false;
+    finishCoach(true); // the fight is over — the lesson yields to the outcome
     renderHud();
     // Leave the field visible for a beat; the pillage modal / toasts take over.
     closeTimer = setTimeout(() => close(), 3500);
@@ -350,6 +433,16 @@ export function createBattle({ store, ui, send }) {
       const r = u.k === 'M' ? 2.9 : u.c === 'CAVALRY' ? 2.0 : 1.7;
       if (u.s === 'A') {
         if (u.k === 'M') {
+          // Coach beat 2: spotlight ring around the Master marker
+          if (coach?.beat === 1) {
+            ctx.strokeStyle = `rgba(255,215,106,${0.55 + 0.4 * pulse})`;
+            ctx.lineWidth = lw(2.2);
+            ctx.setLineDash([lw(5), lw(4)]);
+            ctx.beginPath();
+            ctx.arc(u.x, u.y, 7.5 + pulse * 1.6, 0, 7);
+            ctx.stroke();
+            ctx.setLineDash([]);
+          }
           // The Master: gold-ringed, banner pennant, glow
           ctx.fillStyle = `rgba(255,215,106,${0.16 + 0.1 * pulse})`;
           ctx.beginPath();
@@ -495,7 +588,10 @@ export function createBattle({ store, ui, send }) {
       `<span class="bt-stat" title="Battle clock — expiry means the attack guttered out">⏱ <b>${clock}</b></span>` +
       `<span class="bt-prog" title="Lair broken at 100%"><span style="width:${prog}%"></span></span></div>` +
       `<div class="bt-btns">` +
-      (mine && !ended ? `<button class="bt-steer${steer ? ' on' : ''}" data-bt="steer">${steer ? '🎮 Steering' : '🎮 Steer'}</button>` : '') +
+      (mine && !ended
+        ? `<button class="bt-steer${steer ? ' on' : ''}" data-bt="steer">${steer ? '🎮 Steering' : '🎮 Steer'}</button>` +
+          `<button class="bt-hero" disabled title="Hero Mode — drop into this battle as your Master (full MOBA combat). Coming soon.">⚡ Take the field<span class="soon">SOON</span></button>`
+        : '') +
       `<button data-bt="leave">✕ Leave</button></div>`;
     foot.innerHTML = ended
       ? `<span>The armies disperse — outcome lands on the war map…</span>`
@@ -540,6 +636,7 @@ export function createBattle({ store, ui, send }) {
       send({ t: 'battle_cmd', battleId: openId, cmd: { kind: 'move', x, y } });
       flashes.push({ x, y, t0: performance.now(), kind: 'hit' });
     }
+    if (coach?.beat === 1) coachAdvance(); // beat 2 advances on a REAL move/focus
   });
   canvas.addEventListener('contextmenu', (e) => {
     e.preventDefault();
@@ -547,6 +644,7 @@ export function createBattle({ store, ui, send }) {
     const r = canvas.getBoundingClientRect();
     const [x, y] = toWorld(e.clientX - r.left, e.clientY - r.top);
     send({ t: 'battle_cmd', battleId: openId, cmd: { kind: 'rally', x, y } });
+    if (coach?.beat === 2) coachAdvance(); // beat 3 advances on the rally order (or its 6 s timer)
   });
 
   store.onChange(() => { if (openId) renderHud(); });
@@ -556,6 +654,8 @@ export function createBattle({ store, ui, send }) {
     close,
     onMsg,
     onWorldEvents,
+    /** 📖 library replay: re-run the Command-Mode coach now (or on the next steerable view). */
+    startCoach,
     get openId() { return openId; },
     /** Debug/verification hooks (Playwright walkthrough reads these). */
     get field() { return field; },
