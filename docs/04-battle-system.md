@@ -324,9 +324,13 @@ the LAND HOLDER.**
 
 - **The attacker spawns waves.** Invading ANY land, you arrive with no fortifications — at most
   a minimal **command center camp** (spawn anchor; gold/wood tier ⚙ sets its durability/spawn
-  quality, never towers). Your army stock IS your wave budget: waves and waves of spawns push
-  the lane until you **run out** or you win. Your Masters revive per normal MOBA respawn rules
-  (limited "runs").
+  quality, never towers). On WILD maps there is **no attacker CC at all** — StarCraft-campaign
+  style, your waves enter from the map edge. Your army stock IS your wave budget: waves and
+  waves of spawns push the lane until you **run out** or you win. Your Masters revive per normal
+  MOBA respawn rules (limited "runs").
+- **Guiding principle (owner): do NOT overcomplicate — build with what the engine already has**
+  (waves, towers, cores, respawns, build pads), arranged so each map "makes sense" for who holds
+  the ground — like StarCraft campaign missions, where some maps simply don't give you a base.
 - **Attacker lose conditions (two):** (1) you run out of runs — army waves + Master revives
   exhausted; (2) your CC camp is destroyed.
 - **Structures belong to whoever HOLDS the land:**
