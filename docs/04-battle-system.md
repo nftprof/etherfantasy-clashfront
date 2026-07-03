@@ -366,19 +366,33 @@ the LAND HOLDER.**
      One click from the overworld map; light enough to open for any battle you can see.
   2. **HERO MODE** — the full 3D MOBA client on the same match: embody your Master (or your
      Hero — Irene/Kai/Leah) at hero level with full MOBA combat. The 20–40 min experience.
-  **Seamless interpolation — with the ONE-HERO rule (owner, 2026-07-03):**
+  **Seamless interpolation — with the ONE-HERO rule (owner, 2026-07-03, clarified same day):**
+  - **ONE HERO PER USER — not per map.** A battle map hosts MANY embodied heroes: 2v2, 3v3 and
+    beyond, with ALLIED users joining either side. Each user commands exactly ONE hero at a time.
   - **Multiple Masters may fight on the same map** (several of your officers/armies in one
     battle — allowed and encouraged).
   - Entering HERO MODE you **choose exactly ONE hero to embody** (any Master you own present in
     the battle, or your Hero); all your other Masters stay AI-controlled.
+  - **Take-command = the existing MOBA possession mechanic.** Today the MOBA spawns Masters as
+    wild characters a player can walk up to and take command of — we KEEP that mechanic and
+    change only the spawning: Masters no longer appear randomly, they appear when their
+    overworld march ARRIVES (see reinforcement arrivals below).
   - **No switching on the field**: to change which hero you embody — or to issue ANY
     command-mode orders — you must RETURN TO COMMAND MODE (back to camp) first. Hero mode and
     commanding are mutually exclusive states. You may join at any time as any hero you own; you
     may not swap mid-fight without going back.
   - Rationale (locked): the MOBA client may always assume "one player = one hero at a time" —
-    future MOBA updates never need multi-hero control paths.
+    future MOBA updates never need multi-hero control paths (multi-USER is normal MOBA territory).
   - The AI drives your hero whenever no human embodies it; the AI commands whenever no human
     steers.
+  **Reinforcement arrivals (owner, 2026-07-03):** armies/Masters join a battle IN PROGRESS when
+  their overworld march reaches the parcel — "it arrives when it arrives":
+  - The Master appears ON the battle map at the moment of arrival, entering at the **hexagon
+    edge matching the march's approach direction** on the overworld map.
+  - The Master's soldiers do NOT dump in as a blob: they create an **extra wave SPAWN POINT at
+    that arrival edge**, feeding the match's wave system from the army's remaining unit stock.
+  - This is symmetric: allies reinforce a defense the same way attackers stack a siege — every
+    arrival adds one officer + one edge spawner to its side.
   Architecture: after battle-engine M1, the authoritative sim is the repurposed MOBA server and
   command mode becomes a thin renderer/controller of its snapshots (a compact "command channel"
   in the wire contract) — the overworld's 2D battle viewer is that channel's permanent client.

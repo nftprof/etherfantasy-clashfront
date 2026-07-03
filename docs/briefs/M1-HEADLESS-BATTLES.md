@@ -58,12 +58,26 @@
   {move officer, focus target, rally point} — validated like any input. The overworld's existing
   2D battle viewer (apps/server/public/js/battle.js in the canon repo, WS battle_sub/battle_cmd
   protocol) is the reference client and will attach to this channel after M1.
-  **ONE-HERO rule (owner 2026-07-03): hero seat and command channel are MUTUALLY EXCLUSIVE.**
-  Multiple Masters may fight on one map, but a player embodies exactly ONE at a time; while a
-  player holds a hero seat (E1 possession), their command-channel inputs are REJECTED (409) —
-  they must release the seat (return to command mode) to issue orders or switch heroes. This
-  lets the MOBA client forever assume one-player-one-hero. Commands apply to the side's
-  AI-driven units/officers only.
+  **ONE-HERO rule (owner 2026-07-03): one hero PER USER — hero seat and command channel are
+  MUTUALLY EXCLUSIVE.** A match hosts MANY users (2v2/3v3+, allies on either side), each
+  embodying exactly ONE hero; seats are per-user. While a user holds a hero seat (E1
+  possession), THEIR command-channel inputs are REJECTED (409) — they must release the seat
+  (return to command mode) to issue orders or switch heroes. This lets the MOBA client forever
+  assume one-player-one-hero (multi-user is ordinary MOBA territory). Commands apply to that
+  side's AI-driven units/officers only.
+  **Possession = the EXISTING wild-Master walk-up mechanic** (owner 2026-07-03): the MOBA
+  already spawns Masters as wild characters a player can walk to and take command of — keep it.
+  Change only the SPAWN TRIGGER: Masters never appear randomly; they appear when their overworld
+  march arrives (see D1b).
+- **D1b (reinforcement arrivals — owner 2026-07-03)**: battles are joinable IN PROGRESS by
+  late-arriving armies. `POST /internal/v1/matches/{id}/reinforce` with
+  `{side, officer, unitStacks, provisions, entryEdge}` where `entryEdge` encodes the hexagon
+  edge / bearing matching the march's overworld approach direction. Effect: (a) the officer
+  (Master) spawns AI-controlled at that edge; (b) the army's unit stock is added as an **extra
+  wave SPAWN POINT at that edge** feeding the standard wave system — reinforcements are a new
+  spawner, never an instant unit dump. Symmetric for both sides (allies reinforce defense the
+  same way). Battlefield schema (A1) must therefore parameterize spawn zones by edge/bearing.
+  Reinforcements appear in the result callback's per-side army accounting.
 - **D2**: result callback POST to callbackUrl — winner/TIE, casualties per army, structure
   damage, hero contributions (raw, uncapped — the overworld applies HERO_IMPACT_MAX), duration,
   HMAC-signed (grow the loot-ticket pattern), retry until ack.

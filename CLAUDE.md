@@ -85,7 +85,12 @@ export can be converted to the documented format. See `data/README.md`.
     seamless mid-battle switching (possession model) under the ONE-HERO rule: multiple Masters
     may fight on one map; a player embodies exactly ONE at a time; switching heroes or issuing
     commands requires returning to command mode (hero/command mutually exclusive) — so the MOBA
-    client can forever assume one-player-one-hero. M1 brief D2b specifies the command channel.
+    client can forever assume one-player-one-hero. CLARIFIED 2026-07-03: one hero PER USER, not
+    per map — 2v2/3v3+ with allied users on either side. Possession keeps the MOBA's existing
+    wild-Master walk-up take-command mechanic; only the spawn trigger changes: Masters appear
+    when their overworld march ARRIVES (mid-battle reinforcement), entering at the hexagon edge
+    matching the approach direction, and their soldiers add an extra wave SPAWN POINT at that
+    edge (never an instant unit dump). M1 brief D2b + D1b specify command channel + reinforce API.
 
 12. GEO ZONE-SERVER MAPPING (2026-07-03): shard = zone; each enabled zone served by EXACTLY ONE
     regional server (Montreal + Singapore first ⇒ 2 enabled continents at launch; huge continents
