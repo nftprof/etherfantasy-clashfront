@@ -396,6 +396,43 @@ agnostic to which rails execute.
 **Telemetry is a feature:** `/api/economy` exposes supply, burn, flows-by-reason, and loot-inflow
 heat — the balance team cannot tune what it cannot see.
 
+### 13.6 The net-sink doctrine + enrichment perks (owner, 2026-07-03)
+
+**NET-SINK DOCTRINE (locked):** Clash Front is a SINK in the EF ecosystem — over any long
+window, CT deposited INTO the war front must exceed CT paid out (`sink/faucet ratio < 1`; the
+burn share is the siphon). Other EF game modes (e.g. the mobile game) are the EARN faucets that
+acquire players; those players bring CT here to spend on war. Deliberate, owner-funded
+"Keynesian" injections (events, season bootstraps) are allowed as POLICY — inflation must never
+be EMERGENT from mechanics. The conservation invariant + settlement journal make every
+injection explicit and auditable.
+
+**Why enrich if you only recover ~12 CT of 100?** Because enrichment buys LAND-BOUND,
+NON-MONETARY perks (all chance-based, all contestable with the land — canon model, to be
+implemented as a feature set; ADVERTISE these in the enrich UI once live):
+
+1. **Pet migration (the RoTK "a general arrives" moment):** enriched land attracts PentaPet
+   POPULATION over time — daily/eventful rolls scaled by pool size and prosperity, filtered by
+   element↔biome affinity. The governor gets the message: *"⛰ More pets have settled in
+   ⟨name⟩ — population +N."* Rare rolls settle NAMED notables (bigger draft value, flavor).
+2. **Population is draftable — DRAFTING STILL COSTS FULL CT** (owner's chosen model): settled
+   pet population raises the recruit CAP and training SPEED on that territory, never the
+   price. No free-soldier faucet exists; every soldier in the world is CT-backed. (Corollary
+   kept for the record: if any free/bonus units are ever granted, their deaths must NOT count
+   toward pool-feeding flows — they carry no CT.)
+3. **DNA fragments:** enriched land has a daily chance (∝ pool) to surface DNA FRAGMENTS —
+   collectible progress toward pet NFT crafting/minting. Off-chain inventory now; on-chain
+   with the CT phasing plan (§13.5).
+4. **Blood feeds the land (battle-kill enrichment):** a ⚙ share of BATTLE-TIME CT FLOWS on a
+   parcel (pillage loot, scavenge) is diverted into that parcel's enrichment pool instead of
+   the winner's wallet — battlefields grow richer, attracting settlement and the next war.
+   REDISTRIBUTION ONLY: kills never mint; the share comes out of existing battle flows so the
+   conservation invariant holds unchanged.
+
+Net effect: enrichment converts money into TERRITORY QUALITY — population, draft capacity,
+collectibles, and a richer pool — all of which sit ON the land and transfer with conquest,
+keeping "whale money becomes a battlefield" true while giving the spend a real, advertisable
+payoff beyond the decaying trickle.
+
 ## Cross-references
 
 - [`README.md`](./README.md) — Glossary (CT, Food, Population, Prosperity, Tax, Morale), Pillars 1/4/9/10/11.

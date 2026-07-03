@@ -102,6 +102,16 @@ export can be converted to the documented format. See `data/README.md`.
     "beyond the frontier"; cross-zone = inter-shard handoff; a zone's battles run on its regional
     server (latency locality). `docs/07` §4.4.
 
+13. NET-SINK DOCTRINE + ENRICHMENT PERKS (2026-07-03): Clash Front = a SINK (deposits > payouts;
+    burn is the siphon; other EF games are the earn faucets; Keynesian injections = explicit
+    owner policy only, never emergent). Enrichment's real payoff is LAND-BOUND perks, not the
+    ~12% decaying trickle: pet-population migration rolls (∝ pool, element↔biome; "a general
+    arrives" messages), population raises draft CAP/SPEED but DRAFTING ALWAYS COSTS FULL CT
+    (no free-soldier faucet; any granted units' deaths must never feed pools), DNA-fragment
+    drops (→ pet NFT crafting), and battle-kill enrichment (⚙ share of pillage/scavenge flows
+    diverted to the battlefield's pool — redistribution only, never mint). Advertise in the
+    enrich UI once implemented. `docs/02` §13.6.
+
 ## 📜 v0.2 VISION BIBLE (2026-07-02): `docs/VISION-BIBLE-v0.2.md` + `docs/ADDENDUM-E-PentaPet-Species-Affinity.pdf`
 Overarching new spec from the product owner: PentaPets = the living population (workers/soldiers/
 units, species affinities), terraforming, geology/materials, blueprint NFTs, living cities.
