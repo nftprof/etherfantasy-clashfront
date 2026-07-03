@@ -669,7 +669,11 @@ export function createBattle({ store, ui, send, ftue }) {
       `<div class="bt-btns">` +
       (canSteer && !ended
         ? `<button class="bt-steer${steer ? ' on' : ''}" data-bt="steer">${steer ? '🎮 Steering' : '🎮 Steer'}</button>` +
-          `<button class="bt-hero" disabled title="Hero Mode — drop into this battle as your Master (full MOBA combat). Coming soon.">⚡ Take the field<span class="soon">SOON</span></button>`
+          // HERO MODE doorway: live when the match relay provides a joinUrl
+          // (real MOBA client match); ONE-HERO rule — commanding pauses there.
+          (field.joinUrl
+            ? `<button class="bt-hero live" data-bt="hero" title="Hero Mode — drop into this battle as your Master in the full MOBA client. While embodied you cannot issue commands here (one-hero rule).">⚡ Take the field</button>`
+            : `<button class="bt-hero" disabled title="Hero Mode — drop into this battle as your Master (full MOBA combat). Coming soon.">⚡ Take the field<span class="soon">SOON</span></button>`)
         : '') +
       `<button data-bt="leave">✕ Leave</button></div>`;
     foot.innerHTML = ended
@@ -688,6 +692,12 @@ export function createBattle({ store, ui, send, ftue }) {
     if (!btn) return;
     if (btn.dataset.bt === 'leave') close();
     else if (btn.dataset.bt === 'steer') { steer = !steer; renderHud(); }
+    else if (btn.dataset.bt === 'hero' && field?.joinUrl) {
+      // ONE-HERO rule: taking the field surrenders the command channel here.
+      steer = false;
+      renderHud();
+      window.open(field.joinUrl, '_blank', 'noopener');
+    }
   });
 
   // ── steering input ─────────────────────────────────────────────────────────

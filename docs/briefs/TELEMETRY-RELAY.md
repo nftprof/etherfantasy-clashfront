@@ -101,6 +101,12 @@ battle (LIVE badge + flames + toast), and command mode opens from the parcel.
   normal deterministic phase order. `404 NO_SIM_BATTLE` / `409 ALREADY_BOUND` on bad binds.
 - `arena`: v1 supports `{shape:'square', size>0}` only (`400 BAD_ARENA` otherwise).
 - `troops` are display numbers for toasts/HUD — no overworld army needs to exist.
+- `joinUrl` (optional, **the HERO MODE doorway**): an http(s) URL (≤512 chars, else
+  `400 BAD_JOIN_URL`) where a player can join this match in the real MOBA client. When present,
+  the command-mode viewer's "⚡ Take the field" button goes LIVE and opens it in a new tab
+  (clicking it drops the viewer out of steering first — ONE-HERO rule: hero seat and command
+  channel are mutually exclusive per user; your server should 409 command inputs from users
+  holding a seat). Omit while your client has no join flow — the button stays SOON.
 
 **Response `200`:**
 

@@ -84,6 +84,11 @@ export interface BridgeStartIn {
   battleId?: string;
   /** Display-only battle: no overworld consequences on end. Default true when battleId is absent. */
   exhibition?: boolean;
+  /**
+   * HERO MODE doorway: URL where a player can join this match in the real MOBA
+   * client. When present the viewer's "⚡ Take the field" button opens it.
+   */
+  joinUrl?: string;
 }
 
 export interface BridgeCommandOut {
@@ -123,6 +128,8 @@ interface BridgeBattle {
   matchId: string;
   parcelId: string;
   exhibition: boolean;
+  /** Hero-mode join URL (https), verbatim from start. */
+  joinUrl?: string;
   /** Bound sim battle id (non-exhibition takeover) — equals `id` when bound. */
   bound: boolean;
   /** Governor allowed to steer; undefined = open to any authenticated viewer (exhibition only). */
@@ -241,6 +248,13 @@ export class BridgeHub {
       }
     }
     const exhibition = bound ? false : b.exhibition !== false; // unbound defaults to exhibition
+    let joinUrl: string | undefined;
+    if (b.joinUrl !== undefined) {
+      if (typeof b.joinUrl !== 'string' || b.joinUrl.length > 512 || !/^https?:\/\//.test(b.joinUrl)) {
+        throw new ApiError(400, 'BAD_JOIN_URL', 'joinUrl must be an http(s) URL of at most 512 chars');
+      }
+      joinUrl = b.joinUrl;
+    }
 
     const rec: BridgeBattle = {
       id,
@@ -249,6 +263,7 @@ export class BridgeHub {
       exhibition,
       bound,
       ...(startedBy !== undefined ? { startedByGovernorId: startedBy } : {}),
+      ...(joinUrl !== undefined ? { joinUrl } : {}),
       attackerLabel: b.attacker.armyLabel,
       defenderLabel: b.defender.label,
       attackerTroops: typeof b.attacker.troops === 'number' ? Math.max(0, Math.round(b.attacker.troops)) : 0,
@@ -409,6 +424,7 @@ export class BridgeHub {
       attackerLabel: b.attackerLabel,
       defenderLabel: b.defenderLabel,
       matchId: b.matchId,
+      ...(b.joinUrl !== undefined ? { joinUrl: b.joinUrl } : {}),
       clockTicks: 0,
       tickHz: 1,
       waveEveryTicks: 0,
