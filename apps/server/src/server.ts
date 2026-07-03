@@ -13,6 +13,7 @@
  * Static: ./public — the overworld client (MVP item 4): vanilla ES modules +
  *         one CSS file, no build step (js/app.js entry, Canvas2D map).
  */
+import { spawn } from 'node:child_process';
 import { createHash, timingSafeEqual } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import * as http from 'node:http';
@@ -72,6 +73,10 @@ export class ClashServer {
   readonly bridge: BridgeHub;
   /** Bridge world events awaiting the next tick broadcast (public — everyone sees exhibitions). */
   private pendingBridgeEvents: Record<string, unknown>[] = [];
+  /** Self-serve demo exhibitions (POST /api/exhibition): governorId → running emitter child. */
+  private readonly exhibitions = new Map<string, ReturnType<typeof spawn>>();
+  /** Known parcel ids (exhibition target validation). */
+  private readonly parcelIds: Set<string>;
 
   constructor(private readonly config: ServerConfig) {
     this.game = config.game;
@@ -101,6 +106,7 @@ export class ClashServer {
     // tickMs is server config (wall-clock boundary), stapled on so clients can
     // convert tick ETAs to real time.
     const geo = this.game.worldGeometry();
+    this.parcelIds = new Set(geo.parcels.map((p) => p.id));
     this.worldBody = JSON.stringify({ ...geo, meta: { ...geo.meta, tickMs: config.tickMs } });
     this.worldEtag = `"${createHash('sha1').update(this.worldBody).digest('hex')}"`;
 
@@ -258,6 +264,8 @@ export class ClashServer {
     } catch (e) {
       console.error('[server] final snapshot failed:', e);
     }
+    for (const child of this.exhibitions.values()) child.kill();
+    this.exhibitions.clear();
     for (const ws of this.clients.keys()) ws.terminate();
     this.clients.clear();
     await new Promise<void>((resolve) => {
@@ -395,7 +403,10 @@ export class ClashServer {
       // Public telemetry, cached 10 s (skipped when tickMs is null — tests drive ticks by hand).
       const now = Date.now();
       if (this.config.tickMs === null || this.economyCache === undefined || now - this.economyCache.at > 10_000) {
-        this.economyCache = { body: JSON.stringify(this.game.economyView()), at: now };
+        this.economyCache = {
+          body: JSON.stringify({ ...this.game.economyView(), bridgeEnabled: this.config.bridgeSecret !== undefined }),
+          at: now,
+        };
       }
       res.writeHead(200, { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'public, max-age=10' });
       res.end(this.economyCache.body);
@@ -460,6 +471,9 @@ export class ClashServer {
         case '/api/choice':
           sendJson(res, 200, this.game.choice(session.governorId, body.battleId, body.action, body.overseerId));
           return;
+        case '/api/exhibition':
+          sendJson(res, 200, this.startExhibition(session.governorId, session.name, body.parcelId));
+          return;
         default:
           throw new ApiError(404, 'UNKNOWN_ENDPOINT', `no such endpoint ${path}`);
       }
@@ -485,6 +499,45 @@ export class ClashServer {
    *   GET  /bridge/battles/:id/commands?afterSeq=N   queued command-mode inputs
    *   POST /bridge/battles/:id/end        {winner:'A'|'B'|'DRAW', summary?}
    */
+
+  /**
+   * POST /api/exhibition — self-serve DEMO battle (no SSH needed): spawns the
+   * bundled mock MOBA emitter (scripts/mock-moba-match.mjs) against our own
+   * bridge, targeting the requested parcel. Exhibition semantics: public,
+   * steerable by the requesting governor, zero world consequences. One per
+   * governor, small global cap; the child dies with the match (~3 min).
+   */
+  private startExhibition(governorId: string, governorName: string, parcelId: unknown): Record<string, unknown> {
+    const secret = this.config.bridgeSecret;
+    if (secret === undefined) {
+      throw new ApiError(503, 'BRIDGE_DISABLED', 'the battle bridge is not enabled on this server');
+    }
+    if (typeof parcelId !== 'string' || !this.parcelIds.has(parcelId)) {
+      throw new ApiError(400, 'BAD_PARCEL', 'unknown parcelId');
+    }
+    if (this.exhibitions.has(governorId)) {
+      throw new ApiError(409, 'EXHIBITION_RUNNING', 'you already have an exhibition running — let it finish first');
+    }
+    if (this.exhibitions.size >= 3) {
+      throw new ApiError(429, 'TOO_MANY_EXHIBITIONS', 'the arena is busy — try again in a few minutes');
+    }
+    const addr = this.http.address();
+    if (addr === null || typeof addr === 'string') {
+      throw new ApiError(503, 'NOT_LISTENING', 'server socket unavailable');
+    }
+    const script = join(this.publicDir, '..', '..', '..', 'scripts', 'mock-moba-match.mjs');
+    const child = spawn(
+      process.execPath,
+      [script, '--server', `http://127.0.0.1:${addr.port}`, '--secret', secret,
+        '--parcel', parcelId, '--governor', governorName, '--duration', '180'],
+      { stdio: 'ignore' },
+    );
+    this.exhibitions.set(governorId, child);
+    child.on('exit', () => this.exhibitions.delete(governorId));
+    child.on('error', () => this.exhibitions.delete(governorId));
+    return { ok: true, parcelId, durationSec: 180 };
+  }
+
   private async routeBridge(
     req: http.IncomingMessage,
     res: http.ServerResponse,

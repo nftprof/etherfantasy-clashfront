@@ -249,6 +249,11 @@ export function createUI({ store, map, orders }) {
           : `${esc(store.playerName(lb.attackerGovernorIds?.[0]))} assaults ${lb.monsterName ? `☠ ${esc(lb.monsterName)}` : 'this land'}.`) +
         `<button class="primary" data-act="watch-battle" data-battle="${lb.id}">` +
         `${lb.mine ? '🎮 Command the battle' : '👁 Watch live'}</button></div>`;
+    } else if (store.econ?.bridgeEnabled) {
+      // Self-serve DEMO battle (M1.5 smoke test — no SSH needed): stages the bundled
+      // mock MOBA emitter on this parcel. Public exhibition, zero world consequences.
+      html += `<div class="live-battle"><button data-act="exhibition" data-parcel="${cardParcelId}">` +
+        `⚔ Stage exhibition battle</button> <span class="est">demo relay — no ground changes hands</span></div>`;
     }
 
     // My garrisoned armies here: provisions readout + Provision form (own army
@@ -413,6 +418,7 @@ export function createUI({ store, map, orders }) {
     const t = store.terrByParcel.get(cardParcelId);
     if (btn.dataset.act === 'close') closeCard();
     else if (btn.dataset.act === 'watch-battle') orders.watchBattle(btn.dataset.battle);
+    else if (btn.dataset.act === 'exhibition') { btn.disabled = true; orders.exhibition(btn.dataset.parcel); }
     else if (btn.dataset.act === 'claim' && t) { orders.claim(t.id, ovClaimSel || undefined); ovClaimSel = ''; }
     else if (btn.dataset.act === 'raise' && t) orders.raise(t.id, btn.dataset.preset);
     else if (btn.dataset.dev && t) { btn.disabled = true; orders.develop(t.id, btn.dataset.dev); } // no double-buy before the re-render

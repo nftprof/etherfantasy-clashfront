@@ -428,3 +428,45 @@ test('bridge: 30 s silence marks stale, 2 min auto-ends DRAW (exhibition)', asyn
     await server.stop();
   }
 });
+
+// ── self-serve exhibitions (POST /api/exhibition) ─────────────────────────────
+
+test('exhibition endpoint: disabled without secret; guards; stages + rejects double-book', async () => {
+  // bridge off → 503
+  const off = new ClashServer({ game: new Game(gameConfig()), port: 0, tickMs: null, saveMs: null });
+  const offPort = await off.start();
+  try {
+    const p = (await api(`http://127.0.0.1:${offPort}`, '/api/join', { body: { name: 'Promoter' } })).json;
+    const r = await api(`http://127.0.0.1:${offPort}`, '/api/exhibition', { token: p.token, body: { parcelId: WORLD_FILE.parcels[0]!.parcelId } });
+    assert.equal(r.status, 503);
+    assert.equal(r.json.error.code, 'BRIDGE_DISABLED');
+  } finally {
+    await off.stop();
+  }
+
+  const server = new ClashServer({ game: new Game(gameConfig()), port: 0, tickMs: null, saveMs: null, bridgeSecret: SECRET });
+  const port = await server.start();
+  const base = `http://127.0.0.1:${port}`;
+  try {
+    const p = (await api(base, '/api/join', { body: { name: 'Promoter' } })).json;
+    // auth required
+    assert.equal((await api(base, '/api/exhibition', { body: { parcelId: 'x' } })).status, 401);
+    // unknown parcel
+    const bad = await api(base, '/api/exhibition', { token: p.token, body: { parcelId: 'nope-123' } });
+    assert.equal(bad.status, 400);
+    assert.equal(bad.json.error.code, 'BAD_PARCEL');
+    // happy path: stages the bundled emitter, which registers a live bridge battle
+    const parcelId = WORLD_FILE.parcels[0]!.parcelId;
+    const ok = await api(base, '/api/exhibition', { token: p.token, body: { parcelId } });
+    assert.equal(ok.status, 200);
+    assert.equal(ok.json.ok, true);
+    // one per governor while running
+    const dup = await api(base, '/api/exhibition', { token: p.token, body: { parcelId } });
+    assert.equal(dup.status, 409);
+    assert.equal(dup.json.error.code, 'EXHIBITION_RUNNING');
+    // the spawned emitter reaches the bridge: a live battle appears on that parcel
+    await until(() => (server.bridge.liveSummaries() as any[]).some((b) => b.parcelId === parcelId), 'staged battle live', 15_000);
+  } finally {
+    await server.stop(); // kills the emitter child
+  }
+});

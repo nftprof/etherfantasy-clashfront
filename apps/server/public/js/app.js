@@ -120,6 +120,17 @@ const orders = {
    */
   /** Open the LIVE battle viewer (parcel-card "Watch"/"Command" buttons). */
   watchBattle(battleId) { battle.open(battleId); },
+  /** POST /api/exhibition — stage a self-serve demo battle on a parcel (M1.5 relay). */
+  async exhibition(parcelId) {
+    try {
+      await api('/api/exhibition', { token, body: { parcelId } });
+      ui.toast('⚔ Exhibition staged', 'A demo battle is forming on this parcel — the LIVE badge appears in a few seconds. Open it to watch and steer. No ground changes hands.', 'good', parcelId);
+    } catch (e) {
+      ui.toast('Exhibition unavailable', e.code === 'EXHIBITION_RUNNING'
+        ? 'Your previous exhibition is still running — let it finish first.'
+        : esc(e.message), 'bad');
+    }
+  },
   async choice(choiceId, action, overseerId) {
     const pc = store.pendingChoices.get(choiceId);
     try {
