@@ -51,11 +51,17 @@ export function createBattle({ store, ui, send, ftue }) {
   const tipSeen = (k) => { try { return localStorage.getItem(tipKey(k)) === '1'; } catch { return true; } };
   const tipMark = (k) => { try { localStorage.setItem(tipKey(k), '1'); } catch { /* private mode */ } };
 
+  /**
+   * May the local player steer this view? Own assaults always; BRIDGE
+   * exhibition battles may open commands to any viewer (field.openCommands).
+   */
+  const steerable = () =>
+    !!(openId && (store.liveBattles.get(openId)?.mine || field?.openCommands));
+
   /** Begin (or queue) the coach. `force` = library replay (bypasses seen). */
   function startCoach(force = false) {
     if (!force && (tipSeen('cmdmode') || ftue?.running)) return;
-    const mine = openId && store.liveBattles.get(openId)?.mine;
-    if (!mine || ended) { coachPending = true; return; } // next steerable open runs it
+    if (!steerable() || ended) { coachPending = true; return; } // next steerable open runs it
     coachPending = false;
     tipMark('cmdmode');
     coach = { beat: 0 };
@@ -153,11 +159,10 @@ export function createBattle({ store, ui, send, ftue }) {
       cur = { snap: msg.snap, at: performance.now() };
       prev = cur;
       blotches = makeBlotches(msg);
-      const lb = store.liveBattles.get(openId);
-      if (lb?.mine) steer = true; // your assault — command it by default
+      if (steerable()) steer = true; // your assault (or open exhibition) — command it by default
       renderHud();
-      if (lb?.mine) startCoach(coachPending); // first steerable view → 3-beat mini-coach
-      else ftue?.tip('spectate');             // watch-only open → one-shot spectate tip
+      if (steerable()) startCoach(coachPending); // first steerable view → 3-beat mini-coach
+      else ftue?.tip('spectate');                // watch-only open → one-shot spectate tip
       return;
     }
     if (msg.t === 'battle_tick') {
@@ -217,6 +222,7 @@ export function createBattle({ store, ui, send, ftue }) {
 
   /** Ground stains inside the bounds — cheap painterly variation, per battle. */
   function makeBlotches(f) {
+    if (f.mode === 'square') return []; // bridge arena: flat backdrop, no stains
     const out = [];
     let sd = 0;
     for (const c of f.battleId) sd = (sd * 31 + c.charCodeAt(0)) >>> 0;
