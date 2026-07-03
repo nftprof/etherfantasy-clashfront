@@ -16,6 +16,13 @@
  *   SAVE_PATH              snapshot path                      (default <repo>/data/save.json)
  *   ROSTER_FILE            character roster csv               (default <repo>/data/CHARACTER_ROSTER.csv)
  *   BRIDGE_SECRET          shared secret for /bridge/* telemetry relay (unset = bridge disabled)
+ *
+ * External M1 battle engine (docs/briefs/ALLOCATE-CALLBACK-SCHEMA.md; all unset = feature OFF,
+ * battles resolve exactly as today):
+ *   BATTLE_ENGINE_URL      allocate endpoint, e.g. http://127.0.0.1:8140/internal/v1/matches/allocate
+ *   CF_BATTLE_API_TOKEN    bearer for the allocate direction
+ *   CF_BATTLE_HMAC_SECRET  HMAC secret verifying X-CF-Signature result callbacks
+ *   PUBLIC_BASE_URL        optional callback base (default http://127.0.0.1:<PORT>)
  */
 import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
@@ -59,6 +66,11 @@ async function main(): Promise<void> {
     ? parseMasterNames(readFileSync(rosterPath, 'utf8'))
     : [...FALLBACK_MASTER_NAMES];
 
+  // External M1 battle engine — feature ON only when BATTLE_ENGINE_URL is set.
+  const battleEngineUrl = process.env['BATTLE_ENGINE_URL'];
+  const engineOn = battleEngineUrl !== undefined && battleEngineUrl !== '';
+  const publicBaseUrl = process.env['PUBLIC_BASE_URL'];
+
   const game = new Game({
     worldFile,
     seed,
@@ -66,6 +78,7 @@ async function main(): Promise<void> {
       travelTicksPerStep: envInt('TRAVEL_TICKS_PER_STEP', 12),
       choiceTimeoutTicks: envInt('CHOICE_TIMEOUT_TICKS', 24),
       liveWildBattles: envInt('LIVE_WILD', 1) !== 0,
+      engineBattles: engineOn,
     },
     npcEveryTicks: envInt('NPC_EVERY_TICKS', 60),
     startCtUnits: envInt('START_CT', 2000) * CT,
@@ -81,6 +94,18 @@ async function main(): Promise<void> {
     tickMs,
     saveMs: envInt('SAVE_MS', 30_000),
     ...(bridgeSecret !== undefined && bridgeSecret !== '' ? { bridgeSecret } : {}),
+    ...(engineOn
+      ? {
+          battleEngine: {
+            url: battleEngineUrl,
+            token: process.env['CF_BATTLE_API_TOKEN'] ?? '',
+            hmacSecret: process.env['CF_BATTLE_HMAC_SECRET'] ?? '',
+            ...(publicBaseUrl !== undefined && publicBaseUrl !== ''
+              ? { callbackUrl: `${publicBaseUrl.replace(/\/+$/, '')}/internal/battle-result` }
+              : {}),
+          },
+        }
+      : {}),
   });
   const boundPort = await server.start();
 
@@ -88,6 +113,9 @@ async function main(): Promise<void> {
     `[server] Clash Front MVP up on http://localhost:${boundPort} — world '${seed}' at tick ${game.state.world.tick}, ` +
       `${game.state.territories.size} parcels, ${game.sessions.size} sessions, tick every ${tickMs} ms`,
   );
+  if (engineOn) {
+    console.log(`[server] battle engine ON — allocating field battles at ${battleEngineUrl}`);
+  }
 
   let stopping = false;
   const shutdown = (sig: string): void => {

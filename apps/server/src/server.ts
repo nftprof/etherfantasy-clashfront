@@ -19,6 +19,7 @@ import { readFile } from 'node:fs/promises';
 import * as http from 'node:http';
 import { extname, join, normalize } from 'node:path';
 import { WebSocketServer, type WebSocket } from 'ws';
+import { allocateBattle, type BattleEngineConfig, verifyCallbackSignature } from './battleEngine';
 import { BridgeHub } from './bridge';
 import { ApiError, type Game, type TickResult } from './game';
 
@@ -37,6 +38,13 @@ export interface ServerConfig {
    * docs/briefs/TELEMETRY-RELAY.md). Undefined = bridge disabled (503).
    */
   bridgeSecret?: string;
+  /**
+   * External M1 battle engine (docs/briefs/ALLOCATE-CALLBACK-SCHEMA.md):
+   * allocate endpoint + bearer + HMAC secret. Undefined = feature OFF — pending
+   * engine battles are never created (the Game's TickOptions gate that) and
+   * POST /internal/battle-result answers 503.
+   */
+  battleEngine?: BattleEngineConfig;
   /**
    * Pentagon Games identity (docs/briefs/PG-IDENTITY.md): PUBLISHABLE app key
    * (pk_… prefix, env PG_APP_KEY) sent as X-PG-App-Key. PG login is ENABLED
@@ -92,6 +100,10 @@ export class ClashServer {
   private readonly exhibitions = new Map<string, ReturnType<typeof spawn>>();
   /** Known parcel ids (exhibition target validation). */
   private readonly parcelIds: Set<string>;
+  /** Engine-battle allocate POSTs currently in flight (dedupe across ticks). */
+  private readonly engineInflight = new Set<string>();
+  /** Result-callback nonce ledger: nonce → {battleId, atMs} (replay rejection, 15 min window). */
+  private readonly seenNonces = new Map<string, { battleId: string; atMs: number }>();
   /** PG identity API base (trailing slashes stripped). */
   private readonly pgApiUrl: string;
 
@@ -199,6 +211,9 @@ export class ClashServer {
     this.updateBattlePacing(); // paced battles are stepped LIVE, not fast-forwarded
     this.bridge.sweep(); // relay liveness (stale badge / auto-end) rides the world tick too
     const result = this.game.tick();
+    // Newly pending engine battles get allocated on the external engine between
+    // ticks (fire-and-forget: success/failure lands as a server-boundary status).
+    this.dispatchEngineAllocations();
     // Bridge (exhibition) events are PUBLIC — appended after fog filtering.
     const bridgeEvents = this.pendingBridgeEvents.splice(0);
     const perGovernor = new Map<string, string>(); // governorId → serialized payload
@@ -282,6 +297,95 @@ export class ClashServer {
     for (const id of [...this.battleSubs.keys()]) {
       if (this.game.wildBattle(id) === undefined && !this.bridge.has(id)) this.battleSubs.delete(id);
     }
+  }
+
+  // ── ENGINE battles (docs/briefs/ALLOCATE-CALLBACK-SCHEMA.md) ───────────────
+
+  /**
+   * Allocate every pending engine battle on the external engine. Wall clock /
+   * network live HERE (server boundary); the sim only ever sees the resulting
+   * status flags. On failure the battle is marked FALLBACK — the next world
+   * tick resolves it through the internal instant path (never brick a battle).
+   */
+  private dispatchEngineAllocations(): void {
+    const cfg = this.config.battleEngine;
+    if (cfg === undefined) return;
+    for (const battleId of this.game.pendingEngineAllocations()) {
+      if (this.engineInflight.has(battleId)) continue;
+      this.engineInflight.add(battleId);
+      void this.allocateOne(cfg, battleId).finally(() => this.engineInflight.delete(battleId));
+    }
+  }
+
+  private async allocateOne(cfg: BattleEngineConfig, battleId: string): Promise<void> {
+    try {
+      const callbackUrl = cfg.callbackUrl ?? `http://127.0.0.1:${this.boundPort()}/internal/battle-result`;
+      const payload = this.game.engineAllocateContext(battleId, callbackUrl);
+      if (payload === undefined) return; // settled/fallen back since queued
+      const { matchId } = await allocateBattle(cfg, battleId, payload);
+      this.game.markEngineAllocated(battleId, matchId);
+    } catch (e) {
+      console.error(
+        `[server] engine allocate failed for ${battleId} — falling back to instant resolve:`,
+        e instanceof Error ? e.message : e,
+      );
+      this.game.markEngineAllocateFailed(battleId);
+    }
+  }
+
+  private boundPort(): number {
+    const addr = this.http.address();
+    if (addr === null || typeof addr === 'string') throw new Error('server socket unavailable');
+    return addr.port;
+  }
+
+  /**
+   * POST /internal/battle-result — the R10 result callback receiver.
+   * Verifies `X-CF-Signature: v1=<hex(hmacSHA256(secret, rawBody))>` in
+   * constant time over the RAW body, rejects stale `issuedAt` (>10 min) and
+   * replayed nonces, then acks 200 idempotently by battleId. The outcome is
+   * applied by the NEXT world tick (deterministic phase order owns the map).
+   * /internal is a deployment boundary — never expose it on the public ingress.
+   */
+  private async battleResult(req: http.IncomingMessage, res: http.ServerResponse): Promise<void> {
+    const cfg = this.config.battleEngine;
+    if (cfg === undefined) {
+      throw new ApiError(503, 'ENGINE_DISABLED', 'battle engine integration is not enabled (set BATTLE_ENGINE_URL)');
+    }
+    const raw = await readRawBody(req);
+    if (!verifyCallbackSignature(cfg.hmacSecret, raw, req.headers['x-cf-signature'])) {
+      throw new ApiError(401, 'BAD_SIGNATURE', 'missing or invalid X-CF-Signature');
+    }
+    let payload: Record<string, unknown>;
+    try {
+      const parsed: unknown = JSON.parse(raw.toString('utf8'));
+      if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) throw new Error('not an object');
+      payload = parsed as Record<string, unknown>;
+    } catch {
+      throw new ApiError(400, 'BAD_JSON', 'body must be a JSON object');
+    }
+    // Replay protection (wall clock is fine — server boundary, never the sim).
+    const now = Date.now();
+    const issuedAt = typeof payload['issuedAt'] === 'string' ? Date.parse(payload['issuedAt']) : NaN;
+    if (!Number.isFinite(issuedAt) || now - issuedAt > 10 * 60_000) {
+      throw new ApiError(401, 'STALE_RESULT', 'issuedAt missing, unparsable, or older than 10 minutes');
+    }
+    const battleId = typeof payload['battleId'] === 'string' ? payload['battleId'] : '';
+    const nonce = typeof payload['nonce'] === 'string' ? payload['nonce'] : undefined;
+    if (nonce !== undefined) {
+      const seen = this.seenNonces.get(nonce);
+      if (seen !== undefined && seen.battleId !== battleId) {
+        throw new ApiError(401, 'NONCE_REPLAYED', 'nonce was already used for a different battle');
+      }
+    }
+    const { applied, duplicate } = this.game.applyEngineResult(payload); // throws 400/404
+    if (nonce !== undefined) {
+      for (const [n, rec] of this.seenNonces) {
+        if (now - rec.atMs > 15 * 60_000) this.seenNonces.delete(n);
+      }
+      this.seenNonces.set(nonce, { battleId, atMs: now });
+    }
+    sendJson(res, 200, { ok: true, applied, duplicate });
   }
 
   /** Stop loops, snapshot to disk, close sockets + server. */
@@ -445,6 +549,11 @@ export class ClashServer {
       }
       res.writeHead(200, { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'public, max-age=10' });
       res.end(this.economyCache.body);
+      return;
+    }
+    if (path === '/internal/battle-result' && method === 'POST') {
+      // R10 result callback (HMAC-gated, raw-body signature) — see battleResult().
+      await this.battleResult(req, res);
       return;
     }
     if (path === '/internal/economy/settlement' && method === 'GET') {
@@ -719,6 +828,18 @@ function bearerToken(req: http.IncomingMessage): string | undefined {
   const h = req.headers.authorization;
   if (h === undefined || !h.startsWith('Bearer ')) return undefined;
   return h.slice('Bearer '.length).trim();
+}
+
+/** Raw request body (HMAC verification needs the exact bytes). 256 KiB cap. */
+async function readRawBody(req: http.IncomingMessage): Promise<Buffer> {
+  const chunks: Buffer[] = [];
+  let size = 0;
+  for await (const chunk of req) {
+    size += (chunk as Buffer).length;
+    if (size > 256 * 1024) throw new ApiError(413, 'BODY_TOO_LARGE', 'request body exceeds 256 KiB');
+    chunks.push(chunk as Buffer);
+  }
+  return Buffer.concat(chunks);
 }
 
 async function readJsonBody(req: http.IncomingMessage): Promise<Record<string, unknown>> {

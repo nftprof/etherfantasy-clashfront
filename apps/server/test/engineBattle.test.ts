@@ -1,0 +1,417 @@
+/**
+ * ENGINE battle integration tests (docs/briefs/ALLOCATE-CALLBACK-SCHEMA.md):
+ * the overworld tick engine wired to the M1 external battle engine.
+ *
+ *   - flag OFF ⇒ zero behavior change (instant resolve, no engine state, no HTTP)
+ *   - flag ON ⇒ hostile co-location becomes a PENDING ENGINE BATTLE: hex locked
+ *     (march 409 ENGAGED), allocate POSTed with the EXACT schema payload +
+ *     Authorization/Idempotency-Key headers
+ *   - result callback: valid HMAC applies casualties per UnitClass + winner +
+ *     structure damage next tick; bad HMAC → 401; stale issuedAt → 401;
+ *     replayed nonce for another battle → 401; re-delivered battleId → 200
+ *     without double-apply
+ *   - allocate failure (5xx) ⇒ FALLBACK: the internal instant resolution
+ *     settles the battle next tick (never brick a battle)
+ *
+ * The engine is mocked with a local node:http server. tickMs: null — every
+ * world tick is driven by hand.
+ */
+import assert from 'node:assert/strict';
+import { existsSync, readFileSync } from 'node:fs';
+import * as http from 'node:http';
+import { join } from 'node:path';
+import { test } from 'node:test';
+import { CONSTANTS } from '@clashfront/shared';
+import { completeTraining, type DemoWorldFile } from '@clashfront/sim-engine';
+import { ClashServer, Game, type GameConfig, parseMasterNames, signCallbackBody } from '../src/index';
+
+const CT = CONSTANTS.CT_UNITS_PER_CT;
+const HMAC_SECRET = 'test-hmac-secret';
+const API_TOKEN = 'test-api-token';
+
+function repoDataPath(file: string): string {
+  const candidates = [
+    join(__dirname, '..', '..', '..', '..', 'data', file),
+    join(__dirname, '..', '..', '..', 'data', file),
+  ];
+  const found = candidates.find((p) => existsSync(p));
+  assert.ok(found, `${file} missing from data/`);
+  return found;
+}
+
+const WORLD_FILE = JSON.parse(readFileSync(repoDataPath('demo-world.json'), 'utf8')) as DemoWorldFile;
+const MASTER_NAMES = parseMasterNames(readFileSync(repoDataPath('CHARACTER_ROSTER.csv'), 'utf8'));
+
+function gameConfig(overrides: Partial<GameConfig> = {}): GameConfig {
+  return {
+    worldFile: WORLD_FILE,
+    seed: 'engine-battle-test',
+    tickOptions: { travelTicksPerStep: 1, choiceTimeoutTicks: 50, engineBattles: true },
+    npcEveryTicks: 0,
+    startCtUnits: 5000 * CT,
+    npcCtUnits: 20_000 * CT,
+    masterNames: MASTER_NAMES,
+    ...overrides,
+  };
+}
+
+async function api(
+  base: string,
+  path: string,
+  opts: { token?: string; body?: unknown } = {},
+): Promise<{ status: number; json: any }> {
+  const res = await fetch(base + path, {
+    method: opts.body !== undefined ? 'POST' : 'GET',
+    headers: {
+      ...(opts.body !== undefined ? { 'content-type': 'application/json' } : {}),
+      ...(opts.token !== undefined ? { authorization: `Bearer ${opts.token}` } : {}),
+    },
+    body: opts.body !== undefined ? JSON.stringify(opts.body) : undefined,
+  });
+  const text = await res.text();
+  return { status: res.status, json: text === '' ? undefined : JSON.parse(text) };
+}
+
+async function until(cond: () => boolean, what: string, ms = 3000): Promise<void> {
+  const t0 = Date.now();
+  while (!cond()) {
+    if (Date.now() - t0 > ms) throw new Error(`timeout waiting for ${what}`);
+    await new Promise((r) => setTimeout(r, 10));
+  }
+}
+
+/** Signed POST of a result callback to /internal/battle-result. */
+async function postCallback(
+  base: string,
+  payload: unknown,
+  secret = HMAC_SECRET,
+): Promise<{ status: number; json: any }> {
+  const raw = JSON.stringify(payload);
+  const res = await fetch(`${base}/internal/battle-result`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', 'x-cf-signature': signCallbackBody(secret, raw) },
+    body: raw,
+  });
+  const text = await res.text();
+  return { status: res.status, json: text === '' ? undefined : JSON.parse(text) };
+}
+
+interface CapturedRequest {
+  headers: http.IncomingHttpHeaders;
+  body: any;
+}
+
+/** Local mock of the engine's allocate endpoint. */
+async function mockEngine(
+  status: number,
+  body: unknown,
+): Promise<{ url: string; requests: CapturedRequest[]; close: () => Promise<void> }> {
+  const requests: CapturedRequest[] = [];
+  const server = http.createServer((req, res) => {
+    const chunks: Buffer[] = [];
+    req.on('data', (c: Buffer) => chunks.push(c));
+    req.on('end', () => {
+      requests.push({ headers: req.headers, body: JSON.parse(Buffer.concat(chunks).toString('utf8')) });
+      res.writeHead(status, { 'content-type': 'application/json' });
+      res.end(JSON.stringify(body));
+    });
+  });
+  await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
+  const addr = server.address() as import('node:net').AddressInfo;
+  return {
+    url: `http://127.0.0.1:${addr.port}/internal/v1/matches/allocate`,
+    requests,
+    close: () => new Promise((resolve) => server.close(() => resolve())),
+  };
+}
+
+/** Two adjacent SYSTEM garrison-free territories (deterministic pick). */
+function findAdjacentFreePair(game: Game): { t1: string; t2: string } {
+  const free = (id: string | undefined): boolean => {
+    if (id === undefined) return false;
+    const t = game.state.territories.get(id);
+    return t !== undefined && t.governorKind === 'SYSTEM' && t.garrisonArmyId === undefined;
+  };
+  for (const id of [...game.state.territories.keys()].sort()) {
+    if (!free(id)) continue;
+    const t = game.state.territories.get(id)!;
+    for (const n of game.state.adjacency!.get(t.hexIds[0]!) ?? []) {
+      const nid = game.state.hexes.get(n)!.territoryId;
+      if (nid !== undefined && nid !== id && free(nid)) return { t1: id, t2: nid };
+    }
+  }
+  throw new Error('demo world must contain two adjacent free parcels');
+}
+
+/**
+ * Stage a PvP collision: Defender claims + garrisons t2; Attacker claims t1,
+ * raises a STANDARD army and marches onto t2. Ticks until the collision tick.
+ */
+async function stagePvp(game: Game, server: ClashServer, base: string) {
+  const attacker = (await api(base, '/api/join', { body: { name: 'Attacker' } })).json;
+  const defender = (await api(base, '/api/join', { body: { name: 'Defender' } })).json;
+  const { t1, t2 } = findAdjacentFreePair(game);
+  assert.equal((await api(base, '/api/claim', { token: defender.token, body: { territoryId: t2 } })).status, 200);
+  const defRaise = (await api(base, '/api/raise', { token: defender.token, body: { territoryId: t2, preset: 'STANDARD' } })).json;
+  completeTraining(game.state, defRaise.army.id);
+  assert.equal((await api(base, '/api/claim', { token: attacker.token, body: { territoryId: t1 } })).status, 200);
+  const atkRaise = (await api(base, '/api/raise', { token: attacker.token, body: { territoryId: t1, preset: 'STANDARD' } })).json;
+  completeTraining(game.state, atkRaise.army.id);
+  assert.equal(
+    (await api(base, '/api/march', { token: attacker.token, body: { armyId: atkRaise.army.id, toTerritoryId: t2 } })).status,
+    200,
+  );
+  // March until the collision tick (step time = travelTicksPerStep × moveCost).
+  let events: any[] = [];
+  for (let i = 0; i < 12; i++) {
+    events = server.tickOnce().events as any[];
+    if (events.some((e: any) => e.type === 'battle_started' || e.type === 'battle_resolved')) break;
+  }
+  return { attacker, defender, t1, t2, atkArmyId: atkRaise.army.id as string, defArmyId: defRaise.army.id as string, events };
+}
+
+// ── Flag OFF: zero behavior change ───────────────────────────────────────────
+
+test('engine flag OFF: PvP collisions resolve instantly, no engine battles exist', async () => {
+  const game = new Game(gameConfig({ seed: 'engine-off', tickOptions: { travelTicksPerStep: 1, choiceTimeoutTicks: 50 } }));
+  const server = new ClashServer({ game, port: 0, tickMs: null, saveMs: null });
+  const port = await server.start();
+  const base = `http://127.0.0.1:${port}`;
+  try {
+    const { events } = await stagePvp(game, server, base);
+    assert.ok(events.some((e: any) => e.type === 'battle_resolved'), 'instant resolve, same tick');
+    assert.equal(events.some((e: any) => e.type === 'battle_started'), false, 'no pending battle announced');
+    assert.equal(game.state.engineBattles?.size ?? 0, 0, 'no engine battle state');
+    assert.equal(game.pendingEngineAllocations().length, 0);
+    // The callback receiver is OFF too.
+    const cb = await postCallback(base, { battleId: 'battle_X' });
+    assert.equal(cb.status, 503);
+  } finally {
+    await server.stop();
+  }
+});
+
+// ── Flag ON: allocate context + full callback flow ───────────────────────────
+
+test('engine e2e: collision → pending battle (hex locked) → allocate per schema → HMAC callback settles it', async () => {
+  const engine = await mockEngine(201, { matchId: 'efm_test_1', joinDeadline: '2026-07-03T00:00:00Z', tickHz: 30 });
+  const game = new Game(gameConfig());
+  const server = new ClashServer({
+    game,
+    port: 0,
+    tickMs: null,
+    saveMs: null,
+    battleEngine: { url: engine.url, token: API_TOKEN, hmacSecret: HMAC_SECRET },
+  });
+  const port = await server.start();
+  const base = `http://127.0.0.1:${port}`;
+  try {
+    // A real defender structure so the battlefield/damage lanes are exercised.
+    const pre = findAdjacentFreePair(game);
+    game.state.territories.get(pre.t2)!.structures.push({
+      key: 'TOWER',
+      track: 'DEFENSE',
+      level: 1,
+      hp: 2000,
+      maxHp: 2000,
+      anchor: [0.5, 0.625],
+    });
+
+    const { attacker, defender, t2, atkArmyId, defArmyId, events } = await stagePvp(game, server, base);
+    const started = events.find((e: any) => e.type === 'battle_started');
+    assert.ok(started, 'pending engine battle announced');
+    assert.equal(events.some((e: any) => e.type === 'battle_resolved'), false, 'NOT resolved instantly');
+    const battleId = started.battleId as string;
+    assert.match(battleId, /^battle_[0-9A-HJKMNP-TV-Z]{26}$/, 'prefix-typed ULID');
+    assert.equal(started.attackerTroops, 200);
+    assert.equal(started.defenderTroops, 200);
+    const pending = game.state.engineBattles!.get(battleId)!;
+    assert.match(pending.seed, /^[0-9a-f]{16}$/, 'seeded engine seed, never wall clock');
+
+    // Hex locked exactly like a running wild battle: the army cannot march away.
+    const flee = await api(base, '/api/march', { token: attacker.token, body: { armyId: atkArmyId, toTerritoryId: pre.t1 } });
+    assert.equal(flee.status, 409);
+    assert.equal(flee.json.error.code, 'ENGAGED');
+
+    // Allocate fired with the EXACT schema payload + headers.
+    await until(() => engine.requests.length > 0, 'allocate POST');
+    await until(() => game.state.engineBattles!.get(battleId)!.status === 'ALLOCATED', 'allocated status');
+    const req = engine.requests[0]!;
+    assert.equal(req.headers['authorization'], `Bearer ${API_TOKEN}`);
+    assert.equal(req.headers['idempotency-key'], battleId);
+    assert.equal(req.headers['content-type'], 'application/json');
+    const atkArmy = game.state.armies.get(atkArmyId)!;
+    const defArmy = game.state.armies.get(defArmyId)!;
+    const officerOf = (govId: string, heroId: string | undefined) =>
+      game.state.officers!.get(govId)!.find((o) => o.id === heroId)!;
+    const atkOfficer = officerOf(attacker.governorId, atkArmy.heroId);
+    const defOfficer = officerOf(defender.governorId, defArmy.heroId);
+    const parcelId = game.parcelId(game.state.territories.get(t2)!.hexIds[0]!);
+    assert.deepStrictEqual(req.body, {
+      v: 1,
+      battleId,
+      seed: pending.seed,
+      mode: 'accelerated',
+      rates: { tickHz: 30, commandSnapshotHz: 3 },
+      parcel: { parcelId, zone: String(WORLD_FILE.meta.zone), kind: 'PLAYER' },
+      battlefield: {
+        arena: { shape: 'polygon', sizeM: 240, bounds: [[0, 0], [240, 0], [240, 240], [0, 240]] },
+        laneCount: 1,
+        obstacles: [],
+        spawnZones: [
+          { id: 'spawn_atk_s', side: 'ATTACKER', edge: 'S', x: 120, z: 8 },
+          { id: 'spawn_def_n', side: 'DEFENDER', edge: 'N', x: 120, z: 232 },
+        ],
+        structures: [
+          { anchorId: 'anchor_0', kind: 'TOWER', side: 'DEFENDER', x: 120, z: 150, hp: 2000, hpMax: 2000 },
+        ],
+        mobs: [],
+      },
+      sides: {
+        ATTACKER: {
+          governorId: attacker.governorId,
+          armies: [{
+            armyId: atkArmyId,
+            units: [
+              { cls: 'INFANTRY', count: 100 },
+              { cls: 'ARCHER', count: 60 },
+              { cls: 'CAVALRY', count: 40 },
+            ],
+            officers: [{ masterId: atkOfficer.id, name: atkOfficer.name, level: 2, revives: 3 }],
+            provisions: { food: atkArmy.provisions.food, gold: atkArmy.provisions.gold, wood: atkArmy.provisions.wood },
+            entryEdge: 'S',
+          }],
+        },
+        DEFENDER: {
+          governorId: defender.governorId,
+          armies: [{
+            armyId: defArmyId,
+            units: [
+              { cls: 'INFANTRY', count: 100 },
+              { cls: 'ARCHER', count: 60 },
+              { cls: 'CAVALRY', count: 40 },
+            ],
+            officers: [{ masterId: defOfficer.id, name: defOfficer.name, level: 2, revives: 3 }],
+            provisions: { food: defArmy.provisions.food, gold: defArmy.provisions.gold, wood: defArmy.provisions.wood },
+            entryEdge: 'N',
+          }],
+        },
+      },
+      callback: { url: `http://127.0.0.1:${port}/internal/battle-result`, keyId: 'cf-hmac-1' },
+    });
+
+    // Result callback (R10): attacker wins, per-UnitClass casualties, tower down.
+    const preFood = atkArmy.provisions.food;
+    const callback = {
+      v: 1,
+      battleId,
+      matchId: 'efm_test_1',
+      outcome: { winner: 'ATTACKER', reason: 'CORE_DESTROYED' },
+      sides: {
+        ATTACKER: {
+          casualties: { INFANTRY: 40 },
+          survivors: { INFANTRY: 60, ARCHER: 60, CAVALRY: 40 },
+          provisionsConsumed: { food: 50 },
+          officers: [{ masterId: atkOfficer.id, state: 'ALIVE', revivesUsed: 1, contribution: { kills: 5, structureDamage: 2000, damage: 9000 } }],
+        },
+        DEFENDER: {
+          casualties: { INFANTRY: 100, ARCHER: 60, CAVALRY: 40 },
+          survivors: {},
+          officers: [],
+        },
+      },
+      structures: [{ anchorId: 'anchor_0', hp: 0, destroyed: true }],
+      clock: { tickCount: 9000, durationSec: 300, tickHz: 30 },
+      verify: { finalChecksum: 'aa', journalHash: 'bb', seed: pending.seed },
+      issuedAt: new Date().toISOString(),
+      nonce: 'nonce-e2e-1',
+    };
+    // Wrong secret first: 401, nothing applied.
+    const bad = await postCallback(base, callback, 'wrong-secret');
+    assert.equal(bad.status, 401);
+    assert.equal(game.state.engineBattles!.get(battleId)!.outcome, undefined, 'bad HMAC applies nothing');
+    // Stale issuedAt: 401.
+    const stale = await postCallback(base, { ...callback, issuedAt: new Date(Date.now() - 11 * 60_000).toISOString() });
+    assert.equal(stale.status, 401);
+    assert.equal(stale.json.error.code, 'STALE_RESULT');
+    // Valid: 200 + applied.
+    const ok = await postCallback(base, callback);
+    assert.equal(ok.status, 200);
+    assert.deepEqual(ok.json, { ok: true, applied: true, duplicate: false });
+    assert.equal(game.state.engineBattles!.get(battleId)!.outcome?.winner, 'ATTACKER');
+
+    // Replayed nonce for a DIFFERENT battle: 401.
+    const replayedNonce = await postCallback(base, { ...callback, battleId: 'battle_01AAAAAAAAAAAAAAAAAAAAAAAA' });
+    assert.equal(replayedNonce.status, 401);
+    assert.equal(replayedNonce.json.error.code, 'NONCE_REPLAYED');
+
+    // The NEXT world tick settles it deterministically.
+    const r = server.tickOnce();
+    assert.equal(game.state.engineBattles!.has(battleId), false, 'settled');
+    const resolved = r.events.find((e: any) => e.type === 'battle_resolved') as any;
+    assert.ok(resolved && resolved.battleId === battleId);
+    assert.equal(resolved.winner, 'ATTACKER');
+    // Casualties per UnitClass hit the REAL armies; survivors march on.
+    assert.deepEqual(
+      game.state.armies.get(atkArmyId)!.units.map((u) => ({ cls: u.unitClass, count: u.count })),
+      [{ cls: 'INFANTRY', count: 60 }, { cls: 'ARCHER', count: 60 }, { cls: 'CAVALRY', count: 40 }],
+    );
+    assert.equal(game.state.armies.get(atkArmyId)!.provisions.food, preFood - 50, 'provisions consumed');
+    assert.equal(game.state.armies.get(defArmyId)!.state, 'DISBANDED', 'routed defender');
+    // Structure damage per anchor.
+    assert.equal(game.state.territories.get(t2)!.structures[0]!.hp, 0);
+    // Canon battle record: LIVE MOBA match id + ACCELERATED resolution.
+    const battle = game.state.battles.get(battleId)!;
+    assert.equal(battle.resolutionMode, 'ACCELERATED');
+    assert.equal(battle.efMobaMatchId, 'efm_test_1');
+    // Normal post-battle flow: pillage/occupy pending choice for the winner.
+    const choice = r.events.find((e: any) => e.type === 'choice_pending') as any;
+    assert.ok(choice && choice.battleId === battleId && choice.governorId === attacker.governorId);
+    const pillage = await api(base, '/api/choice', { token: attacker.token, body: { battleId, action: 'PILLAGE' } });
+    assert.equal(pillage.status, 200);
+    assert.ok(pillage.json.battle.lootCt >= 0);
+
+    // Re-delivered battleId after settlement: 200 ack, no double-apply.
+    const redelivered = await postCallback(base, callback);
+    assert.equal(redelivered.status, 200);
+    assert.equal(redelivered.json.duplicate, true);
+    server.tickOnce();
+    assert.equal(game.state.armies.get(atkArmyId)!.units[0]!.count, 60, 'no double-applied casualties');
+  } finally {
+    await server.stop();
+    await engine.close();
+  }
+});
+
+// ── Allocate failure ⇒ internal fallback ─────────────────────────────────────
+
+test('allocate failure (5xx) falls back to the internal instant resolution', async () => {
+  const engine = await mockEngine(500, { error: 'boom' });
+  const game = new Game(gameConfig({ seed: 'engine-fallback' }));
+  const server = new ClashServer({
+    game,
+    port: 0,
+    tickMs: null,
+    saveMs: null,
+    battleEngine: { url: engine.url, token: API_TOKEN, hmacSecret: HMAC_SECRET },
+  });
+  const port = await server.start();
+  const base = `http://127.0.0.1:${port}`;
+  try {
+    const { events } = await stagePvp(game, server, base);
+    const started = events.find((e: any) => e.type === 'battle_started');
+    assert.ok(started, 'pending engine battle created');
+    const battleId = started.battleId as string;
+    await until(() => game.state.engineBattles!.get(battleId)!.status === 'FALLBACK', 'fallback status');
+    // Next tick: lock dropped, instant WarScore resolution settles the field.
+    const r = server.tickOnce();
+    assert.equal(game.state.engineBattles!.size, 0, 'engine record dropped');
+    const resolved = r.events.find((e: any) => e.type === 'battle_resolved') as any;
+    assert.ok(resolved, 'battle resolved through the internal path');
+    assert.ok(['ATTACKER', 'DEFENDER', 'DRAW'].includes(resolved.winner));
+    assert.equal(game.state.battles.get(resolved.battleId)!.resolutionMode, 'AUTO', 'instant resolver');
+  } finally {
+    await server.stop();
+    await engine.close();
+  }
+});

@@ -9,6 +9,7 @@
  */
 import type { Army, BattleInstance, DevelopmentTrack, GovernorKind, Hex, LandNFT, Region, Territory, World } from '@clashfront/shared';
 import type { EconomyState } from './economy';
+import type { EngineBattleState } from './engineBattle';
 import type { WildBattleState } from './wildBattle';
 
 /**
@@ -163,6 +164,15 @@ export interface WorldState {
    * snapshot-safe — a saved world resumes its battles.
    */
   wildBattles?: Map<string, WildBattleState>;
+  /**
+   * PENDING ENGINE BATTLES (docs/briefs/ALLOCATE-CALLBACK-SCHEMA.md): battleId →
+   * battle awaiting the external MOBA engine. Created by BATTLE SPAWNING when
+   * TickOptions.engineBattles is on (replacing the instant WarScore resolve);
+   * the hex is locked like a running wild battle; the server allocates the
+   * match and applies the HMAC result callback as a server-boundary input; the
+   * next tick settles it deterministically. Plain-JSON, snapshot-safe.
+   */
+  engineBattles?: Map<string, EngineBattleState>;
 }
 
 /**

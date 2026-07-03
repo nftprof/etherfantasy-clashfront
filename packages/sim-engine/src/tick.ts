@@ -31,6 +31,7 @@ import {
 } from '@clashfront/shared';
 import type { Army, BattleInstance, GovernorKind, Territory } from '@clashfront/shared';
 import { creditWallet, flushYieldJournal } from './economy';
+import { armyInEngineBattle, createEngineBattle, type EngineBattleState } from './engineBattle';
 import { updateIntelMemory } from './intel';
 import { battleFoodNeed, enduranceMultiplier, marchFoodPerStep, troopCount } from './logistics';
 import { type ArmyRetreatRecord, type BattleLogisticsRecord, sortedIds, type WorldState } from './state';
@@ -56,6 +57,15 @@ export interface TickOptions {
    */
   liveWildBattles?: boolean;
   /**
+   * EXTERNAL ENGINE battles (docs/briefs/ALLOCATE-CALLBACK-SCHEMA.md): battles
+   * the sim would resolve via the INSTANT WarScore path instead become PENDING
+   * ENGINE BATTLES — the hex locks like a running wild battle while the server
+   * allocates a headless match on the MOBA engine and applies its HMAC result
+   * callback next tick. Allocate failure falls back to the instant path.
+   * Default false — existing worlds/tests are byte-identical.
+   */
+  engineBattles?: boolean;
+  /**
    * Parcel polygon provider for wild-battlefield generation (the server wires
    * this to the demo-world geometry). Undefined ⇒ a seeded synthetic outline.
    */
@@ -66,6 +76,7 @@ export const DEFAULT_TICK_OPTIONS: Required<TickOptions> = {
   travelTicksPerStep: (CONSTANTS.TRAVEL_ADJACENT_MIN * 60) / CONSTANTS.TICK_SECONDS,
   choiceTimeoutTicks: 10,
   liveWildBattles: false,
+  engineBattles: false,
   parcelPolygonOf: () => undefined,
 };
 
@@ -536,6 +547,11 @@ function phaseBattleSpawning(
   // 4 Hz driver between world ticks and only SETTLED here once decided.
   advanceWildBattles(state, tick, balance, options);
 
+  // 1c — settle engine battles whose result callback landed (server-boundary
+  // input, like bridge-bound outcomes) and resolve FALLBACK ones (allocate
+  // failed) through the internal instant path — never brick a battle.
+  settleEngineBattles(state, tick, rng, balance, options);
+
   // 2 — detect hostile co-location, hex by hex (deterministic order).
   const byHex = new Map<string, Army[]>();
   for (const id of sortedIds(state.armies)) {
@@ -545,6 +561,7 @@ function phaseBattleSpawning(
   }
   const hexesInBattle = new Set<string>();
   for (const b of state.wildBattles?.values() ?? []) hexesInBattle.add(b.hexId);
+  for (const b of state.engineBattles?.values() ?? []) hexesInBattle.add(b.hexId);
   for (const hexId of [...byHex.keys()].sort()) {
     // A parcel with a RUNNING battle is locked — latecomers wait at its edge
     // (join windows are post-MVP); the hex resolves normally once it settles.
@@ -563,6 +580,13 @@ function phaseBattleSpawning(
     const attackers = armies.filter((a) => a.ownerGovernorId !== defenderGov);
     if (options.liveWildBattles && isLiveWildEligible(state, terr, attackers, defenders)) {
       createRunningWildBattle(state, hexId, attackers, defenders, tick, rng.fork(hexId), balance, options);
+      continue;
+    }
+    // ENGINE path (behind TickOptions.engineBattles): the instant resolve is
+    // replaced by a pending engine battle — the server allocates the match on
+    // the external MOBA engine and the result callback settles it next tick.
+    if (options.engineBattles && isEngineEligible(attackers, defenders)) {
+      createEngineBattle(state, hexId, attackers, defenders, defenderGov, tick, rng.fork(hexId));
       continue;
     }
     resolveFieldBattle(state, hexId, attackers, defenders, tick, rng.fork(hexId), balance, options);
@@ -1071,13 +1095,6 @@ function resolveFieldBattle(
     retreats,
   });
 
-  // Post-victory (docs/02 §9): only a DECISIVE surviving ATTACKER on someone
-  // else's territory triggers PILLAGE|OCCUPY (ties never change territory —
-  // §7c.4). Monsters/SYSTEM never capture land.
-  if (winner !== 'ATTACKER' || territory === undefined) {
-    if (battle.result !== undefined && territory !== undefined) battle.result.territoryOutcome = 'HELD';
-    return;
-  }
   const winnerGov = attackers[0]!.ownerGovernorId; // single-owner side by construction… except mixed attackers:
   // with multiple foreign owners the strongest contributor claims the victory (deterministic).
   const attackerOwners = [...new Set(attackers.map((a) => a.ownerGovernorId))];
@@ -1089,8 +1106,30 @@ function resolveFieldBattle(
           s: attackers.filter((a) => a.ownerGovernorId === g).reduce((n, a) => n + armyStrength(a, balance), 0),
         }))
         .sort((x, y) => y.s - x.s || (x.g < y.g ? -1 : 1))[0]!.g;
+  postVictoryFlow(state, battle, territory, claimingGov, tick, balance, options.choiceTimeoutTicks);
+}
+
+/**
+ * Post-victory (docs/02 §9): only a DECISIVE ATTACKER victory on someone
+ * else's territory triggers PILLAGE|OCCUPY (ties never change territory —
+ * §7c.4). Monsters/SYSTEM never capture land. Shared by the instant resolver
+ * and the engine-callback settlement (same rules, one code path).
+ */
+function postVictoryFlow(
+  state: WorldState,
+  battle: BattleInstance,
+  territory: Territory | undefined,
+  claimingGov: string,
+  tick: number,
+  balance: Balance,
+  choiceTimeoutTicks: number,
+): void {
+  if (battle.result?.winner !== 'ATTACKER' || territory === undefined) {
+    if (battle.result !== undefined && territory !== undefined) battle.result.territoryOutcome = 'HELD';
+    return;
+  }
   if (claimingGov === territory.governorId) {
-    battle.result!.territoryOutcome = 'HELD';
+    battle.result.territoryOutcome = 'HELD';
     return;
   }
   const kind = state.governorKinds?.get(claimingGov);
@@ -1103,7 +1142,7 @@ function resolveFieldBattle(
       return;
     }
     // Unregistered governors (or monsters on wild ground) hold the field but never capture.
-    battle.result!.territoryOutcome = 'HELD';
+    battle.result.territoryOutcome = 'HELD';
     return;
   }
   if (kind === 'NPC_KINGDOM') {
@@ -1113,7 +1152,220 @@ function resolveFieldBattle(
     return;
   }
   // Player: expose the pending choice; defaults to PILLAGE on timeout.
-  queueChoice(state, battle, claimingGov, territory.id, tick, options.choiceTimeoutTicks);
+  queueChoice(state, battle, claimingGov, territory.id, tick, choiceTimeoutTicks);
+}
+
+// ── ENGINE battles (docs/briefs/ALLOCATE-CALLBACK-SCHEMA.md, behind TickOptions.engineBattles) ──
+
+/**
+ * Engine routing eligibility: one attacking governor (the allocate schema has
+ * one governorId per side) and real troops on both sides. Multi-owner attacker
+ * stacks (the temporary MVP truce edge) keep the instant path.
+ */
+function isEngineEligible(attackers: Army[], defenders: Army[]): boolean {
+  if (new Set(attackers.map((a) => a.ownerGovernorId)).size !== 1) return false;
+  const atk = attackers.reduce((n, a) => n + troopCount(a), 0);
+  const def = defenders.reduce((n, d) => n + troopCount(d), 0);
+  return atk > 0 && def > 0;
+}
+
+/**
+ * Apply decided engine battles back to the overworld. Outcomes (set by the
+ * verified HMAC callback) settle through the SAME post-battle paths as the
+ * instant resolver; FALLBACK records (allocate failed) resolve RIGHT HERE via
+ * the internal instant path (re-routing them through the co-location scan
+ * would just mint another doomed engine battle).
+ */
+function settleEngineBattles(
+  state: WorldState,
+  tick: number,
+  rng: Rng,
+  balance: Balance,
+  options: Required<TickOptions>,
+): void {
+  if (state.engineBattles === undefined || state.engineBattles.size === 0) return;
+  for (const battleId of sortedIds(state.engineBattles)) {
+    const b = state.engineBattles.get(battleId)!;
+    if (b.outcome !== undefined) {
+      state.engineBattles.delete(battleId);
+      applyEngineOutcome(state, b, tick, balance, options);
+    } else if (b.status === 'FALLBACK') {
+      // Never brick a battle: the instant WarScore resolver settles the
+      // still-standing armies (same rng fork path as the co-location scan).
+      state.engineBattles.delete(battleId);
+      const live = (ids: readonly string[]): Army[] =>
+        ids
+          .map((id) => state.armies.get(id))
+          .filter((a): a is Army => a !== undefined && a.state !== 'DISBANDED' && a.hexId === b.hexId);
+      const attackers = live(b.attackerArmyIds);
+      const defenders = live(b.defenderArmyIds);
+      if (attackers.length > 0 && defenders.length > 0) {
+        resolveFieldBattle(state, b.hexId, attackers, defenders, tick, rng.fork(b.hexId), balance, options);
+      }
+    }
+  }
+}
+
+/**
+ * Settle one engine battle from its result callback: casualties per UnitClass
+ * applied to the real armies (survivors march on), provisions burned, structure
+ * damage per anchor, winner/TIE semantics identical to the instant resolver
+ * (defender rout / §7c.5 retreat ladder / tie stand-down), then the normal
+ * deterministic post-battle flow (pillage/occupy pending choice).
+ */
+function applyEngineOutcome(
+  state: WorldState,
+  b: EngineBattleState,
+  tick: number,
+  balance: Balance,
+  options: Required<TickOptions>,
+): void {
+  const outcome = b.outcome!;
+  const attackers = b.attackerArmyIds
+    .map((id) => state.armies.get(id))
+    .filter((a): a is Army => a !== undefined && a.state !== 'DISBANDED');
+  const defenders = b.defenderArmyIds
+    .map((id) => state.armies.get(id))
+    .filter((a): a is Army => a !== undefined && a.state !== 'DISBANDED');
+
+  const preTroops = new Map<string, number>();
+  for (const a of [...attackers, ...defenders]) preTroops.set(a.id, troopCount(a));
+  let atkSoldiersStart = 0;
+  let defSoldiersStart = 0;
+  for (const a of attackers) atkSoldiersStart += preTroops.get(a.id)!;
+  for (const d of defenders) defSoldiersStart += preTroops.get(d.id)!;
+
+  // Casualties per UnitClass (the schema field the economy hard-depends on):
+  // kill N per class across the side's armies in sorted id order (deterministic).
+  const casualties: Record<string, number> = {};
+  const applySideCasualties = (side: Army[], dead: Record<string, number>): number => {
+    let total = 0;
+    const armies = [...side].sort((x, y) => (x.id < y.id ? -1 : 1));
+    for (const cls of Object.keys(dead).sort()) {
+      let left = Math.max(0, Math.floor(dead[cls] ?? 0));
+      for (const a of armies) {
+        if (left === 0) break;
+        const stack = a.units.find((s) => s.unitClass === cls);
+        if (stack === undefined || stack.count === 0) continue;
+        const take = Math.min(stack.count, left);
+        stack.count -= take;
+        left -= take;
+        casualties[a.id] = (casualties[a.id] ?? 0) + take;
+        a.version += 1;
+        total += take;
+      }
+    }
+    return total;
+  };
+  const atkLost = applySideCasualties(attackers, outcome.sides.ATTACKER.casualties);
+  const defLost = applySideCasualties(defenders, outcome.sides.DEFENDER.casualties);
+
+  // Provisions the match burned (capped at what the side actually carries).
+  const drainSide = (side: Army[], consumed?: { food?: number; gold?: number; wood?: number }): void => {
+    if (consumed === undefined) return;
+    for (const key of ['food', 'gold', 'wood'] as const) {
+      const amt = Math.max(0, Math.floor(consumed[key] ?? 0));
+      if (amt > 0) drainProvisions(side, key, amt);
+    }
+  };
+  drainSide(attackers, outcome.sides.ATTACKER.provisionsConsumed);
+  drainSide(defenders, outcome.sides.DEFENDER.provisionsConsumed);
+
+  // Structure damage per anchor: `anchor_<i>` indexes the territory's
+  // structures array (the same mapping the allocate context was built with).
+  const territory = territoryAt(state, b.hexId);
+  if (territory !== undefined && outcome.structures !== undefined) {
+    for (const s of outcome.structures) {
+      const ix = Number(/^anchor_(\d+)$/.exec(s.anchorId)?.[1]);
+      const st = Number.isInteger(ix) ? territory.structures[ix] : undefined;
+      if (st === undefined) continue;
+      st.hp = s.destroyed ? 0 : Math.max(0, Math.min(st.maxHp, Math.floor(s.hp)));
+      territory.version += 1;
+    }
+  }
+
+  const winner: 'ATTACKER' | 'DEFENDER' | 'DRAW' = outcome.winner === 'TIE' ? 'DRAW' : outcome.winner;
+  const retreats: ArmyRetreatRecord[] = [];
+  const p = balance.provisions;
+  if (winner === 'ATTACKER') {
+    for (const a of attackers) {
+      a.morale = Math.min(CONSTANTS.MORALE_MAX, a.morale + balance.morale.victoryDelta);
+      if (troopCount(a) === 0) disbandArmy(state, a);
+    }
+    // Losing defenders rout off the map (same MVP rule as the instant resolver).
+    for (const d of defenders) disbandArmy(state, d);
+  } else if (winner === 'DEFENDER') {
+    for (const d of defenders) {
+      d.morale = Math.min(CONSTANTS.MORALE_MAX, d.morale + balance.morale.victoryDelta);
+      d.version += 1;
+      if (troopCount(d) === 0) disbandArmy(state, d);
+    }
+    for (const a of attackers) {
+      a.morale = Math.max(CONSTANTS.MORALE_MIN, a.morale + balance.morale.defeatDelta);
+      retreats.push(retreatArmy(state, a, casualties, preTroops.get(a.id) ?? troopCount(a), tick, balance));
+    }
+  } else {
+    // TIE (FOOD_CLOCK/TIMEOUT): casualties stand, no ground changes hands,
+    // the attacker withdraws (docs/04 §7c.4).
+    for (const a of [...attackers, ...defenders]) {
+      a.morale = Math.max(CONSTANTS.MORALE_MIN, a.morale - p.tieMoraleLoss);
+    }
+    for (const a of attackers) {
+      retreats.push(retreatArmy(state, a, casualties, preTroops.get(a.id) ?? troopCount(a), tick, balance));
+    }
+    for (const d of defenders) {
+      if (troopCount(d) === 0) disbandArmy(state, d);
+    }
+  }
+
+  const warScore: WarScore = {
+    attacker: defLost,
+    defender: atkLost,
+    breakdown: {
+      attackerArmy: atkSoldiersStart,
+      attackerHero: 0, // officer contribution stats are M1-placeholder — hero-impact cap applies at M2
+      defenderArmy: defSoldiersStart,
+      defenderHero: 0,
+      terrain: 1,
+      attackerEndurance: 1,
+      defenderEndurance: 1,
+      structures: 0,
+      defenseDev: 1,
+    },
+  };
+  const battle: BattleInstance = {
+    id: b.id,
+    worldId: state.world.id,
+    type: 'FIELD',
+    state: 'RESOLVED',
+    hexId: b.hexId,
+    attackerArmyIds: [...b.attackerArmyIds],
+    defenderArmyIds: [...b.defenderArmyIds],
+    resolutionMode: 'ACCELERATED',
+    scheduledStartTick: b.startedTick,
+    ...(b.matchId !== undefined ? { efMobaMatchId: b.matchId } : {}),
+    participants: [],
+    warScore,
+    result: { winner, casualties, resolvedTick: tick },
+  };
+  state.battles.set(b.id, battle);
+  state.battleLogistics ??= new Map();
+  state.battleLogistics.set(b.id, {
+    battleId: b.id,
+    outcomeKind: winner === 'ATTACKER' ? 'DECISIVE_ATTACKER' : winner === 'DEFENDER' ? 'DECISIVE_DEFENDER' : 'TIE',
+    attackerEndurance: 1,
+    defenderEndurance: 1,
+    commandCenterTier: 0,
+    structureBonus: 0,
+    attackerFoodConsumed: Math.max(0, Math.floor(outcome.sides.ATTACKER.provisionsConsumed?.food ?? 0)),
+    defenderFoodConsumed: Math.max(0, Math.floor(outcome.sides.DEFENDER.provisionsConsumed?.food ?? 0)),
+    goldSpent: Math.max(0, Math.floor(outcome.sides.ATTACKER.provisionsConsumed?.gold ?? 0)),
+    woodSpent: Math.max(0, Math.floor(outcome.sides.ATTACKER.provisionsConsumed?.wood ?? 0)),
+    retreats,
+  });
+
+  // Same deterministic post-battle flow as every other resolver.
+  postVictoryFlow(state, battle, territory, b.attackerGovernorId, tick, balance, options.choiceTimeoutTicks);
 }
 
 /** Deduct `amount` of one provision kind across a side, greedily in army-id order (deterministic). */
@@ -1558,7 +1810,7 @@ function returnWildRaiders(
       continue;
     }
     if (a.state !== 'GARRISON') continue; // still marching
-    if (armyEngagedIn(state, armyId) !== undefined) continue; // pinned in a running battle
+    if (armyEngagedIn(state, armyId) !== undefined || armyInEngineBattle(state, armyId) !== undefined) continue; // pinned in a running battle
 
     if (a.hexId !== rec.homeHexId) {
       // Halted away from home (raid done, retreated, or intercepted) — march back.
@@ -1635,7 +1887,7 @@ function spawnWildRaids(
     if (lair === undefined || lair.state !== 'GARRISON' || !isWildArmy(state, lair)) continue;
     if (raidingLairs.has(lair.id)) continue;
     if (troopCount(lair) < wr.minRaidTroops) continue;
-    if (armyEngagedIn(state, lair.id) !== undefined) continue; // under live assault — every claw defends
+    if (armyEngagedIn(state, lair.id) !== undefined || armyInEngineBattle(state, lair.id) !== undefined) continue; // under live assault — every claw defends
 
 
 

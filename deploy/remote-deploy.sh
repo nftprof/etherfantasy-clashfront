@@ -29,6 +29,24 @@ if [ -z "${BRIDGE_SECRET:-}" ] && [ -f "$HOME/.cf_bridge_secret" ]; then
 fi
 if [ -n "${BRIDGE_SECRET:-}" ]; then export BRIDGE_SECRET; fi
 
+# External M1 battle engine (docs/briefs/ALLOCATE-CALLBACK-SCHEMA.md): token +
+# HMAC secret live at ~/.cf_battle_api_token / ~/.cf_battle_hmac_secret
+# (chmod 600, provisioned by the engine session — same pattern as BRIDGE_SECRET).
+# Feature stays OFF (instant resolves) when BATTLE_ENGINE_URL ends up unset.
+if [ -z "${CF_BATTLE_API_TOKEN:-}" ] && [ -f "$HOME/.cf_battle_api_token" ]; then
+  CF_BATTLE_API_TOKEN="$(cat "$HOME/.cf_battle_api_token")"
+fi
+if [ -n "${CF_BATTLE_API_TOKEN:-}" ]; then export CF_BATTLE_API_TOKEN; fi
+if [ -z "${CF_BATTLE_HMAC_SECRET:-}" ] && [ -f "$HOME/.cf_battle_hmac_secret" ]; then
+  CF_BATTLE_HMAC_SECRET="$(cat "$HOME/.cf_battle_hmac_secret")"
+fi
+if [ -n "${CF_BATTLE_HMAC_SECRET:-}" ]; then export CF_BATTLE_HMAC_SECRET; fi
+# Engine shares the box: default the allocate URL when both secret files exist.
+if [ -z "${BATTLE_ENGINE_URL:-}" ] && [ -f "$HOME/.cf_battle_api_token" ] && [ -f "$HOME/.cf_battle_hmac_secret" ]; then
+  BATTLE_ENGINE_URL="http://127.0.0.1:8140/internal/v1/matches/allocate"
+fi
+if [ -n "${BATTLE_ENGINE_URL:-}" ]; then export BATTLE_ENGINE_URL; fi
+
 pm2 restart "$APP_NAME" --update-env 2>/dev/null \
   || pm2 start apps/server/dist/src/main.js --name "$APP_NAME" --update-env
 pm2 save

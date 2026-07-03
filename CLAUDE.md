@@ -129,6 +129,14 @@ the parcel graph of ONE zone (hexification deliberately punted — permanent dec
    Masters API (`docs/09` §7).
 4. Battle-engine implementation (in the MOBA repo, per REPURPOSING-PLAN): start M1 = B1 strip-MOBA
    + A1 battlefield model + D1 allocate + D3 headless runner + D2 result callback.
+4b. ~~T1 engine integration (overworld side)~~ **DONE 2026-07-03, behind a feature flag** — the
+   tick engine is wired to the LIVE M1 allocate API + HMAC result callback per
+   `docs/briefs/ALLOCATE-CALLBACK-SCHEMA.md` §3b (its OVERWORLD IMPLEMENTATION note = the
+   operator doc). Env: `BATTLE_ENGINE_URL` (unset = OFF, instant resolves unchanged),
+   `CF_BATTLE_API_TOKEN`, `CF_BATTLE_HMAC_SECRET`, optional `PUBLIC_BASE_URL`;
+   `deploy/remote-deploy.sh` auto-sources both secrets from `~/.cf_battle_*` files and defaults
+   the URL when they exist. Allocate failure ⇒ automatic fallback to instant resolution.
+   Engine callbacks apply as server-boundary inputs next tick (determinism preserved).
 5. Then continue roadmap T1 (`docs/10`): flesh out tick-engine phases against real map data.
 
 **Open design questions for the product owner** (do not decide unilaterally):

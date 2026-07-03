@@ -31,6 +31,7 @@ import {
   newId,
 } from '@clashfront/shared';
 import { recordMint, spendCT } from './economy';
+import { armyInEngineBattle } from './engineBattle';
 import { defaultProvisionsFor, provisionCostCtUnits, type ProvisionOrder } from './logistics';
 import type { DemoOfficer, WorldState } from './state';
 import { stepTicks, type TickOptions } from './tick';
@@ -289,6 +290,7 @@ export function loadDemoWorld(file: DemoWorldFile, rng: Rng, options: LoadDemoWo
     trainingQueues: new Map(),
     devInvestedCt: new Map(),
     wildBattles: new Map(),
+    engineBattles: new Map(),
   };
 
   // Genesis CT is a marked faucet (E5): the seeded territory/town treasuries
@@ -620,6 +622,10 @@ export function orderMarch(state: WorldState, armyId: string, path: readonly str
     if (b.attackerArmyIds.includes(armyId) || b.defenderArmyIds.includes(armyId)) {
       throw new Error(`orderMarch: army ${armyId} is engaged in battle`);
     }
+  }
+  // Same lock while a battle is pending on the external engine (ALLOCATE-CALLBACK-SCHEMA).
+  if (armyInEngineBattle(state, armyId) !== undefined) {
+    throw new Error(`orderMarch: army ${armyId} is engaged in battle`);
   }
   if (path.length === 0) throw new Error('orderMarch: empty path');
   if (state.adjacency === undefined) throw new Error('orderMarch: world has no adjacency graph');

@@ -33,6 +33,7 @@ import {
   addGovernor,
   applyWildBattleCommand,
   armyEngagedIn,
+  armyInEngineBattle,
   armyStrength,
   type BattleLogisticsRecord,
   claimTerritory,
@@ -43,6 +44,9 @@ import {
   type DemoOfficer,
   type DemoWorldFile,
   type EconomyState,
+  type EngineBattleState,
+  type EngineOutcome,
+  type EngineSideResult,
   enrichTerritory,
   ensureEconomy,
   findPath,
@@ -353,6 +357,8 @@ interface SerializedWorldState {
   econCarry?: [string, number][];
   /** RUNNING live wild battles (docs/04 §7b) — plain JSON, resumed on load (unpaced). Optional for older saves. */
   wildBattles?: [string, WildBattleState][];
+  /** PENDING ENGINE BATTLES (ALLOCATE-CALLBACK-SCHEMA) — plain JSON. Optional for older saves. */
+  engineBattles?: [string, EngineBattleState][];
   /** Feature Set 3 (circular economy). All optional for pre-FS3 saves. */
   economy?: EconomyState;
   enrichmentPools?: [string, number][];
@@ -958,6 +964,7 @@ export class Game {
     const preRaids = new Set(this.state.wildRaids?.keys() ?? []);
     const preMustering = new Set(this.state.trainingQueues?.keys() ?? []);
     const preWild = new Set(this.state.wildBattles?.keys() ?? []);
+    const preEngine = new Set(this.state.engineBattles?.keys() ?? []);
 
     runTick(this.state, tick, this.baseRng.fork('sim'), this.balance, this.tickOptions);
 
@@ -1069,6 +1076,28 @@ export class Game {
     }
     for (const id of [...this.announcedWildBattles]) {
       if (this.state.wildBattles?.has(id) !== true) this.announcedWildBattles.delete(id); // settled — done announcing
+    }
+
+    // PENDING ENGINE BATTLES that ignited this tick (ALLOCATE-CALLBACK-SCHEMA):
+    // the parcel is locked while the external MOBA engine resolves the match;
+    // the server allocates it between ticks and the callback settles it later.
+    for (const [battleId, b] of this.state.engineBattles ?? []) {
+      if (preEngine.has(battleId)) continue;
+      const troopsOf = (ids: readonly string[]): number =>
+        ids.reduce((n, id) => {
+          const a = this.state.armies.get(id);
+          return a === undefined || a.state === 'DISBANDED' ? n : n + troopCount(a);
+        }, 0);
+      events.push({
+        type: 'battle_started',
+        tick,
+        battleId,
+        parcelId: this.parcelId(b.hexId),
+        attackerGovernorIds: [b.attackerGovernorId],
+        defenderGovernorIds: [b.defenderGovernorId],
+        attackerTroops: troopsOf(b.attackerArmyIds),
+        defenderTroops: troopsOf(b.defenderArmyIds),
+      });
     }
 
     // Newly pending PILLAGE/OCCUPY choices — battle victories get choice_pending,
@@ -1228,6 +1257,7 @@ export class Game {
         a.state !== 'GARRISON' ||
         a.hexId !== musterHex ||
         isMustering(this.state, a.id) ||
+        armyInEngineBattle(this.state, a.id) !== undefined || // pinned in a pending engine battle
         troopCount(a) === 0
       ) {
         continue;
@@ -1460,6 +1490,172 @@ export class Game {
   /** parcelId → hexId join (bridge parcel validation). */
   hexOfParcel(parcelId: string): string | undefined {
     return this.hexByParcel.get(parcelId);
+  }
+
+  // ── ENGINE battles: allocate context + result callback (ALLOCATE-CALLBACK-SCHEMA) ──
+
+  /** Engine battles still awaiting the server's allocate POST (sorted, deterministic). */
+  pendingEngineAllocations(): string[] {
+    const out: string[] = [];
+    for (const [id, b] of this.state.engineBattles ?? []) {
+      if (b.status === 'ALLOCATING') out.push(id);
+    }
+    return out.sort();
+  }
+
+  /**
+   * Build the R1 allocate context for a pending engine battle — EXACTLY the
+   * schema in docs/briefs/ALLOCATE-CALLBACK-SCHEMA.md §1. M1 battlefield:
+   * square 240 m arena as a 4-pt bounds polygon + the parcel's real structures
+   * (anchorId `anchor_<i>` = index into territory.structures); officers ride
+   * with a revive budget of 3; seed/battleId come from the sim (never wall clock).
+   */
+  engineAllocateContext(battleId: string, callbackUrl: string): Record<string, unknown> | undefined {
+    const b = this.state.engineBattles?.get(battleId);
+    if (b === undefined) return undefined;
+    const terrId = this.state.hexes.get(b.hexId)?.territoryId;
+    const territory = terrId === undefined ? undefined : this.state.territories.get(terrId);
+    const S = 240; // canon: 1 engine unit = 1 m; single parcel ≈ 240×240 m
+    const armiesOf = (ids: readonly string[], entryEdge: 'S' | 'N'): Record<string, unknown>[] =>
+      ids
+        .map((id) => this.state.armies.get(id))
+        .filter((a): a is Army => a !== undefined && a.state !== 'DISBANDED')
+        .map((a) => {
+          const officer =
+            a.heroId === undefined
+              ? undefined
+              : this.state.officers?.get(a.ownerGovernorId)?.find((o) => o.id === a.heroId);
+          return {
+            armyId: a.id,
+            units: a.units.filter((u) => u.count > 0).map((u) => ({ cls: u.unitClass, count: u.count })),
+            officers:
+              officer === undefined
+                ? []
+                : [{
+                    masterId: officer.id,
+                    name: officer.name,
+                    level: Math.max(1, Math.floor(officer.fame / 100)),
+                    revives: 3,
+                  }],
+            provisions: { food: a.provisions.food, gold: a.provisions.gold, wood: a.provisions.wood },
+            entryEdge,
+          };
+        });
+    const wildDefender = this.state.governorKinds?.get(b.defenderGovernorId) === 'SYSTEM';
+    return {
+      v: 1,
+      battleId,
+      seed: b.seed,
+      mode: 'accelerated',
+      rates: { tickHz: 30, commandSnapshotHz: 3 },
+      parcel: {
+        parcelId: this.parcelId(b.hexId),
+        zone: String(this.config.worldFile.meta.zone),
+        kind: territory === undefined || territory.governorKind === 'SYSTEM' ? 'WILD' : 'PLAYER',
+      },
+      battlefield: {
+        arena: { shape: 'polygon', sizeM: S, bounds: [[0, 0], [S, 0], [S, S], [0, S]] },
+        laneCount: 1,
+        obstacles: [],
+        spawnZones: [
+          { id: 'spawn_atk_s', side: 'ATTACKER', edge: 'S', x: S / 2, z: 8 },
+          { id: 'spawn_def_n', side: 'DEFENDER', edge: 'N', x: S / 2, z: S - 8 },
+        ],
+        structures: (territory?.structures ?? []).map((s, i) => ({
+          anchorId: `anchor_${i}`,
+          kind: s.key.toUpperCase(),
+          side: 'DEFENDER',
+          x: Math.round((s.anchor?.[0] ?? 0.5) * S),
+          z: Math.round((s.anchor?.[1] ?? 0.85) * S),
+          hp: s.hp,
+          hpMax: s.maxHp,
+        })),
+        mobs: [],
+      },
+      sides: {
+        ATTACKER: { governorId: b.attackerGovernorId, armies: armiesOf(b.attackerArmyIds, 'S') },
+        DEFENDER: {
+          governorId: wildDefender ? null : b.defenderGovernorId, // null governor = WILD
+          armies: armiesOf(b.defenderArmyIds, 'N'),
+        },
+      },
+      callback: { url: callbackUrl, keyId: 'cf-hmac-1' },
+    };
+  }
+
+  /** Allocate succeeded: record the live matchId; the battle now awaits the callback. */
+  markEngineAllocated(battleId: string, matchId?: string): void {
+    const b = this.state.engineBattles?.get(battleId);
+    if (b === undefined || b.status !== 'ALLOCATING') return;
+    b.status = 'ALLOCATED';
+    if (matchId !== undefined) b.matchId = matchId;
+  }
+
+  /** Allocate failed (network/5xx): the next tick resolves it via the instant path. */
+  markEngineAllocateFailed(battleId: string): void {
+    const b = this.state.engineBattles?.get(battleId);
+    if (b === undefined || b.status !== 'ALLOCATING' || b.outcome !== undefined) return;
+    b.status = 'FALLBACK';
+  }
+
+  /**
+   * Verified R10 result callback (server boundary — the HTTP layer already
+   * checked the HMAC + replay window). Validates + normalizes the payload and
+   * sets the outcome on the pending engine battle; the NEXT world tick settles
+   * it through the deterministic phase order. Idempotent by battleId: a
+   * re-delivered result (still-pending duplicate or already-settled battle)
+   * acks without reprocessing.
+   */
+  applyEngineResult(payload: Record<string, unknown>): { applied: boolean; duplicate: boolean } {
+    const battleId = payload['battleId'];
+    if (typeof battleId !== 'string' || battleId === '') {
+      throw new ApiError(400, 'BAD_RESULT', 'battleId (string) is required');
+    }
+    const b = this.state.engineBattles?.get(battleId);
+    if (b === undefined) {
+      if (this.state.battles.has(battleId)) return { applied: false, duplicate: true }; // already settled
+      throw new ApiError(404, 'NO_BATTLE', `no pending engine battle ${battleId}`);
+    }
+    if (b.outcome !== undefined) return { applied: false, duplicate: true };
+
+    const outcome = payload['outcome'] as Record<string, unknown> | undefined;
+    const winner = outcome?.['winner'];
+    if (winner !== 'ATTACKER' && winner !== 'DEFENDER' && winner !== 'TIE') {
+      throw new ApiError(400, 'BAD_RESULT', "outcome.winner must be 'ATTACKER' | 'DEFENDER' | 'TIE'");
+    }
+    const sides = (payload['sides'] ?? {}) as Record<string, unknown>;
+    const sideOf = (name: 'ATTACKER' | 'DEFENDER'): EngineSideResult => {
+      const s = (sides[name] ?? {}) as Record<string, unknown>;
+      const casualties: Record<string, number> = {};
+      for (const [cls, n] of Object.entries((s['casualties'] ?? {}) as Record<string, unknown>)) {
+        if (typeof n === 'number' && Number.isFinite(n) && n > 0) casualties[cls] = Math.floor(n);
+      }
+      const pcRaw = s['provisionsConsumed'] as Record<string, unknown> | undefined;
+      const pc: { food?: number; gold?: number; wood?: number } = {};
+      for (const key of ['food', 'gold', 'wood'] as const) {
+        const v = pcRaw?.[key];
+        if (typeof v === 'number' && Number.isFinite(v) && v > 0) pc[key] = Math.floor(v);
+      }
+      return { casualties, ...(Object.keys(pc).length > 0 ? { provisionsConsumed: pc } : {}) };
+    };
+    const structures: EngineOutcome['structures'] = [];
+    if (Array.isArray(payload['structures'])) {
+      for (const raw of payload['structures'] as unknown[]) {
+        const s = raw as Record<string, unknown> | undefined;
+        if (typeof s?.['anchorId'] !== 'string' || typeof s['hp'] !== 'number') continue;
+        structures.push({ anchorId: s['anchorId'], hp: s['hp'], destroyed: s['destroyed'] === true });
+      }
+    }
+    const matchId = typeof payload['matchId'] === 'string' ? payload['matchId'] : b.matchId;
+    b.outcome = {
+      winner,
+      reason: typeof outcome?.['reason'] === 'string' ? outcome['reason'] : 'UNKNOWN',
+      sides: { ATTACKER: sideOf('ATTACKER'), DEFENDER: sideOf('DEFENDER') },
+      ...(structures.length > 0 ? { structures } : {}),
+      ...(matchId !== undefined ? { matchId } : {}),
+    };
+    if (matchId !== undefined) b.matchId = matchId;
+    return { applied: true, duplicate: false };
   }
 
   /** Governor lookup by id or display name (case-insensitive) — bridge start attribution. */
@@ -1997,6 +2193,7 @@ function serializeWorldState(state: WorldState): SerializedWorldState {
     foodCarry: [...(state.foodCarry ?? new Map<string, number>()).entries()],
     econCarry: [...(state.econCarry ?? new Map<string, number>()).entries()],
     wildBattles: [...(state.wildBattles ?? new Map<string, WildBattleState>()).entries()],
+    engineBattles: [...(state.engineBattles ?? new Map<string, EngineBattleState>()).entries()],
     economy: ensureEconomy(state),
     enrichmentPools: [...(state.enrichmentPools ?? new Map<string, number>()).entries()],
     enrichCarry: [...(state.enrichCarry ?? new Map<string, number>()).entries()],
@@ -2035,6 +2232,7 @@ function deserializeWorldState(s: SerializedWorldState): WorldState {
     foodCarry: new Map(s.foodCarry ?? []),
     econCarry: new Map(s.econCarry ?? []),
     wildBattles: new Map(s.wildBattles ?? []),
+    engineBattles: new Map(s.engineBattles ?? []),
     ...(s.economy !== undefined ? { economy: s.economy } : {}),
     enrichmentPools: new Map(s.enrichmentPools ?? []),
     enrichCarry: new Map(s.enrichCarry ?? []),

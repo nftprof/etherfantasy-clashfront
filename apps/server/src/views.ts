@@ -126,6 +126,8 @@ export interface BattleView {
   parcelId: string;
   resolvedTick: number;
   winner: string;
+  /** AUTO (instant WarScore) | LIVE (wild tactical sim) | ACCELERATED (external engine). */
+  resolutionMode: string;
   /** Present on per-viewer filtered views. */
   intel?: IntelGrade;
   attackerGovernorIds: string[];
@@ -357,6 +359,7 @@ export function battleView(
     parcelId,
     resolvedTick: b.result?.resolvedTick ?? b.scheduledStartTick,
     winner: b.result?.winner ?? 'UNRESOLVED',
+    resolutionMode: b.resolutionMode,
     attackerGovernorIds,
     defenderGovernorIds,
   };

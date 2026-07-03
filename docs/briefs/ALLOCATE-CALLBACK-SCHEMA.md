@@ -100,6 +100,39 @@ reprocessing (idempotent). Sender retries with exponential backoff (2s→4s→�
 - Allocate-direction auth is a static bearer (`CF_BATTLE_API_TOKEN`), also env-provisioned.
 - Reject if `issuedAt` is older than 10 min or `nonce` was seen for a different body.
 
+## 3b. OVERWORLD IMPLEMENTATION (2026-07-03 — live behind a feature flag)
+
+The overworld side of this contract is IMPLEMENTED (tick engine → engine allocate → HMAC
+callback → deterministic settlement). Key facts for operators + the engine team:
+
+- **Env (apps/server, all three provisioned or feature OFF):** `BATTLE_ENGINE_URL` (the full
+  allocate endpoint; **unset = feature OFF, battles resolve exactly as before**),
+  `CF_BATTLE_API_TOKEN`, `CF_BATTLE_HMAC_SECRET`, optional `PUBLIC_BASE_URL` (callback base;
+  default `http://127.0.0.1:<PORT>`). `deploy/remote-deploy.sh` sources the token/secret from
+  `~/.cf_battle_api_token` / `~/.cf_battle_hmac_secret` (same pattern as `BRIDGE_SECRET`) and
+  defaults `BATTLE_ENGINE_URL=http://127.0.0.1:8140/internal/v1/matches/allocate` when both
+  files exist.
+- **Flow:** hostile co-location that would resolve via the instant WarScore path instead
+  becomes a PENDING ENGINE BATTLE (hex locked like a running wild battle, armies pinned);
+  the server POSTs the §1 context (`Idempotency-Key: battleId`, 5 s timeout, `mode:
+  "accelerated"`, square-240 4-pt bounds polygon + the parcel's real structure anchors
+  `anchor_<i>`, officers with revive budget 3, seed from the seeded world RNG). The verified
+  callback (raw-body HMAC, `issuedAt` ≤ 10 min, nonce ledger, idempotent 200 by battleId)
+  sets the outcome as a SERVER-BOUNDARY INPUT; the **next world tick** applies casualties per
+  UnitClass, provisions consumed, structure damage per anchor, winner/TIE semantics and the
+  normal post-battle flow (pillage/occupy choice, §7c.5 retreat ladder). Callback receiver:
+  `POST /internal/battle-result` (an /internal deployment-boundary route — never public).
+- **FALLBACK RULE:** allocate failure (network error, timeout, non-2xx) marks the battle
+  FALLBACK; the next tick resolves it through the internal instant resolution. An engine
+  outage never bricks a battle.
+- **Scope notes:** multi-governor attacker stacks (MVP truce edge) keep the instant path
+  (one governorId per side in §1); live wild battles (player vs monster lair) keep the
+  built-in tactical sim.
+- **Engine-team note (recorded, no action):** officer `contribution` stats are PLACEHOLDER
+  in M1 — the overworld treats them as M2 and does NOT yet apply `HERO_IMPACT_MAX` to engine
+  results (casualties are authoritative as reported). Faithful finite-wave durability +
+  structures-from-battlefield behavior (the R3–R5 PARAM lane) is game-dev side.
+
 ## 4. Decisions & answers for the engine team (2026-07-03)
 
 1. **R1/R10/R13 owner: the canonical engine.** Agreed and locked — see header note.
