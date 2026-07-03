@@ -366,9 +366,19 @@ the LAND HOLDER.**
      One click from the overworld map; light enough to open for any battle you can see.
   2. **HERO MODE** — the full 3D MOBA client on the same match: embody your Master (or your
      Hero — Irene/Kai/Leah) at hero level with full MOBA combat. The 20–40 min experience.
-  **Seamless interpolation**: "Take the field" from command mode drops you into hero mode
-  mid-battle (same match ticket / possession model); "return to command" pops back out. The AI
-  drives your hero whenever no human is embodying it; the AI commands whenever no human steers.
+  **Seamless interpolation — with the ONE-HERO rule (owner, 2026-07-03):**
+  - **Multiple Masters may fight on the same map** (several of your officers/armies in one
+    battle — allowed and encouraged).
+  - Entering HERO MODE you **choose exactly ONE hero to embody** (any Master you own present in
+    the battle, or your Hero); all your other Masters stay AI-controlled.
+  - **No switching on the field**: to change which hero you embody — or to issue ANY
+    command-mode orders — you must RETURN TO COMMAND MODE (back to camp) first. Hero mode and
+    commanding are mutually exclusive states. You may join at any time as any hero you own; you
+    may not swap mid-fight without going back.
+  - Rationale (locked): the MOBA client may always assume "one player = one hero at a time" —
+    future MOBA updates never need multi-hero control paths.
+  - The AI drives your hero whenever no human embodies it; the AI commands whenever no human
+    steers.
   Architecture: after battle-engine M1, the authoritative sim is the repurposed MOBA server and
   command mode becomes a thin renderer/controller of its snapshots (a compact "command channel"
   in the wire contract) — the overworld's 2D battle viewer is that channel's permanent client.
