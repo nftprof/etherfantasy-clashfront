@@ -19,9 +19,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Sync working copy → ~/clashfront-mvp (preserve world save in data/)
+      - name: Sync working copy → ~/clashfront-mvp (preserve ONLY the world save)
         run: |
-          rsync -a --delete --exclude='.git' --exclude='data' "$GITHUB_WORKSPACE"/ "$HOME"/clashfront-mvp/
+          # data/ MUST sync (demo-world.json geometry fixes ship through it) — only the live
+          # world save survives deploys. --delete would drop save.json without the exclude.
+          rsync -a --delete --exclude='.git' --exclude='data/save.json' "$GITHUB_WORKSPACE"/ "$HOME"/clashfront-mvp/
 
       - name: Build + (re)start clashfront on :8130
         run: |
