@@ -143,6 +143,8 @@ interface BridgeBattle {
   mobsStart: number;
   towersStart: number;
   wavesStockStart: number;
+  /** Last reported score (persists across frames that omit it — end-toast data). */
+  lastScore?: { a: number; b: number };
   /** Command queue (their server polls GET …/commands?afterSeq=N). */
   commands: BridgeCommandOut[];
   nextSeq: number;
@@ -356,6 +358,7 @@ export class BridgeHub {
     b.towersStart = Math.max(b.towersStart, towers.length);
     const stock = s.waves?.stock ?? 0;
     b.wavesStockStart = Math.max(b.wavesStockStart, s.waves?.stockStart ?? stock);
+    if (s.score !== undefined) b.lastScore = { a: Math.round(s.score.a ?? 0), b: Math.round(s.score.b ?? 0) };
     return {
       battleId: b.id,
       bt: Math.round(s.tick),
@@ -495,7 +498,7 @@ export class BridgeHub {
       return;
     }
     // Exhibition: display-only outcome events, NO map mutation.
-    const score = (b.lastSnap?.['score'] as { a: number; b: number } | undefined) ?? { a: 0, b: 0 };
+    const score = b.lastScore ?? { a: 0, b: 0 };
     this.deps.pushEvent({
       type: 'battle_resolved',
       tick: this.deps.worldTick(),
