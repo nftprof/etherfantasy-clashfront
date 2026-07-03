@@ -16,8 +16,12 @@ pnpm install --frozen-lockfile
 pnpm -r build
 
 # keep data/save.json (world persistence) — never clobbered by deploys
-PORT="$APP_PORT" WORLD_SEED="${WORLD_SEED:-mvp-july7}" TICK_MS="${TICK_MS:-5000}" \
-  pm2 startOrRestart apps/server/dist/src/main.js --name "$APP_NAME" --update-env
+# start-or-restart: `pm2 startOrRestart <script>` misparses a raw script as an ecosystem file
+# ("Cannot read properties of undefined (reading 'deploy')"), so restart if the process exists
+# else start fresh. --update-env picks up the exported PORT/WORLD_SEED/TICK_MS on both paths.
+export PORT="$APP_PORT" WORLD_SEED="${WORLD_SEED:-mvp-july7}" TICK_MS="${TICK_MS:-5000}"
+pm2 restart "$APP_NAME" --update-env 2>/dev/null \
+  || pm2 start apps/server/dist/src/main.js --name "$APP_NAME" --update-env
 pm2 save
 
 sleep 2

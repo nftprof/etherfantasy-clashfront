@@ -1,47 +1,29 @@
 name: Deploy MVP to cf.etherfantasy.com
 
-# Trigger: manual button (Actions tab) or any push to the deploy branch.
+# Runs on a SELF-HOSTED runner installed on the EF box (label: cf). The runner connects OUTBOUND
+# to GitHub, so NO inbound SSH / port 22 is opened — the box's security group stays locked down.
+# Push (or merge) to deploy/cf-mvp and this ships to https://cf.etherfantasy.com automatically.
+
 on:
-  workflow_dispatch:
   push:
     branches: [deploy/cf-mvp]
+  workflow_dispatch: {}
 
-concurrency: deploy-cf   # never two deploys at once
+concurrency:
+  group: cf-deploy
+  cancel-in-progress: false
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, cf]
     steps:
       - uses: actions/checkout@v4
 
-      - uses: pnpm/action-setup@v4
-        with: { version: 10 }
-      - uses: actions/setup-node@v4
-        with: { node-version: 20, cache: pnpm }
-
-      - name: Build & test
+      - name: Sync working copy → ~/clashfront-mvp (preserve world save in data/)
         run: |
-          pnpm install --frozen-lockfile
-          pnpm -r build
-          pnpm -r test
+          rsync -a --delete --exclude='.git' --exclude='data' "$GITHUB_WORKSPACE"/ "$HOME"/clashfront-mvp/
 
-      - name: Prepare SSH
+      - name: Build + (re)start clashfront on :8130
         run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy_key
-          chmod 600 ~/.ssh/deploy_key
-          ssh-keyscan -p "${{ secrets.DEPLOY_SSH_PORT || 22 }}" -H "${{ secrets.DEPLOY_HOST }}" >> ~/.ssh/known_hosts
-
-      - name: Sync to server
-        run: |
-          rsync -az --delete \
-            -e "ssh -i ~/.ssh/deploy_key -p ${{ secrets.DEPLOY_SSH_PORT || 22 }}" \
-            --exclude '.git' --exclude 'node_modules' --exclude '**/node_modules' \
-            --exclude 'data/hexagon-city-source' --exclude 'data/save.json' --exclude 'docs' \
-            ./ "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:~/clashfront-mvp/"
-
-      - name: Install, build, (re)start on server
-        run: |
-          ssh -i ~/.ssh/deploy_key -p "${{ secrets.DEPLOY_SSH_PORT || 22 }}" \
-            "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" \
-            'bash ~/clashfront-mvp/deploy/remote-deploy.sh'
+          cd "$HOME"/clashfront-mvp
+          bash deploy/remote-deploy.sh
