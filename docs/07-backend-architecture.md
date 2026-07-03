@@ -206,6 +206,28 @@ split is a config change, not a rewrite.
 
 ---
 
+### 4.4 Geographic zone-server mapping (owner, 2026-07-03)
+
+The world map is huge (10 zones, 292,766 parcels) — **active map area is limited by server
+capacity, geographically**:
+
+- **Shard unit = zone (or a sub-zone slice of a huge continent).** Each enabled zone is served by
+  EXACTLY ONE regional server — **no two servers ever serve the same zone** (this is geographic
+  sharding of ONE world, not realm mirroring; there are no duplicate worlds).
+- **Server regions follow the existing MOBA footprint**: Montreal (ca) + Singapore (sg) today ⇒
+  launch with TWO enabled continents/zones, one per region. More zones unlock as servers are
+  added — expansion of the playable world is an infrastructure event (and a marketing one:
+  "a new continent opens").
+- **One big full world, even cross-server**: every zone is visible on the map to everyone;
+  disabled zones render as "beyond the frontier" (visible, not yet playable). Cross-zone travel
+  and interaction cross server boundaries via the inter-shard protocol (§4.3) — the player never
+  sees a server, only distance. Armies crossing hand off between shard writers.
+- **Latency locality for battles**: a zone's battles (command mode + hero mode) run on that
+  zone's regional server — fight in the Singapore continent, get Singapore ping. Players
+  effectively choose their home latency by choosing where they settle.
+- Zone→server assignment is config (`zones.json` ⚙: zoneId → {region, enabled}), changeable only
+  by migration procedure (shard writer handoff), never concurrently served.
+
 ## 5. Consistency & concurrency
 
 - **Optimistic concurrency:** every mutable simulated entity carries `version` (08 §1). The tick's

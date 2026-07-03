@@ -87,6 +87,12 @@ export can be converted to the documented format. See `data/README.md`.
     commands requires returning to command mode (hero/command mutually exclusive) — so the MOBA
     client can forever assume one-player-one-hero. M1 brief D2b specifies the command channel.
 
+12. GEO ZONE-SERVER MAPPING (2026-07-03): shard = zone; each enabled zone served by EXACTLY ONE
+    regional server (Montreal + Singapore first ⇒ 2 enabled continents at launch; huge continents
+    may split into sub-zone slices). ONE world — no realm duplication; disabled zones visible as
+    "beyond the frontier"; cross-zone = inter-shard handoff; a zone's battles run on its regional
+    server (latency locality). `docs/07` §4.4.
+
 ## 📜 v0.2 VISION BIBLE (2026-07-02): `docs/VISION-BIBLE-v0.2.md` + `docs/ADDENDUM-E-PentaPet-Species-Affinity.pdf`
 Overarching new spec from the product owner: PentaPets = the living population (workers/soldiers/
 units, species affinities), terraforming, geology/materials, blueprint NFTs, living cities.
