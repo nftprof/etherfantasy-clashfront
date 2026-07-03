@@ -65,10 +65,12 @@
   (return to command mode) to issue orders or switch heroes. This lets the MOBA client forever
   assume one-player-one-hero (multi-user is ordinary MOBA territory). Commands apply to that
   side's AI-driven units/officers only.
-  **Possession = the EXISTING wild-Master walk-up mechanic** (owner 2026-07-03): the MOBA
-  already spawns Masters as wild characters a player can walk to and take command of — keep it.
-  Change only the SPAWN TRIGGER: Masters never appear randomly; they appear when their overworld
-  march arrives (see D1b).
+  **Entry model (CLIENT-DECIDED, OP48 2026-07-03, supersedes walk-up-for-entry):** taking the
+  field seats the user AS their Master via the normal champion draft (Masters are selectable
+  champions; seat→pHero binding enforces ONE-HERO). Walk-up possession lives on as the client's
+  unified `joinAlly` primitive — AI-support reinforcements (Master or limited squad from a
+  chosen edge, marching on the enemy base). Spawn trigger unchanged: Masters appear when their
+  overworld march arrives (see D1b — `joinAlly` is its in-match counterpart).
 - **D1b (reinforcement arrivals — owner 2026-07-03)**: battles are joinable IN PROGRESS by
   late-arriving armies. `POST /internal/v1/matches/{id}/reinforce` with
   `{side, officer, unitStacks, provisions, entryEdge}` where `entryEdge` encodes the hexagon

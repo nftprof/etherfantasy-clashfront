@@ -373,10 +373,14 @@ the LAND HOLDER.**
     battle — allowed and encouraged).
   - Entering HERO MODE you **choose exactly ONE hero to embody** (any Master you own present in
     the battle, or your Hero); all your other Masters stay AI-controlled.
-  - **Take-command = the existing MOBA possession mechanic.** Today the MOBA spawns Masters as
-    wild characters a player can walk up to and take command of — we KEEP that mechanic and
-    change only the spawning: Masters no longer appear randomly, they appear when their
-    overworld march ARRIVES (see reinforcement arrivals below).
+  - **Take-command = champion-draft seating (client decision, OP 48 2026-07-03, supersedes
+    walk-up possession for ENTRY):** Masters are selectable champions — entering hero mode
+    seats the user AS their Master through the normal draft (reuses the seat→pHero binding;
+    ONE-HERO per user enforced by the seat). The old wild-Master walk-up mechanic survives as
+    the unified `joinAlly` primitive: it adds AI-SUPPORT units (a Master or a limited
+    line-soldier squad entering from a chosen map edge, marching on the enemy base) — the
+    in-match face of reinforcement arrivals. Spawn trigger unchanged: Masters appear when
+    their overworld march ARRIVES (see reinforcement arrivals below).
   - **No switching on the field**: to change which hero you embody — or to issue ANY
     command-mode orders — you must RETURN TO COMMAND MODE (back to camp) first. Hero mode and
     commanding are mutually exclusive states. You may join at any time as any hero you own; you

@@ -86,8 +86,10 @@ export can be converted to the documented format. See `data/README.md`.
     may fight on one map; a player embodies exactly ONE at a time; switching heroes or issuing
     commands requires returning to command mode (hero/command mutually exclusive) — so the MOBA
     client can forever assume one-player-one-hero. CLARIFIED 2026-07-03: one hero PER USER, not
-    per map — 2v2/3v3+ with allied users on either side. Possession keeps the MOBA's existing
-    wild-Master walk-up take-command mechanic; only the spawn trigger changes: Masters appear
+    per map — 2v2/3v3+ with allied users on either side. ENTRY MODEL (OP48 2026-07-03):
+    taking the field = seated AS your Master via the normal champion draft (Masters are
+    selectable champions now); walk-up possession lives on as the `joinAlly` primitive for
+    AI-support reinforcements. Spawn trigger: Masters appear
     when their overworld march ARRIVES (mid-battle reinforcement), entering at the hexagon edge
     matching the approach direction, auto-attacking on arrival (existing MOBA behavior), and
     their soldiers create a new edge spawning point that acts as a NEW LANE pathing directly to
@@ -167,7 +169,7 @@ a core session merges them.
 | "EF v2 Moba Server (bridge layer)" | match server | M1 allocate+callback (LIVE :8140 Singapore box) + telemetry bridge client; next: auto-register D2b channel from allocate, join tickets |
 | "EF v2 Moba Server (network)" | headless perf/netcode | headless lag fix (sync step() loop) — PVE tamper-proof verify engine |
 | "EF v2 Moba Server (maps)" | map generator | `briefs/MAP-GENERATOR.md` (registry, terraform, AI gardener, prompt-to-params) |
-| "EF Moba OP 48" (Cowork) | game-dev 3D client | ✅ 23 Masters = playable champions (element kits; recruited auto-cast, neutral passive; PentaPets stay units); ✅ deep-link transport (match+ticket in the existing join handshake, `EFM_JOINURL_TEMPLATE`). Open: ticket shape + seating (proposal in `briefs/ALLOCATE-CALLBACK-SCHEMA.md` §1b) |
+| "EF Moba OP 48" (Cowork) | game-dev 3D client | ✅ ALL hero-mode client work: Masters = draft-selectable champions, deep-link `…/play?net=server&ws=<wss>&match=<id>&ticket=<t>` (joinErr{reason} on bad tickets), bridge `POST /matches/:id/ticket → {ticket, joinUrl}`, `joinAlly` reinforcement primitive (Master or squad from a chosen edge → enemy base). **Blocking piece is server-side: live 30 Hz match + gateway seating (bridge+netcode, M2)** |
 Seams: bridge-layer↔OP48 = join ticket format; maps↔bridge-layer = Battlefield JSON (`briefs/ALLOCATE-CALLBACK-SCHEMA.md`).
 
 ## Working rules
