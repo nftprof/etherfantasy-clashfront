@@ -501,6 +501,21 @@ export class Game {
       throw new ApiError(400, 'BAD_NAME', 'name must be a non-empty string of at most 24 characters');
     }
     const cleanName = name.trim();
+    // MVP identity model is name-only login: joining with an EXISTING banner name
+    // RESUMES that governor with a fresh token (lost localStorage ≠ lost empire).
+    // Only governors that were created via join (they have sessions) are resumable —
+    // NPC/system governors have none and can never be hijacked by name.
+    const existing = [...this.sessions.values()].find((s) => s.name.toLowerCase() === cleanName.toLowerCase());
+    if (existing !== undefined) {
+      const token = randomBytes(16).toString('hex');
+      this.sessions.set(token, { token, playerId: existing.playerId, governorId: existing.governorId, name: existing.name });
+      return {
+        playerId: existing.playerId,
+        token,
+        governorId: existing.governorId,
+        officers: this.state.officers?.get(existing.governorId) ?? [],
+      };
+    }
     const joinIndex = this.sessions.size;
     const { governorId, officers } = addGovernor(this.state, this.orderRng('join'), {
       name: cleanName,

@@ -384,3 +384,20 @@ test('snapshot save/load roundtrip preserves world, sessions, and future determi
   assert.equal(g3.state.world.tick, 0, 'foreign-seed snapshot must not be loaded');
   assert.equal(g3.sessions.size, 0);
 });
+
+test('join: an existing banner name RESUMES that governor (fresh token, same empire)', async () => {
+  const server = new ClashServer({ game: new Game(gameConfig()), port: 0, tickMs: null, saveMs: null });
+  const port = await server.start();
+  const base = `http://127.0.0.1:${port}`;
+  try {
+    const first = (await (await fetch(`${base}/api/join`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ name: 'Idon' }) })).json()) as any;
+    const again = (await (await fetch(`${base}/api/join`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ name: 'idon' }) })).json()) as any;
+    assert.equal(again.governorId, first.governorId, 'case-insensitive name resumes the same governor');
+    assert.notEqual(again.token, first.token, 'a fresh token is minted');
+    assert.deepEqual(again.officers.map((o: any) => o.id), first.officers.map((o: any) => o.id), 'same officer pool');
+    const other = (await (await fetch(`${base}/api/join`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ name: 'Someone Else' }) })).json()) as any;
+    assert.notEqual(other.governorId, first.governorId, 'new names still create new governors');
+  } finally {
+    await server.stop();
+  }
+});

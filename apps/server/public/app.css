@@ -40,6 +40,9 @@ button.danger  { background: #4a2320; border-color: #7a3a33; }
 #rail-player .avatar { --av: 30px; }
 #rail-player span { font-size: 13px; font-weight: 600; color: #e8eef6;
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#rail-player #btn-switch { margin-left: auto; background: none; border: 1px solid #24304a;
+  border-radius: 6px; color: #8fa0bd; font-size: 12px; padding: 2px 7px; cursor: pointer; }
+#rail-player #btn-switch:hover { color: #e8b93c; border-color: #e8b93c; }
 #rail-head .head-btn:first-of-type { margin-left: auto; }
 .head-btn { color: #8fa0bd; text-decoration: none; font-size: 13px; border: 1px solid #24304a;
   border-radius: 6px; padding: 0 7px; line-height: 20px; flex: none; }

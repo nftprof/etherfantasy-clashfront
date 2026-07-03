@@ -696,10 +696,16 @@ export function createUI({ store, map, orders }) {
     },
     setPlayerLabel(name) {
       // The player's identity anchor: their Hero's portrait beside the banner name.
+      // ⇄ switches banner (name-only login: rejoining an existing name resumes it).
       const hero = store.officers[0];
       const plate = $('rail-player');
-      plate.innerHTML = `${hero ? avatarHtml(hero, 30) : ''}<span>${esc(name)}</span>`;
+      plate.innerHTML = `${hero ? avatarHtml(hero, 30) : ''}<span>${esc(name)}</span>` +
+        `<button id="btn-switch" title="Switch banner — type an existing name to resume that governor">⇄</button>`;
       plate.hidden = false;
+      plate.querySelector('#btn-switch').addEventListener('click', () => {
+        localStorage.removeItem('cf_token');
+        location.reload();
+      });
     },
   };
 }
