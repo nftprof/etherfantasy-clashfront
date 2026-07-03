@@ -44,13 +44,16 @@
     <!-- right: parcel card -->
     <aside id="card" hidden></aside>
 
-    <!-- join overlay -->
+    <!-- join overlay: dev name-only form by default; the PG sign-in fields replace it
+         when /api/world meta says pgEnabled (docs/briefs/PG-IDENTITY.md) -->
     <div id="join" hidden>
       <form id="join-form">
         <h1>CLASH FRONT</h1>
-        <p class="sub">The overworld is at war. Name your banner — an existing name resumes that governor.</p>
+        <p class="sub" id="join-sub">The overworld is at war. Name your banner — an existing name resumes that governor.</p>
         <input id="join-name" maxlength="24" placeholder="your name" autocomplete="off" required>
-        <button type="submit">Enter the war</button>
+        <input id="join-pg-id" placeholder="email / PNS name / username" autocomplete="username" hidden>
+        <input id="join-pg-pass" type="password" placeholder="password" autocomplete="current-password" hidden>
+        <button type="submit" id="join-btn">Enter the war</button>
         <p id="join-err" class="err"></p>
         <p class="sub" style="margin-top:10px"><a href="/help.html" target="_blank" style="color:#e8b93c">How to play →</a></p>
       </form>

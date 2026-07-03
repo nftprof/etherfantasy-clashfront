@@ -420,22 +420,65 @@ async function boot() {
   showJoin();
 }
 
+/**
+ * Join overlay in one of two modes (docs/briefs/PG-IDENTITY.md):
+ *   pgEnabled  → Pentagon Games sign-in (identifier + password, embedded form —
+ *                no redirects): browser POSTs {pgApiUrl}/user/login with the
+ *                publishable X-PG-App-Key, then hands result.access_token to our
+ *                /api/login-pg which verifies server-side and mints a cf token.
+ *   !pgEnabled → dev name-only banner login (/api/join), unchanged.
+ * The ⇄ switch button just clears cf_token + reloads — it lands here in both modes.
+ */
 function showJoin() {
-  const overlay = document.getElementById('join');
-  overlay.hidden = false;
-  document.getElementById('join-name').focus();
+  const pg = !!store.meta.pgEnabled;
+  document.getElementById('join-sub').textContent = pg
+    ? 'The overworld is at war. Sign in with your Pentagon Games account to take your banner.'
+    : 'The overworld is at war. Name your banner — an existing name resumes that governor.';
+  const nameEl = document.getElementById('join-name');
+  nameEl.hidden = pg; nameEl.required = !pg;
+  for (const id of ['join-pg-id', 'join-pg-pass']) {
+    const el = document.getElementById(id);
+    el.hidden = !pg; el.required = pg;
+  }
+  document.getElementById('join-btn').textContent = pg ? 'Sign in with Pentagon' : 'Enter the war';
+  document.getElementById('join').hidden = false;
+  (pg ? document.getElementById('join-pg-id') : nameEl).focus();
+}
+
+/** PG sign-in: browser → PG /user/login (publishable key) → our /api/login-pg. */
+async function pgLogin() {
+  const username = document.getElementById('join-pg-id').value.trim();
+  const password = document.getElementById('join-pg-pass').value;
+  let json;
+  try {
+    const res = await fetch(`${store.meta.pgApiUrl}/user/login`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', 'X-PG-App-Key': store.meta.pgAppKey },
+      body: JSON.stringify({ type: 'email', username, password, login_from: 'clashfront' }),
+    });
+    json = await res.json().catch(() => undefined);
+    if (json?.status !== true || !json?.result?.access_token) {
+      throw new Error(json?.message ?? json?.error ?? `Pentagon sign-in failed (HTTP ${res.status})`);
+    }
+  } catch (err) {
+    throw err instanceof TypeError ? new Error('Pentagon Games is unreachable — retry shortly.') : err;
+  }
+  if (json.result.refresh_token) localStorage.setItem('pg_refresh', json.result.refresh_token);
+  return api('/api/login-pg', { body: { access_token: json.result.access_token } });
 }
 
 document.getElementById('join-form').addEventListener('submit', async (e) => {
   e.preventDefault();
-  const name = document.getElementById('join-name').value.trim();
   const errEl = document.getElementById('join-err');
   try {
-    const res = await api('/api/join', { body: { name } });
+    const res = store.meta.pgEnabled
+      ? await pgLogin()
+      : await api('/api/join', { body: { name: document.getElementById('join-name').value.trim() } });
     token = res.token;
     localStorage.setItem(TOKEN_KEY, token);
-    store.me = { governorId: res.governorId, name };
+    store.me = { governorId: res.governorId, name: store.playerName(res.governorId) };
     await refreshState();
+    store.me = { governorId: res.governorId, name: store.playerName(res.governorId) };
     document.getElementById('join').hidden = true;
     enterWorld();
   } catch (err) { errEl.textContent = err.message; }

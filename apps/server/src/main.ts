@@ -23,6 +23,11 @@
  *   CF_BATTLE_API_TOKEN    bearer for the allocate direction
  *   CF_BATTLE_HMAC_SECRET  HMAC secret verifying X-CF-Signature result callbacks
  *   PUBLIC_BASE_URL        optional callback base (default http://127.0.0.1:<PORT>)
+ *
+ * Pentagon Games identity (docs/briefs/PG-IDENTITY.md; unset = dev name-only login):
+ *   PG_APP_KEY             PUBLISHABLE app key (pk_…) sent as X-PG-App-Key — setting it
+ *                          turns the client join overlay into the Pentagon sign-in form
+ *   PG_API_URL             PG identity API base (default https://login.pentagon.games)
  */
 import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
@@ -88,12 +93,17 @@ async function main(): Promise<void> {
   });
 
   const bridgeSecret = process.env['BRIDGE_SECRET'];
+  // Pentagon Games identity — PG login is ON only when the (publishable) app key is set.
+  const pgAppKey = process.env['PG_APP_KEY'];
+  const pgApiUrl = process.env['PG_API_URL'];
   const server = new ClashServer({
     game,
     port,
     tickMs,
     saveMs: envInt('SAVE_MS', 30_000),
     ...(bridgeSecret !== undefined && bridgeSecret !== '' ? { bridgeSecret } : {}),
+    ...(pgAppKey !== undefined && pgAppKey !== '' ? { pgAppKey } : {}),
+    ...(pgApiUrl !== undefined && pgApiUrl !== '' ? { pgApiUrl } : {}),
     ...(engineOn
       ? {
           battleEngine: {
@@ -115,6 +125,9 @@ async function main(): Promise<void> {
   );
   if (engineOn) {
     console.log(`[server] battle engine ON — allocating field battles at ${battleEngineUrl}`);
+  }
+  if (pgAppKey !== undefined && pgAppKey !== '') {
+    console.log(`[server] Pentagon Games identity ON — verifying tokens at ${pgApiUrl ?? 'https://login.pentagon.games'}`);
   }
 
   let stopping = false;

@@ -47,6 +47,19 @@ if [ -z "${BATTLE_ENGINE_URL:-}" ] && [ -f "$HOME/.cf_battle_api_token" ] && [ -
 fi
 if [ -n "${BATTLE_ENGINE_URL:-}" ]; then export BATTLE_ENGINE_URL; fi
 
+# Pentagon Games identity (docs/briefs/PG-IDENTITY.md): the app key is PUBLISHABLE
+# (pk_ prefix — the browser sends it too), so it defaults right here; a
+# ~/.cf_pg_app_key file (chmod 600 by convention) overrides it for rotation.
+# Setting PG_APP_KEY turns the join overlay into the Pentagon sign-in form.
+if [ -z "${PG_APP_KEY:-}" ] && [ -f "$HOME/.cf_pg_app_key" ]; then
+  PG_APP_KEY="$(cat "$HOME/.cf_pg_app_key")"
+fi
+if [ -z "${PG_APP_KEY:-}" ]; then
+  PG_APP_KEY="pk_live_3e996782bb03792b8787a02b2d076ec2"
+fi
+export PG_APP_KEY
+if [ -n "${PG_API_URL:-}" ]; then export PG_API_URL; fi
+
 pm2 restart "$APP_NAME" --update-env 2>/dev/null \
   || pm2 start apps/server/dist/src/main.js --name "$APP_NAME" --update-env
 pm2 save

@@ -149,6 +149,14 @@ the parcel graph of ONE zone (hexification deliberately punted — permanent dec
    `deploy/remote-deploy.sh` auto-sources both secrets from `~/.cf_battle_*` files and defaults
    the URL when they exist. Allocate failure ⇒ automatic fallback to instant resolution.
    Engine callbacks apply as server-boundary inputs next tick (determinism preserved).
+4c. ~~Pentagon Games identity login~~ **DONE 2026-07-03** — `docs/briefs/PG-IDENTITY.md`.
+   PG accounts are the PRIMARY login: embedded sign-in form (identifier+password →
+   browser POST login.pentagon.games/user/login with publishable X-PG-App-Key) →
+   `/api/login-pg` verifies server-side via GET /user/info → pgUid→governor binding
+   persisted in the save (resume / adopt richest unbound same-name PLAYER governor /
+   create; adopted never re-adoptable). Env `PG_APP_KEY` (unset = dev name-only login
+   untouched) + `PG_API_URL`; `deploy/remote-deploy.sh` defaults the publishable key
+   (file `~/.cf_pg_app_key` overrides) — **PG login turns ON at the next deploy**.
 5. Then continue roadmap T1 (`docs/10`): flesh out tick-engine phases against real map data.
 
 **Open design questions for the product owner** (do not decide unilaterally):
