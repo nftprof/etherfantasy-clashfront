@@ -167,7 +167,7 @@ a core session merges them.
 |---|---|---|
 | THIS (CF overworld) | hub + canon | all `docs/briefs/*` contracts; BATTLE_ENGINE_URL wiring; deploys to cf.etherfantasy.com |
 | "EF v2 Moba Server (bridge layer)" | match server | M1 allocate+callback (LIVE :8140 Singapore box) + telemetry bridge client; next: auto-register D2b channel from allocate, join tickets |
-| "EF v2 Moba Server (network)" | headless perf/netcode | headless lag fix (sync step() loop) — PVE tamper-proof verify engine |
+| "EF v2 Moba Server (network)" | headless perf/netcode | headless lag fix (sync step() loop) — PVE tamper-proof verify engine. **HOLDS THE LAST HERO-MODE BLOCKER (2026-07-03): `POST /internal/cf/live` → `mm.createLiveMatch(context)` kept open at 30 Hz, matchId stringified — spec in MOBA repo `TICKET-CONTRACT.md` §6; gateway ticket→seat wiring already done** |
 | "EF v2 Moba Server (maps)" | map generator | `briefs/MAP-GENERATOR.md` (registry, terraform, AI gardener, prompt-to-params) |
 | "EF Moba OP 48" (Cowork) | game-dev 3D client | ✅ ALL hero-mode client work: Masters = draft-selectable champions, deep-link `…/play?net=server&ws=<wss>&match=<id>&ticket=<t>` (joinErr{reason} on bad tickets), bridge `POST /matches/:id/ticket → {ticket, joinUrl}`, `joinAlly` reinforcement primitive (Master or squad from a chosen edge → enemy base). **Blocking piece is server-side: live 30 Hz match + gateway seating (bridge+netcode, M2)** |
 Seams: bridge-layer↔OP48 = join ticket format; maps↔bridge-layer = Battlefield JSON (`briefs/ALLOCATE-CALLBACK-SCHEMA.md`).
