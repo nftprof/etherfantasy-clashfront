@@ -616,7 +616,7 @@ export class ClashServer {
           sendJson(res, 200, this.game.choice(session.governorId, body.battleId, body.action, body.overseerId));
           return;
         case '/api/exhibition':
-          sendJson(res, 200, this.startExhibition(session.governorId, session.name, body.parcelId));
+          sendJson(res, 200, this.startExhibition(session.governorId, session.name, body.parcelId, body.joinUrl));
           return;
         default:
           throw new ApiError(404, 'UNKNOWN_ENDPOINT', `no such endpoint ${path}`);
@@ -651,7 +651,7 @@ export class ClashServer {
    * steerable by the requesting governor, zero world consequences. One per
    * governor, small global cap; the child dies with the match (~3 min).
    */
-  private startExhibition(governorId: string, governorName: string, parcelId: unknown): Record<string, unknown> {
+  private startExhibition(governorId: string, governorName: string, parcelId: unknown, joinUrl?: unknown): Record<string, unknown> {
     const secret = this.config.bridgeSecret;
     if (secret === undefined) {
       throw new ApiError(503, 'BRIDGE_DISABLED', 'the battle bridge is not enabled on this server');
@@ -669,11 +669,15 @@ export class ClashServer {
     if (addr === null || typeof addr === 'string') {
       throw new ApiError(503, 'NOT_LISTENING', 'server socket unavailable');
     }
+    if (joinUrl !== undefined && (typeof joinUrl !== 'string' || joinUrl.length > 512 || !/^https?:\/\//.test(joinUrl))) {
+      throw new ApiError(400, 'BAD_JOIN_URL', 'joinUrl must be an http(s) URL of at most 512 chars');
+    }
     const script = join(this.publicDir, '..', '..', '..', 'scripts', 'mock-moba-match.mjs');
     const child = spawn(
       process.execPath,
       [script, '--server', `http://127.0.0.1:${addr.port}`, '--secret', secret,
-        '--parcel', parcelId, '--governor', governorName, '--duration', '180'],
+        '--parcel', parcelId, '--governor', governorName, '--duration', '180',
+        ...(typeof joinUrl === 'string' ? ['--join-url', joinUrl] : [])],
       { stdio: 'ignore' },
     );
     this.exhibitions.set(governorId, child);
