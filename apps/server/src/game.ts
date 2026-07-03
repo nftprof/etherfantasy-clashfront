@@ -369,6 +369,10 @@ export class Game {
   private readonly balance: Balance = loadBalance();
   private readonly parcelByHex: Map<string, string>;
   private readonly hexByParcel = new Map<string, string>();
+  /** Effective tick options: config + the real-parcel polygon provider for wild battlefields. */
+  private readonly tickOptions: TickOptions;
+  /** parcelId → source polygon (wild-battlefield bounds come from the land's true shape). */
+  private readonly polygonByParcel = new Map<string, [number, number][]>();
   private orderSeq = 0;
   private pendingEvents: GameEvent[] = [];
   /** Battles whose territory outcome event has already been emitted (rebuilt on load). */
@@ -403,6 +407,17 @@ export class Game {
     }
     this.parcelByHex = buildParcelByHex(this.state);
     for (const [hexId, parcelId] of this.parcelByHex) this.hexByParcel.set(parcelId, hexId);
+    for (const p of config.worldFile.parcels) this.polygonByParcel.set(p.parcelId, p.polygon);
+    this.tickOptions = {
+      ...config.tickOptions,
+      parcelPolygonOf: (hexId) => this.polygonByParcel.get(this.parcelByHex.get(hexId) ?? ''),
+    };
+    // Loaded battles resume UNPACED (no watchers yet) and pre-announced (their
+    // battle_started already went out before the snapshot).
+    for (const [id, b] of this.state.wildBattles ?? []) {
+      b.paced = false;
+      this.announcedWildBattles.add(id);
+    }
   }
 
   // ── Boot-time governors ────────────────────────────────────────────────────
@@ -545,7 +560,7 @@ export class Game {
       preset,
     });
     return {
-      army: armyView(this.state, army, this.parcelByHex, this.balance, this.config.tickOptions, this.viewerContext(governorId))!,
+      army: armyView(this.state, army, this.parcelByHex, this.balance, this.tickOptions, this.viewerContext(governorId))!,
       ctUnits: this.state.ctBalances?.get(governorId) ?? 0,
       // Training + standard provision pack breakdown (docs/04 §7c.1),
       // including the parcel's F4 MIL-track training discount.
@@ -583,7 +598,7 @@ export class Game {
       throw translateSimError(e);
     }
     return {
-      army: armyView(this.state, a, this.parcelByHex, this.balance, this.config.tickOptions, this.viewerContext(governorId))!,
+      army: armyView(this.state, a, this.parcelByHex, this.balance, this.tickOptions, this.viewerContext(governorId))!,
       ctUnits: this.state.ctBalances?.get(governorId) ?? 0,
       costCtUnits,
     };
@@ -731,11 +746,11 @@ export class Game {
     if (path === undefined || path.length === 0) throw new ApiError(400, 'UNREACHABLE', `no path to ${t.name}`);
     const fromParcelId = this.parcelId(a.hexId);
     try {
-      orderMarch(this.state, a.id, path, this.config.tickOptions);
+      orderMarch(this.state, a.id, path, this.tickOptions);
     } catch (e) {
       throw translateSimError(e);
     }
-    const view = armyView(this.state, a, this.parcelByHex, this.balance, this.config.tickOptions, this.viewerContext(governorId))!;
+    const view = armyView(this.state, a, this.parcelByHex, this.balance, this.tickOptions, this.viewerContext(governorId))!;
     const etaTick = view.etaTick ?? this.state.world.tick;
     this.pendingEvents.push({
       type: 'march_ordered',
@@ -837,7 +852,7 @@ export class Game {
     const preRaids = new Set(this.state.wildRaids?.keys() ?? []);
     const preMustering = new Set(this.state.trainingQueues?.keys() ?? []);
 
-    runTick(this.state, tick, this.baseRng.fork('sim'), this.balance, this.config.tickOptions);
+    runTick(this.state, tick, this.baseRng.fork('sim'), this.balance, this.tickOptions);
 
     const events: GameEvent[] = this.pendingEvents.splice(0);
 
@@ -1098,7 +1113,7 @@ export class Game {
           // war chest can't cover extra rations — march on the standard pack
         }
       }
-      orderMarch(this.state, a.id, target.path, this.config.tickOptions);
+      orderMarch(this.state, a.id, target.path, this.tickOptions);
       events.push({
         type: 'npc_expand',
         tick,
@@ -1188,7 +1203,7 @@ export class Game {
         zone: this.config.worldFile.meta.zone,
         sliceBBox: this.config.worldFile.meta.sliceBBox,
         seed: this.config.seed,
-        travelTicksPerStep: this.config.tickOptions.travelTicksPerStep,
+        travelTicksPerStep: this.tickOptions.travelTicksPerStep,
         // Claim-cost rule (docs/02): adjacent to your land = free; farther = CT/step.
         claims: {
           freeRadiusSteps: this.balance.claims.freeRadiusSteps,
@@ -1368,7 +1383,7 @@ export class Game {
     for (const id of sortedIds(this.state.armies)) {
       const a = this.state.armies.get(id)!;
       if (a.state === 'DISBANDED') continue;
-      const v = armyView(this.state, a, this.parcelByHex, this.balance, this.config.tickOptions, viewer);
+      const v = armyView(this.state, a, this.parcelByHex, this.balance, this.tickOptions, viewer);
       if (v !== undefined) armies.push(v);
     }
     const battles = sortedIds(this.state.battles)
@@ -1455,7 +1470,7 @@ export class Game {
     }
     const armies: ArmyView[] = [];
     for (const id of sortedIds(this.state.armies)) {
-      const v = armyView(this.state, this.state.armies.get(id)!, this.parcelByHex, this.balance, this.config.tickOptions)!;
+      const v = armyView(this.state, this.state.armies.get(id)!, this.parcelByHex, this.balance, this.tickOptions)!;
       const s = JSON.stringify(v);
       if (this.lastViews.armies.get(id) !== s) {
         this.lastViews.armies.set(id, s);
@@ -1501,7 +1516,7 @@ export class Game {
     const HIDDEN = 'hidden';
     for (const id of sortedIds(this.state.armies)) {
       const a = this.state.armies.get(id)!;
-      const v = armyView(this.state, a, this.parcelByHex, this.balance, this.config.tickOptions, viewer);
+      const v = armyView(this.state, a, this.parcelByHex, this.balance, this.tickOptions, viewer);
       if (v === undefined) {
         // Out of intel: tombstone once if the viewer had previously seen it.
         const prev = cache.armies.get(id);
@@ -1619,7 +1634,7 @@ export class Game {
 
   /** Total march ticks for a path (used for ETA echoes). */
   pathTicks(path: readonly string[]): number {
-    return path.reduce((n, hexId) => n + stepTicks(this.state, hexId, this.config.tickOptions), 0);
+    return path.reduce((n, hexId) => n + stepTicks(this.state, hexId, this.tickOptions), 0);
   }
 }
 
