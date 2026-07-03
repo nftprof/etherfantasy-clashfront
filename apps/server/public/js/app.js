@@ -390,12 +390,21 @@ async function boot() {
   api('/api/economy').then((eco) => { store.econ = eco; store.emit(); }).catch(() => {});
 
   if (token) {
-    try {
-      const state = await refreshState();
-      store.me = { governorId: state.my.governorId, name: store.playerName(state.my.governorId) };
-      enterWorld();
-      return;
-    } catch { localStorage.removeItem(TOKEN_KEY); token = null; }
+    // Retry resume through transient failures (server restarting mid-deploy, flaky
+    // network). ONLY a definitive 401 UNAUTHORIZED discards the stored identity —
+    // anything else must never log the player out into a fresh governor.
+    for (let attempt = 0; ; attempt++) {
+      try {
+        const state = await refreshState();
+        store.me = { governorId: state.my.governorId, name: store.playerName(state.my.governorId) };
+        enterWorld();
+        return;
+      } catch (e) {
+        if (e?.code === 'UNAUTHORIZED') { localStorage.removeItem(TOKEN_KEY); token = null; break; }
+        if (attempt >= 5) break; // keep the token; land on join, a reload resumes
+        await new Promise((r) => setTimeout(r, Math.min(1000 * 2 ** attempt, 8000)));
+      }
+    }
   }
   showJoin();
 }
