@@ -37,7 +37,22 @@ export interface ServerConfig {
    * docs/briefs/TELEMETRY-RELAY.md). Undefined = bridge disabled (503).
    */
   bridgeSecret?: string;
+  /**
+   * Pentagon Games identity (docs/briefs/PG-IDENTITY.md): PUBLISHABLE app key
+   * (pk_… prefix, env PG_APP_KEY) sent as X-PG-App-Key. PG login is ENABLED
+   * only when set — otherwise the client keeps the dev name-only login.
+   */
+  pgAppKey?: string;
+  /** PG identity API base URL (env PG_API_URL). Default: the live login service. */
+  pgApiUrl?: string;
+  /** Injectable fetch for /api/login-pg upstream verification — tests mock the PG API. */
+  pgFetch?: typeof fetch;
 }
+
+/** PG identity API (docs/briefs/PG-IDENTITY.md) — the login.pentagon.games service. */
+export const PG_API_URL_DEFAULT = 'https://login.pentagon.games';
+/** Upstream GET /user/info verification timeout. */
+const PG_TIMEOUT_MS = 5000;
 
 const MIME: Record<string, string> = {
   '.html': 'text/html; charset=utf-8',
@@ -77,6 +92,8 @@ export class ClashServer {
   private readonly exhibitions = new Map<string, ReturnType<typeof spawn>>();
   /** Known parcel ids (exhibition target validation). */
   private readonly parcelIds: Set<string>;
+  /** PG identity API base (trailing slashes stripped). */
+  private readonly pgApiUrl: string;
 
   constructor(private readonly config: ServerConfig) {
     this.game = config.game;
@@ -107,7 +124,20 @@ export class ClashServer {
     // convert tick ETAs to real time.
     const geo = this.game.worldGeometry();
     this.parcelIds = new Set(geo.parcels.map((p) => p.id));
-    this.worldBody = JSON.stringify({ ...geo, meta: { ...geo.meta, tickMs: config.tickMs } });
+    this.pgApiUrl = (config.pgApiUrl ?? PG_API_URL_DEFAULT).replace(/\/+$/, '');
+    // PG identity surface for the client: pgEnabled picks the login UI; the
+    // app key is PUBLISHABLE (pk_ prefix) — the browser needs it to POST
+    // {pgApiUrl}/user/login directly (embedded form, no redirects).
+    const pgEnabled = config.pgAppKey !== undefined && config.pgAppKey !== '';
+    this.worldBody = JSON.stringify({
+      ...geo,
+      meta: {
+        ...geo.meta,
+        tickMs: config.tickMs,
+        pgEnabled,
+        ...(pgEnabled ? { pgApiUrl: this.pgApiUrl, pgAppKey: config.pgAppKey } : {}),
+      },
+    });
     this.worldEtag = `"${createHash('sha1').update(this.worldBody).digest('hex')}"`;
 
     this.http = http.createServer((req, res) => {
@@ -385,6 +415,11 @@ export class ClashServer {
       sendJson(res, 200, { playerId, token, governorId, officers });
       return;
     }
+    if (path === '/api/login-pg' && method === 'POST') {
+      const body = await readJsonBody(req);
+      sendJson(res, 200, await this.loginPg(body['access_token']));
+      return;
+    }
     if (path === '/api/world' && method === 'GET') {
       if (req.headers['if-none-match'] === this.worldEtag) {
         res.writeHead(304, { etag: this.worldEtag });
@@ -538,6 +573,55 @@ export class ClashServer {
     return { ok: true, parcelId, durationSec: 180 };
   }
 
+  /**
+   * POST /api/login-pg {access_token} — Pentagon Games identity login
+   * (docs/briefs/PG-IDENTITY.md). Server-side verification, never trusting the
+   * client's claimed identity: PG has NO dedicated verify endpoint, so we call
+   * GET {pgApiUrl}/user/info with the presented bearer token — a 200 returns
+   * the user object, anything else means the token is invalid. The verified
+   * (pgUid, displayName) then maps to a governor via Game.loginPg (existing
+   * binding → resume; unbound same-name governor → adopt; else create).
+   * Responds with the same shape as /api/join.
+   */
+  private async loginPg(accessToken: unknown): Promise<Record<string, unknown>> {
+    const appKey = this.config.pgAppKey;
+    if (appKey === undefined || appKey === '') {
+      throw new ApiError(503, 'PG_DISABLED', 'Pentagon Games login is not enabled on this server (set PG_APP_KEY)');
+    }
+    if (typeof accessToken !== 'string' || accessToken === '') {
+      throw new ApiError(400, 'BAD_TOKEN', 'access_token must be a non-empty string');
+    }
+    const fetchImpl = this.config.pgFetch ?? fetch;
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), PG_TIMEOUT_MS);
+    let upstream: Response;
+    try {
+      upstream = await fetchImpl(`${this.pgApiUrl}/user/info`, {
+        headers: { authorization: `Bearer ${accessToken}`, 'x-pg-app-key': appKey },
+        signal: ctrl.signal,
+      });
+    } catch {
+      throw new ApiError(502, 'PG_UNAVAILABLE', 'Pentagon Games identity service is unreachable — try again shortly');
+    } finally {
+      clearTimeout(timer);
+    }
+    if (upstream.status !== 200) {
+      throw new ApiError(401, 'PG_TOKEN_INVALID', 'Pentagon Games rejected that token — sign in again');
+    }
+    let payload: unknown;
+    try {
+      payload = await upstream.json();
+    } catch {
+      throw new ApiError(502, 'PG_UNAVAILABLE', 'Pentagon Games identity service returned an unreadable response');
+    }
+    const { pgUid, displayName } = derivePgIdentity(payload);
+    if (pgUid === undefined) {
+      throw new ApiError(502, 'PG_UNAVAILABLE', 'Pentagon Games user info carried no user id');
+    }
+    const { playerId, token, governorId, officers } = this.game.loginPg(pgUid, displayName);
+    return { playerId, token, governorId, officers };
+  }
+
   private async routeBridge(
     req: http.IncomingMessage,
     res: http.ServerResponse,
@@ -597,6 +681,29 @@ export class ClashServer {
       throw new ApiError(404, 'NOT_FOUND', `no such file ${path}`);
     }
   }
+}
+
+// ── PG identity helpers ───────────────────────────────────────────────────────
+
+/**
+ * Extract (pgUid, displayName) from GET /user/info's 200 payload. The user
+ * object may arrive bare or wrapped in {status,result}. Display-name
+ * preference mirrors PG's canonical user resolution order: PNS name →
+ * username → email local-part (docs/briefs/PG-IDENTITY.md).
+ * Exported for tests.
+ */
+export function derivePgIdentity(payload: unknown): { pgUid?: string; displayName: string } {
+  const root = payload as Record<string, unknown> | null;
+  const nested = root !== null && typeof root === 'object' ? root['result'] : undefined;
+  const user = (typeof nested === 'object' && nested !== null ? nested : root) as Record<string, unknown> | null;
+  if (user === null || typeof user !== 'object') return { displayName: '' };
+  const idRaw = user['id'] ?? user['user_id'] ?? user['uid'];
+  const pgUid =
+    typeof idRaw === 'string' && idRaw !== '' ? idRaw : typeof idRaw === 'number' ? String(idRaw) : undefined;
+  const str = (v: unknown): string | undefined => (typeof v === 'string' && v.trim() !== '' ? v.trim() : undefined);
+  const email = str(user['email']);
+  const displayName = str(user['pns_name']) ?? str(user['pns']) ?? str(user['username']) ?? email?.split('@')[0] ?? '';
+  return { ...(pgUid !== undefined ? { pgUid } : {}), displayName };
 }
 
 // ── HTTP helpers ──────────────────────────────────────────────────────────────
