@@ -505,7 +505,22 @@ export class Game {
     // RESUMES that governor with a fresh token (lost localStorage ≠ lost empire).
     // Only governors that were created via join (they have sessions) are resumable —
     // NPC/system governors have none and can never be hijacked by name.
-    const existing = [...this.sessions.values()].find((s) => s.name.toLowerCase() === cleanName.toLowerCase());
+    // Duplicate names existed before resume shipped (each join minted a governor),
+    // so pick the SAME-NAME governor with the most holdings — territories, then
+    // armies, then treasury — not merely the oldest session (an empty husk).
+    const candidates = new Map<string, Session>();
+    for (const s of this.sessions.values()) {
+      if (s.name.toLowerCase() === cleanName.toLowerCase()) candidates.set(s.governorId, s);
+    }
+    const score = (govId: string): [number, number, number] => [
+      [...this.state.territories.values()].filter((t) => t.governorId === govId).length,
+      [...this.state.armies.values()].filter((a) => a.ownerGovernorId === govId).length,
+      this.state.ctBalances?.get(govId) ?? 0,
+    ];
+    const existing = [...candidates.values()].sort((a, b) => {
+      const sa = score(a.governorId), sb = score(b.governorId);
+      return sb[0] - sa[0] || sb[1] - sa[1] || sb[2] - sa[2];
+    })[0];
     if (existing !== undefined) {
       const token = randomBytes(16).toString('hex');
       this.sessions.set(token, { token, playerId: existing.playerId, governorId: existing.governorId, name: existing.name });
