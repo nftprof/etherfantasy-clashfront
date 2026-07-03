@@ -226,17 +226,17 @@
   },
   "economy": {
     "_note": "Circular war economy ⚙ (Feature Set 3, docs/briefs/FEATURESET-3-ECONOMY.md E1/E3/E4/E5). Every wallet→world spend is split by spendCT: LOOT → town/wild-parcel treasuries within lootRadiusSteps of the spend parcel (inverse-distance weighted; no eligible target ⇒ that share burns); LANDYIELD → enrichment pools of the spend parcel (landYieldSelfPct) + its ring-1 neighbors (rest, equal split); LORDS = lordsLandlordShare escrowed in unclaimedLordYield (no NFT landlords yet) + lordsSeatShare to the richest TOWN treasury in radius (none ⇒ burn); BURN destroyed; TREASURY → system:treasury. Integer split, remainder to burn — shares must sum to 1.0. enrichYieldPctPerDay: enrichment pool pays this fraction of itself per day (integer carry) to the parcel's CURRENT governor. enrichLootPct: PILLAGE loots this share of the pool. razeSalvagePct: raze recovers this share of a level's original cost (rest burns). purchaseCapCtPerEpoch: $-purchase faucet cap stub (ct_units, /api/buy-ct is 501 until payments land). lootWindowTicks: rolling window for the /api/economy warzone loot heatmap. journalYieldBatchTicks: per-governor yield REWARDs are batched into the settlement journal every N ticks (anti-spam).",
-    "lootShare": 0.30,
-    "landYieldShare": 0.20,
+    "lootShare": 0.3,
+    "landYieldShare": 0.2,
     "lordsLandlordShare": 0.15,
-    "lordsSeatShare": 0.10,
-    "burnShare": 0.20,
+    "lordsSeatShare": 0.1,
+    "burnShare": 0.2,
     "treasuryShare": 0.05,
     "lootRadiusSteps": 3,
     "landYieldSelfPct": 0.6,
-    "enrichYieldPctPerDay": 0.10,
+    "enrichYieldPctPerDay": 0.1,
     "enrichLootPct": 0.35,
-    "razeSalvagePct": 0.40,
+    "razeSalvagePct": 0.4,
     "purchaseCapCtPerEpoch": 50000000,
     "lootWindowTicks": 1440,
     "journalYieldBatchTicks": 20
@@ -244,7 +244,7 @@
   "training": {
     "_note": "Training takes time ⚙ (Feature Set 3 E2 — the anti-whale wall). Raising an army pays the FULL cost up-front (through the splitter) but spawns a MUSTERING shell: soldiers materialize at baseRatePerTick × (1 + MIL_level × milRateBonus) per tick (TRAINING sub-phase of PRODUCTION). One active queue per territory. A mustering army cannot march; if attacked it fights with the troops trained so far × musterPenalty. baseRatePerTick 25 ⇒ a STANDARD army (200 soldiers) completes in 8 demo ticks (≈40 s at the 5 s demo tick).",
     "baseRatePerTick": 25,
-    "milRateBonus": 0.10,
+    "milRateBonus": 0.1,
     "musterPenalty": 0.7,
     "queuesPerTerritory": 1
   },
@@ -256,5 +256,79 @@
     "armySight": 1,
     "scoutSight": 3,
     "fuzzyBandPct": 0.35
+  },
+  "wildBattle": {
+    "_note": "Live wild-battle tactical sim ⚙ (docs/04 §7b wild row — prototype). One battle entity = squadSize overworld soldiers. Stats are per battle tick at tickHz. Attacker = waves from the map edge (no CC, StarCraft-campaign style); defender = mob camps + towers, 1 lane. clockTicks = the battle clock (≈ 4 min demo at 4 Hz); unwatched battles advance acceleratedTicksPerWorldTick per world tick — SAME sim, fast-forward (canon: acceleration is the same sim).",
+    "tickHz": 4,
+    "clockTicks": 960,
+    "acceleratedTicksPerWorldTick": 400,
+    "squadSize": 4,
+    "waveSize": 8,
+    "waveEveryTicks": 24,
+    "masterRevives": 3,
+    "masterRespawnTicks": 40,
+    "acquireRange": 22,
+    "mobAggroRange": 18,
+    "mobLeashRange": 42,
+    "towerHp": 300,
+    "towerDamage": 20,
+    "towerCooldownTicks": 6,
+    "towerRange": 30,
+    "masterHp": 400,
+    "masterDamage": 22,
+    "masterCooldownTicks": 3,
+    "masterRange": 3.5,
+    "masterSpeed": 1.4,
+    "unitStats": {
+      "INFANTRY": {
+        "hp": 60,
+        "damage": 5,
+        "cooldownTicks": 4,
+        "range": 2.5,
+        "speed": 1.0
+      },
+      "ARCHER": {
+        "hp": 40,
+        "damage": 4,
+        "cooldownTicks": 4,
+        "range": 16,
+        "speed": 1.0
+      },
+      "CAVALRY": {
+        "hp": 80,
+        "damage": 7,
+        "cooldownTicks": 4,
+        "range": 2.5,
+        "speed": 1.7
+      },
+      "SPEAR": {
+        "hp": 55,
+        "damage": 6,
+        "cooldownTicks": 4,
+        "range": 3.5,
+        "speed": 1.0
+      },
+      "SIEGE": {
+        "hp": 50,
+        "damage": 18,
+        "cooldownTicks": 12,
+        "range": 24,
+        "speed": 0.7
+      },
+      "MARINE": {
+        "hp": 60,
+        "damage": 5,
+        "cooldownTicks": 4,
+        "range": 2.5,
+        "speed": 1.0
+      },
+      "SHIP": {
+        "hp": 120,
+        "damage": 10,
+        "cooldownTicks": 6,
+        "range": 20,
+        "speed": 0.8
+      }
+    }
   }
 }

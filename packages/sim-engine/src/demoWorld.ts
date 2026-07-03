@@ -614,6 +614,12 @@ export function orderMarch(state: WorldState, armyId: string, path: readonly str
   // E2: a mustering army holds its ground until the last soldier is trained
   // (the simpler rule — no partial-strength sorties; documented in the brief).
   if (isMustering(state, armyId)) throw new Error(`orderMarch: army ${armyId} is still mustering`);
+  // A live wild battle pins its combatants until it settles (docs/04 §7b).
+  for (const b of state.wildBattles?.values() ?? []) {
+    if (b.attackerArmyIds.includes(armyId) || b.defenderArmyIds.includes(armyId)) {
+      throw new Error(`orderMarch: army ${armyId} is engaged in battle`);
+    }
+  }
   if (path.length === 0) throw new Error('orderMarch: empty path');
   if (state.adjacency === undefined) throw new Error('orderMarch: world has no adjacency graph');
   let from = a.hexId;

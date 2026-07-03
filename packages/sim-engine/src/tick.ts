@@ -34,6 +34,7 @@ import { creditWallet, flushYieldJournal } from './economy';
 import { updateIntelMemory } from './intel';
 import { battleFoodNeed, enduranceMultiplier, marchFoodPerStep, troopCount } from './logistics';
 import { type ArmyRetreatRecord, type BattleLogisticsRecord, sortedIds, type WorldState } from './state';
+import { createWildBattle, stepWildBattle, type WildBattleState, wildBattleSurvivors } from './wildBattle';
 
 // ── Tick options (demo-tunable knobs; server config overrides these) ──────────
 
@@ -46,11 +47,26 @@ export interface TickOptions {
   travelTicksPerStep?: number;
   /** Ticks a battle winner has to pick PILLAGE/OCCUPY before the default applies. */
   choiceTimeoutTicks?: number;
+  /**
+   * LIVE wild battles (docs/04 §7b wild row): a PLAYER army attacking a
+   * monster-garrisoned wild parcel becomes a RUNNING tactical fight on the
+   * parcel's generated battlefield (watchable, steerable) instead of the
+   * instant WarScore resolve. PvP / NPC / raid battles keep instant resolution.
+   * Default false — existing worlds/tests are unaffected.
+   */
+  liveWildBattles?: boolean;
+  /**
+   * Parcel polygon provider for wild-battlefield generation (the server wires
+   * this to the demo-world geometry). Undefined ⇒ a seeded synthetic outline.
+   */
+  parcelPolygonOf?: (hexId: string) => [number, number][] | undefined;
 }
 
 export const DEFAULT_TICK_OPTIONS: Required<TickOptions> = {
   travelTicksPerStep: (CONSTANTS.TRAVEL_ADJACENT_MIN * 60) / CONSTANTS.TICK_SECONDS,
   choiceTimeoutTicks: 10,
+  liveWildBattles: false,
+  parcelPolygonOf: () => undefined,
 };
 
 function resolveOptions(options?: TickOptions): Required<TickOptions> {
@@ -513,6 +529,13 @@ function phaseBattleSpawning(
     }
   }
 
+  // 1b — advance RUNNING live wild battles (docs/04 §7b wild row): unwatched
+  // battles fast-forward ⚙ acceleratedTicksPerWorldTick per world tick — the
+  // SAME sim as LIVE viewing, just stepped faster (canon: acceleration is the
+  // same simulation). Server-paced (`paced`) battles are stepped by the LIVE
+  // 4 Hz driver between world ticks and only SETTLED here once decided.
+  advanceWildBattles(state, tick, balance, options);
+
   // 2 — detect hostile co-location, hex by hex (deterministic order).
   const byHex = new Map<string, Army[]>();
   for (const id of sortedIds(state.armies)) {
@@ -520,7 +543,12 @@ function phaseBattleSpawning(
     if (a.state === 'DISBANDED') continue;
     (byHex.get(a.hexId) ?? byHex.set(a.hexId, []).get(a.hexId)!).push(a);
   }
+  const hexesInBattle = new Set<string>();
+  for (const b of state.wildBattles?.values() ?? []) hexesInBattle.add(b.hexId);
   for (const hexId of [...byHex.keys()].sort()) {
+    // A parcel with a RUNNING battle is locked — latecomers wait at its edge
+    // (join windows are post-MVP); the hex resolves normally once it settles.
+    if (hexesInBattle.has(hexId)) continue;
     const armies = byHex.get(hexId)!;
     const owners = [...new Set(armies.map((a) => a.ownerGovernorId))].sort();
     if (owners.length < 2) continue;
@@ -533,8 +561,293 @@ function phaseBattleSpawning(
       : owners[0]!;
     const defenders = armies.filter((a) => a.ownerGovernorId === defenderGov);
     const attackers = armies.filter((a) => a.ownerGovernorId !== defenderGov);
+    if (options.liveWildBattles && isLiveWildEligible(state, terr, attackers, defenders)) {
+      createRunningWildBattle(state, hexId, attackers, defenders, tick, rng.fork(hexId), balance, options);
+      continue;
+    }
     resolveFieldBattle(state, hexId, attackers, defenders, tick, rng.fork(hexId), balance, options);
   }
+}
+
+// ── LIVE wild battles (docs/04 §7b wild row — waves vs towers+mobs) ─────────
+
+/**
+ * Only the canonical wild case runs LIVE (scope control): ONE PLAYER governor
+ * attacking SYSTEM (wild-monster) defenders on SYSTEM-governed ground. PvP,
+ * NPC expansion, monster raids on players — all keep instant resolution.
+ */
+function isLiveWildEligible(
+  state: WorldState,
+  terr: Territory | undefined,
+  attackers: Army[],
+  defenders: Army[],
+): boolean {
+  if (terr === undefined || terr.governorKind !== 'SYSTEM') return false;
+  if (!defenders.every((d) => state.governorKinds?.get(d.ownerGovernorId) === 'SYSTEM')) return false;
+  const attackerOwners = [...new Set(attackers.map((a) => a.ownerGovernorId))];
+  if (attackerOwners.length !== 1) return false;
+  if (state.governorKinds?.get(attackerOwners[0]!) !== 'PLAYER') return false;
+  const atkTroops = attackers.reduce((n, a) => n + troopCount(a), 0);
+  const defTroops = defenders.reduce((n, a) => n + troopCount(a), 0);
+  return atkTroops > 0 && defTroops > 0;
+}
+
+/** True when `armyId` is committed to a running wild battle (it cannot march/split). */
+export function armyEngagedIn(state: WorldState, armyId: string): WildBattleState | undefined {
+  for (const b of state.wildBattles?.values() ?? []) {
+    if (b.attackerArmyIds.includes(armyId) || b.defenderArmyIds.includes(armyId)) return b;
+  }
+  return undefined;
+}
+
+function createRunningWildBattle(
+  state: WorldState,
+  hexId: string,
+  attackers: Army[],
+  defenders: Army[],
+  tick: number,
+  rng: Rng,
+  balance: Balance,
+  options: Required<TickOptions>,
+): void {
+  const battleId = newId('battle', { time: tick, random: () => rng.next() });
+  // Battle-food is consumed up-front like the instant resolver (spent win or lose).
+  const atkTroops = attackers.reduce((n, a) => n + troopCount(a), 0);
+  const atkNeed = battleFoodNeed(atkTroops, balance);
+  const atkCarried = attackers.reduce((n, a) => n + a.provisions.food, 0);
+  drainProvisions(attackers, 'food', Math.min(atkCarried, atkNeed));
+
+  // Master = the leading officer of the (single) attacking governor's armies.
+  let masterName: string | undefined;
+  let hasMaster = false;
+  for (const a of attackers) {
+    if (a.heroId === undefined) continue;
+    const officer = state.officers?.get(a.ownerGovernorId)?.find((o) => o.id === a.heroId);
+    if (officer !== undefined) {
+      masterName = officer.name;
+      hasMaster = true;
+      break;
+    }
+  }
+
+  const battle = createWildBattle(
+    {
+      id: battleId,
+      seed: `${state.world.seed}:${battleId}`,
+      hexId,
+      polygon: parcelPolygon(state, hexId, options),
+      attackers: attackers.map((a) => ({
+        armyId: a.id,
+        governorId: a.ownerGovernorId,
+        units: a.units.map((u) => ({ cls: u.unitClass, count: u.count })),
+      })),
+      defenders: defenders.map((d) => ({
+        armyId: d.id,
+        governorId: d.ownerGovernorId,
+        units: d.units.map((u) => ({ cls: u.unitClass, count: u.count })),
+      })),
+      ...(masterName !== undefined ? { masterName } : {}),
+      hasMaster,
+      startedTick: tick,
+    },
+    balance,
+  );
+  state.wildBattles ??= new Map();
+  state.wildBattles.set(battleId, battle);
+}
+
+/** The real parcel outline when the server provides one, else a seeded synthetic outline. */
+function parcelPolygon(state: WorldState, hexId: string, options: Required<TickOptions>): [number, number][] {
+  const real = options.parcelPolygonOf(hexId);
+  if (real !== undefined && real.length >= 3) return real;
+  // Seeded synthetic outline: a lumpy octagon unique to the hex.
+  const r = 100;
+  const rng = state.world.seed;
+  const poly: [number, number][] = [];
+  for (let i = 0; i < 8; i++) {
+    const ang = (i / 8) * 2 * Math.PI;
+    // Cheap per-vertex determinism from the hex id + world seed.
+    let h = 0;
+    const key = `${rng}:${hexId}:${i}`;
+    for (let c = 0; c < key.length; c++) h = (h * 31 + key.charCodeAt(c)) | 0;
+    const k = 0.75 + ((h >>> 8) % 1000) / 2000; // 0.75..1.25
+    poly.push([Math.cos(ang) * r * k, Math.sin(ang) * r * k]);
+  }
+  return poly;
+}
+
+function advanceWildBattles(
+  state: WorldState,
+  tick: number,
+  balance: Balance,
+  options: Required<TickOptions>,
+): void {
+  if (state.wildBattles === undefined || state.wildBattles.size === 0) return;
+  const budget = balance.wildBattle.acceleratedTicksPerWorldTick;
+  for (const battleId of sortedIds(state.wildBattles)) {
+    const b = state.wildBattles.get(battleId)!;
+    if (b.outcome === undefined && b.paced !== true) {
+      for (let i = 0; i < budget && b.outcome === undefined; i++) stepWildBattle(b, balance);
+    }
+    if (b.outcome !== undefined) settleWildBattle(state, battleId, tick, balance, options);
+  }
+}
+
+/**
+ * Apply a decided wild battle back to the overworld — the SAME post-battle
+ * paths as the instant resolver: casualties from the tactical sim, winner
+ * pendingChoice (PILLAGE/OCCUPY), §7c.5 retreat ladder for failed attackers,
+ * TIE semantics on clock expiry. Produces a normal RESOLVED BattleInstance
+ * (resolutionMode LIVE) + BattleLogisticsRecord so all existing events flow.
+ */
+export function settleWildBattle(
+  state: WorldState,
+  battleId: string,
+  tick: number,
+  balance: Balance = loadBalance(),
+  options?: TickOptions,
+): void {
+  const b = state.wildBattles?.get(battleId);
+  if (b === undefined || b.outcome === undefined) return;
+  const opts = resolveOptions(options);
+  state.wildBattles!.delete(battleId);
+
+  const attackers = b.attackerArmyIds
+    .map((id) => state.armies.get(id))
+    .filter((a): a is Army => a !== undefined && a.state !== 'DISBANDED');
+  const defenders = b.defenderArmyIds
+    .map((id) => state.armies.get(id))
+    .filter((a): a is Army => a !== undefined && a.state !== 'DISBANDED');
+
+  // Casualties: tactical deaths mapped back to stacks via the roster.
+  const casualties: Record<string, number> = {};
+  const preTroops = new Map<string, number>();
+  for (const a of [...attackers, ...defenders]) preTroops.set(a.id, troopCount(a));
+  let atkSoldiersStart = 0;
+  let atkSoldiersLost = 0;
+  let defSoldiersStart = 0;
+  let defSoldiersLost = 0;
+  for (const { entry, survivors } of wildBattleSurvivors(b)) {
+    const army = state.armies.get(entry.armyId);
+    const lost = Math.max(0, entry.soldiers - survivors);
+    if (entry.side === 'ATTACKER') {
+      atkSoldiersStart += entry.soldiers;
+      atkSoldiersLost += lost;
+    } else {
+      defSoldiersStart += entry.soldiers;
+      defSoldiersLost += lost;
+    }
+    if (lost === 0 || army === undefined) continue;
+    const stack = army.units.find((s) => s.unitClass === entry.cls);
+    if (stack !== undefined) stack.count = Math.max(0, stack.count - lost);
+    casualties[entry.armyId] = (casualties[entry.armyId] ?? 0) + lost;
+    army.version += 1;
+  }
+
+  const winner: 'ATTACKER' | 'DEFENDER' | 'DRAW' =
+    b.outcome === 'ATTACKER' ? 'ATTACKER' : b.outcome === 'DEFENDER' ? 'DEFENDER' : 'DRAW';
+  const territory = territoryAt(state, b.hexId);
+  const retreats: ArmyRetreatRecord[] = [];
+  const p = balance.provisions;
+
+  if (winner === 'ATTACKER') {
+    for (const a of attackers) {
+      a.morale = Math.min(CONSTANTS.MORALE_MAX, a.morale + balance.morale.victoryDelta);
+      if (troopCount(a) === 0) disbandArmy(state, a);
+    }
+    // Wild defenders rout off the map — beaten mobs abandon the ground (MVP,
+    // same as the instant resolver's defender rout).
+    for (const d of defenders) disbandArmy(state, d);
+  } else if (winner === 'DEFENDER') {
+    for (const d of defenders) {
+      d.morale = Math.min(CONSTANTS.MORALE_MAX, d.morale + balance.morale.victoryDelta);
+      d.version += 1;
+    }
+    for (const a of attackers) {
+      a.morale = Math.max(CONSTANTS.MORALE_MIN, a.morale + balance.morale.defeatDelta);
+      retreats.push(retreatArmy(state, a, casualties, preTroops.get(a.id) ?? troopCount(a), tick, balance));
+    }
+  } else {
+    // Clock expired, nothing decided (§7c.4 TIE): casualties stand, no ground
+    // changes hands, the attacker withdraws.
+    for (const a of [...attackers, ...defenders]) {
+      a.morale = Math.max(CONSTANTS.MORALE_MIN, a.morale - p.tieMoraleLoss);
+    }
+    for (const a of attackers) {
+      retreats.push(retreatArmy(state, a, casualties, preTroops.get(a.id) ?? troopCount(a), tick, balance));
+    }
+    for (const d of defenders) {
+      if (troopCount(d) === 0) disbandArmy(state, d);
+    }
+  }
+
+  // Score for surfacing: damage dealt to the other side (soldiers), tower kills weighted in.
+  const towersDown = b.towersStart - b.towers.filter((t) => t.hp > 0).length;
+  const attackerScore = defSoldiersLost + towersDown * Math.round(balance.wildBattle.towerHp / 10);
+  const defenderScore = atkSoldiersLost;
+  const warScore: WarScore = {
+    attacker: attackerScore,
+    defender: defenderScore,
+    breakdown: {
+      attackerArmy: atkSoldiersStart,
+      attackerHero: 0,
+      defenderArmy: defSoldiersStart,
+      defenderHero: 0,
+      terrain: 1,
+      attackerEndurance: 1,
+      defenderEndurance: 1,
+      structures: 0,
+      defenseDev: 1,
+    },
+  };
+
+  const battle: BattleInstance = {
+    id: battleId,
+    worldId: state.world.id,
+    type: 'FIELD',
+    state: 'RESOLVED',
+    hexId: b.hexId,
+    attackerArmyIds: [...b.attackerArmyIds],
+    defenderArmyIds: [...b.defenderArmyIds],
+    resolutionMode: 'LIVE',
+    scheduledStartTick: b.startedTick,
+    participants: [],
+    warScore,
+    result: { winner, casualties, resolvedTick: tick },
+  };
+  state.battles.set(battleId, battle);
+  state.battleLogistics ??= new Map();
+  state.battleLogistics.set(battleId, {
+    battleId,
+    outcomeKind: winner === 'ATTACKER' ? 'DECISIVE_ATTACKER' : winner === 'DEFENDER' ? 'DECISIVE_DEFENDER' : 'TIE',
+    attackerEndurance: 1,
+    defenderEndurance: 1,
+    commandCenterTier: 0, // wild maps: NO attacker CC at all (§7b) — waves from the edge
+    structureBonus: 0,
+    attackerFoodConsumed: 0,
+    defenderFoodConsumed: 0,
+    goldSpent: 0,
+    woodSpent: 0,
+    retreats,
+  });
+
+  // Post-victory: the winning PLAYER picks PILLAGE|OCCUPY exactly like an
+  // instant battle (monsters never capture; ties never change territory).
+  if (winner !== 'ATTACKER' || territory === undefined) {
+    if (battle.result !== undefined && territory !== undefined) battle.result.territoryOutcome = 'HELD';
+    return;
+  }
+  const gov = b.attackerGovernorId;
+  if (gov === territory.governorId || state.governorKinds?.get(gov) !== 'PLAYER') {
+    battle.result!.territoryOutcome = 'HELD';
+    return;
+  }
+  const survivorStanding = attackers.some((a) => a.state !== 'DISBANDED' && a.hexId === b.hexId && troopCount(a) > 0);
+  if (!survivorStanding) {
+    battle.result!.territoryOutcome = 'HELD'; // mutual destruction — nobody holds the field
+    return;
+  }
+  queueChoice(state, battle, gov, territory.id, tick, opts.choiceTimeoutTicks);
 }
 
 // ── AUTO field-battle resolution (docs/04 §5 WarScore, demo-simplified) ──────
@@ -1245,6 +1558,7 @@ function returnWildRaiders(
       continue;
     }
     if (a.state !== 'GARRISON') continue; // still marching
+    if (armyEngagedIn(state, armyId) !== undefined) continue; // pinned in a running battle
 
     if (a.hexId !== rec.homeHexId) {
       // Halted away from home (raid done, retreated, or intercepted) — march back.
@@ -1321,6 +1635,9 @@ function spawnWildRaids(
     if (lair === undefined || lair.state !== 'GARRISON' || !isWildArmy(state, lair)) continue;
     if (raidingLairs.has(lair.id)) continue;
     if (troopCount(lair) < wr.minRaidTroops) continue;
+    if (armyEngagedIn(state, lair.id) !== undefined) continue; // under live assault — every claw defends
+
+
 
     const r = rng.fork(terrId); // PRNG(world.seed, tick, 'ai/wildRaids', territoryId)
     const hex = state.hexes.get(lair.hexId)!;

@@ -9,6 +9,7 @@
  */
 import type { Army, BattleInstance, DevelopmentTrack, GovernorKind, Hex, LandNFT, Region, Territory, World } from '@clashfront/shared';
 import type { EconomyState } from './economy';
+import type { WildBattleState } from './wildBattle';
 
 /**
  * MVP demo officer — stands in for a Hero/Master mirror (docs/08) until the live
@@ -153,6 +154,15 @@ export interface WorldState {
   trainingQueues?: Map<string, TrainingQueue>;
   /** E4: territoryId → invested ct_units per development track (raze salvage basis). */
   devInvestedCt?: Map<string, Partial<Record<DevelopmentTrack, number>>>;
+  /**
+   * RUNNING live wild battles (docs/04 §7b wild row): battleId → tactical
+   * battle state. Created by BATTLE SPAWNING when a player army attacks a
+   * monster-garrisoned wild parcel with TickOptions.liveWildBattles enabled;
+   * advanced accelerated inside the tick (or LIVE by the server's 4 Hz driver
+   * when `paced`), settled into a normal RESOLVED BattleInstance. Plain-JSON,
+   * snapshot-safe — a saved world resumes its battles.
+   */
+  wildBattles?: Map<string, WildBattleState>;
 }
 
 /**

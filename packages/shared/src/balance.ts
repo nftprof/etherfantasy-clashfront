@@ -249,12 +249,48 @@ export interface Balance {
     /** Fuzzy band half-width as a fraction of true strength (±35% default). */
     fuzzyBandPct: number;
   };
+  /**
+   * Live wild-battle tactical sim ⚙ — docs/04 §7b wild row prototype.
+   * One battle entity = squadSize overworld soldiers; stats per battle tick at
+   * tickHz. Unwatched battles fast-forward acceleratedTicksPerWorldTick per
+   * world tick (same sim — canon: acceleration is the same simulation).
+   */
+  wildBattle: {
+    tickHz: number;
+    /** Battle clock in battle ticks (≈ 4 min demo at 4 Hz). Expiry ⇒ attacker auto-retreat (TIE path). */
+    clockTicks: number;
+    acceleratedTicksPerWorldTick: number;
+    /** Overworld soldiers one battle entity represents. */
+    squadSize: number;
+    /** Entities spawned per attacker wave (from remaining army stock). */
+    waveSize: number;
+    waveEveryTicks: number;
+    /** Master respawns ("runs") after the first life. */
+    masterRevives: number;
+    masterRespawnTicks: number;
+    /** Attacker units auto-acquire enemies within this range (m). */
+    acquireRange: number;
+    mobAggroRange: number;
+    /** Camp mobs chase no farther than this from their camp anchor. */
+    mobLeashRange: number;
+    towerHp: number;
+    towerDamage: number;
+    towerCooldownTicks: number;
+    towerRange: number;
+    masterHp: number;
+    masterDamage: number;
+    masterCooldownTicks: number;
+    masterRange: number;
+    masterSpeed: number;
+    /** Per-class entity stats (hp per squad, damage per hit, cooldown ticks, range m, speed m/tick). */
+    unitStats: Record<UnitClass, { hp: number; damage: number; cooldownTicks: number; range: number; speed: number }>;
+  };
 }
 
 const REQUIRED_SECTIONS: readonly (keyof Balance)[] = [
   'travel', 'development', 'tax', 'prosperity', 'food', 'population',
   'supply', 'morale', 'desertion', 'upkeep', 'units', 'pillageOccupy', 'draft', 'provisions', 'claims',
-  'intel', 'towns', 'wildRaids', 'developmentEffects', 'economy', 'training',
+  'intel', 'towns', 'wildRaids', 'developmentEffects', 'economy', 'training', 'wildBattle',
 ];
 
 function resolveBalancePath(): string {

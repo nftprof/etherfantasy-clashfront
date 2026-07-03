@@ -31,6 +31,8 @@ import {
 } from '@clashfront/shared';
 import {
   addGovernor,
+  applyWildBattleCommand,
+  armyEngagedIn,
   armyStrength,
   type BattleLogisticsRecord,
   claimTerritory,
@@ -60,11 +62,14 @@ import {
   type SettlementRecord,
   sortedIds,
   stepTicks,
+  stepWildBattle,
   supplyComponents,
   type TickOptions,
   type TrainingQueue,
   troopCount,
   type WalkInOutcome,
+  type WildBattleCmd,
+  type WildBattleState,
   type WildRaidRecord,
   type WorldState,
 } from '@clashfront/sim-engine';
@@ -112,6 +117,7 @@ function translateSimError(e: unknown): ApiError {
   if (msg.includes('non-negative integer')) return new ApiError(400, 'BAD_AMOUNT', msg);
   if (msg.includes('positive integer')) return new ApiError(400, 'BAD_AMOUNT', msg);
   if (msg.includes('still mustering')) return new ApiError(409, 'MUSTERING', msg);
+  if (msg.includes('engaged in battle')) return new ApiError(409, 'ENGAGED', msg);
   if (msg.includes('training queue busy')) return new ApiError(409, 'QUEUE_BUSY', msg);
   if (msg.includes('no level to raze')) return new ApiError(409, 'NOTHING_TO_RAZE', msg);
   return new ApiError(400, 'BAD_ORDER', msg);
@@ -125,6 +131,23 @@ export type GameEvent =
   | { type: 'army_raised'; tick: number; armyId: string; territoryId: string; parcelId: string; governorId: string; preset: string }
   | { type: 'march_ordered'; tick: number; armyId: string; governorId: string; fromParcelId: string; toParcelId: string; etaTick: number }
   | { type: 'army_arrived'; tick: number; armyId: string; governorId: string; parcelId: string }
+  | {
+      /**
+       * A LIVE wild battle started on a parcel (docs/04 §7b wild row): a player
+       * army is assaulting a monster lair in real time. Watch via WS
+       * {t:'battle_sub'}; the attacking owner may steer. Resolution arrives
+       * later as a normal battle_resolved.
+       */
+      type: 'battle_started';
+      tick: number;
+      battleId: string;
+      parcelId: string;
+      attackerGovernorIds: string[];
+      defenderGovernorIds: string[];
+      monsterName?: string;
+      attackerTroops: number;
+      defenderTroops: number;
+    }
   | {
       type: 'battle_resolved';
       tick: number;
