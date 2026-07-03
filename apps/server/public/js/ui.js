@@ -316,7 +316,22 @@ export function createUI({ store, map, orders }) {
         .map((d) => `${d.icon}${t.development[d.track]}`).join(' ');
       if (lv) html += `<div class="hint">Development: ${lv}</div>`;
     }
-    if (!wild && !mine) html += `<div class="hint">Select one of your armies, then click here to march on it.</div>`;
+    // Attack guidance — for ANY land you could march on: enemy parcels AND defended wild land
+    // (monster parcels are the first thing new players attack). The silent case that bit
+    // playtesting: a governor with NO army clicks a target expecting to attack and nothing
+    // explains why they can't — warn loudly and point at the fix, don't hint.
+    if (!mine && (!wild || t.garrison || t.garrisonBand)) {
+      if (!store.myArmies().length) {
+        const home = store.myTerritories()[0];
+        html += `<div class="warn no-army">⚠ <b>You have no army</b> — you can't march on this land without raising soldiers first.` +
+          (home
+            ? `<button class="primary" data-act="goto-raise" data-parcel="${home.parcelId ?? home.id}">⚔ Raise an army at ${esc(home.name ?? 'your land')}</button>`
+            : `<div class="hint">Claim a territory first, then raise soldiers there.</div>`) +
+          `</div>`;
+      } else {
+        html += `<div class="hint">Select one of your armies, then click here to march on it.</div>`;
+      }
+    }
     card.innerHTML = html;
     card.hidden = false;
   }
@@ -421,6 +436,9 @@ export function createUI({ store, map, orders }) {
     else if (btn.dataset.act === 'exhibition') { btn.disabled = true; orders.exhibition(btn.dataset.parcel); }
     else if (btn.dataset.act === 'claim' && t) { orders.claim(t.id, ovClaimSel || undefined); ovClaimSel = ''; }
     else if (btn.dataset.act === 'raise' && t) orders.raise(t.id, btn.dataset.preset);
+    else if (btn.dataset.act === 'goto-raise') { // no-army warning → jump home + open its card on the Raise buttons
+      map.gotoParcel(btn.dataset.parcel); map.pulseAt(btn.dataset.parcel, '#d9a441'); openCard(btn.dataset.parcel);
+    }
     else if (btn.dataset.dev && t) { btn.disabled = true; orders.develop(t.id, btn.dataset.dev); } // no double-buy before the re-render
     else if (btn.dataset.act === 'prov-open') { provDraft = { armyId: btn.dataset.army, food: 0, gold: 0, wood: 0 }; renderCard(); }
     else if (btn.dataset.act === 'prov-cancel') { provDraft = null; renderCard(); }

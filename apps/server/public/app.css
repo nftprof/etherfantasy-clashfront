@@ -167,6 +167,10 @@ button.danger  { background: #4a2320; border-color: #7a3a33; }
   color: var(--ink-faint); font-size: 15px; padding: 2px 5px; }
 #card .close:hover { color: #fff; }
 #card .hint { color: var(--ink-faint); font-size: 11.5px; margin-top: 6px; }
+/* no-army attack warning: loud (gold-bordered), with an inline "go raise" jump button */
+#card .warn.no-army { color: var(--gold); font-size: 12px; margin-top: 8px; padding: 7px 9px;
+  border: 1px solid rgba(217, 164, 65, .45); border-radius: 6px; background: rgba(217, 164, 65, .08); }
+#card .warn.no-army button { display: block; width: 100%; margin-top: 7px; }
 
 /* ── join overlay ── */
 #join { position: fixed; inset: 0; background: radial-gradient(ellipse at 50% 35%, #141c26, #07090d);
