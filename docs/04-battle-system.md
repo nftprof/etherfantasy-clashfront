@@ -358,9 +358,20 @@ the LAND HOLDER.**
   or to nearby empty land (the §7c retreat resolution). Sieges are thus naturally multi-wave
   campaigns of full MOBA matches.
 - **The battle resolves ON the game map** — a real simulation of these forces, never a stat
-  formula. Fully **spectatable** (watch live or review the replay), and players may **drop in
-  controlling a Master as the hero unit** (MOBA-style command); the player's own Hero — embodied
-  as one of the playable characters (Irene/Kai/Leah) — plays the same way.
+  formula.
+- **TWO CONTROL SURFACES, ONE BATTLE (owner, 2026-07-03):** every battle exposes two modes over
+  the SAME authoritative match:
+  1. **COMMAND MODE** — the general's top-down overlay (the overworld's battle viewer): watch
+     live, issue high-level orders — move your Master, focus targets, set the wave rally point.
+     One click from the overworld map; light enough to open for any battle you can see.
+  2. **HERO MODE** — the full 3D MOBA client on the same match: embody your Master (or your
+     Hero — Irene/Kai/Leah) at hero level with full MOBA combat. The 20–40 min experience.
+  **Seamless interpolation**: "Take the field" from command mode drops you into hero mode
+  mid-battle (same match ticket / possession model); "return to command" pops back out. The AI
+  drives your hero whenever no human is embodying it; the AI commands whenever no human steers.
+  Architecture: after battle-engine M1, the authoritative sim is the repurposed MOBA server and
+  command mode becomes a thin renderer/controller of its snapshots (a compact "command channel"
+  in the wire contract) — the overworld's 2D battle viewer is that channel's permanent client.
 
 **Parcel map design layer (owner, 2026-07-02 v0.2):**
 - Parcel GEOMETRY never changes; each parcel's **battle terrain is a designed map** (trees,

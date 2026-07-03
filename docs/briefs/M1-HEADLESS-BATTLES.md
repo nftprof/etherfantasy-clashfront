@@ -51,6 +51,15 @@
   Idempotency-Key = battleId. Seed from context (kill Date.now() seeding).
 - **D3**: headless runner — `runBattle(context) → report`, synchronous fast-forward of the same
   `step()` sim (golden-master pattern), bot brains for all heroes, checkpoint emission.
+- **D2b (command channel — owner 2026-07-03)**: alongside the hero-client protocol, the match
+  server must expose a COMMAND-MODE surface: (a) a compact top-down snapshot stream (entities as
+  {id, kind, team, x, z, hp} + structures + clock/score — think spectator feed at 2-4 Hz, far
+  lighter than the 30 Hz hero snapshots) and (b) command inputs from the army's owner:
+  {move officer, focus target, rally point} — validated like any input. The overworld's existing
+  2D battle viewer (apps/server/public/js/battle.js in the canon repo, WS battle_sub/battle_cmd
+  protocol) is the reference client and will attach to this channel after M1. Mode switching:
+  a player may hold a hero seat (E1 possession) and the command channel simultaneously;
+  commands apply to their side's AI units/officer only when no human embodies them.
 - **D2**: result callback POST to callbackUrl — winner/TIE, casualties per army, structure
   damage, hero contributions (raw, uncapped — the overworld applies HERO_IMPACT_MAX), duration,
   HMAC-signed (grow the loot-ticket pattern), retry until ack.

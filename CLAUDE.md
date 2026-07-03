@@ -79,6 +79,11 @@ export can be converted to the documented format. See `data/README.md`.
     (destructible/pillageable for materials); parcel-map PNG thumbnails texture the overworld
     (`docs/04` §7b, `docs/05` §9, reports/V02-RECONCILIATION.md).
 
+11. TWO CONTROL SURFACES (2026-07-03): every battle = one authoritative match with COMMAND MODE
+    (top-down overlay: watch + high-level orders — built in the demo as js/battle.js, the
+    permanent command-channel client) and HERO MODE (full 3D MOBA, embody Master/Hero), with
+    seamless mid-battle switching (possession model). M1 brief D2b specifies the command channel.
+
 ## 📜 v0.2 VISION BIBLE (2026-07-02): `docs/VISION-BIBLE-v0.2.md` + `docs/ADDENDUM-E-PentaPet-Species-Affinity.pdf`
 Overarching new spec from the product owner: PentaPets = the living population (workers/soldiers/
 units, species affinities), terraforming, geology/materials, blueprint NFTs, living cities.
