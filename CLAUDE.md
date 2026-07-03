@@ -167,7 +167,7 @@ a core session merges them.
 | "EF v2 Moba Server (bridge layer)" | match server | M1 allocate+callback (LIVE :8140 Singapore box) + telemetry bridge client; next: auto-register D2b channel from allocate, join tickets |
 | "EF v2 Moba Server (network)" | headless perf/netcode | headless lag fix (sync step() loop) — PVE tamper-proof verify engine |
 | "EF v2 Moba Server (maps)" | map generator | `briefs/MAP-GENERATOR.md` (registry, terraform, AI gardener, prompt-to-params) |
-| "EF Moba OP 48" (Cowork) | game-dev 3D client | hero-mode deep-link join + hero seat (one per USER) + joinUrl handback |
+| "EF Moba OP 48" (Cowork) | game-dev 3D client | ✅ 23 Masters = playable champions (element kits; recruited auto-cast, neutral passive; PentaPets stay units); ✅ deep-link transport (match+ticket in the existing join handshake, `EFM_JOINURL_TEMPLATE`). Open: ticket shape + seating (proposal in `briefs/ALLOCATE-CALLBACK-SCHEMA.md` §1b) |
 Seams: bridge-layer↔OP48 = join ticket format; maps↔bridge-layer = Battlefield JSON (`briefs/ALLOCATE-CALLBACK-SCHEMA.md`).
 
 ## Working rules

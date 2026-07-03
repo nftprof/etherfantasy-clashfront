@@ -52,6 +52,26 @@ Re-sending the same battleId MUST return the original `{matchId, joinDeadline}` 
 
 Response `201`: `{ "matchId": "efm_...", "joinDeadline": "<ISO8601>", "tickHz": 30 }`
 
+### 1b. Join tickets — PROPOSAL for the bridge-layer ↔ game-client seam (2026-07-03)
+
+Client transport is DONE (OP 48): the boot parser accepts `match` + `ticket` URL params and
+forwards both in the existing `{t:'join',v:2}` handshake; `window.EFM_JOINURL_TEMPLATE` exposes
+the URL format. Remaining: ticket shape + failure message + server-side seating. Proposal (uses
+the HMAC secret + patterns both sides already share — counter-proposals welcome, agree in your
+handoff doc and note the final shape here):
+
+- **Mint (match server, at allocate for `mode:"live"` and on demand):**
+  `ticket = base64url(payload) + "." + base64url(hmacSHA256(CF_BATTLE_HMAC_SECRET, payload))`
+  where `payload = {"m":"<matchId>","g":"<governorId>","u":"<userRef>","side":"A|B","exp":<unixSec>}`.
+  Short-lived (`exp` ≤ join deadline). One ticket per user per match; re-join with the same
+  ticket is allowed until `exp` (reconnects).
+- **Validate (match server, on `{t:'join'}` with match+ticket):** signature + `exp` + match is
+  this match ⇒ seat the player into THAT match's draft on side `side` (hero seat; ONE-HERO per
+  user). Reject ⇒ close with a typed failure the client can render:
+  `{t:'join_denied', code:'TICKET_EXPIRED'|'TICKET_INVALID'|'MATCH_ENDED'|'SEAT_TAKEN', msg}`.
+- **Flow to the button:** match server fills `EFM_JOINURL_TEMPLATE` → sends the result as
+  `joinUrl` in its `/bridge/battles/start` call → CF's "⚡ Take the field" opens it.
+
 ### `POST /internal/v1/matches/{matchId}/reinforce` (D1b — reserve now, M2 build)
 
 Body = one `armies[]` entry as above + `"side"`. Effect: officer spawns at `entryEdge`
