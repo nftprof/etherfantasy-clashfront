@@ -292,15 +292,44 @@ export function createBattle({ store, ui, send, ftue }) {
     ctx.setTransform(dpr * s, 0, 0, dpr * s, dpr * ox(), dpr * oy());
     const lw = (px) => px / s;
 
-    // bounds = the parcel's own shape
+    // bounds = the parcel's own shape ('square' = the bridge's legacy MOBA arena)
+    const square = field.mode === 'square';
     const bpath = new Path2D();
     field.bounds.forEach(([x, y], i) => (i === 0 ? bpath.moveTo(x, y) : bpath.lineTo(x, y)));
     bpath.closePath();
-    const grad = ctx.createLinearGradient(0, 0, field.size, field.size);
-    grad.addColorStop(0, '#33502c');
-    grad.addColorStop(1, '#28401f');
-    ctx.fillStyle = grad;
-    ctx.fill(bpath);
+    if (square) {
+      // Ghost of the real parcel behind the arena — the square battlefield
+      // sits fitted inside the land being fought over.
+      const poly = store.parcels.get(store.liveBattles.get(openId)?.parcelId)?.polygon;
+      if (poly && poly.length > 2) {
+        let mnx = Infinity, mny = Infinity, mxx = -Infinity, mxy = -Infinity;
+        for (const [x, y] of poly) {
+          if (x < mnx) mnx = x; if (y < mny) mny = y;
+          if (x > mxx) mxx = x; if (y > mxy) mxy = y;
+        }
+        const k = (field.size * 1.08) / Math.max(mxx - mnx, mxy - mny, 1e-9);
+        const gx = (field.size - (mxx - mnx) * k) / 2, gy = (field.size - (mxy - mny) * k) / 2;
+        ctx.beginPath();
+        poly.forEach(([x, y], i) => {
+          const px = gx + (x - mnx) * k, py = gy + (y - mny) * k;
+          i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+        });
+        ctx.closePath();
+        ctx.fillStyle = 'rgba(28,40,26,0.6)';
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(226,222,200,0.14)';
+        ctx.lineWidth = lw(1.2);
+        ctx.stroke();
+      }
+      ctx.fillStyle = '#2e4426'; // flat arena ground — bridge terrain comes later
+      ctx.fill(bpath);
+    } else {
+      const grad = ctx.createLinearGradient(0, 0, field.size, field.size);
+      grad.addColorStop(0, '#33502c');
+      grad.addColorStop(1, '#28401f');
+      ctx.fillStyle = grad;
+      ctx.fill(bpath);
+    }
     ctx.save();
     ctx.clip(bpath);
     for (const b of blotches ?? []) {
@@ -309,22 +338,24 @@ export function createBattle({ store, ui, send, ftue }) {
       ctx.ellipse(b.x, b.y, b.r, b.r * 0.7, b.k * 3, 0, 7);
       ctx.fill();
     }
-    // the ONE lane: worn dirt from spawn to heart
-    ctx.strokeStyle = 'rgba(168,146,96,0.20)';
-    ctx.lineWidth = 13;
-    ctx.lineCap = 'round';
-    ctx.beginPath();
-    ctx.moveTo(field.spawn.x, field.spawn.y);
-    ctx.lineTo(field.heart.x, field.heart.y);
-    ctx.stroke();
-    ctx.strokeStyle = 'rgba(190,168,116,0.22)';
-    ctx.lineWidth = 1.4;
-    ctx.setLineDash([4, 6]);
-    ctx.beginPath();
-    ctx.moveTo(field.spawn.x, field.spawn.y);
-    ctx.lineTo(field.heart.x, field.heart.y);
-    ctx.stroke();
-    ctx.setLineDash([]);
+    if (!square) {
+      // the ONE lane: worn dirt from spawn to heart
+      ctx.strokeStyle = 'rgba(168,146,96,0.20)';
+      ctx.lineWidth = 13;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(field.spawn.x, field.spawn.y);
+      ctx.lineTo(field.heart.x, field.heart.y);
+      ctx.stroke();
+      ctx.strokeStyle = 'rgba(190,168,116,0.22)';
+      ctx.lineWidth = 1.4;
+      ctx.setLineDash([4, 6]);
+      ctx.beginPath();
+      ctx.moveTo(field.spawn.x, field.spawn.y);
+      ctx.lineTo(field.heart.x, field.heart.y);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
 
     // terrain
     for (const o of field.obstacles) {
@@ -362,21 +393,49 @@ export function createBattle({ store, ui, send, ftue }) {
       }
     }
     ctx.restore();
-    ctx.strokeStyle = 'rgba(226,222,200,0.4)';
-    ctx.lineWidth = lw(1.6);
-    ctx.stroke(bpath);
+    if (square) {
+      // subtle double frame around the arena square
+      ctx.strokeStyle = 'rgba(226,222,200,0.14)';
+      ctx.lineWidth = lw(6);
+      ctx.stroke(bpath);
+      ctx.strokeStyle = 'rgba(226,222,200,0.5)';
+      ctx.lineWidth = lw(1.6);
+      ctx.stroke(bpath);
+    } else {
+      ctx.strokeStyle = 'rgba(226,222,200,0.4)';
+      ctx.lineWidth = lw(1.6);
+      ctx.stroke(bpath);
+    }
 
-    // spawn edge marker (attacker entry) + heart
     const pulse = 0.5 + 0.5 * Math.sin(now / 300);
-    ctx.strokeStyle = `rgba(77,163,255,${0.35 + 0.4 * pulse})`;
-    ctx.lineWidth = lw(2);
-    ctx.beginPath();
-    ctx.arc(field.spawn.x, field.spawn.y, 6 + pulse * 1.5, 0, 7);
-    ctx.stroke();
-    ctx.fillStyle = 'rgba(224,72,60,0.25)';
-    ctx.beginPath();
-    ctx.arc(field.heart.x, field.heart.y, 5, 0, 7);
-    ctx.fill();
+    if (!square) {
+      // spawn edge marker (attacker entry) + heart
+      ctx.strokeStyle = `rgba(77,163,255,${0.35 + 0.4 * pulse})`;
+      ctx.lineWidth = lw(2);
+      ctx.beginPath();
+      ctx.arc(field.spawn.x, field.spawn.y, 6 + pulse * 1.5, 0, 7);
+      ctx.stroke();
+      ctx.fillStyle = 'rgba(224,72,60,0.25)';
+      ctx.beginPath();
+      ctx.arc(field.heart.x, field.heart.y, 5, 0, 7);
+      ctx.fill();
+    }
+
+    // wave spawn points / arrival lanes (bridge battles; reinforcements open new fronts)
+    for (const sp of cur.snap.spawns ?? []) {
+      const a = 0.3 + 0.35 * pulse;
+      ctx.strokeStyle = sp.s === 'A' ? `rgba(77,163,255,${a})` : `rgba(224,72,60,${a})`;
+      ctx.lineWidth = lw(2);
+      ctx.beginPath();
+      ctx.arc(sp.x, sp.y, 6 + pulse * 1.5, 0, 7);
+      ctx.stroke();
+      ctx.setLineDash([lw(3), lw(3)]);
+      ctx.lineWidth = lw(1);
+      ctx.beginPath();
+      ctx.arc(sp.x, sp.y, 10, 0, 7);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
 
     // rally flag
     const rally = cur.snap.rally;
@@ -534,11 +593,17 @@ export function createBattle({ store, ui, send, ftue }) {
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       const mine = store.liveBattles.get(openId)?.mine ?? false;
-      const txt = ended === 'ATTACKER'
-        ? (mine ? '⚔ VICTORY — the lair is broken' : '⚔ The attackers take the field')
-        : ended === 'DEFENDER'
-          ? (mine ? '💀 DEFEAT — the wilds hold' : '💀 The wilds hold their ground')
-          : '🏳 STALEMATE — the clock ran out';
+      const txt = field?.bridge
+        ? (ended === 'ATTACKER'
+          ? `⚔ VICTORY — ${field.attackerLabel ?? 'the attackers'} take the field`
+          : ended === 'DEFENDER'
+            ? `🛡 DEFEAT — ${field.defenderLabel ?? 'the defenders'} hold`
+            : '🏳 STALEMATE — the clock ran out')
+        : ended === 'ATTACKER'
+          ? (mine ? '⚔ VICTORY — the lair is broken' : '⚔ The attackers take the field')
+          : ended === 'DEFENDER'
+            ? (mine ? '💀 DEFEAT — the wilds hold' : '💀 The wilds hold their ground')
+            : '🏳 STALEMATE — the clock ran out';
       ctx.fillStyle = ended === 'ATTACKER' ? '#ffd76a' : ended === 'DEFENDER' ? '#e0483c' : '#9fb0c4';
       ctx.fillText(txt, w / 2, h / 2);
       ctx.textAlign = 'start';
@@ -586,26 +651,36 @@ export function createBattle({ store, ui, send, ftue }) {
     const mobs = snap ? `<span class="bt-stat" title="Wild defenders remaining">☠ <b>${snap.mobs}</b><em>/${snap.mobsStart}</em></span>` : '';
     const towers = snap ? `<span class="bt-stat" title="Defender towers standing">🗼 <b>${snap.towersAlive}</b><em>/${snap.towersStart}</em></span>` : '';
     const prog = snap && snap.mobsStart > 0 ? Math.round((1 - snap.mobs / snap.mobsStart) * 100) : 0;
+    const canSteer = mine || !!field?.openCommands; // exhibition bridges may open commands to any viewer
+    const stale = !!snap?.stale && !ended;          // relay went quiet (bridge battles)
+    const name = esc(terr?.name ?? lb?.parcelId ?? '…');
+    const title = field?.bridge
+      ? `<b>⚔ ${esc(field.attackerLabel ?? 'Attackers')} at ${name}</b>` +
+        `<span class="bt-vs">vs ${esc(field.defenderLabel ?? 'Defenders')}</span>` +
+        (field.exhibition ? `<span class="bt-exh" title="Exhibition — display only, no ground changes hands">EXHIBITION</span>` : '')
+      : `<b>⚔ ${mine ? 'Your assault on' : 'Assault on'} ${name}</b>` +
+        (monster ? `<span class="bt-vs">vs ☠ ${esc(monster)}</span>` : '');
     hud.innerHTML =
-      `<div class="bt-title"><span class="bt-live${ended ? ' done' : ''}">●</span>` +
-      `<b>⚔ ${mine ? 'Your assault on' : 'Assault on'} ${esc(terr?.name ?? lb?.parcelId ?? '…')}</b>` +
-      (monster ? `<span class="bt-vs">vs ☠ ${esc(monster)}</span>` : '') + `</div>` +
+      `<div class="bt-title"><span class="bt-live${ended ? ' done' : stale ? ' stale' : ''}">●</span>` +
+      title + `</div>` +
       `<div class="bt-stats">${masterBit}${waves}${mobs}${towers}` +
       `<span class="bt-stat" title="Battle clock — expiry means the attack guttered out">⏱ <b>${clock}</b></span>` +
       `<span class="bt-prog" title="Lair broken at 100%"><span style="width:${prog}%"></span></span></div>` +
       `<div class="bt-btns">` +
-      (mine && !ended
+      (canSteer && !ended
         ? `<button class="bt-steer${steer ? ' on' : ''}" data-bt="steer">${steer ? '🎮 Steering' : '🎮 Steer'}</button>` +
           `<button class="bt-hero" disabled title="Hero Mode — drop into this battle as your Master (full MOBA combat). Coming soon.">⚡ Take the field<span class="soon">SOON</span></button>`
         : '') +
       `<button data-bt="leave">✕ Leave</button></div>`;
     foot.innerHTML = ended
       ? `<span>The armies disperse — outcome lands on the war map…</span>`
-      : steer
-        ? `<span><b>Click</b>: move Master · <b>click an enemy</b>: focus fire · <b>right-click</b>: rally the waves</span>`
-        : mine
-          ? `<span>Watching. Press <b>🎮 Steer</b> to command your Master and waves.</span>`
-          : `<span>Watching a battle for ${esc(terr?.name ?? 'wild land')} — spectator only.</span>`;
+      : stale
+        ? `<span class="bad">⚠ Signal lost — awaiting the battle relay…</span>`
+        : steer
+          ? `<span><b>Click</b>: move Master · <b>click an enemy</b>: focus fire · <b>right-click</b>: rally the waves</span>`
+          : canSteer
+            ? `<span>Watching. Press <b>🎮 Steer</b> to command your Master and waves.</span>`
+            : `<span>Watching a battle for ${esc(terr?.name ?? 'wild land')} — spectator only.</span>`;
   }
 
   hud.addEventListener('click', (e) => {

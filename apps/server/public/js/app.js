@@ -209,13 +209,17 @@ function handleEvents(events) {
   for (const ev of events) {
     switch (ev.type) {
       case 'battle_started': {
-        // LIVE wild battle (docs/04 §7b): the parcel is a running fight now.
+        // LIVE wild battle (docs/04 §7b) or a bridge-relayed MOBA match:
+        // the parcel is a running fight now.
         const mine = ev.attackerGovernorIds.includes(store.me?.governorId);
-        const who = ev.monsterName ? `☠ ${esc(ev.monsterName)}` : 'wild defenders';
+        const who = ev.monsterName ? `☠ ${esc(ev.monsterName)}`
+          : ev.defenderLabel ? esc(ev.defenderLabel) : 'wild defenders';
+        const atkName = mine ? 'Your army'
+          : ev.armyLabel ? esc(ev.armyLabel) : esc(store.playerName(ev.attackerGovernorIds[0]));
         const openViewer = () => battle.open(ev.battleId);
         ui.toast(`⚔ Battle joined at ${parcelName(ev.parcelId)}!`,
-          `${mine ? 'Your army' : esc(store.playerName(ev.attackerGovernorIds[0]))} engages ${who} ` +
-          `(${ev.attackerTroops}⚔ vs ${ev.defenderTroops}) — <b>click to ${mine ? 'command' : 'watch'} LIVE</b>`,
+          `${atkName} engages ${who} ` +
+          `(${ev.attackerTroops}⚔ vs ${ev.defenderTroops}) — <b>click to ${mine || ev.open ? 'command' : 'watch'} LIVE</b>`,
           'battle', ev.parcelId, 10_000, openViewer);
         ui.feedPush(`<span class="t-battle">⚔</span> LIVE battle at ${parcelName(ev.parcelId)}${mine ? ' — yours' : ''}`, 't-battle', ev.parcelId);
         if (mine) {
@@ -234,16 +238,23 @@ function handleEvents(events) {
         map.fireAt(ev.parcelId);
         const winners = ev.winner === 'ATTACKER' ? ev.attackerGovernorIds : ev.defenderGovernorIds;
         const losers = ev.winner === 'ATTACKER' ? ev.defenderGovernorIds : ev.attackerGovernorIds;
+        // Bridge exhibitions have labels instead of governors (display-only outcome).
+        const wLbl = ev.winner === 'ATTACKER' ? ev.attackerLabel : ev.defenderLabel;
+        const lLbl = ev.winner === 'ATTACKER' ? ev.defenderLabel : ev.attackerLabel;
         const ccTier = store.battles.get(ev.battleId)?.logistics?.commandCenterTier ?? 0;
-        const txt = `${nameOf(winners)} crushed ${nameOf(losers)} (${ev.attackerScore}–${ev.defenderScore})` +
-          (ccTier > 0 ? ` — ${CC_NAMES[ccTier]} raised` : '');
+        const txt = `${winners.length ? nameOf(winners) : esc(wLbl ?? 'Attackers')} crushed ` +
+          `${losers.length ? nameOf(losers) : esc(lLbl ?? 'Defenders')} (${ev.attackerScore}–${ev.defenderScore})` +
+          (ccTier > 0 ? ` — ${CC_NAMES[ccTier]} raised` : '') +
+          (ev.exhibition ? ' — exhibition, no ground changes hands' : '');
         ui.toast(`⚔ Battle at ${parcelName(ev.parcelId)}!`, txt, 'battle', ev.parcelId, 7000);
         ui.feedPush(`<span class="t-battle">⚔</span> ${parcelName(ev.parcelId)}: ${txt}`, 't-battle', ev.parcelId);
         break;
       }
       case 'battle_tied': {
         map.smokeAt(ev.parcelId); // gray smoke — the battle guttered out, nothing burned down
-        const txt = `${nameOf(ev.attackerGovernorIds)} vs ${nameOf(ev.defenderGovernorIds)} — no ground changed hands`;
+        const aName = ev.attackerGovernorIds.length ? nameOf(ev.attackerGovernorIds) : esc(ev.attackerLabel ?? 'Attackers');
+        const dName = ev.defenderGovernorIds.length ? nameOf(ev.defenderGovernorIds) : esc(ev.defenderLabel ?? 'Defenders');
+        const txt = `${aName} vs ${dName} — no ground changed hands`;
         ui.toast(`⚔️ Stalemate at ${parcelName(ev.parcelId)}`, 'The clock ran out — attackers withdraw.', 'tie', ev.parcelId, 8000);
         ui.feedPush(`<span class="t-tie">🏳</span> Stalemate at ${parcelName(ev.parcelId)}: ${txt}`, 't-tie', ev.parcelId);
         break;

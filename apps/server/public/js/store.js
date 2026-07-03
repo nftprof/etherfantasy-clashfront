@@ -117,6 +117,8 @@ export function createStore() {
           this.putLiveBattle({
             id: ev.battleId, parcelId: ev.parcelId, monsterName: ev.monsterName,
             attackerGovernorIds: ev.attackerGovernorIds, defenderGovernorIds: ev.defenderGovernorIds,
+            // bridge exhibitions (relayed MOBA matches) carry display labels
+            exhibition: ev.exhibition, attackerLabel: ev.armyLabel, defenderLabel: ev.defenderLabel,
           });
         }
         if (ev.type === 'battle_resolved') this.liveBattles.delete(ev.battleId); // settled — badge off

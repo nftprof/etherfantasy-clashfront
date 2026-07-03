@@ -65,6 +65,13 @@ export interface BridgeSnapshotIn {
   waves?: { stock: number; stockStart: number };
   /** Master revives remaining ("runs"), if the match models them. */
   runs?: number;
+  /**
+   * Active wave spawn points / arrival lanes. Reinforcement arrivals
+   * (docs/04 §7b, canon 2026-07-03) open a NEW LANE at the approach-direction
+   * edge whose waves path directly to the enemy main base — command mode
+   * renders each spawner so the general sees every front.
+   */
+  spawns?: { id: string; team: BridgeTeam; x: number; z: number; label?: string }[];
 }
 
 export interface BridgeStartIn {
@@ -338,6 +345,12 @@ export class BridgeHub {
         mh,
       });
     }
+    const spawns: Record<string, unknown>[] = [];
+    for (const sp of s.spawns ?? []) {
+      if (typeof sp?.id !== 'string' || typeof sp.x !== 'number' || typeof sp.z !== 'number') continue;
+      const p = mobaToViewer(sp.x, sp.z, b.size);
+      spawns.push({ id: sp.id, s: sp.team === 'A' ? 'A' : 'D', x: r1(p.x), y: r1(p.y), ...(sp.label !== undefined ? { label: sp.label } : {}) });
+    }
     const towersAlive = towers.filter((t) => (t['hp'] as number) > 0).length;
     b.mobsStart = Math.max(b.mobsStart, defendersAlive);
     b.towersStart = Math.max(b.towersStart, towers.length);
@@ -356,6 +369,7 @@ export class BridgeHub {
       mobsStart: Math.max(1, b.mobsStart),
       towersAlive,
       towersStart: b.towersStart,
+      ...(spawns.length > 0 ? { spawns } : {}),
       ...(s.score !== undefined ? { score: s.score } : {}),
       ...(b.rally !== undefined ? { rally: b.rally } : {}),
       ...(b.focus !== undefined ? { focus: b.focus } : {}),

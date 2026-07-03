@@ -428,6 +428,9 @@ button.danger  { background: #4a2320; border-color: #7a3a33; }
 #battle .bt-vs { color: var(--bad); font-size: 12px; white-space: nowrap; }
 #battle .bt-live { color: #ff5a3c; animation: btPulse 1.1s ease-in-out infinite; font-size: 10px; }
 #battle .bt-live.done { color: #6c7683; animation: none; }
+#battle .bt-live.stale { color: #e0b23c; } /* bridge relay quiet — signal lost */
+#battle .bt-exh { font-size: 9px; font-weight: 700; letter-spacing: 1px; color: var(--gold);
+  border: 1px solid rgba(255, 215, 106, 0.45); border-radius: 3px; padding: 1px 5px; white-space: nowrap; }
 @keyframes btPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.25; } }
 #battle .bt-stats { display: flex; align-items: center; gap: 12px; flex: 1; flex-wrap: wrap; }
 #battle .bt-stat { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--ink); }
