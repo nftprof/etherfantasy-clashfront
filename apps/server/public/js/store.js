@@ -24,6 +24,7 @@ export function createStore() {
     terrByParcel: new Map(),   // parcelId → TerritoryView
     armies: new Map(),         // armyId → ArmyView (live only)
     battles: new Map(),        // battleId → BattleView
+    liveBattles: new Map(),    // battleId → {id, parcelId, attacker/defenderGovernorIds, monsterName?, mine}
 
     // economy telemetry (FS3): latest GET /api/economy payload (boot + dashboard refresh)
     econ: null,
@@ -73,6 +74,8 @@ export function createStore() {
       for (const a of state.armies) this.putArmy(a);
       this.battles.clear();
       for (const b of state.battles) this.battles.set(b.id, b);
+      this.liveBattles.clear();
+      for (const b of state.liveBattles ?? []) this.putLiveBattle(b);
       if (state.my) {
         this.ctBalance = state.my.ctBalance;
         this.officers = state.my.officers;
@@ -94,6 +97,13 @@ export function createStore() {
       if (a.hidden || a.state === 'DISBANDED') this.armies.delete(a.id);
       else this.armies.set(a.id, a);
     },
+    /** RUNNING wild battle (docs/04 §7b) — map badge + viewer entry point. */
+    putLiveBattle(b) {
+      this.liveBattles.set(b.id, {
+        ...b,
+        mine: (b.attackerGovernorIds ?? []).includes(this.me?.governorId),
+      });
+    },
 
     /** WS {t:'tick'} message → apply deltas. Events are handled by the caller. */
     applyTick(msg) {
@@ -103,6 +113,13 @@ export function createStore() {
       for (const a of msg.deltas.armies) this.putArmy(a);
       for (const b of msg.deltas.battles) this.battles.set(b.id, b);
       for (const ev of msg.events) {
+        if (ev.type === 'battle_started') {
+          this.putLiveBattle({
+            id: ev.battleId, parcelId: ev.parcelId, monsterName: ev.monsterName,
+            attackerGovernorIds: ev.attackerGovernorIds, defenderGovernorIds: ev.defenderGovernorIds,
+          });
+        }
+        if (ev.type === 'battle_resolved') this.liveBattles.delete(ev.battleId); // settled — badge off
         if (ev.type === 'player_joined') {
           this.players.set(ev.governorId, { governorId: ev.governorId, name: ev.name, color: ev.color, kind: 'PLAYER' });
         }

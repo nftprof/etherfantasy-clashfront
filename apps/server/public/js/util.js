@@ -228,3 +228,71 @@ export function innerPoint(poly, centroid) {
 export function easeInOut(t) {
   return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 }
+
+// ── Officer avatars ("personal touch", PO 2026-07-03) ─────────────────────────
+// Convention: static portrait at /avatars/<slug>.png (slug = lowercase base
+// name, join-suffix stripped: "Irene 2" → irene, "Death_Jinook" → death_jinook).
+// FUTURE: per-officer NFT image URLs — swap the source in officerAvatarUrl()
+// only; every render site goes through avatarHtml().
+
+const HERO_BASES = new Set(['irene', 'kai', 'leah']);
+/** URLs that 404'd once this session — never re-probed (no console spam). */
+export const missingAvatars = new Set();
+
+function officerSlug(name) {
+  return String(name ?? '').replace(/\s+\d+$/, '').trim().toLowerCase();
+}
+
+/** The single avatar-source lookup (future: officer.imageUrl from the NFT). */
+export function officerAvatarUrl(officer) {
+  const slug = officerSlug(officer?.name);
+  return slug ? `/avatars/${encodeURIComponent(slug)}.png` : null;
+}
+
+export function isHeroOfficer(name) {
+  return HERO_BASES.has(officerSlug(name));
+}
+
+/** Deterministic medallion hue from the officer's name. */
+export function nameHue(name) {
+  let h = 0;
+  const s = officerSlug(name);
+  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0;
+  return (h >>> 0) % 360;
+}
+
+/**
+ * Round officer avatar: portrait image when present, else a generated
+ * medallion (initials on a name-hued disc). Ring color = officer type
+ * (gold Hero / silver Master). The <img> onerror registers the miss and
+ * removes itself — initials underneath show through; nothing re-probes.
+ */
+export function avatarHtml(officer, px = 18) {
+  const name = officer?.name ?? '?';
+  const url = officerAvatarUrl(officer);
+  const initials = esc(
+    officerSlug(name).split(/[_\s-]+/).filter(Boolean).map((w) => w[0]).join('').slice(0, 2).toUpperCase() || '?',
+  );
+  const cls = isHeroOfficer(name) ? 'av-hero' : 'av-master';
+  const img = url && !missingAvatars.has(url)
+    ? `<img src="${url}" alt="" loading="lazy" onerror="this.dispatchEvent(new CustomEvent('avmiss',{bubbles:true}));this.remove()">`
+    : '';
+  return `<span class="avatar ${cls}" style="--av:${px}px;--avh:${nameHue(name)}" title="${esc(name)}"><i>${initials}</i>${img}</span>`;
+}
+
+/** One-time wiring: record 404'd avatar URLs so re-renders skip the <img> entirely. */
+export function initAvatarMissTracking() {
+  document.addEventListener('avmiss', (e) => {
+    const src = e.target?.getAttribute?.('src');
+    if (src) missingAvatars.add(src);
+  });
+}
+
+/** Warm the browser cache for the always-present Hero portraits. */
+export function preloadHeroAvatars() {
+  for (const slug of HERO_BASES) {
+    const img = new Image();
+    img.onerror = () => missingAvatars.add(`/avatars/${slug}.png`);
+    img.src = `/avatars/${slug}.png`;
+  }
+}

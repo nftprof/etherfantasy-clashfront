@@ -9,7 +9,8 @@ import { createMap } from './map.js';
 import { createUI } from './ui.js';
 import { createFTUE } from './ftue.js';
 import { createEcon } from './econ.js';
-import { esc, fmtCT, fmtDur, fmtProv } from './util.js';
+import { createBattle } from './battle.js';
+import { esc, fmtCT, fmtDur, fmtProv, initAvatarMissTracking, preloadHeroAvatars } from './util.js';
 
 const TOKEN_KEY = 'cf_token';
 const store = createStore();
@@ -117,6 +118,8 @@ const orders = {
    * post-victory choices, walk-in choiceId for bloodless town entries (F2).
    * Returns true on success (the modal closes only then).
    */
+  /** Open the LIVE battle viewer (parcel-card "Watch"/"Command" buttons). */
+  watchBattle(battleId) { battle.open(battleId); },
   async choice(choiceId, action, overseerId) {
     const pc = store.pendingChoices.get(choiceId);
     try {
@@ -160,6 +163,10 @@ const map = createMap(document.getElementById('map'), store, {
 const ui = createUI({ store, map, orders });
 const ftue = createFTUE({ store, map, ui });
 const econ = createEcon({ store, map, ui }); // FS3 — 💰 economy dashboard
+// LIVE wild-battle viewer (docs/04 §7b) — WS battle channel through the live socket.
+const battle = createBattle({ store, ui, send: (m) => ws?.send(m) });
+initAvatarMissTracking(); // officer avatars: 404s degrade to medallions, once, silently
+preloadHeroAvatars();
 
 document.getElementById('btn-tutorial').addEventListener('click', (e) => {
   e.preventDefault();
@@ -200,6 +207,24 @@ function handleEvents(events) {
   );
   for (const ev of events) {
     switch (ev.type) {
+      case 'battle_started': {
+        // LIVE wild battle (docs/04 §7b): the parcel is a running fight now.
+        const mine = ev.attackerGovernorIds.includes(store.me?.governorId);
+        const who = ev.monsterName ? `☠ ${esc(ev.monsterName)}` : 'wild defenders';
+        const openViewer = () => battle.open(ev.battleId);
+        ui.toast(`⚔ Battle joined at ${parcelName(ev.parcelId)}!`,
+          `${mine ? 'Your army' : esc(store.playerName(ev.attackerGovernorIds[0]))} engages ${who} ` +
+          `(${ev.attackerTroops}⚔ vs ${ev.defenderTroops}) — <b>click to ${mine ? 'command' : 'watch'} LIVE</b>`,
+          'battle', ev.parcelId, 10_000, openViewer);
+        ui.feedPush(`<span class="t-battle">⚔</span> LIVE battle at ${parcelName(ev.parcelId)}${mine ? ' — yours' : ''}`, 't-battle', ev.parcelId);
+        if (mine) {
+          ftue.tip('battle_live');
+          // Your assault: jump straight into the fight (unless the tutorial owns
+          // the screen — its coach-marks would fight the overlay; the toast invites instead).
+          if (!ftue.running) openViewer();
+        }
+        break;
+      }
       case 'battle_resolved': {
         // DRAW battles never show a winner — battle_tied (same tick) carries the stalemate story.
         if (ev.winner === 'DRAW' || ev.outcome === 'TIE') break;
@@ -332,9 +357,11 @@ function openWS() {
   ws = connectWS(token, {
     onStatus: (s) => ui.setConn(s),
     onMessage: (msg) => {
+      if (typeof msg.t === 'string' && msg.t.startsWith('battle_')) { battle.onMsg(msg); return; }
       if (msg.t !== 'tick') return;
       store.applyTick(msg);   // deltas first, so event rendering sees fresh views
       handleEvents(msg.events);
+      battle.onWorldEvents(msg.events); // close the viewer if its battle settled
     },
     onReconnect: () => { refreshState().catch(() => showJoin()); },
   });
@@ -391,7 +418,7 @@ function enterWorld() {
 }
 
 // Debug/demo hook (also used by the scripted Playwright walkthrough).
-window.CF = { store, map, orders, ftue, ui, econ };
+window.CF = { store, map, orders, ftue, ui, econ, battle };
 
 boot().catch((e) => {
   console.error('[client] boot failed:', e);

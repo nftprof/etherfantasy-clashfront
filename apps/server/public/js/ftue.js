@@ -357,6 +357,7 @@ export function createFTUE({ store, map, ui }) {
       id: 'battle',
       goal: () => {
         if (battlePhase === 'fired') return 'Battle!';
+        if ([...store.liveBattles.values()].some((b) => b.mine)) return '⚔ Battle raging LIVE';
         const a = store.myArmies().find((x) => x.state === 'MARCHING');
         return a?.etaTick !== undefined
           ? `Army marching — ETA ${fmtDur(store.ticksToMs(a.etaTick - store.tickFloat()))}`
@@ -366,7 +367,7 @@ export function createFTUE({ store, map, ui }) {
         : battleOutcome === 'tie' ? '🏳 Stalemate'
           : battleOutcome === 'loss' ? '💀 Defeat' : '⚔ Battle!',
       body: () => battlePhase !== 'fired'
-        ? 'Real time — distance is a weapon. The battle resolves on contact, and everyone can see you coming.'
+        ? 'Real time — distance is a weapon. On contact with wild monsters the battle goes <b>LIVE</b> — a real fight on that land. Click its ⚔ toast or 🔥 map badge to watch or even steer it.'
         : battleOutcome === 'tie'
           ? 'Evenly matched — the clock ran out and your attackers withdrew. Bring 1.5× strength next time.'
           : battleOutcome === 'loss'
@@ -495,8 +496,11 @@ export function createFTUE({ store, map, ui }) {
     const s = steps[stepIx];
     if (s.done?.()) { advance({ flash: true }); return; }
     // March ended with no battle (empty destination): re-aim and re-brief.
+    // A RUNNING live wild battle of ours counts as "battle underway" — the
+    // resolution event arrives when it settles (docs/04 §7b).
     if (s.id === 'battle' && battlePhase === 'wait' && !flags.battled &&
-        !store.myArmies().some((a) => a.state === 'MARCHING')) {
+        !store.myArmies().some((a) => a.state === 'MARCHING') &&
+        ![...store.liveBattles.values()].some((b) => b.mine)) {
       gotoStep(stepIndex('march'));
     }
   }
@@ -551,6 +555,11 @@ export function createFTUE({ store, map, ui }) {
       anchor: () => [...document.querySelectorAll('#march-popover .warn')].find((el) => el.textContent.includes('Low food')),
       title: '🍞 Low food',
       text: 'An underfed army fights weak and can starve mid-march. Provision before long campaigns — food is the battle clock.' },
+    { key: 'battle_live', group: 'Combat & Intel', summary: 'Wild battles run LIVE — watch them or steer them',
+      anchor: () => document.querySelector('#battle:not([hidden]) .bt-hud') ??
+        document.querySelector('#toasts .toast.battle') ?? document.getElementById('toasts'),
+      title: '🔥 LIVE battle',
+      text: 'Wild battles are real fights: your waves storm the parcel from the map edge against mobs and towers. Watch — or take command: click to move your Master, click an enemy to focus fire, right-click to rally the waves. Unwatched battles fast-forward.' },
     { key: 'stalemate', group: 'Combat & Intel', summary: 'Even odds end in a draw — bring 1.5× strength',
       anchor: () => document.querySelector('#toasts .toast') ?? document.getElementById('toasts'),
       title: '🏳 Stalemate',
@@ -842,6 +851,8 @@ export function createFTUE({ store, map, ui }) {
     maybeStart, restart, skip, onEvents, openLibrary,
     tip: fireTip, // one-shot contextual tips (app.js fires event-driven ones)
     get active() { return active; },
+    /** True while the guided tutorial owns the screen (app.js defers auto-overlays). */
+    get running() { return active; },
     get step() { return steps[stepIx]?.id; },
     get stepIndex() { return stepIx; },
     get suggestedClaim() { return suggestedClaim; },

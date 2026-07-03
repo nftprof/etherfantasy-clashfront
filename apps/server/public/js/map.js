@@ -519,6 +519,23 @@ export function createMap(canvas, store, handlers) {
       });
     }
 
+    // LIVE wild battles (docs/04 §7b): continuous flame on the parcel + a
+    // pulsing screen-space badge — the war is watchable while it burns.
+    for (const lb of store.liveBattles.values()) {
+      const c = store.parcels.get(lb.parcelId)?.center;
+      if (!c) continue;
+      drawFire({ x: c[0], y: c[1], t0: 0, seed: ((c[0] * 7.3 + c[1] * 3.1) % 7 + 7) % 7 }, 0.08, now);
+      const [bx, by] = toScreen(c[0], c[1]);
+      if (bx >= -90 && bx <= w + 90 && by >= -60 && by <= h + 60) {
+        badges.push({
+          sx: bx, sy: by - 30,
+          text: lb.mine ? '⚔ LIVE — your battle' : '⚔ LIVE',
+          color: '#ff9a3d',
+          alpha: 0.72 + 0.28 * Math.sin(now / 240),
+        });
+      }
+    }
+
     // selected army ring (fan-out aware)
     if (selectedArmyId) {
       const a = store.armies.get(selectedArmyId);
@@ -772,6 +789,7 @@ export function createMap(canvas, store, handlers) {
   // ── frame loop (draw only when needed) ─────────────────────────────────────
   function animating() {
     if (guide) return true; // FTUE marks pulse continuously while set
+    if (store.liveBattles.size) return true; // LIVE battle flames + badge pulse
     if (flight || fires.length || smokes.length || retreats.length || pulses.length || smolders.size) return true;
     for (const a of store.armies.values()) if (a.state === 'MARCHING' || a.mustering) return true; // muster markers pulse
     return false;

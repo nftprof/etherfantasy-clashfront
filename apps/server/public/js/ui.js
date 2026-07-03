@@ -5,8 +5,8 @@
  * ETA countdowns.
  */
 import {
-  battleFoodNeed, bfsPath, ccTierFor, DEV, DEV_TRACKS, devCostCtUnits, esc, fmtBand, fmtCT,
-  fmtDur, foodSteps, fmtProv, PRESETS, presetCostCt, PROV, provisionCostCtUnits, shortId,
+  avatarHtml, battleFoodNeed, bfsPath, ccTierFor, DEV, DEV_TRACKS, devCostCtUnits, esc, fmtBand,
+  fmtCT, fmtDur, foodSteps, fmtProv, PRESETS, presetCostCt, PROV, provisionCostCtUnits, shortId,
   strengthEst, troopsEst,
 } from './util.js';
 
@@ -71,9 +71,10 @@ export function createUI({ store, map, orders }) {
         : a.state === 'MARCHING'
           ? `→ ${fmtDur(store.ticksToMs((a.etaTick ?? tf) - tf))}`
           : `${a.troops}⚔`;
+      const av = a.heroName ? avatarHtml({ name: a.heroName }, 16) : '';
       const label = a.state === 'MARCHING'
-        ? `${esc(a.heroName ?? shortId(a.id))} marching`
-        : `${esc(a.heroName ?? shortId(a.id))} @ ${esc(here?.name ?? a.parcelId)}`;
+        ? `${av}${esc(a.heroName ?? shortId(a.id))} marching`
+        : `${av}${esc(a.heroName ?? shortId(a.id))} @ ${esc(here?.name ?? a.parcelId)}`;
       if (must) {
         return row(`data-army="${a.id}"`, store.color(a.governorId), label, meta) +
           `<div class="rail-sub muster" data-army="${a.id}">` +
@@ -96,7 +97,7 @@ export function createUI({ store, map, orders }) {
       const meta = duty === undefined ? 'free' : duty.kind === 'leads' ? 'leads army' : 'oversees';
       const target = duty?.kind === 'leads' ? `data-army="${duty.army.id}"`
         : duty?.kind === 'oversees' ? `data-parcel="${duty.territory.parcelId}"` : `data-officer="${o.id}"`;
-      return row(target, duty ? '#7d8a99' : '#58b06b', esc(o.name), meta);
+      return row(target, duty ? null : '#58b06b', `${avatarHtml(o, 18)}${esc(o.name)}`, meta);
     }).join('');
     html += sec(`Officers (${free}/${store.officers.length} free)`, officers);
 
@@ -222,7 +223,7 @@ export function createUI({ store, map, orders }) {
 
     let html = `<button class="close" data-act="close">✕</button>` +
       `<h3><span class="dot" style="background:${color}"></span>${town}${esc(t.name)}</h3>` +
-      `<div class="owner">${owner}${overseer ? ` · overseen by ${esc(overseer.name)}` : ''}` +
+      `<div class="owner">${owner}${overseer ? ` · overseen by ${avatarHtml(overseer, 15)} ${esc(overseer.name)}` : ''}` +
       `${mine ? '' : ` · ${INTEL_CHIP[grade]}`}</div>` +
       `<div class="stats"><span>Prosperity <b>${t.prosperity}</b></span><span>Morale <b>${t.morale}</b></span>` +
       `<span>Population <b>${t.population.toLocaleString()}</b></span></div>`;
@@ -240,6 +241,16 @@ export function createUI({ store, map, orders }) {
         ` — ${fmtBand(t.garrisonBand.band)} strength<b class="tt-fuzzy">?</b> <span class="est">(estimate)</span></div>`;
     }
 
+    // LIVE battle raging here (docs/04 §7b): watch anyone's, command your own.
+    const lb = [...store.liveBattles.values()].find((x) => x.parcelId === cardParcelId);
+    if (lb) {
+      html += `<div class="live-battle">🔥 <b>Battle raging</b> — ` +
+        (lb.mine ? 'your assault is underway.'
+          : `${esc(store.playerName(lb.attackerGovernorIds?.[0]))} assaults ${lb.monsterName ? `☠ ${esc(lb.monsterName)}` : 'this land'}.`) +
+        `<button class="primary" data-act="watch-battle" data-battle="${lb.id}">` +
+        `${lb.mine ? '🎮 Command the battle' : '👁 Watch live'}</button></div>`;
+    }
+
     // My garrisoned armies here: provisions readout + Provision form (own army
     // in GARRISON at a friendly territory — docs/04 §7c.1). Mustering armies
     // (E2) show training progress + the ready countdown instead of strength.
@@ -248,7 +259,7 @@ export function createUI({ store, map, orders }) {
     for (const a of myHere) {
       const must = a.mustering;
       const total = store.musterTotal(a);
-      html += `<div class="army-box"><div class="ab-head"><b>${esc(a.heroName ?? shortId(a.id))}</b>` +
+      html += `<div class="army-box"><div class="ab-head"><b>${a.heroName ? avatarHtml({ name: a.heroName }, 17) : ''}${esc(a.heroName ?? shortId(a.id))}</b>` +
         `<span>${must ? `${a.troops}/${total}⚔` : `${a.troops}⚔ · str ${a.strength}`}</span></div>`;
       if (must) {
         const pct = total > 0 ? Math.round(((a.troops ?? 0) / total) * 100) : 0;
@@ -401,6 +412,7 @@ export function createUI({ store, map, orders }) {
     if (!btn) return;
     const t = store.terrByParcel.get(cardParcelId);
     if (btn.dataset.act === 'close') closeCard();
+    else if (btn.dataset.act === 'watch-battle') orders.watchBattle(btn.dataset.battle);
     else if (btn.dataset.act === 'claim' && t) { orders.claim(t.id, ovClaimSel || undefined); ovClaimSel = ''; }
     else if (btn.dataset.act === 'raise' && t) orders.raise(t.id, btn.dataset.preset);
     else if (btn.dataset.dev && t) { btn.disabled = true; orders.develop(t.id, btn.dataset.dev); } // no double-buy before the re-render
@@ -630,11 +642,12 @@ export function createUI({ store, map, orders }) {
   }
 
   // ── toasts + feed ──────────────────────────────────────────────────────────
-  function toast(title, sub, cls = 'info', parcelId = null, ms = 5000) {
+  function toast(title, sub, cls = 'info', parcelId = null, ms = 5000, onClick = null) {
     const el = document.createElement('div');
     el.className = `toast ${cls}`;
     el.innerHTML = `<b>${title}</b>${sub ? `<div class="sub">${sub}</div>` : ''}`;
-    if (parcelId) el.addEventListener('click', () => map.gotoParcel(parcelId));
+    if (onClick) el.addEventListener('click', onClick);
+    else if (parcelId) el.addEventListener('click', () => map.gotoParcel(parcelId));
     toasts.prepend(el);
     while (toasts.children.length > 5) toasts.lastChild.remove();
     setTimeout(() => { el.classList.add('fading'); setTimeout(() => el.remove(), 700); }, ms);
@@ -675,6 +688,12 @@ export function createUI({ store, map, orders }) {
       pip.className = `pip ${status}`;
       pip.title = { ok: 'live', connecting: 'connecting…', down: 'reconnecting…' }[status] ?? status;
     },
-    setPlayerLabel(name) { $('rail-player').textContent = name; },
+    setPlayerLabel(name) {
+      // The player's identity anchor: their Hero's portrait beside the banner name.
+      const hero = store.officers[0];
+      const plate = $('rail-player');
+      plate.innerHTML = `${hero ? avatarHtml(hero, 30) : ''}<span>${esc(name)}</span>`;
+      plate.hidden = false;
+    },
   };
 }

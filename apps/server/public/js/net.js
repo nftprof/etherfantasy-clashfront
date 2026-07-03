@@ -55,5 +55,9 @@ export function connectWS(token, handlers) {
     ws.onerror = () => { /* onclose follows */ };
   };
   open();
-  return { close() { closed = true; ws?.close(); } };
+  return {
+    close() { closed = true; ws?.close(); },
+    /** Fire-and-forget client→server frame (battle_sub/battle_cmd…); dropped while reconnecting. */
+    send(obj) { if (ws && ws.readyState === 1) ws.send(JSON.stringify(obj)); },
+  };
 }
