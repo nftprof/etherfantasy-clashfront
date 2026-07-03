@@ -152,6 +152,16 @@ Satellite sessions deliver on their OWN branches (`claude/map-extraction`,
 `claude/battle-engine-discovery`) — never directly on `claude/clash-front-overworld-mkcyia`;
 a core session merges them.
 
+**Live session landscape (owner-confirmed 2026-07-03) — 5 concurrent sessions:**
+| Session | Role | Owns |
+|---|---|---|
+| THIS (CF overworld) | hub + canon | all `docs/briefs/*` contracts; BATTLE_ENGINE_URL wiring; deploys to cf.etherfantasy.com |
+| "EF v2 Moba Server (bridge layer)" | match server | M1 allocate+callback (LIVE :8140 Singapore box) + telemetry bridge client; next: auto-register D2b channel from allocate, join tickets |
+| "EF v2 Moba Server (network)" | headless perf/netcode | headless lag fix (sync step() loop) — PVE tamper-proof verify engine |
+| "EF v2 Moba Server (maps)" | map generator | `briefs/MAP-GENERATOR.md` (registry, terraform, AI gardener, prompt-to-params) |
+| "EF Moba OP 48" (Cowork) | game-dev 3D client | hero-mode deep-link join + hero seat (one per USER) + joinUrl handback |
+Seams: bridge-layer↔OP48 = join ticket format; maps↔bridge-layer = Battlefield JSON (`briefs/ALLOCATE-CALLBACK-SCHEMA.md`).
+
 ## Working rules
 
 - **Retry differently (product owner 2026-07-02):** when anything fails, do NOT repeat the same
