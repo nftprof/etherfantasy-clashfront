@@ -321,6 +321,8 @@ interface SaveFileV1 {
   npcGovernorId: string;
   sessions: Session[];
   governors: [string, GovernorMeta][];
+  /** PG identity bindings: pgUid → governorId (docs/briefs/PG-IDENTITY.md). Optional for pre-PG saves. */
+  pgBindings?: [string, string][];
   state: SerializedWorldState;
 }
 
@@ -365,6 +367,8 @@ export class Game {
   readonly state: WorldState;
   readonly sessions = new Map<string, Session>(); // token → session
   readonly governors = new Map<string, GovernorMeta>(); // governorId → meta
+  /** PG identity bindings: pgUid → governorId (persisted — survives restarts). */
+  readonly pgBindings = new Map<string, string>();
   npcGovernorId = '';
 
   private readonly baseRng: Rng;
@@ -401,6 +405,7 @@ export class Game {
       this.npcGovernorId = save.npcGovernorId;
       for (const s of save.sessions) this.sessions.set(s.token, s);
       for (const [id, meta] of save.governors) this.governors.set(id, meta);
+      for (const [uid, gid] of save.pgBindings ?? []) this.pgBindings.set(uid, gid);
       for (const [id, b] of this.state.battles) {
         if (b.result?.territoryOutcome !== undefined) this.emittedOutcomes.add(id);
       }
@@ -508,29 +513,17 @@ export class Game {
     // Duplicate names existed before resume shipped (each join minted a governor),
     // so pick the SAME-NAME governor with the most holdings — territories, then
     // armies, then treasury — not merely the oldest session (an empty husk).
-    const candidates = new Map<string, Session>();
+    const candidates = new Set<string>();
     for (const s of this.sessions.values()) {
-      if (s.name.toLowerCase() === cleanName.toLowerCase()) candidates.set(s.governorId, s);
+      if (s.name.toLowerCase() === cleanName.toLowerCase()) candidates.add(s.governorId);
     }
-    const score = (govId: string): [number, number, number] => [
-      [...this.state.territories.values()].filter((t) => t.governorId === govId).length,
-      [...this.state.armies.values()].filter((a) => a.ownerGovernorId === govId).length,
-      this.state.ctBalances?.get(govId) ?? 0,
-    ];
-    const existing = [...candidates.values()].sort((a, b) => {
-      const sa = score(a.governorId), sb = score(b.governorId);
-      return sb[0] - sa[0] || sb[1] - sa[1] || sb[2] - sa[2];
-    })[0];
-    if (existing !== undefined) {
-      const token = randomBytes(16).toString('hex');
-      this.sessions.set(token, { token, playerId: existing.playerId, governorId: existing.governorId, name: existing.name });
-      return {
-        playerId: existing.playerId,
-        token,
-        governorId: existing.governorId,
-        officers: this.state.officers?.get(existing.governorId) ?? [],
-      };
+    // Session-less PLAYER governors are resumable too: early save formats dropped
+    // sessions on reload, orphaning real empires. kind==='PLAYER' keeps NPCs safe.
+    for (const g of this.governors.values()) {
+      if (g.kind === 'PLAYER' && g.name.toLowerCase() === cleanName.toLowerCase()) candidates.add(g.governorId);
     }
+    const existing = this.richestGovernor(candidates);
+    if (existing !== undefined) return this.resumeGovernor(existing);
     const joinIndex = this.sessions.size;
     const { governorId, officers } = addGovernor(this.state, this.orderRng('join'), {
       name: cleanName,
@@ -545,6 +538,82 @@ export class Game {
     this.governors.set(governorId, { governorId, name: cleanName, kind: 'PLAYER', color });
     this.pendingEvents.push({ type: 'player_joined', tick: this.state.world.tick, governorId, name: cleanName, color });
     return { playerId: governorId, token, governorId, officers };
+  }
+
+  /**
+   * PG-identity login (docs/briefs/PG-IDENTITY.md). The caller has ALREADY
+   * verified the access token server-side against GET /user/info — this maps
+   * the verified pgUid to a governor and mints a fresh cf token (same Session
+   * model as name-only join):
+   *
+   *   existing binding        → resume that governor
+   *   unbound same-name gov   → ADOPTION: bind + resume (how a pre-PG banner —
+   *                             e.g. "Idon" — is reclaimed by its owner's PG
+   *                             account; a governor already bound to another
+   *                             pgUid is never re-adoptable)
+   *   otherwise               → create a new governor named displayName
+   *                             (numeric suffix on name collisions)
+   */
+  loginPg(pgUid: string, displayName: string): { playerId: string; token: string; governorId: string; officers: DemoOfficer[] } {
+    const bound = this.pgBindings.get(pgUid);
+    if (bound !== undefined && this.governors.has(bound)) return this.resumeGovernor(bound);
+    const clean = (displayName.trim() === '' ? `pg-${pgUid.slice(0, 16)}` : displayName.trim()).slice(0, 24);
+    // Adoption: same-name PLAYER governors not yet bound to any PG account
+    // (duplicates pre-date resume — pick the one with the most holdings).
+    const boundIds = new Set(this.pgBindings.values());
+    const candidates = new Set<string>();
+    for (const g of this.governors.values()) {
+      if (g.kind === 'PLAYER' && !boundIds.has(g.governorId) && g.name.toLowerCase() === clean.toLowerCase()) {
+        candidates.add(g.governorId);
+      }
+    }
+    const adopted = this.richestGovernor(candidates);
+    if (adopted !== undefined) {
+      this.pgBindings.set(pgUid, adopted);
+      return this.resumeGovernor(adopted);
+    }
+    const res = this.join(this.uniqueGovernorName(clean));
+    this.pgBindings.set(pgUid, res.governorId);
+    return res;
+  }
+
+  /** Mint a fresh session token for an existing governor (name-resume + PG login). */
+  private resumeGovernor(governorId: string): { playerId: string; token: string; governorId: string; officers: DemoOfficer[] } {
+    const meta = this.governors.get(governorId);
+    if (meta === undefined) throw new ApiError(500, 'INTERNAL', `governor ${governorId} has no meta`);
+    const token = randomBytes(16).toString('hex'); // server boundary — never feeds the sim
+    this.sessions.set(token, { token, playerId: governorId, governorId, name: meta.name });
+    return { playerId: governorId, token, governorId, officers: this.state.officers?.get(governorId) ?? [] };
+  }
+
+  /**
+   * The governor with the most holdings — territories, then armies, then
+   * treasury (ties by id for determinism). Duplicate names existed before
+   * resume shipped, so name lookups must not resume an empty husk.
+   */
+  private richestGovernor(governorIds: ReadonlySet<string>): string | undefined {
+    const score = (govId: string): [number, number, number] => [
+      [...this.state.territories.values()].filter((t) => t.governorId === govId).length,
+      [...this.state.armies.values()].filter((a) => a.ownerGovernorId === govId).length,
+      this.state.ctBalances?.get(govId) ?? 0,
+    ];
+    return [...governorIds].sort((a, b) => {
+      const sa = score(a), sb = score(b);
+      return sb[0] - sa[0] || sb[1] - sa[1] || sb[2] - sa[2] || (a < b ? -1 : 1);
+    })[0];
+  }
+
+  /** `base`, else `base 2`, `base 3`… — unique across governor + session names, ≤ 24 chars. */
+  private uniqueGovernorName(base: string): string {
+    const taken = new Set<string>();
+    for (const g of this.governors.values()) taken.add(g.name.toLowerCase());
+    for (const s of this.sessions.values()) taken.add(s.name.toLowerCase());
+    if (!taken.has(base.toLowerCase())) return base;
+    for (let i = 2; ; i++) {
+      const suffix = ` ${i}`;
+      const candidate = base.slice(0, 24 - suffix.length) + suffix;
+      if (!taken.has(candidate.toLowerCase())) return candidate;
+    }
   }
 
   claim(governorId: string, territoryId: unknown, overseerId?: unknown): TerritoryView {
@@ -1844,6 +1913,7 @@ export class Game {
       npcGovernorId: this.npcGovernorId,
       sessions: [...this.sessions.values()],
       governors: [...this.governors.entries()],
+      pgBindings: [...this.pgBindings.entries()],
       state: serializeWorldState(this.state),
     };
   }
