@@ -89,8 +89,10 @@ export can be converted to the documented format. See `data/README.md`.
     per map — 2v2/3v3+ with allied users on either side. Possession keeps the MOBA's existing
     wild-Master walk-up take-command mechanic; only the spawn trigger changes: Masters appear
     when their overworld march ARRIVES (mid-battle reinforcement), entering at the hexagon edge
-    matching the approach direction, and their soldiers add an extra wave SPAWN POINT at that
-    edge (never an instant unit dump). M1 brief D2b + D1b specify command channel + reinforce API.
+    matching the approach direction, auto-attacking on arrival (existing MOBA behavior), and
+    their soldiers create a new edge spawning point that acts as a NEW LANE pathing directly to
+    the enemy main base (never an instant unit dump). M1 brief D2b + D1b specify command
+    channel + reinforce API.
 
 12. GEO ZONE-SERVER MAPPING (2026-07-03): shard = zone; each enabled zone served by EXACTLY ONE
     regional server (Montreal + Singapore first ⇒ 2 enabled continents at launch; huge continents

@@ -13,11 +13,12 @@
  * Static: ./public — the overworld client (MVP item 4): vanilla ES modules +
  *         one CSS file, no build step (js/app.js entry, Canvas2D map).
  */
-import { createHash } from 'node:crypto';
+import { createHash, timingSafeEqual } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import * as http from 'node:http';
 import { extname, join, normalize } from 'node:path';
 import { WebSocketServer, type WebSocket } from 'ws';
+import { BridgeHub } from './bridge';
 import { ApiError, type Game, type TickResult } from './game';
 
 export interface ServerConfig {
@@ -30,6 +31,11 @@ export interface ServerConfig {
   saveMs?: number | null;
   /** Static files dir; defaults to <package>/public. */
   publicDir?: string;
+  /**
+   * Shared secret for the /bridge/* telemetry-relay API (env BRIDGE_SECRET,
+   * docs/briefs/TELEMETRY-RELAY.md). Undefined = bridge disabled (503).
+   */
+  bridgeSecret?: string;
 }
 
 const MIME: Record<string, string> = {
@@ -58,10 +64,38 @@ export class ClashServer {
   private readonly battleSubs = new Map<string, Set<WebSocket>>();
   /** /api/economy response cache (10 s wall clock — server boundary, never the sim). */
   private economyCache?: { body: string; at: number };
+  /**
+   * External battle relay (BattleSource 'bridge'): the MOBA engine pushes
+   * telemetry to /bridge/* and pulls queued commands; battle_sub/battle_cmd
+   * route here when the battleId is bridge-fed. Public for tests.
+   */
+  readonly bridge: BridgeHub;
+  /** Bridge world events awaiting the next tick broadcast (public — everyone sees exhibitions). */
+  private pendingBridgeEvents: Record<string, unknown>[] = [];
 
   constructor(private readonly config: ServerConfig) {
     this.game = config.game;
     this.publicDir = config.publicDir ?? join(__dirname, '..', '..', 'public');
+    this.bridge = new BridgeHub({
+      broadcast: (battleId, msg) => {
+        const subs = this.battleSubs.get(battleId);
+        if (subs === undefined) return;
+        const raw = JSON.stringify(msg);
+        for (const ws of subs) {
+          if (ws.readyState === ws.OPEN) ws.send(raw);
+        }
+      },
+      pushEvent: (ev) => this.pendingBridgeEvents.push(ev),
+      worldTick: () => this.game.state.world.tick,
+      hexOfParcel: (parcelId) => this.game.hexOfParcel(parcelId),
+      findGovernorId: (ref) => this.game.findGovernorId(ref),
+      simBattleRunning: (id) => {
+        const b = this.game.wildBattle(id);
+        return b !== undefined && b.outcome === undefined;
+      },
+      simBattleAttacker: (id) => this.game.wildBattle(id)?.attackerGovernorId,
+      forceSimOutcome: (id, winner) => this.game.forceWildBattleOutcome(id, winner),
+    });
 
     // /api/world is static for the life of the world — render once, ETag it.
     // tickMs is server config (wall-clock boundary), stapled on so clients can
@@ -127,7 +161,10 @@ export class ClashServer {
    */
   tickOnce(): TickResult {
     this.updateBattlePacing(); // paced battles are stepped LIVE, not fast-forwarded
+    this.bridge.sweep(); // relay liveness (stale badge / auto-end) rides the world tick too
     const result = this.game.tick();
+    // Bridge (exhibition) events are PUBLIC — appended after fog filtering.
+    const bridgeEvents = this.pendingBridgeEvents.splice(0);
     const perGovernor = new Map<string, string>(); // governorId → serialized payload
     for (const [ws, governorId] of this.clients) {
       if (ws.readyState !== ws.OPEN) continue;
@@ -136,7 +173,7 @@ export class ClashServer {
         msg = JSON.stringify({
           t: 'tick',
           tick: result.tick,
-          events: this.game.eventsFor(governorId, result.events),
+          events: [...this.game.eventsFor(governorId, result.events), ...bridgeEvents],
           deltas: this.game.deltasFor(governorId),
         });
         perGovernor.set(governorId, msg);
@@ -164,7 +201,9 @@ export class ClashServer {
 
   private updateBattlePacing(): void {
     for (const [id] of this.game.state.wildBattles ?? []) {
-      this.game.setBattlePaced(id, this.battlePaced(id));
+      // A bridge-BOUND battle is externally driven: always paced (the world
+      // tick must neither fast-forward nor settle it while the relay owns it).
+      this.game.setBattlePaced(id, this.bridge.isBound(id) || this.battlePaced(id));
     }
   }
 
@@ -176,7 +215,12 @@ export class ClashServer {
    * phase order owns all map mutation.
    */
   battleTickOnce(): void {
+    this.bridge.sweep(); // relay liveness: stale badge at 30 s, auto-end at 2 min
     for (const [id, b] of this.game.state.wildBattles ?? []) {
+      if (this.bridge.isBound(id)) {
+        this.game.setBattlePaced(id, true); // external source owns this battle
+        continue;
+      }
       const paced = this.battlePaced(id);
       this.game.setBattlePaced(id, paced);
       if (!paced) continue;
@@ -197,9 +241,10 @@ export class ClashServer {
         }
       }
     }
-    // Battles settle at world ticks — drop dead subscription buckets.
+    // Battles settle at world ticks — drop dead subscription buckets
+    // (bridge-fed battles keep theirs until the hub forgets the battle).
     for (const id of [...this.battleSubs.keys()]) {
-      if (this.game.wildBattle(id) === undefined) this.battleSubs.delete(id);
+      if (this.game.wildBattle(id) === undefined && !this.bridge.has(id)) this.battleSubs.delete(id);
     }
   }
 
@@ -272,6 +317,19 @@ export class ClashServer {
       ws.send(JSON.stringify({ t: 'battle_err', battleId, code, message }));
     };
     if (t === 'battle_sub') {
+      // BRIDGE source first: externally-relayed battles (exhibition or bound)
+      // serve the square-arena hello + last telemetry snapshot from the hub.
+      if (battleId !== undefined && this.bridge.has(battleId)) {
+        if (!this.bridge.canView(battleId)) {
+          fail('FORBIDDEN', 'that battle is not viewable');
+          return;
+        }
+        let subs = this.battleSubs.get(battleId);
+        if (subs === undefined) this.battleSubs.set(battleId, (subs = new Set()));
+        subs.add(ws);
+        ws.send(JSON.stringify({ t: 'battle_hello', ...this.bridge.battleStatic(battleId), snap: this.bridge.battleSnapshot(battleId) }));
+        return;
+      }
       if (battleId === undefined || this.game.wildBattle(battleId) === undefined) {
         fail('NO_BATTLE', 'that battle is not running');
         return;
@@ -293,7 +351,12 @@ export class ClashServer {
     }
     if (t === 'battle_cmd') {
       try {
-        this.game.battleCommand(governorId, battleId, msg['cmd']);
+        if (battleId !== undefined && this.bridge.has(battleId)) {
+          // Bridge battles queue steering for the external server to poll.
+          this.bridge.command(governorId, battleId, msg['cmd']);
+        } else {
+          this.game.battleCommand(governorId, battleId, msg['cmd']);
+        }
       } catch (e) {
         if (e instanceof ApiError) fail(e.code, e.message);
       }
@@ -352,7 +415,13 @@ export class ClashServer {
       // Fog of war (F1): the snapshot is filtered by the viewer's intel;
       // anonymous spectators get ownership/prosperity only (all-UNKNOWN).
       const state = this.game.stateFor(session?.governorId);
+      // Exhibition bridge battles are public (bound ones surface via the sim).
+      state.liveBattles = [...state.liveBattles, ...(this.bridge.liveSummaries() as typeof state.liveBattles)];
       sendJson(res, 200, session === undefined ? state : { ...state, my: this.game.myState(session.governorId) });
+      return;
+    }
+    if (path.startsWith('/bridge/')) {
+      await this.routeBridge(req, res, url, path, method);
       return;
     }
     if (path.startsWith('/api/') && method === 'POST') {
@@ -404,6 +473,65 @@ export class ClashServer {
     throw new ApiError(405, 'METHOD_NOT_ALLOWED', `${method} not allowed`);
   }
 
+  /**
+   * /bridge/* — the telemetry-relay API for external match servers
+   * (docs/briefs/TELEMETRY-RELAY.md). Shared-secret auth: every request must
+   * carry `Authorization: Bearer $BRIDGE_SECRET` (POST /bridge/battles/start
+   * also accepts `{token}` in the body for curl convenience). Disabled (503)
+   * unless the server was configured with a secret.
+   *
+   *   POST /bridge/battles/start          register a battle → {battleId,…}
+   *   POST /bridge/battles/:id/snapshot   telemetry frame (2–4 Hz) → viewer fan-out
+   *   GET  /bridge/battles/:id/commands?afterSeq=N   queued command-mode inputs
+   *   POST /bridge/battles/:id/end        {winner:'A'|'B'|'DRAW', summary?}
+   */
+  private async routeBridge(
+    req: http.IncomingMessage,
+    res: http.ServerResponse,
+    url: URL,
+    path: string,
+    method: string,
+  ): Promise<void> {
+    const secret = this.config.bridgeSecret;
+    if (secret === undefined || secret === '') {
+      throw new ApiError(503, 'BRIDGE_DISABLED', 'battle bridge is not enabled (set BRIDGE_SECRET)');
+    }
+    const body = method === 'POST' ? await readJsonBody(req) : {};
+    const presented = bearerToken(req) ?? (typeof body['token'] === 'string' ? body['token'] : undefined);
+    if (presented === undefined || !secretsEqual(presented, secret)) {
+      throw new ApiError(401, 'BAD_BRIDGE_SECRET', 'missing or wrong bridge secret');
+    }
+
+    if (path === '/bridge/battles/start' && method === 'POST') {
+      const out = this.bridge.start(body);
+      sendJson(res, 200, {
+        ...out,
+        snapshotUrl: `/bridge/battles/${out.battleId}/snapshot`,
+        commandsUrl: `/bridge/battles/${out.battleId}/commands`,
+        endUrl: `/bridge/battles/${out.battleId}/end`,
+      });
+      return;
+    }
+    const m = /^\/bridge\/battles\/([^/]+)\/(snapshot|commands|end)$/.exec(path);
+    if (m === null) throw new ApiError(404, 'UNKNOWN_ENDPOINT', `no such endpoint ${method} ${path}`);
+    const battleId = decodeURIComponent(m[1]!);
+    const leaf = m[2]!;
+    if (leaf === 'snapshot' && method === 'POST') {
+      sendJson(res, 200, this.bridge.snapshot(battleId, body));
+      return;
+    }
+    if (leaf === 'commands' && method === 'GET') {
+      const afterSeq = Number(url.searchParams.get('afterSeq') ?? '0');
+      sendJson(res, 200, this.bridge.commandsAfter(battleId, afterSeq));
+      return;
+    }
+    if (leaf === 'end' && method === 'POST') {
+      sendJson(res, 200, this.bridge.end(battleId, body));
+      return;
+    }
+    throw new ApiError(405, 'METHOD_NOT_ALLOWED', `${method} not allowed on ${path}`);
+  }
+
   private async serveStatic(path: string, res: http.ServerResponse): Promise<void> {
     const rel = path === '/' ? 'index.html' : path.slice(1);
     const full = normalize(join(this.publicDir, rel));
@@ -419,6 +547,13 @@ export class ClashServer {
 }
 
 // ── HTTP helpers ──────────────────────────────────────────────────────────────
+
+/** Constant-time shared-secret comparison (hash first — inputs differ in length). */
+function secretsEqual(a: string, b: string): boolean {
+  const ha = createHash('sha256').update(a).digest();
+  const hb = createHash('sha256').update(b).digest();
+  return timingSafeEqual(ha, hb);
+}
 
 function bearerToken(req: http.IncomingMessage): string | undefined {
   const h = req.headers.authorization;

@@ -73,10 +73,12 @@
   late-arriving armies. `POST /internal/v1/matches/{id}/reinforce` with
   `{side, officer, unitStacks, provisions, entryEdge}` where `entryEdge` encodes the hexagon
   edge / bearing matching the march's overworld approach direction. Effect: (a) the officer
-  (Master) spawns AI-controlled at that edge; (b) the army's unit stock is added as an **extra
-  wave SPAWN POINT at that edge** feeding the standard wave system — reinforcements are a new
-  spawner, never an instant unit dump. Symmetric for both sides (allies reinforce defense the
-  same way). Battlefield schema (A1) must therefore parameterize spawn zones by edge/bearing.
+  (Master) spawns at that edge and **immediately auto-attacks** — reuse the existing wild-Master
+  auto-battle AI unchanged (it already does this) until a user takes command; (b) the army's
+  unit stock becomes a **new spawning point at that edge that acts as a NEW LANE**: its waves
+  path DIRECTLY to the enemy's main base (dynamic lane registration, not a unit dump).
+  Symmetric for both sides (allies reinforce defense the same way). Battlefield schema (A1)
+  must therefore support dynamic lane/spawn-zone registration parameterized by edge/bearing.
   Reinforcements appear in the result callback's per-side army accounting.
 - **D2**: result callback POST to callbackUrl — winner/TIE, casualties per army, structure
   damage, hero contributions (raw, uncapped — the overworld applies HERO_IMPACT_MAX), duration,

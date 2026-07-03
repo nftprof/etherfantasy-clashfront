@@ -388,11 +388,15 @@ the LAND HOLDER.**
   **Reinforcement arrivals (owner, 2026-07-03):** armies/Masters join a battle IN PROGRESS when
   their overworld march reaches the parcel — "it arrives when it arrives":
   - The Master appears ON the battle map at the moment of arrival, entering at the **hexagon
-    edge matching the march's approach direction** on the overworld map.
-  - The Master's soldiers do NOT dump in as a blob: they create an **extra wave SPAWN POINT at
-    that arrival edge**, feeding the match's wave system from the army's remaining unit stock.
+    edge matching the march's approach direction** on the overworld map, and **immediately
+    auto-attacks** (the MOBA's existing Master auto-battle behavior — kept as-is until a user
+    takes command).
+  - The Master's soldiers do NOT dump in as a blob: the arrival creates a **new spawning point
+    at that edge which behaves as a NEW LANE** — its waves spawn from the army's remaining unit
+    stock and push a **direct path to the enemy's MAIN BASE**. Reinforcements literally open a
+    new front.
   - This is symmetric: allies reinforce a defense the same way attackers stack a siege — every
-    arrival adds one officer + one edge spawner to its side.
+    arrival adds one auto-fighting officer + one new lane to its side.
   Architecture: after battle-engine M1, the authoritative sim is the repurposed MOBA server and
   command mode becomes a thin renderer/controller of its snapshots (a compact "command channel"
   in the wire contract) — the overworld's 2D battle viewer is that channel's permanent client.

@@ -15,6 +15,7 @@
  *   WORLD_FILE             demo world json                    (default <repo>/data/demo-world.json)
  *   SAVE_PATH              snapshot path                      (default <repo>/data/save.json)
  *   ROSTER_FILE            character roster csv               (default <repo>/data/CHARACTER_ROSTER.csv)
+ *   BRIDGE_SECRET          shared secret for /bridge/* telemetry relay (unset = bridge disabled)
  */
 import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
@@ -73,11 +74,13 @@ async function main(): Promise<void> {
     savePath: resolve(savePath),
   });
 
+  const bridgeSecret = process.env['BRIDGE_SECRET'];
   const server = new ClashServer({
     game,
     port,
     tickMs,
     saveMs: envInt('SAVE_MS', 30_000),
+    ...(bridgeSecret !== undefined && bridgeSecret !== '' ? { bridgeSecret } : {}),
   });
   const boundPort = await server.start();
 

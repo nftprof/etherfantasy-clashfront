@@ -1344,6 +1344,37 @@ export class Game {
     if (b !== undefined) b.paced = paced;
   }
 
+  /**
+   * BRIDGE source (docs/briefs/TELEMETRY-RELAY.md): an external match server
+   * reported the outcome of a BOUND wild battle. We only set the outcome —
+   * the next world tick settles casualties/loot through the normal
+   * deterministic phase order (v1: survivor accounting still uses the sim's
+   * own roster state; per-unit external casualties are a later contract rev).
+   */
+  forceWildBattleOutcome(battleId: string, winner: 'A' | 'B' | 'DRAW'): void {
+    const b = this.wildBattle(battleId);
+    if (b === undefined || b.outcome !== undefined) return;
+    b.outcome = winner === 'A' ? 'ATTACKER' : winner === 'B' ? 'DEFENDER' : 'TIMEOUT';
+    b.paced = false; // hand it back — the next world tick settles it
+  }
+
+  /** parcelId → hexId join (bridge parcel validation). */
+  hexOfParcel(parcelId: string): string | undefined {
+    return this.hexByParcel.get(parcelId);
+  }
+
+  /** Governor lookup by id or display name (case-insensitive) — bridge start attribution. */
+  findGovernorId(ref: { governorId?: string; governorName?: string }): string | undefined {
+    if (ref.governorId !== undefined && this.governors.has(ref.governorId)) return ref.governorId;
+    if (ref.governorName !== undefined) {
+      const needle = ref.governorName.trim().toLowerCase();
+      for (const g of this.governors.values()) {
+        if (g.name.toLowerCase() === needle) return g.governorId;
+      }
+    }
+    return undefined;
+  }
+
   /** Fog-filtered running-battle summaries for /api/state + map badges. */
   liveBattleSummaries(viewerGovernorId?: string): {
     id: string;
