@@ -57,9 +57,13 @@
   lighter than the 30 Hz hero snapshots) and (b) command inputs from the army's owner:
   {move officer, focus target, rally point} — validated like any input. The overworld's existing
   2D battle viewer (apps/server/public/js/battle.js in the canon repo, WS battle_sub/battle_cmd
-  protocol) is the reference client and will attach to this channel after M1. Mode switching:
-  a player may hold a hero seat (E1 possession) and the command channel simultaneously;
-  commands apply to their side's AI units/officer only when no human embodies them.
+  protocol) is the reference client and will attach to this channel after M1.
+  **ONE-HERO rule (owner 2026-07-03): hero seat and command channel are MUTUALLY EXCLUSIVE.**
+  Multiple Masters may fight on one map, but a player embodies exactly ONE at a time; while a
+  player holds a hero seat (E1 possession), their command-channel inputs are REJECTED (409) —
+  they must release the seat (return to command mode) to issue orders or switch heroes. This
+  lets the MOBA client forever assume one-player-one-hero. Commands apply to the side's
+  AI-driven units/officers only.
 - **D2**: result callback POST to callbackUrl — winner/TIE, casualties per army, structure
   damage, hero contributions (raw, uncapped — the overworld applies HERO_IMPACT_MAX), duration,
   HMAC-signed (grow the loot-ticket pattern), retry until ack.
