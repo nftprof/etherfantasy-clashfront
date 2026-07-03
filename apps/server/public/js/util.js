@@ -246,7 +246,10 @@ function officerSlug(name) {
 /** The single avatar-source lookup (future: officer.imageUrl from the NFT). */
 export function officerAvatarUrl(officer) {
   const slug = officerSlug(officer?.name);
-  return slug ? `/avatars/${encodeURIComponent(slug)}.png` : null;
+  if (!slug) return null;
+  // Hero portraits ship as pre-downscaled 256px JPEGs (source FACE_*.jpg kept alongside).
+  const ext = HERO_BASES.has(slug) ? 'jpg' : 'png';
+  return `/avatars/${encodeURIComponent(slug)}.${ext}`;
 }
 
 export function isHeroOfficer(name) {
@@ -291,8 +294,9 @@ export function initAvatarMissTracking() {
 /** Warm the browser cache for the always-present Hero portraits. */
 export function preloadHeroAvatars() {
   for (const slug of HERO_BASES) {
+    const url = officerAvatarUrl({ name: slug });
     const img = new Image();
-    img.onerror = () => missingAvatars.add(`/avatars/${slug}.png`);
-    img.src = `/avatars/${slug}.png`;
+    img.onerror = () => missingAvatars.add(url);
+    img.src = url;
   }
 }
