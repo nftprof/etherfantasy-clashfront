@@ -160,16 +160,32 @@ function parcelDist(ringsA, ringsB, cutoff) {
   return best <= cutoff ? best : Infinity;
 }
 
-/** Remove collinear points, then decimate uniformly to ≤ maxPts. */
+/** Remove duplicate + collinear points, then decimate uniformly to ≤ maxPts. */
 function simplifyRing(ring, maxPts) {
+  // Collapse consecutive duplicate vertices FIRST — including the explicit closing
+  // vertex (last == first) that closed svgPaths carry. Without this, the collinear
+  // test below sees a zero cross-product at BOTH copies of the duplicated corner
+  // (p==q at one index, q==r at the other) and deletes the real hexagon corner
+  // entirely — hexagons rendered as pentagons with sliver gaps between parcels.
+  const EPS = 1e-9;
+  const uniq = [];
+  for (const q of ring) {
+    const prev = uniq[uniq.length - 1];
+    if (!prev || Math.abs(prev[0] - q[0]) > EPS || Math.abs(prev[1] - q[1]) > EPS) uniq.push(q);
+  }
+  while (uniq.length > 1) {
+    const a = uniq[0], b = uniq[uniq.length - 1];
+    if (Math.abs(a[0] - b[0]) <= EPS && Math.abs(a[1] - b[1]) <= EPS) uniq.pop();
+    else break;
+  }
   const out = [];
-  const n = ring.length;
+  const n = uniq.length;
   for (let i = 0; i < n; i++) {
-    const p = ring[(i - 1 + n) % n], q = ring[i], r = ring[(i + 1) % n];
+    const p = uniq[(i - 1 + n) % n], q = uniq[i], r = uniq[(i + 1) % n];
     const cross = (q[0] - p[0]) * (r[1] - p[1]) - (q[1] - p[1]) * (r[0] - p[0]);
     if (Math.abs(cross) > 1e-9) out.push(q);
   }
-  const kept = out.length >= 3 ? out : ring;
+  const kept = out.length >= 3 ? out : uniq;
   if (kept.length <= maxPts) return kept;
   const step = kept.length / maxPts;
   const dec = [];
