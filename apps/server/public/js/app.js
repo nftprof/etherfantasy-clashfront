@@ -239,6 +239,20 @@ function handleEvents(events) {
         // LIVE wild battle (docs/04 §7b) or a bridge-relayed MOBA match:
         // the parcel is a running fight now.
         const mine = ev.attackerGovernorIds.includes(store.me?.governorId);
+        if (ev.engine) {
+          // ENGINE battle (external MOBA match): no command feed to open — the
+          // parcel card carries the ⚡ Hero-Mode doorway once the join link lands.
+          const foe = ev.monsterName ? `☠ ${esc(ev.monsterName)}`
+            : ev.defenderGovernorIds?.length ? esc(store.playerName(ev.defenderGovernorIds[0])) : 'defenders';
+          const openParcel = () => ui.openCard(ev.parcelId);
+          ui.toast(`⚔ Battle joined at ${parcelName(ev.parcelId)}!`,
+            `${mine ? 'Your army' : esc(store.playerName(ev.attackerGovernorIds[0]))} engages ${foe} ` +
+            `(${ev.attackerTroops}⚔ vs ${ev.defenderTroops}) — fought as a full match on the battle engine`,
+            'battle', ev.parcelId, 10_000, openParcel);
+          ui.feedPush(`<span class="t-battle">⚔</span> Field battle at ${parcelName(ev.parcelId)}${mine ? ' — yours' : ''}`, 't-battle', ev.parcelId);
+          if (mine) openParcel(); // the ⚡ Take-the-field doorway lives on the card
+          break;
+        }
         const who = ev.monsterName ? `☠ ${esc(ev.monsterName)}`
           : ev.defenderLabel ? esc(ev.defenderLabel) : 'wild defenders';
         const atkName = mine ? 'Your army'
@@ -257,6 +271,15 @@ function handleEvents(events) {
           if (ftue.running) ftue.tip('battle_live');
           else openViewer();
         }
+        break;
+      }
+      case 'battle_joinable': {
+        // PRIVATE to me (server-filtered): my live match minted my hero-mode
+        // deep link — the ⚡ doorway on the parcel card is armed now.
+        const openParcel = () => ui.openCard(ev.parcelId);
+        ui.toast(`⚡ The field is open at ${parcelName(ev.parcelId)}`,
+          `Your Master can take the field — <b>click</b> for the ⚡ doorway (one hero at a time).`,
+          'battle', ev.parcelId, 12_000, openParcel);
         break;
       }
       case 'battle_resolved': {

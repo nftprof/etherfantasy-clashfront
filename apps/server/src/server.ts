@@ -320,10 +320,11 @@ export class ClashServer {
   private async allocateOne(cfg: BattleEngineConfig, battleId: string): Promise<void> {
     try {
       const callbackUrl = cfg.callbackUrl ?? `http://127.0.0.1:${this.boundPort()}/internal/battle-result`;
-      const payload = this.game.engineAllocateContext(battleId, callbackUrl);
+      // mode:"live" for player battles unless CF_LIVE_BATTLES=0 (§3b mode selection).
+      const payload = this.game.engineAllocateContext(battleId, callbackUrl, cfg.liveBattles !== false);
       if (payload === undefined) return; // settled/fallen back since queued
-      const { matchId } = await allocateBattle(cfg, battleId, payload);
-      this.game.markEngineAllocated(battleId, matchId);
+      const { matchId, joins } = await allocateBattle(cfg, battleId, payload);
+      this.game.markEngineAllocated(battleId, matchId, joins);
     } catch (e) {
       console.error(
         `[server] engine allocate failed for ${battleId} — falling back to instant resolve:`,

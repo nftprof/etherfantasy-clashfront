@@ -23,6 +23,8 @@
  *   CF_BATTLE_API_TOKEN    bearer for the allocate direction
  *   CF_BATTLE_HMAC_SECRET  HMAC secret verifying X-CF-Signature result callbacks
  *   PUBLIC_BASE_URL        optional callback base (default http://127.0.0.1:<PORT>)
+ *   CF_LIVE_BATTLES        mode:"live" (hero-joinable) allocation for player battles —
+ *                          default ON when the engine is wired; 0 forces accelerated-only
  *
  * Pentagon Games identity (docs/briefs/PG-IDENTITY.md; unset = dev name-only login):
  *   PG_APP_KEY             PUBLISHABLE app key (pk_…) sent as X-PG-App-Key — setting it
@@ -110,6 +112,8 @@ async function main(): Promise<void> {
             url: battleEngineUrl,
             token: process.env['CF_BATTLE_API_TOKEN'] ?? '',
             hmacSecret: process.env['CF_BATTLE_HMAC_SECRET'] ?? '',
+            // Live is the norm once the engine is wired; CF_LIVE_BATTLES=0 forces accelerated-only.
+            liveBattles: !['0', 'false'].includes((process.env['CF_LIVE_BATTLES'] ?? '').toLowerCase()),
             ...(publicBaseUrl !== undefined && publicBaseUrl !== ''
               ? { callbackUrl: `${publicBaseUrl.replace(/\/+$/, '')}/internal/battle-result` }
               : {}),

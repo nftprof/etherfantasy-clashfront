@@ -245,7 +245,17 @@ export function createUI({ store, map, orders }) {
 
     // LIVE battle raging here (docs/04 §7b): watch anyone's, command your own.
     const lb = [...store.liveBattles.values()].find((x) => x.parcelId === cardParcelId);
-    if (lb) {
+    if (lb && lb.engine) {
+      // ENGINE battle (external MOBA match): no built-in watch feed yet — the
+      // HERO-MODE doorway lives here. joinUrl is server-filtered to ME only.
+      html += `<div class="live-battle">🔥 <b>Battle raging</b> — ` +
+        (lb.mine ? 'your forces are engaged on the field.'
+          : `${esc(store.playerName(lb.attackerGovernorIds?.[0]))} fights for this land.`) +
+        (lb.joinUrl
+          ? `<button class="take-field" data-act="take-field" data-battle="${lb.id}" title="Hero Mode — drop into this battle as your Master in the full MOBA client. While embodied you cannot issue commands here (one-hero rule).">⚡ Take the field</button>`
+          : ` <span class="est">fought on the battle engine — the outcome lands on the war map</span>`) +
+        `</div>`;
+    } else if (lb) {
       html += `<div class="live-battle">🔥 <b>Battle raging</b> — ` +
         (lb.mine ? 'your assault is underway.'
           : `${esc(store.playerName(lb.attackerGovernorIds?.[0]))} assaults ${lb.monsterName ? `☠ ${esc(lb.monsterName)}` : 'this land'}.`) +
@@ -458,6 +468,11 @@ export function createUI({ store, map, orders }) {
     const t = store.terrByParcel.get(cardParcelId);
     if (btn.dataset.act === 'close') closeCard();
     else if (btn.dataset.act === 'watch-battle') orders.watchBattle(btn.dataset.battle);
+    else if (btn.dataset.act === 'take-field') {
+      // HERO MODE (one-hero rule): the MOBA client takes over; command stays here.
+      const lb = store.liveBattles.get(btn.dataset.battle);
+      if (lb?.joinUrl) window.open(lb.joinUrl, '_blank', 'noopener');
+    }
     else if (btn.dataset.act === 'exhibition') { btn.disabled = true; orders.exhibition(btn.dataset.parcel); }
     else if (btn.dataset.act === 'claim' && t) { orders.claim(t.id, ovClaimSel || undefined); ovClaimSel = ''; }
     else if (btn.dataset.act === 'raise' && t) orders.raise(t.id, btn.dataset.preset);

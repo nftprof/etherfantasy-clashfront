@@ -128,23 +128,46 @@ callback → deterministic settlement). Key facts for operators + the engine tea
 - **Env (apps/server, all three provisioned or feature OFF):** `BATTLE_ENGINE_URL` (the full
   allocate endpoint; **unset = feature OFF, battles resolve exactly as before**),
   `CF_BATTLE_API_TOKEN`, `CF_BATTLE_HMAC_SECRET`, optional `PUBLIC_BASE_URL` (callback base;
-  default `http://127.0.0.1:<PORT>`). `deploy/remote-deploy.sh` sources the token/secret from
+  default `http://127.0.0.1:<PORT>`), optional `CF_LIVE_BATTLES` (**default ON** once the
+  engine is wired — live is the norm; `CF_LIVE_BATTLES=0` forces accelerated-only).
+  `deploy/remote-deploy.sh` sources the token/secret from
   `~/.cf_battle_api_token` / `~/.cf_battle_hmac_secret` (same pattern as `BRIDGE_SECRET`) and
   defaults `BATTLE_ENGINE_URL=http://127.0.0.1:8140/internal/v1/matches/allocate` when both
   files exist.
 - **Flow:** hostile co-location that would resolve via the instant WarScore path instead
   becomes a PENDING ENGINE BATTLE (hex locked like a running wild battle, armies pinned);
-  the server POSTs the §1 context (`Idempotency-Key: battleId`, 5 s timeout, `mode:
-  "accelerated"`, square-240 4-pt bounds polygon + the parcel's real structure anchors
+  the server POSTs the §1 context (`Idempotency-Key: battleId`, 5 s timeout,
+  square-240 4-pt bounds polygon + the parcel's real structure anchors
   `anchor_<i>`, officers with revive budget 3, seed from the seeded world RNG). The verified
   callback (raw-body HMAC, `issuedAt` ≤ 10 min, nonce ledger, idempotent 200 by battleId)
   sets the outcome as a SERVER-BOUNDARY INPUT; the **next world tick** applies casualties per
   UnitClass, provisions consumed, structure damage per anchor, winner/TIE semantics and the
   normal post-battle flow (pillage/occupy choice, §7c.5 retreat ladder). Callback receiver:
   `POST /internal/battle-result` (an /internal deployment-boundary route — never public).
+- **MODE SELECTION (2026-07-03):** the overworld allocates `mode:"live"` (rates
+  `{tickHz:30, commandSnapshotHz:3}`) whenever **at least one side's governor is a PLAYER** —
+  a real player's battle is hero-joinable by default. Pure AI battles (NPC/SYSTEM vs
+  NPC/SYSTEM, monster raids on NPCs) stay `mode:"accelerated"`. `CF_LIVE_BATTLES=0` is the
+  kill switch (everything accelerated). The chosen mode is stamped on the pending record.
+- **JOIN HANDLING (§1b):** live-mode allocate responses carry hero-mode join info; the
+  overworld accepts BOTH shapes defensively — `{matchId, joinDeadline, tickHz, ticket,
+  joinUrl}` (single, **attacker-oriented** — what the match server returns today) and the
+  future `{joins:[{governorId, ticket, joinUrl}]}`. Grants (joinUrl http(s) ≤ 512 chars;
+  invalid ones dropped) are stored on the pending engine-battle record and persist in the
+  snapshot like the rest of it.
+- **VISIBILITY RULE (fog/canon):** a `joinUrl` is **PRIVATE to its governor**. It is exposed
+  ONLY on the owning governor's own views: their `/api/state` `liveBattles[]` entry
+  (`engine:true`) and a strictly-private `battle_joinable` WS event (announced once). Never
+  to other participants, never to ACCURATE-intel spectators, never in public/exhibition
+  broadcasts. Client surface: the parcel card shows the gold **“⚡ Take the field”** button
+  (one-hero tooltip) to the owner while the engine match runs.
+- **LIVE-MATCH LIFETIME:** a live match runs in real time (up to ~40 min). An ALLOCATED
+  battle has **no tick-based timeout** — the hex stays locked and the armies pinned until
+  the result callback lands; the engine's own `TIMEOUT` reason is the clock authority.
 - **FALLBACK RULE:** allocate failure (network error, timeout, non-2xx) marks the battle
   FALLBACK; the next tick resolves it through the internal instant resolution. An engine
-  outage never bricks a battle.
+  outage never bricks a battle. (Fallback applies to the ALLOCATE step only — see the
+  live-match lifetime rule above.)
 - **Scope notes:** multi-governor attacker stacks (MVP truce edge) keep the instant path
   (one governorId per side in §1); live wild battles (player vs monster lair) keep the
   built-in tactical sim.

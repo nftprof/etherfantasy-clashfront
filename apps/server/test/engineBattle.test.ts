@@ -17,8 +17,9 @@
  * world tick is driven by hand.
  */
 import assert from 'node:assert/strict';
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync } from 'node:fs';
 import * as http from 'node:http';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
 import { CONSTANTS } from '@clashfront/shared';
@@ -146,10 +147,17 @@ function findAdjacentFreePair(game: Game): { t1: string; t2: string } {
 /**
  * Stage a PvP collision: Defender claims + garrisons t2; Attacker claims t1,
  * raises a STANDARD army and marches onto t2. Ticks until the collision tick.
+ * `afterJoin` runs before any claims — mode-selection tests flip governor kinds there.
  */
-async function stagePvp(game: Game, server: ClashServer, base: string) {
+async function stagePvp(
+  game: Game,
+  server: ClashServer,
+  base: string,
+  afterJoin?: (attacker: any, defender: any) => void,
+) {
   const attacker = (await api(base, '/api/join', { body: { name: 'Attacker' } })).json;
   const defender = (await api(base, '/api/join', { body: { name: 'Defender' } })).json;
+  afterJoin?.(attacker, defender);
   const { t1, t2 } = findAdjacentFreePair(game);
   assert.equal((await api(base, '/api/claim', { token: defender.token, body: { territoryId: t2 } })).status, 200);
   const defRaise = (await api(base, '/api/raise', { token: defender.token, body: { territoryId: t2, preset: 'STANDARD' } })).json;
@@ -194,7 +202,15 @@ test('engine flag OFF: PvP collisions resolve instantly, no engine battles exist
 // ── Flag ON: allocate context + full callback flow ───────────────────────────
 
 test('engine e2e: collision → pending battle (hex locked) → allocate per schema → HMAC callback settles it', async () => {
-  const engine = await mockEngine(201, { matchId: 'efm_test_1', joinDeadline: '2026-07-03T00:00:00Z', tickHz: 30 });
+  const JOIN_URL = 'https://moba.example/play?net=server&match=efm_test_1&ticket=tkt.abc';
+  const engine = await mockEngine(201, {
+    matchId: 'efm_test_1',
+    joinDeadline: '2026-07-03T00:00:00Z',
+    tickHz: 30,
+    // single attacker-oriented live join shape (what the netcode session returns today)
+    ticket: 'tkt.abc',
+    joinUrl: JOIN_URL,
+  });
   const game = new Game(gameConfig());
   const server = new ClashServer({
     game,
@@ -251,7 +267,7 @@ test('engine e2e: collision → pending battle (hex locked) → allocate per sch
       v: 1,
       battleId,
       seed: pending.seed,
-      mode: 'accelerated',
+      mode: 'live', // PLAYER on both sides ⇒ hero-joinable live match (§3b mode selection)
       rates: { tickHz: 30, commandSnapshotHz: 3 },
       parcel: { parcelId, zone: String(WORLD_FILE.meta.zone), kind: 'PLAYER' },
       battlefield: {
@@ -299,6 +315,37 @@ test('engine e2e: collision → pending battle (hex locked) → allocate per sch
       },
       callback: { url: `http://127.0.0.1:${port}/internal/battle-result`, keyId: 'cf-hmac-1' },
     });
+
+    // Live join grant (single shape → the attacker): stored on the record and
+    // exposed ONLY to the owning governor's /api/state view (§3b visibility rule).
+    assert.equal(pending.mode, 'live');
+    assert.deepEqual(pending.joins, [{ governorId: attacker.governorId, joinUrl: JOIN_URL, ticket: 'tkt.abc' }]);
+    const atkLb = (await api(base, '/api/state', { token: attacker.token })).json.liveBattles
+      .find((b: any) => b.id === battleId);
+    assert.ok(atkLb, 'pending engine battle listed for the owner');
+    assert.equal(atkLb.engine, true);
+    assert.equal(atkLb.joinUrl, JOIN_URL, 'owner sees the hero-mode doorway');
+    const defLb = (await api(base, '/api/state', { token: defender.token })).json.liveBattles
+      .find((b: any) => b.id === battleId);
+    assert.ok(defLb, 'the other participant still sees the battle');
+    assert.equal(defLb.joinUrl, undefined, 'joinUrl is PRIVATE to its governor');
+    const anonLbs = (await api(base, '/api/state')).json.liveBattles ?? [];
+    assert.equal(anonLbs.some((b: any) => b.joinUrl !== undefined), false, 'never in anonymous views');
+
+    // The join grant is announced ONCE via battle_joinable, STRICTLY private to
+    // its governor even against a participant with ACCURATE intel.
+    const rj = server.tickOnce();
+    const joinables = rj.events.filter((e: any) => e.type === 'battle_joinable') as any[];
+    assert.equal(joinables.length, 1);
+    assert.equal(joinables[0].governorId, attacker.governorId);
+    assert.equal(joinables[0].joinUrl, JOIN_URL);
+    assert.ok(game.eventsFor(attacker.governorId, rj.events).some((e) => e.type === 'battle_joinable'));
+    assert.equal(
+      game.eventsFor(defender.governorId, rj.events).some((e) => e.type === 'battle_joinable'),
+      false,
+      'battle_joinable never reaches another session',
+    );
+    assert.equal(server.tickOnce().events.some((e) => e.type === 'battle_joinable'), false, 'announced once');
 
     // Result callback (R10): attacker wins, per-UnitClass casualties, tower down.
     const preFood = atkArmy.provisions.food;
@@ -410,6 +457,160 @@ test('allocate failure (5xx) falls back to the internal instant resolution', asy
     assert.ok(resolved, 'battle resolved through the internal path');
     assert.ok(['ATTACKER', 'DEFENDER', 'DRAW'].includes(resolved.winner));
     assert.equal(game.state.battles.get(resolved.battleId)!.resolutionMode, 'AUTO', 'instant resolver');
+  } finally {
+    await server.stop();
+    await engine.close();
+  }
+});
+
+// ── Mode selection + live-match lifetime (§3b) ───────────────────────────────
+
+/** Free SYSTEM parcel adjacent to a live monster lair (deterministic pick). */
+function findLairAssault(game: Game): { homeTerrId: string; lairTerrId: string } {
+  for (const id of [...game.state.territories.keys()].sort()) {
+    const t = game.state.territories.get(id)!;
+    if (t.governorKind !== 'SYSTEM' || t.garrisonArmyId === undefined) continue;
+    const g = game.state.armies.get(t.garrisonArmyId);
+    if (g === undefined || g.state === 'DISBANDED') continue;
+    const freeNeighbor = (game.state.adjacency!.get(t.hexIds[0]!) ?? []).find((h) => {
+      const nt = game.state.territories.get(game.state.hexes.get(h)!.territoryId!);
+      return nt !== undefined && nt.governorKind === 'SYSTEM' && nt.garrisonArmyId === undefined;
+    });
+    if (freeNeighbor !== undefined) {
+      return { homeTerrId: game.state.hexes.get(freeNeighbor)!.territoryId!, lairTerrId: id };
+    }
+  }
+  throw new Error('demo world must contain a stageable monster lair');
+}
+
+test('PLAYER vs wild ⇒ mode live; join grant survives the snapshot; a live match is NEVER auto-fallen-back', async () => {
+  const JOIN_URL = 'https://moba.example/play?net=server&match=efm_live_9&ticket=tkt.live';
+  const engine = await mockEngine(201, {
+    matchId: 'efm_live_9',
+    joinDeadline: '2026-07-04T00:00:00Z',
+    tickHz: 30,
+    ticket: 'tkt.live',
+    joinUrl: JOIN_URL,
+  });
+  const savePath = join(mkdtempSync(join(tmpdir(), 'cf-engine-live-')), 'save.json');
+  const config = gameConfig({ seed: 'engine-live-wild', savePath });
+  const game = new Game(config);
+  const server = new ClashServer({
+    game,
+    port: 0,
+    tickMs: null,
+    saveMs: null,
+    battleEngine: { url: engine.url, token: API_TOKEN, hmacSecret: HMAC_SECRET },
+  });
+  const port = await server.start();
+  const base = `http://127.0.0.1:${port}`;
+  try {
+    const player = (await api(base, '/api/join', { body: { name: 'Raider' } })).json;
+    const { homeTerrId, lairTerrId } = findLairAssault(game);
+    assert.equal((await api(base, '/api/claim', { token: player.token, body: { territoryId: homeTerrId } })).status, 200);
+    const raise = (await api(base, '/api/raise', { token: player.token, body: { territoryId: homeTerrId, preset: 'STANDARD' } })).json;
+    completeTraining(game.state, raise.army.id);
+    assert.equal(
+      (await api(base, '/api/march', { token: player.token, body: { armyId: raise.army.id, toTerritoryId: lairTerrId } })).status,
+      200,
+    );
+    let started: any;
+    for (let i = 0; i < 12 && started === undefined; i++) {
+      started = server.tickOnce().events.find((e) => e.type === 'battle_started');
+    }
+    assert.ok(started, 'engine battle ignited');
+    assert.equal(started.engine, true, 'battle_started marks engine battles');
+    const battleId = started.battleId as string;
+
+    // Allocate went out as a LIVE match: a PLAYER is on the field (§3b).
+    await until(() => game.state.engineBattles!.get(battleId)!.status === 'ALLOCATED', 'allocated status');
+    const body = engine.requests[0]!.body;
+    assert.equal(body.mode, 'live');
+    assert.deepEqual(body.rates, { tickHz: 30, commandSnapshotHz: 3 });
+    assert.equal(body.parcel.kind, 'WILD');
+    assert.equal(body.sides.DEFENDER.governorId, null, 'wild defender stays null');
+
+    // A live match runs in REAL time (up to ~40 min): no tick-based timeout may
+    // fall it back or auto-resolve it — the result callback is the only exit.
+    for (let i = 0; i < 30; i++) {
+      const r = server.tickOnce();
+      assert.equal(r.events.some((e) => e.type === 'battle_resolved'), false, `no auto-resolve at tick +${i + 1}`);
+    }
+    const rec = game.state.engineBattles!.get(battleId)!;
+    assert.equal(rec.status, 'ALLOCATED', 'still awaiting the callback after 30 ticks');
+    assert.equal(rec.mode, 'live');
+    const flee = await api(base, '/api/march', { token: player.token, body: { armyId: raise.army.id, toTerritoryId: homeTerrId } });
+    assert.equal(flee.status, 409, 'armies stay pinned for the whole live match');
+
+    // Snapshot round-trip: the join grant is part of the record like everything else.
+    game.saveToDisk();
+    const game2 = new Game(config);
+    const rec2 = game2.state.engineBattles!.get(battleId)!;
+    assert.equal(rec2.mode, 'live');
+    assert.deepEqual(rec2.joins, [{ governorId: player.governorId, joinUrl: JOIN_URL, ticket: 'tkt.live' }]);
+    const mine2 = game2.liveBattleSummaries(player.governorId).find((b) => b.id === battleId);
+    assert.ok(mine2 !== undefined && mine2.engine === true);
+    assert.equal(mine2.joinUrl, JOIN_URL, 'owner view keeps the doorway after reload');
+    assert.equal(
+      game2.liveBattleSummaries(undefined).some((b) => b.joinUrl !== undefined),
+      false,
+      'anonymous view never carries a joinUrl',
+    );
+  } finally {
+    await server.stop();
+    await engine.close();
+  }
+});
+
+test('pure AI battles (NPC vs NPC) stay mode accelerated', async () => {
+  const engine = await mockEngine(201, { matchId: 'efm_ai_1' });
+  const game = new Game(gameConfig({ seed: 'engine-npc-vs-npc' }));
+  const server = new ClashServer({
+    game,
+    port: 0,
+    tickMs: null,
+    saveMs: null,
+    battleEngine: { url: engine.url, token: API_TOKEN, hmacSecret: HMAC_SECRET },
+  });
+  const port = await server.start();
+  const base = `http://127.0.0.1:${port}`;
+  try {
+    const { events } = await stagePvp(game, server, base, (attacker, defender) => {
+      // Both banners are AI kingdoms — nobody can take the field.
+      game.state.governorKinds!.set(attacker.governorId, 'NPC_KINGDOM');
+      game.state.governorKinds!.set(defender.governorId, 'NPC_KINGDOM');
+    });
+    const started = events.find((e: any) => e.type === 'battle_started') as any;
+    assert.ok(started, 'engine battle ignited');
+    await until(() => engine.requests.length > 0, 'allocate POST');
+    assert.equal(engine.requests[0]!.body.mode, 'accelerated');
+    await until(() => game.state.engineBattles!.get(started.battleId)!.status === 'ALLOCATED', 'allocated');
+    assert.equal(game.state.engineBattles!.get(started.battleId)!.mode, 'accelerated');
+    assert.equal(game.state.engineBattles!.get(started.battleId)!.joins, undefined, 'no join grants without a joinUrl');
+  } finally {
+    await server.stop();
+    await engine.close();
+  }
+});
+
+test('CF_LIVE_BATTLES=0 (liveBattles:false) forces accelerated even for player battles', async () => {
+  const engine = await mockEngine(201, { matchId: 'efm_kill_1' });
+  const game = new Game(gameConfig({ seed: 'engine-live-off' }));
+  const server = new ClashServer({
+    game,
+    port: 0,
+    tickMs: null,
+    saveMs: null,
+    battleEngine: { url: engine.url, token: API_TOKEN, hmacSecret: HMAC_SECRET, liveBattles: false },
+  });
+  const port = await server.start();
+  const base = `http://127.0.0.1:${port}`;
+  try {
+    const { events } = await stagePvp(game, server, base);
+    const started = events.find((e: any) => e.type === 'battle_started') as any;
+    assert.ok(started, 'engine battle ignited');
+    await until(() => engine.requests.length > 0, 'allocate POST');
+    assert.equal(engine.requests[0]!.body.mode, 'accelerated', 'kill switch wins over PLAYER governors');
   } finally {
     await server.stop();
     await engine.close();

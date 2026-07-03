@@ -119,6 +119,17 @@ export function createStore() {
             attackerGovernorIds: ev.attackerGovernorIds, defenderGovernorIds: ev.defenderGovernorIds,
             // bridge exhibitions (relayed MOBA matches) carry display labels
             exhibition: ev.exhibition, attackerLabel: ev.armyLabel, defenderLabel: ev.defenderLabel,
+            // ENGINE battles (external match): no watch feed — parcel-card doorway only
+            engine: ev.engine,
+          });
+        }
+        // Hero-mode doorway (private to me): the live match granted MY join link.
+        if (ev.type === 'battle_joinable') {
+          const lb = this.liveBattles.get(ev.battleId);
+          if (lb) lb.joinUrl = ev.joinUrl;
+          else this.putLiveBattle({
+            id: ev.battleId, parcelId: ev.parcelId, engine: true, joinUrl: ev.joinUrl,
+            attackerGovernorIds: [ev.governorId], defenderGovernorIds: [],
           });
         }
         if (ev.type === 'battle_resolved') this.liveBattles.delete(ev.battleId); // settled — badge off

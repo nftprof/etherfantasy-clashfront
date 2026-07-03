@@ -78,6 +78,7 @@ import {
   type WildRaidRecord,
   type WorldState,
 } from '@clashfront/sim-engine';
+import type { AllocateJoinGrant } from './battleEngine';
 import { GOVERNOR_PALETTE, NPC_COLOR, officerNamesForJoin, WILD_COLOR } from './roster';
 import {
   armyView,
@@ -153,6 +154,25 @@ export type GameEvent =
       monsterName?: string;
       attackerTroops: number;
       defenderTroops: number;
+      /**
+       * True for PENDING ENGINE BATTLES (external MOBA match — no built-in
+       * command feed yet); the client keeps the viewer closed and puts the
+       * hero-mode doorway on the parcel card instead.
+       */
+      engine?: true;
+    }
+  | {
+      /**
+       * Hero-mode doorway (ALLOCATE-CALLBACK-SCHEMA §1b): a live-mode engine
+       * allocate returned a join grant for this governor. STRICTLY PRIVATE to
+       * `governorId` — never broadcast to other viewers (fog/canon rule).
+       */
+      type: 'battle_joinable';
+      tick: number;
+      battleId: string;
+      parcelId: string;
+      governorId: string;
+      joinUrl: string;
     }
   | {
       type: 'battle_resolved';
@@ -406,6 +426,8 @@ export class Game {
   private readonly emittedOutcomes = new Set<string>();
   /** Live wild battles whose battle_started event has been emitted (seeded on load). */
   private readonly announcedWildBattles = new Set<string>();
+  /** Engine battles whose battle_joinable grants have been emitted (seeded on load). */
+  private readonly announcedJoinables = new Set<string>();
   private readonly lastViews = {
     territories: new Map<string, string>(),
     armies: new Map<string, string>(),
@@ -447,6 +469,11 @@ export class Game {
     for (const [id, b] of this.state.wildBattles ?? []) {
       b.paced = false;
       this.announcedWildBattles.add(id);
+    }
+    // Loaded engine battles with join grants are pre-announced too — reconnecting
+    // clients re-read joinUrl from /api/state (liveBattles), not from a replayed event.
+    for (const [id, b] of this.state.engineBattles ?? []) {
+      if (b.joins !== undefined) this.announcedJoinables.add(id);
     }
   }
 
@@ -1141,7 +1168,29 @@ export class Game {
         defenderGovernorIds: [b.defenderGovernorId],
         attackerTroops: troopsOf(b.attackerArmyIds),
         defenderTroops: troopsOf(b.defenderArmyIds),
+        engine: true,
       });
+    }
+
+    // Hero-mode doorways (§1b): live-mode allocates land join grants between
+    // ticks (server boundary); announce each battle's grants ONCE, each grant
+    // PRIVATE to its governor (eventsFor enforces it).
+    for (const [battleId, b] of this.state.engineBattles ?? []) {
+      if (b.joins === undefined || this.announcedJoinables.has(battleId)) continue;
+      this.announcedJoinables.add(battleId);
+      for (const j of b.joins) {
+        events.push({
+          type: 'battle_joinable',
+          tick,
+          battleId,
+          parcelId: this.parcelId(b.hexId),
+          governorId: j.governorId,
+          joinUrl: j.joinUrl,
+        });
+      }
+    }
+    for (const id of [...this.announcedJoinables]) {
+      if (this.state.engineBattles?.has(id) !== true) this.announcedJoinables.delete(id); // settled
     }
 
     // Newly pending PILLAGE/OCCUPY choices — battle victories get choice_pending,
@@ -1553,10 +1602,24 @@ export class Game {
    * square 240 m arena as a 4-pt bounds polygon + the parcel's real structures
    * (anchorId `anchor_<i>` = index into territory.structures); officers ride
    * with a revive budget of 3; seed/battleId come from the sim (never wall clock).
+   *
+   * MODE SELECTION (§3b): `mode:"live"` (30 Hz joinable match) when live
+   * battles are enabled AND at least one side's governor is a PLAYER —
+   * a real player's battle is hero-joinable by default. Pure AI battles
+   * (NPC/SYSTEM vs NPC/SYSTEM, monster raids on NPCs) stay "accelerated".
+   * The chosen mode is stamped on the record (server-boundary field).
    */
-  engineAllocateContext(battleId: string, callbackUrl: string): Record<string, unknown> | undefined {
+  engineAllocateContext(
+    battleId: string,
+    callbackUrl: string,
+    liveBattles = true,
+  ): Record<string, unknown> | undefined {
     const b = this.state.engineBattles?.get(battleId);
     if (b === undefined) return undefined;
+    const isPlayer = (gid: string): boolean => this.state.governorKinds?.get(gid) === 'PLAYER';
+    const mode: 'live' | 'accelerated' =
+      liveBattles && (isPlayer(b.attackerGovernorId) || isPlayer(b.defenderGovernorId)) ? 'live' : 'accelerated';
+    b.mode = mode;
     const terrId = this.state.hexes.get(b.hexId)?.territoryId;
     const territory = terrId === undefined ? undefined : this.state.territories.get(terrId);
     const S = 240; // canon: 1 engine unit = 1 m; single parcel ≈ 240×240 m
@@ -1590,7 +1653,7 @@ export class Game {
       v: 1,
       battleId,
       seed: b.seed,
-      mode: 'accelerated',
+      mode,
       rates: { tickHz: 30, commandSnapshotHz: 3 },
       parcel: {
         parcelId: this.parcelId(b.hexId),
@@ -1627,12 +1690,25 @@ export class Game {
     };
   }
 
-  /** Allocate succeeded: record the live matchId; the battle now awaits the callback. */
-  markEngineAllocated(battleId: string, matchId?: string): void {
+  /**
+   * Allocate succeeded: record the live matchId + any hero-mode join grants;
+   * the battle now awaits the callback. Live matches run in real time (up to
+   * ~40 min) — an ALLOCATED battle has NO tick-based timeout; the engine's
+   * own TIMEOUT reason is the clock authority. Grants without a governorId
+   * (the single attacker-oriented response shape) belong to the attacker.
+   */
+  markEngineAllocated(battleId: string, matchId?: string, joins?: AllocateJoinGrant[]): void {
     const b = this.state.engineBattles?.get(battleId);
     if (b === undefined || b.status !== 'ALLOCATING') return;
     b.status = 'ALLOCATED';
     if (matchId !== undefined) b.matchId = matchId;
+    if (joins !== undefined && joins.length > 0) {
+      b.joins = joins.map((j) => ({
+        governorId: j.governorId ?? b.attackerGovernorId,
+        joinUrl: j.joinUrl,
+        ...(j.ticket !== undefined ? { ticket: j.ticket } : {}),
+      }));
+    }
   }
 
   /** Allocate failed (network/5xx): the next tick resolves it via the instant path. */
@@ -1714,7 +1790,13 @@ export class Game {
     return undefined;
   }
 
-  /** Fog-filtered running-battle summaries for /api/state + map badges. */
+  /**
+   * Fog-filtered running-battle summaries for /api/state + map badges: LIVE
+   * wild battles + PENDING ENGINE BATTLES (`engine: true` — external MOBA
+   * matches, no built-in command feed). VISIBILITY RULE (§3b): `joinUrl` is
+   * PRIVATE to its governor — included ONLY on the owning governor's view,
+   * never for other participants, spectators, or broadcasts.
+   */
   liveBattleSummaries(viewerGovernorId?: string): {
     id: string;
     parcelId: string;
@@ -1722,13 +1804,20 @@ export class Game {
     defenderGovernorIds: string[];
     monsterName?: string;
     startedTick: number;
+    /** Pending ENGINE battle (external match) — the client has no watch feed for it yet. */
+    engine?: true;
+    /** Hero-mode deep link — present ONLY on the owning governor's own view. */
+    joinUrl?: string;
   }[] {
     const out: ReturnType<Game['liveBattleSummaries']> = [];
-    if (this.state.wildBattles === undefined || this.state.wildBattles.size === 0) return out;
     const viewer = viewerGovernorId === undefined ? undefined : this.viewerContext(viewerGovernorId);
-    for (const [id, b] of this.state.wildBattles) {
-      const participant = viewerGovernorId !== undefined && b.attackerGovernorId === viewerGovernorId;
-      if (!participant && (viewer === undefined || intelGrade(viewer.grades, b.hexId) !== 'ACCURATE')) continue;
+    const visible = (attackerGov: string, defenderGov: string, hexId: string): boolean => {
+      const participant =
+        viewerGovernorId !== undefined && (attackerGov === viewerGovernorId || defenderGov === viewerGovernorId);
+      return participant || (viewer !== undefined && intelGrade(viewer.grades, hexId) === 'ACCURATE');
+    };
+    for (const [id, b] of this.state.wildBattles ?? []) {
+      if (!visible(b.attackerGovernorId, b.defenderGovernorId, b.hexId)) continue;
       const monsterName = b.defenderArmyIds
         .map((aid) => this.state.monsterNames?.get(aid))
         .find((n) => n !== undefined);
@@ -1739,6 +1828,20 @@ export class Game {
         defenderGovernorIds: [b.defenderGovernorId],
         ...(monsterName !== undefined ? { monsterName } : {}),
         startedTick: b.startedTick,
+      });
+    }
+    for (const [id, b] of this.state.engineBattles ?? []) {
+      if (!visible(b.attackerGovernorId, b.defenderGovernorId, b.hexId)) continue;
+      const myJoin =
+        viewerGovernorId === undefined ? undefined : b.joins?.find((j) => j.governorId === viewerGovernorId);
+      out.push({
+        id,
+        parcelId: this.parcelId(b.hexId),
+        attackerGovernorIds: [b.attackerGovernorId],
+        defenderGovernorIds: [b.defenderGovernorId],
+        startedTick: b.startedTick,
+        engine: true,
+        ...(myJoin !== undefined ? { joinUrl: myJoin.joinUrl } : {}),
       });
     }
     return out;
@@ -2137,6 +2240,9 @@ export class Game {
         (Array.isArray(rec['attackerGovernorIds']) && (rec['attackerGovernorIds'] as string[]).includes(viewerGovernorId)) ||
         (Array.isArray(rec['defenderGovernorIds']) && (rec['defenderGovernorIds'] as string[]).includes(viewerGovernorId));
       if (e.type === 'choice_pending') return rec['governorId'] === viewerGovernorId;
+      // Hero-mode join grants are strictly private (§3b visibility rule) —
+      // an ACCURATE-intel bystander must never receive another player's joinUrl.
+      if (e.type === 'battle_joinable') return rec['governorId'] === viewerGovernorId;
       if (involved) return true;
       if (e.type === 'player_joined') return true;
       // Ownership changes are PUBLIC intel (F1: ownership is never fogged) —

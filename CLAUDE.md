@@ -149,6 +149,15 @@ the parcel graph of ONE zone (hexification deliberately punted — permanent dec
    `deploy/remote-deploy.sh` auto-sources both secrets from `~/.cf_battle_*` files and defaults
    the URL when they exist. Allocate failure ⇒ automatic fallback to instant resolution.
    Engine callbacks apply as server-boundary inputs next tick (determinism preserved).
+   **HERO-MODE LAST MILE (CF side) DONE 2026-07-03:** player battles allocate `mode:"live"`
+   (≥1 PLAYER governor ⇒ live; pure-AI ⇒ accelerated; `CF_LIVE_BATTLES=0` kill switch, default
+   ON). Allocate-response join info accepted in both shapes (single attacker-oriented
+   `{ticket,joinUrl}` and future `joins[]`), persisted on the pending record; `joinUrl` is
+   PRIVATE to its governor (owner-only `/api/state` liveBattles + strictly-private
+   `battle_joinable` event) — the owner gets a gold “⚡ Take the field” button on the PARCEL
+   CARD. Live matches have NO tick timeout (callback settles; engine TIMEOUT = clock
+   authority). §3b documents all of it. Remaining for the watch feed: bridge session
+   auto-registers the D2b command channel from allocate.
 4c. ~~Pentagon Games identity login~~ **DONE 2026-07-03** — `docs/briefs/PG-IDENTITY.md`.
    PG accounts are the PRIMARY login: embedded sign-in form (identifier+password →
    browser POST login.pentagon.games/user/login with publishable X-PG-App-Key) →

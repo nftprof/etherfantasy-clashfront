@@ -30,8 +30,30 @@ export interface BattleEngineConfig {
    * — engine and overworld share the box for MVP.
    */
   callbackUrl?: string;
+  /**
+   * `mode:"live"` allocation for battles with a PLAYER governor on either side
+   * (env CF_LIVE_BATTLES). Default TRUE — live is the norm once the engine is
+   * wired; CF_LIVE_BATTLES=0 forces accelerated-only.
+   */
+  liveBattles?: boolean;
   /** Injectable fetch — tests mock the engine. */
   fetchImpl?: typeof fetch;
+}
+
+/**
+ * One hero-mode join grant parsed from a live-mode allocate response
+ * (ALLOCATE-CALLBACK-SCHEMA §1b). `governorId` is absent for the single
+ * attacker-oriented response shape — the caller resolves it to the attacker.
+ */
+export interface AllocateJoinGrant {
+  governorId?: string;
+  ticket?: string;
+  joinUrl: string;
+}
+
+/** Same joinUrl hygiene as the bridge: http(s), ≤ 512 chars. */
+function validJoinUrl(u: unknown): u is string {
+  return typeof u === 'string' && u.length > 0 && u.length <= 512 && /^https?:\/\//.test(u);
 }
 
 /** Allocate POST timeout (contract: fall back to instant resolve on failure). */
@@ -51,15 +73,21 @@ export function verifyCallbackSignature(secret: string, rawBody: Buffer, header:
 }
 
 /**
- * POST the allocate context. Resolves with the engine's matchId on 2xx;
- * THROWS on timeout/network error/non-2xx (caller falls back to instant).
- * Idempotent on the engine side by battleId — re-sending is always safe.
+ * POST the allocate context. Resolves with the engine's matchId (plus any
+ * hero-mode join grants for live-mode responses) on 2xx; THROWS on timeout/
+ * network error/non-2xx (caller falls back to instant). Idempotent on the
+ * engine side by battleId — re-sending is always safe.
+ *
+ * Join-info shapes accepted DEFENSIVELY (§1b):
+ *   { matchId, joinDeadline, tickHz, ticket, joinUrl }        // single, attacker-oriented (today)
+ *   { matchId, joins: [{ governorId, ticket, joinUrl }] }     // per-side (future)
+ * Grants with a missing/invalid joinUrl are dropped silently.
  */
 export async function allocateBattle(
   cfg: BattleEngineConfig,
   battleId: string,
   payload: Record<string, unknown>,
-): Promise<{ matchId?: string }> {
+): Promise<{ matchId?: string; joins?: AllocateJoinGrant[] }> {
   const fetchImpl = cfg.fetchImpl ?? fetch;
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), ALLOCATE_TIMEOUT_MS);
@@ -78,13 +106,32 @@ export async function allocateBattle(
       throw new Error(`allocate returned HTTP ${res.status}`);
     }
     let matchId: string | undefined;
+    let joins: AllocateJoinGrant[] | undefined;
     try {
       const json = (await res.json()) as Record<string, unknown>;
       if (typeof json['matchId'] === 'string') matchId = json['matchId'];
+      if (Array.isArray(json['joins'])) {
+        const parsed: AllocateJoinGrant[] = [];
+        for (const raw of json['joins'] as unknown[]) {
+          const j = raw as Record<string, unknown> | undefined;
+          if (!validJoinUrl(j?.['joinUrl'])) continue;
+          parsed.push({
+            joinUrl: j['joinUrl'],
+            ...(typeof j['governorId'] === 'string' ? { governorId: j['governorId'] } : {}),
+            ...(typeof j['ticket'] === 'string' ? { ticket: j['ticket'] } : {}),
+          });
+        }
+        if (parsed.length > 0) joins = parsed;
+      } else if (validJoinUrl(json['joinUrl'])) {
+        joins = [{
+          joinUrl: json['joinUrl'],
+          ...(typeof json['ticket'] === 'string' ? { ticket: json['ticket'] } : {}),
+        }];
+      }
     } catch {
       /* body optional — a 2xx without a matchId still counts as allocated */
     }
-    return { ...(matchId !== undefined ? { matchId } : {}) };
+    return { ...(matchId !== undefined ? { matchId } : {}), ...(joins !== undefined ? { joins } : {}) };
   } finally {
     clearTimeout(timer);
   }

@@ -463,6 +463,9 @@ button.danger  { background: #4a2320; border-color: #7a3a33; }
 .live-battle { margin: 10px 0; padding: 9px 10px; border: 1px solid #4a2c1a; border-left: 3px solid var(--fire);
   border-radius: 7px; background: rgba(38, 18, 12, 0.55); font-size: 12.5px; }
 .live-battle button { display: block; width: 100%; margin-top: 8px; }
+/* HERO-MODE doorway (engine battles): gold ⚡ Take the field — owner only */
+.live-battle .take-field { border-color: var(--gold); color: var(--gold); font-weight: 600; }
+.live-battle .take-field:hover { background: rgba(232, 185, 60, 0.12); border-color: var(--gold); }
 
 /* ── Officer avatars (PO 2026-07-03 "personal touch") ─────────────────────── */
 .avatar { position: relative; display: inline-flex; width: var(--av, 18px); height: var(--av, 18px);

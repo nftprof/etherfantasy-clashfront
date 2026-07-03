@@ -57,6 +57,20 @@ export interface EngineOutcome {
  */
 export type EngineBattleStatus = 'ALLOCATING' | 'ALLOCATED' | 'FALLBACK';
 
+/**
+ * Per-governor hero-mode join grant returned by a `mode:"live"` allocate
+ * (ALLOCATE-CALLBACK-SCHEMA §1b). PRIVATE to its governor: views expose
+ * `joinUrl` ONLY to the owning governor's session — never to other viewers,
+ * never in public/exhibition broadcasts.
+ */
+export interface EngineBattleJoin {
+  governorId: string;
+  /** HMAC join ticket (already baked into joinUrl; kept for reissue/debug). */
+  ticket?: string;
+  /** Hero-mode deep link (…/play?net=server&ws=…&match=…&ticket=…). */
+  joinUrl: string;
+}
+
 /** A battle pending on the external engine. Plain JSON — snapshot-safe. */
 export interface EngineBattleState {
   id: string; // battle_<ULID> — the allocate Idempotency-Key
@@ -70,6 +84,16 @@ export interface EngineBattleState {
   startedTick: number;
   status: EngineBattleStatus;
   matchId?: string;
+  /**
+   * Allocate mode actually requested — server-boundary field (like `status`):
+   * 'live' (30 Hz joinable match, player battles) | 'accelerated' (headless).
+   * A live match runs in real time (up to ~40 min); the record simply stays
+   * ALLOCATED until the result callback lands — there is NO tick-based
+   * timeout, the engine's own TIMEOUT reason is the clock authority.
+   */
+  mode?: 'live' | 'accelerated';
+  /** Live-mode join grants (server-boundary; PRIVATE per governor — see EngineBattleJoin). */
+  joins?: EngineBattleJoin[];
   /** Set by the verified result callback; the next tick settles it. */
   outcome?: EngineOutcome;
 }
