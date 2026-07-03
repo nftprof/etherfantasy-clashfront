@@ -53,6 +53,9 @@ export class ClashServer {
   private readonly worldEtag: string;
   private tickTimer?: NodeJS.Timeout;
   private saveTimer?: NodeJS.Timeout;
+  private battleTimer?: NodeJS.Timeout;
+  /** LIVE wild-battle spectators: battleId → sockets receiving battle_tick frames. */
+  private readonly battleSubs = new Map<string, Set<WebSocket>>();
   /** /api/economy response cache (10 s wall clock — server boundary, never the sim). */
   private economyCache?: { body: string; at: number };
 
@@ -90,6 +93,16 @@ export class ClashServer {
               console.error('[server] tick failed:', e);
             }
           }, this.config.tickMs);
+          // LIVE wild-battle driver (docs/04 §7b): 4 Hz battle ticks for paced
+          // battles + snapshot fan-out to subscribers. Same sim as the world
+          // tick's accelerated stepping — only the pacing differs.
+          this.battleTimer = setInterval(() => {
+            try {
+              this.battleTickOnce();
+            } catch (e) {
+              console.error('[server] battle tick failed:', e);
+            }
+          }, Math.round(1000 / this.game.battleTickHz()));
         }
         const saveMs = this.config.saveMs === undefined ? 30_000 : this.config.saveMs;
         if (saveMs !== null) {
@@ -113,6 +126,7 @@ export class ClashServer {
    * client receives events + deltas filtered by ITS governor's intel.
    */
   tickOnce(): TickResult {
+    this.updateBattlePacing(); // paced battles are stepped LIVE, not fast-forwarded
     const result = this.game.tick();
     const perGovernor = new Map<string, string>(); // governorId → serialized payload
     for (const [ws, governorId] of this.clients) {
@@ -132,10 +146,68 @@ export class ClashServer {
     return result;
   }
 
+  /**
+   * A battle runs at LIVE pace while anybody watches it OR its attacking
+   * player is online (they can open the viewer any moment); otherwise the
+   * world tick fast-forwards it (canon: acceleration is the same sim).
+   */
+  private battlePaced(battleId: string): boolean {
+    const b = this.game.wildBattle(battleId);
+    if (b === undefined) return false;
+    const subs = this.battleSubs.get(battleId);
+    if (subs !== undefined && [...subs].some((ws) => ws.readyState === ws.OPEN)) return true;
+    for (const governorId of this.clients.values()) {
+      if (governorId === b.attackerGovernorId) return true;
+    }
+    return false;
+  }
+
+  private updateBattlePacing(): void {
+    for (const [id] of this.game.state.wildBattles ?? []) {
+      this.game.setBattlePaced(id, this.battlePaced(id));
+    }
+  }
+
+  /**
+   * One 4 Hz LIVE pass: step every paced battle a single battle tick and fan
+   * the snapshot out to its subscribers. Battles decided here broadcast
+   * battle_end immediately; the overworld settlement (casualties, pillage
+   * choice, retreat) lands inside the next world tick — the deterministic
+   * phase order owns all map mutation.
+   */
+  battleTickOnce(): void {
+    for (const [id, b] of this.game.state.wildBattles ?? []) {
+      const paced = this.battlePaced(id);
+      this.game.setBattlePaced(id, paced);
+      if (!paced) continue;
+      const wasDecided = b.outcome !== undefined;
+      if (!wasDecided) this.game.stepBattle(id);
+      const subs = this.battleSubs.get(id);
+      if (subs === undefined || subs.size === 0) continue;
+      const snap = this.game.battleSnapshot(id);
+      if (snap === undefined) continue;
+      const msg = JSON.stringify({ t: 'battle_tick', ...snap });
+      for (const ws of subs) {
+        if (ws.readyState === ws.OPEN) ws.send(msg);
+      }
+      if (b.outcome !== undefined && !wasDecided) {
+        const end = JSON.stringify({ t: 'battle_end', battleId: id, outcome: b.outcome });
+        for (const ws of subs) {
+          if (ws.readyState === ws.OPEN) ws.send(end);
+        }
+      }
+    }
+    // Battles settle at world ticks — drop dead subscription buckets.
+    for (const id of [...this.battleSubs.keys()]) {
+      if (this.game.wildBattle(id) === undefined) this.battleSubs.delete(id);
+    }
+  }
+
   /** Stop loops, snapshot to disk, close sockets + server. */
   async stop(): Promise<void> {
     if (this.tickTimer !== undefined) clearInterval(this.tickTimer);
     if (this.saveTimer !== undefined) clearInterval(this.saveTimer);
+    if (this.battleTimer !== undefined) clearInterval(this.battleTimer);
     try {
       this.game.saveToDisk();
     } catch (e) {
@@ -167,10 +239,66 @@ export class ClashServer {
     }
     this.wss.handleUpgrade(req, socket, head, (ws) => {
       this.clients.set(ws, session.governorId);
-      ws.on('close', () => this.clients.delete(ws));
-      ws.on('error', () => this.clients.delete(ws));
+      const drop = (): void => {
+        this.clients.delete(ws);
+        for (const subs of this.battleSubs.values()) subs.delete(ws);
+      };
+      ws.on('close', drop);
+      ws.on('error', drop);
+      ws.on('message', (raw) => {
+        try {
+          this.onClientMessage(ws, session.governorId, JSON.parse(String(raw)) as Record<string, unknown>);
+        } catch {
+          /* malformed frame — ignore */
+        }
+      });
       ws.send(JSON.stringify({ t: 'hello', tick: this.game.state.world.tick, playerId: session.playerId }));
     });
+  }
+
+  /**
+   * Client → server WS frames (LIVE wild battles):
+   *   {t:'battle_sub', battleId}    subscribe (permission: participant or ACCURATE intel)
+   *   {t:'battle_unsub', battleId}  unsubscribe
+   *   {t:'battle_cmd', battleId, cmd:{kind:'move'|'rally',x,y} | {kind:'focus',targetId}}
+   *                                 steering — attacking owner only
+   * Server replies: battle_hello (static field + first snapshot), battle_tick
+   * frames at 4 Hz, battle_end on decision, battle_err {code,message} on rejection.
+   */
+  private onClientMessage(ws: WebSocket, governorId: string, msg: Record<string, unknown>): void {
+    const t = msg['t'];
+    const battleId = typeof msg['battleId'] === 'string' ? msg['battleId'] : undefined;
+    const fail = (code: string, message: string): void => {
+      ws.send(JSON.stringify({ t: 'battle_err', battleId, code, message }));
+    };
+    if (t === 'battle_sub') {
+      if (battleId === undefined || this.game.wildBattle(battleId) === undefined) {
+        fail('NO_BATTLE', 'that battle is not running');
+        return;
+      }
+      if (!this.game.canViewBattle(governorId, battleId)) {
+        fail('FORBIDDEN', 'you need eyes on that parcel (or an army in the fight) to watch');
+        return;
+      }
+      let subs = this.battleSubs.get(battleId);
+      if (subs === undefined) this.battleSubs.set(battleId, (subs = new Set()));
+      subs.add(ws);
+      this.game.setBattlePaced(battleId, true); // a watcher owns the pacing now
+      ws.send(JSON.stringify({ t: 'battle_hello', ...this.game.battleStatic(battleId), snap: this.game.battleSnapshot(battleId) }));
+      return;
+    }
+    if (t === 'battle_unsub') {
+      if (battleId !== undefined) this.battleSubs.get(battleId)?.delete(ws);
+      return;
+    }
+    if (t === 'battle_cmd') {
+      try {
+        this.game.battleCommand(governorId, battleId, msg['cmd']);
+      } catch (e) {
+        if (e instanceof ApiError) fail(e.code, e.message);
+      }
+      return;
+    }
   }
 
   // ── HTTP routing ───────────────────────────────────────────────────────────

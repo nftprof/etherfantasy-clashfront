@@ -8,6 +8,7 @@
  *   TRAVEL_TICKS_PER_STEP  ticks per parcel step              (default 12 ≈ 1 min/step at 5 s ticks)
  *   CHOICE_TIMEOUT_TICKS   ticks before PILLAGE default       (default 24 ≈ 2 min at 5 s ticks)
  *   NPC_EVERY_TICKS        NPC kingdom acts every N ticks     (default 60 ≈ 5 min; 0 disables)
+ *   LIVE_WILD              1 = live wild battles (docs/04 §7b), 0 = instant resolve (default 1)
  *   SAVE_MS                snapshot interval ms               (default 30000)
  *   START_CT               player starting wallet in CT       (default 2000 ≈ 3 STANDARD armies)
  *   NPC_CT                 NPC war chest in CT                (default 20000)
@@ -63,6 +64,7 @@ async function main(): Promise<void> {
     tickOptions: {
       travelTicksPerStep: envInt('TRAVEL_TICKS_PER_STEP', 12),
       choiceTimeoutTicks: envInt('CHOICE_TIMEOUT_TICKS', 24),
+      liveWildBattles: envInt('LIVE_WILD', 1) !== 0,
     },
     npcEveryTicks: envInt('NPC_EVERY_TICKS', 60),
     startCtUnits: envInt('START_CT', 2000) * CT,

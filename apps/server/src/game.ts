@@ -349,6 +349,8 @@ interface SerializedWorldState {
   /** F4 production/trickle carries. Optional for older saves. */
   foodCarry?: [string, number][];
   econCarry?: [string, number][];
+  /** RUNNING live wild battles (docs/04 §7b) — plain JSON, resumed on load (unpaced). Optional for older saves. */
+  wildBattles?: [string, WildBattleState][];
   /** Feature Set 3 (circular economy). All optional for pre-FS3 saves. */
   economy?: EconomyState;
   enrichmentPools?: [string, number][];
@@ -377,6 +379,8 @@ export class Game {
   private pendingEvents: GameEvent[] = [];
   /** Battles whose territory outcome event has already been emitted (rebuilt on load). */
   private readonly emittedOutcomes = new Set<string>();
+  /** Live wild battles whose battle_started event has been emitted (seeded on load). */
+  private readonly announcedWildBattles = new Set<string>();
   private readonly lastViews = {
     territories: new Map<string, string>(),
     armies: new Map<string, string>(),
@@ -739,6 +743,9 @@ export class Game {
     const a = this.state.armies.get(armyId);
     if (a === undefined || a.state === 'DISBANDED') throw new ApiError(404, 'UNKNOWN_ARMY', `no such army ${armyId}`);
     if (a.ownerGovernorId !== governorId) throw new ApiError(403, 'NOT_YOUR_ARMY', `${armyId} is not your army`);
+    if (armyEngagedIn(this.state, a.id) !== undefined) {
+      throw new ApiError(409, 'ENGAGED', 'that army is locked in a running battle — steer it or await the outcome');
+    }
     const t = this.getTerritory(toTerritoryId);
     const toHex = t.hexIds[0]!;
     if (a.hexId === toHex) throw new ApiError(400, 'ALREADY_THERE', 'army is already on that parcel');
@@ -851,6 +858,7 @@ export class Game {
     const preWalkInCount = this.state.walkInOutcomes?.length ?? 0;
     const preRaids = new Set(this.state.wildRaids?.keys() ?? []);
     const preMustering = new Set(this.state.trainingQueues?.keys() ?? []);
+    const preWild = new Set(this.state.wildBattles?.keys() ?? []);
 
     runTick(this.state, tick, this.baseRng.fork('sim'), this.balance, this.tickOptions);
 
@@ -938,6 +946,30 @@ export class Game {
           });
         }
       }
+    }
+
+    // LIVE wild battles that ignited this tick (docs/04 §7b wild row) — the
+    // parcel is now a running fight, watchable/steerable via the WS battle channel.
+    for (const [battleId, b] of this.state.wildBattles ?? []) {
+      if (preWild.has(battleId) || this.announcedWildBattles.has(battleId)) continue;
+      this.announcedWildBattles.add(battleId);
+      const monsterName = b.defenderArmyIds
+        .map((id) => this.state.monsterNames?.get(id))
+        .find((n) => n !== undefined);
+      events.push({
+        type: 'battle_started',
+        tick,
+        battleId,
+        parcelId: this.parcelId(b.hexId),
+        attackerGovernorIds: [b.attackerGovernorId],
+        defenderGovernorIds: [b.defenderGovernorId],
+        ...(monsterName !== undefined ? { monsterName } : {}),
+        attackerTroops: b.roster.filter((r) => r.side === 'ATTACKER').reduce((n, r) => n + r.soldiers, 0),
+        defenderTroops: b.roster.filter((r) => r.side === 'DEFENDER').reduce((n, r) => n + r.soldiers, 0),
+      });
+    }
+    for (const id of [...this.announcedWildBattles]) {
+      if (this.state.wildBattles?.has(id) !== true) this.announcedWildBattles.delete(id); // settled — done announcing
     }
 
     // Newly pending PILLAGE/OCCUPY choices — battle victories get choice_pending,
@@ -1174,6 +1206,174 @@ export class Game {
       .find((o) => o.assignedTerritoryId === undefined && !leading.has(o.id))?.id;
   }
 
+  // ── LIVE wild battles: viewing, steering, pacing (docs/04 §7b wild row) ────
+
+  /** The running wild battle, or undefined once settled. */
+  wildBattle(battleId: string): WildBattleState | undefined {
+    return this.state.wildBattles?.get(battleId);
+  }
+
+  /**
+   * Spectating permission: participants always; everyone else needs ACCURATE
+   * intel on the parcel (same F1 rule as full battle views).
+   */
+  canViewBattle(governorId: string, battleId: string): boolean {
+    const b = this.wildBattle(battleId);
+    if (b === undefined) return false;
+    if (b.attackerGovernorId === governorId || b.defenderGovernorId === governorId) return true;
+    return intelGrade(this.viewerContext(governorId).grades, b.hexId) === 'ACCURATE';
+  }
+
+  /** Static battlefield payload — sent once per battle_sub. */
+  battleStatic(battleId: string): Record<string, unknown> | undefined {
+    const b = this.wildBattle(battleId);
+    if (b === undefined) return undefined;
+    const monsterName = b.defenderArmyIds
+      .map((id) => this.state.monsterNames?.get(id))
+      .find((n) => n !== undefined);
+    return {
+      battleId,
+      parcelId: this.parcelId(b.hexId),
+      size: b.field.size,
+      bounds: b.field.bounds,
+      spawn: b.field.spawn,
+      heart: b.field.heart,
+      obstacles: b.field.obstacles,
+      attackerGovernorId: b.attackerGovernorId,
+      defenderGovernorId: b.defenderGovernorId,
+      ...(b.master?.name !== undefined ? { masterName: b.master.name } : {}),
+      ...(monsterName !== undefined ? { monsterName } : {}),
+      clockTicks: b.clockTicks,
+      tickHz: this.balance.wildBattle.tickHz,
+      waveEveryTicks: this.balance.wildBattle.waveEveryTicks,
+      startedTick: b.startedTick,
+    };
+  }
+
+  /** Per-battle-tick snapshot for subscribers (compact keys, 0.1 m positions). */
+  battleSnapshot(battleId: string): Record<string, unknown> | undefined {
+    const b = this.wildBattle(battleId);
+    if (b === undefined) return undefined;
+    const r1 = (v: number): number => Math.round(v * 10) / 10;
+    const wb = this.balance.wildBattle;
+    let stock = 0;
+    let stockStart = 0;
+    for (let i = 0; i < b.roster.length; i++) {
+      if (b.roster[i]!.side !== 'ATTACKER') continue;
+      stock += b.stock[i] ?? 0;
+      stockStart += b.roster[i]!.entities;
+    }
+    return {
+      battleId,
+      bt: b.bt,
+      clockLeft: Math.max(0, b.clockTicks - b.bt),
+      ...(b.outcome !== undefined ? { outcome: b.outcome } : {}),
+      units: b.entities.map((e) => ({
+        id: e.id,
+        k: e.kind === 'MASTER' ? 'M' : e.kind === 'MOB' ? 'm' : 'u',
+        c: e.cls,
+        s: e.side === 'ATTACKER' ? 'A' : 'D',
+        x: r1(e.x),
+        y: r1(e.y),
+        hp: Math.max(0, Math.round(e.hp)),
+        mh: e.maxHp,
+      })),
+      towers: b.towers.map((t) => ({ id: t.id, x: r1(t.x), y: r1(t.y), hp: t.hp, mh: t.maxHp })),
+      ...(b.master !== undefined
+        ? {
+            master: {
+              alive: b.master.alive,
+              revives: b.master.revives,
+              respawnIn: b.master.alive ? 0 : Math.max(0, (b.master.respawnAt ?? 0) - b.bt),
+              ...(b.master.name !== undefined ? { name: b.master.name } : {}),
+            },
+          }
+        : {}),
+      waves: { stock, stockStart, size: wb.waveSize, nextIn: wb.waveEveryTicks - (b.bt % wb.waveEveryTicks) },
+      mobs: b.mobsStart - b.mobsDead,
+      mobsStart: b.mobsStart,
+      towersAlive: b.towers.filter((t) => t.hp > 0).length,
+      towersStart: b.towersStart,
+      ...(b.rally !== undefined ? { rally: b.rally } : {}),
+      ...(b.focusTgt !== undefined ? { focus: b.focusTgt } : {}),
+    };
+  }
+
+  /**
+   * Steering input — ONLY the attacking army's owner commands the assault
+   * (move the Master / focus-fire a target / set the wave rally point).
+   */
+  battleCommand(governorId: string, battleId: unknown, cmd: unknown): void {
+    if (typeof battleId !== 'string') throw new ApiError(400, 'BAD_BATTLE', 'battleId must be a string');
+    const b = this.wildBattle(battleId);
+    if (b === undefined) throw new ApiError(404, 'NO_BATTLE', `no running battle ${battleId}`);
+    if (b.attackerGovernorId !== governorId) {
+      throw new ApiError(403, 'NOT_YOUR_BATTLE', 'only the attacking commander steers this assault');
+    }
+    const c = cmd as Record<string, unknown> | undefined;
+    const kind = c?.['kind'];
+    let parsed: WildBattleCmd;
+    if ((kind === 'move' || kind === 'rally') && Number.isFinite(c?.['x']) && Number.isFinite(c?.['y'])) {
+      parsed = { kind, x: c!['x'] as number, y: c!['y'] as number };
+    } else if (kind === 'focus' && typeof c?.['targetId'] === 'string') {
+      parsed = { kind: 'focus', targetId: c['targetId'] };
+    } else {
+      throw new ApiError(400, 'BAD_CMD', 'cmd must be {kind:move|rally,x,y} or {kind:focus,targetId}');
+    }
+    applyWildBattleCommand(b, parsed);
+  }
+
+  /**
+   * One LIVE battle tick (the server's 4 Hz driver). Tactical state only —
+   * overworld settlement always happens inside the next world tick, so the
+   * deterministic phase order owns every map mutation.
+   */
+  stepBattle(battleId: string): void {
+    const b = this.wildBattle(battleId);
+    if (b !== undefined && b.outcome === undefined) stepWildBattle(b, this.balance);
+  }
+
+  /** ⚙ balance.wildBattle.tickHz — the LIVE battle driver's frame rate. */
+  battleTickHz(): number {
+    return this.balance.wildBattle.tickHz;
+  }
+
+  /** Pacing input: true = a LIVE driver owns stepping; false = world-tick fast-forward. */
+  setBattlePaced(battleId: string, paced: boolean): void {
+    const b = this.wildBattle(battleId);
+    if (b !== undefined) b.paced = paced;
+  }
+
+  /** Fog-filtered running-battle summaries for /api/state + map badges. */
+  liveBattleSummaries(viewerGovernorId?: string): {
+    id: string;
+    parcelId: string;
+    attackerGovernorIds: string[];
+    defenderGovernorIds: string[];
+    monsterName?: string;
+    startedTick: number;
+  }[] {
+    const out: ReturnType<Game['liveBattleSummaries']> = [];
+    if (this.state.wildBattles === undefined || this.state.wildBattles.size === 0) return out;
+    const viewer = viewerGovernorId === undefined ? undefined : this.viewerContext(viewerGovernorId);
+    for (const [id, b] of this.state.wildBattles) {
+      const participant = viewerGovernorId !== undefined && b.attackerGovernorId === viewerGovernorId;
+      if (!participant && (viewer === undefined || intelGrade(viewer.grades, b.hexId) !== 'ACCURATE')) continue;
+      const monsterName = b.defenderArmyIds
+        .map((aid) => this.state.monsterNames?.get(aid))
+        .find((n) => n !== undefined);
+      out.push({
+        id,
+        parcelId: this.parcelId(b.hexId),
+        attackerGovernorIds: [b.attackerGovernorId],
+        defenderGovernorIds: [b.defenderGovernorId],
+        ...(monsterName !== undefined ? { monsterName } : {}),
+        startedTick: b.startedTick,
+      });
+    }
+    return out;
+  }
+
   // ── Snapshots for the API ─────────────────────────────────────────────────
 
   /** Static world geometry (GET /api/world) — parcels + territory/hex id joins. */
@@ -1374,6 +1574,7 @@ export class Game {
     territories: TerritoryView[];
     armies: ArmyView[];
     battles: BattleView[];
+    liveBattles: ReturnType<Game['liveBattleSummaries']>;
   } {
     const viewer = this.viewerContext(viewerGovernorId);
     const territories = sortedIds(this.state.territories).map((id) =>
@@ -1397,6 +1598,7 @@ export class Game {
       territories,
       armies,
       battles,
+      liveBattles: this.liveBattleSummaries(viewerGovernorId),
     };
   }
 
@@ -1663,6 +1865,7 @@ function serializeWorldState(state: WorldState): SerializedWorldState {
     wildRaids: [...(state.wildRaids ?? new Map<string, WildRaidRecord>()).entries()],
     foodCarry: [...(state.foodCarry ?? new Map<string, number>()).entries()],
     econCarry: [...(state.econCarry ?? new Map<string, number>()).entries()],
+    wildBattles: [...(state.wildBattles ?? new Map<string, WildBattleState>()).entries()],
     economy: ensureEconomy(state),
     enrichmentPools: [...(state.enrichmentPools ?? new Map<string, number>()).entries()],
     enrichCarry: [...(state.enrichCarry ?? new Map<string, number>()).entries()],
@@ -1700,6 +1903,7 @@ function deserializeWorldState(s: SerializedWorldState): WorldState {
     wildRaids: new Map(s.wildRaids ?? []),
     foodCarry: new Map(s.foodCarry ?? []),
     econCarry: new Map(s.econCarry ?? []),
+    wildBattles: new Map(s.wildBattles ?? []),
     ...(s.economy !== undefined ? { economy: s.economy } : {}),
     enrichmentPools: new Map(s.enrichmentPools ?? []),
     enrichCarry: new Map(s.enrichCarry ?? []),
