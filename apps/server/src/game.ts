@@ -425,6 +425,8 @@ interface SaveFileV1 {
   governors: [string, GovernorMeta][];
   /** PG identity bindings: pgUid → governorId (docs/briefs/PG-IDENTITY.md). Optional for pre-PG saves. */
   pgBindings?: [string, string][];
+  /** governorId → canonical PG username (docs/maps/ECONOMY-SEAM.md §1). Optional for pre-maps saves. */
+  pgUsernames?: [string, string][];
   purchases?: [string, number][];
   /** Recently-resolved battle review ring (docs/04 §7b). Optional for pre-review saves. */
   recentBattles?: RecentBattleRecord[];
@@ -476,6 +478,14 @@ export class Game {
   readonly governors = new Map<string, GovernorMeta>(); // governorId → meta
   /** PG identity bindings: pgUid → governorId (persisted — survives restarts). */
   readonly pgBindings = new Map<string, string>();
+  /**
+   * governorId → canonical PG username (the `pns_name`/`pns`/`username` PG returns
+   * at login). Captured at PG login and persisted. This is the identity the maps
+   * side compares against for owner-only design (docs/maps/ECONOMY-SEAM.md §1) —
+   * NOT the governor's empire name, which can differ when a PG user adopts a
+   * legacy empire (PG "nftprof" → empire "Idon").
+   */
+  readonly pgUsernames = new Map<string, string>();
   /** governorId → lifetime purchased ct_units (E5 dev-phase faucet, cap-enforced). */
   readonly purchases = new Map<string, number>();
   npcGovernorId = '';
@@ -524,6 +534,7 @@ export class Game {
       for (const s of save.sessions) this.sessions.set(s.token, s);
       for (const [id, meta] of save.governors) this.governors.set(id, meta);
       for (const [uid, gid] of save.pgBindings ?? []) this.pgBindings.set(uid, gid);
+      for (const [gid, uname] of save.pgUsernames ?? []) this.pgUsernames.set(gid, uname);
       for (const [gid, amt] of save.purchases ?? []) this.purchases.set(gid, amt);
       this.recentBattles = save.recentBattles ?? [];
       for (const [id, b] of this.state.battles) {
@@ -693,8 +704,33 @@ export class Game {
     ownedMasters?: OwnedMaster[],
   ): { playerId: string; token: string; governorId: string; officers: DemoOfficer[] } {
     const base = this.resolveLoginGovernor(pgUid, displayName, bindGovernorId);
+    // Record the canonical PG username against the resolved governor so the maps
+    // ownership feed (docs/maps/ECONOMY-SEAM.md §1) reports the PG identity, not
+    // the empire name (which differs when a PG account adopts a legacy empire).
+    const uname = displayName.trim();
+    if (uname !== '') this.pgUsernames.set(base.governorId, uname);
     this.syncOfficersFromMasters(base.governorId, ownedMasters);
     return { ...base, officers: this.state.officers?.get(base.governorId) ?? [] };
+  }
+
+  /**
+   * Maps ownership feed (docs/maps/ECONOMY-SEAM.md §1): `{ parcelId: pgUsername }`
+   * for every PLAYER-owned parcel whose controlling governor has a known PG
+   * username. Parcels absent from this map (wild/system land, or a player who
+   * signed in name-only without PG) stay designable by any signed-in account —
+   * the agreed testing default; we never fabricate an owner. Deterministic,
+   * read-only, and safe to serve publicly (viewing is public on the maps side).
+   */
+  landOwners(): Record<string, string> {
+    const owners: Record<string, string> = {};
+    for (const t of this.state.territories.values()) {
+      if (t.governorKind === 'SYSTEM') continue;
+      const uname = this.pgUsernames.get(t.governorId);
+      const hex = t.hexIds[0];
+      if (uname === undefined || hex === undefined) continue;
+      owners[this.parcelId(hex)] = uname;
+    }
+    return owners;
   }
 
   /** Resolve pgUid → governor (rebind / resume / adopt / create). See loginPg. */
@@ -2644,6 +2680,7 @@ export class Game {
       sessions: [...this.sessions.values()],
       governors: [...this.governors.entries()],
       pgBindings: [...this.pgBindings.entries()],
+      pgUsernames: [...this.pgUsernames.entries()],
       purchases: [...this.purchases.entries()],
       recentBattles: this.recentBattles,
       state: serializeWorldState(this.state),
