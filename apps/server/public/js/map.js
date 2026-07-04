@@ -17,7 +17,24 @@
  * badge with incoming count + soonest ETA.
  */
 import { createTerrain } from './terrain.js';
-import { easeInOut, pointInPoly, rgba, troopsEst } from './util.js';
+import { easeInOut, officerAvatarUrl, pointInPoly, rgba, troopsEst } from './util.js';
+
+// Hero-head marker images (own armies show their leader's portrait; enemies stay dots).
+// Lazy Image cache keyed by avatar URL: 'loading' until decoded, HTMLImageElement when ready,
+// null when it 404'd (fall back to the plain marker — never re-probe).
+const _heroImg = new Map();
+function heroHeadImg(name) {
+  const url = officerAvatarUrl({ name });
+  if (!url) return null;
+  const cached = _heroImg.get(url);
+  if (cached !== undefined) return cached === 'ready' ? _heroImg.get(url + ':img') : null;
+  _heroImg.set(url, 'loading');
+  const img = new Image();
+  img.onload = () => { _heroImg.set(url, 'ready'); _heroImg.set(url + ':img', img); };
+  img.onerror = () => _heroImg.set(url, null);
+  img.src = url;
+  return null;
+}
 
 const FIRE_MS = 30_000;
 const SMOKE_MS = 18_000;
@@ -447,7 +464,11 @@ export function createMap(canvas, store, handlers) {
           musterDot(p[0], p[1], cap(0.14 * sizeK(total), 8 * sizeK(total)),
             unitColor(a.governorId), lw, now, total > 0 ? (a.troops ?? 0) / total : 0);
         } else {
-          dot(p[0], p[1], cap(0.14 * k, 8 * k), unitColor(a.governorId), unitRing(a.governorId), lw(1));
+          // Own armies show their leader's head; enemies (and led-by-nobody) stay dots.
+          const hr = cap(0.2 * k, 11 * k);
+          if (!(store.isMine(a.governorId) && a.heroName && heroHead(p[0], p[1], hr, a.heroName, unitRing(a.governorId), lw(1.4)))) {
+            dot(p[0], p[1], cap(0.14 * k, 8 * k), unitColor(a.governorId), unitRing(a.governorId), lw(1));
+          }
         }
         if (a.strengthBand) { // fuzzy intel: dashed halo + "?" (F1)
           fuzzyRing(p[0], p[1], cap(0.22 * k, 12.5 * k));
@@ -496,8 +517,13 @@ export function createMap(canvas, store, handlers) {
         ctx.setLineDash([]);
         ctx.restore();
       }
-      chevron(x, y, Math.atan2(next[1] - y, next[0] - x), unitColor(a.governorId), unitRing(a.governorId),
-        a.governorId === me, lw, Math.min(1, 55 / cam.s) * sizeK(troopsEst(a)));
+      // Own marching armies: leader's head marker (direction still shown by the dotted path);
+      // enemies keep the directional chevron.
+      const mk = Math.min(1, 55 / cam.s) * sizeK(troopsEst(a));
+      if (!(a.governorId === me && a.heroName && heroHead(x, y, cap(0.22 * mk, 12 * mk), a.heroName, unitRing(a.governorId), lw(1.4)))) {
+        chevron(x, y, Math.atan2(next[1] - y, next[0] - x), unitColor(a.governorId), unitRing(a.governorId),
+          a.governorId === me, lw, mk);
+      }
       if (a.strengthBand) { // fuzzy marching army (e.g. distant raider): dashed halo + "?"
         fuzzyRing(x, y, cap(0.24, 13));
         fuzzyMarks.push(toScreen(x, y));
@@ -728,6 +754,24 @@ export function createMap(canvas, store, handlers) {
     ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fill();
     ctx.strokeStyle = ring; ctx.lineWidth = ringW;
     ctx.stroke();
+  }
+
+  /**
+   * Hero-head army marker (own armies only): the leader's portrait clipped to a
+   * circle with a colored ring. Returns false when the image isn't ready/exists
+   * so the caller falls back to the plain dot/chevron. `r` is the head radius.
+   */
+  function heroHead(x, y, r, name, ring, ringW) {
+    const img = heroHeadImg(name);
+    if (!img) return false;
+    ctx.save();
+    ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.closePath(); ctx.clip();
+    // cover-fit the square portrait into the circle's bounding box
+    ctx.drawImage(img, x - r, y - r, r * 2, r * 2);
+    ctx.restore();
+    ctx.strokeStyle = ring; ctx.lineWidth = ringW;
+    ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.stroke();
+    return true;
   }
 
   function chevron(x, y, ang, color, ring, mine, lw, k = 1) {
