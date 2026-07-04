@@ -2327,6 +2327,12 @@ export class Game {
     return this.parcelByHex.get(hexId) ?? hexId;
   }
 
+  /** Is battleId a PENDING engine battle (allocated or awaiting allocate, callback not applied)? */
+  engineBattleRunning(battleId: string): boolean {
+    const b = this.state.engineBattles?.get(battleId);
+    return b !== undefined && b.outcome === undefined;
+  }
+
   /** ⚙ balance.economy.purchaseCapCtPerEpoch — surfaced by the /api/buy-ct stub. */
   purchaseCapCtPerEpoch(): number {
     return this.balance.economy.purchaseCapCtPerEpoch;

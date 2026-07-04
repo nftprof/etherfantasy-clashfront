@@ -127,6 +127,7 @@ export class ClashServer {
         const b = this.game.wildBattle(id);
         return b !== undefined && b.outcome === undefined;
       },
+      engineBattleRunning: (id) => this.game.engineBattleRunning(id),
       simBattleAttacker: (id) => this.game.wildBattle(id)?.attackerGovernorId,
       forceSimOutcome: (id, winner) => this.game.forceWildBattleOutcome(id, winner),
     });

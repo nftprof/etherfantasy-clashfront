@@ -132,6 +132,8 @@ interface BridgeBattle {
   joinUrl?: string;
   /** Bound sim battle id (non-exhibition takeover) — equals `id` when bound. */
   bound: boolean;
+  /** Feed attached to a PENDING ENGINE battle: display only — outcome settles via the HMAC callback. */
+  engineFeed?: boolean;
   /** Governor allowed to steer; undefined = open to any authenticated viewer (exhibition only). */
   startedByGovernorId?: string;
   attackerLabel: string;
@@ -174,6 +176,8 @@ export interface BridgeHubDeps {
   findGovernorId(ref: { governorId?: string; governorName?: string }): string | undefined;
   /** BOUND battles: does this sim battle exist and still run? */
   simBattleRunning(battleId: string): boolean;
+  /** Is this a PENDING ENGINE battle (allocate sent, callback not yet applied)? */
+  engineBattleRunning(battleId: string): boolean;
   /** BOUND battles: the sim battle's attacking governor (steering permission). */
   simBattleAttacker(battleId: string): string | undefined;
   /** BOUND battles: force the sim outcome; the next world tick settles it. */
@@ -229,14 +233,28 @@ export class BridgeHub {
     let bound = false;
     let id: string;
     let startedBy: string | undefined;
+    let engineFeed = false;
     if (typeof b.battleId === 'string' && b.battleId !== '') {
-      if (!this.deps.simBattleRunning(b.battleId)) {
-        throw new ApiError(404, 'NO_SIM_BATTLE', `no running wild battle ${b.battleId} to bind`);
-      }
       if (this.battles.has(b.battleId)) throw new ApiError(409, 'ALREADY_BOUND', `battle ${b.battleId} is already bridge-fed`);
-      bound = true;
-      id = b.battleId;
-      startedBy = this.deps.simBattleAttacker(b.battleId);
+      if (this.deps.engineBattleRunning(b.battleId)) {
+        // ENGINE-BOUND FEED (2026-07-04): the match server auto-registers the D2b
+        // command channel for a live engine battle under OUR allocate battleId — one
+        // battle, one badge, watch + ⚡ together. DISPLAY ONLY: the outcome still
+        // settles exclusively through the HMAC result callback; `end` here just
+        // closes the feed and never mutates the world.
+        engineFeed = true;
+        id = b.battleId;
+        startedBy = this.deps.findGovernorId({
+          ...(typeof b.attacker.governorId === 'string' ? { governorId: b.attacker.governorId } : {}),
+          ...(typeof b.attacker.governorName === 'string' ? { governorName: b.attacker.governorName } : {}),
+        });
+      } else if (this.deps.simBattleRunning(b.battleId)) {
+        bound = true;
+        id = b.battleId;
+        startedBy = this.deps.simBattleAttacker(b.battleId);
+      } else {
+        throw new ApiError(404, 'NO_SIM_BATTLE', `no running wild or engine battle ${b.battleId} to bind`);
+      }
     } else {
       id = `BRX${String(++this.counter).padStart(4, '0')}-${b.matchId.replace(/[^A-Za-z0-9_-]/g, '').slice(0, 24)}`;
       startedBy = this.deps.findGovernorId({
@@ -247,7 +265,7 @@ export class BridgeHub {
         throw new ApiError(404, 'UNKNOWN_GOVERNOR', 'attacker.governorName/governorId does not match any governor');
       }
     }
-    const exhibition = bound ? false : b.exhibition !== false; // unbound defaults to exhibition
+    const exhibition = bound || engineFeed ? false : b.exhibition !== false; // unbound defaults to exhibition
     let joinUrl: string | undefined;
     if (b.joinUrl !== undefined) {
       if (typeof b.joinUrl !== 'string' || b.joinUrl.length > 512 || !/^https?:\/\//.test(b.joinUrl)) {
@@ -262,6 +280,7 @@ export class BridgeHub {
       parcelId: b.parcelId,
       exhibition,
       bound,
+      ...(engineFeed ? { engineFeed: true } : {}),
       ...(startedBy !== undefined ? { startedByGovernorId: startedBy } : {}),
       ...(joinUrl !== undefined ? { joinUrl } : {}),
       attackerLabel: b.attacker.armyLabel,
@@ -507,6 +526,11 @@ export class BridgeHub {
     const outcome = winner === 'A' ? 'ATTACKER' : winner === 'B' ? 'DEFENDER' : 'TIMEOUT';
     this.deps.broadcast(b.id, { t: 'battle_end', battleId: b.id, outcome });
     const govs = b.startedByGovernorId !== undefined ? [b.startedByGovernorId] : [];
+    if (b.engineFeed === true) {
+      // Engine-bound feed: the HMAC result callback is the sole settlement path —
+      // ending the RELAY must not touch the world or duplicate resolution events.
+      return;
+    }
     if (b.bound) {
       // Real battle: the sim settles it inside the next world tick (its own
       // battle_resolved event follows through the normal path).
@@ -556,8 +580,9 @@ export class BridgeHub {
       }
       const quiet = nowMs - b.lastSnapshotAtMs;
       if (quiet > BRIDGE_DEAD_MS) {
-        if (b.bound) {
-          // Give the real battle back to the sim rather than forcing a DRAW.
+        if (b.bound || b.engineFeed === true) {
+          // Give the real battle back to the sim / the engine callback rather
+          // than forcing a DRAW from a dead relay.
           this.battles.delete(id);
           continue;
         }
@@ -576,7 +601,7 @@ export class BridgeHub {
   liveSummaries(): Record<string, unknown>[] {
     const out: Record<string, unknown>[] = [];
     for (const b of this.battles.values()) {
-      if (b.bound || b.ended !== undefined) continue;
+      if (b.bound || b.engineFeed === true || b.ended !== undefined) continue;
       out.push({
         id: b.id,
         parcelId: b.parcelId,

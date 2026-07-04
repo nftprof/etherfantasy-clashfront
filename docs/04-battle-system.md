@@ -534,6 +534,12 @@ against the standing order; the owner gets the war-report drama either way.
   **auto-returns to its owner** (pets are NEVER lost — canon `docs/05` §9).
 - Reconciliation: pets ASSIGNED to a governor's occupied territory keep their §9 GUARD role;
   only the lone homestead pet is passive.
+- **GUARD = the player-side WILD equivalent (owner, 2026-07-04):** when a guarding pet garrison
+  defends occupied land, a walk-on is a real BATTLE — resolved exactly like a WILD map but with
+  PETS as the defenders (no Masters, tower/mob-style defense). Attacker wins ⇒ pets are beaten
+  to KO, auto-return home + recover (never lost, §9), then the land can be taken. So there are
+  three defense tiers on a parcel: army garrison (full battle) → guarding pets (pet-only wild
+  battle) → lone homestead pet (no defense, bloodless displacement).
 
 **Scaling rationale (owner, 2026-07-04):** Masters are the COMMAND cap — max 52 Masters + 3
 Heroes = 55 commandable leaders per user; conquest scales with Masters. Pets are the LAND

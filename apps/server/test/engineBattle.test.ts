@@ -616,3 +616,64 @@ test('CF_LIVE_BATTLES=0 (liveBattles:false) forces accelerated even for player b
     await engine.close();
   }
 });
+
+// ── engine-feed bind: the match server's auto-registered D2b feed attaches to the ──
+//    EXISTING pending engine battle (one battle, one badge; end() is display-only). ──
+test('engine feed bind: bridge start with a pending engine battleId attaches display-only (no dupe, no world mutation)', async () => {
+  const engine = await mockEngine(201, {
+    matchId: 'efm_feed_1',
+    joinDeadline: '2026-07-03T00:00:00Z',
+    tickHz: 30,
+    ticket: 'tkt.feed',
+    joinUrl: 'https://moba.example/play?net=server&match=efm_feed_1&ticket=tkt.feed',
+  });
+  const game = new Game(gameConfig());
+  const server = new ClashServer({
+    game, port: 0, tickMs: null, saveMs: null,
+    battleEngine: { url: engine.url, token: API_TOKEN, hmacSecret: HMAC_SECRET },
+    bridgeSecret: 'feed-secret',
+  });
+  const port = await server.start();
+  const base = `http://127.0.0.1:${port}`;
+  try {
+    const { attacker, t2, events } = await stagePvp(game, server, base);
+    const battleId = events.find((e: any) => e.type === 'battle_started')!.battleId as string;
+    await until(() => game.state.engineBattles!.get(battleId)!.status === 'ALLOCATED', 'allocated');
+    const parcelId = game.parcelId(game.state.territories.get(t2)!.hexIds[0]!);
+
+    // Unknown battleId ⇒ 404 (not a wild battle, not an engine battle).
+    const bad = await api(base, '/bridge/battles/start', {
+      body: { token: 'feed-secret', matchId: 'x', parcelId, battleId: 'battle_NOPE',
+        attacker: { armyLabel: 'A', troops: 1 }, defender: { label: 'D', troops: 1 }, arena: { shape: 'square', size: 240 } },
+    });
+    assert.equal(bad.status, 404);
+
+    // Correct battleId ⇒ binds as a display-only engine feed (200, exhibition:false).
+    const ok = await api(base, '/bridge/battles/start', {
+      body: { token: 'feed-secret', matchId: 'efm_feed_1', parcelId, battleId,
+        attacker: { governorName: 'Attacker', armyLabel: '1st Expedition', troops: 200 },
+        defender: { label: 'Garrison', troops: 200 }, arena: { shape: 'square', size: 240 } },
+    });
+    assert.equal(ok.status, 200);
+    assert.equal(ok.json.battleId, battleId, 'feed rides the SAME battleId — one battle, one badge');
+    assert.equal(ok.json.exhibition, false, 'consequence feed, not an exhibition');
+
+    // A second registration of the same id is refused (no duplicate feed).
+    const dupe = await api(base, '/bridge/battles/start', {
+      body: { token: 'feed-secret', matchId: 'efm_feed_1', parcelId, battleId,
+        attacker: { armyLabel: 'A', troops: 1 }, defender: { label: 'D', troops: 1 }, arena: { shape: 'square', size: 240 } },
+    });
+    assert.equal(dupe.status, 409);
+
+    // Ending the RELAY does not settle the battle — the HMAC callback still owns it.
+    const outcomeBefore = game.state.engineBattles!.get(battleId)!.outcome;
+    assert.equal(outcomeBefore, undefined);
+    await api(base, `/bridge/battles/${battleId}/end`, { body: { token: 'feed-secret', winner: 'A' } });
+    server.tickOnce();
+    assert.ok(game.state.engineBattles!.has(battleId), 'battle still pending after feed end — callback settles it, not the relay');
+    void attacker;
+  } finally {
+    await server.stop();
+    await engine.close();
+  }
+});
