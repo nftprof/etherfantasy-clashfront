@@ -143,6 +143,28 @@ Relationship to the existing drop-in model (§4): COMMAND-intent-at-march replac
 LOBBY as the primary "I want to play this" signal, bounded by slots/pool; the LOBBY/reinforce
 join paths still apply on top of a battle that has already gone LIVE.
 
+### 3b-LIVE. Live-match duration, join window & army pool (owner, 2026-07-04)
+
+The interface CF sends and the MOBA match server honors for a LIVE (COMMAND) battle:
+- **Duration ⚙ ≈ 10–15 min** — a normal MOBA match length. The match server keeps it open at
+  30 Hz for the whole window; it must NOT resolve instantly (an instant match is unjoinable —
+  the root of "the battle ends too quickly to join").
+- **Join window = the whole duration.** A player may join ANY time while it runs (mid-game
+  seating via a freshly-minted ticket). Optional **~2 min pre-start countdown** lets a player
+  join from the very start as a fresh match; joining later drops them into the running battle.
+- **Line-soldier pool = the army count CF sends.** The allocate context's `units:[{cls,count}]`
+  per side IS the finite wave stock (entry variable, e.g. 200/side, equal sides for MVP). Once
+  depleted, NO more line soldiers spawn except units the player spawns directly in-game (canon
+  finite-wave R4/R5). The MOBA may cap the concurrent line count; the TOTAL is CF's number.
+- **You command your Master; enemy Masters are AI.** Ticket + start payload carry the player's
+  Master (`youUid`/`youHn`, real `masterId`/`slug` from CF); auto-seat as that Master, enemy
+  Masters bot-driven (ONE-HERO per user, §3a / decision 11).
+CF side of all four is DONE (duration/window need no CF change — CF holds the ⚡ doorway open with
+no tick timeout for LIVE battles; the army count + Master identity are already in the allocate
+context). The remaining work is the match server's (keep-open, finite-pool, late-seat) + the
+client's (ticket-bypass login, auto-seat). Command-view↔MOBA-map alignment: the match server must
+send the real loaded map layout in `battle_hello` (`briefs/BATTLEFIELD-SCHEMA.md`, §1a).
+
 **IMPLEMENTED (2026-07-04, behind the engine-battles flag).** `POST /api/march` takes
 `command?: boolean` (default false = AUTO) → persisted as `army.commandIntent`, consumed at the
 collision tick. Caps live in `balance.json` `battle` (⚙ `commandSlotsPerPlayer` 2,
