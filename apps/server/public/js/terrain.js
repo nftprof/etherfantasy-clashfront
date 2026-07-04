@@ -484,6 +484,11 @@ export function createTerrain(store, onUpdate) {
             const t = Math.min(1, Math.max(0, (ev + 0.6) / 0.6));
             r = 13 + (38 - 13) * t; g = 30 + (79 - 30) * t; b = 44 + (94 - 44) * t;
             a = 255 * t * t;
+            const sh = Math.max(0, 1 + ev / 0.15); // sunlit shallow shelf: 0 by ev=-0.15 → 1 at the waterline
+            if (sh > 0) {                          // brighten toward turquoise so coasts read as real shallows
+              const k = sh * sh * 0.5;
+              r += (66 - r) * k; g += (128 - g) * k; b += (140 - b) * k;
+            }
             const f = Math.max(0, 1 + ev / 0.055); // soft foam line at the coast
             if (f > 0) {
               const k = f * f * 0.42;
