@@ -52,6 +52,23 @@ Re-sending the same battleId MUST return the original `{matchId, joinDeadline}` 
 
 Response `201`: `{ "matchId": "efm_...", "joinDeadline": "<ISO8601>", "tickHz": 30 }`
 
+### 1a. INTERIM battlefield source (owner, 2026-07-04) — until the map generator lands
+
+Per-parcel generated maps do not exist yet (the map-generator session is building the generator,
+`briefs/MAP-GENERATOR.md`). **Until then, EVERY battle uses the MOBA's EXISTING legacy maps** —
+keyed by lane count / battle type (existing 1-lane map for single parcels, 3-lane for estates);
+parcel shape/size/biome are ignored for now. This is a deliberate temporary deviation from the
+canon "battlefield = the parcel's own designed map" (`docs/04` §7b) — acceptable for MVP.
+
+**Load-bearing requirement for command mode to work:** the match server MUST send the REAL loaded
+map's layout in `battle_hello`/battlefield (bounds, lanes, tower/core positions, terrain), not a
+generic square — CF's command view renders exactly what it receives, so a placeholder square makes
+the top-down look nothing like the 3D match. Send the actual legacy-map minimap now.
+
+**Seamless swap later:** the `Battlefield` JSON schema (A1) is the single source of truth both the
+MOBA match and the CF command view consume. Today the match server fills it from a legacy map;
+when the generator lands it fills it from a generated per-parcel design — neither client changes.
+
 ### 1b. Join tickets — PROPOSAL for the bridge-layer ↔ game-client seam (2026-07-03)
 
 Client transport is DONE (OP 48): the boot parser accepts `match` + `ticket` URL params and
