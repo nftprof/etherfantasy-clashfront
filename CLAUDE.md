@@ -226,6 +226,20 @@ the parcel graph of ONE zone (hexification deliberately punted — permanent dec
    (app.css untouched — visual session owns it). New ⚙ `balance.review` section (+ `revealDurationTicks`
    reserved for the sealed-reveal follow-up, designed-not-wired). +4 tests (`recentBattles.test.ts`
    + engineBattle review case); suite 165 green. Docs: `docs/04` §7b.
+4f. ~~Command-view battlefield renderer + real MOBA-style stand-in map~~ **DONE 2026-07-04** (owner:
+   "the command map is a made-up placeholder that looks nothing like the real MOBA battlefield").
+   `battle.js` now has a fully DATA-DRIVEN Battlefield-JSON renderer (`docs/briefs/BATTLEFIELD-SCHEMA.md`):
+   bounds polygon → biome terrain + water footprints + forest/rock obstacles → lane corridors →
+   structure anchors (CORE/TOWER/GATE/WALL coloured by side) → spawn zones → resource nodes →
+   build-spots, with the LIVE unit snapshot layered on top; it renders ANY conformant Battlefield JSON,
+   so the MOBA team's real export drops in with ZERO renderer changes. Shipped the interim stand-ins
+   `data/moba-maps/legacy-3lane.json` (default/estates) + `legacy-1lane.json` (single parcels) — valid
+   Battlefield JSON, tagged `_placeholder`, passing all 5 playability invariants. Server wiring:
+   `game.ts` + `bridge.ts` `battleStatic` attach a `battlefield` to `battle_hello` (precedence: a REAL
+   map from the match server/bridge wins, else the stand-in; 3-lane for estates, 1-lane for single).
+   Loader/validator `apps/server/src/battlefield.ts` (shared walkability rule + 5-invariant validator,
+   `CF_MOBA_MAPS_DIR` override). +5 tests (`battlefield.test.ts`); suite 170 green. Docs: `docs/04` §7b,
+   `BATTLEFIELD-SCHEMA.md`, `ALLOCATE-CALLBACK-SCHEMA.md` §1a.
 5. Then continue roadmap T1 (`docs/10`): flesh out tick-engine phases against real map data.
 
 **Open design questions for the product owner** (do not decide unilaterally):

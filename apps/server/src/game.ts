@@ -19,6 +19,7 @@ import { dirname } from 'node:path';
 import {
   type Army,
   type Balance,
+  CONSTANTS,
   createRng,
   DEVELOPMENT_TRACKS,
   type DevelopmentTrack,
@@ -82,6 +83,7 @@ import {
   type WorldState,
 } from '@clashfront/sim-engine';
 import type { AllocateJoinGrant } from './battleEngine';
+import { loadStandbyBattlefield } from './battlefield';
 import type { OwnedMaster } from './masters';
 import { GOVERNOR_PALETTE, NPC_COLOR, officerNamesForJoin, WILD_COLOR } from './roster';
 import {
@@ -1659,6 +1661,14 @@ export class Game {
     const monsterName = b.defenderArmyIds
       .map((id) => this.state.monsterNames?.get(id))
       .find((n) => n !== undefined);
+    // Real battlefield map for the command view (BATTLEFIELD-SCHEMA / §1a): use
+    // the parcel's designed map once the generator ships; for now a standard
+    // MOBA-style stand-in (3-lane for estates, 1-lane for single parcels). The
+    // legacy painterly field (bounds/spawn/heart/obstacles) stays as a fallback.
+    const terrId = this.state.hexes.get(b.hexId)?.territoryId;
+    const territory = terrId === undefined ? undefined : this.state.territories.get(terrId);
+    const laneCount: 1 | 3 = (territory?.hexIds.length ?? 1) >= CONSTANTS.ESTATE_MIN_HEXES ? 3 : 1;
+    const battlefield = loadStandbyBattlefield(laneCount);
     return {
       battleId,
       parcelId: this.parcelId(b.hexId),
@@ -1667,6 +1677,7 @@ export class Game {
       spawn: b.field.spawn,
       heart: b.field.heart,
       obstacles: b.field.obstacles,
+      ...(battlefield !== undefined ? { battlefield } : {}),
       attackerGovernorId: b.attackerGovernorId,
       defenderGovernorId: b.defenderGovernorId,
       ...(b.master?.name !== undefined ? { masterName: b.master.name } : {}),

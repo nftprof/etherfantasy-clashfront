@@ -113,3 +113,22 @@ emitting. A map that ships MUST pass all five — that's what lets owner-prompte
   deterministic generator + validator. The LLM never writes this JSON directly — parameters only.
 - **Versioning:** bump `meta.designVersion` on every save; keep `seed` stable so v0 always
   reproduces. CF caches by `parcelId+designVersion`.
+
+## Interim stand-in maps (2026-07-04 — until the generator/real export lands)
+
+Per-parcel generated maps do not exist yet (§1a of `ALLOCATE-CALLBACK-SCHEMA.md`). CF therefore
+ships **standard MOBA-style stand-ins** at `data/moba-maps/*.json`, each a valid object of THIS
+schema (tagged with a top-level `"_placeholder"`) that passes all five playability invariants:
+- `legacy-3lane.json` — symmetric competitive layout: two CORE bases at opposite corners, three
+  lanes (top / mid / bot) with per-side TOWER anchors, a diagonal decorative river (WATER
+  footprints, `passable:true`), jungle TREE/BOULDER camps, four resource nodes, gate/wall furniture.
+  Used for estates and as the DEFAULT.
+- `legacy-1lane.json` — one central lane, two bases (S/N), 1 attacker + 2 defender towers, flanking
+  obstacles. Used for single parcels.
+
+The CF command view (`apps/server/public/js/battle.js`) renders these with a fully data-driven
+Battlefield-JSON renderer, so **the MOBA team's real exported map replaces the stand-in with zero
+renderer changes** — same schema, same renderer. The server (`game.ts`/`bridge.ts` `battleStatic`)
+prefers a real per-match battlefield when the match server/bridge supplies one, else loads the
+stand-in (validated at load by `apps/server/src/battlefield.ts`). Retire these files once real
+per-parcel designs flow through the registry.
