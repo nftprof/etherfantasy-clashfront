@@ -1881,6 +1881,10 @@ export class Game {
       seed: b.seed,
       mode,
       rates: { tickHz: 30, commandSnapshotHz: 3 },
+      // ⚙ LIVE-only: how long the match server holds the 30 Hz match open in its
+      // pre-combat STAGING window so a hero-mode ⚡ click can late-seat (network
+      // F5 Fork's dial). Omitted for accelerated battles (no join window).
+      ...(mode === 'live' ? { joinWindowSec: this.balance.battle.joinWindowSec } : {}),
       parcel: {
         parcelId: this.parcelId(b.hexId),
         zone: String(this.config.worldFile.meta.zone),
