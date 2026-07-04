@@ -40,6 +40,30 @@ sunElevation = sin(2π · (dayFrac − 0.25))                     // −1 midnig
   `sunElevation` — indigo night → gold dawn → clear day → amber dusk. Recomputed **once per
   sim-minute** (a CSS variable / a single fill), not per frame. Cost ≈ 0.
 
+### 1a. Two clocks — overworld (server-local) vs battle (accelerated)
+
+The world has **two independent time domains**, and conflating them is the usual mistake:
+
+- **Overworld = the shard's real regional time.** Each zone-shard ([`07` geo mapping]) runs its
+  day/night on its **server region's local clock** — the Montreal shard's map is at Montreal time,
+  Singapore's at Singapore time — via a per-shard `SERVER_TZ_HOURS` anchor. Still `tick`-derived
+  (deterministic), but the anchor is the shard's timezone, so the strategic map's sky matches the
+  real world where its server lives. `dayFrac` above uses that per-shard offset.
+- **Battle = its own accelerated clock.** A real battle lasts ~3–4 h; a game (a MOBA match) is
+  ~20–40 min, so a battle **compresses time**. A battle **inherits the overworld time-of-day at the
+  instant it starts** (march in at dusk → the fight opens at dusk — continuity with the map) and then
+  advances a **compressed span** across the match, so the light visibly evolves (the sun creeps,
+  dawn can break mid-siege) *without* cramming a whole day into 20 minutes:
+
+  ```
+  battleDayFrac = startDayFrac + (battleTick / battleDurationTicks) · BATTLE_TIME_SPAN
+  // BATTLE_TIME_SPAN ≈ 2–4 h of compressed cycle per match (⚙ balance, ❓ OPEN)
+  ```
+
+  Battle time is derived from the **battle's own tick** (the EF MOBA server clock), so it stays
+  deterministic and never reads wall-clock. Weather (§2) likewise **inherits** the overworld hex's
+  wind/precip at battle start and may evolve on the same compressed span.
+
 ## 2. Weather: wind + rain (coherent, drifting, stored nowhere)
 
 Sample a low-frequency value-noise field in space **and slow time** `t = tick · WEATHER_RATE`:
@@ -147,7 +171,11 @@ export function env(seed, tick, x, y, cfg = {}){
 
 ## 9. Open questions (product owner)
 
-- Day length: real 24h (`1440` ticks, matches the server clock) or compressed for pacing?
-- `SERVER_TZ_HOURS` anchor (Montreal vs Singapore shards — one global clock, or per-shard local time?).
+- **Overworld day length** — real 24h (`1440` ticks, tracks the shard's server clock; **leaning this**,
+  per §1a) or compressed for pacing?
+- **Battle `BATTLE_TIME_SPAN`** — how many hours of compressed cycle a single match plays through
+  (~2–4 h proposed, §1a); does deep night ever reduce visibility as a real (bounded) battle factor?
+- **Shard clock** — per-shard **server-local** time (Montreal vs Singapore), **leaning this** (§1a),
+  vs one global clock.
 - Weather granularity: one global system, or per-region climate bias (desert frontier drier, coasts wetter)?
 - Fire/flood balance + whether weather is ever *decisive* (North Star: it must not decide a war alone).
