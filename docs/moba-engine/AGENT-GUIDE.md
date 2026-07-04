@@ -139,15 +139,18 @@ side. **If you touch a seam, read its contract doc first.**
   `Match.addSeat`. **✅ already wired.**
 - **Status:** ✅ ticket + gateway done. Blocked only on Seam D (a live match to join).
 
-### Seam D — Bridge layer ↔ Netcode: **live-match creation** ⏳ THE ONE OPEN ITEM
+### Seam D — Bridge layer ↔ Netcode: **live-match creation** ✅ DONE (2026-07-03)
 - **What:** hero mode needs a persistent 30Hz match in the game server that a ticket binds to.
 - **Contract:** `docs/briefs/TICKET-CONTRACT.md §6`.
-- **Bridge side (us, DONE):** `allocate(mode:"live")` POSTs `GAME_INTERNAL/internal/cf/live` and binds
-  the ticket to the id the game server returns.
-- **Netcode side (TODO):** `POST /internal/cf/live {context}` on the game server → `{matchId:
-  String(mm.createLiveMatch(context))}`; `mm.createLiveMatch` builds a Match from the CF context (reuse
-  `cf/battle.js makeBattleWorld`), keeps it **open at 30Hz** for late joins; `matchId` string end-to-end.
-- **Status:** ⏳ bridge half done + deployed; netcode half is the last piece before a clickable hero demo.
+- **Bridge side:** `allocate(mode:"live")` POSTs `GAME_INTERNAL/internal/cf/live` (context UNwrapped)
+  and binds the ticket to the id the game server returns.
+- **Netcode side:** `POST /internal/cf/live` (`index.js`) → `mm.createLiveMatch(context)` (a `cfLive`
+  Match ticking at 30Hz, kept open; possess/release officers via `Match.addSeat`).
+- **Command channel (`net/cfpump.js`):** on live-match create, auto-registers with CF's bridge
+  (`bridgeStart` + joinUrl → ⚡ lights) and streams 3Hz snapshots + polls steering. Needs the game
+  server proc to have `CF_BRIDGE_URL` + `BRIDGE_SECRET` (it does).
+- **Status:** ✅ verified live — `[cfpump] registered as battle BRX… (joinable)`, army spawns,
+  snapshots streaming. The full hero-mode loop is closed.
 
 ### Seam E — Maps ↔ Bridge layer: **Battlefield JSON**
 - **What:** the map generator's output is what `allocate`'s `battlefield` field consumes.
@@ -211,11 +214,12 @@ allocate→callback loop works.
 
 ## 10. Current status & the single open critical-path item
 
-- ✅ MOBA game, netcode v2 (Montreal), lobby/economy, headless engine, CF M1 (allocate/callback/casualties/
-  verify), M1.5 smoke relay, hero-mode ticket seam + gateway.
-- ⏳ **The one thing between here and a clickable end-to-end hero-mode demo:** Seam D — the netcode
-  session builds `POST /internal/cf/live` + `mm.createLiveMatch` (keep-open 30Hz match). Bridge + client
-  + CF button are all done and waiting on it.
+- ✅ MOBA game, netcode v2, lobby/economy, headless engine, CF M1 (allocate/callback/casualties/verify),
+  M1.5 smoke relay, hero-mode ticket seam + gateway, **live-match + command channel (Seam D) — the full
+  clickable hero-mode loop is wired and verified live** (march → live match → watch in command mode →
+  ⚡ take the field → result settles).
+- Remaining is polish, not critical path: officer contribution stats hook; faithful finite-wave/
+  structures builder; Montreal CF parity; content-parity of ability VFX in net mode; reinforce (D1b)=v2.
 - Follow-ups (non-blocking): officer contribution stats hook; faithful finite-wave/structures builder
   (game-dev PARAM lane); Montreal CF parity; reinforce (D1b) = v2.
 
