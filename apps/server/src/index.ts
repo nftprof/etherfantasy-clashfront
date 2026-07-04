@@ -3,6 +3,7 @@
  * `main.ts` is the boot entry; these exports are for tests + tooling.
  */
 export * from './battleEngine';
+export * from './battlefield';
 export * from './bridge';
 export * from './game';
 export * from './masters';

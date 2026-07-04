@@ -31,6 +31,7 @@
  * Wall clock is allowed here (stale/timeout detection) — the bridge is a
  * server boundary, never the sim.
  */
+import { type Battlefield, loadStandbyBattlefield } from './battlefield';
 import { ApiError } from './game';
 
 // ── Wire shapes (HTTP, external side) ────────────────────────────────────────
@@ -89,6 +90,12 @@ export interface BridgeStartIn {
    * client. When present the viewer's "⚡ Take the field" button opens it.
    */
   joinUrl?: string;
+  /**
+   * The REAL exported Battlefield JSON (BATTLEFIELD-SCHEMA / §1a) the match is
+   * being played on. When present it takes precedence over the stand-in map in
+   * the command view; when absent CF serves a standard MOBA-style stand-in.
+   */
+  battlefield?: Battlefield;
 }
 
 export interface BridgeCommandOut {
@@ -160,6 +167,8 @@ interface BridgeBattle {
   /** Last steering markers, echoed into snapshots so the viewer renders them. */
   rally?: { x: number; y: number };
   focus?: string;
+  /** Real exported map for this match (§1a); undefined ⇒ command view uses a stand-in. */
+  battlefield?: Battlefield;
 }
 
 /** How the hub talks back to the server/world (injected — no ws/game imports here). */
@@ -273,6 +282,14 @@ export class BridgeHub {
       }
       joinUrl = b.joinUrl;
     }
+    // Accept a real exported map if the match server sent one (basic shape gate);
+    // otherwise the command view falls back to a standard MOBA-style stand-in.
+    let battlefield: Battlefield | undefined;
+    const bfIn = (body as { battlefield?: unknown }).battlefield;
+    if (bfIn !== undefined && bfIn !== null) {
+      const arena = (bfIn as { arena?: { bounds?: unknown } }).arena;
+      if (Array.isArray(arena?.bounds) && arena!.bounds.length >= 3) battlefield = bfIn as Battlefield;
+    }
 
     const rec: BridgeBattle = {
       id,
@@ -283,6 +300,7 @@ export class BridgeHub {
       ...(engineFeed ? { engineFeed: true } : {}),
       ...(startedBy !== undefined ? { startedByGovernorId: startedBy } : {}),
       ...(joinUrl !== undefined ? { joinUrl } : {}),
+      ...(battlefield !== undefined ? { battlefield } : {}),
       attackerLabel: b.attacker.armyLabel,
       defenderLabel: b.defender.label,
       attackerTroops: typeof b.attacker.troops === 'number' ? Math.max(0, Math.round(b.attacker.troops)) : 0,
@@ -420,11 +438,17 @@ export class BridgeHub {
     const b = this.battles.get(battleId);
     if (b === undefined) return undefined;
     const sz = b.size;
+    // Real exported map if the match server sent one; else a standard MOBA-style
+    // stand-in (3-lane) so the command view looks like a real battlefield, not a
+    // bare square (ALLOCATE-CALLBACK-SCHEMA §1a). The viewer normalises the
+    // schema's centre-origin coords onto its arena, whatever the arena size.
+    const battlefield = b.battlefield ?? loadStandbyBattlefield(3);
     return {
       battleId,
       parcelId: b.parcelId,
       mode: 'square', // viewer: square arena frame, flat backdrop, no lane/terrain
       bridge: true,
+      ...(battlefield !== undefined ? { battlefield } : {}),
       exhibition: b.exhibition,
       openCommands: b.startedByGovernorId === undefined && b.exhibition,
       size: sz,

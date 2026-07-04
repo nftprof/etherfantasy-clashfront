@@ -1,0 +1,68 @@
+{
+  "v": 1,
+  "_placeholder": "standby standard map — replace with the MOBA team's real exported map when delivered",
+  "meta": {
+    "parcelId": "STANDBY-3LANE",
+    "seed": "cf-standby-3lane-v1",
+    "designVersion": 0,
+    "biome": "TEMPERATE_GRASS",
+    "sizeClass": "SINGLE",
+    "sizeM": 240,
+    "laneCount": 3
+  },
+  "arena": {
+    "shape": "polygon",
+    "sizeM": 240,
+    "bounds": [[-118, -118], [118, -118], [118, 118], [-118, 118]]
+  },
+  "obstacles": [
+    { "id": "river_nw", "kind": "WATER", "passable": true, "footprint": [[-104.3, 115.7], [-19.3, 30.7], [-30.7, 19.3], [-115.7, 104.3]] },
+    { "id": "river_se", "kind": "WATER", "passable": true, "footprint": [[30.7, -19.3], [115.7, -104.3], [104.3, -115.7], [19.3, -30.7]] },
+    { "id": "jungle_n1", "kind": "TREE", "x": -30, "z": 55, "r": 6, "passable": false },
+    { "id": "jungle_n2", "kind": "BOULDER", "x": 30, "z": 58, "r": 5, "passable": false },
+    { "id": "jungle_s1", "kind": "TREE", "x": 30, "z": -55, "r": 6, "passable": false },
+    { "id": "jungle_s2", "kind": "BOULDER", "x": -30, "z": -58, "r": 5, "passable": false },
+    { "id": "jungle_e1", "kind": "TREE", "x": 58, "z": -30, "r": 6, "passable": false },
+    { "id": "jungle_w1", "kind": "TREE", "x": -58, "z": 30, "r": 6, "passable": false }
+  ],
+  "resources": [
+    { "id": "gold_n", "kind": "GOLD_MINE", "x": 0, "z": 60, "richness": 3 },
+    { "id": "wood_s", "kind": "WOOD_GROVE", "x": 0, "z": -60, "richness": 2 },
+    { "id": "gold_e", "kind": "GOLD_MINE", "x": 60, "z": 0, "richness": 2 },
+    { "id": "wood_w", "kind": "WOOD_GROVE", "x": -60, "z": 0, "richness": 2 }
+  ],
+  "buildSpots": [
+    { "anchorId": "spot_def_top", "x": 48, "z": 100, "size": "M", "side": "DEFENDER" },
+    { "anchorId": "spot_def_bot", "x": 100, "z": 48, "size": "M", "side": "DEFENDER" },
+    { "anchorId": "spot_atk_top", "x": -100, "z": -48, "size": "M", "side": "ATTACKER" },
+    { "anchorId": "spot_mid", "x": 0, "z": 0, "size": "S" }
+  ],
+  "spawnZones": [
+    { "id": "spawn_atk", "side": "ATTACKER", "edge": "S", "x": -96, "z": -110 },
+    { "id": "spawn_def", "side": "DEFENDER", "edge": "N", "x": 96, "z": 110 }
+  ],
+  "lanes": [
+    { "id": "lane_top", "side": "ATTACKER", "waypoints": [[-96, -96], [-104, 0], [-104, 96], [0, 104], [96, 96]] },
+    { "id": "lane_mid", "side": "ATTACKER", "waypoints": [[-96, -96], [-45, -45], [0, 0], [45, 45], [96, 96]] },
+    { "id": "lane_bot", "side": "ATTACKER", "waypoints": [[-96, -96], [0, -104], [96, -104], [104, 0], [96, 96]] }
+  ],
+  "structures": [
+    { "anchorId": "core_atk", "kind": "CORE", "side": "ATTACKER", "x": -96, "z": -96 },
+    { "anchorId": "core_def", "kind": "CORE", "side": "DEFENDER", "x": 96, "z": 96 },
+    { "anchorId": "gate_atk", "kind": "GATE", "side": "ATTACKER", "x": -82, "z": -82 },
+    { "anchorId": "gate_def", "kind": "GATE", "side": "DEFENDER", "x": 82, "z": 82 },
+    { "anchorId": "wall_atk1", "kind": "WALL", "side": "ATTACKER", "x": -108, "z": -88 },
+    { "anchorId": "wall_atk2", "kind": "WALL", "side": "ATTACKER", "x": -88, "z": -108 },
+    { "anchorId": "wall_def1", "kind": "WALL", "side": "DEFENDER", "x": 108, "z": 88 },
+    { "anchorId": "wall_def2", "kind": "WALL", "side": "DEFENDER", "x": 88, "z": 108 },
+    { "anchorId": "t_top_atk", "kind": "TOWER", "side": "ATTACKER", "x": -102, "z": -30 },
+    { "anchorId": "t_top_def1", "kind": "TOWER", "side": "DEFENDER", "x": -40, "z": 102 },
+    { "anchorId": "t_top_def2", "kind": "TOWER", "side": "DEFENDER", "x": 52, "z": 99 },
+    { "anchorId": "t_mid_atk", "kind": "TOWER", "side": "ATTACKER", "x": -48, "z": -48 },
+    { "anchorId": "t_mid_def1", "kind": "TOWER", "side": "DEFENDER", "x": 40, "z": 40 },
+    { "anchorId": "t_mid_def2", "kind": "TOWER", "side": "DEFENDER", "x": 68, "z": 68 },
+    { "anchorId": "t_bot_atk", "kind": "TOWER", "side": "ATTACKER", "x": -30, "z": -102 },
+    { "anchorId": "t_bot_def1", "kind": "TOWER", "side": "DEFENDER", "x": 102, "z": -40 },
+    { "anchorId": "t_bot_def2", "kind": "TOWER", "side": "DEFENDER", "x": 99, "z": 52 }
+  ]
+}

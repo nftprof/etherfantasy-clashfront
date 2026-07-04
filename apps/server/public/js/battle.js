@@ -244,6 +244,238 @@ export function createBattle({ store, ui, send, ftue }) {
     return out;
   }
 
+  // ── Battlefield-JSON renderer (docs/briefs/BATTLEFIELD-SCHEMA.md) ────────────
+  // A fully data-driven top-down map: it draws ANY conformant Battlefield object
+  // (bounds polygon, terrain, lanes, structure anchors, spawns, resources,
+  // buildSpots). The live UNIT snapshot layer renders ON TOP of this in draw().
+  // When the MOBA team's real exported map replaces the stand-in JSON, this
+  // renderer consumes it unchanged.
+  const BIOMES = {
+    TEMPERATE_GRASS: { g0: '#33502c', g1: '#25401d', dirt: '190,168,116' },
+    TEMPERATE_FOREST: { g0: '#2c4626', g1: '#1f3618', dirt: '176,150,102' },
+    DESERT: { g0: '#8a7a4a', g1: '#6f6036', dirt: '210,190,140' },
+    SNOW: { g0: '#8fa3b0', g1: '#6d818f', dirt: '200,210,220' },
+    VOLCANIC: { g0: '#4a3630', g1: '#33231f', dirt: '150,110,90' },
+  };
+  const biomePalette = (b) => BIOMES[b] ?? BIOMES.TEMPERATE_GRASS;
+  const sideColor = (side) => (side === 'ATTACKER' ? ATK : side === 'DEFENDER' ? FOE : '#9fb0c4');
+
+  /** Schema (x east, z north, centre origin, ±sizeM/2) → viewer world space [0,size]². */
+  function bfProject(x, z) {
+    const bf = field.battlefield;
+    const S = field.size || 240;
+    const M = bf?.arena?.sizeM || bf?.meta?.sizeM || S;
+    return [(x / M + 0.5) * S, (0.5 - z / M) * S];
+  }
+
+  /** Draw the whole static Battlefield JSON (everything below the live units). */
+  function drawBattlefieldMap(now, s, lw, pulse) {
+    const bf = field.battlefield;
+    const S = field.size || 240;
+    const pal = biomePalette(bf.meta?.biome);
+    const P = bfProject;
+
+    // bounds polygon = the arena outline
+    const bpath = new Path2D();
+    (bf.arena?.bounds ?? [[-S / 2, -S / 2], [S / 2, -S / 2], [S / 2, S / 2], [-S / 2, S / 2]]).forEach(
+      ([x, z], i) => { const [vx, vy] = P(x, z); i === 0 ? bpath.moveTo(vx, vy) : bpath.lineTo(vx, vy); },
+    );
+    bpath.closePath();
+    const grad = ctx.createLinearGradient(0, 0, S, S);
+    grad.addColorStop(0, pal.g0);
+    grad.addColorStop(1, pal.g1);
+    ctx.fillStyle = grad;
+    ctx.fill(bpath);
+
+    ctx.save();
+    ctx.clip(bpath);
+
+    // LANES — translucent worn corridors (drawn first, under terrain/structures)
+    for (const lane of bf.lanes ?? []) {
+      const wp = (lane.waypoints ?? []).map(([x, z]) => P(x, z));
+      if (wp.length < 2) continue;
+      ctx.strokeStyle = `rgba(${pal.dirt},0.20)`;
+      ctx.lineWidth = 13;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.beginPath();
+      wp.forEach(([x, y], i) => (i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y)));
+      ctx.stroke();
+      ctx.strokeStyle = `rgba(${pal.dirt},0.30)`;
+      ctx.lineWidth = 1.4;
+      ctx.setLineDash([4, 6]);
+      ctx.beginPath();
+      wp.forEach(([x, y], i) => (i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y)));
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+
+    // TERRAIN — water footprints + forest/rock obstacles
+    for (const o of bf.obstacles ?? []) {
+      const kind = String(o.kind ?? '').toUpperCase();
+      if (Array.isArray(o.footprint) && o.footprint.length >= 3) {
+        const pts = o.footprint.map(([x, z]) => P(x, z));
+        ctx.beginPath();
+        pts.forEach(([x, y], i) => (i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y)));
+        ctx.closePath();
+        const water = kind === 'WATER' || kind === 'RIVER';
+        ctx.fillStyle = water ? 'rgba(39,80,107,0.7)' : 'rgba(70,60,54,0.6)';
+        ctx.fill();
+        ctx.strokeStyle = water ? 'rgba(140,190,220,0.35)' : 'rgba(150,140,130,0.3)';
+        ctx.lineWidth = lw(1.2);
+        ctx.stroke();
+        continue;
+      }
+      const [cx, cy] = P(o.x ?? 0, o.z ?? 0);
+      const r = o.r ?? 5;
+      if (kind === 'WATER' || kind === 'POND' || kind === 'RIVER') {
+        ctx.fillStyle = '#27506b';
+        ctx.beginPath();
+        ctx.ellipse(cx, cy, r, r * 0.8, 0.4, 0, 7);
+        ctx.fill();
+      } else if (kind === 'TREE' || kind === 'TREES' || kind === 'FOREST') {
+        for (let i = 0; i < 5; i++) {
+          const a = (i / 5) * Math.PI * 2 + cx;
+          const rr = r * (0.5 + 0.22 * ((i * 37) % 10) / 10);
+          ctx.fillStyle = i % 2 ? '#1e3618' : '#25421c';
+          ctx.beginPath();
+          ctx.arc(cx + Math.cos(a) * r * 0.38, cy + Math.sin(a) * r * 0.34, rr, 0, 7);
+          ctx.fill();
+        }
+        ctx.fillStyle = '#2c4c22';
+        ctx.beginPath();
+        ctx.arc(cx - r * 0.15, cy - r * 0.2, r * 0.45, 0, 7);
+        ctx.fill();
+      } else {
+        // BOULDER / ROCK / CLIFF
+        ctx.fillStyle = '#5a5f66';
+        ctx.beginPath();
+        ctx.arc(cx, cy, r, 0, 7);
+        ctx.fill();
+        ctx.fillStyle = '#71767d';
+        ctx.beginPath();
+        ctx.arc(cx - r * 0.25, cy - r * 0.3, r * 0.55, 0, 7);
+        ctx.fill();
+      }
+    }
+
+    // RESOURCE NODES — gold mines / wood groves
+    for (const r of bf.resources ?? []) {
+      const [cx, cy] = P(r.x, r.z);
+      const kind = String(r.kind ?? '').toUpperCase();
+      const gold = kind.includes('GOLD') || kind.includes('ORE') || kind.includes('MINE');
+      ctx.fillStyle = gold ? 'rgba(240,200,80,0.9)' : 'rgba(120,180,90,0.9)';
+      ctx.strokeStyle = 'rgba(20,24,16,0.7)';
+      ctx.lineWidth = lw(1);
+      if (gold) {
+        ctx.beginPath();
+        ctx.moveTo(cx, cy - 3.4);
+        ctx.lineTo(cx + 3.2, cy);
+        ctx.lineTo(cx, cy + 3.4);
+        ctx.lineTo(cx - 3.2, cy);
+        ctx.closePath();
+      } else {
+        ctx.beginPath();
+        ctx.moveTo(cx, cy - 3.6);
+        ctx.lineTo(cx + 3.2, cy + 2.8);
+        ctx.lineTo(cx - 3.2, cy + 2.8);
+        ctx.closePath();
+      }
+      ctx.fill();
+      ctx.stroke();
+    }
+
+    // BUILD SPOTS — faint anchor pips
+    for (const bs of bf.buildSpots ?? []) {
+      const [cx, cy] = P(bs.x, bs.z);
+      ctx.strokeStyle = bs.side ? `${sideColor(bs.side)}66` : 'rgba(200,200,200,0.28)';
+      ctx.lineWidth = lw(1);
+      ctx.setLineDash([lw(2), lw(2)]);
+      ctx.beginPath();
+      ctx.arc(cx, cy, 3, 0, 7);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+    ctx.restore();
+
+    // bounds outline (over the clipped fill)
+    ctx.strokeStyle = 'rgba(226,222,200,0.4)';
+    ctx.lineWidth = lw(1.6);
+    ctx.stroke(bpath);
+
+    // STRUCTURE ANCHORS — CORE / TOWER / GATE / WALL, coloured by side
+    for (const st of bf.structures ?? []) {
+      const [cx, cy] = P(st.x, st.z);
+      const col = sideColor(st.side);
+      const kind = String(st.kind ?? '').toUpperCase();
+      if (kind === 'CORE') {
+        ctx.fillStyle = `${col}33`;
+        ctx.beginPath();
+        ctx.arc(cx, cy, 9 + pulse * 1.5, 0, 7);
+        ctx.fill();
+        ctx.fillStyle = col;
+        ctx.beginPath();
+        ctx.moveTo(cx, cy - 5.5);
+        ctx.lineTo(cx + 5.5, cy);
+        ctx.lineTo(cx, cy + 5.5);
+        ctx.lineTo(cx - 5.5, cy);
+        ctx.closePath();
+        ctx.fill();
+        ctx.strokeStyle = GOLD;
+        ctx.lineWidth = lw(1.6);
+        ctx.stroke();
+      } else if (kind === 'TOWER') {
+        ctx.fillStyle = `${col}12`;
+        ctx.beginPath();
+        ctx.arc(cx, cy, 12, 0, 7);
+        ctx.fill();
+        ctx.fillStyle = '#2a2620';
+        ctx.strokeStyle = col;
+        ctx.lineWidth = lw(1.4);
+        ctx.fillRect(cx - 3.2, cy - 3.2, 6.4, 6.4);
+        ctx.strokeRect(cx - 3.2, cy - 3.2, 6.4, 6.4);
+        ctx.fillStyle = col;
+        ctx.beginPath();
+        ctx.arc(cx, cy, 1.8, 0, 7);
+        ctx.fill();
+      } else if (kind === 'GATE') {
+        ctx.fillStyle = '#3a3128';
+        ctx.strokeStyle = col;
+        ctx.lineWidth = lw(1.2);
+        ctx.fillRect(cx - 4.5, cy - 2.2, 9, 4.4);
+        ctx.strokeRect(cx - 4.5, cy - 2.2, 9, 4.4);
+      } else {
+        // WALL / other furniture — small stud
+        ctx.fillStyle = `${col}aa`;
+        ctx.strokeStyle = 'rgba(20,20,20,0.5)';
+        ctx.lineWidth = lw(0.8);
+        ctx.fillRect(cx - 2.4, cy - 2.4, 4.8, 4.8);
+        ctx.strokeRect(cx - 2.4, cy - 2.4, 4.8, 4.8);
+      }
+    }
+
+    // SPAWN ZONES — pulsing edge markers per side
+    for (const sp of bf.spawnZones ?? []) {
+      const [cx, cy] = P(sp.x, sp.z);
+      const col = sideColor(sp.side);
+      ctx.strokeStyle = col;
+      ctx.globalAlpha = 0.35 + 0.4 * pulse;
+      ctx.lineWidth = lw(2);
+      ctx.beginPath();
+      ctx.arc(cx, cy, 6 + pulse * 1.6, 0, 7);
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+      ctx.setLineDash([lw(3), lw(3)]);
+      ctx.lineWidth = lw(1);
+      ctx.beginPath();
+      ctx.arc(cx, cy, 10, 0, 7);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+    void now;
+    void s;
+  }
+
   /** Compare consecutive snapshots: deaths → puffs, hp drops → hit sparks. */
   function spawnEffects(prevSnap, curSnap) {
     const now = performance.now();
@@ -314,6 +546,14 @@ export function createBattle({ store, ui, send, ftue }) {
     ctx.fillRect(0, 0, w, h);
     ctx.setTransform(dpr * s, 0, 0, dpr * s, dpr * ox(), dpr * oy());
     const lw = (px) => px / s;
+    const pulse = 0.5 + 0.5 * Math.sin(now / 300);
+
+    if (field.battlefield) {
+      // Real Battlefield-JSON map (docs/briefs/BATTLEFIELD-SCHEMA.md) — the
+      // command view renders exactly the layout the 3D match plays on. The live
+      // unit snapshot layer (below) draws on top of it.
+      drawBattlefieldMap(now, s, lw, pulse);
+    } else {
 
     // bounds = the parcel's own shape ('square' = the bridge's legacy MOBA arena)
     const square = field.mode === 'square';
@@ -430,7 +670,6 @@ export function createBattle({ store, ui, send, ftue }) {
       ctx.stroke(bpath);
     }
 
-    const pulse = 0.5 + 0.5 * Math.sin(now / 300);
     if (!square) {
       // spawn edge marker (attacker entry) + heart
       ctx.strokeStyle = `rgba(77,163,255,${0.35 + 0.4 * pulse})`;
@@ -443,6 +682,8 @@ export function createBattle({ store, ui, send, ftue }) {
       ctx.arc(field.heart.x, field.heart.y, 5, 0, 7);
       ctx.fill();
     }
+
+    } // end legacy (non-battlefield) map
 
     // wave spawn points / arrival lanes (bridge battles; reinforcements open new fronts)
     for (const sp of cur.snap.spawns ?? []) {

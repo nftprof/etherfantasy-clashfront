@@ -387,6 +387,20 @@ review is strictly post-resolution (they are watchable live via the existing com
 computed at collision but may be held SEALED until `startTick + revealDurationTicks` so a fight cannot be
 previewed before normal battle time — the same `recentBattles` record + timeline shape already serve it.
 
+**Command-view map & interim stand-ins (owner 2026-07-04; implemented).** The command-mode top-down view
+(`apps/server/public/js/battle.js`) is a fully **data-driven renderer of the Battlefield JSON**
+(`docs/briefs/BATTLEFIELD-SCHEMA.md`): it draws the bounds polygon, biome-tinted terrain + water
+footprints + forest/rock obstacles, lane corridors, structure anchors (CORE / TOWER / GATE / WALL coloured
+by side), spawn zones, resource nodes and build-spots, with the LIVE unit snapshot layered on top. Until
+the map generator (`briefs/MAP-GENERATOR.md`) ships per-parcel designs, every `battle_hello` carries an
+**interim stand-in map from `data/moba-maps/*.json`** — a standard symmetric MOBA layout
+(`legacy-3lane.json` for estates/default, `legacy-1lane.json` for single parcels), each a valid Battlefield
+JSON passing all five playability invariants and tagged `_placeholder`. Precedence: a REAL exported map
+sent by the match server/bridge for a given match wins; otherwise the stand-in (wired in both
+`game.ts battleStatic` for sim battles and `bridge.ts battleStatic` for engine/bridge/exhibition battles).
+When the generator or the MOBA team's real export lands it drops into the same schema and the renderer
+consumes it unchanged, zero renderer edits (`ALLOCATE-CALLBACK-SCHEMA.md` §1a).
+
 **Scale laws (product owner, 2026-07-02):**
 - **The overworld game map = the source SVG, verbatim** — the extracted hexagon-city geometry
   (`data/hexagon-city-source/`) IS the world map: exact parcel shapes, positions, proportions.
