@@ -263,6 +263,13 @@
     "liveMatchPoolMax": 8,
     "commandQueueTimeoutTicks": 20
   },
+  "review": {
+    "_note": "⚙ Post-battle 'Recent battles' review (docs/04 §7b). Battles resolve fast (accelerated is the default per §3a) so the player needs a way to review a fight AFTER it ends. ringCap = how many recently-resolved battles the server keeps per world for review (older age out, newest-first, fog-filtered per viewer); reviewTimerSec = seconds each battle shows during 'Review all' auto-advance; timelineKeyframes = compact synthesized strength-progression keyframes stored per accelerated battle (a few hundred bytes, NOT 30 Hz frames — an honest reconstruction, not fake live telemetry); revealDurationTicks = world ticks an AUTO outcome stays SEALED after collision before it may be revealed (sealed-reveal follow-up: the accelerated result is computed at collision but applied/shown only at startTick+revealDurationTicks, so AUTO battles cannot be previewed before normal battle time).",
+    "ringCap": 12,
+    "reviewTimerSec": 7,
+    "timelineKeyframes": 12,
+    "revealDurationTicks": 6
+  },
   "wildBattle": {
     "_note": "Live wild-battle tactical sim ⚙ (docs/04 §7b wild row — prototype). One battle entity = squadSize overworld soldiers. Stats are per battle tick at tickHz. Attacker = waves from the map edge (no CC, StarCraft-campaign style); defender = mob camps + towers, 1 lane. clockTicks = the battle clock (≈ 4 min demo at 4 Hz); unwatched battles advance acceleratedTicksPerWorldTick per world tick — SAME sim, fast-forward (canon: acceleration is the same sim).",
     "tickHz": 4,

@@ -775,3 +775,72 @@ test('engine feed bind: bridge start with a pending engine battleId attaches dis
     await engine.close();
   }
 });
+
+// ── Recently-resolved review ring (docs/04 §7b) ──────────────────────────────
+test('review ring: engine-callback settlement records the fight in recentBattles (per-UnitClass casualties, fog, not live)', async () => {
+  const engine = await mockEngine(201, { matchId: 'efm_rev_1' });
+  const game = new Game(gameConfig({ seed: 'engine-review-ring' }));
+  const server = new ClashServer({
+    game, port: 0, tickMs: null, saveMs: null,
+    battleEngine: { url: engine.url, token: API_TOKEN, hmacSecret: HMAC_SECRET },
+  });
+  const port = await server.start();
+  const base = `http://127.0.0.1:${port}`;
+  try {
+    // Plain MARCH (command=false) ⇒ accelerated engine battle.
+    const { attacker, defender, atkArmyId, defArmyId, events } = await stagePvp(game, server, base);
+    const battleId = events.find((e: any) => e.type === 'battle_started')!.battleId as string;
+    // A stranger with zero intel on the parcel — used for the fog assertion.
+    const stranger = (await api(base, '/api/join', { body: { name: 'Stranger' } })).json;
+    await until(() => game.state.engineBattles!.get(battleId)!.status === 'ALLOCATED', 'allocated');
+
+    // Callback: attacker wins, per-UnitClass casualties both sides (defender wiped).
+    const callback = {
+      v: 1,
+      battleId,
+      matchId: 'efm_rev_1',
+      outcome: { winner: 'ATTACKER', reason: 'CORE_DESTROYED' },
+      sides: {
+        ATTACKER: { casualties: { INFANTRY: 30 }, survivors: {} },
+        DEFENDER: { casualties: { INFANTRY: 100, ARCHER: 60, CAVALRY: 40 }, survivors: {} },
+      },
+      issuedAt: new Date().toISOString(),
+      nonce: 'rev-nonce-1',
+    };
+    assert.equal((await postCallback(base, callback)).status, 200);
+    // Not in the ring until the world tick settles it.
+    assert.equal(game.recentBattlesFor(attacker.governorId).some((b) => b.battleId === battleId), false);
+    server.tickOnce();
+
+    const st = (await api(base, '/api/state', { token: attacker.token })).json;
+    const rec = st.recentBattles.find((b: any) => b.battleId === battleId);
+    assert.ok(rec, 'settled engine battle recorded in recentBattles');
+    assert.equal(rec.winner, 'ATTACKER');
+    assert.equal(rec.reason, 'CORE_DESTROYED', 'engine outcome reason carried through');
+    assert.equal(rec.mine, true, 'attacker sees it as theirs');
+    assert.equal(rec.wasLive, false, 'accelerated battle had no live telemetry');
+    assert.equal(rec.resolutionMode, 'ACCELERATED');
+    // Aggregate casualties reflect the per-UnitClass callback (30 attacker, 200 defender wiped).
+    assert.equal(rec.casualties.attacker, 30);
+    assert.equal(rec.casualties.defender, 200);
+    assert.equal(rec.survivors.attacker, 170);
+    assert.equal(rec.survivors.defender, 0);
+    assert.ok(Array.isArray(rec.timeline) && rec.timeline.length >= 2, 'compact strength timeline present');
+    assert.equal(rec.timeline[0].a, 200, 'timeline starts at full strength');
+    assert.equal(rec.timeline[rec.timeline.length - 1].a, 170, 'timeline ends at survivors');
+    // A resolved battle is NOT in liveBattleSummaries.
+    assert.equal(st.liveBattles.some((b: any) => b.id === battleId), false, 'settled battle off the live list');
+    // The defender participant also sees it; the fogged stranger does not.
+    assert.ok(game.recentBattlesFor(defender.governorId).some((b) => b.battleId === battleId), 'defender sees the fight');
+    assert.equal(
+      game.recentBattlesFor(stranger.governorId).some((b) => b.battleId === battleId),
+      false,
+      'a viewer with no intel on the parcel never sees the battle',
+    );
+    void atkArmyId;
+    void defArmyId;
+  } finally {
+    await server.stop();
+    await engine.close();
+  }
+});

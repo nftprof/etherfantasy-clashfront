@@ -239,6 +239,8 @@ export class ClashServer {
           tick: result.tick,
           events: [...this.game.eventsFor(governorId, result.events), ...bridgeEvents],
           deltas: this.game.deltasFor(governorId),
+          // Recently-resolved review ring (docs/04 §7b) — fog-filtered, newest-first.
+          recentBattles: this.game.recentBattlesFor(governorId),
         });
         perGovernor.set(governorId, msg);
       }

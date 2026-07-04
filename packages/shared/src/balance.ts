@@ -298,12 +298,27 @@ export interface Balance {
     /** A COMMAND battle QUEUED past the live pool waits this many world ticks, then falls back to accelerated. */
     commandQueueTimeoutTicks: number;
   };
+  /**
+   * ⚙ Post-battle "Recent battles" review (docs/04 §7b). Battles resolve fast
+   * (accelerated is the default), so the player reviews a fight AFTER it ends
+   * from a bounded, fog-filtered ring. See balance.json `review._note`.
+   */
+  review: {
+    /** How many recently-resolved battles the world keeps for review (newest-first; older age out). */
+    ringCap: number;
+    /** Seconds each battle shows during "Review all" auto-advance. */
+    reviewTimerSec: number;
+    /** Compact synthesized strength-progression keyframes per accelerated battle (honest reconstruction, not 30 Hz telemetry). */
+    timelineKeyframes: number;
+    /** World ticks an AUTO outcome stays SEALED after collision before it may be revealed (sealed-reveal follow-up). */
+    revealDurationTicks: number;
+  };
 }
 
 const REQUIRED_SECTIONS: readonly (keyof Balance)[] = [
   'travel', 'development', 'tax', 'prosperity', 'food', 'population',
   'supply', 'morale', 'desertion', 'upkeep', 'units', 'pillageOccupy', 'draft', 'provisions', 'claims',
-  'intel', 'towns', 'wildRaids', 'developmentEffects', 'economy', 'training', 'wildBattle', 'battle',
+  'intel', 'towns', 'wildRaids', 'developmentEffects', 'economy', 'training', 'wildBattle', 'battle', 'review',
 ];
 
 function resolveBalancePath(): string {
