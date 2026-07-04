@@ -110,6 +110,39 @@ function decideMode(b: BattleInstance): ResolutionMode {
 **North-star guard:** expected `WarScore` is mode-invariant. `LIVE` only moves the outcome within the
 `HERO_IMPACT_MAX` band; a battle you'd lose 80/20 on paper cannot be won purely by playing well.
 
+### 3a. COMMAND vs AUTO — the march-time choice (owner, 2026-07-04) — SCALING KEYSTONE
+
+LIVE (30 Hz, joinable, steerable) is a SCARCE, OPT-IN resource; AUTO (accelerated resolve,
+watch-only after) is the DEFAULT. You cannot run a live server for every border clash in a
+293k-parcel world — so the player DECLARES intent at MARCH time, and the system honors it only
+within a bounded live-match budget.
+
+- **Two march orders:** `MARCH` (auto — resolve it for me; watch the replay after) and
+  `MARCH & COMMAND` (I want to play/steer this battle live). Default = MARCH (auto).
+- **Command SLOTS (per-player attention cap):** a player may have only ⚙ N concurrent COMMAND
+  battles (MVP ⚙ small, e.g. 1–2). Beyond that, further battles auto-resolve — you command the
+  fights you actually care about.
+- **Live-match POOL + QUEUE (server capacity backpressure):** the global count of live 30 Hz
+  matches is capped ⚙. A COMMAND battle whose start would exceed the pool is QUEUED (created,
+  live-start deferred) until a slot frees; if it waits past ⚙ `commandQueueTimeout`, it falls
+  back to AUTO. So COMMAND is best-effort: guaranteed a fight, live when capacity allows.
+- **Mode selection (SUPERSEDES §3 `decideMode` "≥1 human ⇒ LIVE"):**
+  `LIVE` iff ANY participant elected COMMAND **and** holds a free command slot **and** the live
+  pool has room (else queue, else AUTO). No command intent anywhere ⇒ ACCELERATED (or AUTO for
+  trivial stakes). Human-never-in-range battles always auto-resolve. Applies to **PvP too** — a
+  player-vs-player battle auto-resolves unless a participant spent a command slot on it.
+- **Watch-only after AUTO:** an auto/accelerated battle emits a replay you can review; you
+  cannot steer it or take the field (that's what COMMAND buys).
+- **Future ⚙ COMMAND FEE:** dedicating a general to live command may cost CT ("dedicated-command
+  compensation") — a sink + a soft rate-limiter beyond hard slots. Phased with the CT economy.
+- **Why this scales:** only battles a player actively commands consume 30 Hz capacity; the
+  entire rest of the war runs cheap accelerated resolution. Server expansion = more live-pool
+  slots. This is the mechanism that makes a persistent world-scale battlefield tractable.
+
+Relationship to the existing drop-in model (§4): COMMAND-intent-at-march replaces the open
+LOBBY as the primary "I want to play this" signal, bounded by slots/pool; the LOBBY/reinforce
+join paths still apply on top of a battle that has already gone LIVE.
+
 ---
 
 ## 4. Drop-in / join model

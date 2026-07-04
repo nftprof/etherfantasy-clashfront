@@ -120,6 +120,16 @@ export can be converted to the documented format. See `data/README.md`.
     standing orders (DUEL/FLEE/STAND). NFT pets = passive homesteads: farm yield, never
     defend, walk-on take-over returns the pet home (never lost). `docs/04` §7d.
 
+15. COMMAND vs AUTO — SCALING KEYSTONE (2026-07-04): LIVE 30Hz battles are a SCARCE OPT-IN
+    resource, AUTO (accelerated resolve, watch-only) is the DEFAULT. Player declares intent at
+    MARCH time — `MARCH` (auto) vs `MARCH & COMMAND` (play/steer live). Bounded by per-player
+    COMMAND SLOTS (⚙ small) + a global live-match POOL with a QUEUE (over-capacity command
+    battles wait, then fall back to auto). Mode = LIVE iff a participant elected command AND has
+    a free slot AND the pool has room; else accelerated. SUPERSEDES the old "≥1 player ⇒ live"
+    rule — applies to PvP too. Future ⚙ COMMAND FEE (CT sink for dedicated command). Only
+    commanded battles use 30Hz capacity ⇒ world-scale tractable; server expand = more slots.
+    `docs/04` §3a.
+
 ## 📜 v0.2 VISION BIBLE (2026-07-02): `docs/VISION-BIBLE-v0.2.md` + `docs/ADDENDUM-E-PentaPet-Species-Affinity.pdf`
 Overarching new spec from the product owner: PentaPets = the living population (workers/soldiers/
 units, species affinities), terraforming, geology/materials, blueprint NFTs, living cities.
