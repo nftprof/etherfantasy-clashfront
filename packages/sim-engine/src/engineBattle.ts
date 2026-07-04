@@ -20,7 +20,7 @@
  * removes the lock and the standing armies resolve through the internal
  * instant path — an engine outage never bricks a battle.
  */
-import { newId, type Rng } from '@clashfront/shared';
+import { newId, type Balance, type Rng } from '@clashfront/shared';
 import type { Army } from '@clashfront/shared';
 import type { WorldState } from './state';
 
@@ -51,11 +51,14 @@ export interface EngineOutcome {
 
 /**
  * Allocation lifecycle — server-boundary field (like WildBattleState.paced):
- *   ALLOCATING  created by the tick engine, awaiting the server's allocate POST
+ *   QUEUED      COMMAND battle waiting for a free live-pool slot (docs/04 §3a);
+ *               the hex stays locked; promoted to ALLOCATING(live) when the pool
+ *               frees, or downgraded to ALLOCATING(accelerated) on queue timeout.
+ *   ALLOCATING  ready for the server's allocate POST (mode already decided)
  *   ALLOCATED   match live on the engine, awaiting the HMAC result callback
  *   FALLBACK    allocate failed (network/5xx) — next tick resolves internally
  */
-export type EngineBattleStatus = 'ALLOCATING' | 'ALLOCATED' | 'FALLBACK';
+export type EngineBattleStatus = 'QUEUED' | 'ALLOCATING' | 'ALLOCATED' | 'FALLBACK';
 
 /**
  * Per-governor hero-mode join grant returned by a `mode:"live"` allocate
@@ -92,10 +95,46 @@ export interface EngineBattleState {
    * timeout, the engine's own TIMEOUT reason is the clock authority.
    */
   mode?: 'live' | 'accelerated';
+  /**
+   * COMMAND-mode gating (docs/04 §3a): governors who spent a command slot on this
+   * battle (elected `MARCH & COMMAND` and held a free slot at the collision tick).
+   * These IDs are what the per-player slot count and the QUEUE promotion key on.
+   * Empty ⇒ a plain accelerated battle (nobody commands it).
+   */
+  commandGovernorIds?: string[];
+  /** World tick this battle entered QUEUED (queue-timeout clock — docs/04 §3a). */
+  queuedTick?: number;
   /** Live-mode join grants (server-boundary; PRIVATE per governor — see EngineBattleJoin). */
   joins?: EngineBattleJoin[];
   /** Set by the verified result callback; the next tick settles it. */
   outcome?: EngineOutcome;
+}
+
+/**
+ * Concurrent LIVE engine matches globally (docs/04 §3a live-match POOL). Counts
+ * battles the server is actively running at 30 Hz (mode 'live', allocate in
+ * flight or awaiting the callback). QUEUED battles are NOT live yet — excluded.
+ */
+export function engineLivePoolCount(state: WorldState): number {
+  let n = 0;
+  for (const b of state.engineBattles?.values() ?? []) {
+    if (b.mode === 'live' && (b.status === 'ALLOCATING' || b.status === 'ALLOCATED')) n++;
+  }
+  return n;
+}
+
+/**
+ * COMMAND slots a governor is currently holding (docs/04 §3a per-player cap):
+ * engine battles it spent a command slot on that are still live OR queued for a
+ * live slot. A settled battle is deleted, so it stops counting automatically.
+ */
+export function engineCommandSlotCount(state: WorldState, governorId: string): number {
+  let n = 0;
+  for (const b of state.engineBattles?.values() ?? []) {
+    if (b.commandGovernorIds?.includes(governorId) !== true) continue;
+    if (b.status === 'QUEUED' || (b.mode === 'live' && (b.status === 'ALLOCATING' || b.status === 'ALLOCATED'))) n++;
+  }
+  return n;
 }
 
 /** 16-hex-char engine seed from the battle's RNG fork (schema: WE supply the seed). */
@@ -108,6 +147,14 @@ export function engineSeed(rng: Rng): string {
 /**
  * Create a pending engine battle for a hostile co-location (called from the
  * BATTLE SPAWNING phase with the phase's per-hex RNG fork — fully deterministic).
+ *
+ * MODE SELECTION (docs/04 §3a, supersedes "≥1 player ⇒ live"): the battle goes
+ * LIVE only when a participant carried COMMAND intent (`army.commandIntent`)
+ * AND that governor holds a free command slot AND the global live pool has room.
+ * If a command-opting governor has a slot but the pool is full ⇒ QUEUED (live
+ * deferred). Otherwise (no command intent anywhere, or every opting governor is
+ * at its slot cap, or live disabled) ⇒ ACCELERATED. The elected command intent
+ * is CONSUMED here (cleared off the armies).
  */
 export function createEngineBattle(
   state: WorldState,
@@ -117,7 +164,40 @@ export function createEngineBattle(
   defenderGovernorId: string,
   tick: number,
   rng: Rng,
+  balance: Balance,
+  liveBattles: boolean,
 ): EngineBattleState {
+  // Which participating governors elected COMMAND for this collision?
+  const commandGovs = new Set<string>();
+  for (const a of [...attackers, ...defenders]) {
+    if (a.commandIntent === true) commandGovs.add(a.ownerGovernorId);
+  }
+  // Consume the intent (best-effort — a later march must opt in again).
+  for (const a of [...attackers, ...defenders]) {
+    if (a.commandIntent === true) {
+      a.commandIntent = false;
+      a.version += 1;
+    }
+  }
+
+  let status: EngineBattleStatus = 'ALLOCATING';
+  let mode: 'live' | 'accelerated' = 'accelerated';
+  let holders: string[] = [];
+  if (liveBattles && commandGovs.size > 0) {
+    const slotCap = balance.battle.commandSlotsPerPlayer;
+    // Only governors still under their slot cap can hold a command slot here.
+    const eligible = [...commandGovs].filter((g) => engineCommandSlotCount(state, g) < slotCap).sort();
+    if (eligible.length > 0) {
+      holders = eligible;
+      if (engineLivePoolCount(state) >= balance.battle.liveMatchPoolMax) {
+        status = 'QUEUED'; // slot reserved, live start deferred until the pool frees
+      } else {
+        mode = 'live';
+      }
+    }
+    // else: every opting governor is at its slot cap ⇒ downgrade to accelerated.
+  }
+
   const battle: EngineBattleState = {
     id: newId('battle', { time: tick, random: () => rng.next() }),
     seed: engineSeed(rng),
@@ -127,11 +207,52 @@ export function createEngineBattle(
     attackerGovernorId: attackers[0]!.ownerGovernorId,
     defenderGovernorId,
     startedTick: tick,
-    status: 'ALLOCATING',
+    status,
+    ...(status === 'QUEUED' ? { queuedTick: tick } : { mode }),
+    ...(holders.length > 0 ? { commandGovernorIds: holders } : {}),
   };
   state.engineBattles ??= new Map();
   state.engineBattles.set(battle.id, battle);
   return battle;
+}
+
+/**
+ * Promote QUEUED command battles (docs/04 §3a) — run once per world tick from the
+ * BATTLE SPAWNING phase AFTER settlements free live-pool slots. Deterministic:
+ * queued battles are processed in sorted id order.
+ *   - Timed out (waited ≥ commandQueueTimeoutTicks) or live disabled ⇒ downgrade
+ *     to ALLOCATING(accelerated); the command slot is released.
+ *   - Live pool has room ⇒ promote to ALLOCATING(live); the local pool tally
+ *     rises so one tick never over-promotes past the cap.
+ *   - Otherwise it keeps waiting.
+ */
+export function promoteQueuedEngineBattles(
+  state: WorldState,
+  tick: number,
+  balance: Balance,
+  liveBattles: boolean,
+): void {
+  if (state.engineBattles === undefined || state.engineBattles.size === 0) return;
+  let livePool = engineLivePoolCount(state);
+  const poolMax = balance.battle.liveMatchPoolMax;
+  const timeout = balance.battle.commandQueueTimeoutTicks;
+  for (const id of [...state.engineBattles.keys()].sort()) {
+    const b = state.engineBattles.get(id)!;
+    if (b.status !== 'QUEUED') continue;
+    const waited = tick - (b.queuedTick ?? tick);
+    if (!liveBattles || waited >= timeout) {
+      // Fall back to accelerated resolution (still an engine match, headless).
+      b.status = 'ALLOCATING';
+      b.mode = 'accelerated';
+      delete b.queuedTick;
+      delete b.commandGovernorIds; // slot released — it auto-resolves now
+    } else if (livePool < poolMax) {
+      b.status = 'ALLOCATING';
+      b.mode = 'live';
+      delete b.queuedTick;
+      livePool++;
+    }
+  }
 }
 
 /** True when `armyId` is committed to a pending engine battle (it cannot march/split). */

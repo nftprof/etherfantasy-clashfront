@@ -31,7 +31,12 @@ import {
 } from '@clashfront/shared';
 import type { Army, BattleInstance, GovernorKind, Territory } from '@clashfront/shared';
 import { creditWallet, flushYieldJournal } from './economy';
-import { armyInEngineBattle, createEngineBattle, type EngineBattleState } from './engineBattle';
+import {
+  armyInEngineBattle,
+  createEngineBattle,
+  type EngineBattleState,
+  promoteQueuedEngineBattles,
+} from './engineBattle';
 import { updateIntelMemory } from './intel';
 import { battleFoodNeed, enduranceMultiplier, marchFoodPerStep, troopCount } from './logistics';
 import { type ArmyRetreatRecord, type BattleLogisticsRecord, sortedIds, type WorldState } from './state';
@@ -66,6 +71,13 @@ export interface TickOptions {
    */
   engineBattles?: boolean;
   /**
+   * LIVE (30 Hz, joinable/steerable) engine battles enabled (docs/04 §3a) —
+   * the CF_LIVE_BATTLES kill switch. When false, COMMAND intent is ignored and
+   * every engine battle allocates ACCELERATED (headless). Default true: live is
+   * the norm once the engine is wired, gated by command intent + slots + pool.
+   */
+  liveBattles?: boolean;
+  /**
    * Parcel polygon provider for wild-battlefield generation (the server wires
    * this to the demo-world geometry). Undefined ⇒ a seeded synthetic outline.
    */
@@ -77,6 +89,7 @@ export const DEFAULT_TICK_OPTIONS: Required<TickOptions> = {
   choiceTimeoutTicks: 10,
   liveWildBattles: false,
   engineBattles: false,
+  liveBattles: true,
   parcelPolygonOf: () => undefined,
 };
 
@@ -552,6 +565,11 @@ function phaseBattleSpawning(
   // failed) through the internal instant path — never brick a battle.
   settleEngineBattles(state, tick, rng, balance, options);
 
+  // 1d — promote QUEUED command battles now that settlements freed live-pool
+  // slots (docs/04 §3a): a queued battle that gets a slot flips to live allocate;
+  // one that waited past ⚙ commandQueueTimeoutTicks falls back to accelerated.
+  promoteQueuedEngineBattles(state, tick, balance, options.liveBattles);
+
   // 2 — detect hostile co-location, hex by hex (deterministic order).
   const byHex = new Map<string, Army[]>();
   for (const id of sortedIds(state.armies)) {
@@ -586,7 +604,7 @@ function phaseBattleSpawning(
     // replaced by a pending engine battle — the server allocates the match on
     // the external MOBA engine and the result callback settles it next tick.
     if (options.engineBattles && isEngineEligible(attackers, defenders)) {
-      createEngineBattle(state, hexId, attackers, defenders, defenderGov, tick, rng.fork(hexId));
+      createEngineBattle(state, hexId, attackers, defenders, defenderGov, tick, rng.fork(hexId), balance, options.liveBattles);
       continue;
     }
     resolveFieldBattle(state, hexId, attackers, defenders, tick, rng.fork(hexId), balance, options);

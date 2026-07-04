@@ -143,6 +143,18 @@ Relationship to the existing drop-in model (§4): COMMAND-intent-at-march replac
 LOBBY as the primary "I want to play this" signal, bounded by slots/pool; the LOBBY/reinforce
 join paths still apply on top of a battle that has already gone LIVE.
 
+**IMPLEMENTED (2026-07-04, behind the engine-battles flag).** `POST /api/march` takes
+`command?: boolean` (default false = AUTO) → persisted as `army.commandIntent`, consumed at the
+collision tick. Caps live in `balance.json` `battle` (⚙ `commandSlotsPerPlayer` 2,
+`liveMatchPoolMax` 8, `commandQueueTimeoutTicks` 20). The sim (`createEngineBattle` /
+`promoteQueuedEngineBattles`, packages/sim-engine) owns the LIVE / QUEUED / ACCELERATED decision
+deterministically; `EngineBattleState` gains a `QUEUED` status + `commandGovernorIds` +
+`queuedTick`. Kill switch = `CF_LIVE_BATTLES=0` → `tickOptions.liveBattles`. Client: the march
+popover offers **⚔ March** (auto) and gold **⚔ March & Command** (live) with a `Command used/max`
+hint; an at-capacity march toasts the auto-resolve downgrade; only LIVE engine battles open the
+command viewer / ⚡ doorway. Wire details: `docs/briefs/ALLOCATE-CALLBACK-SCHEMA.md` §3b MODE
+SELECTION. The COMMAND FEE remains a future ⚙ hook (not built).
+
 ---
 
 ## 4. Drop-in / join model

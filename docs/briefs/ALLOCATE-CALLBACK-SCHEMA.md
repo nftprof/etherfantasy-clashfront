@@ -144,11 +144,21 @@ callback → deterministic settlement). Key facts for operators + the engine tea
   UnitClass, provisions consumed, structure damage per anchor, winner/TIE semantics and the
   normal post-battle flow (pillage/occupy choice, §7c.5 retreat ladder). Callback receiver:
   `POST /internal/battle-result` (an /internal deployment-boundary route — never public).
-- **MODE SELECTION (2026-07-03):** the overworld allocates `mode:"live"` (rates
-  `{tickHz:30, commandSnapshotHz:3}`) whenever **at least one side's governor is a PLAYER** —
-  a real player's battle is hero-joinable by default. Pure AI battles (NPC/SYSTEM vs
-  NPC/SYSTEM, monster raids on NPCs) stay `mode:"accelerated"`. `CF_LIVE_BATTLES=0` is the
-  kill switch (everything accelerated). The chosen mode is stamped on the pending record.
+- **MODE SELECTION (2026-07-04 — COMMAND-vs-AUTO, docs/04 §3a; SUPERSEDES the 2026-07-03
+  "≥1 player ⇒ live" rule):** the sim decides mode at the collision tick and stamps it on the
+  pending record. `mode:"live"` (rates `{tickHz:30, commandSnapshotHz:3}`) iff **a participant's
+  army carried COMMAND intent** (a `MARCH & COMMAND` order — `army.commandIntent`) **AND** that
+  governor holds a free ⚙ `battle.commandSlotsPerPlayer` slot **AND** the global live pool
+  (⚙ `battle.liveMatchPoolMax`) has room. Command intent with a free slot but a **full pool** ⇒
+  the battle is created **QUEUED** (hex locked, armies pinned, live-start deferred); it flips to
+  live allocate on a later tick when a slot frees, or falls back to accelerated after ⚙
+  `battle.commandQueueTimeoutTicks`. No command intent anywhere, every opting governor at its
+  slot cap, or pure AI ⇒ `mode:"accelerated"`. Applies to PvP AND player-vs-wild. A plain
+  `MARCH` (no command) always auto-resolves — watch-only after. `CF_LIVE_BATTLES=0` (both the
+  `tickOptions.liveBattles` sim flag and the allocate clamp) forces accelerated regardless of
+  intent. `engineAllocateContext` HONORS `b.mode`; QUEUED records are not dispatched until
+  promoted. **Future ⚙ COMMAND FEE** (CT sink for dedicated command) will phase in on top — not
+  yet built.
 - **JOIN HANDLING (§1b):** live-mode allocate responses carry hero-mode join info; the
   overworld accepts BOTH shapes defensively — `{matchId, joinDeadline, tickHz, ticket,
   joinUrl}` (single, **attacker-oriented** — what the match server returns today) and the

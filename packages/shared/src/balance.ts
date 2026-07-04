@@ -285,12 +285,25 @@ export interface Balance {
     /** Per-class entity stats (hp per squad, damage per hit, cooldown ticks, range m, speed m/tick). */
     unitStats: Record<UnitClass, { hp: number; damage: number; cooldownTicks: number; range: number; speed: number }>;
   };
+  /**
+   * ⚙ COMMAND-vs-AUTO scaling keystone (docs/04 §3a). LIVE (30 Hz joinable/
+   * steerable) battles are a SCARCE OPT-IN resource chosen at MARCH time; AUTO
+   * (accelerated headless resolve) is the default. See balance.json `battle._note`.
+   */
+  battle: {
+    /** Max concurrent live/queued COMMAND battles one player may hold (per-player attention cap). */
+    commandSlotsPerPlayer: number;
+    /** Global cap on concurrent LIVE engine matches (server 30 Hz capacity). */
+    liveMatchPoolMax: number;
+    /** A COMMAND battle QUEUED past the live pool waits this many world ticks, then falls back to accelerated. */
+    commandQueueTimeoutTicks: number;
+  };
 }
 
 const REQUIRED_SECTIONS: readonly (keyof Balance)[] = [
   'travel', 'development', 'tax', 'prosperity', 'food', 'population',
   'supply', 'morale', 'desertion', 'upkeep', 'units', 'pillageOccupy', 'draft', 'provisions', 'claims',
-  'intel', 'towns', 'wildRaids', 'developmentEffects', 'economy', 'training', 'wildBattle',
+  'intel', 'towns', 'wildRaids', 'developmentEffects', 'economy', 'training', 'wildBattle', 'battle',
 ];
 
 function resolveBalancePath(): string {

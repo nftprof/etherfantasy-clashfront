@@ -109,13 +109,20 @@ const orders = {
       return false;
     }
   },
-  async march(armyId, toTerritoryId) {
+  async march(armyId, toTerritoryId, command = false) {
     try {
-      const { army } = await api('/api/march', { token, body: { armyId, toTerritoryId } });
+      const { army, commandAtCapacity } = await api('/api/march', { token, body: { armyId, toTerritoryId, command } });
       store.putArmy(army);
       store.emit();
       if (army.path?.length) marchDest.set(army.id, army.path[army.path.length - 1]);
-      ui.toast('March ordered', `${army.troops} troops on the move.`, 'info', army.parcelId);
+      // COMMAND-vs-AUTO (docs/04 §3a): surface an at-capacity downgrade.
+      if (command && commandAtCapacity) {
+        ui.toast('⚔ At command capacity', `${army.troops} troops march — but you're at your command slot limit, so this battle will AUTO-resolve. Free a command slot to play the next one live.`, 'info', army.parcelId, 7000);
+      } else if (command) {
+        ui.toast('⚔ March & Command', `${army.troops} troops on the move — you'll be able to take the field / steer this battle live.`, 'good', army.parcelId);
+      } else {
+        ui.toast('March ordered', `${army.troops} troops on the move.`, 'info', army.parcelId);
+      }
     } catch (e) { ui.toast('March refused', esc(e.message), 'bad'); }
   },
   /** POST /api/provision — buy food/gold/wood with CT (docs/04 §7c.1). Returns true on success. */
@@ -253,12 +260,23 @@ function handleEvents(events) {
         // the parcel is a running fight now.
         const mine = ev.attackerGovernorIds.includes(store.me?.governorId);
         if (ev.engine) {
-          // ENGINE battle (external MOBA match): the match server auto-registers a
+          const foe = ev.monsterName ? `☠ ${esc(ev.monsterName)}`
+            : ev.defenderGovernorIds?.length ? esc(store.playerName(ev.defenderGovernorIds[0])) : 'defenders';
+          // AUTO (accelerated/queued) engine battle (docs/04 §3a): watch-only —
+          // NO command viewer, NO ⚡ doorway. It resolves fast; the replay lands
+          // as a normal battle_resolved. Only LIVE battles (ev.live) open command.
+          if (!ev.live) {
+            ui.toast(`⚔ Battle at ${parcelName(ev.parcelId)}`,
+              `${mine ? 'Your army' : esc(store.playerName(ev.attackerGovernorIds[0]))} engages ${foe} ` +
+              `(${ev.attackerTroops}⚔ vs ${ev.defenderTroops}) — auto-resolving.`,
+              'battle', ev.parcelId, 7000);
+            ui.feedPush(`<span class="t-battle">⚔</span> Battle at ${parcelName(ev.parcelId)}${mine ? ' — yours (auto)' : ''}`, 't-battle', ev.parcelId);
+            break;
+          }
+          // LIVE engine battle (external MOBA match): the match server auto-registers a
           // command-mode telemetry feed under THIS battleId (bridge engine-feed
           // bind), so command mode DOES open and populates when the relay streams;
           // the ⚡ Take-the-field doorway lives on both the card and the viewer HUD.
-          const foe = ev.monsterName ? `☠ ${esc(ev.monsterName)}`
-            : ev.defenderGovernorIds?.length ? esc(store.playerName(ev.defenderGovernorIds[0])) : 'defenders';
           const openViewer = () => battle.open(ev.battleId);
           ui.toast(`⚔ Battle joined at ${parcelName(ev.parcelId)}!`,
             `${mine ? 'Your army' : esc(store.playerName(ev.attackerGovernorIds[0]))} engages ${foe} ` +

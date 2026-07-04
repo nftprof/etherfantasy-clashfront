@@ -673,8 +673,18 @@ export function raiseArmy(
  * excluding the current hex). First-step arrival = current tick + step time of
  * the first hex (travelTicksPerStep × moveCost). Movement resolves in the
  * MOVEMENT phase; hostile arrival spawns a battle the same tick it lands.
+ *
+ * `commandIntent` (docs/04 §3a) records a `MARCH & COMMAND` order on the army so
+ * any battle it triggers can request a LIVE (steerable) engine match — subject
+ * to command slots + the live pool at the collision tick. Default false = AUTO.
  */
-export function orderMarch(state: WorldState, armyId: string, path: readonly string[], options?: TickOptions): void {
+export function orderMarch(
+  state: WorldState,
+  armyId: string,
+  path: readonly string[],
+  options?: TickOptions,
+  commandIntent = false,
+): void {
   const a = state.armies.get(armyId);
   if (a === undefined || a.state === 'DISBANDED') throw new Error(`orderMarch: no such army ${armyId}`);
   // E2: a mustering army holds its ground until the last soldier is trained
@@ -709,6 +719,9 @@ export function orderMarch(state: WorldState, armyId: string, path: readonly str
   a.state = 'MARCHING';
   a.path = [...path];
   a.arrivalTick = state.world.tick + stepTicks(state, path[0]!, options);
+  // COMMAND intent rides on the army until a collision consumes it (docs/04 §3a).
+  if (commandIntent) a.commandIntent = true;
+  else delete a.commandIntent;
   a.version += 1;
 }
 

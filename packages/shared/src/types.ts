@@ -187,6 +187,14 @@ export interface Army {
   supplyMax: number;
   morale: number;             // 0–100
   supplyTrainIds: string[];
+  /**
+   * COMMAND-intent (docs/04 §3a, MVP-demo state — not canon docs/08): set by a
+   * `MARCH & COMMAND` order, cleared when consumed at the collision tick. When
+   * true and the owning governor holds a free command slot + the live pool has
+   * room, the resulting engine battle allocates LIVE (30 Hz, joinable/steerable)
+   * instead of accelerated. Best-effort: cap/pool pressure downgrades to AUTO.
+   */
+  commandIntent?: boolean;
   version: number;
 }
 

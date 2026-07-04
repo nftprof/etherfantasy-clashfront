@@ -203,7 +203,7 @@ test('cannot abandon contested ground: pending ENGINE battle and live wild battl
   completeTraining(state, attacker.id);
 
   // PENDING ENGINE BATTLE on the parcel (ALLOCATE-CALLBACK-SCHEMA lock).
-  const battle = createEngineBattle(state, hexId, [attacker], [defender], governorId, state.world.tick, rng.fork('eb'));
+  const battle = createEngineBattle(state, hexId, [attacker], [defender], governorId, state.world.tick, rng.fork('eb'), loadBalance(), false);
   assert.throws(() => abandonTerritory(state, homeId, governorId), /battle rages/);
   state.engineBattles!.delete(battle.id);
 

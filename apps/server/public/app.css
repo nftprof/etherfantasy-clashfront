@@ -111,6 +111,16 @@ button.danger  { background: #4a2320; border-color: #7a3a33; }
 #march-popover .btns { display: flex; gap: 8px; margin-top: 9px; }
 #march-popover .btns button { flex: 1; }
 #march-popover .warn { color: var(--gold); font-size: 11.5px; margin-top: 5px; }
+/* COMMAND-vs-AUTO (docs/04 §3a): gold-accented "March & Command" + slot hint. */
+#march-popover .mp-command-hint { font-size: 11px; color: var(--muted, #93a2b5); margin-top: 8px; line-height: 1.5; }
+#march-popover .mp-command-hint .cmd { color: var(--gold); }
+#march-popover .cmd-slots { display: inline-block; margin-left: 4px; padding: 0 5px; border-radius: 8px;
+  background: rgba(212,175,55,0.14); color: var(--gold); font-weight: 600; }
+#march-popover .cmd-slots.full { background: rgba(168,58,48,0.18); color: #e2887e; }
+#march-popover .cmd-full-note { color: #e2887e; }
+#march-popover button.command { background: linear-gradient(180deg,#7a5f16,#5c4711); border-color: var(--gold);
+  color: #ffeab0; font-weight: 600; }
+#march-popover button.command:hover:not(:disabled) { background: linear-gradient(180deg,#8f6f1a,#6b5313); }
 
 /* ── toasts ── */
 #toasts { position: absolute; top: 12px; right: 14px; z-index: 30; display: flex;

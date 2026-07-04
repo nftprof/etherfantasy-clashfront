@@ -10,7 +10,7 @@ import assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { test } from 'node:test';
-import { type Army, CONSTANTS, createRng } from '@clashfront/shared';
+import { type Army, CONSTANTS, createRng, loadBalance } from '@clashfront/shared';
 import { createEngineBattle, type DemoWorldFile } from '@clashfront/sim-engine';
 import { ClashServer, Game, type GameConfig, parseMasterNames } from '../src/index';
 
@@ -90,7 +90,7 @@ test('/api/abandon: guards, overseer freed, no refund, public event, re-claim, b
     const battle = createEngineBattle(
       game.state, t.hexIds[0]!,
       [fakeSide('army_atk', bob.governorId)], [fakeSide('army_def', alice.governorId)],
-      alice.governorId, game.state.world.tick, createRng('eb'),
+      alice.governorId, game.state.world.tick, createRng('eb'), loadBalance(), false,
     );
     const raging = await api(base, '/api/abandon', { token: alice.token, body: { territoryId: home } });
     assert.equal(raging.status, 409);

@@ -33,6 +33,7 @@ export function createStore() {
     me: null,                  // {governorId, name}
     ctBalance: 0,
     officers: [],              // DemoOfficer[] (roster is static per player)
+    commandSlots: { used: 0, max: 2 }, // COMMAND-vs-AUTO budget (docs/04 §3a) — from /api/state my.commandSlots
     selfResolvedBattles: new Set(), // loot already applied via POST /api/choice response
     // My pending PILLAGE/OCCUPY decisions (FS2): choiceId → {choiceId, battleId?,
     // walkIn, armyId?, territoryId, parcelId, expiresTick, zoneType?}. Seeded from
@@ -79,6 +80,7 @@ export function createStore() {
       if (state.my) {
         this.ctBalance = state.my.ctBalance;
         this.officers = state.my.officers;
+        if (state.my.commandSlots) this.commandSlots = state.my.commandSlots;
         this.pendingChoices.clear();
         for (const c of state.my.pendingChoices ?? []) this.pendingChoices.set(c.choiceId, c);
       }

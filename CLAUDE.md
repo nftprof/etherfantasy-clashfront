@@ -167,15 +167,29 @@ the parcel graph of ONE zone (hexification deliberately punted — permanent dec
    `deploy/remote-deploy.sh` auto-sources both secrets from `~/.cf_battle_*` files and defaults
    the URL when they exist. Allocate failure ⇒ automatic fallback to instant resolution.
    Engine callbacks apply as server-boundary inputs next tick (determinism preserved).
-   **HERO-MODE LAST MILE (CF side) DONE 2026-07-03:** player battles allocate `mode:"live"`
-   (≥1 PLAYER governor ⇒ live; pure-AI ⇒ accelerated; `CF_LIVE_BATTLES=0` kill switch, default
-   ON). Allocate-response join info accepted in both shapes (single attacker-oriented
-   `{ticket,joinUrl}` and future `joins[]`), persisted on the pending record; `joinUrl` is
-   PRIVATE to its governor (owner-only `/api/state` liveBattles + strictly-private
-   `battle_joinable` event) — the owner gets a gold “⚡ Take the field” button on the PARCEL
-   CARD. Live matches have NO tick timeout (callback settles; engine TIMEOUT = clock
+   **HERO-MODE LAST MILE (CF side) DONE 2026-07-03:** Allocate-response join info accepted in
+   both shapes (single attacker-oriented `{ticket,joinUrl}` and future `joins[]`), persisted on
+   the pending record; `joinUrl` is PRIVATE to its governor (owner-only `/api/state` liveBattles +
+   strictly-private `battle_joinable` event) — the owner gets a gold “⚡ Take the field” button on
+   the PARCEL CARD. Live matches have NO tick timeout (callback settles; engine TIMEOUT = clock
    authority). §3b documents all of it. Remaining for the watch feed: bridge session
    auto-registers the D2b command channel from allocate.
+   **COMMAND-vs-AUTO SCALING KEYSTONE DONE 2026-07-04 (decision 15 / docs/04 §3a; SUPERSEDES
+   "≥1 PLAYER ⇒ live"):** LIVE is now a SCARCE OPT-IN resource chosen at MARCH time. `POST
+   /api/march` takes `command?:bool` (default false = AUTO) → `army.commandIntent`, consumed at
+   the collision tick. The sim decides LIVE iff a participant elected COMMAND **and** holds a free
+   ⚙ `battle.commandSlotsPerPlayer` (2) slot **and** the ⚙ `battle.liveMatchPoolMax` (8) global
+   live pool has room; command+slot but full pool ⇒ QUEUED (hex locked, promoted when a slot
+   frees, else accelerated after ⚙ `battle.commandQueueTimeoutTicks` 20); else ACCELERATED.
+   Applies to PvP + player-vs-wild; pure AI stays accelerated. `EngineBattleState` gains QUEUED
+   status + `commandGovernorIds` + `queuedTick`; `createEngineBattle`/`promoteQueuedEngineBattles`
+   (sim, deterministic) own it; `CF_LIVE_BATTLES=0` → `tickOptions.liveBattles` kill switch.
+   Client: march popover = **⚔ March** (auto) + gold **⚔ March & Command** (live) with a
+   `Command used/max` hint; at-capacity march toasts the downgrade; only LIVE engine battles open
+   the command viewer/⚡ doorway. Owner-visible change: **marches now AUTO-resolve by default;
+   pick "March & Command" to play a battle live, limited to N (2) at a time.** Future ⚙ COMMAND
+   FEE hook noted (not built). Tests: +7 sim-engine (`engineCommand.test.ts`) + engineBattle
+   integration; suite 161 green.
 4c. ~~Pentagon Games identity login~~ **DONE 2026-07-03** — `docs/briefs/PG-IDENTITY.md`.
    PG accounts are the PRIMARY login: embedded sign-in form (identifier+password →
    browser POST login.pentagon.games/user/login with publishable X-PG-App-Key) →

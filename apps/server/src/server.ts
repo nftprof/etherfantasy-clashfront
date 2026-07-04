@@ -604,7 +604,7 @@ export class ClashServer {
           sendJson(res, 200, this.game.raise(session.governorId, body.territoryId, body.preset, body.heroId));
           return;
         case '/api/march':
-          sendJson(res, 200, this.game.march(session.governorId, body.armyId, body.toTerritoryId));
+          sendJson(res, 200, this.game.march(session.governorId, body.armyId, body.toTerritoryId, body.command));
           return;
         case '/api/provision':
           sendJson(res, 200, this.game.provision(session.governorId, body.armyId, body.food, body.gold, body.wood));

@@ -46,6 +46,7 @@ import {
   type DemoOfficer,
   type DemoWorldFile,
   type EconomyState,
+  engineCommandSlotCount,
   type EngineBattleState,
   type EngineOutcome,
   type EngineSideResult,
@@ -163,6 +164,12 @@ export type GameEvent =
        * hero-mode doorway on the parcel card instead.
        */
       engine?: true;
+      /**
+       * True only for LIVE (30 Hz, steerable) engine battles (docs/04 §3a):
+       * the command viewer / ⚡ doorway is offered ONLY for these. Accelerated
+       * (AUTO) engine battles resolve fast and are watch-only after — no viewer.
+       */
+      live?: boolean;
     }
   | {
       /**
@@ -354,6 +361,8 @@ export interface GameConfig {
   masterNames: readonly string[];
   /** JSON snapshot path; loaded on construction when present, written by saveToDisk(). */
   savePath?: string;
+  /** Override balance.json path (tests/scenarios; default = the packaged balance). */
+  balancePath?: string;
 }
 
 interface SaveFileV1 {
@@ -419,7 +428,7 @@ export class Game {
   npcGovernorId = '';
 
   private readonly baseRng: Rng;
-  private readonly balance: Balance = loadBalance();
+  private readonly balance: Balance;
   private readonly parcelByHex: Map<string, string>;
   private readonly hexByParcel = new Map<string, string>();
   /** Effective tick options: config + the real-parcel polygon provider for wild battlefields. */
@@ -447,6 +456,7 @@ export class Game {
 
   constructor(private readonly config: GameConfig) {
     this.baseRng = createRng(config.seed);
+    this.balance = loadBalance(config.balancePath);
     const save = this.tryLoadSave();
     if (save !== undefined) {
       this.state = deserializeWorldState(save.state);
@@ -1028,7 +1038,12 @@ export class Game {
     };
   }
 
-  march(governorId: string, armyId: unknown, toTerritoryId: unknown): { army: ArmyView; etaTick: number } {
+  march(
+    governorId: string,
+    armyId: unknown,
+    toTerritoryId: unknown,
+    command: unknown = false,
+  ): { army: ArmyView; etaTick: number; command: boolean; commandAtCapacity: boolean } {
     if (typeof armyId !== 'string') throw new ApiError(400, 'BAD_ARMY', 'armyId must be a string');
     const a = this.state.armies.get(armyId);
     if (a === undefined || a.state === 'DISBANDED') throw new ApiError(404, 'UNKNOWN_ARMY', `no such army ${armyId}`);
@@ -1042,8 +1057,14 @@ export class Game {
     const path = findPath(this.state, a.hexId, toHex, governorId); // hostile parcels block transit
     if (path === undefined || path.length === 0) throw new ApiError(400, 'UNREACHABLE', `no path to ${t.name}`);
     const fromParcelId = this.parcelId(a.hexId);
+    // COMMAND intent (docs/04 §3a): `MARCH & COMMAND` asks for a LIVE steerable
+    // battle. Best-effort — if the governor is already at its command-slot cap
+    // we still march (intent recorded), but flag that this fight will AUTO-resolve.
+    const wantCommand = command === true;
+    const commandAtCapacity =
+      wantCommand && engineCommandSlotCount(this.state, governorId) >= this.balance.battle.commandSlotsPerPlayer;
     try {
-      orderMarch(this.state, a.id, path, this.tickOptions);
+      orderMarch(this.state, a.id, path, this.tickOptions, wantCommand);
     } catch (e) {
       throw translateSimError(e);
     }
@@ -1058,7 +1079,7 @@ export class Game {
       toParcelId: this.parcelId(toHex),
       etaTick,
     });
-    return { army: view, etaTick };
+    return { army: view, etaTick, command: wantCommand, commandAtCapacity };
   }
 
   /**
@@ -1283,6 +1304,7 @@ export class Game {
         attackerTroops: troopsOf(b.attackerArmyIds),
         defenderTroops: troopsOf(b.defenderArmyIds),
         engine: true,
+        live: b.mode === 'live', // AUTO (accelerated/queued) ⇒ watch-only, no live viewer (§3a)
       });
     }
 
@@ -1717,11 +1739,11 @@ export class Game {
    * (anchorId `anchor_<i>` = index into territory.structures); officers ride
    * with a revive budget of 3; seed/battleId come from the sim (never wall clock).
    *
-   * MODE SELECTION (§3b): `mode:"live"` (30 Hz joinable match) when live
-   * battles are enabled AND at least one side's governor is a PLAYER —
-   * a real player's battle is hero-joinable by default. Pure AI battles
-   * (NPC/SYSTEM vs NPC/SYSTEM, monster raids on NPCs) stay "accelerated".
-   * The chosen mode is stamped on the record (server-boundary field).
+   * MODE SELECTION (§3a/§3b): the LIVE-vs-accelerated decision is made by the
+   * sim at the collision tick (command intent + per-player command slots + the
+   * global live pool — docs/04 §3a) and stamped on the record as `mode`. This
+   * method simply HONORS `b.mode`, with the `liveBattles` kill switch as a final
+   * clamp (CF_LIVE_BATTLES=0 forces accelerated even if the sim marked it live).
    */
   engineAllocateContext(
     battleId: string,
@@ -1730,9 +1752,7 @@ export class Game {
   ): Record<string, unknown> | undefined {
     const b = this.state.engineBattles?.get(battleId);
     if (b === undefined) return undefined;
-    const isPlayer = (gid: string): boolean => this.state.governorKinds?.get(gid) === 'PLAYER';
-    const mode: 'live' | 'accelerated' =
-      liveBattles && (isPlayer(b.attackerGovernorId) || isPlayer(b.defenderGovernorId)) ? 'live' : 'accelerated';
+    const mode: 'live' | 'accelerated' = liveBattles && b.mode === 'live' ? 'live' : 'accelerated';
     b.mode = mode;
     const terrId = this.state.hexes.get(b.hexId)?.territoryId;
     const territory = terrId === undefined ? undefined : this.state.territories.get(terrId);
@@ -2214,6 +2234,8 @@ export class Game {
       walkIn: boolean;
       armyId?: string;
     }[];
+    /** COMMAND-slot budget (docs/04 §3a) — the march popover shows "Command used/max". */
+    commandSlots: { used: number; max: number };
   } {
     const territoryIds: string[] = [];
     for (const id of sortedIds(this.state.territories)) {
@@ -2245,6 +2267,10 @@ export class Game {
       territoryIds,
       armyIds,
       pendingChoices,
+      commandSlots: {
+        used: engineCommandSlotCount(this.state, governorId),
+        max: this.balance.battle.commandSlotsPerPlayer,
+      },
     };
   }
 

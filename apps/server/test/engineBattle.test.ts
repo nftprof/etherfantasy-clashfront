@@ -17,14 +17,23 @@
  * world tick is driven by hand.
  */
 import assert from 'node:assert/strict';
-import { existsSync, mkdtempSync, readFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import * as http from 'node:http';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
-import { CONSTANTS } from '@clashfront/shared';
-import { completeTraining, type DemoWorldFile } from '@clashfront/sim-engine';
+import { type Balance, CONSTANTS, loadBalance } from '@clashfront/shared';
+import { completeTraining, type DemoWorldFile, type EngineBattleState } from '@clashfront/sim-engine';
 import { ClashServer, Game, type GameConfig, parseMasterNames, signCallbackBody } from '../src/index';
+
+/** Write a temp balance.json = the packaged balance with `battle` overrides (cap-pressure tests). */
+function balanceFileWith(patch: Partial<Balance['battle']>): string {
+  const base = JSON.parse(JSON.stringify(loadBalance())) as Balance;
+  base.battle = { ...base.battle, ...patch };
+  const p = join(mkdtempSync(join(tmpdir(), 'cf-balance-')), 'balance.json');
+  writeFileSync(p, JSON.stringify(base));
+  return p;
+}
 
 const CT = CONSTANTS.CT_UNITS_PER_CT;
 const HMAC_SECRET = 'test-hmac-secret';
@@ -148,12 +157,14 @@ function findAdjacentFreePair(game: Game): { t1: string; t2: string } {
  * Stage a PvP collision: Defender claims + garrisons t2; Attacker claims t1,
  * raises a STANDARD army and marches onto t2. Ticks until the collision tick.
  * `afterJoin` runs before any claims — mode-selection tests flip governor kinds there.
+ * `command` issues the attacker's march as `MARCH & COMMAND` (docs/04 §3a).
  */
 async function stagePvp(
   game: Game,
   server: ClashServer,
   base: string,
   afterJoin?: (attacker: any, defender: any) => void,
+  command = false,
 ) {
   const attacker = (await api(base, '/api/join', { body: { name: 'Attacker' } })).json;
   const defender = (await api(base, '/api/join', { body: { name: 'Defender' } })).json;
@@ -165,17 +176,22 @@ async function stagePvp(
   assert.equal((await api(base, '/api/claim', { token: attacker.token, body: { territoryId: t1 } })).status, 200);
   const atkRaise = (await api(base, '/api/raise', { token: attacker.token, body: { territoryId: t1, preset: 'STANDARD' } })).json;
   completeTraining(game.state, atkRaise.army.id);
-  assert.equal(
-    (await api(base, '/api/march', { token: attacker.token, body: { armyId: atkRaise.army.id, toTerritoryId: t2 } })).status,
-    200,
-  );
+  const marchRes = await api(base, '/api/march', {
+    token: attacker.token,
+    body: { armyId: atkRaise.army.id, toTerritoryId: t2, command },
+  });
+  assert.equal(marchRes.status, 200);
   // March until the collision tick (step time = travelTicksPerStep × moveCost).
   let events: any[] = [];
   for (let i = 0; i < 12; i++) {
     events = server.tickOnce().events as any[];
     if (events.some((e: any) => e.type === 'battle_started' || e.type === 'battle_resolved')) break;
   }
-  return { attacker, defender, t1, t2, atkArmyId: atkRaise.army.id as string, defArmyId: defRaise.army.id as string, events };
+  return {
+    attacker, defender, t1, t2,
+    atkArmyId: atkRaise.army.id as string, defArmyId: defRaise.army.id as string,
+    events, march: marchRes.json,
+  };
 }
 
 // ── Flag OFF: zero behavior change ───────────────────────────────────────────
@@ -233,9 +249,11 @@ test('engine e2e: collision → pending battle (hex locked) → allocate per sch
       anchor: [0.5, 0.625],
     });
 
-    const { attacker, defender, t2, atkArmyId, defArmyId, events } = await stagePvp(game, server, base);
+    // MARCH & COMMAND (docs/04 §3a): the attacker opts into a LIVE steerable battle.
+    const { attacker, defender, t2, atkArmyId, defArmyId, events } = await stagePvp(game, server, base, undefined, true);
     const started = events.find((e: any) => e.type === 'battle_started');
     assert.ok(started, 'pending engine battle announced');
+    assert.equal(started.live, true, 'command march ⇒ LIVE engine battle');
     assert.equal(events.some((e: any) => e.type === 'battle_resolved'), false, 'NOT resolved instantly');
     const battleId = started.battleId as string;
     assert.match(battleId, /^battle_[0-9A-HJKMNP-TV-Z]{26}$/, 'prefix-typed ULID');
@@ -510,8 +528,9 @@ test('PLAYER vs wild ⇒ mode live; join grant survives the snapshot; a live mat
     assert.equal((await api(base, '/api/claim', { token: player.token, body: { territoryId: homeTerrId } })).status, 200);
     const raise = (await api(base, '/api/raise', { token: player.token, body: { territoryId: homeTerrId, preset: 'STANDARD' } })).json;
     completeTraining(game.state, raise.army.id);
+    // MARCH & COMMAND (docs/04 §3a): opt into a LIVE steerable wild assault.
     assert.equal(
-      (await api(base, '/api/march', { token: player.token, body: { armyId: raise.army.id, toTerritoryId: lairTerrId } })).status,
+      (await api(base, '/api/march', { token: player.token, body: { armyId: raise.army.id, toTerritoryId: lairTerrId, command: true } })).status,
       200,
     );
     let started: any;
@@ -520,9 +539,10 @@ test('PLAYER vs wild ⇒ mode live; join grant survives the snapshot; a live mat
     }
     assert.ok(started, 'engine battle ignited');
     assert.equal(started.engine, true, 'battle_started marks engine battles');
+    assert.equal(started.live, true, 'command march ⇒ LIVE engine battle');
     const battleId = started.battleId as string;
 
-    // Allocate went out as a LIVE match: a PLAYER is on the field (§3b).
+    // Allocate went out as a LIVE match: a PLAYER is on the field who elected command (§3a).
     await until(() => game.state.engineBattles!.get(battleId)!.status === 'ALLOCATED', 'allocated status');
     const body = engine.requests[0]!.body;
     assert.equal(body.mode, 'live');
@@ -593,9 +613,13 @@ test('pure AI battles (NPC vs NPC) stay mode accelerated', async () => {
   }
 });
 
-test('CF_LIVE_BATTLES=0 (liveBattles:false) forces accelerated even for player battles', async () => {
+test('CF_LIVE_BATTLES=0 (liveBattles:false) forces accelerated even with COMMAND intent', async () => {
   const engine = await mockEngine(201, { matchId: 'efm_kill_1' });
-  const game = new Game(gameConfig({ seed: 'engine-live-off' }));
+  // Kill switch flows into the sim (tickOptions.liveBattles) AND the allocate clamp.
+  const game = new Game(gameConfig({
+    seed: 'engine-live-off',
+    tickOptions: { travelTicksPerStep: 1, choiceTimeoutTicks: 50, engineBattles: true, liveBattles: false },
+  }));
   const server = new ClashServer({
     game,
     port: 0,
@@ -606,11 +630,85 @@ test('CF_LIVE_BATTLES=0 (liveBattles:false) forces accelerated even for player b
   const port = await server.start();
   const base = `http://127.0.0.1:${port}`;
   try {
-    const { events } = await stagePvp(game, server, base);
+    // Even with MARCH & COMMAND, the kill switch downgrades to accelerated.
+    const { events } = await stagePvp(game, server, base, undefined, true);
     const started = events.find((e: any) => e.type === 'battle_started') as any;
     assert.ok(started, 'engine battle ignited');
+    assert.equal(started.live, false, 'kill switch ⇒ never live');
     await until(() => engine.requests.length > 0, 'allocate POST');
-    assert.equal(engine.requests[0]!.body.mode, 'accelerated', 'kill switch wins over PLAYER governors');
+    assert.equal(engine.requests[0]!.body.mode, 'accelerated', 'kill switch wins over COMMAND intent');
+  } finally {
+    await server.stop();
+    await engine.close();
+  }
+});
+
+test('plain MARCH (command=false) ⇒ accelerated engine battle — no live match, no join grant', async () => {
+  // Accelerated allocate returns no join grant (no hero-mode doorway).
+  const engine = await mockEngine(201, { matchId: 'efm_auto_1' });
+  const game = new Game(gameConfig({ seed: 'engine-auto-default' }));
+  const server = new ClashServer({
+    game, port: 0, tickMs: null, saveMs: null,
+    battleEngine: { url: engine.url, token: API_TOKEN, hmacSecret: HMAC_SECRET },
+  });
+  const port = await server.start();
+  const base = `http://127.0.0.1:${port}`;
+  try {
+    const { attacker, events } = await stagePvp(game, server, base); // command defaults to false
+    const started = events.find((e: any) => e.type === 'battle_started') as any;
+    assert.ok(started, 'engine battle ignited');
+    assert.equal(started.live, false, 'AUTO march ⇒ NOT a live battle');
+    const battleId = started.battleId as string;
+    await until(() => engine.requests.length > 0, 'allocate POST');
+    assert.equal(engine.requests[0]!.body.mode, 'accelerated', 'default march allocates accelerated');
+    await until(() => game.state.engineBattles!.get(battleId)!.status === 'ALLOCATED', 'allocated');
+    const rec = game.state.engineBattles!.get(battleId)!;
+    assert.equal(rec.mode, 'accelerated');
+    assert.equal(rec.joins, undefined, 'accelerated battles carry no hero-mode doorway');
+    // Owner view: no joinUrl on the accelerated battle.
+    const lb = (await api(base, '/api/state', { token: attacker.token })).json.liveBattles.find((b: any) => b.id === battleId);
+    assert.equal(lb?.joinUrl, undefined, 'no ⚡ doorway for an AUTO battle');
+  } finally {
+    await server.stop();
+    await engine.close();
+  }
+});
+
+test('COMMAND beyond the per-player slot cap ⇒ auto-resolve + march flags commandAtCapacity (§3a)', async () => {
+  const engine = await mockEngine(201, { matchId: 'efm_cap_1' });
+  // Cap of ONE command slot; pre-occupy it with an in-flight command battle.
+  const game = new Game(gameConfig({ seed: 'engine-slot-cap', balancePath: balanceFileWith({ commandSlotsPerPlayer: 1 }) }));
+  const server = new ClashServer({
+    game, port: 0, tickMs: null, saveMs: null,
+    battleEngine: { url: engine.url, token: API_TOKEN, hmacSecret: HMAC_SECRET },
+  });
+  const port = await server.start();
+  const base = `http://127.0.0.1:${port}`;
+  try {
+    const { events, march } = await stagePvp(game, server, base, (attacker) => {
+      // The attacker is already commanding one live battle (slot full).
+      game.state.engineBattles ??= new Map<string, EngineBattleState>();
+      game.state.engineBattles.set('battle_00000000000000000000000000', {
+        id: 'battle_00000000000000000000000000',
+        seed: '0000000000000000',
+        hexId: 'hex_not_a_real_parcel',
+        attackerArmyIds: [], defenderArmyIds: [],
+        attackerGovernorId: attacker.governorId,
+        defenderGovernorId: 'gov_other',
+        startedTick: 0,
+        status: 'ALLOCATED',
+        mode: 'live',
+        commandGovernorIds: [attacker.governorId],
+      });
+    }, true);
+    // March response flags the at-capacity downgrade for the UI toast.
+    assert.equal(march.command, true);
+    assert.equal(march.commandAtCapacity, true, 'march surfaces the at-capacity downgrade');
+    const started = events.find((e: any) => e.type === 'battle_started') as any;
+    assert.ok(started, 'engine battle ignited');
+    assert.equal(started.live, false, 'over the slot cap ⇒ AUTO-resolve, not live');
+    await until(() => engine.requests.length > 0, 'allocate POST');
+    assert.equal(engine.requests[0]!.body.mode, 'accelerated', 'downgraded to accelerated at the slot cap');
   } finally {
     await server.stop();
     await engine.close();

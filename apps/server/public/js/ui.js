@@ -603,8 +603,18 @@ export function createUI({ store, map, orders }) {
             : '') +
           `</div>`;
       }
+      // COMMAND-vs-AUTO (docs/04 §3a): default March = AUTO (resolve + watch the
+      // replay); March & Command = play the battle LIVE, limited by command slots.
+      const cs = store.commandSlots || { used: 0, max: 2 };
+      const atCap = cs.used >= cs.max;
+      const disMuster = a.mustering ? 'disabled title="Still mustering — armies march when training completes"' : '';
+      html += `<div class="mp-command-hint">⚔ <b>March</b> auto-resolves · <b class="cmd">Command</b> plays it live ` +
+        `<span class="cmd-slots${atCap ? ' full' : ''}">Command ${cs.used}/${cs.max}</span>` +
+        (atCap ? `<span class="cmd-full-note">— at capacity, this will auto-resolve</span>` : '') + `</div>`;
       html += `<div class="btns"><button data-close>Cancel</button>` +
-        `<button class="primary" data-march="${t.id}" ${a.mustering ? 'disabled title="Still mustering — armies march when training completes"' : ''}>March</button></div>`;
+        `<button class="primary" data-march="${t.id}" ${disMuster}>⚔ March</button>` +
+        `<button class="command" data-march-command="${t.id}" ${disMuster} ` +
+        `title="MARCH &amp; COMMAND — play/steer this battle live in the MOBA client (one of ${cs.max} command slots).">⚔ March &amp; Command</button></div>`;
     }
     popover.innerHTML = html;
     popover.hidden = false;
@@ -619,7 +629,10 @@ export function createUI({ store, map, orders }) {
     if (!btn) return;
     if (btn.dataset.close !== undefined) closePopover();
     else if (btn.dataset.march) {
-      orders.march(map.selectedArmyId, btn.dataset.march);
+      orders.march(map.selectedArmyId, btn.dataset.march, false);
+      selectArmy(null);
+    } else if (btn.dataset.marchCommand) {
+      orders.march(map.selectedArmyId, btn.dataset.marchCommand, true);
       selectArmy(null);
     }
   });

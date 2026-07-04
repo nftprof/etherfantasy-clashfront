@@ -92,6 +92,9 @@ async function main(): Promise<void> {
       choiceTimeoutTicks: envInt('CHOICE_TIMEOUT_TICKS', 24),
       liveWildBattles: envInt('LIVE_WILD', 1) !== 0,
       engineBattles: engineOn,
+      // COMMAND-vs-AUTO mode selection lives in the sim (docs/04 §3a); the
+      // CF_LIVE_BATTLES kill switch flows in here so it decides accelerated-only.
+      liveBattles: !['0', 'false'].includes((process.env['CF_LIVE_BATTLES'] ?? '').toLowerCase()),
     },
     npcEveryTicks: envInt('NPC_EVERY_TICKS', 60),
     startCtUnits: envInt('START_CT', 2000) * CT,
