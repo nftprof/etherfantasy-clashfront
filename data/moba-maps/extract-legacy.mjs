@@ -102,12 +102,17 @@ const bf = {
     sizeClass: "LEGACY",         // NB: not a parcel — the legacy full 3-lane arena. sizeM is authoritative.
     sizeM: Math.round(2 * HARD),
     laneCount: 3,
-    heroSoftBoxM: 2 * SOFT,      // heroes soft-clamped to this ±90*MAPK box (+ fountain pockets); units use full bounds
+    // clampMap (index.html:2919-2931) applies TWO clamps to EVERY unit: a hard ±115*MAPK=161 m
+    // outer limit (= arena.bounds), then a soft ±90*MAPK=126 m box — EXCEPT the two diagonal
+    // fountain pockets (blue SW / red NE, r=16*MAPK around each fountain) so spawn/recall pads
+    // behind each base stay reachable. softClampBoxM is that inner box (applies to all units, not
+    // just heroes); render arena.bounds, but pathing should honor the box+pockets.
+    softClampBoxM: 2 * SOFT,
     source: "etherfantasy-browser-moba-game@15d610c index.html (drawMM minimap geometry, MAPK=1.4)",
     note: "Structural geometry only; cosmetic tree/grass scatter (Math.random in-engine) omitted. " +
           "Blue(SW)->ATTACKER, Red(NE)->DEFENDER (MOBA is symmetric PvP; sides are a labelling choice).",
   },
-  arena: { shape: "polygon", sizeM: Math.round(2 * HARD), bounds },
+  arena: { shape: "polygon", sizeM: Math.round(2 * HARD), hardClampM: HARD, softClampBoxM: SOFT, bounds },
   heightField: { cols: HF_N, rows: HF_N, cellM: HF_CELL, data: hf },
   obstacles: WALLS.map((w, i) => ({
     id: `ridge_${String(i + 1).padStart(2, "0")}`, kind: "RIDGE", passable: false, footprint: wallFootprint(w),

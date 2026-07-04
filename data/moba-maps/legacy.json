@@ -8,13 +8,15 @@
     "sizeClass": "LEGACY",
     "sizeM": 322,
     "laneCount": 3,
-    "heroSoftBoxM": 252,
+    "softClampBoxM": 252,
     "source": "etherfantasy-browser-moba-game@15d610c index.html (drawMM minimap geometry, MAPK=1.4)",
     "note": "Structural geometry only; cosmetic tree/grass scatter (Math.random in-engine) omitted. Blue(SW)->ATTACKER, Red(NE)->DEFENDER (MOBA is symmetric PvP; sides are a labelling choice)."
   },
   "arena": {
     "shape": "polygon",
     "sizeM": 322,
+    "hardClampM": 161,
+    "softClampBoxM": 126,
     "bounds": [
       [
         161,

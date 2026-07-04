@@ -24,9 +24,13 @@ wild camps, and resource nodes, all in metres, origin-centered, `x` east / `z` n
 
 - Origin at arena center; `x` = east, `z` = north; 1 unit = 1 m — matches CF's viewer/bridge.
 - `arena.bounds` is the engine's **hard** movement clamp, a ±161 m square (`clampMap`,
-  `index.html:2919`). All units and economy live inside it.
-- `meta.heroSoftBoxM` (±126 m) is an extra **hero-only** soft clamp (with two diagonal fountain
-  pockets) that stops perimeter runs — a gameplay rule, not the arena extent. Render `bounds`.
+  `index.html:2919-2920`, `±115·MAPK`). All units and economy live inside it — render this.
+- `meta.softClampBoxM` / `arena.softClampBoxM` (±126 m) is a **second** clamp `clampMap` applies to
+  **every unit** (`index.html:2927`, `const R=90*MAPK`) — **not** hero-only — that pulls units back
+  into a ±126 box **except** the two diagonal fountain pockets (blue SW / red NE), so spawn/recall
+  pads behind each base stay reachable. It's the tighter *functional* play area; pathing should
+  honor `box ∪ pockets`, but the rendered arena outline is `bounds` (±161). (The `126` here is
+  world-metres from `90·MAPK`; do not confuse it with the unrelated minimap-gradient pixel radius.)
 - Side labels: the MOBA is symmetric PvP (blue SW vs red NE). Mapped blue → `ATTACKER`,
   red → `DEFENDER` purely for the schema; swap freely per battle context.
 - `sizeClass: "LEGACY"` — this is the full legacy arena, **not** a hex parcel; `meta.sizeM` (322 m)
