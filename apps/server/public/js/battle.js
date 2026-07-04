@@ -281,7 +281,19 @@ export function createBattle({ store, ui, send, ftue }) {
       ctx.fillStyle = '#9fb0c4';
       ctx.font = '13px "Segoe UI", system-ui, sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText('Connecting to the battle…', w / 2, h / 2);
+      // Engine battles stream from the match server's relay — it can lag a beat.
+      // Say so plainly (not a dead "connecting"), and if the hero-mode link has
+      // already landed, invite the player to take the field while they wait.
+      const lb = openId ? store.liveBattles?.get(openId) : null;
+      if (lb?.engine) {
+        ctx.fillText('Battle running on the engine — command relay connecting…', w / 2, h / 2 - 10);
+        if (lb.joinUrl) {
+          ctx.fillStyle = '#e8b93c';
+          ctx.fillText('⚡ Take the field now from this parcel’s card', w / 2, h / 2 + 14);
+        }
+      } else {
+        ctx.fillText('Connecting to the battle…', w / 2, h / 2);
+      }
       ctx.textAlign = 'start';
       return;
     }

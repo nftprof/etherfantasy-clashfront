@@ -253,17 +253,19 @@ function handleEvents(events) {
         // the parcel is a running fight now.
         const mine = ev.attackerGovernorIds.includes(store.me?.governorId);
         if (ev.engine) {
-          // ENGINE battle (external MOBA match): no command feed to open — the
-          // parcel card carries the ⚡ Hero-Mode doorway once the join link lands.
+          // ENGINE battle (external MOBA match): the match server auto-registers a
+          // command-mode telemetry feed under THIS battleId (bridge engine-feed
+          // bind), so command mode DOES open and populates when the relay streams;
+          // the ⚡ Take-the-field doorway lives on both the card and the viewer HUD.
           const foe = ev.monsterName ? `☠ ${esc(ev.monsterName)}`
             : ev.defenderGovernorIds?.length ? esc(store.playerName(ev.defenderGovernorIds[0])) : 'defenders';
-          const openParcel = () => ui.openCard(ev.parcelId);
+          const openViewer = () => battle.open(ev.battleId);
           ui.toast(`⚔ Battle joined at ${parcelName(ev.parcelId)}!`,
             `${mine ? 'Your army' : esc(store.playerName(ev.attackerGovernorIds[0]))} engages ${foe} ` +
-            `(${ev.attackerTroops}⚔ vs ${ev.defenderTroops}) — fought as a full match on the battle engine`,
-            'battle', ev.parcelId, 10_000, openParcel);
+            `(${ev.attackerTroops}⚔ vs ${ev.defenderTroops}) — <b>click to command LIVE</b> or take the field`,
+            'battle', ev.parcelId, 10_000, openViewer);
           ui.feedPush(`<span class="t-battle">⚔</span> Field battle at ${parcelName(ev.parcelId)}${mine ? ' — yours' : ''}`, 't-battle', ev.parcelId);
-          if (mine) openParcel(); // the ⚡ Take-the-field doorway lives on the card
+          if (mine && !ftue.running) openViewer(); // command mode; ⚡ in the HUD + card
           break;
         }
         const who = ev.monsterName ? `☠ ${esc(ev.monsterName)}`
