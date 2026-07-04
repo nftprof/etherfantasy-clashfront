@@ -20,17 +20,18 @@ Re-sending the same battleId MUST return the original `{matchId, joinDeadline}` 
   "mode": "live",                                          // "live" (30 Hz, joinable) | "accelerated" (headless)
   "rates": { "tickHz": 30, "commandSnapshotHz": 3 },       // R13; accelerated may run unclamped
   "parcel": { "parcelId": "60203370020", "zone": "EDU", "kind": "WILD" }, // WILD | PLAYER | ESTATE
-  "battlefield": {                                         // A1 schema — the parcel's designed map
+  "battlefield": {                                         // A1 schema — see BATTLEFIELD-SCHEMA.md
+    // CENTER-ORIGIN (LOCKED): (0,0)=arena center, x east, z NORTH(+). Attacker south(−z), defender north(+z).
     "arena": { "shape": "polygon", "sizeM": 240,           // 1 unit = 1 m (canon)
-               "bounds": [[0,0],[240,0],[240,240],[0,240]] }, // square = 4-pt polygon (M1/M1.5)
+               "bounds": [[-120,-120],[120,-120],[120,120],[-120,120]] }, // square = 4-pt polygon, ±sizeM/2
     "laneCount": 1,                                        // 1 default; 3 for estates
-    "obstacles": [ { "kind": "TREE", "x": 60, "z": 90, "r": 4 } ],
-    "spawnZones": [ { "id": "spawn_atk_s", "side": "ATTACKER", "edge": "S", "x": 120, "z": 8 } ],
+    "obstacles": [ { "kind": "TREE", "x": -60, "z": 30, "r": 4 } ],
+    "spawnZones": [ { "id": "spawn_atk_s", "side": "ATTACKER", "edge": "S", "x": 0, "z": -112 } ],
     "structures": [                                        // land holder's furniture, incoming HP
-      { "anchorId": "anchor_t1", "kind": "TOWER", "side": "DEFENDER", "x": 120, "z": 150, "hp": 1800, "hpMax": 2000 },
-      { "anchorId": "anchor_cc", "kind": "CORE",  "side": "DEFENDER", "x": 120, "z": 210, "hp": 5000, "hpMax": 5000 }
+      { "anchorId": "anchor_t1", "kind": "TOWER", "side": "DEFENDER", "x": 0, "z": 30, "hp": 1800, "hpMax": 2000 },
+      { "anchorId": "anchor_cc", "kind": "CORE",  "side": "DEFENDER", "x": 0, "z": 90, "hp": 5000, "hpMax": 5000 }
     ],
-    "mobs": [ { "id": "mob_pack_1", "kind": "WOLF", "x": 90, "z": 120, "count": 6 } ]  // WILD only
+    "mobs": [ { "id": "mob_pack_1", "kind": "WOLF", "x": 30, "z": 0, "count": 6 } ]  // WILD only
   },
   "sides": {
     "ATTACKER": {

@@ -1879,20 +1879,23 @@ export class Game {
         zone: String(this.config.worldFile.meta.zone),
         kind: territory === undefined || territory.governorKind === 'SYSTEM' ? 'WILD' : 'PLAYER',
       },
+      // CENTER-ORIGIN coords (LOCKED — BATTLEFIELD-SCHEMA.md / TELEMETRY-RELAY): (0,0) = arena
+      // center, x east, z NORTH (+). Attacker enters south (−z), defender holds north (+z).
+      // Anchors are 0..1 parcel-normalized → (anchor−0.5)*S maps into [−S/2, +S/2].
       battlefield: {
-        arena: { shape: 'polygon', sizeM: S, bounds: [[0, 0], [S, 0], [S, S], [0, S]] },
+        arena: { shape: 'polygon', sizeM: S, bounds: [[-S / 2, -S / 2], [S / 2, -S / 2], [S / 2, S / 2], [-S / 2, S / 2]] },
         laneCount: 1,
         obstacles: [],
         spawnZones: [
-          { id: 'spawn_atk_s', side: 'ATTACKER', edge: 'S', x: S / 2, z: 8 },
-          { id: 'spawn_def_n', side: 'DEFENDER', edge: 'N', x: S / 2, z: S - 8 },
+          { id: 'spawn_atk_s', side: 'ATTACKER', edge: 'S', x: 0, z: -(S / 2 - 8) },
+          { id: 'spawn_def_n', side: 'DEFENDER', edge: 'N', x: 0, z: S / 2 - 8 },
         ],
         structures: (territory?.structures ?? []).map((s, i) => ({
           anchorId: `anchor_${i}`,
           kind: s.key.toUpperCase(),
           side: 'DEFENDER',
-          x: Math.round((s.anchor?.[0] ?? 0.5) * S),
-          z: Math.round((s.anchor?.[1] ?? 0.85) * S),
+          x: Math.round(((s.anchor?.[0] ?? 0.5) - 0.5) * S),
+          z: Math.round(((s.anchor?.[1] ?? 0.85) - 0.5) * S),
           hp: s.hp,
           hpMax: s.maxHp,
         })),

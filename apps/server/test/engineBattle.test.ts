@@ -289,15 +289,17 @@ test('engine e2e: collision → pending battle (hex locked) → allocate per sch
       rates: { tickHz: 30, commandSnapshotHz: 3 },
       parcel: { parcelId, zone: String(WORLD_FILE.meta.zone), kind: 'PLAYER' },
       battlefield: {
-        arena: { shape: 'polygon', sizeM: 240, bounds: [[0, 0], [240, 0], [240, 240], [0, 240]] },
+        // CENTER-ORIGIN (BATTLEFIELD-SCHEMA): ±sizeM/2, (0,0)=center, +z north.
+        arena: { shape: 'polygon', sizeM: 240, bounds: [[-120, -120], [120, -120], [120, 120], [-120, 120]] },
         laneCount: 1,
         obstacles: [],
         spawnZones: [
-          { id: 'spawn_atk_s', side: 'ATTACKER', edge: 'S', x: 120, z: 8 },
-          { id: 'spawn_def_n', side: 'DEFENDER', edge: 'N', x: 120, z: 232 },
+          { id: 'spawn_atk_s', side: 'ATTACKER', edge: 'S', x: 0, z: -112 },
+          { id: 'spawn_def_n', side: 'DEFENDER', edge: 'N', x: 0, z: 112 },
         ],
         structures: [
-          { anchorId: 'anchor_0', kind: 'TOWER', side: 'DEFENDER', x: 120, z: 150, hp: 2000, hpMax: 2000 },
+          // tower anchor [0.5, 0.625] ⇒ ((0.5−0.5)·240, (0.625−0.5)·240) = (0, 30)
+          { anchorId: 'anchor_0', kind: 'TOWER', side: 'DEFENDER', x: 0, z: 30, hp: 2000, hpMax: 2000 },
         ],
         mobs: [],
       },
