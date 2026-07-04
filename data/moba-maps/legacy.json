@@ -1,0 +1,1230 @@
+{
+  "v": 1,
+  "meta": {
+    "parcelId": "moba-legacy-3lane",
+    "seed": "ef-moba-15d610c",
+    "designVersion": 1,
+    "biome": "TEMPERATE_MEADOW",
+    "sizeClass": "LEGACY",
+    "sizeM": 322,
+    "laneCount": 3,
+    "heroSoftBoxM": 252,
+    "source": "etherfantasy-browser-moba-game@15d610c index.html (drawMM minimap geometry, MAPK=1.4)",
+    "note": "Structural geometry only; cosmetic tree/grass scatter (Math.random in-engine) omitted. Blue(SW)->ATTACKER, Red(NE)->DEFENDER (MOBA is symmetric PvP; sides are a labelling choice)."
+  },
+  "arena": {
+    "shape": "polygon",
+    "sizeM": 322,
+    "bounds": [
+      [
+        161,
+        -161
+      ],
+      [
+        161,
+        161
+      ],
+      [
+        -161,
+        161
+      ],
+      [
+        -161,
+        -161
+      ]
+    ]
+  },
+  "heightField": {
+    "cols": 21,
+    "rows": 21,
+    "cellM": 16.1,
+    "data": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      1.91,
+      1.01,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0.09,
+      3.22,
+      1.91,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0.09,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0.09,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      1.91,
+      3.22,
+      0.09,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      1.01,
+      1.91,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "obstacles": [
+    {
+      "id": "ridge_01",
+      "kind": "RIDGE",
+      "passable": false,
+      "footprint": [
+        [
+          -75.98,
+          -5.22
+        ],
+        [
+          -39.58,
+          31.18
+        ],
+        [
+          -33.22,
+          24.82
+        ],
+        [
+          -69.62,
+          -11.58
+        ]
+      ]
+    },
+    {
+      "id": "ridge_02",
+      "kind": "RIDGE",
+      "passable": false,
+      "footprint": [
+        [
+          -17.18,
+          53.58
+        ],
+        [
+          19.22,
+          89.98
+        ],
+        [
+          25.58,
+          83.62
+        ],
+        [
+          -10.82,
+          47.22
+        ]
+      ]
+    },
+    {
+      "id": "ridge_03",
+      "kind": "RIDGE",
+      "passable": false,
+      "footprint": [
+        [
+          -11.58,
+          -69.62
+        ],
+        [
+          24.82,
+          -33.22
+        ],
+        [
+          31.18,
+          -39.58
+        ],
+        [
+          -5.22,
+          -75.98
+        ]
+      ]
+    },
+    {
+      "id": "ridge_04",
+      "kind": "RIDGE",
+      "passable": false,
+      "footprint": [
+        [
+          47.22,
+          -10.82
+        ],
+        [
+          83.62,
+          25.58
+        ],
+        [
+          89.98,
+          19.22
+        ],
+        [
+          53.58,
+          -17.18
+        ]
+      ]
+    },
+    {
+      "id": "ridge_05",
+      "kind": "RIDGE",
+      "passable": false,
+      "footprint": [
+        [
+          -124.9,
+          -56
+        ],
+        [
+          -124.9,
+          78.4
+        ],
+        [
+          -115.9,
+          78.4
+        ],
+        [
+          -115.9,
+          -56
+        ]
+      ]
+    },
+    {
+      "id": "ridge_06",
+      "kind": "RIDGE",
+      "passable": false,
+      "footprint": [
+        [
+          115.9,
+          -78.4
+        ],
+        [
+          115.9,
+          56
+        ],
+        [
+          124.9,
+          56
+        ],
+        [
+          124.9,
+          -78.4
+        ]
+      ]
+    },
+    {
+      "id": "ridge_07",
+      "kind": "RIDGE",
+      "passable": false,
+      "footprint": [
+        [
+          -56,
+          -115.9
+        ],
+        [
+          78.4,
+          -115.9
+        ],
+        [
+          78.4,
+          -124.9
+        ],
+        [
+          -56,
+          -124.9
+        ]
+      ]
+    },
+    {
+      "id": "ridge_08",
+      "kind": "RIDGE",
+      "passable": false,
+      "footprint": [
+        [
+          -78.4,
+          124.9
+        ],
+        [
+          56,
+          124.9
+        ],
+        [
+          56,
+          115.9
+        ],
+        [
+          -78.4,
+          115.9
+        ]
+      ]
+    },
+    {
+      "id": "ridge_09",
+      "kind": "RIDGE",
+      "passable": false,
+      "footprint": [
+        [
+          -140,
+          4.5
+        ],
+        [
+          -117.6,
+          4.5
+        ],
+        [
+          -117.6,
+          -4.5
+        ],
+        [
+          -140,
+          -4.5
+        ]
+      ]
+    },
+    {
+      "id": "ridge_10",
+      "kind": "RIDGE",
+      "passable": false,
+      "footprint": [
+        [
+          117.6,
+          4.5
+        ],
+        [
+          140,
+          4.5
+        ],
+        [
+          140,
+          -4.5
+        ],
+        [
+          117.6,
+          -4.5
+        ]
+      ]
+    },
+    {
+      "id": "ridge_11",
+      "kind": "RIDGE",
+      "passable": false,
+      "footprint": [
+        [
+          -4.5,
+          -140
+        ],
+        [
+          -4.5,
+          -117.6
+        ],
+        [
+          4.5,
+          -117.6
+        ],
+        [
+          4.5,
+          -140
+        ]
+      ]
+    },
+    {
+      "id": "ridge_12",
+      "kind": "RIDGE",
+      "passable": false,
+      "footprint": [
+        [
+          -4.5,
+          117.6
+        ],
+        [
+          -4.5,
+          140
+        ],
+        [
+          4.5,
+          140
+        ],
+        [
+          4.5,
+          117.6
+        ]
+      ]
+    }
+  ],
+  "resources": [
+    {
+      "id": "mineral_01",
+      "kind": "GOLD_MINE",
+      "x": -98,
+      "z": -120.4,
+      "richness": 2
+    },
+    {
+      "id": "tree_02",
+      "kind": "WOOD_GROVE",
+      "x": -120.4,
+      "z": -98,
+      "richness": 2
+    },
+    {
+      "id": "mineral_03",
+      "kind": "GOLD_MINE",
+      "x": -126,
+      "z": -123.2,
+      "richness": 1
+    },
+    {
+      "id": "tree_04",
+      "kind": "WOOD_GROVE",
+      "x": -109.2,
+      "z": -128.8,
+      "richness": 2
+    },
+    {
+      "id": "tree_05",
+      "kind": "WOOD_GROVE",
+      "x": -56,
+      "z": -25.2,
+      "richness": 2
+    },
+    {
+      "id": "tree_06",
+      "kind": "WOOD_GROVE",
+      "x": -25.2,
+      "z": -56,
+      "richness": 2
+    },
+    {
+      "id": "mineral_07",
+      "kind": "GOLD_MINE",
+      "x": -44.8,
+      "z": -44.8,
+      "richness": 1
+    },
+    {
+      "id": "tree_08",
+      "kind": "WOOD_GROVE",
+      "x": 58.8,
+      "z": 25.2,
+      "richness": 2
+    },
+    {
+      "id": "tree_09",
+      "kind": "WOOD_GROVE",
+      "x": 25.2,
+      "z": 58.8,
+      "richness": 2
+    },
+    {
+      "id": "mineral_10",
+      "kind": "GOLD_MINE",
+      "x": 44.8,
+      "z": 44.8,
+      "richness": 1
+    },
+    {
+      "id": "tree_11",
+      "kind": "WOOD_GROVE",
+      "x": -72.8,
+      "z": 58.8,
+      "richness": 1
+    },
+    {
+      "id": "tree_12",
+      "kind": "WOOD_GROVE",
+      "x": 72.8,
+      "z": -72.8,
+      "richness": 1
+    },
+    {
+      "id": "mineral_13",
+      "kind": "GOLD_MINE",
+      "x": 2.8,
+      "z": 39.2,
+      "richness": 1
+    },
+    {
+      "id": "mineral_14",
+      "kind": "GOLD_MINE",
+      "x": -2.8,
+      "z": -39.2,
+      "richness": 1
+    },
+    {
+      "id": "camp_gold_1",
+      "kind": "GOLD_MINE",
+      "x": -103.6,
+      "z": 14,
+      "richness": 3
+    },
+    {
+      "id": "camp_wood_1",
+      "kind": "WOOD_GROVE",
+      "x": -97.6,
+      "z": 18,
+      "richness": 2
+    },
+    {
+      "id": "camp_gold_2",
+      "kind": "GOLD_MINE",
+      "x": 14,
+      "z": -103.6,
+      "richness": 3
+    },
+    {
+      "id": "camp_wood_2",
+      "kind": "WOOD_GROVE",
+      "x": 20,
+      "z": -99.6,
+      "richness": 2
+    }
+  ],
+  "buildSpots": [
+    {
+      "anchorId": "spot_01",
+      "x": -84,
+      "z": -53.2,
+      "size": "M",
+      "side": "ATTACKER"
+    },
+    {
+      "anchorId": "spot_02",
+      "x": -53.2,
+      "z": -84,
+      "size": "M",
+      "side": "ATTACKER"
+    },
+    {
+      "anchorId": "spot_03",
+      "x": -81.2,
+      "z": -11.2,
+      "size": "M",
+      "side": "ATTACKER"
+    },
+    {
+      "anchorId": "spot_04",
+      "x": -11.2,
+      "z": -81.2,
+      "size": "M",
+      "side": "ATTACKER"
+    },
+    {
+      "anchorId": "spot_05",
+      "x": -70,
+      "z": -70,
+      "size": "M",
+      "side": "ATTACKER"
+    }
+  ],
+  "spawnZones": [
+    {
+      "id": "spawn_attacker",
+      "side": "ATTACKER",
+      "edge": "SW",
+      "x": -131.6,
+      "z": -131.6
+    },
+    {
+      "id": "spawn_defender",
+      "side": "DEFENDER",
+      "edge": "NE",
+      "x": 131.6,
+      "z": 131.6
+    }
+  ],
+  "lanes": [
+    {
+      "id": "lane_mid",
+      "side": "ATTACKER",
+      "waypoints": [
+        [
+          -100.8,
+          -100.8
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          100.8,
+          100.8
+        ]
+      ],
+      "note": "symmetric/bidirectional — DEFENDER minions traverse in reverse (mkMinion reverses, index.html:3057)"
+    },
+    {
+      "id": "lane_top",
+      "side": "ATTACKER",
+      "waypoints": [
+        [
+          -100.8,
+          -84
+        ],
+        [
+          -100.8,
+          100.8
+        ],
+        [
+          84,
+          100.8
+        ]
+      ],
+      "note": "symmetric/bidirectional — DEFENDER minions traverse in reverse (mkMinion reverses, index.html:3057)"
+    },
+    {
+      "id": "lane_bot",
+      "side": "ATTACKER",
+      "waypoints": [
+        [
+          -84,
+          -100.8
+        ],
+        [
+          100.8,
+          -100.8
+        ],
+        [
+          100.8,
+          84
+        ]
+      ],
+      "note": "symmetric/bidirectional — DEFENDER minions traverse in reverse (mkMinion reverses, index.html:3057)"
+    }
+  ],
+  "structures": [
+    {
+      "anchorId": "anchor_cc_B",
+      "kind": "CORE",
+      "side": "ATTACKER",
+      "x": -114.8,
+      "z": -114.8,
+      "_ref": {
+        "hp": 2400,
+        "dmg": 0,
+        "range": 0,
+        "note": "innate cannon defDmg35 defRange20 (:3066)"
+      }
+    },
+    {
+      "anchorId": "anchor_cc_R",
+      "kind": "CORE",
+      "side": "DEFENDER",
+      "x": 114.8,
+      "z": 114.8,
+      "_ref": {
+        "hp": 2400,
+        "dmg": 0,
+        "range": 0,
+        "note": "innate cannon defDmg35 defRange20 (:3066)"
+      }
+    },
+    {
+      "anchorId": "anchor_t01",
+      "kind": "TOWER",
+      "side": "ATTACKER",
+      "x": -56,
+      "z": -56,
+      "_ref": {
+        "hp": 1400,
+        "dmg": 85,
+        "range": 21
+      }
+    },
+    {
+      "anchorId": "anchor_t02",
+      "kind": "TOWER",
+      "side": "ATTACKER",
+      "x": -28,
+      "z": -28,
+      "_ref": {
+        "hp": 1400,
+        "dmg": 85,
+        "range": 21
+      }
+    },
+    {
+      "anchorId": "anchor_t03",
+      "kind": "TOWER",
+      "side": "ATTACKER",
+      "x": -100.8,
+      "z": -25.2,
+      "_ref": {
+        "hp": 1400,
+        "dmg": 85,
+        "range": 21
+      }
+    },
+    {
+      "anchorId": "anchor_t04",
+      "kind": "TOWER",
+      "side": "ATTACKER",
+      "x": -100.8,
+      "z": 44.8,
+      "_ref": {
+        "hp": 1400,
+        "dmg": 85,
+        "range": 21
+      }
+    },
+    {
+      "anchorId": "anchor_t05",
+      "kind": "TOWER",
+      "side": "ATTACKER",
+      "x": -2.8,
+      "z": -100.8,
+      "_ref": {
+        "hp": 1400,
+        "dmg": 85,
+        "range": 21
+      }
+    },
+    {
+      "anchorId": "anchor_t06",
+      "kind": "TOWER",
+      "side": "ATTACKER",
+      "x": -61.6,
+      "z": -100.8,
+      "_ref": {
+        "hp": 1400,
+        "dmg": 85,
+        "range": 21
+      }
+    },
+    {
+      "anchorId": "anchor_t07",
+      "kind": "TOWER",
+      "side": "DEFENDER",
+      "x": 56,
+      "z": 56,
+      "_ref": {
+        "hp": 1400,
+        "dmg": 85,
+        "range": 21
+      }
+    },
+    {
+      "anchorId": "anchor_t08",
+      "kind": "TOWER",
+      "side": "DEFENDER",
+      "x": 28,
+      "z": 28,
+      "_ref": {
+        "hp": 1400,
+        "dmg": 85,
+        "range": 21
+      }
+    },
+    {
+      "anchorId": "anchor_t09",
+      "kind": "TOWER",
+      "side": "DEFENDER",
+      "x": 100.8,
+      "z": 25.2,
+      "_ref": {
+        "hp": 1400,
+        "dmg": 85,
+        "range": 21
+      }
+    },
+    {
+      "anchorId": "anchor_t10",
+      "kind": "TOWER",
+      "side": "DEFENDER",
+      "x": 100.8,
+      "z": -44.8,
+      "_ref": {
+        "hp": 1400,
+        "dmg": 85,
+        "range": 21
+      }
+    },
+    {
+      "anchorId": "anchor_t11",
+      "kind": "TOWER",
+      "side": "DEFENDER",
+      "x": 2.8,
+      "z": 100.8,
+      "_ref": {
+        "hp": 1400,
+        "dmg": 85,
+        "range": 21
+      }
+    },
+    {
+      "anchorId": "anchor_t12",
+      "kind": "TOWER",
+      "side": "DEFENDER",
+      "x": 61.6,
+      "z": 100.8,
+      "_ref": {
+        "hp": 1400,
+        "dmg": 85,
+        "range": 21
+      }
+    }
+  ],
+  "mobs": [
+    {
+      "id": "camp_1",
+      "kind": "WILD_GUARD",
+      "x": -103.6,
+      "z": 14,
+      "count": 3,
+      "_ref": {
+        "hp": 340,
+        "dmg": 22,
+        "range": 2.4
+      }
+    },
+    {
+      "id": "camp_2",
+      "kind": "WILD_GUARD",
+      "x": 14,
+      "z": -103.6,
+      "count": 3,
+      "_ref": {
+        "hp": 340,
+        "dmg": 22,
+        "range": 2.4
+      }
+    },
+    {
+      "id": "boss_weapon",
+      "kind": "BOSS",
+      "x": -53.2,
+      "z": 53.2,
+      "count": 1,
+      "adds": 2,
+      "guards": "legendary:weapon",
+      "_ref": {
+        "hp": 2400,
+        "dmg": 60,
+        "range": 3.5
+      }
+    },
+    {
+      "id": "boss_armor",
+      "kind": "BOSS",
+      "x": 53.2,
+      "z": -53.2,
+      "count": 1,
+      "adds": 2,
+      "guards": "legendary:armor",
+      "_ref": {
+        "hp": 2400,
+        "dmg": 60,
+        "range": 3.5
+      }
+    }
+  ],
+  "thumbnail": null
+}
