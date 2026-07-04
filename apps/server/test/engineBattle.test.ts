@@ -289,17 +289,18 @@ test('engine e2e: collision → pending battle (hex locked) → allocate per sch
       rates: { tickHz: 30, commandSnapshotHz: 3 },
       parcel: { parcelId, zone: String(WORLD_FILE.meta.zone), kind: 'PLAYER' },
       battlefield: {
-        // CENTER-ORIGIN (BATTLEFIELD-SCHEMA): ±sizeM/2, (0,0)=center, +z north.
-        arena: { shape: 'polygon', sizeM: 240, bounds: [[-120, -120], [120, -120], [120, 120], [-120, 120]] },
+        // FIXED ±161 m standard arena (sizeM 322), (0,0)=center, +z north; world-metres
+        // post-MAPK, consumed AS-IS (no ×MAPK). spawns ±131.6, cores would sit ±114.8.
+        arena: { shape: 'polygon', sizeM: 322, bounds: [[-161, -161], [161, -161], [161, 161], [-161, 161]] },
         laneCount: 1,
         obstacles: [],
         spawnZones: [
-          { id: 'spawn_atk_s', side: 'ATTACKER', edge: 'S', x: 0, z: -112 },
-          { id: 'spawn_def_n', side: 'DEFENDER', edge: 'N', x: 0, z: 112 },
+          { id: 'spawn_atk_s', side: 'ATTACKER', edge: 'S', x: 0, z: -131.6 },
+          { id: 'spawn_def_n', side: 'DEFENDER', edge: 'N', x: 0, z: 131.6 },
         ],
         structures: [
-          // tower anchor [0.5, 0.625] ⇒ ((0.5−0.5)·240, (0.625−0.5)·240) = (0, 30)
-          { anchorId: 'anchor_0', kind: 'TOWER', side: 'DEFENDER', x: 0, z: 30, hp: 2000, hpMax: 2000 },
+          // tower anchor [0.5, 0.625] ⇒ round(((0.5−0.5)·322, (0.625−0.5)·322)) = (0, 40)
+          { anchorId: 'anchor_0', kind: 'TOWER', side: 'DEFENDER', x: 0, z: 40, hp: 2000, hpMax: 2000 },
         ],
         mobs: [],
       },

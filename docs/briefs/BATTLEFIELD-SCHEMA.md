@@ -7,14 +7,33 @@
 
 ## Coordinate system & units (LOCKED — do not vary)
 
-- **1 unit = 1 meter** (canon scale law).
+- **Coordinates are dimensionless WORLD-UNITS**, post-MAPK — **consumed AS-IS, NEVER re-scaled**
+  by any consumer (do NOT multiply by MAPK / 1.4 anywhere; that double-scales). Real-world size
+  is a DECLARED mapping on top (see the scale declaration below), not a per-unit metre.
 - **Origin at arena CENTER `(0,0)`. `x` = east (+right), `z` = north (+up-screen).** `y` (optional)
-  = elevation in metres. This matches CF's existing viewer/bridge convention (`x east, z north`;
-  viewer maps it to screen with north = top).
-- The arena spans roughly `[-sizeM/2, +sizeM/2]` in x and z. `sizeM` = the parcel's normalized
-  arena size (SINGLE ≈ 240 m; estates scale up per the ladder in `docs/04` §7b).
-- **`bounds` is the parcel's REAL polygon**, centered and normalized to `sizeM` — this is what
-  "building maps based on exact size/shape" produces. Non-convex is fine; wind CCW.
+  = elevation. This matches CF's existing viewer/bridge convention (`x east, z north`; viewer maps
+  it to screen with north = top). **blue/ATTACKER = SW (−,−); red/DEFENDER = NE (+,+)** (single-lane
+  N–S: attacker enters south −z, defender holds north +z).
+- **FIXED standard arena: half-edge ±161 world-units ⇒ `sizeM = 322`** (the client's real frame:
+  `clampMap ±115 · MAPK 1.4`). `sizeM` is the coordinate EDGE in world-units (the field name is kept
+  for compat; it is NOT metres). This is THE arena for **every** CF battle. Known-good magnitudes:
+  **spawns at ±131.6, cores at ±114.8** (both OUTSIDE the RETIRED ±120/240 pre-scale frame — that
+  old frame clipped them). The earlier "sizeM = the parcel's normalized size (SINGLE ≈ 240,
+  estates scale up)" framing is **SUPERSEDED for arena DIMENSIONS**: estates fight as a SERIES of
+  standard ±161 component battles (canon decision 4 / `docs/04` §7b), so parcel size scales
+  army/structure COUNT and component COUNT, **not** arena size. Source of truth = the MOBA
+  BattleEngine's `legacy.json` (matches the client 1:1); prefer it over any stand-in.
+- **`bounds` is the parcel-shaped polygon**, centered and normalized to the fixed `sizeM = 322`
+  (span `[-161, +161]`). Non-convex is fine; wind CCW.
+
+### Real-world scale declaration (world-units ↦ metres)
+
+The ±161 world-unit frame ≡ **1 CF parcel ≡ ~14 acres**. 14 acres = 56,656 m² ⇒ edge ≈ 238 m;
+the battlefield edge is 322 units, so **1 world-unit ≈ 0.74 m (~1.35 units/m).** This is a DECLARED
+mapping layered on top of the dimensionless coordinates — the frame itself is always ±161 units.
+The **EF v2 CF Moba (map maker) (F5)** session authors per-parcel terrain at ~0.74 m/unit to fill
+the ±161 frame without distortion. (Note: the overworld/sim's own "1 unit = 1 m" is a SEPARATE
+coordinate space — the battlefield frame is world-units at ≈0.74 m/unit, not 1 m/unit.)
 
 ## The object
 
@@ -27,14 +46,14 @@
     "designVersion": 3,             // bumps as the AI gardener / owner iterates
     "biome": "TEMPERATE_FOREST",    // palette + prop set selector
     "sizeClass": "SINGLE",          // SINGLE … EPIC (docs/04 §7b ladder)
-    "sizeM": 240,
+    "sizeM": 322,                   // world-UNIT edge (fixed ±161 frame), NOT metres; ~0.74 m/unit
     "laneCount": 1                  // 1 default; 3 for estates. A PARAMETER, not a gate.
   },
 
   "arena": {
     "shape": "polygon",
-    "sizeM": 240,
-    "bounds": [[-118,-120],[118,-120],[120,118],[-120,120]]  // [x,z] metres, CCW, the parcel shape
+    "sizeM": 322,                   // fixed standard arena edge in world-units (±161)
+    "bounds": [[-161,-161],[161,-161],[161,161],[-161,161]]  // [x,z] world-units, CCW, the parcel shape
   },
 
   // Optional low-res elevation for hillshade/cliffs. Omit for flat maps.
@@ -61,20 +80,21 @@
 
   // Where each side's units enter. edge = compass hint (matches overworld approach direction).
   "spawnZones": [
-    { "id": "spawn_atk_s", "side": "ATTACKER", "edge": "S", "x": 0, "z": -112 },
-    { "id": "spawn_def_n", "side": "DEFENDER", "edge": "N", "x": 0, "z":  112 }
+    { "id": "spawn_atk_s", "side": "ATTACKER", "edge": "S", "x": 0, "z": -131.6 },
+    { "id": "spawn_def_n", "side": "DEFENDER", "edge": "N", "x": 0, "z":  131.6 }
   ],
 
   // Lane corridors: ordered waypoints spawn → enemy base. One per lane; reinforcements add edge lanes.
   "lanes": [
-    { "id": "lane_mid", "side": "ATTACKER", "waypoints": [[0,-112],[0,-40],[0,40],[0,108]] }
+    { "id": "lane_mid", "side": "ATTACKER", "waypoints": [[0,-131.6],[0,-40],[0,40],[0,131.6]] }
   ],
 
   // Defensive furniture ANCHORS (positions + kind + side). The GENERATOR sets positions;
   // game-time fills hp/hpMax/ownership from the battle context (wild=towers+mobs, player=CC+towers).
+  // CORE at the known-good ±114.8 magnitude (blue SW / red NE; here single-lane N–S).
   "structures": [
-    { "anchorId": "anchor_t1", "kind": "TOWER", "side": "DEFENDER", "x": 0, "z": 60 },
-    { "anchorId": "anchor_cc", "kind": "CORE",  "side": "DEFENDER", "x": 0, "z": 106 }
+    { "anchorId": "anchor_t1", "kind": "TOWER", "side": "DEFENDER", "x": 0, "z": 61.7 },
+    { "anchorId": "anchor_cc", "kind": "CORE",  "side": "DEFENDER", "x": 0, "z": 114.8 }
   ],
 
   // WILD maps only — mob camps (positions + pack).

@@ -240,6 +240,21 @@ the parcel graph of ONE zone (hexification deliberately punted — permanent dec
    Loader/validator `apps/server/src/battlefield.ts` (shared walkability rule + 5-invariant validator,
    `CF_MOBA_MAPS_DIR` override). +5 tests (`battlefield.test.ts`); suite 170 green. Docs: `docs/04` §7b,
    `BATTLEFIELD-SCHEMA.md`, `ALLOCATE-CALLBACK-SCHEMA.md` §1a.
+4g. ~~Battlefield coordinate-frame rescale to the client's REAL ±161 frame~~ **DONE 2026-07-04**
+   (authoritative — EF Moba game dev OP 48, who owns client geometry). Retired the pre-scale
+   ±120/sizeM240 artifact; the battlefield frame is now the **FIXED standard ±161 arena
+   (`sizeM = 322`) for EVERY battle** (singles AND estates — an estate is a SERIES of ±161
+   component battles per canon decision 4, so parcel size scales army/structure/component COUNT,
+   not arena size; the MOBA needs zero arena change). Coords are dimensionless **WORLD-UNITS**
+   (~0.74 m/unit by the declared 14-acre parcel mapping), center-origin, +z north, blue/ATTACKER
+   SW / red/DEFENDER NE, **spawns ±131.6, cores ±114.8**, consumed AS-IS post-MAPK — **NO ×MAPK
+   anywhere in the CF path**. `game.ts engineAllocateContext` (S=322, bounds ±161, spawns ±131.6,
+   anchors `(anchor−0.5)·322`), both stand-ins rescaled + passing all 5 invariants, loader now
+   **prefers a real `data/moba-maps/legacy.json`** (the MOBA BattleEngine source of truth) over
+   the stand-ins. Renderer (`battle.js`) already data-driven off `sizeM`/`bounds` (no hardcoded
+   240/120) — renders ±161 unchanged. Docs: `BATTLEFIELD-SCHEMA.md` (coord system + scale
+   declaration), `ALLOCATE-CALLBACK-SCHEMA.md` §1, `docs/04` §7b reconciliation note. Tests
+   updated (engineBattle expected frame + stand-in sizeM/core checks); suite 170 green.
 5. Then continue roadmap T1 (`docs/10`): flesh out tick-engine phases against real map data.
 
 **Open design questions for the product owner** (do not decide unilaterally):

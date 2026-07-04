@@ -1816,9 +1816,10 @@ export class Game {
   /**
    * Build the R1 allocate context for a pending engine battle — EXACTLY the
    * schema in docs/briefs/ALLOCATE-CALLBACK-SCHEMA.md §1. M1 battlefield:
-   * square 240 m arena as a 4-pt bounds polygon + the parcel's real structures
-   * (anchorId `anchor_<i>` = index into territory.structures); officers ride
-   * with a revive budget of 3; seed/battleId come from the sim (never wall clock).
+   * the FIXED standard ±161 m MOBA arena (sizeM 322) as a 4-pt bounds polygon +
+   * the parcel's real structures (anchorId `anchor_<i>` = index into
+   * territory.structures); officers ride with a revive budget of 3; seed/battleId
+   * come from the sim (never wall clock).
    *
    * MODE SELECTION (§3a/§3b): the LIVE-vs-accelerated decision is made by the
    * sim at the collision tick (command intent + per-player command slots + the
@@ -1837,7 +1838,13 @@ export class Game {
     b.mode = mode;
     const terrId = this.state.hexes.get(b.hexId)?.territoryId;
     const territory = terrId === undefined ? undefined : this.state.territories.get(terrId);
-    const S = 240; // canon: 1 engine unit = 1 m; single parcel ≈ 240×240 m
+    // FIXED standard MOBA arena (the client's real frame — OP 48, docs/04 §7b):
+    // half-edge ±161 WORLD-UNITS (= client clampMap ±115 · MAPK 1.4). Dimensionless
+    // world-units (~0.74 m/unit by the declared 14-acre parcel mapping), consumed
+    // AS-IS post-MAPK — NEVER multiply by MAPK here. Every CF battle uses this one
+    // arena; estates fight as a SERIES of standard ±161 component battles (canon
+    // decision 4), so parcel size scales army / structure COUNT, not arena size.
+    const S = 322; // sizeM = 2·161 (world-unit edge)
     const armiesOf = (ids: readonly string[], entryEdge: 'S' | 'N'): Record<string, unknown>[] =>
       ids
         .map((id) => this.state.armies.get(id))
@@ -1880,15 +1887,17 @@ export class Game {
         kind: territory === undefined || territory.governorKind === 'SYSTEM' ? 'WILD' : 'PLAYER',
       },
       // CENTER-ORIGIN coords (LOCKED — BATTLEFIELD-SCHEMA.md / TELEMETRY-RELAY): (0,0) = arena
-      // center, x east, z NORTH (+). Attacker enters south (−z), defender holds north (+z).
-      // Anchors are 0..1 parcel-normalized → (anchor−0.5)*S maps into [−S/2, +S/2].
+      // center, x east, z NORTH (+); world-UNITS post-MAPK, consumed AS-IS (never re-scaled).
+      // Attacker/blue enters south (−z), defender/red holds north (+z). Known-good client
+      // magnitudes: spawns ±131.6, cores ±114.8 (both OUTSIDE the retired ±120 frame).
+      // Anchors are 0..1 parcel-normalized → (anchor−0.5)*S maps into [−S/2, +S/2] = [−161, +161].
       battlefield: {
         arena: { shape: 'polygon', sizeM: S, bounds: [[-S / 2, -S / 2], [S / 2, -S / 2], [S / 2, S / 2], [-S / 2, S / 2]] },
         laneCount: 1,
         obstacles: [],
         spawnZones: [
-          { id: 'spawn_atk_s', side: 'ATTACKER', edge: 'S', x: 0, z: -(S / 2 - 8) },
-          { id: 'spawn_def_n', side: 'DEFENDER', edge: 'N', x: 0, z: S / 2 - 8 },
+          { id: 'spawn_atk_s', side: 'ATTACKER', edge: 'S', x: 0, z: -131.6 },
+          { id: 'spawn_def_n', side: 'DEFENDER', edge: 'N', x: 0, z: 131.6 },
         ],
         structures: (territory?.structures ?? []).map((s, i) => ({
           anchorId: `anchor_${i}`,
