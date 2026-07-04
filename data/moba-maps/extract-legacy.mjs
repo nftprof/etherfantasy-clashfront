@@ -77,11 +77,12 @@ function wallFootprint(seg, w = 4.5) {   // segment → thin CCW quad, half-widt
 const richness = (amt) => amt >= 1000 ? 3 : amt >= 800 ? 2 : 1;
 
 // ---- bounds: the engine's HARD clamp square ±115*MAPK (clampMap, index.html:2919-2920).
-// This is the true movement boundary that contains ALL units/economy. Heroes are additionally
-// soft-clamped to a ±90*MAPK box except the two diagonal fountain pockets (index.html:2921-2931)
-// — a hero-only gameplay rule, noted in meta, NOT the arena extent. CCW winding. ----
+// This is the true movement boundary that contains ALL units/economy. clampMap ALSO soft-clamps
+// EVERY unit (not just heroes) to a ±90*MAPK box except the two diagonal fountain pockets
+// (index.html:2927-2931) so spawn/recall pads behind each base stay reachable — the tighter
+// functional play area, noted in meta, NOT the rendered arena extent. CCW winding. ----
 const HARD = K(115);      // 161 — hard clamp (all units)
-const SOFT = K(90);       // 126 — hero soft box (informational)
+const SOFT = K(90);       // 126 — soft clamp box (all units; index.html:2927 const R=90*MAPK)
 const bounds = [ [HARD,-HARD], [HARD,HARD], [-HARD,HARD], [-HARD,-HARD] ];
 
 // ---- heightField (coarse hillshade; two low h=4 hills = the boss lairs) -----
@@ -102,12 +103,16 @@ const bf = {
     sizeClass: "LEGACY",         // NB: not a parcel — the legacy full 3-lane arena. sizeM is authoritative.
     sizeM: Math.round(2 * HARD),
     laneCount: 3,
-    heroSoftBoxM: 2 * SOFT,      // heroes soft-clamped to this ±90*MAPK box (+ fountain pockets); units use full bounds
+    // clampMap (index.html:2919-2931) applies TWO clamps to EVERY unit: a hard ±115*MAPK=161 m
+    // outer limit (= arena.bounds), then a soft ±90*MAPK=126 m box — EXCEPT the two diagonal
+    // fountain pockets (blue SW / red NE, r=16*MAPK around each fountain). softClampBoxM is that
+    // inner box (all units, not just heroes); render arena.bounds, path against box+pockets.
+    softClampBoxM: 2 * SOFT,
     source: "etherfantasy-browser-moba-game@15d610c index.html (drawMM minimap geometry, MAPK=1.4)",
     note: "Structural geometry only; cosmetic tree/grass scatter (Math.random in-engine) omitted. " +
           "Blue(SW)->ATTACKER, Red(NE)->DEFENDER (MOBA is symmetric PvP; sides are a labelling choice).",
   },
-  arena: { shape: "polygon", sizeM: Math.round(2 * HARD), bounds },
+  arena: { shape: "polygon", sizeM: Math.round(2 * HARD), hardClampM: HARD, softClampBoxM: SOFT, bounds },
   heightField: { cols: HF_N, rows: HF_N, cellM: HF_CELL, data: hf },
   obstacles: WALLS.map((w, i) => ({
     id: `ridge_${String(i + 1).padStart(2, "0")}`, kind: "RIDGE", passable: false, footprint: wallFootprint(w),
