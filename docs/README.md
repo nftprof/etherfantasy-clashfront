@@ -32,6 +32,7 @@ If a term is missing, add it to this README's Glossary in the same PR.
 | [08 — Data Models](./08-data-models.md) | Canonical schemas, IDs, enums, invariants | Data |
 | [09 — API Contracts](./09-api-contracts.md) | REST + WebSocket + event bus contracts | API |
 | [10 — Development Roadmap](./10-development-roadmap.md) | MVP → Alpha → Beta → Live, milestones | Program |
+| [12 — Environment: Day/Night & Weather](./12-environment-and-weather.md) | Deterministic tick-driven sky + drifting weather; light client visuals; future battle inputs (fire/flood/wind) | Sim/Client/Battle |
 | [AGENTS.md](./AGENTS.md) | **How AI agents build this** — conventions, task graph, DoD | All |
 
 **If you are an implementation agent, read [`AGENTS.md`](./AGENTS.md) first**, then your assigned
@@ -134,6 +135,12 @@ Single source of truth for names. All docs, code, and schemas MUST use these exa
 - **ZoneType** — `VILLAGE | TOWN | FORTRESS | HARBOR | CAPITAL | WILD | SEA`.
 - **Node** — a point of interest on a hex (e.g. a resource node, a port, a shrine).
 - **Route** — a traversable connection (road / sea lane) with a movement-cost weight.
+
+### Environment (see `12-environment-and-weather.md`)
+- **Environment** — the deterministic sky + weather state, a pure function of `(world.seed, tick, position)`; never stored (`12`).
+- **Time-of-Day** — day/night derived from the tick (`TICKS_PER_DAY`); tracks the server-timezone 24h clock without the sim reading wall-clock (`12 §1`).
+- **Weather** — coherent, drifting **Wind** (direction/speed) + **Precipitation** (rain 0–1) + **Moisture** (fire dryness), all seeded/tick-driven (`12 §2`).
+- **EnvSample** — the per-query environment output the sim/client/battle read; future battle input for fire spread, shoreline flooding, and wind (`12 §4`).
 
 ### Resources (see `02-economy.md`)
 - **CT (Carat)** — the single hard currency. Build, train, upgrade, repair, trade. On-chain settleable.
