@@ -237,7 +237,7 @@
     "enrichYieldPctPerDay": 0.1,
     "enrichLootPct": 0.35,
     "razeSalvagePct": 0.4,
-    "purchaseCapCtPerEpoch": 50000000,
+    "purchaseCapCtPerEpoch": 200000000,
     "lootWindowTicks": 1440,
     "journalYieldBatchTicks": 20
   },

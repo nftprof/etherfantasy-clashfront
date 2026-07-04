@@ -136,6 +136,19 @@ const orders = {
    */
   /** Open the LIVE battle viewer (parcel-card "Watch"/"Command" buttons). */
   watchBattle(battleId) { battle.open(battleId); },
+  /** POST /api/buy-ct — dev-phase E5 purchase (amount in whole CT). */
+  async buyCt(amountCt) {
+    try {
+      const res = await api('/api/buy-ct', { token, body: { amountCtUnits: amountCt * 10_000 } });
+      store.ctBalance = res.ctUnits;
+      store.emit();
+      ui.toast('💰 CT purchased', `+${fmtCT(res.boughtCtUnits)} — ${fmtCT(res.remainingCapCtUnits)} of purchase cap left this epoch.`, 'gold');
+    } catch (e) {
+      ui.toast('Purchase refused', e.code === 'PURCHASE_CAP'
+        ? 'Purchase cap reached for this epoch — earn the rest on the battlefield.'
+        : esc(e.message), 'bad');
+    }
+  },
   /** POST /api/exhibition — stage a self-serve demo battle on a parcel (M1.5 relay). */
   async exhibition(parcelId) {
     try {
@@ -491,26 +504,22 @@ function showJoin() {
   (pg ? document.getElementById('join-pg-id') : nameEl).focus();
 }
 
-/** PG sign-in: browser → PG /user/login (publishable key) → our /api/login-pg. */
+/**
+ * PG sign-in — PROXIED through our server (2026-07-03): the browser's direct POST
+ * to the PG origin dies on CORS, so /api/login-pg now takes identifier+password
+ * and does the PG round-trip server-side. bind_token = the PREVIOUS session's cf
+ * token (stashed by the ⇄ switch): proves control of that governor so the PG
+ * account claims it even when names differ (PG "nftprof" → the "Idon" empire).
+ */
 async function pgLogin() {
-  const username = document.getElementById('join-pg-id').value.trim();
+  const identifier = document.getElementById('join-pg-id').value.trim();
   const password = document.getElementById('join-pg-pass').value;
-  let json;
-  try {
-    const res = await fetch(`${store.meta.pgApiUrl}/user/login`, {
-      method: 'POST',
-      headers: { 'content-type': 'application/json', 'X-PG-App-Key': store.meta.pgAppKey },
-      body: JSON.stringify({ type: 'email', username, password, login_from: 'clashfront' }),
-    });
-    json = await res.json().catch(() => undefined);
-    if (json?.status !== true || !json?.result?.access_token) {
-      throw new Error(json?.message ?? json?.error ?? `Pentagon sign-in failed (HTTP ${res.status})`);
-    }
-  } catch (err) {
-    throw err instanceof TypeError ? new Error('Pentagon Games is unreachable — retry shortly.') : err;
-  }
-  if (json.result.refresh_token) localStorage.setItem('pg_refresh', json.result.refresh_token);
-  return api('/api/login-pg', { body: { access_token: json.result.access_token } });
+  const bindToken = localStorage.getItem('cf_prev') ?? undefined;
+  const res = await api('/api/login-pg', {
+    body: { identifier, password, ...(bindToken ? { bind_token: bindToken } : {}) },
+  });
+  localStorage.removeItem('cf_prev'); // one-shot bind hint
+  return res;
 }
 
 document.getElementById('join-form').addEventListener('submit', async (e) => {

@@ -58,6 +58,7 @@ import {
   marchFoodPerStep,
   orderMarch,
   provisionArmy,
+  recordMint,
   raiseArmy,
   raiseCost,
   type RaiseCostBreakdown,
@@ -362,6 +363,7 @@ interface SaveFileV1 {
   governors: [string, GovernorMeta][];
   /** PG identity bindings: pgUid → governorId (docs/briefs/PG-IDENTITY.md). Optional for pre-PG saves. */
   pgBindings?: [string, string][];
+  purchases?: [string, number][];
   state: SerializedWorldState;
 }
 
@@ -410,6 +412,8 @@ export class Game {
   readonly governors = new Map<string, GovernorMeta>(); // governorId → meta
   /** PG identity bindings: pgUid → governorId (persisted — survives restarts). */
   readonly pgBindings = new Map<string, string>();
+  /** governorId → lifetime purchased ct_units (E5 dev-phase faucet, cap-enforced). */
+  readonly purchases = new Map<string, number>();
   npcGovernorId = '';
 
   private readonly baseRng: Rng;
@@ -449,6 +453,7 @@ export class Game {
       for (const s of save.sessions) this.sessions.set(s.token, s);
       for (const [id, meta] of save.governors) this.governors.set(id, meta);
       for (const [uid, gid] of save.pgBindings ?? []) this.pgBindings.set(uid, gid);
+      for (const [gid, amt] of save.purchases ?? []) this.purchases.set(gid, amt);
       for (const [id, b] of this.state.battles) {
         if (b.result?.territoryOutcome !== undefined) this.emittedOutcomes.add(id);
       }
@@ -602,9 +607,19 @@ export class Game {
    *   otherwise               → create a new governor named displayName
    *                             (numeric suffix on name collisions)
    */
-  loginPg(pgUid: string, displayName: string): { playerId: string; token: string; governorId: string; officers: DemoOfficer[] } {
+  loginPg(pgUid: string, displayName: string, bindGovernorId?: string): { playerId: string; token: string; governorId: string; officers: DemoOfficer[] } {
     const bound = this.pgBindings.get(pgUid);
     if (bound !== undefined && this.governors.has(bound)) return this.resumeGovernor(bound);
+    // EXPLICIT BIND (2026-07-03): the client passes the previous session's token when
+    // signing in, proving control of that governor — binds it even when the PG
+    // display name differs (e.g. PG user "nftprof" claiming the "Idon" empire).
+    // Only unbound PLAYER governors are bindable; NPCs/SYSTEM never.
+    const boundGovs = new Set(this.pgBindings.values());
+    if (bindGovernorId !== undefined && !boundGovs.has(bindGovernorId)
+      && this.governors.get(bindGovernorId)?.kind === 'PLAYER') {
+      this.pgBindings.set(pgUid, bindGovernorId);
+      return this.resumeGovernor(bindGovernorId);
+    }
     const clean = (displayName.trim() === '' ? `pg-${pgUid.slice(0, 16)}` : displayName.trim()).slice(0, 24);
     // Adoption: same-name PLAYER governors not yet bound to any PG account
     // (duplicates pre-date resume — pick the one with the most holdings).
@@ -2263,6 +2278,7 @@ export class Game {
       sessions: [...this.sessions.values()],
       governors: [...this.governors.entries()],
       pgBindings: [...this.pgBindings.entries()],
+      purchases: [...this.purchases.entries()],
       state: serializeWorldState(this.state),
     };
   }
@@ -2312,6 +2328,29 @@ export class Game {
   /** ⚙ balance.economy.purchaseCapCtPerEpoch — surfaced by the /api/buy-ct stub. */
   purchaseCapCtPerEpoch(): number {
     return this.balance.economy.purchaseCapCtPerEpoch;
+  }
+
+  /**
+   * E5 dev-phase CT purchase (owner 2026-07-03: "for now we use CT freely for
+   * game testing"): mints to the wallet, journaled as a purchase faucet, HARD
+   * capped at ⚙ purchaseCapCtPerEpoch per governor (epoch = world lifetime for
+   * the MVP — real payments + epoch reset come with the on-chain phase).
+   */
+  buyCt(governorId: string, amountCtUnits: unknown): { ctUnits: number; boughtCtUnits: number; remainingCapCtUnits: number } {
+    if (typeof amountCtUnits !== 'number' || !Number.isInteger(amountCtUnits) || amountCtUnits <= 0) {
+      throw new ApiError(400, 'BAD_AMOUNT', 'amountCtUnits must be a positive integer');
+    }
+    const cap = this.balance.economy.purchaseCapCtPerEpoch;
+    const used = this.purchases.get(governorId) ?? 0;
+    const grant = Math.min(amountCtUnits, cap - used);
+    if (grant <= 0) {
+      throw new ApiError(409, 'PURCHASE_CAP', `purchase cap reached (${cap} ct_units per governor this epoch)`);
+    }
+    this.purchases.set(governorId, used + grant);
+    const bal = this.state.ctBalances?.get(governorId) ?? 0;
+    this.state.ctBalances?.set(governorId, bal + grant);
+    recordMint(this.state, governorId, grant, 'purchase', 'wallet');
+    return { ctUnits: bal + grant, boughtCtUnits: grant, remainingCapCtUnits: cap - used - grant };
   }
 
   /** Total march ticks for a path (used for ETA echoes). */

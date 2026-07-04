@@ -522,7 +522,7 @@ export class ClashServer {
     }
     if (path === '/api/login-pg' && method === 'POST') {
       const body = await readJsonBody(req);
-      sendJson(res, 200, await this.loginPg(body['access_token']));
+      sendJson(res, 200, await this.loginPg(body['access_token'], body['identifier'], body['password'], body['bind_token']));
       return;
     }
     if (path === '/api/world' && method === 'GET') {
@@ -609,13 +609,10 @@ export class ClashServer {
           sendJson(res, 200, this.game.abandon(session.governorId, body.territoryId));
           return;
         case '/api/buy-ct':
-          // E5 purchase-cap stub: real payments are out of scope; the cap that
-          // WILL apply per account per epoch is ⚙ balance.economy.purchaseCapCtPerEpoch.
-          throw new ApiError(
-            501,
-            'NOT_ENABLED',
-            `CT purchases are not enabled yet; when they are, buys are capped at ${this.game.purchaseCapCtPerEpoch()} ct_units per account per epoch`,
-          );
+          // E5 dev-phase purchase (owner: CT free for testing until on-chain phase);
+          // hard-capped per governor at ⚙ purchaseCapCtPerEpoch, journaled as a mint.
+          sendJson(res, 200, this.game.buyCt(session.governorId, body.amountCtUnits));
+          return;
         case '/api/choice':
           sendJson(res, 200, this.game.choice(session.governorId, body.battleId, body.action, body.overseerId));
           return;
@@ -700,15 +697,47 @@ export class ClashServer {
    * binding → resume; unbound same-name governor → adopt; else create).
    * Responds with the same shape as /api/join.
    */
-  private async loginPg(accessToken: unknown): Promise<Record<string, unknown>> {
+  private async loginPg(
+    accessToken: unknown,
+    identifier?: unknown,
+    password?: unknown,
+    bindToken?: unknown,
+  ): Promise<Record<string, unknown>> {
     const appKey = this.config.pgAppKey;
     if (appKey === undefined || appKey === '') {
       throw new ApiError(503, 'PG_DISABLED', 'Pentagon Games login is not enabled on this server (set PG_APP_KEY)');
     }
-    if (typeof accessToken !== 'string' || accessToken === '') {
-      throw new ApiError(400, 'BAD_TOKEN', 'access_token must be a non-empty string');
-    }
     const fetchImpl = this.config.pgFetch ?? fetch;
+    // SERVER-SIDE CREDENTIAL PROXY (2026-07-03): the browser's direct POST to the PG
+    // origin fails on CORS, so the form now sends identifier+password HERE and we do
+    // the PG login server-to-server. Password is forwarded upstream only, never stored.
+    if (typeof accessToken !== 'string' || accessToken === '') {
+      if (typeof identifier !== 'string' || identifier === '' || typeof password !== 'string' || password === '') {
+        throw new ApiError(400, 'BAD_TOKEN', 'send access_token, or identifier + password');
+      }
+      const ctrl0 = new AbortController();
+      const timer0 = setTimeout(() => ctrl0.abort(), PG_TIMEOUT_MS);
+      let loginRes: Response;
+      try {
+        loginRes = await fetchImpl(`${this.pgApiUrl}/user/login`, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json', 'x-pg-app-key': appKey },
+          body: JSON.stringify({ type: 'email', username: identifier, password, login_from: 'clashfront' }),
+          signal: ctrl0.signal,
+        });
+      } catch {
+        throw new ApiError(502, 'PG_UNAVAILABLE', 'Pentagon Games identity service is unreachable — try again shortly');
+      } finally {
+        clearTimeout(timer0);
+      }
+      const loginJson = (await loginRes.json().catch(() => undefined)) as
+        | { status?: boolean; result?: { access_token?: string; refresh_token?: string }; message?: string }
+        | undefined;
+      if (loginJson?.status !== true || typeof loginJson.result?.access_token !== 'string') {
+        throw new ApiError(401, 'PG_LOGIN_FAILED', loginJson?.message ?? `Pentagon sign-in failed (HTTP ${loginRes.status})`);
+      }
+      accessToken = loginJson.result.access_token;
+    }
     const ctrl = new AbortController();
     const timer = setTimeout(() => ctrl.abort(), PG_TIMEOUT_MS);
     let upstream: Response;
@@ -735,7 +764,8 @@ export class ClashServer {
     if (pgUid === undefined) {
       throw new ApiError(502, 'PG_UNAVAILABLE', 'Pentagon Games user info carried no user id');
     }
-    const { playerId, token, governorId, officers } = this.game.loginPg(pgUid, displayName);
+    const bindGovernorId = typeof bindToken === 'string' ? this.game.sessionByToken(bindToken)?.governorId : undefined;
+    const { playerId, token, governorId, officers } = this.game.loginPg(pgUid, displayName, bindGovernorId);
     return { playerId, token, governorId, officers };
   }
 

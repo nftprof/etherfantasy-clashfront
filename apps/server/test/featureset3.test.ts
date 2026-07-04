@@ -135,11 +135,23 @@ test('E3/E4 over HTTP: enrich + raze endpoints — auth, ownership, amounts, eve
     assert.equal(razeEv.salvageCtUnits, preview);
     assert.equal(razeEv.track, 'AGRICULTURE');
 
-    // /api/buy-ct — the E5 purchase-cap stub
-    const buy = await api(base, '/api/buy-ct', { token: alice.token, body: { amountCt: 100 } });
-    assert.equal(buy.status, 501);
-    assert.equal(buy.json.error.code, 'NOT_ENABLED');
-    assert.match(buy.json.error.message, new RegExp(String(E.purchaseCapCtPerEpoch)));
+    // /api/buy-ct — E5 dev-phase purchase: minted to the wallet, hard-capped per governor
+    const badBuy = await api(base, '/api/buy-ct', { token: alice.token, body: { amountCt: 100 } });
+    assert.equal(badBuy.status, 400); // amountCtUnits (integer ct_units) is the contract
+    const before = (await api(base, `/api/state`, { token: alice.token })).json.my.ctBalance;
+    const buy = await api(base, '/api/buy-ct', { token: alice.token, body: { amountCtUnits: 100 * CT } });
+    assert.equal(buy.status, 200);
+    assert.equal(buy.json.boughtCtUnits, 100 * CT);
+    assert.equal(buy.json.ctUnits, before + 100 * CT);
+    assert.equal(buy.json.remainingCapCtUnits, E.purchaseCapCtPerEpoch - 100 * CT);
+    // cap enforcement: a second buy larger than the remaining cap is clipped, then 409
+    const over = await api(base, '/api/buy-ct', { token: alice.token, body: { amountCtUnits: E.purchaseCapCtPerEpoch } });
+    assert.equal(over.status, 200);
+    assert.equal(over.json.boughtCtUnits, E.purchaseCapCtPerEpoch - 100 * CT);
+    assert.equal(over.json.remainingCapCtUnits, 0);
+    const capped = await api(base, '/api/buy-ct', { token: alice.token, body: { amountCtUnits: 1 } });
+    assert.equal(capped.status, 409);
+    assert.equal(capped.json.error.code, 'PURCHASE_CAP');
   } finally {
     await server.stop();
   }

@@ -55,7 +55,8 @@ export function createUI({ store, map, orders }) {
       (dotColor ? `<span class="dot" style="background:${dotColor}"></span>` : '') +
       `<span class="grow">${label}</span><span class="meta">${meta ?? ''}</span></div>`;
 
-    let html = `<div class="rail-sec"><h3>Treasury</h3><div class="rail-ct">${fmtCT(store.ctBalance)}</div></div>`;
+    let html = `<div class="rail-sec"><h3>Treasury</h3><div class="rail-ct">${fmtCT(store.ctBalance)}` +
+      `<button id="btn-buyct" title="Dev-phase CT purchase (E5) — capped per governor; real payments come with the on-chain phase">＋10K</button></div></div>`;
 
     html += sec(`Decisions${choices.length ? ` (${choices.length})` : ''}`, choices.map((c) => {
       const t = store.territories.get(c.territoryId);
@@ -114,6 +115,7 @@ export function createUI({ store, map, orders }) {
   // resolves to the entity they lead/oversee (idle officers just flash).
   // Double-click naturally repeats the same idempotent action.
   rail.addEventListener('click', (e) => {
+    if (e.target.closest('#btn-buyct')) { orders.buyCt(10_000); return; }
     const el = e.target.closest('[data-parcel],[data-army],[data-choice],[data-feed],[data-officer]');
     if (!el) return;
     if (el.dataset.parcel) {
@@ -769,6 +771,10 @@ export function createUI({ store, map, orders }) {
         `<button id="btn-switch" title="Switch banner — type an existing name to resume that governor">⇄</button>`;
       plate.hidden = false;
       plate.querySelector('#btn-switch').addEventListener('click', () => {
+        // Stash the outgoing session token: if the next login is a Pentagon sign-in,
+        // it proves control of this governor and binds it to the PG account.
+        const cur = localStorage.getItem('cf_token');
+        if (cur) localStorage.setItem('cf_prev', cur);
         localStorage.removeItem('cf_token');
         location.reload();
       });

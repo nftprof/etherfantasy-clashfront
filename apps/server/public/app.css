@@ -55,7 +55,9 @@ button.danger  { background: #4a2320; border-color: #7a3a33; }
 .rail-sec { padding: 8px 12px 2px; }
 .rail-sec h3 { margin: 0 0 4px; font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase;
   color: var(--ink-faint); font-weight: 600; }
-.rail-ct { font: var(--mono); font-size: 17px; color: var(--gold); }
+.rail-ct { font: var(--mono); font-size: 17px; color: var(--gold); display: flex; align-items: center; gap: 8px; }
+.rail-ct #btn-buyct { font-size: 10.5px; padding: 1px 7px; color: var(--gold); border-color: #4a3a1c; background: none; }
+.rail-ct #btn-buyct:hover { border-color: var(--gold); }
 .rail-row { display: flex; align-items: center; gap: 6px; padding: 4px 6px; margin: 1px -6px;
   border-radius: 5px; cursor: pointer; font-size: 12.5px; }
 .rail-row:hover { background: var(--panel-2); }
