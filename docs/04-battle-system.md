@@ -535,8 +535,20 @@ against the standing order; the owner gets the war-report drama either way.
 - Reconciliation: pets ASSIGNED to a governor's occupied territory keep their §9 GUARD role;
   only the lone homestead pet is passive.
 
+**Scaling rationale (owner, 2026-07-04):** Masters are the COMMAND cap — max 52 Masters + 3
+Heroes = 55 commandable leaders per user; conquest scales with Masters. Pets are the LAND
+scale — more pets ⇒ more homesteaded parcels ⇒ more resource farming, zero combat power.
+Two NFT products, two growth axes.
+
+**Defeated-troop fate (PROPOSAL 2026-07-04, pending owner lock):** on a DECISIVE loss the
+loser's surviving soldiers split three ways ⚙ — DEAD (casualties, as now) / CAPTURED (join
+the winner's draftable pool — CT-backed value TRANSFER like pillage, never a mint; raised by
+the WINNER's Master fame/charisma) / SCATTERED (retreat with the routed Master; protected by
+the LOSER's Master loyalty). Ties/non-decisive keep the §7c retreat ladder unchanged.
+
 ❓ OPEN (owner): exact flee odds/penalty; duel stance-UI depth (pickable stances vs pure
-auto); whether a lone Master also passively claims/holds yield like a homestead pet.
+auto); whether a lone Master also passively claims/holds yield like a homestead pet;
+lock or amend the defeated-troop split above.
 
 ---
 
