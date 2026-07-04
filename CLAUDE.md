@@ -263,15 +263,17 @@ Satellite sessions deliver on their OWN branches (`claude/map-extraction`,
 `claude/battle-engine-discovery`) — never directly on `claude/clash-front-overworld-mkcyia`;
 a core session merges them.
 
-**Live session landscape (owner-confirmed 2026-07-03) — 5 concurrent sessions:**
-| Session | Role | Owns |
+**Live session landscape (owner-confirmed 2026-07-04 — ALWAYS refer to a session by its EXACT name below; never say "netcode"/"the server" ambiguously):**
+| Session name (use verbatim) | Repo(s) | Owns |
 |---|---|---|
-| THIS (CF overworld) | hub + canon | all `docs/briefs/*` contracts; BATTLE_ENGINE_URL wiring; deploys to cf.etherfantasy.com |
-| "EF v2 Moba Server (bridge layer)" | match server | M1 allocate+callback (LIVE :8140 Singapore box) + telemetry bridge client; next: auto-register D2b channel from allocate, join tickets |
-| "EF v2 Moba Server (network)" | headless perf/netcode | headless lag fix (sync step() loop) — PVE tamper-proof verify engine. **HOLDS THE LAST HERO-MODE BLOCKER (2026-07-03): `POST /internal/cf/live` → `mm.createLiveMatch(context)` kept open at 30 Hz, matchId stringified — spec in MOBA repo `TICKET-CONTRACT.md` §6; gateway ticket→seat wiring already done** |
-| "EF v2 Moba Server (maps)" | map generator | `briefs/MAP-GENERATOR.md` (registry, terraform, AI gardener, prompt-to-params) |
-| "MOBA game dev agent OP48" (Cowork) | game-dev 3D client | ✅ ALL hero-mode client work + entry: Masters = champions; ticketed `/play/?ws&match&ticket` deep-link BYPASSES login (ticket=auth); `cf:1` start AUTO-SEATS as `youHn` (Master, resolved by name/slug/Mas_ file), NO champion-select; `joinAlly` reinforcement. **Full chain clickable end-to-end 2026-07-04.** Open nicety (non-blocking): wire `officers[]` uid→masterId into snapshot model resolution so OTHER players'/officers' Master models render correctly (today non-you heroes use server slot index). |
-Seams: bridge-layer↔OP48 = join ticket format; maps↔bridge-layer = Battlefield JSON (`briefs/ALLOCATE-CALLBACK-SCHEMA.md`).
+| **Clash Front Overworld design** (THIS) | `etherfantasy-clashfront` only | CF game-dev / overworld UI + hub + canon; all `docs/briefs/*` contracts; `BATTLE_ENGINE_URL` wiring; deploys to cf.etherfantasy.com |
+| **EF v2 Moba Server (network) (F5 Fork)** | MOBA repo | the match server / old PVP server: 30 Hz match loop, `addSeat`, snapshot streaming. **Owns "keep the match LIVE for the join window + late-seat"** (the current hero-mode blocker: match must stay open ~10–15 min so a ⚡ click can seat mid-game) |
+| **EF v2 Moba Server (bridge layer)** | MOBA repo ↔ CF | sits between CF and the match server: allocate, ticket mint/verify, cfpump telemetry, `makeBattleWorld`, **map layout in `battle_hello`**. ✅ delivered tickets + a map JSON; owes: send the REAL loaded map layout to CF's command view |
+| **EF Moba game dev OP 48** (Cowork) | MOBA repo (3D client) | the actual game — `index.html` MOBA 3D client. ✅ hero-mode entry (ticket=auth login bypass, `cf:1` auto-seat as `youHn`, `joinAlly`). Owes: make the deployed client actually honor the ticket (login still flashes) + auto-seat |
+| **EF v2 CF Moba (map maker) (F5)** | CF + MOBA | AI/LLM generates a unique battlefield per CF parcel hexagon (`briefs/MAP-GENERATOR.md` + `BATTLEFIELD-SCHEMA.md`); eventually merges in for per-parcel battle maps |
+| **MOBA BattleEngine** | bridges `etherfantasy-browser-moba-game` ↔ `etherfantasy-clashfront` | delivers maps + the details CF needs onto the CF side (the repo-to-repo courier for battlefield/map data) |
+| **EF v2 Main WebSite FE** / **EF v2 WebSite (Pets Claim)** | website FE | the main marketing/app site + the pets-claim page (not battle-path) |
+Seams: **bridge layer ↔ OP 48** = join ticket format; **map maker ↔ bridge layer** (via **MOBA BattleEngine**) = Battlefield JSON (`briefs/BATTLEFIELD-SCHEMA.md`); **network (F5 Fork) ↔ OP 48** = keep-match-live so the client can late-seat.
 
 ## Working rules
 
