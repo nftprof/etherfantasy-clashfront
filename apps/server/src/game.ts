@@ -608,18 +608,20 @@ export class Game {
    *                             (numeric suffix on name collisions)
    */
   loginPg(pgUid: string, displayName: string, bindGovernorId?: string): { playerId: string; token: string; governorId: string; officers: DemoOfficer[] } {
+    // EXPLICIT (RE)BIND (2026-07-03): the client passes the previous session's token
+    // when signing in, proving control of that governor — the PG account claims it
+    // even when names differ (PG "nftprof" → the "Idon" empire), and a subsequent
+    // proven bind MOVES the binding (your PG account, your choice of empire). Only
+    // PLAYER governors not bound to a DIFFERENT PG account are bindable.
+    if (bindGovernorId !== undefined && this.governors.get(bindGovernorId)?.kind === 'PLAYER') {
+      const otherOwner = [...this.pgBindings.entries()].find(([uid, gid]) => gid === bindGovernorId && uid !== pgUid);
+      if (otherOwner === undefined) {
+        this.pgBindings.set(pgUid, bindGovernorId);
+        return this.resumeGovernor(bindGovernorId);
+      }
+    }
     const bound = this.pgBindings.get(pgUid);
     if (bound !== undefined && this.governors.has(bound)) return this.resumeGovernor(bound);
-    // EXPLICIT BIND (2026-07-03): the client passes the previous session's token when
-    // signing in, proving control of that governor — binds it even when the PG
-    // display name differs (e.g. PG user "nftprof" claiming the "Idon" empire).
-    // Only unbound PLAYER governors are bindable; NPCs/SYSTEM never.
-    const boundGovs = new Set(this.pgBindings.values());
-    if (bindGovernorId !== undefined && !boundGovs.has(bindGovernorId)
-      && this.governors.get(bindGovernorId)?.kind === 'PLAYER') {
-      this.pgBindings.set(pgUid, bindGovernorId);
-      return this.resumeGovernor(bindGovernorId);
-    }
     const clean = (displayName.trim() === '' ? `pg-${pgUid.slice(0, 16)}` : displayName.trim()).slice(0, 24);
     // Adoption: same-name PLAYER governors not yet bound to any PG account
     // (duplicates pre-date resume — pick the one with the most holdings).

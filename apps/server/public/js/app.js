@@ -488,8 +488,11 @@ async function boot() {
  *   !pgEnabled → dev name-only banner login (/api/join), unchanged.
  * The ⇄ switch button just clears cf_token + reloads — it lands here in both modes.
  */
+/** Which login form is showing: PG by default when enabled; banner = the dev/name path. */
+let joinMode = 'auto'; // 'auto' | 'banner'
+
 function showJoin() {
-  const pg = !!store.meta.pgEnabled;
+  const pg = !!store.meta.pgEnabled && joinMode !== 'banner';
   document.getElementById('join-sub').textContent = pg
     ? 'The overworld is at war. Sign in with your Pentagon Games account to take your banner.'
     : 'The overworld is at war. Name your banner — an existing name resumes that governor.';
@@ -500,9 +503,21 @@ function showJoin() {
     el.hidden = !pg; el.required = pg;
   }
   document.getElementById('join-btn').textContent = pg ? 'Sign in with Pentagon' : 'Enter the war';
+  // Pre-PG governors must stay reachable (name-resume): a small toggle swaps forms.
+  const alt = document.getElementById('join-alt');
+  if (alt) {
+    alt.hidden = !store.meta.pgEnabled;
+    alt.textContent = pg ? 'or enter with a banner name (dev) →' : '← back to Pentagon sign-in';
+  }
   document.getElementById('join').hidden = false;
   (pg ? document.getElementById('join-pg-id') : nameEl).focus();
 }
+
+document.getElementById('join-alt')?.addEventListener('click', (e) => {
+  e.preventDefault();
+  joinMode = joinMode === 'banner' ? 'auto' : 'banner';
+  showJoin();
+});
 
 /**
  * PG sign-in — PROXIED through our server (2026-07-03): the browser's direct POST
@@ -526,7 +541,7 @@ document.getElementById('join-form').addEventListener('submit', async (e) => {
   e.preventDefault();
   const errEl = document.getElementById('join-err');
   try {
-    const res = store.meta.pgEnabled
+    const res = store.meta.pgEnabled && joinMode !== 'banner'
       ? await pgLogin()
       : await api('/api/join', { body: { name: document.getElementById('join-name').value.trim() } });
     token = res.token;
