@@ -60,6 +60,12 @@ fi
 export PG_APP_KEY
 if [ -n "${PG_API_URL:-}" ]; then export PG_API_URL; fi
 
+# EF Masters roster gate (docs/09 §7, docs/briefs/PG-IDENTITY.md §3b): a PG-logged-in
+# player commands only the Masters their wallet owns/rents. Base URL defaults to the
+# live host inside the server; export an override if set. The box MUST be able to reach
+# api.etherfantasy.com or every login silently falls back to the demo roster.
+if [ -n "${MASTERS_API_URL:-}" ]; then export MASTERS_API_URL; fi
+
 pm2 restart "$APP_NAME" --update-env 2>/dev/null \
   || pm2 start apps/server/dist/src/main.js --name "$APP_NAME" --update-env
 pm2 save

@@ -151,6 +151,18 @@ interface Master {
 `master_…` id (prefix-typed ids disambiguate) — an army may be led by your own Hero or by a
 commanded Master. `HERO_IMPACT_MAX` applies identically to both.
 
+**MVP officer mirror (implemented 2026-07-04):** the server's `DemoOfficer`
+(`packages/sim-engine` `state.ts`) is the MVP stand-in for the officer pool. When a player logs in
+via Pentagon Games and their wallet is known, that pool is **gated to the Masters they own/rent** —
+synced live from the EF Masters API (`09` §7) at every login. Each such officer carries the
+`Master` mirror fields `masterId` (the real EF id — sent into the battle allocate context so the
+MOBA client maps to the champion), `slug`, `source` (`owned|rented`), `koUntil`, `joinChance`,
+`rentalExpires`. A wallet-less dev login or an unreachable API leaves those undefined and keeps the
+demo roster (playability fallback — a governor is never left with zero officers). Re-sync reconciles
+by `masterId`: still-owned Masters keep their assignment, newly owned ones are added, and an officer
+whose Master is no longer owned is dropped **if free** but kept **until idle if busy** (overseeing a
+territory or leading a live army).
+
 ### World / Region / Territory / Hex
 ```ts
 interface World { id: string; name: string; seed: string; tick: number; startedAt: number; }

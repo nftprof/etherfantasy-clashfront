@@ -5,6 +5,7 @@
 export * from './battleEngine';
 export * from './bridge';
 export * from './game';
+export * from './masters';
 export * from './server';
 export * from './roster';
 export * from './views';

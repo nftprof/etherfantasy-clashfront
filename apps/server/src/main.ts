@@ -30,6 +30,12 @@
  *   PG_APP_KEY             PUBLISHABLE app key (pk_…) sent as X-PG-App-Key — setting it
  *                          turns the client join overlay into the Pentagon sign-in form
  *   PG_API_URL             PG identity API base (default https://login.pentagon.games)
+ *
+ * EF Masters roster gate (docs/09 §7; officer pool = the Masters the PG wallet owns/rents):
+ *   MASTERS_API_URL        EF Masters API base (default https://api.etherfantasy.com).
+ *                          Active only when PG login yields a wallet AND the API is
+ *                          reachable; otherwise the demo roster stands. The box must be
+ *                          able to reach this host for the gate to take effect.
  */
 import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
@@ -98,6 +104,9 @@ async function main(): Promise<void> {
   // Pentagon Games identity — PG login is ON only when the (publishable) app key is set.
   const pgAppKey = process.env['PG_APP_KEY'];
   const pgApiUrl = process.env['PG_API_URL'];
+  // EF Masters roster gate — base URL only (default lives in ClashServer); the
+  // gate is active per-login when PG hands us a wallet and the host is reachable.
+  const mastersApiUrl = process.env['MASTERS_API_URL'];
   const server = new ClashServer({
     game,
     port,
@@ -106,6 +115,7 @@ async function main(): Promise<void> {
     ...(bridgeSecret !== undefined && bridgeSecret !== '' ? { bridgeSecret } : {}),
     ...(pgAppKey !== undefined && pgAppKey !== '' ? { pgAppKey } : {}),
     ...(pgApiUrl !== undefined && pgApiUrl !== '' ? { pgApiUrl } : {}),
+    ...(mastersApiUrl !== undefined && mastersApiUrl !== '' ? { mastersApiUrl } : {}),
     ...(engineOn
       ? {
           battleEngine: {

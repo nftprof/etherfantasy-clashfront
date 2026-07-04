@@ -23,6 +23,7 @@ import {
   DEVELOPMENT_TRACKS,
   type DevelopmentTrack,
   type GovernorKind,
+  newId,
   type PostVictoryAction,
   type Rng,
   type Territory,
@@ -80,6 +81,7 @@ import {
   type WorldState,
 } from '@clashfront/sim-engine';
 import type { AllocateJoinGrant } from './battleEngine';
+import type { OwnedMaster } from './masters';
 import { GOVERNOR_PALETTE, NPC_COLOR, officerNamesForJoin, WILD_COLOR } from './roster';
 import {
   armyView,
@@ -606,8 +608,31 @@ export class Game {
    *                             pgUid is never re-adoptable)
    *   otherwise               → create a new governor named displayName
    *                             (numeric suffix on name collisions)
+   *
+   * ROSTER GATE (docs/09 §7): when `ownedMasters` is supplied (PG yielded a
+   * wallet and the EF Masters API was reachable) the resolved governor's officer
+   * pool is RE-SYNCED to exactly those Masters — carrying the real masterId/slug/
+   * source/koUntil into battle. Refreshed on every login. `undefined` (no wallet
+   * / API down) or `[]` (wallet owns nothing) keep the demo roster so the game
+   * never bricks (see `syncOfficersFromMasters`).
    */
-  loginPg(pgUid: string, displayName: string, bindGovernorId?: string): { playerId: string; token: string; governorId: string; officers: DemoOfficer[] } {
+  loginPg(
+    pgUid: string,
+    displayName: string,
+    bindGovernorId?: string,
+    ownedMasters?: OwnedMaster[],
+  ): { playerId: string; token: string; governorId: string; officers: DemoOfficer[] } {
+    const base = this.resolveLoginGovernor(pgUid, displayName, bindGovernorId);
+    this.syncOfficersFromMasters(base.governorId, ownedMasters);
+    return { ...base, officers: this.state.officers?.get(base.governorId) ?? [] };
+  }
+
+  /** Resolve pgUid → governor (rebind / resume / adopt / create). See loginPg. */
+  private resolveLoginGovernor(
+    pgUid: string,
+    displayName: string,
+    bindGovernorId?: string,
+  ): { playerId: string; token: string; governorId: string; officers: DemoOfficer[] } {
     // EXPLICIT (RE)BIND (2026-07-03): the client passes the previous session's token
     // when signing in, proving control of that governor — the PG account claims it
     // even when names differ (PG "nftprof" → the "Idon" empire), and a subsequent
@@ -640,6 +665,78 @@ export class Game {
     const res = this.join(this.uniqueGovernorName(clean));
     this.pgBindings.set(pgUid, res.governorId);
     return res;
+  }
+
+  /**
+   * Reconcile a governor's officer pool against the LIVE EF Masters roster
+   * (docs/09 §7) — "you command only the Masters your wallet holds". Runs at the
+   * server boundary (PG login), NEVER inside the sim tick, so determinism holds.
+   *
+   *   owned === undefined  → API unreachable / no wallet: keep existing officers
+   *                          (demo roster fallback — never brick the game).
+   *   owned === []         → wallet owns nothing: keep the demo roster as a
+   *                          playability fallback (a governor is never left with
+   *                          zero officers) and LOG it.
+   *   owned non-empty      → the officer pool BECOMES those Masters:
+   *                            • an owned Master already mirrored (by masterId)
+   *                              keeps its officer object → its overseer/army
+   *                              assignment survives; its fields are refreshed.
+   *                            • a newly owned Master gets a fresh hero_… officer.
+   *                            • an officer whose Master is no longer owned (or a
+   *                              demo officer with no masterId) is REMOVED if free,
+   *                              but KEPT until idle if BUSY (oversees a territory
+   *                              or leads a live army) — the least-surprising rule:
+   *                              never yank a general out of an ongoing command.
+   */
+  private syncOfficersFromMasters(governorId: string, owned?: OwnedMaster[]): void {
+    if (owned === undefined) return; // API down / no wallet — demo roster stands.
+    if (owned.length === 0) {
+      // eslint-disable-next-line no-console
+      console.log(`[masters] governor ${governorId} wallet owns no Masters — keeping demo roster (playability fallback)`);
+      return;
+    }
+    const rng = this.orderRng('masters-sync');
+    const time = this.state.world.tick;
+    const existing = this.state.officers?.get(governorId) ?? [];
+    // Busy = oversees a territory OR leads a non-disbanded army (can't be yanked).
+    const leading = new Set<string>();
+    for (const a of this.state.armies.values()) {
+      if (a.state !== 'DISBANDED' && a.heroId !== undefined) leading.add(a.heroId);
+    }
+    const isBusy = (o: DemoOfficer): boolean => o.assignedTerritoryId !== undefined || leading.has(o.id);
+    const priorByMaster = new Map<string, DemoOfficer>();
+    for (const o of existing) {
+      if (o.masterId !== undefined) priorByMaster.set(String(o.masterId), o);
+    }
+    const ownedKeys = new Set(owned.map((m) => String(m.masterId)));
+    const next: DemoOfficer[] = [];
+    // 1. Every owned Master → an officer (reuse the mirror to preserve assignment).
+    for (const m of owned) {
+      const prior = priorByMaster.get(String(m.masterId));
+      const officer: DemoOfficer = prior ?? {
+        id: newId('hero', { time, random: () => rng.next() }),
+        ownerGovernorId: governorId,
+        name: m.name,
+        fame: 200,
+      };
+      officer.name = m.name;
+      officer.masterId = m.masterId;
+      if (m.slug !== undefined) officer.slug = m.slug;
+      if (m.source !== undefined) officer.source = m.source;
+      officer.koUntil = m.koUntil ?? null;
+      if (m.joinChance !== undefined) officer.joinChance = m.joinChance;
+      if (m.rentalExpires !== undefined) officer.rentalExpires = m.rentalExpires;
+      next.push(officer);
+    }
+    // 2. No-longer-owned officers (and demo officers with no masterId): drop if
+    //    free, keep until idle if busy.
+    for (const o of existing) {
+      const stillOwned = o.masterId !== undefined && ownedKeys.has(String(o.masterId));
+      if (stillOwned) continue; // already carried in pass 1
+      if (isBusy(o)) next.push(o);
+    }
+    this.state.officers ??= new Map();
+    this.state.officers.set(governorId, next);
   }
 
   /** Mint a fresh session token for an existing governor (name-resume + PG login). */
@@ -1656,8 +1753,12 @@ export class Game {
               officer === undefined
                 ? []
                 : [{
-                    masterId: officer.id,
+                    // REAL EF masterId (docs/09 §7) so the MOBA client maps to the
+                    // champion + pre-locks the seat; fall back to the internal
+                    // hero_… id only for demo officers with no owned Master.
+                    masterId: officer.masterId ?? officer.id,
                     name: officer.name,
+                    ...(officer.slug !== undefined ? { slug: officer.slug } : {}),
                     level: Math.max(1, Math.floor(officer.fame / 100)),
                     revives: 3,
                   }],

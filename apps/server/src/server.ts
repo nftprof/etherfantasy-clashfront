@@ -22,6 +22,7 @@ import { WebSocketServer, type WebSocket } from 'ws';
 import { allocateBattle, type BattleEngineConfig, verifyCallbackSignature } from './battleEngine';
 import { BridgeHub } from './bridge';
 import { ApiError, type Game, type TickResult } from './game';
+import { fetchActiveMasters, MASTERS_API_URL_DEFAULT, type OwnedMaster } from './masters';
 
 export interface ServerConfig {
   game: Game;
@@ -55,6 +56,14 @@ export interface ServerConfig {
   pgApiUrl?: string;
   /** Injectable fetch for /api/login-pg upstream verification — tests mock the PG API. */
   pgFetch?: typeof fetch;
+  /**
+   * EF Masters API base URL (docs/09 §7, env MASTERS_API_URL). Default
+   * https://api.etherfantasy.com. Used at PG login to gate a governor's officer
+   * pool to the Masters their wallet owns/rents; unreachable ⇒ demo-roster fallback.
+   */
+  mastersApiUrl?: string;
+  /** Injectable fetch for the Masters roster sync — tests mock the Masters API. */
+  mastersFetch?: typeof fetch;
 }
 
 /** PG identity API (docs/briefs/PG-IDENTITY.md) — the login.pentagon.games service. */
@@ -106,6 +115,8 @@ export class ClashServer {
   private readonly seenNonces = new Map<string, { battleId: string; atMs: number }>();
   /** PG identity API base (trailing slashes stripped). */
   private readonly pgApiUrl: string;
+  /** EF Masters API base (trailing slashes stripped). */
+  private readonly mastersApiUrl: string;
 
   constructor(private readonly config: ServerConfig) {
     this.game = config.game;
@@ -138,6 +149,7 @@ export class ClashServer {
     const geo = this.game.worldGeometry();
     this.parcelIds = new Set(geo.parcels.map((p) => p.id));
     this.pgApiUrl = (config.pgApiUrl ?? PG_API_URL_DEFAULT).replace(/\/+$/, '');
+    this.mastersApiUrl = (config.mastersApiUrl ?? MASTERS_API_URL_DEFAULT).replace(/\/+$/, '');
     // PG identity surface for the client: pgEnabled picks the login UI; the
     // app key is PUBLISHABLE (pk_ prefix) — the browser needs it to POST
     // {pgApiUrl}/user/login directly (embedded form, no redirects).
@@ -761,12 +773,20 @@ export class ClashServer {
     } catch {
       throw new ApiError(502, 'PG_UNAVAILABLE', 'Pentagon Games identity service returned an unreadable response');
     }
-    const { pgUid, displayName } = derivePgIdentity(payload);
+    const { pgUid, displayName, wallet } = derivePgIdentity(payload);
     if (pgUid === undefined) {
       throw new ApiError(502, 'PG_UNAVAILABLE', 'Pentagon Games user info carried no user id');
     }
+    // Roster gate (docs/09 §7): when PG hands us a wallet, the officer pool is the
+    // Masters that wallet owns/rents — pulled live from the EF Masters API. Any
+    // failure (no wallet, timeout, non-200) leaves ownedMasters undefined, and
+    // Game.loginPg keeps the demo roster (the game never bricks on an API hiccup).
+    let ownedMasters: OwnedMaster[] | undefined;
+    if (wallet !== undefined && wallet !== '') {
+      ownedMasters = await fetchActiveMasters(this.mastersApiUrl, wallet, this.config.mastersFetch ?? fetch);
+    }
     const bindGovernorId = typeof bindToken === 'string' ? this.game.sessionByToken(bindToken)?.governorId : undefined;
-    const { playerId, token, governorId, officers } = this.game.loginPg(pgUid, displayName, bindGovernorId);
+    const { playerId, token, governorId, officers } = this.game.loginPg(pgUid, displayName, bindGovernorId, ownedMasters);
     return { playerId, token, governorId, officers };
   }
 
@@ -837,10 +857,11 @@ export class ClashServer {
  * Extract (pgUid, displayName) from GET /user/info's 200 payload. The user
  * object may arrive bare or wrapped in {status,result}. Display-name
  * preference mirrors PG's canonical user resolution order: PNS name →
- * username → email local-part (docs/briefs/PG-IDENTITY.md).
- * Exported for tests.
+ * username → email local-part (docs/briefs/PG-IDENTITY.md). Also surfaces the
+ * EVM `wallet` from `mm_address` (docs/09 §7) — the key the Masters roster sync
+ * gates on. Exported for tests.
  */
-export function derivePgIdentity(payload: unknown): { pgUid?: string; displayName: string } {
+export function derivePgIdentity(payload: unknown): { pgUid?: string; displayName: string; wallet?: string } {
   const root = payload as Record<string, unknown> | null;
   const nested = root !== null && typeof root === 'object' ? root['result'] : undefined;
   const user = (typeof nested === 'object' && nested !== null ? nested : root) as Record<string, unknown> | null;
@@ -851,7 +872,8 @@ export function derivePgIdentity(payload: unknown): { pgUid?: string; displayNam
   const str = (v: unknown): string | undefined => (typeof v === 'string' && v.trim() !== '' ? v.trim() : undefined);
   const email = str(user['email']);
   const displayName = str(user['pns_name']) ?? str(user['pns']) ?? str(user['username']) ?? email?.split('@')[0] ?? '';
-  return { ...(pgUid !== undefined ? { pgUid } : {}), displayName };
+  const wallet = str(user['mm_address']);
+  return { ...(pgUid !== undefined ? { pgUid } : {}), displayName, ...(wallet !== undefined ? { wallet } : {}) };
 }
 
 // ── HTTP helpers ──────────────────────────────────────────────────────────────

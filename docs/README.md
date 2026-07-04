@@ -109,7 +109,10 @@ Single source of truth for names. All docs, code, and schemas MUST use these exa
   source of truth: `games-etherfantasy-backend` Masters API (`docs/09` §7) — roster (`joinChance`,
   `source: owned|rented`, `rentalExpires`), KO state (`koUntil`), limited revives. *Who you command.*
   Officer fields (`heroId`) accept either a Hero or a Master (prefix-typed ids); `HERO_IMPACT_MAX`
-  applies identically to both.
+  applies identically to both. **MVP (2026-07-04):** a PG-logged-in player's officer pool is gated
+  to exactly the Masters their wallet holds — synced live from the Masters API on login, carrying
+  the real `masterId`/`slug` into battle. Wallet-less dev login or an unreachable API keeps the demo
+  roster (never zero officers). See `08-data-models.md` (MVP officer mirror) and `docs/briefs/PG-IDENTITY.md`.
 - **Landlord** — holder of a **Land NFT**. Earns tax/prosperity yield. Does **not** automatically control the territory.
 - **Governor** — the entity that *controls* a **Territory** (trains units, upgrades, declares war). May be a player, guild, alliance, or **NPC Kingdom**.
 - **NPC Kingdom** — an AI-run faction that owns/controls territory and acts autonomously.

@@ -174,6 +174,17 @@ the parcel graph of ONE zone (hexification deliberately punted — permanent dec
    create; adopted never re-adoptable). Env `PG_APP_KEY` (unset = dev name-only login
    untouched) + `PG_API_URL`; `deploy/remote-deploy.sh` defaults the publishable key
    (file `~/.cf_pg_app_key` overrides) — **PG login turns ON at the next deploy**.
+4d. ~~Masters roster gate~~ **DONE 2026-07-04** — `docs/briefs/PG-IDENTITY.md` §3b. A
+   PG-logged-in player commands ONLY the Masters their wallet owns/rents, pulled live from the EF
+   Masters API (`09` §7, `GET /api/gameplay/masters/active/{wallet}`). Wallet from PG `mm_address`;
+   `MASTERS_API_URL` (default `https://api.etherfantasy.com`, injectable `mastersFetch` for tests);
+   `Game.loginPg(…, ownedMasters?)` re-syncs the officer pool on every login (reconcile by
+   `masterId`: keep still-owned + assignments, add new, drop no-longer-owned if FREE / keep until
+   idle if BUSY). API-down or wallet-owns-nothing ⇒ demo-roster fallback (never zero officers).
+   Officers now carry the REAL `masterId`/`slug` into the battle allocate context (fixes the old
+   `masterId = hero_… ULID` bug so the MOBA client maps the champion + pre-locks the seat).
+   New env `MASTERS_API_URL` (deploy exports if set; **the box must reach api.etherfantasy.com**).
+   +7 tests (`apps/server/test/mastersRoster.test.ts`); suite 152 green.
 5. Then continue roadmap T1 (`docs/10`): flesh out tick-engine phases against real map data.
 
 **Open design questions for the product owner** (do not decide unilaterally):

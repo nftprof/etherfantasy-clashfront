@@ -58,21 +58,54 @@ refresh support. PG errors surface in the join overlay's `#join-err`. When
 `!pgEnabled` the historic banner-name form renders verbatim. The ⇄ switch-banner
 button works in both modes (clears `cf_token`, reloads to the join overlay).
 
+## 3b. Masters roster from ownership (implemented 2026-07-04)
+
+**Owner mandate:** a player commands ONLY the Masters their wallet actually owns/rents —
+pulled live from the EF Masters API (`09` §7), exactly like the MOBA game. This replaces the
+fixed demo-roster officers CF handed every governor.
+
+- **Wallet source:** `derivePgIdentity` reads it from the PG `/user/info` `mm_address` field.
+  No `mm_address` ⇒ no wallet ⇒ the feature stays off (demo roster).
+- **Fetch:** on PG login, after `/user/info` verification, if a wallet was derived the server
+  calls `GET {MASTERS_API_URL}/api/gameplay/masters/active/{wallet}` (5 s timeout, injectable
+  `mastersFetch` for tests) and passes the result into `Game.loginPg(…, ownedMasters?)`.
+- **Officer pool = owned Masters.** Each officer keeps a CF-internal `hero_…` id for references
+  but carries the real `masterId` + `slug` + `name` + `source` + `koUntil` + `joinChance` +
+  `rentalExpires`. The **allocate context** sends the real `masterId` (+ `slug`) so the MOBA client
+  maps to the champion and pre-locks the seat (fixes the old `masterId = hero_… ULID` bug).
+- **Refresh on every login** (picks up new mints/rentals/KO). Reconciled by `masterId`:
+  still-owned Masters keep their overseer/army assignment; newly owned ones are added; an officer
+  whose Master is no longer owned is **removed if free**, but **kept until idle if busy**
+  (overseeing a territory or leading a live army) — never yank a general out of an active command.
+- **Fallbacks (the game never bricks):** API unreachable / non-200 ⇒ keep existing (demo) roster,
+  login still succeeds; wallet owns **nothing** (empty list) ⇒ keep the demo roster as a
+  playability fallback and log it (a governor is never left with zero officers). KO enforcement is
+  stored (`alive`/`koUntil`) but not yet gated in v1.
+
 ## 4. Env & deploy
 
 | Env | Meaning | Default |
 |---|---|---|
 | `PG_APP_KEY` | publishable app key; **setting it turns PG login ON** | unset (dev name login) |
 | `PG_API_URL` | PG identity API base | `https://login.pentagon.games` |
+| `MASTERS_API_URL` | EF Masters API base (roster gate, `09` §7) | `https://api.etherfantasy.com` |
 
 `deploy/remote-deploy.sh` sources `PG_APP_KEY` from `~/.cf_pg_app_key` when present,
 else defaults it to the publishable `pk_live_3e996782bb03792b8787a02b2d076ec2` — so PG
 login is ON at cf.etherfantasy.com from the next deploy onward, no provisioning step.
-Sandbox/dev/tests never reach the real API: tests inject `pgFetch`; local runs without
-`PG_APP_KEY` keep the name-only login.
+`MASTERS_API_URL` defaults to the live host in the server (exported by the deploy script if set) —
+**the box must be able to reach `api.etherfantasy.com`** for the roster gate to take effect;
+otherwise every PG login silently falls back to the demo roster.
+Sandbox/dev/tests never reach the real API: tests inject `pgFetch` + `mastersFetch`; local runs
+without `PG_APP_KEY` keep the name-only login.
 
 ## 5. Tests
 
 `apps/server/test/pgLogin.test.ts` (mock PG via injectable fetch): create / resume /
 adopt / no-re-adopt / 401 invalid / 502 down / 503 disabled / world-meta exposure /
 binding persistence across save-reload.
+
+`apps/server/test/mastersRoster.test.ts` (mock PG + Masters via injectable fetch): wallet from
+`mm_address` / 2 masters ⇒ exactly those officers (masterId/slug/source) / API unreachable ⇒ demo
+fallback / empty list ⇒ playability fallback + logged / no wallet ⇒ never fetched / re-login refresh
+(add, free-eviction, busy-retention) / allocate context carries the real masterId + slug.

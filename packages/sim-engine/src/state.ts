@@ -13,15 +13,26 @@ import type { EngineBattleState } from './engineBattle';
 import type { WildBattleState } from './wildBattle';
 
 /**
- * MVP demo officer — stands in for a Hero/Master mirror (docs/08) until the live
- * Masters API sync lands (post-MVP). Overseer assignment + army leadership only.
+ * MVP officer — mirror of a commanded Hero/Master (docs/08 `Master` interface).
+ * Overseer assignment + army leadership. The optional `masterId…rentalExpires`
+ * fields carry the LIVE EF Masters API roster (docs/09 §7) when a governor is
+ * gated to the Masters their wallet owns/rents (server-boundary sync on PG
+ * login, apps/server game.ts `syncOfficersFromMasters`); demo-roster officers
+ * (dev name-login, API-down) leave them undefined.
  */
 export interface DemoOfficer {
-  id: string;                   // hero_… (demo; real world will also carry master_…)
+  id: string;                   // hero_… (internal ref; carries the real masterId below)
   ownerGovernorId: string;
-  name: string;                 // display name from data/CHARACTER_ROSTER.csv
+  name: string;                 // display name (Masters API name, or data/CHARACTER_ROSTER.csv)
   fame: number;                 // feeds the WarScore hero term (capped by HERO_IMPACT_MAX)
   assignedTerritoryId?: string; // territory this officer oversees (docs/01 §11.3)
+  // ── LIVE Masters API mirror (docs/09 §7) — present only for owned/rented Masters ──
+  masterId?: number | string;   // EF masterId (e.g. 3001) — the champion key sent into battle
+  slug?: string;                // champion slug (e.g. 'choco') — lets the MOBA pre-lock the seat
+  source?: 'owned' | 'rented';  // ownership tenure from the Masters API
+  koUntil?: string | null;      // ISO ts while KO'd (stored; live KO gate is post-MVP)
+  joinChance?: number;          // % availability roll (docs/09 §7)
+  rentalExpires?: string;       // ISO ts; RENTED only
 }
 
 /**
