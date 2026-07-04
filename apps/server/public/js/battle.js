@@ -47,6 +47,16 @@ export function createBattle({ store, ui, send, ftue }) {
   coachEl.hidden = true;
   stage.appendChild(coachEl);
 
+  // ── Recently-resolved review panel (docs/04 §7b) ────────────────────────────
+  // A post-resolution result/replay surface reusing the #battle overlay chrome.
+  // Its markup lives in this .review-panel; its scoped CSS is injected once here
+  // (deliberately NOT in app.css — the visual session owns that file).
+  const reviewEl = document.createElement('div');
+  reviewEl.className = 'review-panel';
+  reviewEl.hidden = true;
+  root.appendChild(reviewEl);
+  injectReviewStyles();
+
   const tipKey = (k) => `tip:${store.me?.governorId}:${k}`;
   const tipSeen = (k) => { try { return localStorage.getItem(tipKey(k)) === '1'; } catch { return true; } };
   const tipMark = (k) => { try { localStorage.setItem(tipKey(k), '1'); } catch { /* private mode */ } };
@@ -126,6 +136,7 @@ export function createBattle({ store, ui, send, ftue }) {
 
   // ── open/close ─────────────────────────────────────────────────────────────
   function open(battleId) {
+    if (review) closeReview(); // a live battle supersedes any open review
     if (openId === battleId) return;
     if (openId) close(true);
     openId = battleId;
@@ -750,6 +761,253 @@ export function createBattle({ store, ui, send, ftue }) {
     if (coach?.beat === 2) coachAdvance(); // beat 3 advances on the rally order (or its 6 s timer)
   });
 
+  // ── Recently-resolved review (docs/04 §7b) ─────────────────────────────────
+  // Post-resolution result/replay. AUTO/accelerated battles never had live
+  // telemetry, so this shows an HONEST RESULT CARD + a compact SYNTHESIZED
+  // strength-progression scrub (from the server's recentBattles record) — never
+  // fabricated unit positions. A `wasLive` fight notes that real telemetry ran.
+  let review = null; // { list, i, playing, paused, scrubbing, frac, at, holdUntil }
+  let reviewRaf = 0;
+  const reviewTimerSec = () => Math.max(2, store.meta?.review?.timerSec ?? 7);
+
+  function openReview(list, index = 0) {
+    if (!Array.isArray(list) || list.length === 0) return;
+    if (openId) close(true); // a review supersedes any live viewer
+    review = {
+      list, i: Math.max(0, Math.min(index | 0, list.length - 1)),
+      playing: list.length > 1, paused: false, scrubbing: false,
+      frac: 0, at: performance.now(), holdUntil: 0,
+    };
+    root.hidden = false;
+    root.classList.add('review-mode');
+    renderReviewShell();
+    reviewLoop();
+  }
+
+  function closeReview() {
+    if (!review) return;
+    review = null;
+    cancelAnimationFrame(reviewRaf);
+    reviewRaf = 0;
+    reviewEl.hidden = true;
+    root.classList.remove('review-mode');
+    root.hidden = true;
+  }
+
+  function reviewGoto(i) {
+    if (!review) return;
+    review.i = (i + review.list.length) % review.list.length;
+    review.frac = 0;
+    review.at = performance.now();
+    review.holdUntil = 0;
+    review.scrubbing = false;
+    renderReviewShell();
+  }
+
+  /** Interpolated troop count for side `key` at scrub fraction `frac`. */
+  function valueAt(tl, key, frac) {
+    if (!tl || !tl.length) return 0;
+    for (let k = 1; k < tl.length; k++) {
+      if (frac <= tl[k].t) {
+        const p = tl[k - 1], q = tl[k];
+        const span = Math.max(1e-6, q.t - p.t);
+        const u = Math.min(1, Math.max(0, (frac - p.t) / span));
+        return Math.round(p[key] + (q[key] - p[key]) * u);
+      }
+    }
+    return tl[tl.length - 1][key];
+  }
+
+  function renderReviewShell() {
+    if (!review) return;
+    const rec = review.list[review.i];
+    const tl = rec.timeline ?? [];
+    const maxV = Math.max(1, rec.startStrength?.attacker ?? 0, rec.startStrength?.defender ?? 0);
+    const px = (t) => (t * 100).toFixed(2);
+    const py = (v) => (6 + (1 - v / maxV) * 88).toFixed(2);
+    const poly = (key) => tl.map((f) => `${px(f.t)},${py(f[key])}`).join(' ');
+    const winTxt = rec.winner === 'ATTACKER' ? `⚔ ${esc(rec.attackerLabel)} won the field`
+      : rec.winner === 'DEFENDER' ? `🛡 ${esc(rec.defenderLabel)} held the ground`
+        : '🏳 Stalemate — no ground changed hands';
+    const winCls = rec.winner === 'ATTACKER' ? 'atk' : rec.winner === 'DEFENDER' ? 'def' : 'tie';
+    const durTicks = Math.max(0, (rec.resolvedTick ?? 0) - (rec.startedTick ?? 0));
+    const mode = rec.wasLive ? 'live telemetry' : 'auto-resolved · reconstructed';
+    const opts = review.list.map((r, k) =>
+      `<option value="${k}"${k === review.i ? ' selected' : ''}>${esc(r.attackerLabel)} vs ${esc(r.defenderLabel)} — ${esc(r.parcelName)} (${r.winner})</option>`).join('');
+    const many = review.list.length > 1;
+    reviewEl.innerHTML =
+      `<div class="review-head">` +
+        `<div class="review-title"><b>🎬 ${esc(rec.parcelName)}</b>` +
+          `<span class="review-sub"><span class="atk">${esc(rec.attackerLabel)}</span> <em>vs</em> <span class="def">${esc(rec.defenderLabel)}</span></span></div>` +
+        `<div class="review-pick">` +
+          (many ? `<select class="review-jump">${opts}</select>` : '') +
+          `<button class="review-x" data-rv="close" title="Close">✕</button></div>` +
+      `</div>` +
+      `<div class="review-body">` +
+        `<div class="review-chart"><svg viewBox="0 0 100 100" preserveAspectRatio="none">` +
+          `<line class="rv-grid" x1="0" y1="94" x2="100" y2="94"></line>` +
+          `<polyline class="rv-line def" points="${poly('b')}"></polyline>` +
+          `<polyline class="rv-line atk" points="${poly('a')}"></polyline>` +
+          `<line class="rv-head-line" x1="0" y1="0" x2="0" y2="100"></line>` +
+        `</svg>` +
+        `<div class="rv-legend"><span class="atk">⚔ ${esc(rec.attackerLabel)} <b class="rv-a">${rec.startStrength?.attacker ?? 0}</b></span>` +
+          `<span class="def">🛡 ${esc(rec.defenderLabel)} <b class="rv-b">${rec.startStrength?.defender ?? 0}</b></span></div></div>` +
+        `<div class="review-card">` +
+          `<div class="review-win ${winCls}">${winTxt}</div>` +
+          `<div class="review-rows">` +
+            `<div><span>losses (⚔/🛡)</span><b>${rec.casualties?.attacker ?? 0} / ${rec.casualties?.defender ?? 0}</b></div>` +
+            `<div><span>survivors (⚔/🛡)</span><b>${rec.survivors?.attacker ?? 0} / ${rec.survivors?.defender ?? 0}</b></div>` +
+            `<div><span>outcome</span><b>${esc(rec.reason ?? '')}</b></div>` +
+            `<div><span>fight</span><b>${durTicks} ticks · ${mode}</b></div>` +
+          `</div>` +
+          (rec.wasLive ? '' : `<div class="review-note">Auto-resolved — this is a reconstructed summary, not a live replay.</div>`) +
+        `</div>` +
+      `</div>` +
+      `<div class="review-foot">` +
+        `<div class="rv-timer"><span class="rv-timer-fill"></span></div>` +
+        `<div class="rv-ctrls">` +
+          (many ? `<button data-rv="prev" title="Previous battle">◀</button>` : '') +
+          (many ? `<button class="rv-play" data-rv="play">${review.playing && !review.paused ? '⏸ Pause' : '▶ Review all'}</button>` : '') +
+          (many ? `<button data-rv="next" title="Next battle">▶</button>` : '') +
+          `<input class="rv-scrub" type="range" min="0" max="1000" value="0" title="Scrub the fight" />` +
+          `<span class="rv-count">${review.i + 1}/${review.list.length}</span>` +
+        `</div>` +
+      `</div>`;
+    reviewEl.hidden = false;
+    updateReviewDynamic();
+  }
+
+  function updateReviewDynamic() {
+    if (!review) return;
+    const rec = review.list[review.i];
+    const tl = rec.timeline ?? [];
+    const f = review.frac;
+    const head = reviewEl.querySelector('.rv-head-line');
+    if (head) { head.setAttribute('x1', (f * 100).toFixed(2)); head.setAttribute('x2', (f * 100).toFixed(2)); }
+    const a = reviewEl.querySelector('.rv-a'); if (a) a.textContent = valueAt(tl, 'a', f);
+    const b = reviewEl.querySelector('.rv-b'); if (b) b.textContent = valueAt(tl, 'b', f);
+    const fill = reviewEl.querySelector('.rv-timer-fill'); if (fill) fill.style.width = `${Math.round(f * 100)}%`;
+    const scrub = reviewEl.querySelector('.rv-scrub');
+    if (scrub && !review.scrubbing) scrub.value = String(Math.round(f * 1000));
+  }
+
+  function reviewLoop() {
+    cancelAnimationFrame(reviewRaf);
+    const frame = (now) => {
+      if (!review) return;
+      if (!review.paused && !review.scrubbing) {
+        const dur = reviewTimerSec() * 1000;
+        review.frac = Math.min(1, (now - review.at) / dur);
+        if (review.frac >= 1) {
+          if (review.holdUntil === 0) {
+            review.holdUntil = now + 800; // hold on the settled result a beat
+          } else if (now >= review.holdUntil) {
+            if (review.playing && review.i < review.list.length - 1) {
+              reviewGoto(review.i + 1);
+            } else {
+              review.paused = true; // rest at the end (single battle, or "Review all" done)
+              renderReviewShell();
+            }
+          }
+        }
+      }
+      updateReviewDynamic();
+      reviewRaf = requestAnimationFrame(frame);
+    };
+    reviewRaf = requestAnimationFrame(frame);
+  }
+
+  reviewEl.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-rv]');
+    if (!btn || !review) return;
+    const act = btn.dataset.rv;
+    if (act === 'close') { closeReview(); return; }
+    if (act === 'prev') { review.playing = false; review.paused = false; reviewGoto(review.i - 1); }
+    else if (act === 'next') { review.playing = false; review.paused = false; reviewGoto(review.i + 1); }
+    else if (act === 'play') {
+      if (review.playing && !review.paused) {
+        review.paused = true;
+      } else {
+        review.playing = true;
+        review.paused = false;
+        if (review.frac >= 1) reviewGoto(review.i);
+        else review.at = performance.now() - review.frac * reviewTimerSec() * 1000;
+      }
+      renderReviewShell();
+    }
+  });
+  reviewEl.addEventListener('change', (e) => {
+    const sel = e.target.closest('.review-jump');
+    if (sel && review) { review.playing = false; review.paused = false; reviewGoto(Number(sel.value)); }
+  });
+  reviewEl.addEventListener('input', (e) => {
+    const sc = e.target.closest('.rv-scrub');
+    if (!sc || !review) return;
+    review.scrubbing = true;
+    review.paused = true;
+    review.frac = Math.min(1, Math.max(0, Number(sc.value) / 1000));
+    updateReviewDynamic();
+  });
+  const endScrub = (e) => { if (review && e.target.closest('.rv-scrub')) review.scrubbing = false; };
+  reviewEl.addEventListener('pointerup', endScrub);
+  reviewEl.addEventListener('change', endScrub);
+
+  /** Scoped review CSS — injected once (app.css is off-limits; visual session owns it). */
+  function injectReviewStyles() {
+    if (document.getElementById('review-styles')) return;
+    const s = document.createElement('style');
+    s.id = 'review-styles';
+    s.textContent = `
+#battle.review-mode .bt-hud,#battle.review-mode .bt-foot,#battle.review-mode .bt-stage{display:none;}
+.review-panel{position:absolute;inset:0;display:flex;flex-direction:column;background:#0b0f14;color:#cdd7e2;font:13px "Segoe UI",system-ui,sans-serif;z-index:5;}
+.review-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;border-bottom:1px solid #1c2632;background:#0e141b;}
+.review-title b{font-size:16px;color:#eaf0f6;}
+.review-title .review-sub{display:block;margin-top:3px;color:#8ea1b5;}
+.review-title .review-sub em{color:#6b7f93;font-style:normal;margin:0 4px;}
+.review-panel .atk{color:#4da3ff;}
+.review-panel .def{color:#e0483c;}
+.review-pick{display:flex;align-items:center;gap:8px;}
+.review-jump{max-width:340px;background:#0b1118;color:#cdd7e2;border:1px solid #24313f;border-radius:6px;padding:5px 8px;font:12px inherit;}
+.review-x{background:#182230;color:#cdd7e2;border:1px solid #2a3746;border-radius:6px;padding:5px 9px;cursor:pointer;}
+.review-x:hover{background:#233242;}
+.review-body{flex:1;display:flex;gap:16px;padding:16px;min-height:0;}
+.review-chart{flex:1;display:flex;flex-direction:column;min-width:0;background:#0e141b;border:1px solid #1c2632;border-radius:8px;padding:10px;}
+.review-chart svg{flex:1;width:100%;height:100%;min-height:120px;}
+.review-chart .rv-line{fill:none;stroke-width:1.6;vector-effect:non-scaling-stroke;stroke-linejoin:round;stroke-linecap:round;}
+.review-chart .rv-line.atk{stroke:#4da3ff;}
+.review-chart .rv-line.def{stroke:#e0483c;}
+.review-chart .rv-grid{stroke:#22303e;stroke-width:1;vector-effect:non-scaling-stroke;}
+.review-chart .rv-head-line{stroke:#ffd76a;stroke-width:1.4;vector-effect:non-scaling-stroke;opacity:.85;}
+.rv-legend{display:flex;justify-content:space-between;gap:12px;margin-top:8px;font-size:12px;}
+.rv-legend b{margin-left:5px;font-variant-numeric:tabular-nums;}
+.review-card{width:240px;flex:none;background:#0e141b;border:1px solid #1c2632;border-radius:8px;padding:14px;display:flex;flex-direction:column;gap:10px;}
+.review-win{font-size:14px;font-weight:700;padding:8px 10px;border-radius:6px;background:#131c26;}
+.review-win.atk{color:#ffd76a;border-left:3px solid #4da3ff;}
+.review-win.def{color:#ffb4ab;border-left:3px solid #e0483c;}
+.review-win.tie{color:#9fb0c4;border-left:3px solid #5a6b7d;}
+.review-rows{display:flex;flex-direction:column;gap:6px;}
+.review-rows>div{display:flex;justify-content:space-between;gap:10px;font-size:12px;border-bottom:1px solid #17212c;padding-bottom:5px;}
+.review-rows span{color:#8ea1b5;}
+.review-rows b{color:#e6edf4;font-variant-numeric:tabular-nums;text-align:right;}
+.review-note{font-size:11px;color:#7f93a6;font-style:italic;}
+.review-foot{border-top:1px solid #1c2632;background:#0e141b;padding:10px 16px;}
+.rv-timer{height:4px;background:#17212c;border-radius:3px;overflow:hidden;margin-bottom:10px;}
+.rv-timer-fill{display:block;height:100%;width:0;background:linear-gradient(90deg,#4da3ff,#ffd76a);transition:width .08s linear;}
+.rv-ctrls{display:flex;align-items:center;gap:8px;}
+.rv-ctrls button{background:#182230;color:#cdd7e2;border:1px solid #2a3746;border-radius:6px;padding:6px 10px;cursor:pointer;font:12px inherit;}
+.rv-ctrls button:hover{background:#233242;}
+.rv-ctrls .rv-play{font-weight:700;color:#ffd76a;}
+.rv-scrub{flex:1;accent-color:#4da3ff;cursor:pointer;}
+.rv-count{color:#8ea1b5;font-variant-numeric:tabular-nums;min-width:34px;text-align:right;}
+.review-open{margin-left:8px;background:#182230;color:#ffd76a;border:1px solid #2a3746;border-radius:6px;padding:2px 8px;cursor:pointer;font:11px inherit;}
+.review-open:hover{background:#233242;}
+.feed-review{cursor:pointer;}
+.feed-review .feed-play{float:right;opacity:.55;margin-left:6px;}
+.feed-review:hover .feed-play{opacity:1;}
+`;
+    document.head.appendChild(s);
+  }
+
   store.onChange(() => { if (openId) renderHud(); });
 
   return {
@@ -757,9 +1015,13 @@ export function createBattle({ store, ui, send, ftue }) {
     close,
     onMsg,
     onWorldEvents,
+    /** 🎬 Recently-resolved review (docs/04 §7b): open a result/replay panel over `list` at `index`. */
+    openReview,
+    closeReview,
     /** 📖 library replay: re-run the Command-Mode coach now (or on the next steerable view). */
     startCoach,
     get openId() { return openId; },
+    get reviewing() { return review !== null; },
     /** Debug/verification hooks (Playwright walkthrough reads these). */
     get field() { return field; },
     get snap() { return cur?.snap ?? null; },

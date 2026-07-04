@@ -143,6 +143,21 @@ const orders = {
    */
   /** Open the LIVE battle viewer (parcel-card "Watch"/"Command" buttons). */
   watchBattle(battleId) { battle.open(battleId); },
+  /**
+   * Open the post-battle REVIEW panel (docs/04 §7b): "🎬 Recent battles" header
+   * control + clickable resolved war-report entries. `battleId` jumps to that
+   * fight; omitted starts at the newest. Only recently-resolved battles are
+   * reviewable — the list is the bounded, fog-filtered server ring.
+   */
+  reviewRecent(battleId) {
+    const list = store.recentBattles ?? [];
+    if (!list.length) {
+      ui.toast('No recent battles', 'Fights you can see will appear here once they resolve.', 'info');
+      return;
+    }
+    const idx = battleId ? Math.max(0, list.findIndex((b) => b.battleId === battleId)) : 0;
+    battle.openReview(list, idx);
+  },
   /** POST /api/buy-ct — dev-phase E5 purchase (amount in whole CT). */
   async buyCt(amountCt) {
     try {
@@ -329,8 +344,10 @@ function handleEvents(events) {
           `${losers.length ? nameOf(losers) : esc(lLbl ?? 'Defenders')} (${ev.attackerScore}–${ev.defenderScore})` +
           (ccTier > 0 ? ` — ${CC_NAMES[ccTier]} raised` : '') +
           (ev.exhibition ? ' — exhibition, no ground changes hands' : '');
-        ui.toast(`⚔ Battle at ${parcelName(ev.parcelId)}!`, txt, 'battle', ev.parcelId, 7000);
-        ui.feedPush(`<span class="t-battle">⚔</span> ${parcelName(ev.parcelId)}: ${txt}`, 't-battle', ev.parcelId);
+        ui.toast(`⚔ Battle at ${parcelName(ev.parcelId)}!`, `${txt} — <b>🎬 click to review</b>`, 'battle', ev.parcelId, 7000,
+          () => orders.reviewRecent(ev.battleId));
+        // Resolved war-report entries are clickable → open that fight's review (docs/04 §7b).
+        ui.feedPush(`<span class="t-battle">⚔</span> ${parcelName(ev.parcelId)}: ${txt}`, 't-battle', ev.parcelId, ev.battleId);
         break;
       }
       case 'battle_tied': {

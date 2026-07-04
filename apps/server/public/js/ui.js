@@ -103,9 +103,20 @@ export function createUI({ store, map, orders }) {
     }).join('');
     html += sec(`Officers (${free}/${store.officers.length} free)`, officers);
 
-    html += sec('War report', feed.map((f, i) =>
-      `<div class="feed-row" data-feed="${i}"><span class="${f.cls}">${f.text}</span></div>`,
-    ).join(''));
+    // War report — the section header carries the 🎬 Recent-battles review entry
+    // point (docs/04 §7b); resolved rows (with a battleId) open that fight's review.
+    const recentN = (store.recentBattles ?? []).length;
+    const reviewCtrl = recentN
+      ? `<button class="review-open" data-review="all" title="Review recently-resolved battles — auto-advance through them or pick one">🎬 Review${recentN > 1 ? ` (${recentN})` : ''}</button>`
+      : '';
+    html += `<div class="rail-sec"><h3>War report${reviewCtrl}</h3>` +
+      (feed.length
+        ? feed.map((f, i) =>
+            `<div class="feed-row${f.battleId ? ' feed-review' : ''}" data-feed="${i}"${f.battleId ? ` data-review-battle="${f.battleId}"` : ''}>` +
+            `<span class="${f.cls}">${f.text}</span>${f.battleId ? '<span class="feed-play" title="Review this battle">🎬</span>' : ''}</div>`,
+          ).join('')
+        : '<div class="rail-empty">none</div>') +
+      `</div>`;
 
     rail.innerHTML = html;
   }
@@ -116,6 +127,11 @@ export function createUI({ store, map, orders }) {
   // Double-click naturally repeats the same idempotent action.
   rail.addEventListener('click', (e) => {
     if (e.target.closest('#btn-buyct')) { orders.buyCt(10_000); return; }
+    // 🎬 Recent-battles review (docs/04 §7b): header control opens the newest;
+    // a resolved war-report row opens that specific fight.
+    if (e.target.closest('[data-review="all"]')) { orders.reviewRecent(); return; }
+    const reviewRow = e.target.closest('[data-review-battle]');
+    if (reviewRow) { orders.reviewRecent(reviewRow.dataset.reviewBattle); return; }
     const el = e.target.closest('[data-parcel],[data-army],[data-choice],[data-feed],[data-officer]');
     if (!el) return;
     if (el.dataset.parcel) {
@@ -740,8 +756,9 @@ export function createUI({ store, map, orders }) {
     setTimeout(() => { el.classList.add('fading'); setTimeout(() => el.remove(), 700); }, ms);
   }
 
-  function feedPush(text, cls, parcelId) {
-    feed.unshift({ text, cls, parcelId });
+  function feedPush(text, cls, parcelId, battleId) {
+    // battleId (optional) makes the row a 🎬 review entry (docs/04 §7b).
+    feed.unshift({ text, cls, parcelId, battleId });
     if (feed.length > MAX_FEED) feed.pop();
     scheduleRail();
   }

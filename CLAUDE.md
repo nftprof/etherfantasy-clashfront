@@ -209,6 +209,23 @@ the parcel graph of ONE zone (hexification deliberately punted — permanent dec
    `masterId = hero_… ULID` bug so the MOBA client maps the champion + pre-locks the seat).
    New env `MASTERS_API_URL` (deploy exports if set; **the box must reach api.etherfantasy.com**).
    +7 tests (`apps/server/test/mastersRoster.test.ts`); suite 152 green.
+4e. ~~Recently-resolved battle review~~ **DONE 2026-07-04** (owner: "the battle ends too quickly
+   to view" — AUTO is the default now). Server keeps a bounded, fog-filtered **recentBattles ring**
+   (⚙ `review.ringCap` = 12; newest-first, older ages out — only recently-completed are reviewable)
+   populated at settlement in `Game.tick()` for ALL paths (engine callback / wild / instant/bridge),
+   persisted in the snapshot, exposed per-viewer on `/api/state` + every WS tick (`recentBattlesFor`
+   reuses the liveBattleSummaries intel gate). Each record: sides + labels, winner/reason,
+   casualties/survivors counts, duration, `wasLive`, and a **compact synthesized strength timeline**
+   (⚙ `review.timelineKeyframes` = 12 — honest reconstruction from start troops → known casualties
+   with a seeded rhythm, NOT 30 Hz frames). Client: **🎬 Recent battles** control in the War-report
+   rail header + clickable resolved feed rows → a **result/replay panel** reusing the `#battle`
+   overlay (`battle.js` `openReview`): RESULT CARD + scrubbable SVG strength chart, "▶ Review all"
+   auto-advance with a per-battle timer (⚙ `review.reviewTimerSec` = 7, via `/api/world` meta),
+   prev/next + jump dropdown + manual scrub. Accelerated battles show the honest reconstruction (no
+   fake live replay); LIVE keeps real telemetry. Scoped `.review-*` CSS injected from `battle.js`
+   (app.css untouched — visual session owns it). New ⚙ `balance.review` section (+ `revealDurationTicks`
+   reserved for the sealed-reveal follow-up, designed-not-wired). +4 tests (`recentBattles.test.ts`
+   + engineBattle review case); suite 165 green. Docs: `docs/04` §7b.
 5. Then continue roadmap T1 (`docs/10`): flesh out tick-engine phases against real map data.
 
 **Open design questions for the product owner** (do not decide unilaterally):

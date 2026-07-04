@@ -329,6 +329,55 @@ export interface TickResult {
   deltas: TickDeltas;
 }
 
+/**
+ * One keyframe of a battle's compact strength-progression timeline (docs/04
+ * §7b post-battle review). NOT 30 Hz telemetry — a few keyframes synthesized
+ * from start troop counts → known final casualties with a seeded rhythm (an
+ * honest reconstruction for AUTO/accelerated battles, a scrub track for review).
+ * `t` is a 0..1 fraction of the fight; `a`/`b` are attacker/defender troop
+ * counts at that point; `ev` tags a notable beat (engage / rout).
+ */
+export interface BattleTimelineFrame {
+  t: number;
+  a: number;
+  b: number;
+  ev?: string[];
+}
+
+/**
+ * A recently-resolved battle kept in the bounded review ring (docs/04 §7b).
+ * Battles resolve fast (accelerated is the default per §3a) — the player can no
+ * longer catch them live, so the last ⚙ `review.ringCap` settlements are kept
+ * (newest-first, fog-filtered per viewer) for a post-battle result/replay panel.
+ * `hexId` is internal (the fog gate); `recentBattlesFor` strips it and adds a
+ * per-viewer `mine`.
+ */
+export interface RecentBattleRecord {
+  battleId: string;
+  parcelId: string;
+  parcelName: string;
+  /** Internal fog gate — never exposed on the wire (stripped by recentBattlesFor). */
+  hexId: string;
+  attackerGovernorIds: string[];
+  defenderGovernorIds: string[];
+  attackerLabel: string;
+  defenderLabel: string;
+  monsterName?: string;
+  startedTick: number;
+  resolvedTick: number;
+  winner: 'ATTACKER' | 'DEFENDER' | 'TIE';
+  /** Engine outcome reason (e.g. NEXUS_DESTROYED) or the §7c.6 outcomeKind. */
+  reason: string;
+  /** AUTO (instant WarScore) | LIVE (wild tactical sim) | ACCELERATED (external engine). */
+  resolutionMode: string;
+  /** True when the fight had a real LIVE/bridge telemetry feed (client may hold a final frame). */
+  wasLive: boolean;
+  casualties: { attacker: number; defender: number };
+  survivors: { attacker: number; defender: number };
+  startStrength: { attacker: number; defender: number };
+  timeline: BattleTimelineFrame[];
+}
+
 // ── Sessions / governors ─────────────────────────────────────────────────────
 
 export interface Session {
@@ -375,6 +424,8 @@ interface SaveFileV1 {
   /** PG identity bindings: pgUid → governorId (docs/briefs/PG-IDENTITY.md). Optional for pre-PG saves. */
   pgBindings?: [string, string][];
   purchases?: [string, number][];
+  /** Recently-resolved battle review ring (docs/04 §7b). Optional for pre-review saves. */
+  recentBattles?: RecentBattleRecord[];
   state: SerializedWorldState;
 }
 
@@ -443,6 +494,12 @@ export class Game {
   private readonly announcedWildBattles = new Set<string>();
   /** Engine battles whose battle_joinable grants have been emitted (seeded on load). */
   private readonly announcedJoinables = new Set<string>();
+  /**
+   * Recently-resolved battle review ring (docs/04 §7b) — bounded to ⚙
+   * review.ringCap, oldest-first (newest at the end); populated at settlement
+   * in tick(), restored from the snapshot. Fog-filtered per viewer on read.
+   */
+  private recentBattles: RecentBattleRecord[] = [];
   private readonly lastViews = {
     territories: new Map<string, string>(),
     armies: new Map<string, string>(),
@@ -466,6 +523,7 @@ export class Game {
       for (const [id, meta] of save.governors) this.governors.set(id, meta);
       for (const [uid, gid] of save.pgBindings ?? []) this.pgBindings.set(uid, gid);
       for (const [gid, amt] of save.purchases ?? []) this.purchases.set(gid, amt);
+      this.recentBattles = save.recentBattles ?? [];
       for (const [id, b] of this.state.battles) {
         if (b.result?.territoryOutcome !== undefined) this.emittedOutcomes.add(id);
       }
@@ -1171,6 +1229,15 @@ export class Game {
     const preMustering = new Set(this.state.trainingQueues?.keys() ?? []);
     const preWild = new Set(this.state.wildBattles?.keys() ?? []);
     const preEngine = new Set(this.state.engineBattles?.keys() ?? []);
+    // Review ring (docs/04 §7b): capture the pre-settlement troop counts (start
+    // strengths for the timeline) + the engine reason/live-flag that the settled
+    // BattleInstance does not preserve — battles about to settle read them below.
+    const preTroopCounts = new Map<string, number>();
+    for (const [id, a] of this.state.armies) preTroopCounts.set(id, troopCount(a));
+    const settlingEngine = new Map<string, { reason: string; live: boolean }>();
+    for (const [id, b] of this.state.engineBattles ?? []) {
+      if (b.outcome !== undefined) settlingEngine.set(id, { reason: b.outcome.reason, live: b.mode === 'live' });
+    }
 
     runTick(this.state, tick, this.baseRng.fork('sim'), this.balance, this.tickOptions);
 
@@ -1210,6 +1277,9 @@ export class Game {
     for (const id of sortedIds(this.state.battles)) {
       if (preBattles.has(id)) continue;
       const v = battleView(this.state, this.state.battles.get(id)!, this.parcelByHex, this.balance)!;
+      // Post-battle review (docs/04 §7b): the fight just settled — record it in
+      // the bounded ring so the player can review it after it ends.
+      this.pushRecentBattle(v, tick, preTroopCounts, settlingEngine.get(id));
       events.push({
         type: 'battle_resolved',
         tick,
@@ -1989,6 +2059,138 @@ export class Game {
     return out;
   }
 
+  // ── Recently-resolved battle review (docs/04 §7b) ──────────────────────────
+
+  /**
+   * Record a just-settled battle into the bounded review ring. Start strengths
+   * come from `preTroops` (captured before runTick); survivors from the settled
+   * armies (0 for routed/disbanded). `engineInfo` carries the reason + live flag
+   * the BattleInstance drops. Trimmed to ⚙ review.ringCap (oldest evicted).
+   */
+  private pushRecentBattle(
+    v: BattleView,
+    tick: number,
+    preTroops: ReadonlyMap<string, number>,
+    engineInfo?: { reason: string; live: boolean },
+  ): void {
+    const b = this.state.battles.get(v.id);
+    if (b === undefined) return;
+    const sumPre = (ids: readonly string[]): number => ids.reduce((n, id) => n + (preTroops.get(id) ?? 0), 0);
+    const sumNow = (ids: readonly string[]): number =>
+      ids.reduce((n, id) => {
+        const a = this.state.armies.get(id);
+        return n + (a !== undefined && a.state !== 'DISBANDED' ? troopCount(a) : 0);
+      }, 0);
+    const aStart = sumPre(b.attackerArmyIds);
+    const aNow = sumNow(b.attackerArmyIds);
+    const bStart = sumPre(b.defenderArmyIds);
+    const bNow = sumNow(b.defenderArmyIds);
+    const winner: RecentBattleRecord['winner'] =
+      v.winner === 'DEFENDER' ? 'DEFENDER' : v.winner === 'ATTACKER' ? 'ATTACKER' : 'TIE';
+    const label = (ids: readonly string[], fallback: string): string => {
+      const names = ids.map((g) => this.governors.get(g)?.name).filter((n): n is string => n !== undefined);
+      return names.length > 0 ? names.join(', ') : fallback;
+    };
+    const monsterName = b.defenderArmyIds
+      .map((id) => this.state.monsterNames?.get(id))
+      .find((n) => n !== undefined);
+    const rec: RecentBattleRecord = {
+      battleId: v.id,
+      parcelId: v.parcelId,
+      parcelName: territoryAtHex(this.state, b.hexId)?.name ?? v.parcelId,
+      hexId: b.hexId,
+      attackerGovernorIds: v.attackerGovernorIds,
+      defenderGovernorIds: v.defenderGovernorIds,
+      attackerLabel: label(v.attackerGovernorIds, 'Attackers'),
+      defenderLabel: monsterName ?? label(v.defenderGovernorIds, 'Defenders'),
+      ...(monsterName !== undefined ? { monsterName } : {}),
+      startedTick: b.scheduledStartTick,
+      resolvedTick: tick,
+      winner,
+      reason: engineInfo?.reason ?? v.outcome ?? (winner === 'TIE' ? 'TIE' : `DECISIVE_${winner}`),
+      resolutionMode: v.resolutionMode,
+      wasLive: engineInfo?.live === true || v.resolutionMode === 'LIVE',
+      casualties: { attacker: Math.max(0, aStart - aNow), defender: Math.max(0, bStart - bNow) },
+      survivors: { attacker: aNow, defender: bNow },
+      startStrength: { attacker: aStart, defender: bStart },
+      timeline: this.synthTimeline(v.id, aStart, aNow, bStart, bNow),
+    };
+    this.recentBattles.push(rec);
+    const cap = Math.max(1, this.balance.review.ringCap);
+    if (this.recentBattles.length > cap) this.recentBattles.splice(0, this.recentBattles.length - cap);
+  }
+
+  /**
+   * Compact, DETERMINISTIC strength-progression timeline (docs/04 §7b): ⚙
+   * review.timelineKeyframes frames interpolating each side's troop count from
+   * its start down to its known survivors, with a seeded per-battle rhythm so
+   * the losses land in uneven beats (not a straight ramp). Monotonic (troops
+   * only fall). This is a RECONSTRUCTION — never fabricated unit positions —
+   * and doubles as the sealed-reveal scrub track for AUTO battles.
+   */
+  private synthTimeline(battleId: string, aStart: number, aFinal: number, bStart: number, bFinal: number): BattleTimelineFrame[] {
+    const N = Math.max(2, Math.floor(this.balance.review.timelineKeyframes));
+    let sd = 0;
+    for (const c of battleId) sd = (sd * 31 + c.charCodeAt(0)) >>> 0;
+    const rnd = (): number => ((sd = (sd * 1664525 + 1013904223) >>> 0) / 4294967296);
+    // Cumulative, normalized weights over the N-1 steps (last = 1) — the seeded rhythm.
+    const cumWeights = (steps: number): number[] => {
+      const w: number[] = [];
+      let sum = 0;
+      for (let i = 0; i < steps; i++) {
+        const x = 0.4 + rnd();
+        w.push(x);
+        sum += x;
+      }
+      const cum: number[] = [];
+      let acc = 0;
+      for (const x of w) {
+        acc += x / sum;
+        cum.push(acc);
+      }
+      return cum;
+    };
+    const aw = cumWeights(N - 1);
+    const bw = cumWeights(N - 1);
+    const frames: BattleTimelineFrame[] = [{ t: 0, a: aStart, b: bStart, ev: ['engage'] }];
+    for (let i = 1; i < N; i++) {
+      const a = Math.round(aStart - (aStart - aFinal) * aw[i - 1]!);
+      const b = Math.round(bStart - (bStart - bFinal) * bw[i - 1]!);
+      const frame: BattleTimelineFrame = { t: Math.round((i / (N - 1)) * 100) / 100, a, b };
+      if (i === N - 1) frame.ev = ['decided'];
+      frames.push(frame);
+    }
+    return frames;
+  }
+
+  /**
+   * Fog-filtered recently-resolved battles for /api/state + the review panel
+   * (docs/04 §7b), NEWEST FIRST. Reuses the liveBattleSummaries intel gate: the
+   * viewer sees a battle only if they fought in it OR held ACCURATE intel on its
+   * parcel. The internal `hexId` is stripped; a per-viewer `mine` is added. A
+   * currently-live battle is NOT here — this is strictly post-resolution.
+   */
+  recentBattlesFor(viewerGovernorId?: string): (Omit<RecentBattleRecord, 'hexId'> & { mine: boolean })[] {
+    const viewer = viewerGovernorId === undefined ? undefined : this.viewerContext(viewerGovernorId);
+    const visible = (rec: RecentBattleRecord): boolean => {
+      const participant =
+        viewerGovernorId !== undefined &&
+        (rec.attackerGovernorIds.includes(viewerGovernorId) || rec.defenderGovernorIds.includes(viewerGovernorId));
+      return participant || (viewer !== undefined && intelGrade(viewer.grades, rec.hexId) === 'ACCURATE');
+    };
+    const out: (Omit<RecentBattleRecord, 'hexId'> & { mine: boolean })[] = [];
+    for (let i = this.recentBattles.length - 1; i >= 0; i--) {
+      const rec = this.recentBattles[i]!;
+      if (!visible(rec)) continue;
+      const { hexId: _hexId, ...pub } = rec;
+      out.push({
+        ...pub,
+        mine: viewerGovernorId !== undefined && rec.attackerGovernorIds.includes(viewerGovernorId),
+      });
+    }
+    return out;
+  }
+
   // ── Snapshots for the API ─────────────────────────────────────────────────
 
   /** Static world geometry (GET /api/world) — parcels + territory/hex id joins. */
@@ -2024,6 +2226,8 @@ export class Game {
           freeRadiusSteps: this.balance.claims.freeRadiusSteps,
           costCtUnitsPerStep: this.balance.claims.costCtUnitsPerStep,
         },
+        // ⚙ Post-battle review (docs/04 §7b) — the client's "Review all" timer.
+        review: { timerSec: this.balance.review.reviewTimerSec },
       },
       parcels,
     };
@@ -2190,6 +2394,7 @@ export class Game {
     armies: ArmyView[];
     battles: BattleView[];
     liveBattles: ReturnType<Game['liveBattleSummaries']>;
+    recentBattles: ReturnType<Game['recentBattlesFor']>;
   } {
     const viewer = this.viewerContext(viewerGovernorId);
     const territories = sortedIds(this.state.territories).map((id) =>
@@ -2214,6 +2419,7 @@ export class Game {
       armies,
       battles,
       liveBattles: this.liveBattleSummaries(viewerGovernorId),
+      recentBattles: this.recentBattlesFor(viewerGovernorId),
     };
   }
 
@@ -2412,6 +2618,7 @@ export class Game {
       governors: [...this.governors.entries()],
       pgBindings: [...this.pgBindings.entries()],
       purchases: [...this.purchases.entries()],
+      recentBattles: this.recentBattles,
       state: serializeWorldState(this.state),
     };
   }

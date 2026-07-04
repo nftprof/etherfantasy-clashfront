@@ -346,6 +346,25 @@ Combat mechanics are EF MOBA's; this table defines only what each type **reads f
 **The battlefield is not a MOBA map.** The battle engine's square map becomes a **battlefield where
 armies collide against natural terrain** — no lanes, towers, or creep conventions. Hero drop-in remains.
 
+**Post-battle review (owner 2026-07-04; implemented).** Battles now AUTO-resolve by default (§3a) and
+can end fast — "the battle ends too quickly to view." The server therefore keeps a bounded, fog-filtered
+**recently-resolved ring** (⚙ `review.ringCap`, newest-first; older battles age out — *only recently-
+completed battles are reviewable*, by owner rule). Each record is compact: sides + labels, winner/reason,
+casualties/survivors counts, duration, `wasLive`, and a **compact synthesized strength-progression
+timeline** (⚙ `review.timelineKeyframes` — an honest reconstruction from start troop counts → known final
+casualties with a seeded rhythm; *not* stored 30 Hz frames). It is exposed per-viewer on `/api/state` +
+the WS tick as `recentBattles[]` (reusing the live-battle intel gate: you see a fight only if you fought
+in it or held ACCURATE intel on its parcel). The client "🎬 Recent battles" control (War-report header;
+resolved feed rows are clickable) opens a **result/replay panel** reusing the battle overlay: a RESULT
+CARD (winner, reason, casualties/survivors, duration) + a scrubbable strength chart; "▶ Review all"
+auto-advances through the ring with a per-battle timer (⚙ `review.reviewTimerSec`), plus prev/next, a
+jump dropdown, and manual scrub. Accelerated battles show the honest reconstruction (never a fake live
+replay); LIVE/command battles keep their real telemetry. Currently-live battles are NOT in this list —
+review is strictly post-resolution (they are watchable live via the existing command channel).
+*Sealed-reveal follow-up (⚙ `review.revealDurationTicks`, designed-not-yet-wired):* an AUTO outcome is
+computed at collision but may be held SEALED until `startTick + revealDurationTicks` so a fight cannot be
+previewed before normal battle time — the same `recentBattles` record + timeline shape already serve it.
+
 **Scale laws (product owner, 2026-07-02):**
 - **The overworld game map = the source SVG, verbatim** — the extracted hexagon-city geometry
   (`data/hexagon-city-source/`) IS the world map: exact parcel shapes, positions, proportions.
