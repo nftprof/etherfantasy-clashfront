@@ -255,6 +255,19 @@ the parcel graph of ONE zone (hexification deliberately punted — permanent dec
    240/120) — renders ±161 unchanged. Docs: `BATTLEFIELD-SCHEMA.md` (coord system + scale
    declaration), `ALLOCATE-CALLBACK-SCHEMA.md` §1, `docs/04` §7b reconciliation note. Tests
    updated (engineBattle expected frame + stand-in sizeM/core checks); suite 170 green.
+4h. ~~Maps economy seam Hook 1 — ownership feed~~ **DONE 2026-07-04** (maps deliverable merged from
+   `claude/maps-econ-seam` → `docs/maps/ECONOMY-SEAM.md` + `README.md`). CF now serves the public
+   **`GET /api/land-owners` → `{ owners: { parcelId: pgUsername } }`** feed (map form the maps lobby
+   accepts) for PLAYER-owned parcels. Reports the **canonical PG username** (`pgUsernames` map,
+   governorId→PG username, captured at `loginPg` + persisted) — NOT the empire name, which differs
+   when a PG account adopts a legacy empire (PG "nftprof" → empire "Idon"). Wild/system land and
+   name-only (non-PG) players are ABSENT ⇒ stay designable by any signed-in account (agreed testing
+   default; we never fabricate an owner). Activation: `echo 'http://localhost:8130/api/land-owners' >
+   ~/.ef_maps_owners_url && pm2 restart ef-moba-lobby` on the shared box (13.250.39.41), or hand the
+   URL to the maps session to wire+verify. +1 test (`landOwners.test.ts`); suite 171 green.
+   Also joinWindowSec staging dial now sent in the live allocate context (⚙ `battle.joinWindowSec`
+   = 120; network F5 Fork's hero-mode late-seat window). **STILL OWED — Hook 2 (invest CT → map
+   budget tier 0..5, keyed POST) + Hook 3 (landowner payout from the casualty callback).**
 5. Then continue roadmap T1 (`docs/10`): flesh out tick-engine phases against real map data.
 
 **Open design questions for the product owner** (do not decide unilaterally):

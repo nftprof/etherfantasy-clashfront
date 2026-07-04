@@ -554,6 +554,13 @@ export class ClashServer {
       res.end(this.worldBody);
       return;
     }
+    if (path === '/api/land-owners' && method === 'GET') {
+      // Maps ownership feed (docs/maps/ECONOMY-SEAM.md §1): { owners: { parcelId: pgUsername } }
+      // for PLAYER-owned parcels. Public read, polled by the maps lobby (5-min cache
+      // its side); parcels absent stay designable by any signed-in account.
+      sendJson(res, 200, { owners: this.game.landOwners() });
+      return;
+    }
     if (path === '/api/economy' && method === 'GET') {
       // Public telemetry, cached 10 s (skipped when tickMs is null — tests drive ticks by hand).
       const now = Date.now();
