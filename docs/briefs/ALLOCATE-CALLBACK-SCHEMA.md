@@ -55,10 +55,14 @@ Response `201`: `{ "matchId": "efm_...", "joinDeadline": "<ISO8601>", "tickHz": 
 ### 1a. INTERIM battlefield source (owner, 2026-07-04) — until the map generator lands
 
 Per-parcel generated maps do not exist yet (the map-generator session is building the generator,
-`briefs/MAP-GENERATOR.md`). **Until then, EVERY battle uses the MOBA's EXISTING legacy maps** —
-keyed by lane count / battle type (existing 1-lane map for single parcels, 3-lane for estates);
-parcel shape/size/biome are ignored for now. This is a deliberate temporary deviation from the
-canon "battlefield = the parcel's own designed map" (`docs/04` §7b) — acceptable for MVP.
+`briefs/MAP-GENERATOR.md`). **Until then, EVERY battle uses whatever maps the MOBA ALREADY has** —
+parcel shape/size/biome ignored for now. This is a deliberate temporary deviation from the canon
+"battlefield = the parcel's own designed map" (`docs/04` §7b) — acceptable for MVP.
+- **Do NOT block on map variety.** Whatever the MOBA ships today (likely a single standard arena)
+  is fine for ALL battles now — lane count is a battlefield PARAMETER, not a prerequisite.
+- Canon *prefers* 1-lane for wild/single parcels and 3-lane for estates, but if the MOBA has no
+  1-lane map yet, use its existing map for everything; a 1-lane variant is a nice-to-have the
+  MOBA maps session can add later, not an MVP gate.
 
 **Load-bearing requirement for command mode to work:** the match server MUST send the REAL loaded
 map's layout in `battle_hello`/battlefield (bounds, lanes, tower/core positions, terrain), not a
