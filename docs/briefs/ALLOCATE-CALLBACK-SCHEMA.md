@@ -19,6 +19,7 @@ Re-sending the same battleId MUST return the original `{matchId, joinDeadline}` 
   "seed": "9f2c4a61d0b3785e",                              // WE supply it. Never seed from Date.now().
   "mode": "live",                                          // "live" (30 Hz, joinable) | "accelerated" (headless)
   "rates": { "tickHz": 30, "commandSnapshotHz": 3 },       // R13; accelerated may run unclamped
+  "joinWindowSec": 120,                                     // live only: pre-combat STAGING window the match holds open for ⚡ late-seat (⚙ CF battle.joinWindowSec; omitted for accelerated)
   "parcel": { "parcelId": "60203370020", "zone": "EDU", "kind": "WILD" }, // WILD | PLAYER | ESTATE
   "battlefield": {                                         // A1 schema — see BATTLEFIELD-SCHEMA.md
     // CENTER-ORIGIN (LOCKED): (0,0)=arena center, x east, z NORTH(+); world-UNITS, consumed AS-IS (no ×MAPK).

@@ -287,10 +287,11 @@ test('engine e2e: collision → pending battle (hex locked) → allocate per sch
       seed: pending.seed,
       mode: 'live', // PLAYER on both sides ⇒ hero-joinable live match (§3b mode selection)
       rates: { tickHz: 30, commandSnapshotHz: 3 },
+      joinWindowSec: 120, // LIVE-only staging window for hero-mode ⚡ late-seating (⚙ battle.joinWindowSec)
       parcel: { parcelId, zone: String(WORLD_FILE.meta.zone), kind: 'PLAYER' },
       battlefield: {
-        // FIXED ±161 m standard arena (sizeM 322), (0,0)=center, +z north; world-metres
-        // post-MAPK, consumed AS-IS (no ×MAPK). spawns ±131.6, cores would sit ±114.8.
+        // FIXED ±161 standard arena (sizeM 322), (0,0)=center, +z north; world-UNITS
+        // (~0.74 m/unit) consumed AS-IS (no ×MAPK). spawns ±131.6, cores would sit ±114.8.
         arena: { shape: 'polygon', sizeM: 322, bounds: [[-161, -161], [161, -161], [161, 161], [-161, 161]] },
         laneCount: 1,
         obstacles: [],

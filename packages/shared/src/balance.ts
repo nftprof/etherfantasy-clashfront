@@ -297,6 +297,14 @@ export interface Balance {
     liveMatchPoolMax: number;
     /** A COMMAND battle QUEUED past the live pool waits this many world ticks, then falls back to accelerated. */
     commandQueueTimeoutTicks: number;
+    /**
+     * ⚙ How long a LIVE match stays in its pre-combat STAGING window before the
+     * armies engage — the joinable window the hero-mode ⚡ doorway seats into.
+     * Sent to the match server in the allocate context (`joinWindowSec`); the
+     * server holds the 30 Hz match open this long so a ⚡ click can late-seat.
+     * Ignored for accelerated battles. (network F5 Fork's dial; default 120s.)
+     */
+    joinWindowSec: number;
   };
   /**
    * ⚙ Post-battle "Recent battles" review (docs/04 §7b). Battles resolve fast
