@@ -501,6 +501,43 @@ hexagone-city (land sizes are permanent — snapshot under `data/` once repo acc
    decisive-or-tie; tie ⇒ retreat resolution. Mode-invariance (§3) holds — LIVE play shifts
    outcomes only within the hero cap.
 
+### 7d. Lone occupations — Master champions & pet homesteads (owner, 2026-07-03)
+
+A Master (or pet) may hold land WITHOUT an army. Encounter rules when a hostile force walks on:
+
+**Lone MASTER ("champion holds the ground") — three outcomes, chosen per encounter:**
+1. **OVERWHELM** — the attacker swarms with their army: guaranteed win, costs a few soldiers
+   ⚙; the defending Master is **KO'd through the live Masters KO API**
+   (`POST api.etherfantasy.com/api/gameplay/masters/result` → `koUntil`, `revivesRemaining`;
+   endpoints verified live, `docs/09` §7).
+2. **DUEL** — if the attacker fields a Master, either side may call a 1v1. ONE resolution
+   core, TWO presentations:
+   - Core odds (always): **Master rating** (level/fame) × **elemental wheel** (Addendum E
+     species-affinity matrix) × bounded chance (⚙ ±25% swing), seeded/deterministic.
+   - v1 presentation: **auto-duel** — Uncharted-Waters-style best-of-3 stance exchange
+     (aggressive/defensive/trick RPS, stats weight each round), rendered as a short animated
+     exchange in the overworld viewer; resolves offline-vs-offline, replayable.
+   - M2+ presentation: **live 1v1 micro-match** on the battle engine (tiny arena battlefield,
+     2–3 min, both ⚡ doorways light, AI stand-ins keep the same odds).
+   Winner holds/takes the ground; loser KO'd (same API). Duels spare troops.
+3. **FLEE** — the defender declines and escapes to the owner's inventory: an **escape roll**
+   (rating-based ⚙ ~70–90%), NOT free — a failed flee = caught ⇒ forced duel at a penalty ⚙.
+   (Free flight would make lone Masters unkillable scouts.)
+
+Defenders are usually OFFLINE (async game) ⇒ every deployed Master carries an owner-set
+**standing order**: `DUEL | FLEE | STAND(overwhelm me)`. Encounters resolve immediately
+against the standing order; the owner gets the war-report drama either way.
+
+**Lone PET ("homestead") — NFT pets may occupy land to FARM (yield boost ⚙):**
+- Purely **passive**: does not defend, cannot lead armies, never blocks anything.
+- Any hostile walk-on ⇒ the normal bloodless take-over choice fires and the pet
+  **auto-returns to its owner** (pets are NEVER lost — canon `docs/05` §9).
+- Reconciliation: pets ASSIGNED to a governor's occupied territory keep their §9 GUARD role;
+  only the lone homestead pet is passive.
+
+❓ OPEN (owner): exact flee odds/penalty; duel stance-UI depth (pickable stances vs pure
+auto); whether a lone Master also passively claims/holds yield like a homestead pet.
+
 ---
 
 ## 8. Post-victory: PILLAGE vs OCCUPY, and settlement
