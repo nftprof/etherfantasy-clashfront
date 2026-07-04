@@ -1969,6 +1969,10 @@ export class Game {
       });
     }
     for (const [id, b] of this.state.engineBattles ?? []) {
+      // Only genuinely-LIVE engine battles get the map LIVE badge / command viewer.
+      // AUTO (accelerated) + QUEUED battles resolve headless and are watch-only — a
+      // LIVE badge on them reads as "stuck" (§3a: command is the opt-in live path).
+      if (b.mode !== 'live') continue;
       if (!visible(b.attackerGovernorId, b.defenderGovernorId, b.hexId)) continue;
       const myJoin =
         viewerGovernorId === undefined ? undefined : b.joins?.find((j) => j.governorId === viewerGovernorId);
