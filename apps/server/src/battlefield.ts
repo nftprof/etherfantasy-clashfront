@@ -8,8 +8,10 @@
  * these stand-ins are unused (ALLOCATE-CALLBACK-SCHEMA.md §1a). Both consumers
  * render the SAME schema, so the swap is seamless.
  *
- * Coordinates are schema-canonical: 1 unit = 1 m, origin at arena CENTRE (0,0),
- * x = east, z = north (docs/04 §7b scale laws). The CF viewer translates to its
+ * Coordinates are schema-canonical: dimensionless WORLD-UNITS (the fixed ±161
+ * frame, sizeM 322; ~0.74 m/unit by the declared 14-acre parcel mapping —
+ * BATTLEFIELD-SCHEMA "scale declaration"), origin at arena CENTRE (0,0), x =
+ * east, z = north; consumed AS-IS (no ×MAPK). The CF viewer translates to its
  * [0,size]² space with the shared mobaToViewer convention.
  */
 import { existsSync, readFileSync } from 'node:fs';
@@ -186,19 +188,39 @@ function resolveMapsDir(): string {
 }
 
 const FILES: Record<1 | 3, string> = { 1: 'legacy-1lane.json', 3: 'legacy-3lane.json' };
+// The REAL MOBA export. The MOBA BattleEngine session delivers data/moba-maps/
+// legacy.json — the standard ±161 world-unit arena as the client plays it 1:1
+// (the SOURCE OF TRUTH). When present it REPLACES both interim stand-ins for
+// every battle: the arena is fixed, so estates scale by component COUNT, not size.
+const REAL_MAP_FILE = 'legacy.json';
 const cache = new Map<1 | 3, Battlefield>();
 
 /**
- * The interim stand-in Battlefield for `laneCount` lanes (1 = single parcel,
- * 3 = estate/default). Cached; the returned object is shared read-only (the
- * client only reads it, the server only serialises it). A missing/corrupt file
- * returns undefined so callers can omit the field rather than crash a battle.
+ * The standard Battlefield for `laneCount` lanes (1 = single parcel, 3 =
+ * estate/default). Prefers the real MOBA export (data/moba-maps/legacy.json)
+ * when the MOBA BattleEngine session has delivered it; otherwise the interim
+ * ±161 world-unit stand-ins (legacy-{1,3}lane.json). Cached; the returned object is
+ * shared read-only (the client only reads it, the server only serialises it). A
+ * missing/corrupt file returns undefined so callers can omit the field rather
+ * than crash a battle.
  */
 export function loadStandbyBattlefield(laneCount: 1 | 3 = 3): Battlefield | undefined {
   const cached = cache.get(laneCount);
   if (cached !== undefined) return cached;
+  const dir = resolveMapsDir();
+  // Prefer the real MOBA export (source of truth) over the stand-ins.
+  const realPath = join(dir, REAL_MAP_FILE);
+  if (existsSync(realPath)) {
+    try {
+      const bf = JSON.parse(readFileSync(realPath, 'utf8')) as Battlefield;
+      cache.set(laneCount, bf);
+      return bf;
+    } catch {
+      /* fall through to the stand-in */
+    }
+  }
   try {
-    const path = join(resolveMapsDir(), FILES[laneCount]);
+    const path = join(dir, FILES[laneCount]);
     const bf = JSON.parse(readFileSync(path, 'utf8')) as Battlefield;
     cache.set(laneCount, bf);
     return bf;

@@ -108,7 +108,17 @@ for (const file of ['legacy-3lane.json', 'legacy-1lane.json']) {
     const res = validateBattlefield(bf);
     assert.deepEqual(res.errors, [], `${file} invariants: ${res.errors.join('; ')}`);
     assert.ok(res.ok);
-    assert.equal(bf.arena.sizeM, 240, 'single arena is 240 m per scale law');
+    // FIXED standard MOBA arena: ±161 m half-edge (sizeM 322) for every battle.
+    assert.equal(bf.arena.sizeM, 322, 'standard arena is 322 m (±161) per the client frame');
+    assert.equal(bf.meta?.sizeM, 322, 'meta.sizeM agrees with the arena');
+    // Cores sit at the client known-good ±114.8, well inside ±161.
+    for (const core of (bf.structures ?? []).filter((s) => s.kind === 'CORE')) {
+      assert.ok(Math.abs(core.x) <= 161 && Math.abs(core.z) <= 161, `${file}: CORE ${core.anchorId} inside ±161`);
+      assert.ok(
+        Math.max(Math.abs(core.x), Math.abs(core.z)) > 100,
+        `${file}: CORE ${core.anchorId} near its base edge (~114.8)`,
+      );
+    }
     assert.ok(typeof bf._placeholder === 'string' && bf._placeholder.length > 0, 'marked as a stand-in');
     assertCompetitiveLayout(bf, file);
   });

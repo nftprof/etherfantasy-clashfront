@@ -413,6 +413,24 @@ consumes it unchanged, zero renderer edits (`ALLOCATE-CALLBACK-SCHEMA.md` §1a).
   arena scale — you fight on the outline of the land being taken. (Battle-engine plan item A1's
   bounds-polygon model covers this; "hex" boundaries are a special case, not a requirement.)
 
+  > **⚠ Coordinate-frame reconciliation (2026-07-04, authoritative — OP 48 client geometry).**
+  > The battle-engine's REAL arena frame is a **FIXED ±161 half-edge ⇒ `sizeM = 322` in
+  > dimensionless WORLD-UNITS** (the client's `clampMap ±115 · MAPK 1.4`), center-origin, +z
+  > north, blue/ATTACKER = SW, red/DEFENDER = NE, spawns ±131.6, cores ±114.8. Consumed AS-IS
+  > post-MAPK — never re-scaled (no ×MAPK anywhere). This SUPERSEDES the "240×240-unit /
+  > 1 engine unit = 1 m" framing above **for the battlefield coordinate space only**: the
+  > battlefield is world-units at **~0.74 m/unit** (declared mapping: the ±161 frame ≡ 1 parcel ≡
+  > ~14 acres = 56,656 m² ⇒ edge ≈ 238 m, over 322 units). The overworld/sim's own "1 unit = 1 m"
+  > is a SEPARATE space and still holds. **The arena is FIXED for every battle** — singles and
+  > estates alike — so estates do NOT get a bigger arena; per canon decision 4 an estate is a
+  > SERIES of standard ±161 component battles, and parcel size scales army/structure COUNT and
+  > component COUNT, not arena size. The size-ladder acreage figures above (SINGLE ≈ 14.2 acres,
+  > EPIC ≈ 6,800 acres) remain the overworld LAND-AREA estimates and drive component counts; they
+  > are not arena dimensions and are to be refreshed later against the real frame. Source of truth
+  > = the MOBA BattleEngine's `legacy.json` (matches the client 1:1); the CF stand-ins
+  > (`data/moba-maps/legacy-{1,3}lane.json`) are the interim ±161 fill. Frame + schema:
+  > `docs/briefs/BATTLEFIELD-SCHEMA.md`, `ALLOCATE-CALLBACK-SCHEMA.md` §1.
+
 **Battle definition (owner, 2026-07-02 v0.2): every battle is a FULL MOBA match** — a real
 server-run game, 20–40 minutes, with the armies (PentaPet units + officers) fighting on both
 sides. AI-vs-AI battles run the SAME simulation with **accelerated ticks** (fast-forward, not a

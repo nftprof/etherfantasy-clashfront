@@ -21,15 +21,16 @@ Re-sending the same battleId MUST return the original `{matchId, joinDeadline}` 
   "rates": { "tickHz": 30, "commandSnapshotHz": 3 },       // R13; accelerated may run unclamped
   "parcel": { "parcelId": "60203370020", "zone": "EDU", "kind": "WILD" }, // WILD | PLAYER | ESTATE
   "battlefield": {                                         // A1 schema — see BATTLEFIELD-SCHEMA.md
-    // CENTER-ORIGIN (LOCKED): (0,0)=arena center, x east, z NORTH(+). Attacker south(−z), defender north(+z).
-    "arena": { "shape": "polygon", "sizeM": 240,           // 1 unit = 1 m (canon)
-               "bounds": [[-120,-120],[120,-120],[120,120],[-120,120]] }, // square = 4-pt polygon, ±sizeM/2
+    // CENTER-ORIGIN (LOCKED): (0,0)=arena center, x east, z NORTH(+); world-UNITS, consumed AS-IS (no ×MAPK).
+    // blue/ATTACKER=SW(−,−), red/DEFENDER=NE(+,+); single-lane N–S: attacker south(−z), defender north(+z).
+    "arena": { "shape": "polygon", "sizeM": 322,           // FIXED ±161 arena edge, world-units (NOT metres; ~0.74 m/unit)
+               "bounds": [[-161,-161],[161,-161],[161,161],[-161,161]] }, // square = 4-pt polygon, ±sizeM/2
     "laneCount": 1,                                        // 1 default; 3 for estates
     "obstacles": [ { "kind": "TREE", "x": -60, "z": 30, "r": 4 } ],
-    "spawnZones": [ { "id": "spawn_atk_s", "side": "ATTACKER", "edge": "S", "x": 0, "z": -112 } ],
+    "spawnZones": [ { "id": "spawn_atk_s", "side": "ATTACKER", "edge": "S", "x": 0, "z": -131.6 } ], // spawns ±131.6
     "structures": [                                        // land holder's furniture, incoming HP
-      { "anchorId": "anchor_t1", "kind": "TOWER", "side": "DEFENDER", "x": 0, "z": 30, "hp": 1800, "hpMax": 2000 },
-      { "anchorId": "anchor_cc", "kind": "CORE",  "side": "DEFENDER", "x": 0, "z": 90, "hp": 5000, "hpMax": 5000 }
+      { "anchorId": "anchor_t1", "kind": "TOWER", "side": "DEFENDER", "x": 0, "z": 61.7,  "hp": 1800, "hpMax": 2000 },
+      { "anchorId": "anchor_cc", "kind": "CORE",  "side": "DEFENDER", "x": 0, "z": 114.8, "hp": 5000, "hpMax": 5000 } // cores ±114.8
     ],
     "mobs": [ { "id": "mob_pack_1", "kind": "WOLF", "x": 30, "z": 0, "count": 6 } ]  // WILD only
   },
@@ -159,8 +160,8 @@ callback → deterministic settlement). Key facts for operators + the engine tea
 - **Flow:** hostile co-location that would resolve via the instant WarScore path instead
   becomes a PENDING ENGINE BATTLE (hex locked like a running wild battle, armies pinned);
   the server POSTs the §1 context (`Idempotency-Key: battleId`, 5 s timeout,
-  square-240 4-pt bounds polygon + the parcel's real structure anchors
-  `anchor_<i>`, officers with revive budget 3, seed from the seeded world RNG). The verified
+  the FIXED ±161 world-unit arena (sizeM 322) as a 4-pt bounds polygon + the parcel's real
+  structure anchors `anchor_<i>`, officers with revive budget 3, seed from the seeded world RNG). The verified
   callback (raw-body HMAC, `issuedAt` ≤ 10 min, nonce ledger, idempotent 200 by battleId)
   sets the outcome as a SERVER-BOUNDARY INPUT; the **next world tick** applies casualties per
   UnitClass, provisions consumed, structure damage per anchor, winner/TIE semantics and the

@@ -1,50 +1,50 @@
 {
   "v": 1,
-  "_placeholder": "standby standard map — replace with the MOBA team's real exported map when delivered",
+  "_placeholder": "standby standard map — replace with the MOBA BattleEngine's real exported legacy.json (source of truth, matches the client 1:1) when delivered",
   "meta": {
     "parcelId": "STANDBY-1LANE",
     "seed": "cf-standby-1lane-v1",
     "designVersion": 0,
     "biome": "TEMPERATE_GRASS",
     "sizeClass": "SINGLE",
-    "sizeM": 240,
+    "sizeM": 322,
     "laneCount": 1
   },
   "arena": {
     "shape": "polygon",
-    "sizeM": 240,
-    "bounds": [[-118, -118], [118, -118], [118, 118], [-118, 118]]
+    "sizeM": 322,
+    "bounds": [[-161, -161], [161, -161], [161, 161], [-161, 161]]
   },
   "obstacles": [
-    { "id": "tree_l1", "kind": "TREE", "x": -42, "z": -20, "r": 7, "passable": false },
-    { "id": "tree_r1", "kind": "TREE", "x": 42, "z": -20, "r": 7, "passable": false },
-    { "id": "tree_l2", "kind": "TREE", "x": -42, "z": 40, "r": 7, "passable": false },
-    { "id": "tree_r2", "kind": "TREE", "x": 42, "z": 40, "r": 7, "passable": false },
-    { "id": "rock_l", "kind": "BOULDER", "x": -55, "z": 0, "r": 6, "passable": false },
-    { "id": "rock_r", "kind": "BOULDER", "x": 55, "z": 0, "r": 6, "passable": false }
+    { "id": "tree_l1", "kind": "TREE", "x": -56.4, "z": -26.8, "r": 9.4, "passable": false },
+    { "id": "tree_r1", "kind": "TREE", "x": 56.4, "z": -26.8, "r": 9.4, "passable": false },
+    { "id": "tree_l2", "kind": "TREE", "x": -56.4, "z": 53.7, "r": 9.4, "passable": false },
+    { "id": "tree_r2", "kind": "TREE", "x": 56.4, "z": 53.7, "r": 9.4, "passable": false },
+    { "id": "rock_l", "kind": "BOULDER", "x": -73.8, "z": 0, "r": 8.1, "passable": false },
+    { "id": "rock_r", "kind": "BOULDER", "x": 73.8, "z": 0, "r": 8.1, "passable": false }
   ],
   "resources": [
-    { "id": "gold_ne", "kind": "GOLD_MINE", "x": 40, "z": 70, "richness": 3 },
-    { "id": "wood_sw", "kind": "WOOD_GROVE", "x": -40, "z": -70, "richness": 2 }
+    { "id": "gold_ne", "kind": "GOLD_MINE", "x": 53.7, "z": 93.9, "richness": 3 },
+    { "id": "wood_sw", "kind": "WOOD_GROVE", "x": -53.7, "z": -93.9, "richness": 2 }
   ],
   "buildSpots": [
-    { "anchorId": "spot_def", "x": 0, "z": 72, "size": "M", "side": "DEFENDER" },
-    { "anchorId": "spot_atk", "x": 0, "z": -72, "size": "M", "side": "ATTACKER" }
+    { "anchorId": "spot_def", "x": 0, "z": 96.6, "size": "M", "side": "DEFENDER" },
+    { "anchorId": "spot_atk", "x": 0, "z": -96.6, "size": "M", "side": "ATTACKER" }
   ],
   "spawnZones": [
-    { "id": "spawn_atk", "side": "ATTACKER", "edge": "S", "x": 0, "z": -112 },
-    { "id": "spawn_def", "side": "DEFENDER", "edge": "N", "x": 0, "z": 112 }
+    { "id": "spawn_atk", "side": "ATTACKER", "edge": "S", "x": 0, "z": -131.6 },
+    { "id": "spawn_def", "side": "DEFENDER", "edge": "N", "x": 0, "z": 131.6 }
   ],
   "lanes": [
-    { "id": "lane_mid", "side": "ATTACKER", "waypoints": [[0, -100], [0, -40], [0, 40], [0, 100]] }
+    { "id": "lane_mid", "side": "ATTACKER", "waypoints": [[0, -134.2], [0, -53.7], [0, 53.7], [0, 134.2]] }
   ],
   "structures": [
-    { "anchorId": "core_atk", "kind": "CORE", "side": "ATTACKER", "x": 0, "z": -100 },
-    { "anchorId": "core_def", "kind": "CORE", "side": "DEFENDER", "x": 0, "z": 100 },
-    { "anchorId": "gate_atk", "kind": "GATE", "side": "ATTACKER", "x": 0, "z": -84 },
-    { "anchorId": "gate_def", "kind": "GATE", "side": "DEFENDER", "x": 0, "z": 84 },
-    { "anchorId": "t_atk", "kind": "TOWER", "side": "ATTACKER", "x": 0, "z": -46 },
-    { "anchorId": "t_def1", "kind": "TOWER", "side": "DEFENDER", "x": 0, "z": 46 },
-    { "anchorId": "t_def2", "kind": "TOWER", "side": "DEFENDER", "x": 0, "z": 80 }
+    { "anchorId": "core_atk", "kind": "CORE", "side": "ATTACKER", "x": 0, "z": -114.8 },
+    { "anchorId": "core_def", "kind": "CORE", "side": "DEFENDER", "x": 0, "z": 114.8 },
+    { "anchorId": "gate_atk", "kind": "GATE", "side": "ATTACKER", "x": 0, "z": -112.7 },
+    { "anchorId": "gate_def", "kind": "GATE", "side": "DEFENDER", "x": 0, "z": 112.7 },
+    { "anchorId": "t_atk", "kind": "TOWER", "side": "ATTACKER", "x": 0, "z": -61.7 },
+    { "anchorId": "t_def1", "kind": "TOWER", "side": "DEFENDER", "x": 0, "z": 61.7 },
+    { "anchorId": "t_def2", "kind": "TOWER", "side": "DEFENDER", "x": 0, "z": 107.3 }
   ]
 }
