@@ -44,13 +44,11 @@ jobs:
           ls -la /etc/nginx/sites-enabled/ 2>&1 || sudo -n ls -la /etc/nginx/sites-enabled/ 2>&1 || echo "(needs sudo)"
           echo "===== NGINX: error log tail ====="
           sudo -n tail -20 /var/log/nginx/error.log 2>&1 || tail -20 /var/log/nginx/error.log 2>&1 || echo "(error log needs sudo)"
-          echo "===== APP: pm2 full describe (restarts/memory/uptime) ====="
-          pm2 describe clashfront 2>&1 | grep -E "status|restart|uptime|memory|created|script|exec|node|pid|error log|out log" || true
-          echo "===== APP: pm2 CRASH LOGS (why it keeps restarting) ====="
-          pm2 logs clashfront --lines 80 --nostream 2>&1 | tail -90 || true
-          echo "===== SYSTEM: memory (OOM check) ====="
-          free -m 2>&1 || true
-          echo "===== SYSTEM: recent OOM kills in dmesg ====="
-          sudo -n dmesg -T 2>&1 | grep -iE "out of memory|oom|killed process" | tail -8 || echo "(dmesg needs sudo)"
+          echo "===== APP: pm2 uptime/restarts (is churn stopped?) ====="
+          pm2 describe clashfront 2>&1 | grep -E "status|restart|uptime|created" || true
+          echo "===== DNS: does the new hostname resolve? (need A -> 13.250.39.41) ====="
+          for h in cf.moba.etherfantasy.com moba.etherfantasy.com sg.moba.etherfantasy.com cf.etherfantasy.com cfx.etherfantasy.com; do
+            printf '%-32s -> ' "$h"; (dig +short "$h" 2>/dev/null || getent hosts "$h" 2>/dev/null) | tr '\n' ' '; echo
+          done
           echo "===== DONE (read-only) ====="
           exit 0
