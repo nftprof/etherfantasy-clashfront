@@ -490,10 +490,10 @@ export function createMap(canvas, store, handlers) {
       if (a.state !== 'MARCHING' || !a.path?.length) continue;
       const dest = a.path[a.path.length - 1];
       let g = converge.get(dest);
-      if (g === undefined) converge.set(dest, g = { n: 0, eta: Infinity, hostile: false });
+      if (g === undefined) converge.set(dest, g = { n: 0, eta: Infinity, hostile: false, mine: false });
       g.n++;
       if (a.etaTick !== undefined) g.eta = Math.min(g.eta, a.etaTick);
-      if (a.governorId !== me) g.hostile = true;
+      if (a.governorId !== me) g.hostile = true; else g.mine = true;
     }
     const pathSeq = new Map(); // destPid → how many path hints already drawn
     for (const a of store.armies.values()) {
@@ -530,17 +530,33 @@ export function createMap(canvas, store, handlers) {
       }
     }
     for (const [pid, g] of converge) {
-      if (g.n < 2) continue;
       const c = store.parcels.get(pid)?.center;
       if (!c) continue;
+      // A march STARTS A BATTLE when it lands on ground its owner doesn't hold:
+      // my army onto foreign/wild land (my attack) or a hostile army onto mine
+      // (incoming attack). The arrival tick IS the battle-start tick (the server
+      // fires the battle on collision), so the ETA below is the battle countdown.
+      const destTerr = store.terrByParcel.get(pid);
+      const destMine = destTerr ? store.isMine(destTerr.governorId) : false;
+      const myAttack = g.mine && !!destTerr && !destMine; // I'm marching into a fight
+      const incoming = g.hostile && destMine;             // someone's marching into MINE
+      if (g.n < 2 && !myAttack && !incoming) continue;     // peaceful single reposition → no badge
       const [sx, sy] = toScreen(c[0], c[1]);
       if (sx < -60 || sx > w + 60 || sy < -60 || sy > h + 60) continue;
       const ms = Number.isFinite(g.eta) ? Math.max(0, store.ticksToMs(g.eta - store.tickFloat())) : null;
-      const clock = ms === null ? '' : ` · ${Math.floor(ms / 60000)}:${String(Math.floor((ms % 60000) / 1000)).padStart(2, '0')}`;
+      const clock = ms === null ? '' : `${Math.floor(ms / 60000)}:${String(Math.floor((ms % 60000) / 1000)).padStart(2, '0')}`;
+      // Convergence (2+) keeps the count; a lone battle-bound march reads as the
+      // battle-start countdown so the player knows when the fight (and the join
+      // window) begins.
+      const text = g.n >= 2
+        ? `⚔ ${g.n} incoming${clock ? ` · ${clock}` : ''}`
+        : incoming
+          ? `⚠ battle in ${clock || 'moments'}`
+          : `⚔ battle in ${clock || 'moments'}`;
       badges.push({
         sx, sy: sy - 26,
-        text: `⚔ ${g.n} incoming${clock}`,
-        color: g.hostile ? FOE_UNIT : MY_UNIT, // red if ANY incoming is hostile to the viewer
+        text,
+        color: g.n >= 2 ? (g.hostile ? FOE_UNIT : MY_UNIT) : incoming ? FOE_UNIT : MY_UNIT,
         alpha: 0.72 + 0.28 * Math.sin(now / 260),
       });
     }
