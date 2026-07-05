@@ -129,6 +129,9 @@ export function createBattle({ store, ui, send, ftue }) {
   let steer = false;      // participation mode (attacking owner only)
   let ended = null;       // outcome once decided
   let closeTimer = null;
+  let subRetryTimer = null; // engine battles: re-sub until the bridge binds the relay
+  let subRetries = 0;
+  const SUB_RETRY_MS = 1200, SUB_RETRY_MAX = 110; // ~2.2 min — covers the join window
   let raf = 0;
   let blotches = null;    // painterly ground stains (visual only, per battle)
   let flashes = [];       // death/hit effects {x, y, t0, kind}
@@ -145,6 +148,8 @@ export function createBattle({ store, ui, send, ftue }) {
     ended = null;
     flashes = [];
     steer = false;
+    subRetries = 0;
+    if (subRetryTimer) { clearTimeout(subRetryTimer); subRetryTimer = null; }
     root.hidden = false;
     resize();
     send({ t: 'battle_sub', battleId });
@@ -159,6 +164,7 @@ export function createBattle({ store, ui, send, ftue }) {
     root.hidden = true;
     cancelAnimationFrame(raf);
     if (closeTimer) { clearTimeout(closeTimer); closeTimer = null; }
+    if (subRetryTimer) { clearTimeout(subRetryTimer); subRetryTimer = null; }
     finishCoach(true); // never leak a coach card across views
   }
 
@@ -166,6 +172,8 @@ export function createBattle({ store, ui, send, ftue }) {
   function onMsg(msg) {
     if (msg.battleId !== openId) return;
     if (msg.t === 'battle_hello') {
+      subRetries = 0; // relay bound — stop any pending re-sub
+      if (subRetryTimer) { clearTimeout(subRetryTimer); subRetryTimer = null; }
       field = msg;
       cur = { snap: msg.snap, at: performance.now() };
       prev = cur;
@@ -189,6 +197,21 @@ export function createBattle({ store, ui, send, ftue }) {
       return;
     }
     if (msg.t === 'battle_err') {
+      // Engine/live battles: allocate → bridge-relay-bind is async, so a command
+      // view opened a beat early gets NO_BATTLE before the feed exists. Don't tear
+      // the view down — hold the "relay connecting…" state and re-sub until the
+      // bridge binds (hello arrives → the ±161 map renders), bounded by the join
+      // window. Wild/instant battles that truly don't exist still close.
+      const lb = openId ? store.liveBattles?.get(openId) : null;
+      if (msg.code === 'NO_BATTLE' && lb?.engine && subRetries < SUB_RETRY_MAX) {
+        subRetries++;
+        if (subRetryTimer) clearTimeout(subRetryTimer);
+        subRetryTimer = setTimeout(() => {
+          subRetryTimer = null;
+          if (openId === msg.battleId) send({ t: 'battle_sub', battleId: openId });
+        }, SUB_RETRY_MS);
+        return;
+      }
       ui.toast('Battle', esc(msg.message ?? msg.code), 'bad');
       if (msg.code === 'NO_BATTLE' || msg.code === 'FORBIDDEN') close(true);
     }
