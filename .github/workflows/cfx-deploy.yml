@@ -1,0 +1,33 @@
+name: Deploy cfx staging (cfx.etherfantasy.com)
+
+# ISOLATED look-and-feel preview. Runs on the SAME self-hosted runner (label: cf) but starts a
+# SEPARATE pm2 app `clashfront-cfx` on :8131 in ~/clashfront-cfx — restarting it never touches the
+# live game (`clashfront` on :8130). Push to deploy/cfx (or dispatch) to ship here freely.
+
+on:
+  push:
+    branches: [deploy/cfx]
+    paths-ignore:
+      - 'docs/**'
+      - '**/*.md'
+  workflow_dispatch: {}
+
+concurrency:
+  group: cfx-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: [self-hosted, cf]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Sync working copy → ~/clashfront-cfx (preserve ONLY the cfx world save)
+        run: |
+          rsync -a --delete --exclude='.git' --exclude='data/save.cfx.json' \
+            "$GITHUB_WORKSPACE"/ "$HOME"/clashfront-cfx/
+
+      - name: Build + (re)start clashfront-cfx on :8131
+        run: |
+          cd "$HOME"/clashfront-cfx
+          APP_PORT=8131 APP_NAME=clashfront-cfx bash deploy/remote-deploy-cfx.sh
