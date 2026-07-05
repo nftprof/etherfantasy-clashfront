@@ -162,6 +162,22 @@ async function main(): Promise<void> {
   };
   process.on('SIGINT', () => shutdown('SIGINT'));
   process.on('SIGTERM', () => shutdown('SIGTERM'));
+
+  // Last-resort resilience (2026-07-05, after the cf.etherfantasy.com outage): a
+  // stray unhandled rejection or thrown error must NOT take the whole world server
+  // down. The tick/battle/save loops, WS frames, HTTP routing and engine-allocate
+  // paths already have their own try/catch, so anything reaching here is a truly
+  // unexpected escape — log it loudly and KEEP SERVING rather than exit (a live
+  // demo down for everyone is worse than one dropped operation). An intentional
+  // shutdown (SIGINT/SIGTERM) still exits normally via `stopping`.
+  process.on('unhandledRejection', (reason) => {
+    if (stopping) return;
+    console.error('[server] UNHANDLED REJECTION — kept alive:', reason);
+  });
+  process.on('uncaughtException', (err) => {
+    if (stopping) return;
+    console.error('[server] UNCAUGHT EXCEPTION — kept alive:', err);
+  });
 }
 
 main().catch((e: unknown) => {

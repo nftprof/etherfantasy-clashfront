@@ -66,8 +66,13 @@ if [ -n "${PG_API_URL:-}" ]; then export PG_API_URL; fi
 # api.etherfantasy.com or every login silently falls back to the demo roster.
 if [ -n "${MASTERS_API_URL:-}" ]; then export MASTERS_API_URL; fi
 
+# Crash resilience: if the process ever DOES exit (despite the in-process
+# uncaughtException/unhandledRejection guards in main.ts), pm2 must keep bringing
+# it back and never give up. --restart-delay spaces retries so a fast crash-loop
+# can't trip pm2's max-restarts giveup; these flags apply on a fresh start.
 pm2 restart "$APP_NAME" --update-env 2>/dev/null \
-  || pm2 start apps/server/dist/src/main.js --name "$APP_NAME" --update-env
+  || pm2 start apps/server/dist/src/main.js --name "$APP_NAME" --update-env \
+       --max-restarts 1000 --restart-delay 3000 --time
 pm2 save
 
 sleep 2
