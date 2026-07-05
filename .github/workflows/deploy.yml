@@ -13,7 +13,8 @@ on:
     paths-ignore:
       - 'docs/**'
       - '**/*.md'
-      - '.github/workflows/diagnose.yml'
+      - '.github/workflows/**'
+      - 'deploy/nginx-*.conf'
   workflow_dispatch: {}
 
 concurrency:

@@ -1,0 +1,48 @@
+name: Set up clashfront.etherfantasy.com (nginx + cert)
+
+# Adds a NEW nginx vhost for clashfront.etherfantasy.com → the CF app on :8130, alongside
+# the existing cf.etherfantasy.com (which stays). cf's hostname is SNI-blocked on some
+# network paths; clashfront is the reachable alias. Runs on the box's self-hosted runner.
+# Guarded: aborts (no changes) unless the DNS A record already points at the box, and never
+# reloads nginx on a failed `nginx -t`. certbot only edits the clashfront server block.
+# Manual only — dispatch it once DNS is live.
+
+on:
+  workflow_dispatch: {}
+
+concurrency:
+  group: cf-deploy          # serialize with deploys so we never fight over nginx
+  cancel-in-progress: false
+
+jobs:
+  setup:
+    runs-on: [self-hosted, cf]
+    steps:
+      - uses: actions/checkout@v4
+      - name: nginx vhost + Let's Encrypt cert for clashfront.etherfantasy.com
+        run: |
+          set -uo pipefail
+          DOMAIN=clashfront.etherfantasy.com
+          BOXIP=13.250.39.41
+          echo "===== DNS precondition (need $DOMAIN A -> $BOXIP) ====="
+          RES="$( { dig +short "$DOMAIN" 2>/dev/null; getent hosts "$DOMAIN" 2>/dev/null | awk '{print $1}'; } | tr '\n' ' ')"
+          echo "$DOMAIN -> [$RES]"
+          case "$RES" in
+            *"$BOXIP"*) echo "DNS OK — proceeding." ;;
+            *) echo "❌ $DOMAIN does not resolve to $BOXIP yet — add the DNS A record first. NO CHANGES MADE."; exit 1 ;;
+          esac
+          echo "===== install HTTP vhost (:80 → :8130 + WS) ====="
+          sudo cp "$GITHUB_WORKSPACE/deploy/nginx-clashfront.etherfantasy.com.conf" "/etc/nginx/sites-available/$DOMAIN"
+          sudo ln -sf "/etc/nginx/sites-available/$DOMAIN" "/etc/nginx/sites-enabled/$DOMAIN"
+          echo "===== validate (roll back the vhost if invalid; never reload a bad config) ====="
+          if ! sudo nginx -t; then
+            echo "❌ nginx -t failed — removing the new vhost, not reloading."
+            sudo rm -f "/etc/nginx/sites-enabled/$DOMAIN"; sudo nginx -t; exit 1
+          fi
+          sudo systemctl reload nginx
+          echo "===== certbot (adds :443 + cert + http→https redirect for this vhost only) ====="
+          sudo certbot --nginx -d "$DOMAIN" --non-interactive --agree-tos -m idon.cgg@gmail.com --redirect --keep-until-expiring 2>&1 | tail -25
+          echo "===== verify ====="
+          sudo nginx -t
+          curl -sS -m 15 -o /dev/null -w "LOCAL  https://$DOMAIN/api/world -> HTTP %{http_code}\n" "https://$DOMAIN/api/world" || echo "verify curl failed (exit $?)"
+          echo "===== DONE ====="
