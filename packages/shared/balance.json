@@ -258,11 +258,11 @@
     "fuzzyBandPct": 0.35
   },
   "battle": {
-    "_note": "⚙ COMMAND-vs-AUTO scaling keystone (docs/04 §3a). LIVE (30 Hz joinable/steerable) battles are a SCARCE OPT-IN resource chosen at MARCH time; AUTO (accelerated headless resolve) is the default. commandSlotsPerPlayer = max concurrent live/queued COMMAND battles one player may hold; liveMatchPoolMax = global cap on concurrent live engine matches (server capacity); commandQueueTimeoutTicks = a COMMAND battle QUEUED past the pool waits this many world ticks before falling back to accelerated. joinWindowSec = pre-combat STAGING window a LIVE match holds open for hero-mode ⚡ late-seating (sent to the match server in the allocate context; EF v2 Moba Server network F5 Fork's dial, default 120s). Future ⚙ COMMAND FEE (CT sink) phases in on top — not yet built.",
+    "_note": "⚙ COMMAND-vs-AUTO scaling keystone (docs/04 §3a). LIVE (30 Hz joinable/steerable) battles are a SCARCE OPT-IN resource chosen at MARCH time; AUTO (accelerated headless resolve) is the default. commandSlotsPerPlayer = max concurrent live/queued COMMAND battles one player may hold; liveMatchPoolMax = global cap on concurrent live engine matches (server capacity); commandQueueTimeoutTicks = a COMMAND battle QUEUED past the pool waits this many world ticks before falling back to accelerated. joinWindowSec = pre-combat STAGING window a LIVE match holds open for hero-mode ⚡ late-seating (sent to the match server in the allocate context; EF v2 Moba Server network F5 Fork's dial, default 90s — matches the match server's staging window). Future ⚙ COMMAND FEE (CT sink) phases in on top — not yet built.",
     "commandSlotsPerPlayer": 2,
     "liveMatchPoolMax": 8,
     "commandQueueTimeoutTicks": 20,
-    "joinWindowSec": 120
+    "joinWindowSec": 90
   },
   "review": {
     "_note": "⚙ Post-battle 'Recent battles' review (docs/04 §7b). Battles resolve fast (accelerated is the default per §3a) so the player needs a way to review a fight AFTER it ends. ringCap = how many recently-resolved battles the server keeps per world for review (older age out, newest-first, fog-filtered per viewer); reviewTimerSec = seconds each battle shows during 'Review all' auto-advance; timelineKeyframes = compact synthesized strength-progression keyframes stored per accelerated battle (a few hundred bytes, NOT 30 Hz frames — an honest reconstruction, not fake live telemetry); revealDurationTicks = world ticks an AUTO outcome stays SEALED after collision before it may be revealed (sealed-reveal follow-up: the accelerated result is computed at collision but applied/shown only at startTick+revealDurationTicks, so AUTO battles cannot be previewed before normal battle time).",

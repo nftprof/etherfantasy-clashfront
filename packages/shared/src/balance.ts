@@ -302,7 +302,7 @@ export interface Balance {
      * armies engage — the joinable window the hero-mode ⚡ doorway seats into.
      * Sent to the match server in the allocate context (`joinWindowSec`); the
      * server holds the 30 Hz match open this long so a ⚡ click can late-seat.
-     * Ignored for accelerated battles. (network F5 Fork's dial; default 120s.)
+     * Ignored for accelerated battles. (network F5 Fork's dial; default 90s, matches the match server's staging window.)
      */
     joinWindowSec: number;
   };

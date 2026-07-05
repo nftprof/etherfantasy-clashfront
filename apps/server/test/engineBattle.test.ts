@@ -287,7 +287,7 @@ test('engine e2e: collision → pending battle (hex locked) → allocate per sch
       seed: pending.seed,
       mode: 'live', // PLAYER on both sides ⇒ hero-joinable live match (§3b mode selection)
       rates: { tickHz: 30, commandSnapshotHz: 3 },
-      joinWindowSec: 120, // LIVE-only staging window for hero-mode ⚡ late-seating (⚙ battle.joinWindowSec)
+      joinWindowSec: 90, // LIVE-only staging window for hero-mode ⚡ late-seating (⚙ battle.joinWindowSec)
       parcel: { parcelId, zone: String(WORLD_FILE.meta.zone), kind: 'PLAYER' },
       battlefield: {
         // FIXED ±161 standard arena (sizeM 322), (0,0)=center, +z north; world-UNITS
