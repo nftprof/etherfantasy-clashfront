@@ -7,6 +7,13 @@ name: Deploy MVP to cf.etherfantasy.com
 on:
   push:
     branches: [deploy/cf-mvp]
+    # Don't redeploy (restart the live server) for pushes that change no runtime code.
+    # Every deploy = pm2 restart = a few seconds of downtime; docs/diagnostic/markdown-only
+    # pushes must NOT bounce the server. Real code changes still deploy.
+    paths-ignore:
+      - 'docs/**'
+      - '**/*.md'
+      - '.github/workflows/diagnose.yml'
   workflow_dispatch: {}
 
 concurrency:
