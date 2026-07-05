@@ -127,10 +127,14 @@ within a bounded live-match budget.
     time. Within that rule they may queue as MANY as they like — a fight starting in 15 min and
     one in 1 h can both be committed (they don't overlap). "Maximize command if you like, just no
     overlap."
-  - **Exponential fee (the abuse limiter + the CT SINK).** Each command commitment costs a
-    COMMAND FEE in CT that grows with current queue DEPTH: the 1st queued is very cheap (⚙
-    `commandFeeBaseCtUnits`), the Nth concurrent = base × ⚙ `commandFeeGrowth`^(N−1). Cost — not a
-    hard cap — is the primary throttle; it burns (net-sink doctrine, `docs/02` §13).
+  - **Rising fee (the abuse limiter + the CT SINK).** Each command commitment costs a COMMAND FEE
+    in CT set by a LADDER on current queue DEPTH — ⚙ `commandFeeLadderCt` = **[1, 3, 5, 10, 20] CT**
+    (owner 2026-07-05; 1 CT ≈ $0.10). The ladder length is also the hard cap: **at most 5 concurrent
+    committed commands.** The 1st is ~1 CT (cheap enough that commanding your one fight is trivial);
+    stacking a 4th/5th costs 10–20 CT — real money, real deterrent. It burns (net-sink doctrine,
+    `docs/02` §13). NB: the wider `balance.json` CT economy still uses the OLD high scale (raise/
+    claim/develop 10–100× too dear for 5–500 CT start balances) — a full re-scale-down is a pending
+    task (`briefs/HANDOFF-BATTLE-COMMAND-HERO-MAPS.md`).
   - **Cancellable.** A queued command may be CANCELLED before it starts → the fee is refunded and
     the queue slot frees (drops depth, so the next commitment is cheaper again); the march
     continues as AUTO (or is itself cancelled). Forfeit one to pick up another.
