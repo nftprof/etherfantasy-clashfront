@@ -1,0 +1,45 @@
+name: Diagnose cf.etherfantasy.com (read-only)
+
+# Runs on the same self-hosted runner as the deploy (label: cf), on the box that
+# terminates TLS for cf.etherfantasy.com. READ-ONLY — inspects nginx/cert/port/app
+# state to explain an ERR_SSL_PROTOCOL_ERROR. Changes NOTHING. Triggered by touching
+# this file on deploy/cf-mvp, or manually via workflow_dispatch.
+
+on:
+  push:
+    branches: [deploy/cf-mvp]
+    paths: ['.github/workflows/diagnose.yml']
+  workflow_dispatch: {}
+
+concurrency:
+  group: cf-diagnose
+  cancel-in-progress: true
+
+jobs:
+  diagnose:
+    runs-on: [self-hosted, cf]
+    steps:
+      - name: nginx / TLS / port / cert / app state (read-only)
+        run: |
+          set +e
+          echo "===== APP: pm2 clashfront ====="
+          pm2 describe clashfront 2>&1 | grep -E "status|restart|uptime" || pm2 list 2>&1 | head -20
+          echo "===== APP: healthcheck localhost:8130 ====="
+          curl -sS -o /dev/null -w "app /api/world -> HTTP %{http_code}\n" http://127.0.0.1:8130/api/world
+          echo "===== NGINX: service state ====="
+          systemctl is-active nginx 2>&1
+          sudo -n systemctl status nginx --no-pager 2>&1 | head -8 || systemctl status nginx --no-pager 2>&1 | head -8
+          echo "===== NGINX: config test (a broken vhost blocks ALL sites) ====="
+          sudo -n nginx -t 2>&1 || nginx -t 2>&1 || echo "(nginx -t needs sudo)"
+          echo "===== PORTS: who owns :443 and :80 ====="
+          sudo -n ss -ltnp 2>&1 | grep -E ':443|:80 ' || ss -ltn 2>&1 | grep -E ':443|:80 ' || echo "(ss unavailable)"
+          echo "===== TLS: local handshake to :443 (SNI cf.etherfantasy.com) ====="
+          echo | timeout 10 openssl s_client -connect 127.0.0.1:443 -servername cf.etherfantasy.com 2>&1 | grep -E "CONNECTED|error|verify|subject=|issuer=|Verify return|no peer certificate|SSL alert" | head -12
+          echo "===== CERT: certbot state ====="
+          sudo -n certbot certificates 2>&1 | grep -E "Certificate Name|Domains|Expiry|VALID|INVALID|cf.etherfantasy" || echo "(certbot needs sudo)"
+          echo "===== NGINX: enabled vhosts ====="
+          ls -la /etc/nginx/sites-enabled/ 2>&1 || sudo -n ls -la /etc/nginx/sites-enabled/ 2>&1 || echo "(needs sudo)"
+          echo "===== NGINX: error log tail ====="
+          sudo -n tail -40 /var/log/nginx/error.log 2>&1 || tail -40 /var/log/nginx/error.log 2>&1 || echo "(error log needs sudo)"
+          echo "===== DONE (read-only) ====="
+          exit 0
