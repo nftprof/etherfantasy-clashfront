@@ -119,22 +119,42 @@ within a bounded live-match budget.
 
 - **Two march orders:** `MARCH` (auto — resolve it for me; watch the replay after) and
   `MARCH & COMMAND` (I want to play/steer this battle live). Default = MARCH (auto).
-- **Command SLOTS (per-player attention cap):** a player may have only ⚙ N concurrent COMMAND
-  battles (MVP ⚙ small, e.g. 1–2). Beyond that, further battles auto-resolve — you command the
-  fights you actually care about.
-- **Live-match POOL + QUEUE (server capacity backpressure):** the global count of live 30 Hz
-  matches is capped ⚙. A COMMAND battle whose start would exceed the pool is QUEUED (created,
-  live-start deferred) until a slot frees; if it waits past ⚙ `commandQueueTimeout`, it falls
-  back to AUTO. So COMMAND is best-effort: guaranteed a fight, live when capacity allows.
+- **Command QUEUE — exponential fee, non-overlap, cancellable (owner, 2026-07-05; SUPERSEDES the
+  fixed "N slots" cap of the 07-04 draft):** instead of a hard per-player slot count, a player
+  builds a QUEUE of battles they've committed to command:
+  - **Non-overlap, not a fixed count.** A live battle plays in REAL TIME (§3b ≈ 10–15 min) and a
+    player embodies ONE hero at a time, so their committed command battles may NOT overlap in
+    time. Within that rule they may queue as MANY as they like — a fight starting in 15 min and
+    one in 1 h can both be committed (they don't overlap). "Maximize command if you like, just no
+    overlap."
+  - **Exponential fee (the abuse limiter + the CT SINK).** Each command commitment costs a
+    COMMAND FEE in CT that grows with current queue DEPTH: the 1st queued is very cheap (⚙
+    `commandFeeBaseCtUnits`), the Nth concurrent = base × ⚙ `commandFeeGrowth`^(N−1). Cost — not a
+    hard cap — is the primary throttle; it burns (net-sink doctrine, `docs/02` §13).
+  - **Cancellable.** A queued command may be CANCELLED before it starts → the fee is refunded and
+    the queue slot frees (drops depth, so the next commitment is cheaper again); the march
+    continues as AUTO (or is itself cancelled). Forfeit one to pick up another.
+- **PRE-COMMITMENT is absolute — no late command.** Command is bought at MARCH time. A battle that
+  reaches its start (collision) tick with NO committed command resolves ACCELERATED and is
+  **playback-only**. You cannot request command once it has started: `⚔ Battle already started —
+  it's too late to take command now.` (Late `MARCH & COMMAND` on an already-engaged army → this
+  message, not a live upgrade.)
+- **Live-match POOL + QUEUE (server capacity backpressure) — unchanged:** the global count of live
+  30 Hz matches is still capped ⚙ `liveMatchPoolMax`. A committed COMMAND battle whose start would
+  exceed the pool is QUEUED (live-start deferred) until a slot frees; past ⚙
+  `commandQueueTimeoutTicks` it falls back to AUTO. Server capacity is orthogonal to the per-player
+  fee/overlap gate above.
 - **Mode selection (SUPERSEDES §3 `decideMode` "≥1 human ⇒ LIVE"):**
   `LIVE` iff ANY participant elected COMMAND **and** holds a free command slot **and** the live
   pool has room (else queue, else AUTO). No command intent anywhere ⇒ ACCELERATED (or AUTO for
   trivial stakes). Human-never-in-range battles always auto-resolve. Applies to **PvP too** — a
   player-vs-player battle auto-resolves unless a participant spent a command slot on it.
 - **Watch-only after AUTO:** an auto/accelerated battle emits a replay you can review; you
-  cannot steer it or take the field (that's what COMMAND buys).
-- **Future ⚙ COMMAND FEE:** dedicating a general to live command may cost CT ("dedicated-command
-  compensation") — a sink + a soft rate-limiter beyond hard slots. Phased with the CT economy.
+  cannot steer it or take the field (that's what COMMAND buys). This is the "playback-only"
+  destiny of every uncommitted battle.
+- **COMMAND FEE (now the core throttle, not a future add-on):** the exponential per-commitment CT
+  fee above IS the "dedicated-command compensation" sink — it replaces hard slots as the primary
+  rate-limiter and feeds the net-sink burn (`docs/02` §13).
 - **Why this scales:** only battles a player actively commands consume 30 Hz capacity; the
   entire rest of the war runs cheap accelerated resolution. Server expansion = more live-pool
   slots. This is the mechanism that makes a persistent world-scale battlefield tractable.
