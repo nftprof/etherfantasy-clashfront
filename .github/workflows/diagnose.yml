@@ -26,6 +26,9 @@ jobs:
           pm2 describe clashfront 2>&1 | grep -E "status|restart|uptime" || pm2 list 2>&1 | head -20
           echo "===== APP: healthcheck localhost:8130 ====="
           curl -sS -o /dev/null -w "app /api/world -> HTTP %{http_code}\n" http://127.0.0.1:8130/api/world
+          echo "===== PUBLIC: full path https://cf.etherfantasy.com (what the browser hits) ====="
+          curl -sS -m 15 -o /dev/null -w "public https / -> HTTP %{http_code}  ssl_verify=%{ssl_verify_result}\n" https://cf.etherfantasy.com/ 2>&1 || echo "public https FAILED (exit $?)"
+          curl -sS -m 15 -o /dev/null -w "public https /api/world -> HTTP %{http_code}\n" https://cf.etherfantasy.com/api/world 2>&1 || echo "public https /api/world FAILED (exit $?)"
           echo "===== NGINX: service state ====="
           systemctl is-active nginx 2>&1
           sudo -n systemctl status nginx --no-pager 2>&1 | head -8 || systemctl status nginx --no-pager 2>&1 | head -8
