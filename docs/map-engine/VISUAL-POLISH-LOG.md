@@ -30,3 +30,19 @@ zero gameplay impact). One surgical, shippable improvement per entry.
   or perf cost (the field bakes once). No JS control-flow, no sim/server changes.
 - **Verify:** `pnpm -r build && pnpm -r test` green; terrain.js parse-checked. Screenshot
   deferred (no Playwright module); change is a self-contained, clamped color blend.
+
+## 2026-07-05 · #3 — cinematic landscape pass (focus 1/7: relief + atmosphere)
+
+- **What (bold, LOTR-matte-painting direction):**
+  1. **Painterly directional light** — the flat grayscale hillshade becomes coloured: warm sun on
+     lit slopes, cool-blue shade in the valleys (`terrain.js composeRows`), so ridges read like a
+     painting instead of a heightmap.
+  2. **Aerial perspective** — high country (elevation ≥ 0.55) recedes under a cool pale haze, giving
+     ranges real depth and distance.
+  3. **Deeper relief** — `Z_SCALE` 1.1 → 1.35 so slopes sculpt harder under the new light.
+  4. **Drifting cloud shadows (parallax)** — a slow GPU-composited layer (`app.css #map-wrap::before`)
+     sweeps soft shade across the land, moving independently of the terrain for a cinematic parallax
+     feel; `pointer-events:none`, z-index 1 (below HUD), honours `prefers-reduced-motion`.
+- **Safety:** terrain changes are baked once (no per-frame cost); the cloud layer is one CSS transform
+  animation (no JS). Ownership washes/HUD draw on top and are unaffected. Zero sim/server changes.
+- **Verify:** build + test green, terrain parse-checked. (Trees polish is the next tick.)

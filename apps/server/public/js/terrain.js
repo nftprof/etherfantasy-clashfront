@@ -78,7 +78,7 @@ const HILL_FULL = 0.90;           // …and reaches full range amplitude here
 const SPINE_BLUR = 0.45;          // parcelD blur radius (wu) — medial-axis detector
 const RANGE_REF = 0.85;           // strip half-width (wu) reaching full massif height
 const E_MAX = 1.25;               // elevation clamp (snow-dust crest ceiling)
-const Z_SCALE = 1.1;              // e-gradient → slope steepness for shading
+const Z_SCALE = 1.35;             // e-gradient → slope steepness for shading (deeper cinematic relief)
 const LX = -0.551, LY = -0.551, LZ = 0.627; // light from NW (normalized)
 const PROP_SPACING = 0.19;        // scatter-grid cell (wu)
 const SPLAT_PPU = 80;             // below: forests are baked density tint only
@@ -512,8 +512,14 @@ export function createTerrain(store, onUpdate) {
                 r += (34 - r) * k; g += (56 - g) * k; b += (30 - b) * k;
               }
             }
-            const s = shadeA[i], dth = (hash2(x, y, 7) - 0.5) * 8;
-            r = r * s + dth; g = g * s + dth; b = b * s + dth;
+            // aerial perspective: high country recedes under a cool pale haze → cinematic depth
+            const hz = sstep(ev, 0.55, 1.05) * 0.30;
+            if (hz > 0) { r += (198 - r) * hz; g += (205 - g) * hz; b += (216 - b) * hz; }
+            // painterly directional light: warm sun on lit slopes, cool-blue shadow in the valleys
+            const s = shadeA[i], lit = s - 1, dth = (hash2(x, y, 7) - 0.5) * 8;
+            r = r * s + dth + (lit > 0 ? lit * 20 : lit * 5);
+            g = g * s + dth + (lit > 0 ? lit * 9 : lit * 1);
+            b = b * s + dth + (lit > 0 ? -lit * 12 : -lit * 22);
           }
           d[o] = clamp255(r); d[o + 1] = clamp255(g); d[o + 2] = clamp255(b); d[o + 3] = clamp255(a);
         }
