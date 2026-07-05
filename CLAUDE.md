@@ -130,6 +130,21 @@ export can be converted to the documented format. See `data/README.md`.
     commanded battles use 30Hz capacity ⇒ world-scale tractable; server expand = more slots.
     `docs/04` §3a.
 
+16. COMMAND QUEUE — exponential fee, non-overlap, cancellable (2026-07-05; EVOLVES 15, replaces
+    the fixed per-player slot cap). The per-player limiter is no longer a hard count but a QUEUE:
+    (a) NON-OVERLAP not a fixed N — a live battle plays in real time (~10–15 min) and a player
+    embodies one hero at a time, so their committed command battles may not overlap in time; within
+    that they may queue as many as they like (a fight in 15 min AND one in 1 h both commit). (b)
+    EXPONENTIAL COMMAND FEE in CT = the abuse limiter + the CT SINK (net-sink doctrine): 1st queued
+    very cheap (⚙ `commandFeeBaseCtUnits`), Nth concurrent = base × ⚙ `commandFeeGrowth`^(N−1);
+    burns. (c) CANCELLABLE before start → fee refunded, depth drops (next is cheaper), march
+    continues AUTO. (d) PRE-COMMITMENT ABSOLUTE — command is bought at MARCH time; a battle that
+    starts with no committed command resolves accelerated + PLAYBACK-ONLY; no late command:
+    "⚔ Battle already started — it's too late to take command now." Global `liveMatchPoolMax` pool
+    + queue/timeout unchanged (server 30Hz capacity, orthogonal). Proposed ⚙ defaults (owner to
+    tune): base cheap, `commandFeeGrowth` 3, `commandWindowTicks` ≈ a live-battle duration.
+    `docs/04` §3a. **BUILD PENDING** — canon locked; sim/server/client + test churn next.
+
 ## 📜 v0.2 VISION BIBLE (2026-07-02): `docs/VISION-BIBLE-v0.2.md` + `docs/ADDENDUM-E-PentaPet-Species-Affinity.pdf`
 Overarching new spec from the product owner: PentaPets = the living population (workers/soldiers/
 units, species affinities), terraforming, geology/materials, blueprint NFTs, living cities.
