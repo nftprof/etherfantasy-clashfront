@@ -223,6 +223,29 @@ const map = createMap(document.getElementById('map'), store, {
   onClickVoid: () => { ui.closePopover(); ui.closeCard(); },
 });
 const ui = createUI({ store, map, orders });
+
+// Tile search — fly the camera to a parcel by its token id (e.g. 60202500000).
+(() => {
+  const form = document.getElementById('tile-search');
+  const input = document.getElementById('tile-search-input');
+  if (!form || !input) return;
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const id = input.value.trim();
+    if (!id) return;
+    if (store.parcels.has(id)) {
+      map.gotoParcel(id);
+      map.pulseAt(id, '#d9a441');
+      ui.openCard(id);
+      input.blur();
+    } else {
+      ui.toast('Tile not found', `No parcel #${esc(id)} on this map.`, 'bad');
+      input.classList.add('nf');
+      setTimeout(() => input.classList.remove('nf'), 700);
+    }
+  });
+})();
+
 const ftue = createFTUE({ store, map, ui });
 const econ = createEcon({ store, map, ui }); // FS3 — 💰 economy dashboard
 // LIVE wild-battle viewer (docs/04 §7b) — WS battle channel through the live socket.

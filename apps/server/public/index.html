@@ -27,6 +27,11 @@
     <!-- map -->
     <main id="map-wrap">
       <canvas id="map"></canvas>
+      <!-- jump the camera to a parcel by its token id (e.g. 60202500000) -->
+      <form id="tile-search" autocomplete="off">
+        <input id="tile-search-input" inputmode="numeric" maxlength="14" placeholder="Go to tile #…  e.g. 60202500000">
+        <button type="submit" title="Go to tile">Go</button>
+      </form>
       <div id="tooltip" hidden></div>
       <div id="march-popover" hidden></div>
       <div id="select-banner" hidden></div>
