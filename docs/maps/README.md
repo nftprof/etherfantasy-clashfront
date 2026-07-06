@@ -7,6 +7,10 @@
 
 ## Docs here
 - **ECONOMY-SEAM.md** — the three CF↔maps hooks: ownership feed, invest flow, payout note.
+- **LAND-VALUE-AND-IMPROVEMENT.md** — PROPOSAL (for owner review): the land-layer economic model —
+  how a landowner spends/burns CT to raise a parcel/estate's investment tier and unlock more resource
+  tiles, strategic ground, defenses, and (estates only) castle grades; the improvement menu, value
+  realization, guardrails, and open questions. Grounded in `INVEST_TIERS` + ECONOMY-SEAM + net-sink canon.
 - **BATTLE-MAP-TEMPLATE-LIBRARY.md** — 24 open-field battlefield templates (real game maps +
   historical battlefields), the archetype taxonomy, A1-schema methodology, and the NEW
   battlefield-archetype appendix. Design input to expand the generator from 7 → ~48 archetypes.
