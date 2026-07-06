@@ -13,28 +13,32 @@
 ## 0. TL;DR
 
 1. **No farming inside battle.** Confirmed: units come **pre-provisioned** (they carry their food). The
-   MOBA stays a clean collision — the only in-match economy is **gold to hire elites at the command
+   MOBA stays a clean collision — the only in-match economy is **gold to train elites at the command
    center**, and that gold is **match-local / tactical** (it never touches your overworld balance).
    Farming, mining, and crafting happen **only on the overworld map**. This is the clean seam between the
    two games.
-2. **Soldiers ↔ farmers = a STANCE, not a transform.** A pet is one entity with an aptitude vector; on land
-   it holds a **stance** — `GARRISON` (soldier: defend/train) or `LABOR` (farm/craft/gather). Idle armies
-   default to `LABOR`, so they aren't wasted — but a Military-heavy pet farms at its low Agriculture score.
-   The incentive to hold a **mix** falls straight out of the aptitude sheet. Flipping stance has a
-   **cooldown** so you can't dodge a raid by instantly re-tasking.
-3. **Yes — a three-tier pet reserve.** Owner **roster pool** (owned/rented, unallocated) → assigned to land
-   → the **wild reserve** (unowned species living in biomes; the enlist + migration source) → bounded by
-   **world capacity** (the ecological cap, 14,175). Pets are **never lost**: KO'd pets auto-return to the
-   roster pool to recover (decision 14).
-4. **Rare pets — two paths.** Own the **NFT** → summon it directly at full rank power (premium). OR
-   **battle-enlist**: grind maps in that species' biome, train a **bounded, gold-capped** few wild
-   footmen/archers of that species into your roster — but enlisted wild units are **common-rank** (no
-   rarity multiplier). NFT keeps its value (rank = real power); F2P gets a slow collection grind.
+2. **Worker ⇄ soldier = ARM / disarm the SAME mon (three-tier progression).** Units climb a tech-tree:
+   **WORKER** (unarmed, farms, cheap, *accumulates*) → **ARM it** (craft arms) → **LINE SOLDIER** (armed,
+   ~equal strength, consumable) → **train in-battle with gold** → **ELITE** (persists + levels). A worker
+   and a line soldier are the *same mon* — no armor vs armed. Idle/unarmed → farms; armed → fights.
+   ("When soldiers aren't fighting they farm" = they **disarm back to workers**.) Full model:
+   `BATTLE-MAP-AND-UNIT-SPEC.md` §5.
+3. **Yes — a three-tier reserve, and workers are the persistent core.** Owner **roster pool** (your
+   mons, incl. the worker reserve that survives battles) → **assigned** to land → the **wild reserve**
+   (unowned species that spawn on biome maps) → bounded by **world capacity** (14,175). **Pets don't KO**
+   — only **Master heroes** KO (7-day CD or pay to revive). A beaten pet just returns to the wild/your
+   reserve; you never lose the mon (decision 14).
+4. **Rare pets — NFT = a training RIGHT for that class; else catch it wild.** Own the pet **NFT** → you
+   can **train that species directly** (in battle or outside), full access. Don't own it → it **spawns on
+   maps whose biome hosts it**, and you **recruit the wild version by training it on the map** with gold —
+   **richer land can spawn stronger units**. Elites collected this way are hard-won (few per battle);
+   **workers you reliably accumulate**. A **swift, decisive win** gives a **chance a wild elite joins free**.
 5. **Masterless land defends like wild — AUTO only.** Land worked without a Master is a **passive
    homestead**; when attacked it is **never eligible for command/live mode on defense** — it always
-   **AUTO-resolves** (PvE), the labor-pets fighting at their weak Military aptitude. They usually lose,
-   **KO → auto-return home** (never destroyed), the attacker takes the **land + a pillage %** (not the
-   pets). Structures/towers are the only way an uncommanded homestead gets real teeth.
+   **AUTO-resolves** (PvE), the unarmed/lightly-armed labor mons fighting weakly. They usually lose, get
+   **dispersed back to the wild/reserve** (not destroyed — pets don't KO), and the attacker takes the
+   **land + a pillage %** (not the mons). Structures/towers are the only way an uncommanded homestead gets
+   real teeth.
 
 ---
 
@@ -64,101 +68,108 @@ StarCraft.** So:
 
 ---
 
-## 2. The worker ↔ soldier lifecycle — STANCE on one pet (not a conversion)
+## 2. The worker ⇄ soldier lifecycle — ARM / disarm the same mon
 
-A pet is **one entity** with a fixed aptitude vector; it can perform any role but **excels at its dominant
-one** (`PET-APTITUDE-ECONOMY-MAP` §3). So there is **no "convert a soldier into a farmer"** transform — you
-**re-task the same pet** by setting its **stance** on the land it's assigned to:
+A mon moves up a **three-tier progression** (`BATTLE-MAP-AND-UNIT-SPEC` §5); the worker↔soldier question is
+tiers **1 ⇄ 2**, which are the **same mon in two states**:
 
-| Stance | What the pet does | Rate driver |
-|---|---|---|
-| **GARRISON** | stands as a **soldier** — defends the land, trains (gains Experience), can be marched | its **Military** aptitude × rank × formula |
-| **LABOR** | **farms / gathers / crafts** — produces overworld resources | its **Agriculture / Industry / Logistics / Arcane** aptitude × rank × formula |
+| Tier | State | What it does | Cost to enter |
+|---|---|---|---|
+| **1 WORKER** | **unarmed** | **farms / gathers / crafts** on the land; is your **persistent manpower** | cheap + fast to recruit (CT) |
+| **2 LINE SOLDIER** | **armed** | fights on the front line — **~same strength as a worker**, just combat-ready | **craft arms** (a resource/craft sink) to arm a worker |
+| **3 ELITE** | **trained** | evolved from a line soldier by **in-battle training** (gold) | expensive + slow; persists + levels |
 
 Rules:
 
-- **Idle → LABOR by default.** "When soldiers aren't fighting, are they farming?" — **yes.** An army sitting
-  on owned land with nothing to do auto-drops to `LABOR` so it produces instead of idling. But a
-  Military-heavy pet farms at its **low** Agriculture score (e.g. Military-100 / Agri-18 → a poor farmer),
-  so idle soldiers are **weak farmers** — the game nudges you to hold a **mix** (real farmers + real
-  soldiers) rather than one uber-army that also feeds itself for free.
-- **Stance flip has a cooldown (⚙ `stanceSwitchCooldown` ≈ ½–1 world-day).** You cannot see a raid inbound
-  and instantly flip your whole labor force to soldiers (or vice-versa to dodge losses). Commit ahead of
-  time — this is what makes garrisoning a **real defensive choice** and keeps the march-time
-  pre-commitment (decision 16) meaningful on defense too.
-- **Upkeep applies to GARRISON, not idle LABOR.** Standing soldiers cost **food upkeep** (`BATTLE-MAP-AND-
-  UNIT-SPEC` §5b) — so a large standing army is a **food sink**, which is exactly why scarce farmers
-  (capacity 1,945, the premium role) matter. Labor pets **feed themselves** and produce surplus.
-- **This is the "population" of the land.** A held parcel's assigned pets = its garrison + workforce; the
-  land-improvement tier (`LAND-VALUE-AND-IMPROVEMENT.md`) sets how many can work it and how much they yield.
+- **"When soldiers aren't fighting they farm" = they DISARM to workers.** There is no separate transform:
+  you **arm** a worker to field it as a soldier, and **disarm** it back to farm. So idle soldiers become
+  farmers automatically — an unarmed mon on land labors.
+- **Arming costs crafted arms (the gate).** Going worker→soldier requires **arms you craft from resources**
+  — so a large armed army is a **materials sink**, and you can't instantly arm your whole labor force the
+  moment a raid appears (the craft/time is the natural cooldown, and pre-commitment at march time,
+  decision 16, still holds on defense).
+- **Workers are the reserve that survives.** A battle **ends** holding mostly **workers** (rear/labor role),
+  while **line soldiers mostly die** — so your accumulated workers are **re-armed for the next fight**.
+  Workers = your standing population; soldiers = the armed, consumable state of it.
+- **Aptitude still sets quality.** A mon farms at its **Agriculture** score and fights at its **Military**
+  score (`PET-APTITUDE-ECONOMY-MAP` §3) — a Military-heavy mon is a poor farmer, a farmer-type is a poor
+  soldier — so you still want a **mix**, and this is why scarce farmers (capacity 1,945) are premium.
+- **Upkeep hits standing ELITES**, not workers idling as labor (`BATTLE-MAP-AND-UNIT-SPEC` §5b): elites cost
+  food + a little gold/day, so you can't hoard a huge elite army free. Workers feed themselves + produce.
+- **This is the land's "population."** A held parcel's assigned mons = its workforce (unarmed) + garrison
+  (armed); the land-improvement tier (`LAND-VALUE-AND-IMPROVEMENT.md`) sets how many can work it.
 
 ---
 
-## 3. The pet reserve — three tiers + the never-lost rule
+## 3. The reserve — three nested pools; workers are the persistent core; pets don't KO
 
-"Is there a reserve of pets?" — **yes, three nested pools**, plus the hard capacity ceiling:
+"Is there a reserve?" — **yes, three nested pools**, plus the hard capacity ceiling:
 
 | Tier | What it is | Role |
 |---|---|---|
-| **① Roster pool** (barracks) | pets you **own or rent**, currently **unallocated** | your bench — draw from here to assign GARRISON/LABOR or to march. KO'd pets return **here** to recover. |
-| **② Assigned** | pets placed on a specific parcel with a stance | the working/defending force on each land |
-| **③ Wild reserve** | species **not owned by anyone**, living in their biomes | the source of **battle-enlistable** units (§4) and of **enrichment migration** ("a general arrives", decision 13) |
+| **① Roster pool** (barracks) | your recruited mons currently **unallocated** — incl. the **worker reserve that survives battles** | your bench — draw from here to arm as soldiers, assign to labor, or march |
+| **② Assigned** | mons placed on a parcel (unarmed labor + armed garrison) | the working/defending force on each land |
+| **③ Wild reserve** | species **not owned by anyone**, spawning on their biome maps | the source of **wild-recruited** units (§4) and of **enrichment migration** ("a general arrives", decision 13) |
 
 Bounding + safety rules:
 
+- **Workers accumulate; they are the reserve's backbone.** Because they mostly survive battles (§2), your
+  roster pool trends **worker-heavy** over time — which you re-arm each fight. Elites are the scarce,
+  kept-on-purpose exception.
 - **World capacity cap** (14,175 total; per-species caps from `role-scarcity-summary.md`) bounds
   **owned + wild ≤ capacity** for each species. Mythic species cap at ~2 each → the power ceiling is
   structural, not just economic (pairs with decision 17).
-- **Pets are NEVER destroyed (decision 14).** A pet KO'd in any battle — as a marched soldier, a homestead
-  defender, or a lost duel — **auto-returns to your roster pool (①) and recovers** on a cooldown. You lose
-  the **battle / the land / a pillage cut**, never the NFT. This is what lets masterless land "get
-  slaughtered" (§5) without the owner losing assets.
+- **Pets do NOT KO — only Master heroes do (decision 14, clarified 2026-07-06).** A **Master hero** (the
+  hero NFT) that falls is **KO'd** and needs a **7-day cooldown or a paid revive (⚙ ~5 CT)**. **Pet
+  units** are population: a beaten pet is **not destroyed** — it **disperses back to the wild or your
+  reserve pool**. You lose the **battle / the land / a pillage cut**, never the mon. This is what lets
+  masterless land "get slaughtered" (§5) without the owner losing assets.
 - **Rented pets** return to the lessor when the rental ends; while rented they occupy the renter's roster
   pool and count against the renter's caps (rental economy, master-summary §6).
 
 ---
 
-## 4. Getting rare pets — own the NFT (summon) vs. battle-enlist (train-to-collect)
+## 4. Getting units — NFT = a training right for the class; else catch/recruit it wild
 
-Two acquisition paths, adopting the owner's idea and resolving the "disperse-all vs keep" fork:
+Two acquisition paths (the pet **NFT is the class, not an individual unit** — clarified 2026-07-06):
 
-**Path A — own the NFT → summon directly.** If you hold (or rent) the species NFT, you can **field it at
-will** up to your cap, at its **full rank** (×1.0–×2.2). This is the premium, instant, full-power path —
-and the reason NFTs hold value.
+**Path A — own the pet NFT → train that class directly.** Holding (or renting) a species' pet NFT is a
+**training right**: you can **recruit/train that species deliberately** — in a battle *or* outside on the
+overworld — instead of waiting for it to spawn. It buys **guaranteed access + composition control**, not
+per-unit power. This is the premium path (skip the RNG hunt).
 
-**Path B — battle-enlist (the F2P grind).** On a battle map whose **biome hosts a species** (§2 biome
-pools), wild **footmen/archers of that species spawn as neutral/enlistable units**. By fighting **and
-training** them during the match you can **enlist a bounded few into your post-battle roster** — an
-alternative to buying the NFT. Bounds that keep this from breaking the economy:
+**Path B — catch/recruit it in the wild (the F2P grind).** A species you don't own **spawns on maps whose
+biome hosts it** (§2 biome pools); you recruit the **wild version by training/recruiting it on that map**
+(gold — "they're wild here; you have gold, so they come work for you"). Bounds + flavor:
 
-- **Gold-capped supply.** Each map's **finite gold** caps how many wild units exist and how many you can
-  train/enlist per battle (the same finite-gold rule as §1 / `BATTLE-MAP-AND-UNIT-SPEC` §1). Grind a rich
-  biome map repeatedly and its enlistable pool **depletes until re-seeded** — no infinite unit printer.
-- **Enlisted = COMMON rank, no multiplier.** A battle-trained wild unit joins at **common (×1.0)** — it is
-  *a* member of that species, but **not** the rank/rarity power the NFT carries. Rank (real power, ×2.2
-  mythic) stays **exclusive to owned/minted NFTs**, so the collection economy is preserved.
-- **Most trained units disperse; a bounded few stick (the resolved fork).** Owner raised "vs. at end of
-  battle all trained units are dispersed." Ruling: **HYBRID.** The bulk of what you train is **tactical and
-  disperses at battle end** (they were this-fight mercenaries). But a **small, gold-bounded number can be
-  permanently enlisted** if they **survive** and you have **roster/cap space** — routed through the existing
-  **post-battle survivor fate** (`BATTLE-MAP-AND-UNIT-SPEC` §5b: release / put-to-work / retain, under the
-  2-class cap). So a battle is **not** a free unit factory (that would violate the net-sink), but it **is** a
-  slow, honest grind toward owning a species without paying — which is exactly the F2P on-ramp we want.
+- **Gold-capped supply, richer land = stronger spawns.** Each map's **finite gold** caps how many wild
+  units you can train per battle (the same finite-gold rule as §1). And **more expensive / higher-tier
+  land has a chance to spawn STRONGER units** — so rich land is also the better **hunting ground**.
+- **Post-battle, per trained unit — inventory it OR release it for its gold.** At battle end you either
+  **add the trained unit to your roster** (continuity — it persists) **or release it** and **strip the gold
+  it carries**, booting it back to the wild (`BATTLE-MAP-AND-UNIT-SPEC` §5b). So a battle is **not** a free
+  unit factory — keeping a unit is a real cost/roster decision, not automatic.
+- **Elites are hard-won; workers accumulate.** You'll usually collect **few elites** per battle (they're
+  expensive + slow to train), but your **workers reliably survive and pile up** — the manpower loop.
+- **Swift-win bonus (⚙).** Win **quickly and decisively** (not stalling to farm the map) → a **chance a
+  wild version of an elite on that map joins you for free**. Rewards clean wins over grind-stalling.
+- **Outside recruiting = the overworld alternative** (`BATTLE-MAP-AND-UNIT-SPEC` §5b): **worker** fast+cheap
+  (then arm it), **pre-armed soldier** fast but expensive, **elite** slow but cheaper than in-game training —
+  so you can pre-build an elite core to bring to battle.
 - **DNA-fragment path stays.** Separately, battle-kill enrichment can drop **pet-DNA fragments** (decision
-  13) → craft toward an actual **rarer** pet NFT. Battle-enlist gets you the **species at common rank**;
-  DNA-craft is the path to **rank**. Two grinds, two payoffs.
+  13) → craft toward a **rarer** pet NFT (the path to *rank*, master-summary §8).
 
-**Net:** own the NFT for **instant + full rank**; grind the biome to **slowly collect the species at common
-rank**; grind + DNA-craft to **earn rank**. Every path is gold/capacity-bounded, so none of them prints
-free power (decision 17 holds).
+**Net:** own the NFT to **train the class on demand**; grind its biome to **catch the wild version** (few
+elites, steady workers, gold-bounded); land tier raises spawn strength; DNA-craft earns **rank**. Every
+path is gold/capacity-bounded, so none prints free power (decision 17 holds).
 
 ---
 
 ## 5. Masterless farming-land — "defends like wild", and how the battle ends
 
-Owner's case: land can be **held and farmed without a Master** (soldiers set to `LABOR`, no commander
-present). "These lands can be attacked but they defend like wild does… no-master player can't command it,
-it just gets slaughtered." Resolution:
+Owner's case: land can be **held and farmed without a Master** (mons in unarmed **worker/labor** state, no
+commander present). "These lands can be attacked but they defend like wild does… no-master player can't
+command it, it just gets slaughtered." Resolution:
 
 - **A masterless homestead is never eligible for COMMAND or LIVE mode on defense.** Command/live is a
   Master embodying a hero (decisions 9, 15, 16); with **no Master on the land there is nobody to embody**,
@@ -171,10 +182,10 @@ it just gets slaughtered." Resolution:
   standard settlement** — one side eliminated or the core/objective taken — and settles on the usual battle
   callback. No commander is required for the sim to terminate; **AUTO resolution IS the terminal state.**
 - **On loss:** the **land flips** to the attacker and the attacker takes a **pillage %** of stored
-  resources (decision 17-bounded). The defending **pets KO → auto-return to the owner's roster pool to
-  recover** (§3, decision 14) — **the owner loses the land and a resource cut, never the pets.** This is
-  precisely the "passive homestead / walk-on take-over returns the pet home" rule of decision 14, now
-  generalized to a labor force.
+  resources (decision 17-bounded). The defending **mons are dispersed back to the wild / the owner's
+  reserve pool** — **pets don't KO** (§3), so **the owner loses the land and a resource cut, never the
+  mons.** This is precisely the "passive homestead / walk-on take-over returns the pet home" rule of
+  decision 14, now generalized to a labor force.
 - **How an uncommanded homestead gets real teeth (the counterplay):**
   1. **Assign a Master** → it becomes a defended holding (garrison + optional command/live/standing-orders
      DUEL/STAND/FLEE per decision 14).
@@ -197,11 +208,11 @@ risks the land + a pillage cut but **never the pets.**
 | Question | Decision | Home doc |
 |---|---|---|
 | Farm inside the match? | **No** — units pre-provisioned; in-match gold is tactical/non-persistent; farming is overworld-only | this doc §1; `BATTLE-MAP-AND-UNIT-SPEC` §1/§5 |
-| Soldier ↔ farmer | **Stance** (GARRISON/LABOR) on one pet, cooldown-gated; idle → LABOR at weak aptitude | this doc §2; `PET-APTITUDE-ECONOMY-MAP` §3 |
-| Pet reserve | **Roster pool → assigned → wild reserve**, capped by world capacity; pets never lost | this doc §3; decision 14; `role-scarcity-summary.md` |
-| Rare-pet acquisition | **NFT summon (full rank)** or **battle-enlist (common rank, gold-bounded, mostly disperses)** or **DNA-craft (earns rank)** | this doc §4; `BATTLE-MAP-AND-UNIT-SPEC` §5a/§5b; decision 13 |
-| Masterless land | **AUTO/PvE only, no command/live on defense**; ends by standard settlement; land+pillage lost, pets KO→home; harden with structures/Master | this doc §5; decisions 14, 15 |
+| Worker ⇄ soldier | **ARM / disarm the same mon** (three-tier: worker→arm→soldier→train→elite); unarmed farms, armed fights; arming = a craft/arms sink | this doc §2; `BATTLE-MAP-AND-UNIT-SPEC` §5 |
+| Reserve | **Roster pool (worker-heavy) → assigned → wild reserve**, capped by world capacity; **pets don't KO** (only Master heroes do) | this doc §3; decision 14; `role-scarcity-summary.md` |
+| Getting units / rare pets | **Own NFT = train the CLASS on demand**; else **catch it wild** (biome spawn, richer land = stronger, gold-bounded, inventory-or-release, swift-win bonus); DNA-craft earns **rank** | this doc §4; `BATTLE-MAP-AND-UNIT-SPEC` §5a/§5b; decision 13 |
+| Masterless land | **AUTO/PvE only, no command/live on defense**; ends by standard settlement; land+pillage lost, mons **disperse home (never KO'd)**; harden with structures/Master | this doc §5; decisions 14, 15 |
 
-**Open ⚙ dials to tune later:** `stanceSwitchCooldown`, per-battle **enlist cap** and its gold cost curve,
-the **retain fraction** of trained wild units, and the homestead structure-HP that makes an uncommanded
-defense viable. All are numbers, not new mechanics.
+**Open ⚙ dials to tune later:** the **arms cost** to convert worker→soldier, per-battle **wild-recruit cap**
+and its gold curve, the **swift-win elite-join chance**, elite **upkeep**, and the homestead structure-HP
+that makes an uncommanded defense viable. All are numbers, not new mechanics.
