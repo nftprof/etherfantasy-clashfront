@@ -180,6 +180,60 @@ deflationary (net-sink doctrine, `docs/02` §13). Richer resource play ⇒ *more
 All are single ⚙ numbers in `balance.json`; none change the *structure* above. Tune to taste once the
 CT re-scale (5/50/500 start, ~1 CT actions) lands.
 
+## 11. Reconciliation with the REAL systems (owner, 2026-07-06)
+
+Owner clarifications ground the abstract model in what actually exists:
+
+### On-chain vs backend — only CT touches the chain
+- **CT (Carat) = the sole on-chain token** and the real money. Settlement via a **vault contract +
+  keeper-issued payouts**. Today CT payout is just a frontend tracking number; it moves to a **backend
+  vault + keeper** (the daily-payout keeper).
+- **All other resources — gold, iron, timber, food — are BACKEND tokens** (off-chain ledger). No gas, no
+  chain; they trade/craft/deplete server-side. Value settles on-chain **only when it withdraws to CT**.
+  So the resource economy stays fast + free and **CT is the settlement layer**.
+
+### The CT faucet is the mobile game; Clash Front is the SINK (macro loop, concrete numbers)
+- A player buys an **EF Genesis character (~$50 NFT)**. In the mobile game each char **farms 1–32 CT/
+  session** (scales with level → caps at 32), **3 energy/day** (1 per session) ⇒ **3–96 CT/day/char**.
+- **Death → 7-day cooldown OR pay 5 CT to revive** — a faucet-side sink.
+- **That CT is the supply Clash Front must sink.** → **mobile game = faucet, Clash Front = sink**, exactly
+  the net-sink doctrine with real faucet numbers. Scale implication: a mid char farming ~30 CT/day must
+  find ~30 CT/day of CF consumption — i.e. CF sinks (soldiers mainly, + enrich/craft/command/revive) must
+  absorb the faucet, so the game is deliberately consumptive (big armies, frequent battles, enrichment).
+
+### Gems collapse into CT (Carat) — drop the separate premium token
+- The deep/rare tier **is CT itself** ("CT = Carat"). Deep-mining doesn't drop a gem token — it
+  **recovers CT/Carat that enrichment buried in the land** (risk/boss-gated). Enrich = bury CT deep;
+  deep-mine = dig it back out, dangerously. **No new mint** (recovers sunk CT), and it removes a whole
+  token from the stack. Crafts that needed "gems" (blueprints, pet-DNA) now cost **CT + materials**.
+
+### Gold & timber are the MOBA's OWN resources — unify, don't reinvent
+- **Gold and timber already exist in the MOBA match** (gold currency; trees to cut). CF does **not** mint
+  parallel resources — it **shares** them. Match-gold earned in a battle, **extracted on a win**, becomes
+  **CF backend gold** (spendable in both, sells → CT). Timber likewise. Renewable-vs-finite is a *tuning
+  detail*, not a layer rule.
+- **Action item (cross-session):** set the MOBA's gold value so it **translates 1:1 through to CF gold**
+  (coordinate with the MOBA / bridge sessions) — **one gold, two layers.**
+
+### Items — three tiers, cleanly separated (proposal — confirm)
+| Tier | What | Where earned | Persistence |
+|---|---|---|---|
+| **MOBA shop items** | in-match power spikes | MOBA match, bought with **match-gold** | per-match (temporary) |
+| **Soldier gear** (sword/armor) | mass army quality | **crafted in CF** from resources (+ CT burn) | persistent on the unit |
+| **Hero artifacts** | unique Master equipment | **found RoTK-style** — search/discovery/random, ruins, deep-mine, boss drops (CF layer) | persistent NFT, tradeable |
+
+So **crafting is for the mass soldier economy; hero items are DISCOVERED, not crafted** (your RoTK
+instinct). Character progression stays special and off the production line.
+
+### Revised currency stack
+```
+ CT (Carat)   — ON-CHAIN — mobile-game faucet → CF sink; deep-reserve = buried CT recovered by deep-mine
+   ▲ withdraw / ▼ deposit  (vault contract + keeper)
+ GOLD             — backend — shared MOBA↔CF currency (match economy + CF trade); sells → CT
+ IRON/TIMBER/FOOD — backend — farmed/mined/harvested; crafted into soldier gear (+ CT burn)
+ HERO ARTIFACTS   — NFT     — RoTK-style discovery, for Masters (not crafted)
+```
+
 ## TL;DR
 
 CT is the numeraire (10,000 units = $0.10; start 5/50/500). Resources have reference values (food 0.002 →
