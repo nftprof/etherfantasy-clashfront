@@ -155,6 +155,62 @@ What you keep after a battle decides whether the gold/arms were worth it:
   | **Soldier (pre-armed)** | fast | **expensive** | a worker **+ arms bundled** — costs much more (you skip the craft step) |
   | **Elite** | **slow** | cheaper than **in-game** training | lets you **pre-build elites** to bring to battle |
 
+### 5c. Army composition & caps (owner-decided 2026-07-06)
+
+- **Elite : line ratio — max 1 : 3.** Every battle army must be **≥ 3 line soldiers per elite** (elites
+  **≤ 25%** of the force), matching the current MOBA wave (each wave = 1 : 3). **Elites can never *be* the
+  line** — you can't field an all-elite doomstack. This, not a distinct-species cap, is the elite governor.
+- **No distinct-elite-per-Master cap — synergy instead.** *(Supersedes the old "2 distinct elite classes
+  per Master" line.)* You may train **any** elites and pair them freely, but **Master ↔ unit alignment gives
+  synergy**: when a Master sits on land whose **biome/element matches its unit types**, the army fights
+  **better in battle AND the land farms faster** (⚙ `alignmentFarmBonus`, `alignmentCombatBonus`). Mismatched
+  pairings still work, just without the bonus — so composition is a **soft optimization**, not a hard lock.
+- **Master/hero hard cap = 55.** Only **55 commander NFTs** exist (the 47 Masters + heroes). Masters are the
+  scarce command layer; scale battles by **more land/pets**, not more commanders.
+- **Any land farms with ≥ 100 pets; masterless land still defends.** A parcel is a working farm/garrison as
+  long as it holds a **minimum ⚙ `minGarrison` = 100 pets** — **no Master required** (a Master adds command +
+  synergy, not the ability to hold land). So **every battle fields ≥ ~100 per side** (attacker army vs. the
+  defender's ≥100 garrison, or ≥100 wild on unowned land) — a solid MOBA-scale fight floor. **Recommended
+  floors (⚙):** `minGarrison` **100**, wild-land defenders **100–150**, boss camps higher.
+
+### 5d. Arms & salvage — the recurring materials sink (decided 2026-07-06)
+
+- **Arms are consumed when a line soldier dies** (arms = crafted from **iron/timber**, `ECONOMY-RESOURCE-MAP`).
+  So even though the **worker** survives free, **re-arming it each fight re-burns materials** — this is the
+  loop's recurring sink and what keeps accumulated workers from becoming a free infinite army.
+- **The winner salvages 30% of the arms of ALL the fallen — both sides.** Win the field and you scavenge
+  **~30%** of every dead unit's arms (your own dead **and** the enemy's). Losing side salvages nothing. So a
+  decisive win is also a **materials windfall** (you loot the battlefield), and losing an army means losing
+  its arms — a real materials swing that rewards winning and punishes attrition.
+
+### 5e. The swift-win skill reward — auto-balanced vs. your own average (decided 2026-07-06)
+
+The wild-elite-join bonus (§5b) is **skill-gated and self-normalizing** so it can't be farmed:
+
+- **Performance is scored vs. YOUR OWN rolling average** (last ⚙ `perfWindow` ≈ 20 battles) — not vs. other
+  players. You must **beat your own median** to earn anything; **below median → nothing.**
+- **Metric = a MIX (recommended weights ⚙):** **speed** (time-to-win, faster better) **0.4** · **kill/damage
+  share 0.35** · **survivor rate** (own casualties avoided) **0.25**. Blending all three stops one-note
+  farming (you can't just turtle for kills or rush and bleed out).
+- **Reward scales with deviation above your median:** **+1σ → 1–5 units**, **+2σ → 6–15**, **+3σ+ → up to
+  the biome cap** (still capped at **1–2 elites/battle**; the rest are workers/line). New players improve
+  fast (easy to beat a low early average → early rewards); veterans must **keep beating themselves** (the
+  bar rises with them). Pure auto-balance, no fixed threshold to game.
+
+### 5f. Rare resources — boss-gated, mined on the overworld (decided 2026-07-06)
+
+Rare mats (gems = **Carat/CT-tier**, rare ice cores, arcane reagents — the Arcane/deep-mine tier) are **not**
+on ordinary tiles. They are **unlocked by beating a BOSS**:
+
+- **High-tier / wild land spawns a BOSS** (the 10-boss roster). Clearing it (a hard MOBA battle) has a
+  **chance to reveal a rare-resource node / deep-mine location** on that land.
+- **The fight is in the MOBA; the mining is on the overworld** — consistent with §1 (no in-battle farming):
+  the boss battle is the **gate**, the revealed node then **yields rare mats over a limited window** on the
+  CF map (finite, enrich/re-clear to refresh — decision-17-safe, doesn't mint CT).
+- So bosses are the **rare-resource faucet control**: rare mats flow only to those who **beat the boss**,
+  tying the top of the resource ladder to the hardest fights. (Placement/where exactly = a ⚙ dial: wild
+  estates, tier-4+ land, or special boss camps.)
+
 ## 6. Structure persistence & pillage — what survives a battle on the CF land
 
 | Structure | Origin | Persists after battle? | Value if taken |
