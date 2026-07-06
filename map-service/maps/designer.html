@@ -222,6 +222,8 @@ async function loadParcels(){try{
   if(parcels.length){fitView();drawMap();}else $("mapStat").textContent="· world snapshot unavailable — type a parcel id below";
 }catch(e){$("mapStat").textContent="· world unavailable — type a parcel id below";}}
 loadParcels();
+// deep-link: /designer?parcel=ID (the gallery links here) — auto-select on load
+try{const _dl=new URLSearchParams(location.search).get("parcel");if(_dl)selectParcel(_dl.trim());}catch(e){}
 function markStatus(id,row){const p=parcels.find(q=>q.parcelId===id);if(p&&row){p.status=row.status;p.v=row.designVersion;p.archetype=row.archetype;p.palette=row.palette;}drawMap();}
 
 // ---- sign-in (viewing is public; DESIGNING needs your account — later, owning the land) ----

@@ -67,9 +67,23 @@ LLM (LLM only picks PARAMETERS, then `clampParams`+validator-gated).
    (**120/120** across biomes) — the identical schema `drawBattlefieldMap` + `data/moba-maps/legacy-*.json`
    use, so it renders with zero renderer changes. Refs: `docs/briefs/BATTLEFIELD-SCHEMA.md` (A1) +
    `docs/briefs/COMMAND-MAP-SPEC.md`.
-2. **§4 — `map.etherfantasy.com` portal.** Login → all-maps gallery → owned-parcel filter → designer.
-   Needs DNS (`map → 13.250.39.41`), an nginx vhost + cert, a gallery page, and owned-parcel filtering
-   wired to CF ownership. The designer (`designer.html`) is standalone static hitting `/internal/v1/*`.
+2. **§4 — `map.etherfantasy.com` portal — ✅ CF side built; awaiting the box repoint.**
+   DNS + nginx vhost + Let's Encrypt cert are LIVE (map-maker session; interim upstream = lobby `:8090`).
+   CF side delivered:
+   - `server.js` — the standalone map-service process (the `proxy_pass` target). Mounts the unchanged
+     `mapsApi`, serves the gallery at `/`, a same-origin `/gallery/owners` passthrough (so "my land"
+     needs no cross-origin fetch to CF), and `/healthz`. **`maps/` stays a pristine MOBA-repo mirror** —
+     all CF glue lives in `server.js` (only touch inside `maps/`: a 2-line `?parcel=` deep-link in
+     `designer.html`).
+   - `maps/gallery.html` — login (PG email/pw, shared `ef_pg_token`) → **All maps** (designed maps, real
+     generator thumbnails, version/frozen badges) / **My land** (owned-parcel filter via `/gallery/owners`
+     ∩ whoami; degrades to "all designable" until the owners feed is wired) → click into `/designer?parcel=`.
+   - `DEPLOY.md` — pm2 bring-up + the one-line nginx `proxy_pass :8090 → :8140` repoint + the 301 retire.
+
+   Verified locally: `/healthz`, gallery (6 real thumbnails, tab switching, zero console errors),
+   designs list, owners passthrough, designer deep-link. **Remaining (box, not code):** `pm2 start
+   server.js` on `13.250.39.41`, flip `proxy_pass` to `:8140`, set `MAPS_OWNERS_URL` → CF's
+   `/api/land-owners` to turn on ownership enforcement.
 
 Also pending (engine-side): the 3D `render.json` converter (`battlefield_converter.cjs`) — obtain from
 the engine team, or `render.json` stays 501.
