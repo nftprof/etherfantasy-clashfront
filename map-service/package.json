@@ -1,0 +1,10 @@
+{
+  "name": "@clashfront/map-service",
+  "private": true,
+  "type": "module",
+  "description": "Battlefield map system consolidated from the MOBA repo (server/maps). CF asset; the MOBA map-engine stays the quality-parity reference — re-pull on engine upgrades. NOT in the pnpm workspace so it never affects the live CF build/test gate.",
+  "scripts": {
+    "test": "node maps/test/maps.test.js && node maps/test/api.test.js && node maps/test/loader.test.js",
+    "test:gen": "node maps/test/maps.test.js"
+  }
+}

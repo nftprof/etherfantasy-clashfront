@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EtherFantasy — Land Designer</title>
+<style>
+  :root{--ink-950:#050409;--ink-900:#0a0813;--ink-850:#0f0c1b;--ether-300:#d8bbff;--ether-400:#c08cff;--ether-500:#a855f7;--ether-700:#6d28d9;
+    --gold-300:#ecd293;--gold-400:#e0bd6b;--crystal-300:#9cf6e4;--crystal-400:#5fe9d0;--fg:#ece9f5;--fg-dim:#a8a3bf;--fg-mute:#6f6a88;--edge:rgba(255,255,255,.10)}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:"Inter",ui-sans-serif,system-ui,Segoe UI,sans-serif;color:var(--fg);min-height:100vh;background:
+    radial-gradient(1100px 650px at 78% -10%,rgba(168,85,247,.16),transparent 60%),
+    radial-gradient(800px 550px at 8% 8%,rgba(45,212,191,.09),transparent 55%),var(--ink-950)}
+  .wrap{max-width:960px;margin:0 auto;padding:26px 16px 60px}
+  h1{font-family:Georgia,serif;font-size:30px;margin:6px 0 2px;background:linear-gradient(120deg,#fff 8%,var(--ether-300) 52%,var(--crystal-300));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .tag{color:var(--fg-dim);font-size:13px;margin-bottom:18px}
+  .card{background:linear-gradient(180deg,rgba(255,255,255,.045),rgba(255,255,255,.012));border:1px solid var(--edge);border-radius:16px;padding:18px;margin:14px 0}
+  h2{font-family:Georgia,serif;font-size:18px;margin:0 0 10px}
+  h2 .n{display:inline-flex;width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,var(--ether-500),var(--ether-700));color:#fff;font-size:12px;align-items:center;justify-content:center;margin-right:8px;vertical-align:2px;font-family:Inter}
+  label{font-size:11px;text-transform:uppercase;letter-spacing:.14em;color:var(--fg-mute);display:block;margin:8px 0 4px}
+  input,select,textarea{font:inherit;width:100%;background:var(--ink-900);border:1px solid var(--edge);color:var(--fg);border-radius:9px;padding:9px 11px}
+  textarea{min-height:70px;resize:vertical}
+  input:focus,select:focus,textarea:focus{outline:none;border-color:var(--ether-500)}
+  button{font:inherit;font-weight:600;cursor:pointer;border-radius:10px;border:1px solid var(--edge);background:rgba(255,255,255,.05);color:var(--fg);padding:10px 15px}
+  button.primary{border:none;color:#fff;background:linear-gradient(135deg,var(--ether-500),var(--ether-700))}
+  button:disabled{opacity:.4;cursor:not-allowed}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:720px){.grid{grid-template-columns:1fr}}
+  .chip{display:inline-flex;padding:4px 12px;border-radius:999px;font-size:12px;border:1px solid var(--edge);background:rgba(255,255,255,.05);color:var(--fg-dim);cursor:pointer}
+  .chip:hover{border-color:var(--ether-400);color:var(--fg)}
+  .sel{display:inline-flex;gap:8px;align-items:center;padding:5px 14px;border-radius:999px;font-size:13px;border:1px solid var(--crystal-400);color:var(--crystal-300);background:rgba(45,212,191,.07)}
+  #landmap{width:100%;border-radius:12px;border:1px solid var(--edge);background:var(--ink-900);cursor:crosshair;display:block}
+  #maptip{position:fixed;pointer-events:none;background:rgba(5,4,9,.92);border:1px solid var(--edge);border-radius:8px;padding:5px 9px;font-size:12px;display:none;z-index:50}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:11.5px;color:var(--fg-dim);margin-top:8px}
+  .legend i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px}
+  .meta{display:flex;gap:7px;flex-wrap:wrap;margin-top:8px}
+  .meta span{font-size:11px;padding:3px 9px;border-radius:999px;border:1px solid var(--edge);color:var(--crystal-300)}
+  #thumb{width:100%;max-width:340px;image-rendering:pixelated;border-radius:12px;border:1px solid var(--edge);display:block}
+  .vstrip{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+  .vstrip button{padding:4px 10px;font-size:12px}
+  .vstrip button.cur{border-color:var(--ether-400);color:var(--ether-300)}
+  .hint{color:var(--fg-mute);font-size:12px;margin-top:6px}
+  .err{color:#f0556b;font-size:13px;min-height:18px;margin-top:6px}
+  .stat{font-size:12px;color:var(--fg-dim)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🗺 Land Designer</h1>
+  <div class="tag">Pick your parcel, connect your AI, describe the battlefield — the engine guarantees every design is fair and playable, and your land keeps its look forever (until you redesign it).</div>
+
+  <div class="card">
+    <h2><span class="n">1</span>Select land <span class="stat" id="mapStat">loading world…</span></h2>
+    <canvas id="landmap" width="1840" height="760"></canvas>
+    <div class="legend">
+      <span><i style="background:#4d5a68"></i>undesigned</span>
+      <span><i style="background:#5fe9d0"></i>seed design</span>
+      <span><i style="background:#c08cff"></i>AI-designed</span>
+      <span><i style="background:#e0bd6b"></i>owner-frozen</span>
+    </div>
+    <div class="row" style="margin-top:10px;justify-content:space-between">
+      <div class="row">
+        <input id="parcel" placeholder="…or type a parcel id" style="width:220px">
+        <button id="load">Select</button>
+      </div>
+      <span class="sel" id="selChip" hidden></span>
+    </div>
+    <div class="hint">Showing all parcels for testing — once Clash Front login is wired in, this filters to <b>land you own</b>.</div>
+    <div class="err" id="err"></div>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h2><span class="n">2</span>Connect your AI</h2>
+      <label>Provider</label>
+      <select id="prov"></select>
+      <label>Model</label>
+      <select id="model"></select>
+      <div id="keyRow"><label>API key (stays in your browser — never sent to our server)</label><input id="key" type="password" placeholder="sk-…" autocomplete="off"></div>
+      <div id="customRow" style="display:none">
+        <label>Base URL (chat-completions endpoint)</label><input id="customUrl" placeholder="https://your-host/v1/chat/completions">
+        <label>Model id</label><input id="customModel" placeholder="e.g. poca-0.2">
+      </div>
+      <div class="hint" id="provHint"></div>
+      <label style="margin-top:10px">Admin key (only if the server requires one)</label>
+      <input id="adminKey" type="password" placeholder="x-maps-key (optional)" autocomplete="off">
+
+      <h2 style="margin-top:20px"><span class="n">3</span>Design it</h2>
+      <textarea id="directive" placeholder="volcanic wasteland with a ruined fortress and a river of lava splitting the map, gold in the caldera"></textarea>
+      <div class="row" style="margin-top:8px">
+        <span class="chip" data-p="volcanic wasteland, a lava river splitting the map, ruined tower, rich gold">🌋 Volcanic</span>
+        <span class="chip" data-p="misty swamp fortress, causeways over deep marsh, standing stones">🐸 Swamp</span>
+        <span class="chip" data-p="sacred sakura grove with a crater lake, gentle open fields, three lanes">🌸 Sakura</span>
+        <span class="chip" data-p="frozen ridge line with narrow passes, shipwreck landmark, sparse resources">🧊 Frozen</span>
+      </div>
+      <div class="row" style="margin-top:12px">
+        <button class="primary" id="gen" disabled>⚒ Generate design</button>
+        <button id="freeze" disabled>🔒 Freeze</button>
+      </div>
+      <div class="hint" id="who">Checking sign-in…</div>
+      <div id="loginRow" style="display:none;margin-top:8px">
+        <div class="row">
+          <input id="pgEmail" type="email" placeholder="Pentagon Games email" autocomplete="username" style="flex:1;min-width:170px">
+          <input id="pgPass" type="password" placeholder="Password" autocomplete="current-password" style="flex:1;min-width:120px">
+          <button class="primary" id="pgLogin">🔐 Sign in</button>
+        </div>
+        <div class="hint">Same Pentagon Games account as the game — your provider choice saves to your account.</div>
+      </div>
+      <div class="hint" id="genStat"></div>
+    </div>
+
+    <div class="card">
+      <h2>🗺 Current design <span class="stat" id="status"></span></h2>
+      <img id="thumb" alt="" hidden>
+      <div class="row" style="margin-top:8px"><a id="view3d" hidden target="_blank" rel="noopener"><button>🧊 View in 3D</button></a></div>
+      <div class="meta" id="meta"></div>
+      <div class="vstrip" id="vstrip"></div>
+      <div class="hint" id="dhint">Select a parcel on the map. First visit mints its permanent seed design.</div>
+    </div>
+  </div>
+</div>
+<div id="maptip"></div>
+
+<script>
+const $=(id)=>document.getElementById(id);
+// ---- provider registry (ported from the Pentagon card app: BYO key, browser-side call) ----
+const PROVIDERS={
+  server:{label:"Pentagon default (server)",models:[{id:"default",name:"Pentagon default"}],hint:"No key needed — uses the server's configured provider (Venice / POCA)."},
+  anthropic:{label:"Anthropic",models:[{id:"claude-haiku-4-5",name:"Claude Haiku 4.5"},{id:"claude-sonnet-4-5",name:"Claude Sonnet 4.5"}],hint:'Key: console.anthropic.com',
+    req:(k,m,sys,usr)=>({url:"https://api.anthropic.com/v1/messages",headers:{"content-type":"application/json","x-api-key":k,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},body:{model:m,max_tokens:900,system:sys,messages:[{role:"user",content:usr}]}}),
+    parse:(d)=>{if(d.error)throw new Error(d.error.message||d.error.type);return d.content?.[0]?.text||"";}},
+  openai:{label:"OpenAI",models:[{id:"gpt-5-mini",name:"GPT-5 Mini"},{id:"gpt-4.1",name:"GPT-4.1"}],hint:'Key: platform.openai.com',
+    req:(k,m,sys,usr)=>({url:"https://api.openai.com/v1/chat/completions",headers:{"content-type":"application/json",authorization:"Bearer "+k},body:{model:m,max_tokens:900,messages:[{role:"system",content:sys},{role:"user",content:usr}]}}),
+    parse:(d)=>{if(d.error)throw new Error(d.error.message);return d.choices?.[0]?.message?.content||"";}},
+  google:{label:"Google",models:[{id:"gemini-2.5-flash",name:"Gemini 2.5 Flash"},{id:"gemini-2.5-pro",name:"Gemini 2.5 Pro"}],hint:'Key: aistudio.google.com',
+    req:(k,m,sys,usr)=>({url:`https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent?key=${k}`,headers:{"content-type":"application/json"},body:{system_instruction:{parts:[{text:sys}]},contents:[{role:"user",parts:[{text:usr}]}],generationConfig:{maxOutputTokens:900}}}),
+    parse:(d)=>{if(d.error)throw new Error(d.error.message);return d.candidates?.[0]?.content?.parts?.[0]?.text||"";}},
+  deepseek:{label:"DeepSeek",models:[{id:"deepseek-chat",name:"DeepSeek V3"}],hint:'Key: platform.deepseek.com',
+    req:(k,m,sys,usr)=>({url:"https://api.deepseek.com/chat/completions",headers:{"content-type":"application/json",authorization:"Bearer "+k},body:{model:m,max_tokens:900,messages:[{role:"system",content:sys},{role:"user",content:usr}]}}),
+    parse:(d)=>{if(d.error)throw new Error(d.error.message);return d.choices?.[0]?.message?.content||"";}},
+  glm:{label:"GLM (Zhipu)",models:[{id:"glm-4.7-flash",name:"GLM-4.7 Flash (free)"},{id:"glm-4.7",name:"GLM-4.7"},{id:"glm-4.5-air",name:"GLM-4.5 Air"}],hint:'Key: open.bigmodel.cn — flash tier is free',
+    req:(k,m,sys,usr)=>({url:"https://open.bigmodel.cn/api/paas/v4/chat/completions",headers:{"content-type":"application/json",authorization:"Bearer "+k},body:{model:m,max_tokens:900,messages:[{role:"system",content:sys},{role:"user",content:usr}]}}),
+    parse:(d)=>{if(d.error)throw new Error(d.error.message||d.error.code);return d.choices?.[0]?.message?.content||"";}},
+  qwen:{label:"Qwen (DashScope)",models:[{id:"qwen-turbo",name:"Qwen Turbo"},{id:"qwen-plus",name:"Qwen Plus"},{id:"qwen-max",name:"Qwen Max"}],hint:'Key: dashscope.console.aliyun.com',
+    req:(k,m,sys,usr)=>({url:"https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions",headers:{"content-type":"application/json",authorization:"Bearer "+k},body:{model:m,max_tokens:900,messages:[{role:"system",content:sys},{role:"user",content:usr}]}}),
+    parse:(d)=>{if(d.error)throw new Error(d.error.message||d.error.code);return d.choices?.[0]?.message?.content||"";}},
+  bedrock:{label:"AWS Bedrock",models:[
+      {id:"deepseek.v3.2",name:"DeepSeek V3.2"},{id:"deepseek.r1-v1:0",name:"DeepSeek R1"},
+      {id:"zai.glm-4.7-flash",name:"GLM-4.7 Flash"},{id:"zai.glm-4.7",name:"GLM-4.7"},{id:"zai.glm-5",name:"GLM-5"},
+      {id:"qwen.qwen3-32b-v1:0",name:"Qwen3 32B"},{id:"qwen.qwen3-next-80b-a3b",name:"Qwen3 Next 80B"},
+      {id:"amazon.nova-lite-v1:0",name:"Nova Lite"}],
+    hint:'Bedrock API key (ABSK…) · us-east-1 · one key unlocks whichever models its IAM user allows',
+    req:(k,m,sys,usr)=>({url:"https://bedrock-runtime.us-east-1.amazonaws.com/openai/v1/chat/completions",headers:{"content-type":"application/json",authorization:"Bearer "+k},body:{model:m,max_tokens:900,messages:[{role:"system",content:sys},{role:"user",content:usr}]}}),
+    parse:(d)=>{if(d.error)throw new Error(d.error.message||d.error);return d.choices?.[0]?.message?.content||"";}},
+  custom:{label:"Custom / self-hosted (OpenAI-compatible)",models:[{id:"custom",name:"— set below —"}],hint:'Any OpenAI-compatible endpoint: vLLM, Ollama, LM Studio — or Pentagon POCA when hosted.',
+    req:(k,m,sys,usr,cf)=>({url:cf.url,headers:{"content-type":"application/json",...(k?{authorization:"Bearer "+k}:{})},body:{model:cf.model||m,max_tokens:900,messages:[{role:"system",content:sys},{role:"user",content:usr}]}}),
+    parse:(d)=>{if(d.error)throw new Error(typeof d.error==="string"?d.error:d.error.message);return d.choices?.[0]?.message?.content||"";}},
+  venice:{label:"Venice.ai",models:[{id:"llama-3.3-70b",name:"Llama 3.3 70B"},{id:"qwen3-235b",name:"Qwen3 235B"}],hint:'Key: venice.ai/settings/api · zero data retention',
+    req:(k,m,sys,usr)=>({url:"https://api.venice.ai/api/v1/chat/completions",headers:{"content-type":"application/json",authorization:"Bearer "+k},body:{model:m,max_tokens:900,messages:[{role:"system",content:sys},{role:"user",content:usr}]}}),
+    parse:(d)=>{if(d.error)throw new Error(typeof d.error==="string"?d.error:d.error.message);return d.choices?.[0]?.message?.content||"";}},
+  openrouter:{label:"OpenRouter",models:[{id:"meta-llama/llama-3.3-70b-instruct",name:"Llama 3.3 70B"},{id:"anthropic/claude-haiku-4.5",name:"Claude Haiku 4.5"}],hint:'Key: openrouter.ai/keys',
+    req:(k,m,sys,usr)=>({url:"https://openrouter.ai/api/v1/chat/completions",headers:{"content-type":"application/json",authorization:"Bearer "+k,"HTTP-Referer":location.origin,"X-Title":"EF Land Designer"},body:{model:m,max_tokens:900,messages:[{role:"system",content:sys},{role:"user",content:usr}]}}),
+    parse:(d)=>{if(d.error)throw new Error(d.error.message);return d.choices?.[0]?.message?.content||"";}},
+};
+const SYS='You translate a battlefield design directive into map-generator parameters for a war game. Reply with ONLY a single JSON object (no prose, no code fences) with these fields:\n'+
+' "archetype": one of ["openSteppe","forestMaze","riverCrossing","boxCanyon","cliffTerraces","marshCauseways","ridgePasses"]\n'+
+' "palette": one of ["verdant","autumn","volcanic","tundra","desert","swamp","ashen","sakura"]\n'+
+' "landmark": one of ["NONE","STANDING_STONES","RUINED_TOWER","CRATER_LAKE","ANCIENT_BRIDGE","SHIPWRECK","GIANT_SKULL","OBELISK"]\n'+
+' "laneCount": integer 1..3\n "density": number 0..1\n "waterLevel": number 0..1\n "resourceNodes": integer 0..8\n "resourceRichness": number 0..1\n "mobCamps": integer 0..6\n "towers": integer 0..6\n "roughness": number 0..1\n "mirrorFair": boolean\n'+
+'Pick the archetype/palette/landmark that best matches the directive. volcanic palette renders water as lava.\n'+
+'OPTIONALLY add "features": [...] — up to 24 detail placements (coords normalized -1..1, 0=center, +z=north; r/width = map fraction): '+
+'{"kind":"riverBand","axis":"x"|"z","at":0.1-0.9,"width":0.02-0.3,"fords":1-3} (axis x = west-east river, z = south-north) · {"kind":"ridge","x1","z1","x2","z2","passes":1-3} · {"kind":"road","x1","z1","x2","z2"} · '+
+'{"kind":"forestPatch"|"rockPatch"|"waterPool"|"clearing","x","z","r"} · {"kind":"landmarkAt","x","z"} · {"kind":"resourceAt","x","z","res":"GOLD_MINE"|"WOOD_GROVE"} · {"kind":"mobCampAt","x","z"} · {"kind":"towerAt","x","z"}. '+
+'Use features for precise composition ("lava river splitting the map" → riverBand; "gold in the caldera" → resourceAt at the crater). Placements consume the budget.';
+const budgetLine=(b)=>b?('\nHARD BUDGET — this land\'s investment tier is "'+b.name+'": resourceNodes ≤ '+b.resourceNodes+', resourceRichness ≤ '+b.maxRichness+', mobCamps ≤ '+b.mobCamps+', towers ≤ '+b.towers+(b.landmark?'':', landmark MUST be "NONE"')+'. Design the best map WITHIN it.'):'';
+
+// ---- provider persistence ----
+const saved=JSON.parse(localStorage.getItem("efmaps-llm")||'{"provider":"server"}');
+function renderProv(){const sel=$("prov");sel.innerHTML="";for(const[k,p]of Object.entries(PROVIDERS)){const o=document.createElement("option");o.value=k;o.textContent=p.label;sel.appendChild(o);}
+  sel.value=saved.provider in PROVIDERS?saved.provider:"server";onProv();}
+function onProv(){const p=PROVIDERS[$("prov").value];const ms=$("model");ms.innerHTML="";p.models.forEach(m=>{const o=document.createElement("option");o.value=m.id;o.textContent=m.name;ms.appendChild(o);});
+  if(saved.model&&p.models.some(m=>m.id===saved.model))ms.value=saved.model;
+  $("provHint").textContent=p.hint;$("keyRow").style.display=$("prov").value==="server"?"none":"block";
+  $("customRow").style.display=$("prov").value==="custom"?"block":"none";
+  $("customUrl").value=saved.customUrl||"";$("customModel").value=saved.customModel||"";
+  $("key").value=(saved.keys&&saved.keys[$("prov").value])||"";persist();}
+function persist(){saved.provider=$("prov").value;saved.model=$("model").value;saved.keys=saved.keys||{};if($("prov").value!=="server")saved.keys[$("prov").value]=$("key").value;
+  saved.customUrl=$("customUrl").value.trim();saved.customModel=$("customModel").value.trim();
+  localStorage.setItem("efmaps-llm",JSON.stringify(saved));
+  if(window.syncPrefs)window.syncPrefs();/* signed in → provider choice (never keys) saves to the account */}
+$("prov").addEventListener("change",onProv);$("model").addEventListener("change",persist);$("key").addEventListener("change",persist);
+$("customUrl").addEventListener("change",persist);$("customModel").addEventListener("change",persist);
+renderProv();
+document.querySelectorAll(".chip").forEach(c=>c.onclick=()=>{$("directive").value=c.dataset.p;});
+
+// ---- land map picker ----
+const STATUS_COL={undefined:"#4d5a68",SEED_V0:"#5fe9d0",AI_ITERATED:"#c08cff",OWNER_FROZEN:"#e0bd6b"};
+let parcels=[],view=null,selId=null,hoverId=null;
+const cv=$("landmap"),cx=cv.getContext("2d");
+function fitView(){let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;for(const p of parcels){x0=Math.min(x0,p.x);x1=Math.max(x1,p.x);y0=Math.min(y0,p.y);y1=Math.max(y1,p.y);}
+  const pad=28,W=cv.width,H=cv.height,s=Math.min((W-2*pad)/((x1-x0)||1),(H-2*pad)/((y1-y0)||1));
+  view={s,ox:pad+(W-2*pad-s*(x1-x0))/2-s*x0,oy:pad+(H-2*pad-s*(y1-y0))/2-s*y0};}
+const px=(p)=>[p.x*view.s+view.ox, cv.height-(p.y*view.s+view.oy)];
+function drawMap(){if(!view)return;cx.clearRect(0,0,cv.width,cv.height);
+  for(const p of parcels){const[X,Y]=px(p);
+    cx.beginPath();cx.arc(X,Y,p.parcelId===selId?9:(p.parcelId===hoverId?8:5.5),0,7);
+    cx.fillStyle=STATUS_COL[p.status]||STATUS_COL[undefined];cx.fill();
+    if(p.parcelId===selId){cx.lineWidth=3;cx.strokeStyle="#fff";cx.stroke();}
+    else if(p.parcelId===hoverId){cx.lineWidth=2;cx.strokeStyle="#d8bbff";cx.stroke();}}}
+function nearest(ev){const r=cv.getBoundingClientRect(),mx=(ev.clientX-r.left)*cv.width/r.width,my=(ev.clientY-r.top)*cv.height/r.height;
+  let best=null,bd=18*18;for(const p of parcels){const[X,Y]=px(p);const d=(X-mx)*(X-mx)+(Y-my)*(Y-my);if(d<bd){bd=d;best=p;}}return best;}
+cv.addEventListener("mousemove",(ev)=>{const p=nearest(ev);hoverId=p?.parcelId||null;drawMap();
+  const tip=$("maptip");if(p){tip.style.display="block";tip.style.left=(ev.clientX+14)+"px";tip.style.top=(ev.clientY+10)+"px";
+    tip.innerHTML="<b>"+p.parcelId+"</b>"+(p.status?(" · "+p.status+" v"+p.v+(p.archetype?(" · "+p.archetype+"/"+p.palette):"")):" · undesigned");}
+  else tip.style.display="none";});
+cv.addEventListener("mouseleave",()=>{hoverId=null;$("maptip").style.display="none";drawMap();});
+cv.addEventListener("click",(ev)=>{const p=nearest(ev);if(p)selectParcel(p.parcelId);});
+async function loadParcels(){try{
+  const d=await fetch("/internal/v1/parcels").then(r=>r.json());
+  parcels=(d.parcels||[]);$("mapStat").textContent="· "+parcels.length+" parcels · "+parcels.filter(p=>p.status).length+" designed";
+  if(parcels.length){fitView();drawMap();}else $("mapStat").textContent="· world snapshot unavailable — type a parcel id below";
+}catch(e){$("mapStat").textContent="· world unavailable — type a parcel id below";}}
+loadParcels();
+function markStatus(id,row){const p=parcels.find(q=>q.parcelId===id);if(p&&row){p.status=row.status;p.v=row.designVersion;p.archetype=row.archetype;p.palette=row.palette;}drawMap();}
+
+// ---- sign-in (viewing is public; DESIGNING needs your account — later, owning the land) ----
+// Direct PG email/password login (identity-docs flow via our server; app key never leaves it).
+// Token shared with the game lobby (same origin, localStorage ef_pg_token) — either login works.
+let pgTok=null;try{pgTok=localStorage.getItem("ef_pg_token");}catch(e){}
+let me=null;
+async function refreshWho(){
+  try{
+    const r=await fetch("/internal/v1/whoami",{headers:pgTok?{authorization:"Bearer "+pgTok}:{}}).then(x=>x.json());
+    me=r.ok?r.username:null;
+    if(r.ok){
+      $("who").innerHTML="✅ Signed in as <b>"+r.username+"</b> — your provider choice saves to your account. <a href='#' id='signout'>sign out</a>";
+      $("loginRow").style.display="none";
+      document.getElementById("signout").onclick=(e)=>{e.preventDefault();try{localStorage.removeItem("ef_pg_token");}catch(_){};pgTok=null;refreshWho();};
+      try{ // account defaults override this browser's local ones
+        const p=await fetch("/internal/v1/prefs",{headers:{authorization:"Bearer "+pgTok}}).then(x=>x.json());
+        if(p.ok&&p.prefs){Object.assign(saved,{provider:p.prefs.provider,model:p.prefs.model,customUrl:p.prefs.customUrl,customModel:p.prefs.customModel});renderProv();}
+      }catch(_){}
+    }else{
+      $("who").innerHTML="👁 Viewing is open to everyone — sign in to <b>design</b>:";
+      $("loginRow").style.display="block";
+    }
+  }catch(e){$("who").textContent="";}
+}
+$("pgLogin").onclick=async()=>{
+  const email=$("pgEmail").value.trim(),pass=$("pgPass").value;
+  if(!email||!pass){$("err").textContent="Enter your Pentagon Games email and password.";return;}
+  $("pgLogin").disabled=true;$("err").textContent="";
+  try{
+    const r=await fetch("/internal/v1/login",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({email,password:pass})}).then(x=>x.json());
+    if(!r.ok)throw new Error(r.error||"login failed");
+    pgTok=r.token;try{localStorage.setItem("ef_pg_token",r.token);}catch(_){}
+    $("pgPass").value="";await refreshWho();
+  }catch(e){$("err").textContent=e.message;}
+  $("pgLogin").disabled=false;
+};
+$("pgPass").addEventListener("keydown",(e)=>{if(e.key==="Enter")$("pgLogin").click();});
+refreshWho();
+// push provider choice (never keys) to the account whenever it changes while signed in
+window.syncPrefs=(()=>{let t=null;return()=>{if(!pgTok||!me)return;clearTimeout(t);t=setTimeout(()=>{
+  fetch("/internal/v1/prefs",{method:"POST",headers:{"content-type":"application/json",authorization:"Bearer "+pgTok},
+    body:JSON.stringify({provider:saved.provider,model:saved.model,customUrl:saved.customUrl,customModel:saved.customModel})}).catch(()=>{});},600);};})();
+
+// ---- selection + design view ----
+let cur=null;
+const hdrs=()=>{const h={"content-type":"application/json"};if(pgTok)h.authorization="Bearer "+pgTok;if($("adminKey").value)h["x-maps-key"]=$("adminKey").value;return h;};
+async function selectParcel(id){selId=id;$("parcel").value=id;$("selChip").hidden=false;$("selChip").textContent="📍 "+id;$("gen").disabled=false;$("err").textContent="";drawMap();
+  $("dhint").textContent="Loading design…";
+  try{const d=await fetch(`/internal/v1/designs/${id}`).then(r=>r.json());if(!d.ok)throw new Error(d.error||"load failed");show(id,d.row,d.artifact,d.budget);markStatus(id,d.row);}
+  catch(e){$("err").textContent=e.message;$("dhint").textContent="";}}
+function show(parcelId,row,artifact,budget){cur={parcelId,row,artifact,budget:budget||(cur&&cur.budget)};
+  $("thumb").src=`/internal/v1/designs/${parcelId}/thumb.png?v=${row.designVersion}&t=${row.lastGeneratedAt}`;$("thumb").hidden=false;
+  $("view3d").hidden=false;$("view3d").href=`/designer/3d?parcel=${parcelId}&v=${row.designVersion}`;
+  $("status").textContent=`· ${row.status} · v${row.designVersion}`;
+  const p=artifact?.meta?.params||{};const b=cur.budget;
+  $("meta").innerHTML=[
+    b?("🏦 "+b.name+" (tier "+b.level+")"):null,
+    p.archetype,p.palette,p.landmark!=="NONE"?p.landmark:null,(artifact?.laneCount||1)+" lane(s)",
+    (artifact?.resources?.length??0)+" nodes",(artifact?.mobs?.length??0)+" camps",(artifact?.structures?.length??0)+" towers",
+    artifact?.meta?.repairs?.length?("repairs: "+artifact.meta.repairs.length):null].filter(Boolean).map(x=>`<span>${x}</span>`).join("");
+  if(b)$("dhint").textContent="Tier caps: ≤"+b.resourceNodes+" resource nodes · richness ≤"+Math.round(b.maxRichness*100)+"% · ≤"+b.mobCamps+" camps · ≤"+b.towers+" towers"+(b.landmark?"":" · no landmark")+". Invest CT in Clash Front to raise them (coming soon).";
+  const vs=$("vstrip");vs.innerHTML="";
+  for(let v=0;v<=row.designVersion;v++){const b=document.createElement("button");b.textContent="v"+v;if(v===row.designVersion)b.className="cur";
+    b.onclick=()=>{$("thumb").src=`/internal/v1/designs/${parcelId}/thumb.png?v=${v}`;$("view3d").href=`/designer/3d?parcel=${parcelId}&v=${v}`;};vs.appendChild(b);}
+  $("freeze").disabled=false;$("freeze").textContent=row.status==="OWNER_FROZEN"?"🔓 Unfreeze":"🔒 Freeze";
+  if(!b)$("dhint").textContent="";}
+$("load").onclick=()=>{const id=$("parcel").value.trim();if(id)selectParcel(id);};
+$("parcel").addEventListener("keydown",(e)=>{if(e.key==="Enter")$("load").click();});
+$("freeze").onclick=async()=>{if(!cur)return;const on=cur.row.status!=="OWNER_FROZEN";
+  const d=await fetch(`/internal/v1/designs/${cur.parcelId}/freeze`,{method:"POST",headers:hdrs(),body:JSON.stringify({on})}).then(r=>r.json());
+  if(d.ok){cur.row=d.row;show(cur.parcelId,d.row,cur.artifact);markStatus(cur.parcelId,d.row);}};
+
+// ---- generate: browser LLM (BYO key) → params → server · or server-default directive ----
+$("gen").onclick=async()=>{const id=selId||$("parcel").value.trim(),dir=$("directive").value.trim();
+  if(!id){$("err").textContent="Select a parcel first (step 1).";return;}
+  if(!dir){$("err").textContent="Describe the battlefield you want (step 3).";return;}
+  $("err").textContent="";$("gen").disabled=true;persist();
+  try{
+    let body={directive:dir};
+    const prov=$("prov").value;
+    if(prov!=="server"){
+      $("genStat").textContent="Asking "+PROVIDERS[prov].label+"…";
+      const P=PROVIDERS[prov],k=$("key").value.trim();
+      const cf={url:$("customUrl").value.trim(),model:$("customModel").value.trim()};
+      if(prov==="custom"&&!cf.url)throw new Error("Set your endpoint's Base URL in step 2.");
+      if(!k&&prov!=="custom")throw new Error("Add your "+P.label+" API key in step 2 (or switch to Pentagon default).");
+      const rq=P.req(k,$("model").value,SYS+budgetLine(cur&&cur.budget),dir,cf);
+      const d=await fetch(rq.url,{method:"POST",headers:rq.headers,body:JSON.stringify(rq.body)}).then(r=>r.json());
+      const txt=P.parse(d);const m=txt.match(/\{[\s\S]*\}/);if(!m)throw new Error("model returned no JSON");
+      body.params=JSON.parse(m[0]);
+    } else $("genStat").textContent="Asking the Pentagon default model…";
+    $("genStat").textContent+=" ⚒ generating + validating…";
+    const d=await fetch(`/internal/v1/designs/${id}/prompt`,{method:"POST",headers:hdrs(),body:JSON.stringify(body)}).then(r=>r.json());
+    if(!d.ok)throw new Error(d.error||"generation failed");
+    show(id,d.row,d.artifact,d.budget);markStatus(id,d.row);
+    $("genStat").textContent="✅ Saved as v"+d.row.designVersion+" — your land keeps this design until you change it.";
+  }catch(e){$("err").textContent=e.message;$("genStat").textContent="";}
+  $("gen").disabled=false;};
+</script>
+</body>
+</html>
