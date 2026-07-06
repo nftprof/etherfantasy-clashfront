@@ -11,7 +11,7 @@
 //                    (so the gallery can filter "my land" without a cross-origin fetch to CF),
 //                    /healthz, and the HTTP listener. No map logic lives here.
 //
-// Env: MAPS_PORT (default 8140), MAPS_HOST (default 127.0.0.1 — nginx fronts TLS),
+// Env: MAPS_PORT (default 8150; :8140 is cf-battle-api), MAPS_HOST (default 127.0.0.1 — nginx fronts TLS),
 //      MAPS_OWNERS_URL (owner feed; default CF's /api/land-owners), plus everything maps/api.js
 //      reads (MAPS_WORLD_URL, MAPS_DIR, PG_APP_KEY, MAPS_API_TOKEN, MAPS_LLM_*).
 import http from "node:http";
@@ -23,7 +23,8 @@ import * as reg from "./maps/registry.js";
 import { toBattlefieldA1 } from "./maps/command_converter.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const PORT = Number(process.env.MAPS_PORT || 8140);
+// NB: :8140 is taken by cf-battle-api on the shared box; the map service uses :8150.
+const PORT = Number(process.env.MAPS_PORT || 8150);
 const HOST = process.env.MAPS_HOST || "127.0.0.1";
 
 // Owner feed URL — env, or ~/.ef_maps_owners_url (the file the box already uses), or CF's default.
@@ -125,7 +126,14 @@ export const createMapServer = () => http.createServer(handleRequest);
 // Listen only when run as the entrypoint (tests import handleRequest without binding a port).
 const isMain = process.argv[1] && import.meta.url === `file://${process.argv[1]}`;
 if (isMain) {
-  createMapServer().listen(PORT, HOST, () => {
+  const srv = createMapServer();
+  srv.on("error", (e) => {
+    // fail LOUDLY on a port clash so a misconfigured port never silently 404s behind nginx
+    // eslint-disable-next-line no-console
+    console.error(`[map-service] FATAL: cannot bind ${HOST}:${PORT} — ${e && e.code === "EADDRINUSE" ? "port already in use (pick a free MAPS_PORT; :8140 is cf-battle-api)" : (e && e.message)}`);
+    process.exit(1);
+  });
+  srv.listen(PORT, HOST, () => {
     // eslint-disable-next-line no-console
     console.log(`[map-service] listening on http://${HOST}:${PORT}  (gallery / · designer /designer · api /internal/v1/*)`);
   });

@@ -2,8 +2,8 @@ name: Deploy map service (map.etherfantasy.com)
 
 # The CF map service (map-service/server.js): all-maps gallery + designer + registry API. Runs on the
 # SAME self-hosted runner (label: cf) as the live game, but as a SEPARATE pm2 app `ef-map-service` on
-# :8140 in ~/ef-map-service — restarting it never touches `clashfront` (:8130) or cfx (:8131). nginx
-# proxy_pass map.etherfantasy.com → :8140 (see map-service/DEPLOY.md for the one-line repoint). No
+# :8150 in ~/ef-map-service — restarting it never touches `clashfront` (:8130), cfx (:8131), or
+# cf-battle-api (:8140). nginx proxy_pass map.etherfantasy.com → :8150 (see map-service/DEPLOY.md). No
 # ssh/scp: the CF runner already lives on the box (replaces the old deploy key). Push to deploy/map
 # (or dispatch) to ship.
 
@@ -32,8 +32,9 @@ jobs:
           rsync -a --delete --exclude='.git' \
             "$GITHUB_WORKSPACE"/map-service/ "$HOME"/ef-map-service/
 
-      - name: (re)start ef-map-service on :8140 (health-gated on /healthz)
+      - name: (re)start ef-map-service on :8150 (health-gated on /healthz)
         run: |
-          # single source of deploy truth = the checked-out script, pointed at the synced app dir
-          MAPS_APP_DIR="$HOME/ef-map-service" \
+          # single source of deploy truth = the checked-out script, pointed at the synced app dir.
+          # :8140 is cf-battle-api on the box — the map service binds :8150.
+          MAPS_APP_DIR="$HOME/ef-map-service" MAPS_PORT=8150 \
           bash "$GITHUB_WORKSPACE"/deploy/remote-deploy-map.sh
