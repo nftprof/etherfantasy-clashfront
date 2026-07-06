@@ -182,6 +182,29 @@ const orders = {
         : esc(e.message), 'bad');
     }
   },
+  /**
+   * POST /api/launch-live — allocate a REAL live (30 Hz) match on this parcel and
+   * drop straight into HERO MODE in the game client. The server returns a one-time
+   * joinUrl (?net=server&match&ticket); we open it in a new tab. Fresh every click
+   * (a live match dies on a server restart — never cached).
+   */
+  async launchLive(parcelId) {
+    try {
+      const r = await api('/api/launch-live', { token, body: { parcelId } });
+      if (r?.joinUrl) {
+        ui.toast('⚡ Live battle launching', 'Dropping you into hero mode on this land — a new tab is opening. You command your Master; the enemy is AI.', 'good', parcelId);
+        window.open(r.joinUrl, '_blank', 'noopener');
+      } else {
+        ui.toast('Live battle', 'The match server did not return a join link — try again.', 'bad');
+      }
+    } catch (e) {
+      ui.toast('Live battle unavailable', e.code === 'ENGINE_OFF'
+        ? 'Live battles are not enabled on this server yet.'
+        : e.code === 'NO_MASTER'
+          ? 'You have no Master to command — sign in with a wallet that owns one.'
+          : esc(e.message), 'bad');
+    }
+  },
   async choice(choiceId, action, overseerId) {
     const pc = store.pendingChoices.get(choiceId);
     try {

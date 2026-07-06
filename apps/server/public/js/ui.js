@@ -280,10 +280,11 @@ export function createUI({ store, map, orders }) {
         `<button class="primary" data-act="watch-battle" data-battle="${lb.id}">` +
         `${lb.mine ? '🎮 Command the battle' : '👁 Watch live'}</button></div>`;
     } else if (store.econ?.bridgeEnabled) {
-      // Self-serve DEMO battle (M1.5 smoke test — no SSH needed): stages the bundled
-      // mock MOBA emitter on this parcel. Public exhibition, zero world consequences.
-      html += `<div class="live-battle"><button data-act="exhibition" data-parcel="${cardParcelId}">` +
-        `⚔ Stage exhibition battle</button> <span class="est">demo relay — no ground changes hands</span></div>`;
+      // Launch a REAL live (30 Hz) match on this parcel and drop straight into HERO
+      // MODE in the game client (integration team 2026-07-06). Replaces the old demo
+      // exhibition. Allocates fresh each click → one-time joinUrl → /play hero mode.
+      html += `<div class="live-battle"><button data-act="launch-live" data-parcel="${cardParcelId}">` +
+        `⚡ Launch live session on this land</button> <span class="est">real 30 Hz battle — you command your Master, enemy is AI</span></div>`;
     }
 
     // My garrisoned armies here: provisions readout + Provision form (own army
@@ -490,6 +491,10 @@ export function createUI({ store, map, orders }) {
       // HERO MODE (one-hero rule): the MOBA client takes over; command stays here.
       const lb = store.liveBattles.get(btn.dataset.battle);
       if (lb?.joinUrl) window.open(lb.joinUrl, '_blank', 'noopener');
+    }
+    else if (btn.dataset.act === 'launch-live') {
+      btn.disabled = true;
+      orders.launchLive(btn.dataset.parcel).finally(() => { btn.disabled = false; });
     }
     else if (btn.dataset.act === 'exhibition') { btn.disabled = true; orders.exhibition(btn.dataset.parcel); }
     else if (btn.dataset.act === 'claim' && t) { orders.claim(t.id, ovClaimSel || undefined); ovClaimSel = ''; }

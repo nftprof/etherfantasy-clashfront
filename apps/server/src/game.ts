@@ -29,6 +29,7 @@ import {
   type Rng,
   type Territory,
   TICKS_PER_DAY,
+  ulid,
   loadBalance,
 } from '@clashfront/shared';
 import {
@@ -1956,6 +1957,82 @@ export class Game {
           governorId: wildDefender ? null : b.defenderGovernorId, // null governor = WILD
           armies: armiesOf(b.defenderArmyIds, 'N'),
         },
+      },
+      callback: { url: callbackUrl, keyId: 'cf-hmac-1' },
+    };
+  }
+
+  /**
+   * "Launch live session on this land" test button (integration team, 2026-07-06).
+   * Builds a `mode:"live"` allocate payload DIRECTLY (no sim collision) — seats the
+   * player's Master (ATTACKER) vs an AI enemy Master (DEFENDER), 200 units a side,
+   * on the fixed ±161 arena — so a tester can spawn a command-mode / hero-mode match
+   * on any parcel. The server POSTs this to the match server and opens the returned
+   * joinUrl. Mints a FRESH battleId + seed per call (a live match dies on a server
+   * restart, so the button must never cache — allocate anew each click). Same
+   * battlefield / coord frame / officer shape as `engineAllocateContext`.
+   */
+  launchLiveContext(governorId: string, parcelId: string, callbackUrl: string): Record<string, unknown> {
+    const officers = this.state.officers?.get(governorId) ?? [];
+    const withMaster = officers.filter((o) => o.masterId !== undefined);
+    const roster = withMaster.length > 0 ? withMaster : officers;
+    if (roster.length === 0) {
+      throw new ApiError(409, 'NO_MASTER', 'you have no Master to command — sign in with a wallet that owns one');
+    }
+    const atk = roster[0]!;
+    const def = roster[1] ?? roster[0]!; // distinct enemy if you own ≥2 Masters, else reuse (AI foe)
+    const officerPayload = (o: DemoOfficer): Record<string, unknown> => ({
+      masterId: o.masterId ?? o.id, // REAL EF masterId so the MOBA client maps the champion + pre-locks the seat
+      name: o.name,
+      ...(o.slug !== undefined ? { slug: o.slug } : {}),
+      level: Math.max(1, Math.floor(o.fame / 100)),
+      revives: 3,
+    });
+    const hexId = this.hexByParcel.get(parcelId);
+    const terrId = hexId === undefined ? undefined : this.state.hexes.get(hexId)?.territoryId;
+    const territory = terrId === undefined ? undefined : this.state.territories.get(terrId);
+    const S = 322; // fixed ±161 arena (docs/04 §7b)
+    const army = (cls: string, count: number, officer: DemoOfficer, entryEdge: 'S' | 'N'): Record<string, unknown> => ({
+      armyId: newId('army'),
+      units: [{ cls, count }],
+      officers: [officerPayload(officer)],
+      provisions: { food: 1000, gold: 200, wood: 200 },
+      entryEdge,
+    });
+    return {
+      v: 1,
+      battleId: newId('battle'),
+      seed: ulid(),
+      mode: 'live',
+      rates: { tickHz: 30, commandSnapshotHz: 3 },
+      joinWindowSec: this.balance.battle.joinWindowSec,
+      parcel: {
+        parcelId,
+        zone: String(this.config.worldFile.meta.zone),
+        kind: territory === undefined || territory.governorKind === 'SYSTEM' ? 'WILD' : 'PLAYER',
+      },
+      battlefield: {
+        arena: { shape: 'polygon', sizeM: S, bounds: [[-S / 2, -S / 2], [S / 2, -S / 2], [S / 2, S / 2], [-S / 2, S / 2]] },
+        laneCount: 1,
+        obstacles: [],
+        spawnZones: [
+          { id: 'spawn_atk_s', side: 'ATTACKER', edge: 'S', x: 0, z: -131.6 },
+          { id: 'spawn_def_n', side: 'DEFENDER', edge: 'N', x: 0, z: 131.6 },
+        ],
+        structures: (territory?.structures ?? []).map((s, i) => ({
+          anchorId: `anchor_${i}`,
+          kind: s.key.toUpperCase(),
+          side: 'DEFENDER',
+          x: Math.round(((s.anchor?.[0] ?? 0.5) - 0.5) * S),
+          z: Math.round(((s.anchor?.[1] ?? 0.85) - 0.5) * S),
+          hp: s.hp,
+          hpMax: s.maxHp,
+        })),
+        mobs: [],
+      },
+      sides: {
+        ATTACKER: { governorId, armies: [army('INFANTRY', 200, atk, 'S')] },
+        DEFENDER: { governorId: null, armies: [army('ARCHER', 200, def, 'N')] }, // null governor = AI/WILD enemy
       },
       callback: { url: callbackUrl, keyId: 'cf-hmac-1' },
     };
