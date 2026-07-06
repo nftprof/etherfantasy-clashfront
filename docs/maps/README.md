@@ -13,6 +13,14 @@
 - **CASTLE-TEMPLATE-LIBRARY.md** — 24 castle/fortification siege templates (real forts worldwide),
   each mapped to the estate "series of ±161 components, keep = final component" model, plus the NEW
   castle-archetype appendix (prioritizes a shared `wall()` primitive).
+- **CONTINENT-TERRAIN-ATLAS.md** — the macro-terrain constitution of all 10 zones (BUS/EDU/ENT/HUB
+  surface · HS1–3 sky · UW1–3 underworld), grounded in the real extracted geometry (worldOffset,
+  bboxes, parcel counts): per-continent biomes/palettes, ranges/coasts/rivers, frontier edges, and
+  seaport/airship/shaft/boss hotspots. The authored-override seed for `world-terrain.json`.
+- **../briefs/MAP-MACRO-TERRAIN-AND-POSITION-CONSTRAINTS.md** — the world envelope (biome field +
+  position-role + edge-type system) each parcel map is designed inside.
+- **../briefs/MAP-GENERATOR-LLM-CURRICULUM.md** — the fitness function + repair loop + difficulty
+  ladder that challenges the LLM to design playable, novel maps within that envelope.
 
 ## Live API quick-reference (moba.etherfantasy.com, lobby :8090 on the shared box)
 - `GET  /internal/v1/designs[?status=]` · `GET /internal/v1/designs/:parcelId` (lazy v0; returns
