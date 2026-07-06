@@ -234,6 +234,47 @@ instinct). Character progression stays special and off the production line.
  HERO ARTIFACTS   — NFT     — RoTK-style discovery, for Masters (not crafted)
 ```
 
+## 12. Equipment & army composition (owner, 2026-07-06) — modest buffs, salvage, 2-type armies
+
+### Army composition — simple and capped
+- **Each Master commands ONE army of at most 2 unit types: NORMAL (line/basic) + ELITE (advanced).** No
+  more than 2 compositions — keeps rosters legible and the MOBA spawn/lane logic simple.
+- **⚙ Max units per Master** (`maxUnitsPerMaster`, TBD) caps army size — bounds battle scale and keeps a
+  Master's force meaningful, not infinite.
+- **Scale comes from MORE Masters, not one god-army:** several Masters/armies converge on a battle via
+  the existing reinforcement model, so power = numbers of commanders + tactics, not a single stacked hero.
+
+### Soldier gear — per-unit, modest, tied to the unit
+- **1:1 with units** — 200 elite soldiers need **200** sets of gear (e.g. leather armor). Gear is a real
+  per-unit cost, never a cheap global multiplier.
+- **Modest buff (⚙ ~+10–20%, NOT +50%)** — gear *tilts* a fight, never decides it. Scale + tactics +
+  Masters win battles; gear-checking doesn't.
+- **Destroyed with the unit** if it dies; **~30% salvage** back to resources if the unit survives / on a
+  win. **Transferable** between your own units out of battle.
+- Made from resources + a CT burn.
+
+### Hero equipment ("shop"/per-match layer) — per match, 30% salvage on win
+- **Store/crafted hero items buff the HERO (Master) for that match** — swords, boots, trinkets.
+- Per-match, BUT **you don't just throw crafted gear away: WIN → salvage ~30% of its value back to gold,
+  brought home.** That's *why* it's per-match and still feels fair — a win recovers a third; a loss loses
+  it (real stakes). Keeps hero power spikes tactical + temporary while respecting that you crafted them.
+
+### Hero artifacts (unchanged) — RoTK discovery, persistent NFT
+- The *unique* Master equipment stays **found, not crafted**, permanent, tradeable — the special-item
+  progression *above* the crafted/per-match layer.
+
+### Revised recipe/buff table (supersedes §4's +50% buffs)
+| Item | Buff (⚙) | Cost | On death | On win/survive |
+|---|---|---|---|---|
+| Leather armor (soldier) | **+15% survivability** | 3 iron + 1 timber + 0.02 CT | destroyed | ~30% salvage |
+| Iron sword (soldier) | **+15% attack** | 3 iron + 1 timber + 0.02 CT | destroyed | ~30% salvage |
+| Hero gear (per-match) | modest hero spike | resources + CT burn | lost | **30% → gold, brought home** |
+
+**Why this is economically healthy:** gear is a **consumable** — units die → gear destroyed → recraft →
+**CT burn every replacement.** Constant attrition = constant crafting demand = a steady sink, *without*
+gear-gated god-armies (1:1 cost + modest buff caps the power). The 30% salvage softens the loss enough
+that crafting feels worthwhile, while 70% is genuinely consumed — a net sink on every fight.
+
 ## TL;DR
 
 CT is the numeraire (10,000 units = $0.10; start 5/50/500). Resources have reference values (food 0.002 →
