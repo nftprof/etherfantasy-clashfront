@@ -84,7 +84,7 @@ import {
   type WorldState,
 } from '@clashfront/sim-engine';
 import type { AllocateJoinGrant } from './battleEngine';
-import { loadStandbyBattlefield } from './battlefield';
+import { loadStandbyBattlefield, loadParcelBattlefield } from './battlefield';
 import type { OwnedMaster } from './masters';
 import { GOVERNOR_PALETTE, NPC_COLOR, officerNamesForJoin, WILD_COLOR } from './roster';
 import {
@@ -1705,10 +1705,14 @@ export class Game {
     const terrId = this.state.hexes.get(b.hexId)?.territoryId;
     const territory = terrId === undefined ? undefined : this.state.territories.get(terrId);
     const laneCount: 1 | 3 = (territory?.hexIds.length ?? 1) >= CONSTANTS.ESTATE_MIN_HEXES ? 3 : 1;
-    const battlefield = loadStandbyBattlefield(laneCount);
+    // Precedence: the parcel's OWN generated map (map-service §3 A1) if one is on the
+    // box, else the standard MOBA-style stand-in. A bridge/match-server map still wins
+    // upstream (attached in the engine path); this covers the wild/command view.
+    const parcelId = this.parcelId(b.hexId);
+    const battlefield = loadParcelBattlefield(parcelId) ?? loadStandbyBattlefield(laneCount);
     return {
       battleId,
-      parcelId: this.parcelId(b.hexId),
+      parcelId,
       size: b.field.size,
       bounds: b.field.bounds,
       spawn: b.field.spawn,

@@ -187,6 +187,45 @@ function resolveMapsDir(): string {
   return join(__dirname, '..', '..', '..', '..', 'data', 'moba-maps');
 }
 
+// ── Per-parcel generated maps (the real designed battlefield) ────────────────
+// The map service (map-service/) generates a per-parcel A1 Battlefield (raster →
+// §3 command_converter) and serves it at /internal/v1/designs/<id>/command.json.
+// An operator (or a small sync) drops these A1 files on the box as
+// <CF_PARCEL_MAPS_DIR>/<parcelId>.json; when present + valid, CF prefers the
+// parcel's OWN map over the standard stand-in. Absent/invalid ⇒ undefined ⇒
+// caller falls back to loadStandbyBattlefield. Synchronous disk read, cached.
+const parcelCache = new Map<string, Battlefield | null>();
+
+function resolveParcelMapsDir(): string {
+  const override = process.env['CF_PARCEL_MAPS_DIR'];
+  if (override !== undefined && override !== '') return override;
+  return join(resolveMapsDir(), 'parcels');
+}
+
+/**
+ * The designed Battlefield for a specific parcel, if one has been generated and
+ * placed on the box (`<CF_PARCEL_MAPS_DIR>/<parcelId>.json`). Validated at load;
+ * an invalid/missing file returns undefined so callers fall back to the stand-in.
+ * Cached per parcelId (null = "checked, none") — the file is immutable per design.
+ */
+export function loadParcelBattlefield(parcelId: string | undefined): Battlefield | undefined {
+  if (parcelId === undefined || parcelId === '') return undefined;
+  const cached = parcelCache.get(parcelId);
+  if (cached !== undefined) return cached ?? undefined;
+  try {
+    const path = join(resolveParcelMapsDir(), `${parcelId}.json`);
+    if (!existsSync(path)) { parcelCache.set(parcelId, null); return undefined; }
+    const bf = JSON.parse(readFileSync(path, 'utf8')) as Battlefield;
+    const v = validateBattlefield(bf);
+    if (!v.ok) { parcelCache.set(parcelId, null); return undefined; } // never ship an unplayable map
+    parcelCache.set(parcelId, bf);
+    return bf;
+  } catch {
+    parcelCache.set(parcelId, null);
+    return undefined;
+  }
+}
+
 const FILES: Record<1 | 3, string> = { 1: 'legacy-1lane.json', 3: 'legacy-3lane.json' };
 // The REAL MOBA export. The MOBA BattleEngine session delivers data/moba-maps/
 // legacy.json — the standard ±161 world-unit arena as the client plays it 1:1
