@@ -83,46 +83,77 @@ strongest component.
 - **Castle grade** (estates): each grade adds **1 wall ring = 1 more ±161 component to breach** + a stronger
   keep (final-component HP). ~3 grades (manor→keep→fortress) gated by estate size.
 
-## 5. The unit model — line = workers (CT), elite = hired biome mons (gold)
+## 5. The unit model — a THREE-tier progression: worker → armed line soldier → elite
 
-The populace mons' **dual role (worker / soldier)** maps *exactly* onto our two unit classes — and the
-MOBA's in-match summoning IS elite generation:
+**Correction (owner 2026-07-06):** it is a **three-tier** progression, not a two-class binary. Pet mons are
+the population; a mon moves **up the tiers** by being **armed** then **trained/evolved**. The tiers are the
+three friendly unit types you field in any battle:
 
-| Class | Lore | Raised by | Cost (⚙) | Strength | Where summoned |
-|---|---|---|---|---|---|
-| **LINE (normal)** | populace mons in **WORKER** role, drafted | **CT** (population draft) | ~0.02 CT / soldier (50 = 1 CT) | baseline | overworld draft → wave soldiers |
-| **ELITE** | **hired/recruited biome combatants** (footman, archer…) | **GOLD** (biome mercenary pay) | ~50 gold / elite | 2–3× a line soldier | **in-battle, from the COMMAND CENTER** |
+| # | Type | What it is | Raised by | Cost / speed (⚙) | Strength | Continuity |
+|---|---|---|---|---|---|---|
+| 1 | **WORKER** | base mon, **unarmed** | **CT** population recruit | **cheap + fast** | baseline | **high** — rear role, mostly survives → **accumulates** |
+| 2 | **LINE SOLDIER** | a worker **that has been ARMED** | worker **+ crafted arms** (resource) | fast; the **arms** cost resource/craft | ~**same as a worker**, but combat-ready | low — front line, **mostly dies** |
+| 3 | **ELITE** | a line soldier **trained/evolved** in-battle | **GOLD** (train/recruit on the map) | **expensive + slow** | **2–3×** a line soldier | high — **persists + levels** |
 
-- **The equivalence you asked for:** footmen/archers **summoned in the command center during a MOBA match
-  = ELITE soldiers.** They're "hired from the local biome." So in-match unit production feeds your elite
-  pool — the two layers are the same soldiers. **Workers → line; hired combatants → elite.**
-- **Two-tier economy falls out clean:** **CT → line (mass workers)**, **gold → elite (quality biome
-  hires)**. Gold comes from mining (§1), so the resource economy *is* the elite-unit economy.
-- **Command center** = the in-battle structure that summons elites (spends gold). It's a **land tier
-  structure** (§6) — capturing one intact lets you summon there.
+**The tier progression (the tech-tree):**
+```
+  WORKER  ──(ARM: craft arms, spend resource)──►  LINE SOLDIER  ──(TRAIN/EVOLVE in-battle, spend GOLD)──►  ELITE
+    ▲                                                   │
+    └───────────────── disarm / return to labor ────────┘   (1 ⇄ 2 are the SAME mon, armored or not)
+```
 
-### 5a. Class ownership — NFT (pick) vs random (draft)
-- **Default = RANDOM draft:** you summon/draft units and the **class is system-assigned from the local
-  BIOME pool** (§2). Forest gives forest species, desert gives desert species. F2P-friendly.
-- **Own the pet NFT → PICK that class:** owning a species' pet NFT lets you summon **that specific class
-  deliberately** (composition control), anywhere its biome allows. So NFTs buy **army-composition control**,
-  not raw power — F2P still fields full armies, just with less say over the mix.
-- **2 distinct classes per Master (decision-9 cap):** a Master fields **NORMAL + ELITE**, and only **2
-  distinct elite classes** at once — so if you own few elite mons, your mix is limited. Scale via **more
-  Masters**, variety via **more pet NFTs**.
+- **Worker ⇄ line soldier are interchangeable** — the **same mon**, just **unarmed vs armed**. Think *1 = no
+  armor, 2 = armed.* You **choose ahead of time** which workers to arm for a fight (arming needs **crafted
+  arms** — a resource/craft sink). They are **about equal strength**; the difference is combat-readiness and
+  **role**, not power. So workers farm; armed workers fight.
+- **The accumulation loop (why two names for near-equal units):** a battle **starts** with few workers on
+  the field and **ends** with the **most workers** (they're the rear/labor role and don't always fight),
+  while **line soldiers mostly die**. So after a battle you're **left holding workers** — which you then
+  **ARM again as soldiers for the next fight**. Workers are your **persistent manpower reserve**; soldiers
+  are the **consumable armed state** of that reserve.
+- **Elites are grown from line soldiers, in the match.** They **evolve from tier 2** by **training/recruiting
+  on the battle map** with **gold** (the command center / on-map recruit — "they're wild on this map; you
+  have gold, so they come to work for you"). Elites carry **continuity** (they persist and level), so a
+  trained elite is a real, lasting asset — expensive, slow, and worth keeping.
+- **Command center** = the in-battle structure where gold buys elite training/recruiting. Land structure
+  (§6); capture one intact and you can train there.
 
-### 5b. Post-battle unit fate — your choice for surviving elites (all three of your options)
-Hiring elites cost **gold**; what you do with survivors decides whether that gold was worth it:
+### 5a. Ownership — NFT is per CLASS (a training right), not per unit; pets do **not** KO
+**Correction (owner 2026-07-06):** a **pet NFT is a species/CLASS, not an individual unit.** Master heroes
+are the NFTs that **KO + revive** (7-day CD or pay 5 CT); **pets do NOT KO** — they are population.
 
-| Choice | Effect | Gold recovered? |
+- **Own the pet NFT → TRAIN that class directly.** Owning a species' pet NFT is a **training right**: you can
+  **recruit/train that species deliberately**, anywhere (in a battle or outside), instead of hoping it
+  spawns. It buys **access + composition control**, not per-unit power.
+- **Don't own it → CATCH IT IN THE WILD.** That species **spawns on maps whose biome hosts it** (§2). You
+  recruit the wild version by **fighting/training it on that map** (gold). **Richer / more expensive land has
+  a chance to spawn STRONGER units** — so high-tier land is also a better hunting ground for good mons.
+- **Pets are population, never lost.** A pet that loses a fight is **not KO'd/destroyed** — it returns to the
+  wild or your reserve. Only **Master heroes** have the KO→revive lifecycle. (Decision 14 / the pets-never-
+  lost rule.)
+- **Composition cap:** a Master still fields a **bounded mix** of distinct elite species at once (⚙ decision-9
+  cap) — own more pet NFTs for more variety, field more Masters for more scale.
+
+### 5b. Post-battle unit fate — inventory it, or release it for its gold
+What you keep after a battle decides whether the gold/arms were worth it:
+
+| Choice | Effect | Recovered? |
 |---|---|---|
-| **① Release to the wild** | mons return to the biome; roster freed | **No** — the hire gold is sunk (a sink) |
-| **② Put to work (farm/guard)** | combat mon → **worker role**: farms resources / guards land | Retained as *productivity* (dual-role lore) |
-| **③ Retain in the Master's pool** | kept as ready elites, **retain their class** | Retained, but **bounded by the 2-class-per-Master cap** — overflow must release or work |
+| **① Inventory the trained unit** | keep the elite/soldier in your **roster** — persists (continuity), levels | Retained (costs **upkeep**) |
+| **② Release for its gold** | **strip the gold it carries** and **boot it back to the wild** | **Gold recovered** (the unit is let go) |
+| **③ Put to work (farm/guard)** | armed mon → **disarm to WORKER**: farms resources / guards land | Retained as *productivity* + your worker reserve |
 
-- Standing elites cost **upkeep** (food + a little gold/day) — so you can't hoard a huge elite army free;
-  release or put-to-work the overflow. This is a steady sink + a real roster-management decision.
-- Line soldiers (workers) that survive similarly return to population or the labor pool.
+- **Workers mostly come home**; **soldiers mostly don't**; **elites you choose to keep** cost **upkeep**
+  (food + a little gold/day) so you can't hoard a huge standing elite army free.
+- **Swift-win bonus (⚙):** win **quickly** (a decisive win, not stalling to grind the map) → a **chance a
+  wild version of an elite** on that map **joins you** for free. Reward for winning clean; you usually
+  collect **few** elites this way, but your **workers** reliably accumulate.
+- **Outside-the-MOBA recruiting** (the overworld alternative to in-battle training), cost/speed trade:
+  | Recruit outside | Speed | Cost | Note |
+  |---|---|---|---|
+  | **Worker** | **fast** | **cheap** | unarmed — must **ARM** (craft arms, resource) to field as a soldier |
+  | **Soldier (pre-armed)** | fast | **expensive** | a worker **+ arms bundled** — costs much more (you skip the craft step) |
+  | **Elite** | **slow** | cheaper than **in-game** training | lets you **pre-build elites** to bring to battle |
 
 ## 6. Structure persistence & pillage — what survives a battle on the CF land
 
@@ -155,7 +186,8 @@ big → **~300 materials**; a full tier-5 estate pillage = a large haul (but des
 4. **Components per land size** (single 1 → EPIC ~480; castle = final component, estates only) — §3.
 5. **Command-center + tier-defense structures** placed per the land's development (persist across battles);
    in-battle structures are per-match/occupier — §6.
-6. **Local unit species per biome** (the elite pool the command center hires from) — §2/§5.
+6. **Local unit species per biome** (the pool a battle map spawns; **richer land can spawn stronger
+   units**) — §2/§5.
 7. All **deterministic** (seed = parcelId+tier+biome) and **generator-clamped** to the tier budget.
 
 ## TL;DR
@@ -163,9 +195,11 @@ big → **~300 materials**; a full tier-5 estate pillage = a large haul (but des
 Land tier (bought with **CT**, exponential, estates ~8×) sets **how many resource tiles** (2→8), **richness**
 (40→100%), **mob camps** (1→6) and **defenses** a battle map spawns; **biome** sets **gold-vs-wood** and the
 **local unit species**; **land size** sets **how many ±161 components** (single 1 → EPIC ~480, castle =
-final component). Yields: gold tile ~50 (finite, enrich-seeded), wood ~60 (regrows ~3 days). **Units:
-line = drafted workers (CT), elite = command-center-hired biome mons (gold)** — the MOBA's in-match summons
-ARE your elite soldiers; own the pet NFT to pick the class, else random-from-biome; 2 classes/Master.
-Post-battle elites: **release (lose hire gold) / work (farm-guard) / retain (capped)**. Structures: **owner
+final component). Yields: gold tile ~50 (finite, enrich-seeded), wood ~60 (regrows ~3 days). **Units = a
+three-tier progression: WORKER (CT, cheap/fast, unarmed, accumulates) → ARM it → LINE SOLDIER (armed,
+consumable) → train in-battle with GOLD → ELITE (persists/levels).** Worker⇄soldier are the same mon
+(unarmed vs armed); pet **NFT = a training right for that CLASS** (else catch it wild on its biome map,
+richer land = stronger spawns); **pets don't KO — only Master heroes do.** Post-battle: **inventory it /
+release for its gold / put to work**; **swift win → chance a wild elite joins**. Structures: **owner
 tier-defenses + command centers persist**; a victor **pillages for ~30% materials or occupies to inherit
 them intact**. All numbers ⚙; all deterministic; all obey the net-sink + per-user cap (decision 17).
