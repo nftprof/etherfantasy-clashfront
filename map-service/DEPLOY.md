@@ -32,7 +32,19 @@ of the MOBA repo** — re-pull it on engine upgrades without losing CF wiring. T
 | `MAPS_API_TOKEN` | — | optional admin `x-maps-key` (ops); or drop `~/.ef_maps_key` on the box |
 | `MAPS_LLM_*` | — | optional server-side default LLM for owner prompts (else bring-your-own-key in the designer) |
 
-## Bring it up (pm2)
+## Bring it up — automated (CF self-hosted runner)
+
+Push to the **`deploy/map`** branch (or run the *Deploy map service* workflow via dispatch). The CF
+runner (label `cf`, already on `13.250.39.41` — no ssh key) rsyncs `map-service/` → `~/ef-map-service`
+and runs `deploy/remote-deploy-map.sh`: `pm2 start server.js --name ef-map-service` on `:8140`,
+health-gated on `/healthz`. The registry (`~/ef-battlefields`) is never touched. Isolated pm2 app —
+restarting it can't disturb `clashfront` (:8130) or cfx (:8131).
+
+```bash
+git push bsh HEAD:deploy/map      # ships map-service to the box via the CF runner
+```
+
+## Bring it up — manual (pm2)
 
 ```bash
 # from the CF checkout on the box (this repo), in map-service/
