@@ -7,6 +7,12 @@
 
 ## Docs here
 - **ECONOMY-SEAM.md** — the three CF↔maps hooks: ownership feed, invest flow, payout note.
+- **BATTLE-MAP-TEMPLATE-LIBRARY.md** — 24 open-field battlefield templates (real game maps +
+  historical battlefields), the archetype taxonomy, A1-schema methodology, and the NEW
+  battlefield-archetype appendix. Design input to expand the generator from 7 → ~48 archetypes.
+- **CASTLE-TEMPLATE-LIBRARY.md** — 24 castle/fortification siege templates (real forts worldwide),
+  each mapped to the estate "series of ±161 components, keep = final component" model, plus the NEW
+  castle-archetype appendix (prioritizes a shared `wall()` primitive).
 
 ## Live API quick-reference (moba.etherfantasy.com, lobby :8090 on the shared box)
 - `GET  /internal/v1/designs[?status=]` · `GET /internal/v1/designs/:parcelId` (lazy v0; returns
