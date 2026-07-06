@@ -19,6 +19,8 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { mapsApi } from "./maps/api.js";
+import * as reg from "./maps/registry.js";
+import { toBattlefieldA1 } from "./maps/command_converter.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = Number(process.env.MAPS_PORT || 8140);
@@ -48,6 +50,35 @@ async function ownersMap() {
   return _owners.map;
 }
 
+// A1 command-map producer: current (or ?v=N) raster artifact → toBattlefieldA1, cached per
+// parcelId+designVersion (immutable). Lazily generates v0 (square fallback) so a first hit works,
+// mirroring render.json. Never throws to the socket — errors → JSON 4xx/5xx.
+const _cmdCache = new Map(); // `${parcelId}:${v}` → A1 object
+function commandJson(req, res, parcelId) {
+  try {
+    const u = new URL(req.url, "http://x");
+    const vq = u.searchParams.get("v");
+    let row = reg.getRow(parcelId);
+    if (!row && vq == null) { try { reg.ensureDesign({ parcelId: String(parcelId) }); row = reg.getRow(parcelId); } catch { /* fall through */ } }
+    const v = vq != null ? Number(vq) : row?.designVersion;
+    if (v == null) { res.writeHead(404, { "content-type": "application/json", "access-control-allow-origin": "*" }); return res.end('{"ok":false,"error":"no_design"}'); }
+    const key = `${parcelId}:${v}`;
+    let a1 = _cmdCache.get(key);
+    if (!a1) {
+      const art = reg.readArtifact(parcelId, v);
+      if (!art) { res.writeHead(404, { "content-type": "application/json", "access-control-allow-origin": "*" }); return res.end('{"ok":false,"error":"no_design"}'); }
+      a1 = toBattlefieldA1(art);
+      if (_cmdCache.size > 2000) _cmdCache.clear();
+      _cmdCache.set(key, a1);
+    }
+    res.writeHead(200, { "content-type": "application/json", "cache-control": "public,max-age=31536000,immutable", "access-control-allow-origin": "*" });
+    res.end(JSON.stringify(a1));
+  } catch (e) {
+    res.writeHead(500, { "content-type": "application/json", "access-control-allow-origin": "*" });
+    res.end(JSON.stringify({ ok: false, error: String(e && e.message || e) }));
+  }
+}
+
 const sendFile = (res, file, type) => {
   fs.readFile(path.join(__dirname, file), (e, buf) => {
     if (e) { res.writeHead(404); return res.end("not found"); }
@@ -56,7 +87,7 @@ const sendFile = (res, file, type) => {
   });
 };
 
-const server = http.createServer((req, res) => {
+export function handleRequest(req, res) {
   const [p] = req.url.split("?");
 
   if (p === "/healthz" || p === "/health") { res.writeHead(200, { "content-type": "text/plain" }); return res.end("ok"); }
@@ -73,14 +104,29 @@ const server = http.createServer((req, res) => {
     return;
   }
 
+  // A1 command-view battlefield for a parcel (raster registry artifact → §3 converter). This is the
+  // vector map CF's command view + the MOBA loader consume (docs/briefs/BATTLEFIELD-SCHEMA.md). The
+  // bridge/match server (or CF's per-parcel loader) pulls it per battle; public + cached per version.
+  // GET /internal/v1/designs/<parcelId>/command.json[?v=N]
+  {
+    const m = /^\/internal\/v1\/designs\/([^/]+)\/command\.json$/.exec(p);
+    if (m) { commandJson(req, res, decodeURIComponent(m[1])); return; }
+  }
+
   // everything else → the map API (designer, registry, prompt/regenerate/freeze, thumbs, render.json)
   if (mapsApi(req, res)) return;
 
   res.writeHead(404, { "content-type": "text/plain" });
   res.end("not found");
-});
+}
 
-server.listen(PORT, HOST, () => {
-  // eslint-disable-next-line no-console
-  console.log(`[map-service] listening on http://${HOST}:${PORT}  (gallery / · designer /designer · api /internal/v1/*)`);
-});
+export const createMapServer = () => http.createServer(handleRequest);
+
+// Listen only when run as the entrypoint (tests import handleRequest without binding a port).
+const isMain = process.argv[1] && import.meta.url === `file://${process.argv[1]}`;
+if (isMain) {
+  createMapServer().listen(PORT, HOST, () => {
+    // eslint-disable-next-line no-console
+    console.log(`[map-service] listening on http://${HOST}:${PORT}  (gallery / · designer /designer · api /internal/v1/*)`);
+  });
+}

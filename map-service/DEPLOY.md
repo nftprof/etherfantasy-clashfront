@@ -12,6 +12,7 @@ the old lobby `:8090`**. This service replaces that upstream — bring it up, th
 | `/` `/gallery` | all-maps gallery → owned-parcel filter → click into the designer (`maps/gallery.html`) |
 | `/designer` `/designer/3d` | the studio + standalone 3D preview (`maps/api.js`, unchanged mirror) |
 | `/internal/v1/*` | manifest / artifact / prompt / regenerate / freeze / thumbs / render.json |
+| `/internal/v1/designs/<id>/command.json` | the **A1 command-view battlefield** for a parcel (raster registry artifact → §3 converter). The vector map CF's command view + the MOBA loader render; cached per designVersion. |
 | `/gallery/owners` | same-origin passthrough of CF's ownership feed (gallery "my land" filter; no CORS) |
 | `/healthz` | liveness (returns `ok`) — health-gate the deploy on this |
 
@@ -80,6 +81,21 @@ curl -fsS https://map.etherfantasy.com/healthz    # → ok
 ```
 
 No cert/vhost rework needed — only the `proxy_pass` port changes.
+
+## Last mile — generated maps in live battles
+
+The maps loop closes in two steps CF already ships:
+1. **Produce/serve the A1**: `GET /internal/v1/designs/<parcelId>/command.json` returns the parcel's
+   designed battlefield (raster registry artifact → §3 `command_converter`), cached per version.
+2. **CF prefers the parcel's own map**: CF's `battleStatic` calls `loadParcelBattlefield(parcelId)` —
+   it reads `<CF_PARCEL_MAPS_DIR>/<parcelId>.json` (default `<CF map dir>/parcels/`), validates it
+   against the 5 playability invariants, and uses it in place of the stand-in; missing/invalid ⇒
+   falls back to `legacy-{1,3}lane.json`. A bridge/match-server map still wins upstream (engine path).
+
+So to light up a real per-parcel map for the wild/command view, drop its `command.json` output at
+`<CF_PARCEL_MAPS_DIR>/<parcelId>.json` on the CF box (a tiny sync from the registry, or curl the
+endpoint). No code change, no restart of the game needed beyond picking up the file (cache is
+per-parcel, cleared on process restart).
 
 ## Retire the old designer (when `map.` is proven)
 
