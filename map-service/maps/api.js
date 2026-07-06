@@ -1,0 +1,258 @@
+// D1 manifest API + owner-prompt endpoint + designer studio page. Mounts on the lobby HTTP
+// server via one hook: `if (mapsApi(req, res)) return;` — self-contained, no lobby coupling.
+//
+//   GET  /internal/v1/designs?status=S            manifest list (registry rows)
+//   GET  /internal/v1/designs/:parcelId           { row, artifact }  (lazy-generates v0)
+//   GET  /internal/v1/designs/:parcelId/thumb.png[?v=N]
+//   POST /internal/v1/designs/:parcelId/prompt    { directive, params? } → LLM/params → new version
+//   POST /internal/v1/designs/:parcelId/regenerate{ params?, byOwner? }
+//   POST /internal/v1/designs/:parcelId/freeze    { on }
+//   GET  /designer                                the studio page (maps/designer.html)
+//
+// Auth (MVP): if MAPS_API_TOKEN is set, POSTs require `x-maps-key` to match. Real landowner
+// auth arrives when the CF overworld proxies these calls with land-ownership checks.
+// Parcel facts come from the overworld world snapshot (MAPS_WORLD_URL), cached 10 min;
+// unreachable world ⇒ generate from parcelId alone (square fallback per the brief).
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
+import * as reg from "./registry.js";
+import { translateDirective, llmEnabled } from "./llm.js";
+import { clampParams, budgetFor } from "./schema.js";
+import { verifyToken, loginPassword } from "../lobby/auth.js";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const WORLD_URL = () => process.env.MAPS_WORLD_URL || "https://cf.etherfantasy.com/api/world";
+// admin key: env or ~/.ef_maps_key (file = no pm2 env dance; CF's overworld runs on the SAME
+// box, so it reads the file directly — the invest secret never travels anywhere).
+let _tok = null;
+const TOKEN = () => {
+  if (process.env.MAPS_API_TOKEN) return process.env.MAPS_API_TOKEN;
+  if (_tok === null) { try { _tok = fs.readFileSync(`${process.env.HOME || ""}/.ef_maps_key`, "utf8").trim(); } catch { _tok = ""; } }
+  return _tok;
+};
+
+let _world = { at: 0, byId: new Map() };
+async function parcelFacts(parcelId) {
+  if (Date.now() - _world.at > 600_000) {
+    try {
+      const d = await fetch(WORLD_URL(), { signal: AbortSignal.timeout(6000) }).then((r) => r.json());
+      const parcels = d.parcels || d.world?.parcels || [];
+      _world = { at: Date.now(), byId: new Map(parcels.map((p) => [String(p.id ?? p.parcelId), p])) };
+    } catch { _world.at = Date.now() - 540_000; } // retry in ~1 min, don't hammer
+  }
+  const p = _world.byId.get(String(parcelId));
+  // polygon → the battlefield is built inside the parcel's REAL shape (square fallback without it)
+  return { parcelId: String(parcelId), zone: p?.zone || "", biome: p?.biome || "", polygon: p?.polygon };
+}
+
+const J = (res, code, obj) => { res.writeHead(code, { "content-type": "application/json", "access-control-allow-origin": "*" }); res.end(JSON.stringify(obj)); };
+const readBody = (req) => new Promise((ok) => { let b = ""; req.on("data", (d) => { b += d; if (b.length > 32768) req.destroy(); }); req.on("end", () => { try { ok(JSON.parse(b || "{}")); } catch { ok(null); } }); req.on("error", () => ok(null)); });
+
+// ---- edit gate: VIEWING is public, DESIGNING needs identity (+ ownership once known) --------
+// Identity: admin `x-maps-key` (ops), or a PG access token (the same one the lobby stores in
+// localStorage `ef_pg_token` — same origin) verified to the canonical username via lobby/auth.
+const _who = new Map(); // token -> { u, at } (60s cache so POST bursts don't hammer the PG API)
+async function identify(req) {
+  if (TOKEN() && req.headers["x-maps-key"] === TOKEN()) return { admin: true, username: "__admin__" };
+  const m = /^Bearer\s+(.+)$/.exec(req.headers.authorization || "");
+  if (!m) return null;
+  const tok = m[1], c = _who.get(tok);
+  if (c && Date.now() - c.at < 60_000) return c.u ? { username: c.u } : null;
+  const v = await verifyToken(tok).catch(() => null);
+  if (_who.size > 500) _who.clear();
+  _who.set(tok, { u: v && v.ok ? v.username : null, at: Date.now() });
+  return v && v.ok ? { username: v.username } : null;
+}
+// Ownership: pluggable feed (MAPS_OWNERS_URL → {owners:{parcelId:username}} or [{parcelId,owner}]),
+// cached 5 min. The public world snapshot has no owner data yet — until the CF overworld exposes
+// this feed, owners are UNKNOWN and any signed-in account may design (testing phase). The moment
+// the feed exists, owner-mismatch → 403 automatically. undefined = unknown/unowned.
+let _owners = { at: 0, map: new Map() };
+let _ownersUrl = null;   // env or ~/.ef_maps_owners_url (file = point at CF's feed without env)
+const ownersUrl = () => {
+  if (process.env.MAPS_OWNERS_URL) return process.env.MAPS_OWNERS_URL;
+  if (_ownersUrl === null) { try { _ownersUrl = fs.readFileSync(`${process.env.HOME || ""}/.ef_maps_owners_url`, "utf8").trim(); } catch { _ownersUrl = ""; } }
+  return _ownersUrl;
+};
+async function ownerOf(parcelId) {
+  const url = ownersUrl();
+  if (!url) return undefined;
+  if (Date.now() - _owners.at > 300_000) {
+    try {
+      const d = await fetch(url, { signal: AbortSignal.timeout(6000) }).then((r) => r.json());
+      const src = d.owners || d, m = new Map();
+      if (Array.isArray(src)) for (const o of src) m.set(String(o.parcelId), String(o.owner ?? o.username ?? "").toLowerCase());
+      else for (const [k, v] of Object.entries(src)) m.set(String(k), String(v).toLowerCase());
+      _owners = { at: Date.now(), map: m };
+    } catch { _owners.at = Date.now() - 240_000; }
+  }
+  return _owners.map.get(String(parcelId));
+}
+// pure decision (unit-tested): admin → yes; anonymous → 401; owned by someone else → 403.
+export const editDecision = ({ admin, username, owner }) =>
+  admin ? { ok: true } :
+  !username ? { ok: false, code: 401, error: "sign in to design land — log in through the game lobby first (viewing is open to everyone)" } :
+  owner && owner !== String(username).toLowerCase() ? { ok: false, code: 403, error: `this land belongs to ${owner} — only the owner can redesign it` } :
+  { ok: true };
+
+// returns true if the request was ours (response handled), false to let the lobby continue
+export function mapsApi(req, res) {
+  const [p] = req.url.split("?");
+  if (p === "/designer" || p === "/designer/" || p === "/designer/3d") {
+    // /designer = the studio · /designer/3d?parcel= = standalone layout-true 3D preview
+    // (placeholder art; the game-model render is the client's bfpreview, CLIENT_BATTLEFIELD_LOADER.md)
+    fs.readFile(path.join(__dirname, p === "/designer/3d" ? "preview3d.html" : "designer.html"), (e, buf) => {
+      if (e) { res.writeHead(404); return res.end("page missing"); }
+      res.writeHead(200, { "content-type": "text/html", "cache-control": "no-cache" });
+      res.end(buf);
+    });
+    return true;
+  }
+  if (p === "/internal/v1/parcels") {                       // land picker: world parcels ⊕ design status
+    parcelsList().then((parcels) => J(res, 200, { ok: true, parcels })).catch((e) => J(res, 500, { ok: false, error: e.message }));
+    return true;
+  }
+  if (p === "/internal/v1/whoami") {                        // designer sign-in state (Bearer = lobby's ef_pg_token)
+    identify(req).then((id) => J(res, 200, id ? { ok: true, username: id.username, admin: !!id.admin } : { ok: false }))
+      .catch(() => J(res, 200, { ok: false }));
+    return true;
+  }
+  if (p === "/internal/v1/login" && req.method === "POST") {  // direct PG email/password login (identity docs
+    readBody(req).then(async (b) => {                          // flow; app key stays server-side, like the lobby)
+      if (!b || !b.email || !b.password) return J(res, 400, { ok: false, error: "email + password required" });
+      const v = await loginPassword(String(b.email), String(b.password));
+      if (!v.ok) return J(res, 401, { ok: false, error: "Login failed: " + (v.reason || "bad credentials") });
+      J(res, 200, { ok: true, token: v.token, username: v.username });
+    }).catch((e) => J(res, 500, { ok: false, error: e.message }));
+    return true;
+  }
+  if (p === "/internal/v1/prefs") {                           // per-ACCOUNT designer defaults (provider/model —
+    (async () => {                                            //  API keys deliberately stay browser-local)
+      const id = await identify(req);
+      if (!id) return J(res, 401, { ok: false, error: "sign in first" });
+      const f = path.join(process.env.MAPS_DIR || path.join(process.env.HOME || ".", "ef-battlefields"), "prefs.json");
+      let all = {}; try { all = JSON.parse(fs.readFileSync(f, "utf8")); } catch {}
+      const k = String(id.username).toLowerCase();
+      if (req.method === "GET") return J(res, 200, { ok: true, prefs: all[k] || null });
+      if (req.method !== "POST") return J(res, 404, { ok: false });
+      const b = await readBody(req);
+      if (!b) return J(res, 400, { ok: false, error: "bad json" });
+      all[k] = {                                              // whitelist — never store keys server-side
+        provider: String(b.provider || "server").slice(0, 24), model: String(b.model || "").slice(0, 64),
+        customUrl: String(b.customUrl || "").slice(0, 200), customModel: String(b.customModel || "").slice(0, 64),
+      };
+      fs.mkdirSync(path.dirname(f), { recursive: true }); fs.writeFileSync(f, JSON.stringify(all));
+      J(res, 200, { ok: true, prefs: all[k] });
+    })().catch((e) => J(res, 500, { ok: false, error: e.message }));
+    return true;
+  }
+  if (!p.startsWith("/internal/v1/designs")) return false;
+  handle(req, res, p).catch((e) => J(res, 500, { ok: false, error: e.message }));
+  return true;
+}
+
+// world parcels (id + map position) merged with registry design status — feeds the designer's
+// clickable land map. Ownership filtering arrives later via the CF overworld proxy (it owns
+// governor/territory data); this endpoint is deliberately facts-only.
+async function parcelsList() {
+  await parcelFacts("__warm__");                              // ensure the world cache is fresh
+  const rows = new Map(reg.list().map((r) => [String(r.parcelId), r]));
+  const out = [];
+  for (const [id, p] of _world.byId) {
+    const c = p.center || [0, 0], r = rows.get(id);
+    out.push({ parcelId: id, x: c[0], y: c[1], ...(r ? { status: r.status, v: r.designVersion, archetype: r.archetype, palette: r.palette, approved: r.approved !== false, modes: r.sim?.modes || null, score: r.sim?.score ?? null } : {}) });
+  }
+  return out;
+}
+
+async function handle(req, res, p) {
+  const u = new URL(req.url, "http://x");
+  const seg = p.split("/").filter(Boolean); // internal v1 designs [parcelId] [action]
+  const parcelId = seg[3], action = seg[4];
+
+  if (req.method === "GET" && !parcelId)
+    return J(res, 200, { ok: true, llm: llmEnabled(), rows: reg.list(u.searchParams.get("status") || null) });
+
+  if (req.method === "GET" && parcelId && action === "owner") {
+    // acceptance/debug (admin-key only): what owner does the CF feed resolve for this parcel?
+    // Lets us verify feed→enforcement wiring the minute CF ships, without needing two accounts.
+    const id = await identify(req);
+    if (!(id && id.admin)) return J(res, 403, { ok: false });
+    return J(res, 200, { ok: true, parcelId, owner: (await ownerOf(parcelId)) ?? null, feedConfigured: !!ownersUrl() });
+  }
+  if (req.method === "GET" && parcelId && action === "thumb.png") {
+    const row = reg.getRow(parcelId);
+    const v = u.searchParams.get("v") ?? row?.designVersion;
+    const f = path.join(process.env.MAPS_DIR || path.join(process.env.HOME || ".", "ef-battlefields"), String(parcelId), `thumb.v${v}.png`);
+    return fs.readFile(f, (e, buf) => {
+      if (e) { res.writeHead(404); return res.end(); }
+      res.writeHead(200, { "content-type": "image/png", "cache-control": "no-cache", "access-control-allow-origin": "*" });
+      res.end(buf);
+    });
+  }
+
+  // engine-ready render manifest (heightfield + biome + trees/rocks/scatter derived from the grid).
+  // Lazily built + cached per designVersion. Consumed by the client ?bfpreview= render, command-mode
+  // underlay, and the designer 3D preview. Public (viewing is open, same as thumb/artifact).
+  if (req.method === "GET" && parcelId && action === "render.json") {
+    const row = reg.getRow(parcelId);
+    if (!row) { await reg.ensureDesign(await parcelFacts(parcelId)); }   // lazy v0 so first hit works
+    const v = u.searchParams.get("v");
+    const m = reg.readManifest(parcelId, v != null ? Number(v) : null);
+    if (!m) return J(res, 404, { ok: false, error: "no_design" });
+    if (m.error) return J(res, m.error === "converter_unavailable" ? 501 : 500, { ok: false, ...m });
+    res.writeHead(200, { "content-type": "application/json", "cache-control": "public,max-age=31536000,immutable", "access-control-allow-origin": "*" });
+    return res.end(JSON.stringify(m));
+  }
+
+  if (req.method === "GET" && parcelId) {
+    const v = u.searchParams.get("v");
+    if (v != null) { const row = reg.getRow(parcelId); return J(res, 200, { ok: true, row, artifact: reg.readArtifact(parcelId, Number(v)), budget: budgetFor(row?.investLevel ?? 0) }); }
+    const { row, artifact } = reg.ensureDesign(await parcelFacts(parcelId));   // lazy v0
+    return J(res, 200, { ok: true, row, artifact, budget: budgetFor(row?.investLevel ?? 0) });
+  }
+
+  if (req.method === "OPTIONS") { res.writeHead(204, { "access-control-allow-origin": "*", "access-control-allow-headers": "content-type,x-maps-key,authorization" }); return res.end(); }
+  if (req.method !== "POST" || !parcelId) return J(res, 404, { ok: false });
+  // EDIT GATE: viewing is public; prompt/regenerate/freeze need identity + (when known) ownership
+  const id = await identify(req);
+  const gate = editDecision({ admin: !!(id && id.admin), username: id && id.username, owner: await ownerOf(parcelId) });
+  if (!gate.ok) return J(res, gate.code, { ok: false, error: gate.error });
+  const by = (id && id.username) || "__admin__";
+  const body = await readBody(req);
+  if (!body) return J(res, 400, { ok: false, error: "bad json" });
+  const parcel = await parcelFacts(parcelId);
+
+  const budget = budgetFor(reg.getRow(parcelId)?.investLevel ?? 0);   // parcel's investment budget
+
+  if (action === "prompt") {
+    // Owner prompt: browser-side LLM sends ready `params`; otherwise our default provider
+    // translates `directive`. Either way clampParams(…, budget) + validator gate the result.
+    const directive = String(body.directive || "").slice(0, 600);
+    let params;
+    try { params = body.params ? clampParams(body.params, budget) : await translateDirective(directive, undefined, budget); }
+    catch (e) { return J(res, e.code === 503 ? 503 : 502, { ok: false, error: e.code === 503 ? "no default LLM configured — bring your own key in the designer, or set MAPS_LLM_* on the box" : "LLM failed: " + e.message }); }
+    const r = reg.regenerate(parcel, params, { byOwner: true, directive, by });
+    return J(res, 200, { ok: true, ...r, params, budget });
+  }
+  if (action === "regenerate") {
+    const r = reg.regenerate(parcel, body.params ? clampParams(body.params, budget) : null, { byOwner: !!body.byOwner, directive: body.directive || null, by });
+    return r.error ? J(res, 409, { ok: false, error: r.error }) : J(res, 200, { ok: true, ...r, budget });
+  }
+  if (action === "invest") {
+    // Investment tier changes are ECONOMY — they flow through the Clash Front overworld (it
+    // charges the CT). Admin-only until that wiring lands, so tiers can be tested end-to-end.
+    if (!(id && id.admin)) return J(res, 403, { ok: false, error: "investing flows through Clash Front (spend CT there to upgrade your land) — coming soon" });
+    reg.ensureDesign(parcel);                                  // a row must exist to carry the tier
+    const row = reg.setInvest(parcelId, body.level | 0);
+    return J(res, 200, { ok: true, row, budget: budgetFor(row.investLevel) });
+  }
+  if (action === "freeze") {
+    const row = reg.freeze(parcelId, body.on !== false);
+    if (!row) return J(res, 404, { ok: false, error: "no design yet" });
+    if (row.error) return J(res, 409, { ok: false, error: row.error, sim: row.sim }); // failed the sim gate — can't deploy
+    return J(res, 200, { ok: true, row });
+  }
+  return J(res, 404, { ok: false });
+}
