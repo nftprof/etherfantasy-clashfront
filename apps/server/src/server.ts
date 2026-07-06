@@ -356,6 +356,39 @@ export class ClashServer {
   }
 
   /**
+   * POST /api/launch-live — "launch live session on this land" (integration team,
+   * 2026-07-06). Directly allocates a `mode:"live"` match on the given parcel
+   * (player's Master vs AI) and returns the join info so the client opens the game
+   * client's hero-mode door (`/play?net=server&match&ticket`). Fresh allocate every
+   * click — a live match dies on a server restart, so the button never caches a
+   * matchId. Requires the battle engine to be configured (BATTLE_ENGINE_URL).
+   */
+  private async launchLive(governorId: string, parcelId: unknown): Promise<Record<string, unknown>> {
+    const cfg = this.config.battleEngine;
+    if (cfg === undefined) throw new ApiError(503, 'ENGINE_OFF', 'live battles are not enabled on this server (no BATTLE_ENGINE_URL)');
+    if (typeof parcelId !== 'string' || parcelId === '') throw new ApiError(400, 'BAD_PARCEL', 'parcelId is required');
+    const callbackUrl = cfg.callbackUrl ?? `http://127.0.0.1:${this.boundPort()}/internal/battle-result`;
+    const payload = this.game.launchLiveContext(governorId, parcelId, callbackUrl);
+    const battleId = String(payload['battleId']);
+    let result: { matchId?: string; joins?: { joinUrl: string; ticket?: string }[] };
+    try {
+      result = await allocateBattle(cfg, battleId, payload);
+    } catch (e) {
+      throw new ApiError(502, 'ALLOCATE_FAILED', `the match server could not start the live battle: ${e instanceof Error ? e.message : String(e)}`);
+    }
+    const grant = result.joins?.[0];
+    if (grant === undefined || !grant.joinUrl) {
+      throw new ApiError(502, 'NO_JOIN_URL', 'the match server allocated the battle but returned no joinUrl to seat the hero');
+    }
+    return {
+      battleId,
+      ...(result.matchId !== undefined ? { matchId: result.matchId } : {}),
+      joinUrl: grant.joinUrl,
+      ...(grant.ticket !== undefined ? { ticket: grant.ticket } : {}),
+    };
+  }
+
+  /**
    * POST /internal/battle-result — the R10 result callback receiver.
    * Verifies `X-CF-Signature: v1=<hex(hmacSHA256(secret, rawBody))>` in
    * constant time over the RAW body, rejects stale `issuedAt` (>10 min) and
@@ -640,6 +673,9 @@ export class ClashServer {
           return;
         case '/api/exhibition':
           sendJson(res, 200, this.startExhibition(session.governorId, session.name, body.parcelId, body.joinUrl));
+          return;
+        case '/api/launch-live':
+          sendJson(res, 200, await this.launchLive(session.governorId, body.parcelId));
           return;
         default:
           throw new ApiError(404, 'UNKNOWN_ENDPOINT', `no such endpoint ${path}`);
