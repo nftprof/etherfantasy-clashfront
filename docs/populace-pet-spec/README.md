@@ -16,13 +16,28 @@ This is the site's concrete interpretation of **Addendum E**
 (`../ADDENDUM-E-PentaPet-Species-Affinity.pdf`) — same design (species define talent,
 every pet can do every job but excels differently), turned into hard numbers per pet.
 
+## Answers to your economy-map report (2026-07-06)
+Re `../reports/PET-APTITUDE-ECONOMY-MAP.md`:
+- **Confirm #1 — rank/rarity = real power: YES.** Intended and locked. The ×1.0–×2.20 rank
+  multiplier scales real combat/work output — it's the core of the NFT store-of-value + rental
+  economy. The P2W ceiling is held exactly as you noted: decision-17's per-user cap + F2P fielding
+  common-mon armies. Build to "rarity is real power."
+- **Confirm #2 — the roster: delivered + enriched.** `pets-aptitudes.{csv,md}` now carry the
+  scarcity dimension you need (**capacity, dominant_role, biome_hint** per pet), and
+  **`role-scarcity-summary.md`** answers your three finalization items directly:
+  1. **Role supply** (→ prices): world capacity by dominant role — Farmers **1,945** & Adepts **1,824**
+     are scarcest (priciest); Crafters **4,028** & Soldiers **4,005** most abundant; Haulers 2,373.
+  2. **Rank ceiling** (→ power cap): mythic is **20 pets total** across the whole world; legendary+mythic ≈ small % of the 14,175 total capacity.
+  3. **Biome pools**: capacity by suggested biome (element-derived; refine with your biome wheel).
+
 ## Files here
 | File | What it is |
 |---|---|
-| `README.md` | this — orientation + the reconciliation asks |
+| `README.md` | this — orientation, confirms, reconciliation asks |
+| `role-scarcity-summary.md` | **the tuning numbers** — role supply, rank ceiling, biome pools (by capacity) |
 | `framework-reference.md` | the exact aptitude formula, the 5 rarity ranks (×mult), and all **17 elements** with their capability vectors + role lists |
-| `pets-aptitudes.md` | readable table of **all 228 pets**: type, rank, the 5 aptitude scores, primary roles |
-| `pets-aptitudes.csv` | the same 228 pets, machine-readable, with **full** role lists (kingdom_work, war_duties, brings_home, second_nature) |
+| `pets-aptitudes.md` | readable table of **all 228 pets**: capacity, type, biome, dominant role, rank, the 5 aptitude scores |
+| `pets-aptitudes.csv` | same 228 pets, machine-readable, with capacity/dominant_role/biome_hint + **full** role lists |
 
 Only the 228 pets with an assigned element are included (typeless/unreleased placeholder
 classes are excluded — they render no aptitudes on the site). ⚡ marks the 7 never-released
