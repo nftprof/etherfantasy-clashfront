@@ -228,7 +228,166 @@ the net-sink).
 
 ---
 
-## 5. Recommended integration path (phased, non-breaking)
+## 5. Resource replenishment, persistence & anti-exploit — the extraction ledger
+
+The make-or-break question: *if you mine gold in a battle and replay the map, is the gold still there,
+and does it add to your balance?* Get this wrong and it's an infinite-money faucet. The model:
+
+### Principle: a battle-map resource is a VIEW of the parcel's persistent RESERVE — not a per-match spawn
+
+The gold/ore/timber you can mine on a battle map is **not fresh loot generated for the match** — it is
+the **parcel's own persistent reserve, made harvestable**. Mining *moves* it: `in the ground → your
+army's saddlebags → (only if you win) your overworld stockpile`, and it is **debited from the parcel's
+reserve**. So:
+
+- **Replay the same map → the gold you already extracted is GONE.** The reserve is lower; the mine on
+  the map renders depleted/collapsed. It is the *same finite pile*, not a respawn. **This is the whole
+  anti-exploit** — there is no per-match faucet, only extraction from a fixed, persistent stock.
+- Non-renewables (gold/ore/gems) follow canon: *"never fully deplete — extraction becomes progressively
+  harder"* (VISION-BIBLE §75). The easy surface reserve goes first; the rest needs **deep-mine** at
+  higher cost/risk.
+
+### Where the reserve comes from — "gold only on enriched land" (your instinct, endorsed and made safe)
+
+Reserves are NOT free. Two sources, both anti-mint:
+1. **Baseline geology (small):** wild/unowned land holds only trace reserves — enough to flavor a
+   battle, never enough to farm.
+2. **Enrichment = the real source (the CT→reserve transformation):** pouring CT into a parcel **seeds a
+   physical gold/materials reserve in its ground.** This reuses the *existing enrich sink*: a fraction
+   of the CT becomes reserve; the rest still feeds region/lords/**BURN** (net-sink intact). So mined
+   gold is **recovery of CT you already sank, risk-gated** — never a mint.
+
+Because the CT was already spent (with burn leakage) to seed it, and getting it back costs soldiers +
+provisions + fighting monsters + the risk a raider steals it + landlord tax, **the loop is net-negative
+for the token.** You mine gold not to print money (the market + leakage kill that arbitrage) but for its
+**production/military utility** — craft, build, field-upgrade. Money stays CT; gold is an *input*.
+
+### Renewable vs non-renewable replenishment (why "trees grow over time")
+
+| Kind | Replenish | Deplete | Steward |
+|---|---|---|---|
+| **Timber, food** (renewable) | **regrow on a ⚙ timer** — cut a forest, it grows back over days | over-harvest faster than regrowth → **deforestation**: yield drops + prosperity scar until recovered | **pets tending** speeds regrowth; fallow/replant |
+| **Gold, ore, gems** (non-renewable) | do NOT regrow; **re-seed only via enrichment** (top up) or **deep-mine** (reach a new vein) | each extraction hardens the curve (surface→shaft→deep) | can't "grow" — only invest deeper |
+
+So: replay immediately after clear-cutting a forest → little timber; come back after regrowth → it's
+back. Replay after mining out the gold → it's gone until someone re-enriches or you deep-mine.
+
+### Rich land attracts monsters — fight AND mine (your mechanic, wired to existing PvE canon)
+
+A parcel's reserve richness **raises its threat** (drives the `docs/05` Taming Score / monster pressure).
+Rich deposits → **monsters spawn**: on the overworld as raids, and **on the battle map as monster camps
+that contest the mines**. So extraction is *never passive* — you must clear/hold the deposit to work it,
+fighting and mining at once. This is the anti-hoard governor: gold-rich land is a **battlefield, not a
+piggy bank**, and deep reserves wake **bosses** (the deep-mine ↔ boss link from §4). It also gives the
+wild-creature layer an economic reason to exist: **monsters are the guardians of value.**
+
+### Use-in-battle vs extract ("craft/use some, take some with you")
+
+Every harvested unit is a live choice between **tactical** and **strategic**:
+- **SPEND now (tactical, battle-scoped):** wood → raise walls/towers/traps *this match*; gold → summon a
+  reinforcement wave / field-upgrade a squad; food → extend the endurance clock. Consumed — it never
+  leaves the battle. (This IS the MOBA's local gold/wood loop.)
+- **EXTRACT (strategic, persistent):** whatever you *didn't* spend, plus a plunder share, is carried to
+  your overworld stockpile — **but only if you WIN.** Lose, and it's forfeit (the victor plunders it).
+
+The tension is the fun: *burn your harvest to win the fight, or hoard it to get rich* — and you only
+extract by winning, so economic gain is risk-gated to military success.
+
+### The turtle-farm problem: winning without finishing (the OP staller) — remove the incentive, then escalate
+
+The failure mode you flagged: a player who's clearly won *doesn't* finish the enemy, and instead safely
+farms the whole reserve. Your three options are the three real fixes — and they're best **layered**, in
+this priority:
+
+**A. Remove the incentive — winner auto-collects the SURFACE reserve (your option 1, as the baseline).**
+Winning (break the enemy core/army) **resolves the battle and auto-grants the parcel's currently-
+accessible surface reserve**, capped by what's in the ground, minus tax/burn. So there is **no reason to
+prolong** for the normal haul — you get it by winning, cleanly, no tedious hand-mining. This alone kills
+~90% of the exploit and is the best UX: honest players never stall because stalling gains them nothing.
+
+**B. Price the GREED-BEYOND-baseline — the destabilization clock (your option 2).**
+The only reason left to stay is to extract *more than* the surface haul — i.e., **deep-mine mid-battle**
+for the rare/deep reserve. Allowed, but it **wakes the land**: the longer you work past the win / the
+deeper you dig, the higher the **threat clock** climbs — monster waves grow, culminating in a **boss**.
+This is literally "rich land → monsters come up," turned into a *time-and-greed-escalating* pressure,
+wired to the `docs/05` Taming/boss system. So excess greed is **self-punishing**: extract-and-leave is
+safe; extract-*more* means surviving an escalating horde. An OP army *may* greed — but it's a priced
+risk/reward gamble, not a free farm.
+
+**C. Expose the staller to third parties (your option 3) — emergent, and free from tech we already have.**
+A battle left *live/unfinished* stays **joinable**, and both armies are attrited. In a contested zone a
+**third player's army can march in and wipe both**, taking the spoils — we get this for free from the
+existing **mid-battle reinforce / `joinAlly` + Masters-arrive-open-a-new-lane** primitive (decision 11).
+So dragging out a fight on rich land is a *beacon*: the longer you farm, the likelier a fresh army ends
+you. EVE-style emergent danger — and it works exactly where rich, enriched land is (populated regions).
+
+**Recommendation — lead with A+B, let C ride on top.** (A) removes the incentive so honest players never
+stall; (B) turns the *remaining* greed into a priced, escalating gamble instead of a safe exploit; (C)
+adds emergent danger in contested zones. The OP player's dominant line becomes **win → auto-collect →
+leave**, with **greed-for-more** as an opt-in, escalating, *exposed* gamble — which is *interesting*, not
+degenerate. Pure "let it play out" (C alone) fails on the frontier (no third party ever comes); pure
+"winner takes all" (A alone) throws away the deep-mine tension — so A+B is the spine, C is the flavor.
+
+### How the map-maker and landowner interact (so it all stays consistent)
+
+The trick is separating **layout (static)** from **reserve state (dynamic)** — the same split the schema
+already uses for structure HP:
+
+- **Map-maker** places resource-node **positions + types** in the Battlefield JSON to reflect the
+  parcel's endowment (gold parcel → `GOLD_MINE` nodes, forest → `WOOD_GROVE`, iron → ore outcrops +
+  forge build-spot). The **layout is stable/persistent** — it does NOT bake in amounts.
+- **Server (`game.ts` allocate context)** fills each node's **live `richness`/`remaining` from the
+  parcel's CURRENT reserve at battle time** — exactly like it already fills structure `hp/hpMax` from the
+  battle context (`BATTLEFIELD-SCHEMA.md`: *"the GENERATOR sets positions; game-time fills … from the
+  battle context"*). So one map renders **full** mines when the reserve is high and **depleted/collapsed**
+  mines when it's mined out. One layout, dynamic state.
+- **Landowner** drives the reserve and its defense: **enrich** (seed reserve → more value + yield, but
+  attracts threat), **steward** sustainability (pets, don't clear-cut), **design defenses** (walls/
+  structures) to protect the reserve from raiders + monsters, and **tax extraction** (landlord tax on
+  what occupiers mine). Their real decision: *rich-and-targeted vs quiet-and-safe*.
+- **Settlement callback** closes the ledger: the battle result reports harvested/extracted amounts per
+  side → the server **debits the parcel reserve, credits the victor's stockpile** (minus landlord tax +
+  burn), deterministically, in integer units, persisted in the world save.
+
+### Direct answers to your questions
+
+- **Same map's gold on replay — gone or still there?** *Gone* for whatever you extracted (it's the
+  parcel's persistent reserve, debited — not a respawn). Trees are *back* after their regrowth timer.
+- **Does mined gold add to your balance?** Only the **extracted share (what you carried out by winning)**,
+  and it lands in your **overworld stockpile as physical gold** — *not* directly as CT. Converting to CT
+  means selling on the market (leaky, price-moving), so it's a **resource** gain, not free money.
+- **Exploit prevention:** the reserve is **finite** + sourced from **enriched CT** (already sunk, with
+  burn leakage) + extraction costs **soldiers + provisions** + guarded by **monsters** + steal-able by
+  **raiders** + **landlord-taxed**. There is no positive-sum money loop anywhere — it's a *risk-gated
+  recovery of committed value*, which is exactly what keeps the net-sink intact.
+
+### The monetary constitution: CT is the base layer — nothing is created without a burn
+
+The law that stops everything above from becoming a shadow money supply: **CT is the sole base-layer
+currency, and the economy's total money grows ONLY by fresh player CT injection** (deposits — earnings
+from other EF games + the P2W deposit cap). Everything internal is a *transfer* or a *sink*. Resources
+(gold, timber, ore, materials) are **non-monetary production inputs, never money** — they only *realize*
+value when combined with a **burn**:
+
+- **Nothing is crafted, built, upgraded, or minted without a burn.** Craft an item/blueprint, raise a
+  structure, field-upgrade a unit = **materials + a CT burn (and/or a soldier burn)**. Resources *reduce*
+  the CT an action needs (they substitute for part of it) but never remove the **burn floor** — every
+  creative act carries a sink.
+- **Two, and only two, value flows:**
+  1. **Injection (grows the economy):** a player deposits fresh CT. This is the *only* way total money
+     rises — **a bigger player base = a bigger economy**, exactly as you said.
+  2. **Burn (shrinks it):** soldiers die (the CT that raised them is destroyed), enrichment leaks to
+     burn, crafting/building/upgrading/command-fees burn. **War is the largest sink.**
+- **Resources are transfers, not mints.** Mining moves existing reserve; selling gold for CT is a
+  player-to-player *transfer* (no new CT); enrichment *transforms* already-sunk CT into ground reserve.
+  So the resource layer can **never inflate the money supply.**
+
+Macro frame: **CT deposits are the money supply; resources are the goods; war is the demand sink.** This
+makes the entire design self-consistent with the net-sink doctrine — a *richer* resource economy means
+*more* CT burned to realize it, so **deeper economy ⇒ deeper sink**, never a faucet. The pie grows only
+when real players bring real CT in.
+
+## 6. Recommended integration path (phased, non-breaking)
 
 1. **Endowment (foundation).** Add a deterministic `endowment` to each parcel (arable/timber/ore/gold/
    gems/deep, seeded from parcel id + biome). Surface it on the parcel card. *No battle change yet* —
