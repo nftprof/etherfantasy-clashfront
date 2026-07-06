@@ -448,10 +448,14 @@ export function createTerrain(store, onUpdate) {
             const spine = sstep(1 - gm, 0.30, 0.70);
             const mass = sstep(sd[i], 0.05, RANGE_REF);           // wider strip → taller massif
             const pk = 0.25 + 0.75 * sstep(fbm(wx * 0.5, wy * 0.5, 71, 2), 0.35, 0.72); // massif envelope
-            const rg = ridged(wx * 0.7, wy * 0.7, 23, 3);         // rocky detail
-            const serr = ridged(wx * 0.75, wy * 0.75, 83, 2);     // crest serration → summits, not a ribbon
-            range = 0.10 + 0.30 * mass + rg * (0.14 + 0.26 * mass)
-              + spine * pk * (0.30 + 0.70 * serr) * (0.12 + 0.42 * mass);
+            // Coherent-ridge model (was pervasive high-freq ridged noise → "cracked" far-zoom look):
+            // a smooth massif BODY carries gentle rolling relief, and the medial spine carries a
+            // DOMINANT low-frequency crestline that climbs to the summits. Reads as real ranges.
+            const roll = fbm(wx * 0.5, wy * 0.5, 23, 3);          // smooth massif undulation (not cracks)
+            const crest = ridged(wx * 0.42, wy * 0.42, 83, 2);    // low-freq ridgelines along the spine
+            range = 0.12 + 0.36 * mass
+              + (roll - 0.5) * (0.10 + 0.16 * mass)
+              + spine * pk * (0.40 + 0.60 * crest) * (0.16 + 0.50 * mass);
           }
           e[i] = Math.min(E_MAX,
             sstep(landIn[i], 0, 0.30) * low + sstep(landIn[i], 0.15, 0.90) * hm * range);
