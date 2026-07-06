@@ -128,6 +128,25 @@ Bounding + safety rules:
 - **Rented pets** return to the lessor when the rental ends; while rented they occupy the renter's roster
   pool and count against the renter's caps (rental economy, master-summary §6).
 
+### 3a. Land population & the draft cap (ROTK model, owner-decided 2026-07-06)
+
+Each parcel has a **population** — the mons living/working there (this is the same number that gates army
+size, farm output, and pet-populace capacity: **one stat**). You **recruit from it, but never drain it**:
+
+- **Draft cap = 50% of current population** (base). A land of **10,000 pop → you may draft 5,000** at once;
+  the other half stays home to keep the land alive. (Prevents scorched-earth over-drafting; keeps land a
+  renewable source, not a one-shot.)
+- **Population regrows over time**, from the post-draft level **back toward its max** (⚙ `popRegrowRate`).
+  So draft, wait, draft again — a natural pacing/cooldown on how fast you can field fresh armies.
+- **Landowner upgrade raises the ceiling** (the `INVEST_TIERS` land-improvement tier, `LAND-VALUE-AND-
+  IMPROVEMENT.md`): a higher tier lifts both the **max population** and the **draftable fraction** (50% →
+  up toward 100% at top tiers) — so improved land fields **bigger armies**.
+- **Warlord enrichment speeds replenishment.** A warlord **investing (enriching) CT into land** raises
+  `popRegrowRate` — so contested/valuable land **refills faster**, letting the holder sustain more battles
+  (an enrich sink that buys tempo, decision 13). Owner upgrade = the ceiling; warlord enrich = the speed.
+- **The ≥100-pet floor (`minGarrison`, `BATTLE-MAP-AND-UNIT-SPEC` §5c)** is the *minimum* to hold/defend a
+  land; the **draft cap** is the *maximum* you can pull for an army — a land operates between the two.
+
 ---
 
 ## 4. Getting units — NFT = a training right for the class; else catch/recruit it wild
