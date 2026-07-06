@@ -124,7 +124,10 @@ export function handleRequest(req, res) {
 export const createMapServer = () => http.createServer(handleRequest);
 
 // Listen only when run as the entrypoint (tests import handleRequest without binding a port).
-const isMain = process.argv[1] && import.meta.url === `file://${process.argv[1]}`;
+// Under pm2 FORK mode the entry is pm2's ProcessContainerFork wrapper, not this file — pm2 exposes
+// the real script path in `pm_exec_path`. Fall back to argv[1] for a direct `node server.js`.
+const entry = process.env["pm_exec_path"] || process.argv[1] || "";
+const isMain = import.meta.url === `file://${entry}`;
 if (isMain) {
   const srv = createMapServer();
   srv.on("error", (e) => {
