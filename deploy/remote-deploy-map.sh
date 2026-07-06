@@ -1,17 +1,18 @@
 #!/usr/bin/env bash
-# Clash Front — map service (map.etherfantasy.com → :8140).
+# Clash Front — map service (map.etherfantasy.com → :8150).
 #
 # The standalone map-service process (map-service/server.js): all-maps gallery + designer + registry
 # API. It is a NON-workspace, ZERO-dependency ESM folder, so there is NO pnpm install / build — we
 # just (re)start it under pm2. Runs on the SAME box + self-hosted runner (label: cf) as the live game
-# (`clashfront` :8130) and cfx (:8131); its own pm2 app `ef-map-service` on :8140 is fully isolated —
-# restarting it never touches either. nginx `proxy_pass`es map.etherfantasy.com at :8140 (DEPLOY.md).
+# (`clashfront` :8130), cfx (:8131), cf-battle-api (:8140); its own pm2 app `ef-map-service` on :8150
+# is fully isolated. nginx `proxy_pass`es map.etherfantasy.com at :8150 (DEPLOY.md).
 set -euo pipefail
 # App dir: the synced ~/ef-map-service on the box (stable path for pm2), else the repo's map-service/
 # when run from a checkout. MAPS_APP_DIR lets the workflow point us at the synced copy.
 cd "${MAPS_APP_DIR:-$(dirname "$0")/../map-service}"
 
-APP_PORT="${MAPS_PORT:-8140}"
+# :8140 is cf-battle-api on the shared box — the map service uses :8150.
+APP_PORT="${MAPS_PORT:-8150}"
 APP_NAME="${MAPS_APP_NAME:-ef-map-service}"
 
 command -v pm2 >/dev/null 2>&1 || npm i -g pm2

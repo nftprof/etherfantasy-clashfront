@@ -24,7 +24,7 @@ of the MOBA repo** — re-pull it on engine upgrades without losing CF wiring. T
 
 | Var | Default | Notes |
 |---|---|---|
-| `MAPS_PORT` | `8140` | listener port — this is what `proxy_pass` targets |
+| `MAPS_PORT` | `8150` | listener port — this is what `proxy_pass` targets |
 | `MAPS_HOST` | `127.0.0.1` | nginx fronts TLS; keep it loopback |
 | `MAPS_DIR` | `~/ef-battlefields` | the immutable design registry. **READ the shared dir, don't migrate** (immutable per `designVersion` → concurrent readers are safe). ONE writer only — this service owns generate/regenerate; don't also let the lobby write. |
 | `MAPS_WORLD_URL` | `https://cf.etherfantasy.com/api/world` | parcel facts (zone/biome/polygon) |
@@ -37,7 +37,7 @@ of the MOBA repo** — re-pull it on engine upgrades without losing CF wiring. T
 
 Push to the **`deploy/map`** branch (or run the *Deploy map service* workflow via dispatch). The CF
 runner (label `cf`, already on `13.250.39.41` — no ssh key) rsyncs `map-service/` → `~/ef-map-service`
-and runs `deploy/remote-deploy-map.sh`: `pm2 start server.js --name ef-map-service` on `:8140`,
+and runs `deploy/remote-deploy-map.sh`: `pm2 start server.js --name ef-map-service` on `:8150`,
 health-gated on `/healthz`. The registry (`~/ef-battlefields`) is never touched. Isolated pm2 app —
 restarting it can't disturb `clashfront` (:8130) or cfx (:8131).
 
@@ -50,13 +50,13 @@ git push bsh HEAD:deploy/map      # ships map-service to the box via the CF runn
 ```bash
 # from the CF checkout on the box (this repo), in map-service/
 cd map-service
-MAPS_PORT=8140 \
+MAPS_PORT=8150 \
 MAPS_DIR="$HOME/ef-battlefields" \
 MAPS_WORLD_URL="https://cf.etherfantasy.com/api/world" \
 MAPS_OWNERS_URL="https://cf.etherfantasy.com/api/land-owners" \
 pm2 start server.js --name ef-map-service --update-env
 pm2 save
-curl -fsS http://127.0.0.1:8140/healthz   # → ok
+curl -fsS http://127.0.0.1:8150/healthz   # → ok
 ```
 
 (`PG_APP_KEY` comes from the box's existing provisioning — export it in the pm2 env or rely on the
@@ -65,11 +65,11 @@ curl -fsS http://127.0.0.1:8140/healthz   # → ok
 
 ## Repoint nginx (one line)
 
-Edit `/etc/nginx/sites-available/map.etherfantasy.com` — change the interim upstream to `:8140`:
+Edit `/etc/nginx/sites-available/map.etherfantasy.com` — change the interim upstream to `:8150`:
 
 ```nginx
 location / {
-    proxy_pass http://127.0.0.1:8140;   # was :8090 (interim lobby)
+    proxy_pass http://127.0.0.1:8150;   # was :8090 (interim lobby)
     proxy_set_header Host $host;
     proxy_set_header X-Forwarded-Proto $scheme;
 }
