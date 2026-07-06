@@ -44,13 +44,29 @@ LLM (LLM only picks PARAMETERS, then `clampParams`+validator-gated).
 
 ## Two TODOs (from the handover — the real work)
 
-1. **§3 — command-view reconciliation (TOP PRIORITY).** Our artifact is **raster** (a 161×161 terrain
-   grid); CF's command view (`apps/server/public/js/battle.js drawBattlefieldMap`) is **vector** (A1
-   schema: `bounds` + obstacle footprints + `lanes[]{id,side,waypoints}` + `structures[]` incl. `CORE`).
-   So our maps would render nearly empty there. **Fix:** a raster→A1-vector converter (cluster
-   FOREST/WATER/ROCK/CLIFF cell regions into obstacle footprint polygons with `passable`, wrap lanes,
-   emit a `CORE`, ids everywhere), validated against `drawBattlefieldMap` + `data/moba-maps/legacy-*.json`.
-   Refs: `docs/briefs/BATTLEFIELD-SCHEMA.md` (A1) + `docs/briefs/COMMAND-MAP-SPEC.md`.
+1. **§3 — command-view reconciliation — ✅ DONE (`maps/command_converter.js`).** Our artifact is
+   **raster** (a 161×161 terrain grid); CF's command view (`apps/server/public/js/battle.js
+   drawBattlefieldMap`) is **vector** (A1 schema: `bounds` + obstacle footprints +
+   `lanes[]{id,side,waypoints}` + `structures[]` incl. `CORE`), so the raw artifact renders nearly
+   empty there. `toBattlefieldA1(artifact)` closes the gap deterministically:
+   - clusters BLOCKED terrain cells (FOREST/WATER/ROCK/CLIFF) into obstacle **footprint polygons**
+     (`passable:false` = the walkability truth) via 4-connected components + boundary trace + collinear
+     simplify; sub-`MIN_FOOTPRINT_CELLS` specks become round obstacles; décor props carry through as
+     `passable:true` visual layer, so grid-walkability is preserved 1:1;
+   - wraps bare lane arrays as `{id,side,waypoints}`; synthesizes `CORE`/`GATE`/`TOWER` anchored on
+     the generator's guaranteed-clear ATTACKER/DEFENDER base spawns (NOT a fixed ±114.8 — a generated
+     map's real cleared base is authoritative);
+   - **force-opens a clear pocket** around bases (`CORE_CLEAR`), spawns (`SPAWN_CLEAR`) and along each
+     lane centerline (`LANE_CLEAR`) so vectorized terrain never seals a staging area or corridor —
+     making CF's validator invariants 1 (corridor) + 4 (base clear) true by construction;
+   - stamps ids everywhere; normalizes `buildSpots.size` numeric→`"S"/"M"/"L"` + side; carries
+     `meta.biome/sizeClass/sizeM/laneCount`.
+
+   **Verified in-repo:** `maps/test/command_converter.test.js` 8/8 (shape + walkability parity), and
+   every converted map passes CF's real `apps/server/src/battlefield.ts validateBattlefield`
+   (**120/120** across biomes) — the identical schema `drawBattlefieldMap` + `data/moba-maps/legacy-*.json`
+   use, so it renders with zero renderer changes. Refs: `docs/briefs/BATTLEFIELD-SCHEMA.md` (A1) +
+   `docs/briefs/COMMAND-MAP-SPEC.md`.
 2. **§4 — `map.etherfantasy.com` portal.** Login → all-maps gallery → owned-parcel filter → designer.
    Needs DNS (`map → 13.250.39.41`), an nginx vhost + cert, a gallery page, and owned-parcel filtering
    wired to CF ownership. The designer (`designer.html`) is standalone static hitting `/internal/v1/*`.
