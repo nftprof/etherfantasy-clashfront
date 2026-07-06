@@ -41,10 +41,13 @@ export PG_APP_KEY
 # admin ops key (x-maps-key) + optional server-side default LLM — read from box files if present.
 [ -n "${MAPS_API_TOKEN:-}" ] && export MAPS_API_TOKEN || true
 
-# ---- (re)start under pm2 ---------------------------------------------------------------------
-pm2 restart "$APP_NAME" --update-env 2>/dev/null \
-  || pm2 start server.js --name "$APP_NAME" --update-env \
-       --max-restarts 1000 --restart-delay 3000 --time
+# ---- (re)start under pm2 — DELETE + START (not restart) --------------------------------------
+# A crash-looping app does NOT reliably pick up a new MAPS_PORT on `pm2 restart --update-env`
+# (the earlier :8140 clash left it looping on the old port). The service is stateless (registry is
+# on disk), so tear it down and recreate for a clean process with the correct env every deploy.
+pm2 delete "$APP_NAME" 2>/dev/null || true
+pm2 start server.js --name "$APP_NAME" --update-env \
+  --max-restarts 1000 --restart-delay 3000 --time
 pm2 save
 
 # ---- health gate (POLL — the ESM import chain server→api→registry→auth can take >2s to bind) -----
@@ -56,5 +59,9 @@ done
 if [ -n "$ok" ]; then
   echo "✅ ${APP_NAME} healthy on :${APP_PORT} (map.etherfantasy.com upstream)"
 else
-  echo "❌ map-service health check failed after 30s"; pm2 logs "$APP_NAME" --lines 40 --nostream; exit 1
+  echo "❌ map-service health check failed after 30s — diagnostics:"
+  echo "--- what is on :${APP_PORT} ---"; (ss -ltnp 2>/dev/null || netstat -ltnp 2>/dev/null) | grep -E ":${APP_PORT}\b" || echo "(nothing listening on ${APP_PORT})"
+  echo "--- pm2 describe ---"; pm2 describe "$APP_NAME" 2>/dev/null | grep -E "status|script|exec cwd|error log|out log|restarts|unstable|exit code" || true
+  echo "--- pm2 logs ---"; pm2 logs "$APP_NAME" --lines 50 --nostream || true
+  exit 1
 fi
