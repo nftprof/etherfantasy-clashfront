@@ -20,6 +20,34 @@ same Hero record fights PvE and leads Clash Front armies"):
 So the same asset is the **faucet source, the war unit, and the store of value.** Everything below hangs
 off this.
 
+## 0b. THE SECURITY INVARIANT — the anti-cheat engine (TOP PRIORITY · on-contract · owner 2026-07-06)
+
+The rule **above all others**, enforced **on-contract, per user**. Every mechanic below obeys it.
+
+> **A user can NEVER withdraw more CT than they deposited.** The game is a **house-edged, negative-sum CT
+> machine** — an **arcade / ticket-redemption model**: put CT in, play, redeem rewards, but the *base
+> mechanic never pays out more CT than you put in.* "The more you put in, the more we give back — but at a
+> cut, never above your input."
+
+| Element | Rule |
+|---|---|
+| **Per-user cap** | withdrawable CT **W ≤ deposited CT D** — always net-negative by default (the house edge) |
+| **The rake** | **≥10% of CT flow is ALWAYS burned** (hard floor, net-sink); total cut can reach **10–40%**, the part above the burn going to a **developer VAULT** |
+| **The vault** | the redistribution + **prize pool** (rake + revenue). Devs **discretionarily, with vetting** award rewards from it — the "occasional major store rewards" and the **only** path to net-positive |
+| **Anti-cheat** | because it's structurally negative-sum for CT and the only upside is **house-granted + vetted**, botting/cheating **cannot drain it** — no exploitable mechanic pays out more than deposits allow |
+| **On-contract** | every deposit/withdraw/burn is **per-user accounted on-chain** (vault contract + keeper). Not published — it's the underlying engine |
+
+**Where the cap bites (corollary — reconciles with the rest of this doc):** the internal resource economy
+(mine gold, plunder, trade, craft, conquer) is a **rich, dynamic off-chain gameplay layer** — a player can
+be *in-game rich* (gold, land, gear, standing). But the **on-chain CT cash-out is separately capped per
+user (W ≤ D − rake)**. So "grow your balance" = in-game wealth + competitive standing (which the vault
+*may* reward), **NOT** guaranteed on-chain profit. The earlier sims (e.g. "+1.2 CT/week") describe *in-game*
+CT movement (redistribution among players); **net on-chain withdrawal stays ≤ deposits.** This is the
+net-sink doctrine made **per-user and contract-enforced**, with a **≥10% burn floor** underneath.
+
+Everything else — soldiers, gear, land tiers, enrichment, rentals — are CT sinks that feed the burn + the
+vault. The whole economy is the *machine*; this invariant is the *coin slot and the ticket dispenser*.
+
 ## 1. The value stack — three tiers (on-chain money · scarce NFTs · backend resources)
 
 | Tier | Asset | On-chain? | Supply | Role | Axie analogue |

@@ -149,6 +149,20 @@ export can be converted to the documented format. See `data/README.md`.
     CT economy needs a re-scale down** (current values are 10–100× too high). Scoped as a task in
     `docs/briefs/HANDOFF-BATTLE-COMMAND-HERO-MAPS.md`.
 
+17. **SECURITY INVARIANT — the anti-cheat engine (2026-07-06, TOP PRIORITY, on-contract):** the rule
+    ABOVE all economy mechanics. **A user can NEVER withdraw more CT than they deposited** — the game is a
+    **house-edged, negative-sum CT machine** (arcade / ticket-redemption): put CT in, play, redeem, but the
+    base mechanic never pays out more CT than went in. **Rake on CT flows: ≥10% ALWAYS burned** (hard
+    floor, net-sink); total cut up to **10–40%**, the part above the burn to a **developer VAULT** =
+    the redistribution/prize pool (rake + revenue), paid out **discretionarily + vetted** (the only path to
+    net-positive; the "occasional major reward"; unpublished). This is the anti-cheat: structurally
+    negative-sum + house-granted-only upside ⇒ botting/cheating can't drain it. **On-contract, per-user
+    accounted** (vault contract + keeper). The internal resource economy (gold/plunder/trade/craft) is a
+    rich off-chain gameplay layer; the **on-chain CT cash-out is where the per-user cap + rake bite** —
+    in-game-rich ≠ on-chain-profit. Net-sink doctrine (decision 13) made per-user + contract-enforced.
+    Full model: `docs/reports/ECONOMY-MASTER-SUMMARY.md` §0b (+ RESOURCE-MAP, WARGAME-DESIGN-STUDY,
+    `docs/maps/LAND-VALUE-AND-IMPROVEMENT.md`). Economy design is in REVIEW; this invariant is locked.
+
 ## 📜 v0.2 VISION BIBLE (2026-07-02): `docs/VISION-BIBLE-v0.2.md` + `docs/ADDENDUM-E-PentaPet-Species-Affinity.pdf`
 Overarching new spec from the product owner: PentaPets = the living population (workers/soldiers/
 units, species affinities), terraforming, geology/materials, blueprint NFTs, living cities.
