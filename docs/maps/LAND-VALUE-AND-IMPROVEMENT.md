@@ -84,6 +84,17 @@ Add these budgeted axes on top of the existing tier caps (all still generator-cl
   ridge / chokepoint the defender holds, or a river/wall that funnels attackers. Higher tier = stronger,
   more defensible ground (maps to the `ridge/riverBand/wall` feature-DSL + high-ground scoring in the
   LLM curriculum). *This is the "strong strategic point" ask.*
+- **Natural defensive features scale with ESTATE SIZE (owner 2026-07-06).** Bigger estates get more (and
+  more unique) natural defensive terrain — hills, cliffs, ravines, narrow passes, fordable rivers — not
+  just more components. This is a size-driven bonus on top of purchased grade: a 10,000-hex estate is a
+  *landscape* with real high ground, an EPIC's castle sits on a crag. Ties to `heightField` (elevation as
+  gameplay, see the constraints brief) and the atlas's mountain/coast zones.
+- **Terrain-as-weapon (defensive actions, `heightField`-driven).** Where an estate has hills, the defender
+  can trigger **downhill hazards** — roll boulders / drop logs / release a dammed stream down a slope into
+  the attacker's lane (a one-shot, cooldown'd defensive action, cost/charge in CT or materials). This makes
+  elevation *actionable*, not just cover, and gives estates a signature "hold the high ground" identity.
+  Needs the `heightField` layer + a HAZARD terrain code (both already scoped in the constraints/curriculum
+  briefs). **Design note for review — not yet speced into the generator.**
 - **Resource-tile TYPE + placement** — beyond count/richness, let the owner bias toward **gold** (economy)
   vs **wood** (soldiers/structures), and toward **defensible** placement (near the keep) vs **contested**
   (mid-map, higher yield but raidable). *This is the "more resource tile for gold and wood" ask.*
