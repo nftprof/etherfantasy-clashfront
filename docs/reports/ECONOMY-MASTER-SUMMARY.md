@@ -85,6 +85,35 @@ So the land loop is: **spend CT to improve/enrich → land spawns more → riche
 war.** Caps mean improvement is finite (you buy the ceiling up, with diminishing returns), and the whole
 thing is a **CT sink that manufactures conflict** — exactly what a war game wants.
 
+### 5b. Alignment — the concrete mechanism is the `INVEST_TIERS` ladder (land team, 2026-07-06)
+
+The land-creator team delivered **`docs/maps/LAND-VALUE-AND-IMPROVEMENT.md`** — the authoritative
+land-improvement spec. It **is** the concrete form of the "improvement caps" above: the live
+`INVEST_TIERS` ladder (in `map-service/maps/schema.js`) is the cap mechanism. CT-spend raises a parcel's
+**tier 0→5**, which raises the **map budget** the deterministic generator is clamped to:
+
+| Tier | Name | Resource tiles | Max richness | Mob camps | Towers | Barriers |
+|---|---|---:|---:|---:|---:|---:|
+| 0 | Untamed | 2 | 40% | 1 | 0 | 0 |
+| 2 | Developed | 4 | 70% | 3 | 2 | 1 |
+| 5 | Golden | 8 | 100% | 6 | 6 | 4 |
+
+Higher tier = more/richer resource tiles + more mob camps (**richer land literally spawns more monsters →
+my "rich land attracts warlords + monsters" is the same knob**) + stronger defenses. It's wired to
+ECONOMY-SEAM Hook 2 (`POST …/invest {level}`, CT burned) + Hook 3 (landowner payout). **Adopt it as the
+mechanism; my §5 is the *why*, their doc is the *how*.**
+
+**Recommended answers to their 6 open questions (from this economy model):**
+
+| # | Their question | Recommendation (grounded in the numbers) |
+|---|---|---|
+| 1 | CT cost curve per tier — linear/exponential? per class? | **Exponential** (whale sink; the faucet needs deep sinks) — e.g. single-parcel ~10/30/90/270/810 CT for tiers 1–5; **estates 5–10× more** (castle grades = the whale premium). |
+| 2 | Decay/raid downgrade, or permanent? | **Split cap from reserve:** the **tier (cap) is permanent** (clean, resale-able asset), but the **reserve (fill toward it) depletes** via extraction/raid (§5, resource-map). Fully-abandoned land slowly reverts. |
+| 3 | Strategic terrain — own axis or folded? | **Fold into the tier for MVP** (fewer dials); tier ≥3 unlocks designed high-ground. Separate axis is a post-MVP refinement. |
+| 4 | Gold-vs-wood bias — specialize or generic? | **Specialize** — this *is* the geology/heterogeneity keystone. Seed a baseline bias from biome (forest→wood, hills→iron/gold), let owners tilt further. Specialization creates trade demand (§6 commerce). |
+| 5 | Castle granularity — steps? each ring a component? | **Yes, each wall ring = one more ±161 component** (decision 4) → bigger castle = more battles to breach = defensibility *and* a whale sink. ~3–4 grades (manor→keep→castle→epic), gated by estate size. |
+| 6 | Occupier vs owner CT spend? | **Owner buys permanent tier; occupiers spend CT on *temporary*, destructible/pillageable structures** (decision 10) — a sink, but lost when the land changes hands. Permanent value = owner-only. |
+
 ## 6. The rental economy (Axie-style scholarship — for whales + F2P access)
 
 Scarce NFTs (Masters, legendary items, prime land) can be **rented**, so whales monetize ownership and
