@@ -46,8 +46,14 @@ pm2 restart "$APP_NAME" --update-env 2>/dev/null \
        --max-restarts 1000 --restart-delay 3000 --time
 pm2 save
 
-# ---- health gate -----------------------------------------------------------------------------
-sleep 2
-curl -sf "http://127.0.0.1:${APP_PORT}/healthz" >/dev/null \
-  && echo "✅ ${APP_NAME} healthy on :${APP_PORT} (map.etherfantasy.com upstream)" \
-  || { echo "❌ map-service health check failed"; pm2 logs "$APP_NAME" --lines 30 --nostream; exit 1; }
+# ---- health gate (POLL — the ESM import chain server→api→registry→auth can take >2s to bind) -----
+ok=""
+for i in $(seq 1 30); do
+  if curl -sf "http://127.0.0.1:${APP_PORT}/healthz" >/dev/null 2>&1; then ok=1; break; fi
+  sleep 1
+done
+if [ -n "$ok" ]; then
+  echo "✅ ${APP_NAME} healthy on :${APP_PORT} (map.etherfantasy.com upstream)"
+else
+  echo "❌ map-service health check failed after 30s"; pm2 logs "$APP_NAME" --lines 40 --nostream; exit 1
+fi
