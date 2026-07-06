@@ -83,34 +83,34 @@ strongest component.
 - **Castle grade** (estates): each grade adds **1 wall ring = 1 more ±161 component to breach** + a stronger
   keep (final-component HP). ~3 grades (manor→keep→fortress) gated by estate size.
 
-## 5. The unit model — a THREE-tier progression: worker → armed line soldier → elite
+## 5. The unit model — three roster types (worker / line / elite); the ARMY is two-tier (LINE / ELITE)
 
-**Correction (owner 2026-07-06):** it is a **three-tier** progression, not a two-class binary. Pet mons are
-the population; a mon moves **up the tiers** by being **armed** then **trained/evolved**. The tiers are the
-three friendly unit types you field in any battle:
+**Correction (owner 2026-07-06):** the **roster** has **three** types — but the **fielded army is still the
+two-tier LINE / ELITE**. The third type, **WORKER**, is the **unarmed reserve state of a line soldier** (same
+mon), so only **worker ⇄ line** interchange. **ELITE is always armed** — it never disarms to a worker.
 
-| # | Type | What it is | Raised by | Cost / speed (⚙) | Strength | Continuity |
-|---|---|---|---|---|---|---|
-| 1 | **WORKER** | base mon, **unarmed** | **CT** population recruit | **cheap + fast** | baseline | **high** — rear role, mostly survives → **accumulates** |
-| 2 | **LINE SOLDIER** | a worker **that has been ARMED** | worker **+ crafted arms** (resource) | fast; the **arms** cost resource/craft | ~**same as a worker**, but combat-ready | low — front line, **mostly dies** |
-| 3 | **ELITE** | a line soldier **trained/evolved** in-battle | **GOLD** (train/recruit on the map) | **expensive + slow** | **2–3×** a line soldier | high — **persists + levels** |
+| # | Roster type | Army role | What it is | Raised by | Cost / speed (⚙) | Strength | Continuity |
+|---|---|---|---|---|---|---|---|
+| 1 | **WORKER** | — (labor) | base mon, **unarmed** | **CT** population recruit | **cheap + fast** | baseline | **high** — rear role, mostly survives → **accumulates** |
+| 2 | **LINE SOLDIER** | **LINE** | a worker **that has been ARMED** | worker **+ crafted arms** (resource) | fast; the **arms** cost resource/craft | ~**same as a worker**, but combat-ready | low — front line, **mostly dies** |
+| 3 | **ELITE** | **ELITE** | a line soldier **trained/evolved** in-battle; **always armed** | **GOLD** (train/recruit on the map) | **expensive + slow** | **2–3×** a line soldier | high — **persists + levels** |
 
 **The tier progression (the tech-tree):**
 ```
   WORKER  ──(ARM: craft arms, spend resource)──►  LINE SOLDIER  ──(TRAIN/EVOLVE in-battle, spend GOLD)──►  ELITE
-    ▲                                                   │
-    └───────────────── disarm / return to labor ────────┘   (1 ⇄ 2 are the SAME mon, armored or not)
+    ▲                                                   │                                                (always armed —
+    └───────────────── disarm / return to labor ────────┘   (1 ⇄ 2 = SAME mon, armored or not)          never disarms)
 ```
 
-- **Worker ⇄ line soldier are interchangeable** — the **same mon**, just **unarmed vs armed**. Think *1 = no
-  armor, 2 = armed.* You **choose ahead of time** which workers to arm for a fight (arming needs **crafted
-  arms** — a resource/craft sink). They are **about equal strength**; the difference is combat-readiness and
-  **role**, not power. So workers farm; armed workers fight.
-- **The accumulation loop (why two names for near-equal units):** a battle **starts** with few workers on
-  the field and **ends** with the **most workers** (they're the rear/labor role and don't always fight),
-  while **line soldiers mostly die**. So after a battle you're **left holding workers** — which you then
-  **ARM again as soldiers for the next fight**. Workers are your **persistent manpower reserve**; soldiers
-  are the **consumable armed state** of that reserve.
+- **Worker ⇄ line soldier are the same mon** — just **unarmed vs armed** (*1 = no armor, 2 = armed*). Only
+  **these two** interchange; you **choose ahead of time** which workers to arm (arming needs **crafted arms**
+  — a resource/craft sink). They are **about equal strength**; the difference is combat-readiness and
+  **role**, not power. So workers farm; armed workers fight; **elites (tier 3) are always armed and stay
+  military.**
+- **Why worker is its own tier (the math you flagged):** if "line soldier" were the only reserve, you'd end
+  a battle with **almost none left** (the front line dies). The **surplus you carry out is WORKERS** (rear
+  role, they survive) — so the persistent, accumulating manpower **has** to be a distinct un-armed tier that
+  you **re-arm into line** next fight. That's the whole reason for three roster types behind a two-tier army.
 - **Elites are grown from line soldiers, in the match.** They **evolve from tier 2** by **training/recruiting
   on the battle map** with **gold** (the command center / on-map recruit — "they're wild on this map; you
   have gold, so they come to work for you"). Elites carry **continuity** (they persist and level), so a
@@ -137,11 +137,11 @@ are the NFTs that **KO + revive** (7-day CD or pay 5 CT); **pets do NOT KO** —
 ### 5b. Post-battle unit fate — inventory it, or release it for its gold
 What you keep after a battle decides whether the gold/arms were worth it:
 
-| Choice | Effect | Recovered? |
-|---|---|---|
-| **① Inventory the trained unit** | keep the elite/soldier in your **roster** — persists (continuity), levels | Retained (costs **upkeep**) |
-| **② Release for its gold** | **strip the gold it carries** and **boot it back to the wild** | **Gold recovered** (the unit is let go) |
-| **③ Put to work (farm/guard)** | armed mon → **disarm to WORKER**: farms resources / guards land | Retained as *productivity* + your worker reserve |
+| Choice | Applies to | Effect | Recovered? |
+|---|---|---|---|
+| **① Inventory it** | line + elite | keep the unit in your **roster** — elites persist/level; line stays armed | Retained (elites cost **upkeep**) |
+| **② Release for its gold** | line + elite | **strip the gold it carries** and **boot it back to the wild** | **Gold recovered** (unit let go) |
+| **③ Disarm to worker (farm/guard)** | **line only** (elites are always armed) | surviving **line soldier → WORKER**: farms resources / guards land | Retained as *productivity* + your worker reserve |
 
 - **Workers mostly come home**; **soldiers mostly don't**; **elites you choose to keep** cost **upkeep**
   (food + a little gold/day) so you can't hoard a huge standing elite army free.

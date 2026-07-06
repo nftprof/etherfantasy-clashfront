@@ -70,14 +70,15 @@ StarCraft.** So:
 
 ## 2. The worker ⇄ soldier lifecycle — ARM / disarm the same mon
 
-A mon moves up a **three-tier progression** (`BATTLE-MAP-AND-UNIT-SPEC` §5); the worker↔soldier question is
-tiers **1 ⇄ 2**, which are the **same mon in two states**:
+The roster has **three types**, but the **fielded army is the two-tier LINE / ELITE**
+(`BATTLE-MAP-AND-UNIT-SPEC` §5). The worker↔soldier question is only tiers **1 ⇄ 2** — the **same mon,
+unarmed vs armed**. **ELITE (tier 3) is always armed** and never disarms to labor:
 
-| Tier | State | What it does | Cost to enter |
-|---|---|---|---|
-| **1 WORKER** | **unarmed** | **farms / gathers / crafts** on the land; is your **persistent manpower** | cheap + fast to recruit (CT) |
-| **2 LINE SOLDIER** | **armed** | fights on the front line — **~same strength as a worker**, just combat-ready | **craft arms** (a resource/craft sink) to arm a worker |
-| **3 ELITE** | **trained** | evolved from a line soldier by **in-battle training** (gold) | expensive + slow; persists + levels |
+| Tier | State | Army role | What it does | Cost to enter |
+|---|---|---|---|---|
+| **1 WORKER** | **unarmed** | — (labor) | **farms / gathers / crafts**; is your **persistent manpower** | cheap + fast to recruit (CT) |
+| **2 LINE SOLDIER** | **armed** | **LINE** | fights the front line — **~same strength as a worker**, just combat-ready | **craft arms** (a resource sink) to arm a worker |
+| **3 ELITE** | **always armed** | **ELITE** | evolved from a line soldier by **in-battle training** (gold); stays military | expensive + slow; persists + levels |
 
 Rules:
 
