@@ -387,7 +387,77 @@ makes the entire design self-consistent with the net-sink doctrine — a *richer
 *more* CT burned to realize it, so **deeper economy ⇒ deeper sink**, never a faucet. The pie grows only
 when real players bring real CT in.
 
-## 6. Recommended integration path (phased, non-breaking)
+## 6. The commerce layer — pets, estates as trade hubs, and real demand without a transport game
+
+Can we add peaceful commerce — pets that passively farm + craft + sell; strong estates (whale/NPC) too
+tough to conquer that new players *visit to buy gear*; real trade demand (a forge needs iron → crafts
+swords → sells) — **without** becoming a transport/logistics game, keeping war the focus? Yes.
+
+### Pets = the passive labor engine (the "other half" of soldiers)
+
+Soldiers are pets you SPEND in battle (burned). The **same PentaPets**, assigned to **land/facilities**
+instead of armies, are the passive **economic labor**:
+- **Farm** — gather raw (ore, timber, food) from a parcel's reserve over time (a passive drip; no micro).
+- **Craft** — at a facility (forge, mill, workshop), convert raw → goods (iron → swords, timber → armor)
+  — each craft carries the **CT burn floor** (monetary constitution).
+- **Guard** — defend land/caravans from raiders (existing pet-guard role).
+- Output → the parcel/estate's **market stock**, sold for CT. And **pets are NFTs, tradeable** — breed/
+  DNA-craft strong farmers or soldiers and sell them (a pet economy).
+
+So a player (or whale, or NPC) with many pets + facilities becomes a **production engine — passively,
+while they focus on war.** That's your "farm + craft + sell" layer, run by pets, no micromanagement.
+Pets are simultaneously your **workforce, your army, and a tradeable asset**.
+
+### Estates as trade hubs — the symbiotic, un-conquerable anchor
+
+A very strong estate (canon decision 4: a huge multi-component siege — practically unconquerable for a
+small player) becomes a **commerce anchor**, not just a fortress:
+- **NPC capitals** (system-owned big estates; canon already has neutral **TOWNs**) = regional trade
+  **capitals** — always-open markets, deep stock, stable-ish prices. The economy's anchor points.
+- **Player whale estates** = player-run trade hubs — their pets produce gear; they sell it.
+- **New/weak players can't take them — so they TRADE with them.** Visit the estate market, buy armor/
+  swords/mounts crafted by its pets, gear up, then go conquer **weaker** land. A **non-combat on-ramp**:
+  you don't have to beat the big guy — you *buy* from him and beat someone your size.
+
+The symbiosis you asked for — **not every interaction is versus.** The estate needs raw inputs (buys
+iron/timber from small farmers); small players need finished gear (buy from the estate). Each completes
+the other. War still decides who owns the *production land*; commerce decides how its output flows.
+
+### "Real demand" without hauling — the market IS the interface, not a wagon
+
+The trick to real demand without a transport game: **abstract delivery into market orders; make the
+DEMAND real by making stock finite and input-fed.**
+- A forge's sword **stock is finite** and **made from iron**. Players buy swords → stock drops → the
+  forge needs iron → it posts a **BUY order for iron** (price rises as it's short).
+- A player who mined iron **fills that order in one click** at the estate's market. **No wagon, no route
+  to drive.** Delivery is a market fill (optionally a small distance fee or a fire-and-forget caravan
+  ETA — never micro).
+- Demand is **genuinely real** (swords deplete, iron is needed, prices move with scarcity) but the
+  player action is **buy/sell at a market**. The economic *activity* lives in **price movement + finite
+  stock** (interesting), not in logistics chores (tedious).
+
+**Why this isn't a transport game:** you never manage routes or carry loads — you place market orders;
+production + fulfillment happen passively (pets craft, orders fill). The only motion is optional, and
+*war-relevant*:
+
+### The one seam where trade touches war (optional, later) — raidable supply
+
+The single place logistics meets the game is as a **war target, not a chore**: an estate's supply can
+travel as a **fire-and-forget caravan** (like a march, but goods) that **raiders can intercept**. Cut an
+estate's iron → its sword prices spike → economic warfare, *without you ever driving the wagon*. Ties
+commerce to war (raiding trade = a strategic act) and keeps war central. Ship it late; the market-order
+model works fully without it.
+
+### Consistency check
+
+- **Monetary constitution holds:** every craft burns CT (burn floor); buying/selling is a CT *transfer*;
+  pet output realizes value only through the craft-burn. **Commerce can't inflate the supply.**
+- **War stays the point:** commerce *feeds* war (gear up to fight) and *creates* war (conquer production
+  land, raid supply, tax trade). It's the economy that makes the war matter — not a replacement.
+- **New-player on-ramp:** farm small → sell raw to an estate → buy gear → conquer weak land → repeat. A
+  peaceful growth path that still ends in battle.
+
+## 7. Recommended integration path (phased, non-breaking)
 
 1. **Endowment (foundation).** Add a deterministic `endowment` to each parcel (arable/timber/ore/gold/
    gems/deep, seeded from parcel id + biome). Surface it on the parcel card. *No battle change yet* —
