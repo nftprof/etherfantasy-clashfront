@@ -18,6 +18,12 @@
   feature-network layer (roads + districts) to `world-terrain.json`, an **edge-freeze terraform rule**
   (edges frozen, interior free), and a new **CF aerial mosaic view** (tiled thumbnails). Stamps stay as the
   floor; author one continent/week. Extends the Atlas + macro-terrain brief.
+- **ZONE-BIOME-SEEDING-GUIDANCE.md** — ⭐ FOR THE ECONOMICS DEV (Map-maker, 2026-07-07): the map/terrain
+  half of `MAP-ECONOMY-SEEDING-PARAMS.md` — all 10 zones (tier/biome/elements/server), a **materials ×
+  zones richness matrix** (food/timber/stone/iron/gold/fish/obsidian/gems/aether/herb/arcane/light/dark),
+  the **"broad but thin, concentrated rich"** gradient rule (iron minable everywhere, richest UW3), per-zone
+  detail cards (materials/recruits/POI-types/wild-boss/hazards), and the resource-node vocabulary the
+  generator must grow into. Grounded in the Atlas + biome-recruitment.
 - **ECONOMY-SEAM.md** — the three CF↔maps hooks: ownership feed, invest flow, payout note.
 - **LAND-VALUE-AND-IMPROVEMENT.md** — PROPOSAL (for owner review): the land-layer economic model —
   how a landowner spends/burns CT to raise a parcel/estate's investment tier and unlock more resource
