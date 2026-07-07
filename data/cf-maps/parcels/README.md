@@ -34,6 +34,16 @@ over the standard stand-in** for the wild/command view. Opt-in, empty by default
    ```
 2. **Hand-author** an A1 Battlefield JSON (see `docs/briefs/BATTLEFIELD-SCHEMA.md`) named `<parcelId>.json`.
 
+## Real sample committed (integration end-to-end fixture)
+
+- **`60200010000.json`** — a **real on-chain parcelId** (EDU zone L3 single, Academy Highlands biome; from
+  `data/hexagon-city-source/l3/EDU.json`), generated at invest tier 2 (seeded: towers + gold + mob camps).
+  Passes CF `validateBattlefield` (all 5 invariants) and loads via `loadParcelBattlefield("60200010000")`
+  — test `apps/server/test/parcelSample.test.ts`. This is the **B (A1 vector)** form.
+- Its matching **A (raster artifact)** — for the sim to build collision — is
+  `data/cf-maps/artifacts/60200010000.artifact.json` (terrain grid `cells`+`walk` + entities). Schema +
+  seam contract: **`docs/briefs/ARTIFACT-SCHEMA.md`**.
+
 ## Rules
 
 - **Filename = `<parcelId>.json`** exactly (the id CF looks up).
