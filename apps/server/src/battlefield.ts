@@ -172,34 +172,42 @@ export function validateBattlefield(bf: Battlefield): ValidationResult {
 
 // ── Stand-in loader (data/moba-maps/*.json) ──────────────────────────────────
 
-function resolveMapsDir(): string {
-  const override = process.env['CF_MOBA_MAPS_DIR'];
-  if (override !== undefined && override !== '') return override;
+// Walk up from __dirname to the repo root and return data/<sub> (works from src/ and dist/).
+function resolveDataSubdir(sub: string): string {
   let dir = __dirname;
   for (let i = 0; i < 12; i++) {
-    const candidate = join(dir, 'data', 'moba-maps');
+    const candidate = join(dir, 'data', sub);
     if (existsSync(join(dir, 'pnpm-workspace.yaml')) && existsSync(candidate)) return candidate;
     if (existsSync(candidate)) return candidate;
     const parent = dirname(dir);
     if (parent === dir) break;
     dir = parent;
   }
-  return join(__dirname, '..', '..', '..', '..', 'data', 'moba-maps');
+  return join(__dirname, '..', '..', '..', '..', 'data', sub);
 }
 
-// ── Per-parcel generated maps (the real designed battlefield) ────────────────
+function resolveMapsDir(): string {
+  const override = process.env['CF_MOBA_MAPS_DIR'];
+  if (override !== undefined && override !== '') return override;
+  return resolveDataSubdir('moba-maps');
+}
+
+// ── Per-parcel CF maps (the real designed battlefield) ───────────────────────
 // The map service (map-service/) generates a per-parcel A1 Battlefield (raster →
 // §3 command_converter) and serves it at /internal/v1/designs/<id>/command.json.
 // An operator (or a small sync) drops these A1 files on the box as
-// <CF_PARCEL_MAPS_DIR>/<parcelId>.json; when present + valid, CF prefers the
-// parcel's OWN map over the standard stand-in. Absent/invalid ⇒ undefined ⇒
-// caller falls back to loadStandbyBattlefield. Synchronous disk read, cached.
+// <CF_PARCEL_MAPS_DIR>/<parcelId>.json (default data/cf-maps/parcels/); when
+// present + valid, CF prefers the parcel's OWN map over the standard stand-in.
+// Absent/invalid ⇒ undefined ⇒ caller falls back to loadStandbyBattlefield.
+// NOTE: CF-generated per-parcel maps live under data/cf-maps/; data/moba-maps/ is
+// reserved for MOBA-derived maps (the reverse-engineered single-player map + the
+// legacy-*.json stand-ins). Synchronous disk read, cached.
 const parcelCache = new Map<string, Battlefield | null>();
 
 function resolveParcelMapsDir(): string {
   const override = process.env['CF_PARCEL_MAPS_DIR'];
   if (override !== undefined && override !== '') return override;
-  return join(resolveMapsDir(), 'parcels');
+  return join(resolveDataSubdir('cf-maps'), 'parcels');
 }
 
 /**
