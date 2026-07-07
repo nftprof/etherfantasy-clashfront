@@ -34,15 +34,23 @@ over the standard stand-in** for the wild/command view. Opt-in, empty by default
    ```
 2. **Hand-author** an A1 Battlefield JSON (see `docs/briefs/BATTLEFIELD-SCHEMA.md`) named `<parcelId>.json`.
 
-## Real sample committed (integration end-to-end fixture)
+## Real samples committed (integration correlation batch)
 
-- **`60200010000.json`** — a **real on-chain parcelId** (EDU zone L3 single, Academy Highlands biome; from
-  `data/hexagon-city-source/l3/EDU.json`), generated at invest tier 2 (seeded: towers + gold + mob camps).
-  Passes CF `validateBattlefield` (all 5 invariants) and loads via `loadParcelBattlefield("60200010000")`
-  — test `apps/server/test/parcelSample.test.ts`. This is the **B (A1 vector)** form.
-- Its matching **A (raster artifact)** — for the sim to build collision — is
-  `data/cf-maps/artifacts/60200010000.artifact.json` (terrain grid `cells`+`walk` + entities). Schema +
-  seam contract: **`docs/briefs/ARTIFACT-SCHEMA.md`**.
+A batch of **9 real on-chain parcels** across three zones/biomes + three invest tiers (from
+`data/hexagon-city-source/l3/*` + `data/zone-registry.json` biomes). Each is committed in **both** forms and
+all 9 pass CF `validateBattlefield` (5 invariants) + load via `loadParcelBattlefield` — test
+`apps/server/test/parcelSample.test.ts` (12 tests green; full server suite 71).
+
+| Zone (name) | Parcels | Biome |
+|---|---|---|
+| EDU (Highmar) | `60200010000` · `60200030000` · `60200060000` | TEMPERATE_FOREST |
+| HUB (Aurelia) | `60700010000` · `60700040000` · `60700190000` | TEMPERATE_GRASS |
+| BUS (Porthaven) | `60000080000` · `60000170001` · `60000200002` | SWAMP |
+
+- **B (A1 vector)** → `data/cf-maps/parcels/<id>.json` (this dir) — the command view / loader form.
+- **A (raster artifact)** → `data/cf-maps/artifacts/<id>.artifact.json` — the sim's collision source
+  (terrain grid `cells`+`walk` + entities). Schema + seam contract: **`docs/briefs/ARTIFACT-SCHEMA.md`**.
+- Regenerate deterministically from the registry biome + `generate(parcel)`; invest tier varies content.
 
 ## Rules
 
