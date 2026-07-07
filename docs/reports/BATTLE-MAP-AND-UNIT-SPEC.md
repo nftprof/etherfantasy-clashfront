@@ -225,16 +225,25 @@ on ordinary tiles. They are **unlocked by beating a BOSS**:
   paid from the developer **vault** (rake + revenue), unpublished and at our discretion. Nothing in the
   core loop pays out more CT than went in; the upside is a **granted prize**, never an emergent faucet.
 
-### 5g. Wild / NPC strength scaling (owner-decided 2026-07-06)
+### 5g. Wild / NPC strength scaling — two zone families (owner-decided 2026-07-06)
 
-Wild forces must never be **trivially weak** vs. players — they scale to the **zone's average strength**:
+Wild forces must never be **trivially weak** vs. players. Strength is set by the **zone**, and zones come in
+**two families** with different scaling laws (map team to deliver the full zone brief):
 
-- **Wild strength band = 30%–200% of the zone's average player strength**, rolled per encounter, **weighted
-  by zone.** Weak zones skew low, dangerous zones skew high — so wild is always a **meaningful** fight, never
-  a free win, and high zones can field wild **stronger than the local players** (a real threat / gate).
-- **Zone `UW3` = high end of the band + ORE-default resource.** It sits in the **upper strength range** (a
-  hard/late zone) and its **default resource is ore/iron** (the industry/arms feedstock). *(Recorded as
-  given; if `UW3` maps to a specific continent/shard id, tag it in the zone table.)*
+- **UW — Underworld (RANGE-based, chaotic).** Wild strength = **30%–200% of the zone's average player
+  strength**, rolled per encounter, **weighted by zone**. Weak UW zones skew low, dangerous ones skew high —
+  wild is always a **meaningful** fight and high UW zones can field wild **stronger than the locals**.
+  - **`UW3` = Underworld 3** — a hard/late continent at the **upper end of the range** + **ORE-default
+    resource** (the industry/arms feedstock).
+- **HS — High Society (FIXED-multiplier, strict & orderly).** "Heavenly-guarded" continents — instead of a
+  range, wild is **strictly scaled to YOUR strength** by a fixed floor:
+  | Zone | Wild strength |
+  |---|---|
+  | **HS1** | **1×** (exactly your strength) |
+  | **HS2** | **2×** |
+  | **HS3** (highest floating island) | **3×** (exception-tier — do not mess around) |
+  So HS is **guaranteed at least an even fight**, climbing to **3× overmatch** at the top island. *(HS is
+  planned for a later phase; recorded now so the zone table carries both families.)*
 - **NPC warlords (later phase):** beyond wild mobs, we can add full **AI players that command whole fleets of
   Masters** — an AI faction that marches, holds land, and fights like a human empire. Deferred, but the
   wild-strength model is the seed (wild = leaderless mobs today → NPC-commanded armies later).
@@ -255,6 +264,28 @@ existing **morale** stat, not a hard cutoff:
   can't stall forever, and **bigger armies need more food to march**, which naturally caps doomstacks.
 - Food comes from the land's granary (**§ food economy below / FARMING §3b**); army size × march distance
   sets the provision load, so **food scarcity is the real throttle on how much force you can project.**
+
+### 5i. Retreat/forfeit & the draw clock — two battle-end mechanisms (owner-decided 2026-07-06)
+
+Two ways a battle ends besides a clean win/loss:
+
+**Retreat (forfeit) — costly, so provision properly.** You may **flee/forfeit** at any time, but routing an
+army is dangerous:
+- **Arms loss:** you drop/scatter **5%–30% of your arms** as you run.
+- **Units captured:** the enemy takes **10%–80% of your units**, **scaled by how badly you were losing** —
+  if you were about to lose anyway, you lose *more* (fleeing a lost fight is worse than a clean withdrawal
+  from a even one).
+- **Captured → enemy soldiers:** **~30% of the units you lose convert to the ENEMY's** side (they recruit
+  your routed troops); the rest disperse. So fleeing **arms your opponent** — a real swing.
+- **Design intent:** retreat is a **big risk**, which is the point of **bringing enough food** (§5h) — don't
+  march into a fight you can't provision and then flee. **⚙ balance note:** tune the % bands over time so
+  retreat **doesn't become a dominant determinant of who wins** — it's a cost, not a coin-flip.
+
+**Draw clock — no infinite stalemates.** A **max battle time** (⚙ `battleMaxTicks`, ≈ a live-battle
+duration) plus a **stall check**: if **no unit on either side has been killed for ⚙ `stallWindow`**, the
+battle is called a **DRAW**. Covers the stuck cases — **both lines run out**, the **map deadlocks**, or
+**heroes avoid each other**. **Draw outcome:** **no territory changes hands**, the attacker withdraws, and
+**food/arms already spent are lost** (a stalemate still costs both sides what they burned — no free stalls).
 
 ## 6. Structure persistence & pillage — what survives a battle on the CF land
 
