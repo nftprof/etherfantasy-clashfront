@@ -113,6 +113,16 @@ export function handleRequest(req, res) {
   // gallery landing page (all-maps + my-land filter → click into /designer)
   if (p === "/" || p === "/gallery" || p === "/gallery/") return sendFile(res, "maps/gallery.html", "text/html");
 
+  // list the bundled example maps (MOBA reverse-engineer + the CF biome references) for the gallery
+  if (p === "/gallery/examples") {
+    const list = [...EXAMPLES.values()].map((a) => ({
+      parcelId: a.meta?.parcelId, biome: a.meta?.biome, palette: a.meta?.params?.palette,
+      archetype: a.meta?.params?.archetype, laneCount: a.laneCount ?? a.meta?.laneCount ?? 1,
+    }));
+    res.writeHead(200, { "content-type": "application/json", "cache-control": "no-cache" });
+    return res.end(JSON.stringify({ ok: true, examples: list }));
+  }
+
   // same-origin owners feed for the gallery's "my land" filter
   if (p === "/gallery/owners") {
     ownersMap().then((owners) => {

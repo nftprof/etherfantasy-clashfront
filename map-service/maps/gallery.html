@@ -61,14 +61,8 @@
 </header>
 
 <div style="padding:14px 22px 0">
-  <div style="background:linear-gradient(90deg,#1d222b,#161a21);border:1px solid var(--gold);border-radius:12px;padding:14px 16px;display:flex;gap:14px;align-items:center;flex-wrap:wrap">
-    <div style="flex:1;min-width:240px">
-      <div style="color:var(--gold);font-weight:650">⚔ Featured — the real MOBA single-player map</div>
-      <div style="color:var(--dim);font-size:13px;margin-top:3px">Reverse-engineered from the live game client into the map spec, then viewable in BOTH the 2D command view and our 3D preview — the round-trip, on the real map.</div>
-    </div>
-    <a class="btn" href="/designer?parcel=MOBA-SINGLEPLAYER" style="border-color:var(--gold);color:var(--gold)">Open in 2D designer</a>
-    <a class="btn" href="/designer/3d?parcel=MOBA-SINGLEPLAYER" style="border-color:var(--blue);color:var(--blue)">View in 3D →</a>
-  </div>
+  <div style="color:var(--gold);font-weight:650;margin-bottom:8px">✦ Example maps <span style="color:var(--dim);font-weight:400;font-size:12.5px">— reference battlefields, each viewable in 2D command view and 3D</span></div>
+  <div id="examples" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px"></div>
 </div>
 
 <div class="tabs">
@@ -176,7 +170,24 @@ function render(){
 
 document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>{tab=t.dataset.tab;render();});
 
-(async()=>{ await refreshWho(); await load(); render(); })();
+async function renderExamples(){
+  let ex=[]; try{ ex=(await j("/gallery/examples")).examples||[]; }catch(e){}
+  const el=$("examples"); if(!el) return;
+  if(!ex.length){ el.parentElement.style.display="none"; return; }
+  el.innerHTML=ex.map(e=>{
+    const id=e.parcelId, name=String(id).replace(/^CF-/,"").replace(/-/g," ");
+    const tags=[e.biome,e.palette].filter(Boolean).join(" · ");
+    return `<div class="card" style="padding:12px">
+      <div style="font-weight:600">🗺 ${name}</div>
+      <div class="tags" style="color:var(--dim);font-size:11.5px;text-transform:capitalize;margin:2px 0 10px">${tags}</div>
+      <div style="display:flex;gap:8px">
+        <a class="btn" style="flex:1;text-align:center;border-color:var(--gold);color:var(--gold)" href="/designer?parcel=${id}">2D</a>
+        <a class="btn" style="flex:1;text-align:center;border-color:var(--blue);color:var(--blue)" href="/designer/3d?parcel=${id}">3D →</a>
+      </div>
+    </div>`;
+  }).join("");
+}
+(async()=>{ await refreshWho(); await renderExamples(); await load(); render(); })();
 </script>
 </body>
 </html>
