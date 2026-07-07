@@ -18,6 +18,18 @@
   feature-network layer (roads + districts) to `world-terrain.json`, an **edge-freeze terraform rule**
   (edges frozen, interior free), and a new **CF aerial mosaic view** (tiled thumbnails). Stamps stay as the
   floor; author one continent/week. Extends the Atlas + macro-terrain brief.
+- **ZONE-REGISTRY.md** + **`../../data/zone-registry.json`** — ⭐ THE CANONICAL 10-ZONE LIST (Map-maker,
+  2026-07-07): the generator/sim input — `zoneId`, `zoneCode` (parcelId→zone lookup), proposed continent
+  **names** (Aurelia/Solmara/Porthaven/Highmar/Cirrane/Emberfall/Aetheria/Grimwarren/Drowndeep/Infernus —
+  owner to lock), `family` + `strengthMultiplier`/`zoneAvgStrength` (SURFACE ×1.0–1.3 progression · SKY
+  fixed ×2.0 · UNDERWORLD range ×2.5/3.5/5.0), biomeFamily, primaryElements, signatureMaterials, real
+  parcel counts. The base pass reads biome/position; the seed pass reads family/strength for wild sizing.
+- **ZONE-BIOME-SEEDING-GUIDANCE.md** — ⭐ FOR THE ECONOMICS DEV (Map-maker, 2026-07-07): the map/terrain
+  half of `MAP-ECONOMY-SEEDING-PARAMS.md` — all 10 zones (tier/biome/elements/server), a **materials ×
+  zones richness matrix** (food/timber/stone/iron/gold/fish/obsidian/gems/aether/herb/arcane/light/dark),
+  the **"broad but thin, concentrated rich"** gradient rule (iron minable everywhere, richest UW3), per-zone
+  detail cards (materials/recruits/POI-types/wild-boss/hazards), and the resource-node vocabulary the
+  generator must grow into. Grounded in the Atlas + biome-recruitment.
 - **ECONOMY-SEAM.md** — the three CF↔maps hooks: ownership feed, invest flow, payout note.
 - **LAND-VALUE-AND-IMPROVEMENT.md** — PROPOSAL (for owner review): the land-layer economic model —
   how a landowner spends/burns CT to raise a parcel/estate's investment tier and unlock more resource
