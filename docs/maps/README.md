@@ -25,6 +25,12 @@
   position-role + edge-type system) each parcel map is designed inside.
 - **../briefs/MAP-GENERATOR-LLM-CURRICULUM.md** — the fitness function + repair loop + difficulty
   ladder that challenges the LLM to design playable, novel maps within that envelope.
+- **MAP-LAYER-MODEL.md** — PROPOSAL: a map = a stack of toggleable OVERLAYS (pathing, entry points,
+  build spots, resources, wild masters, walkability, ground texture…), each = an A1 array, each
+  LLM-designable per-layer, each tier-limited; plus the ≥1-entry-per-edge invariant. The designer-UI
+  + per-layer-LLM spec.
+- **BIOME-RECRUITMENT-AND-ARMY.md** — PROPOSAL: biome-gated recruitment (element↔biome → which
+  soldier/worker classes recruit on a map) feeding the persistent army.
 
 ## Live API quick-reference (moba.etherfantasy.com, lobby :8090 on the shared box)
 - `GET  /internal/v1/designs[?status=]` · `GET /internal/v1/designs/:parcelId` (lazy v0; returns
