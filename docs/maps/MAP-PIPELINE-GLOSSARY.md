@@ -9,8 +9,12 @@
 > **The two things everyone must hold:** (1) there is **ONE map** = a JSON artifact; the 2D/3D things you
 > *see* are **renders** of it, not separate maps. (2) **A live battle's map wins over any static file** —
 > the static files (legacy.json, stand-ins, parcel files) are the **fallback** for when no match is running.
-
----
+>
+> **🔎 REVIEW REQUESTED — two sessions must concur on the 2026-07-07 updates below** (the generation path +
+> the two-layer base-terrain/seeding model + the "3-lane is a test drop-in, not a design fallback"
+> correction): **EF Moba game dev OP 48** (owns the 3D client / hero-mode entry) and the **integration
+> session / MOBA BattleEngine** (owns `legacy.json` + the repo-to-repo map courier). Please read the
+> **"How a parcel gets its map"** and **"Live vs static — the precedence"** sections and reply concur / flag.
 
 ## Three tiers of "map" (the word is overloaded — split it)
 
@@ -51,6 +55,53 @@ engine's `legacy.json` is the **authoritative** version and supersedes it when i
 **Read it as:** the LLM writes *parameters* → the generator bakes ONE *artifact* (the raster JSON, the
 source of truth) → that artifact is (a) converted to the *A1 vector* for the 2D command view, (b)
 enriched with a *render manifest* for 3D, and (c) rendered three ways. **One artifact, many views.**
+
+---
+
+## How a parcel gets its map — the generation path + the two seeding layers (READ THIS)
+
+> **For sessions that don't know CF has an LLM/generator path yet:** CF maps are **not hand-authored one
+> by one** and they are **not** the shared 3-lane arena. A parcel's map is **generated** — an LLM emits a
+> compact *recipe*, a deterministic generator bakes it into the artifact. This section is the intended
+> production pipeline that **replaces** the 3-lane test drop-in.
+
+### What the LLM/user actually produces — it is NOT file A/B/C/D
+The four files below (A artifact, B command.json, C render.json, D thumb.png) are all **outputs of the
+generator**. The **LLM never writes any of them.** The LLM (or a landowner tuning the designer) writes a
+**fifth thing, upstream of all of them**: the **design params** (archetype, palette, feature counts, a
+bounded placement DSL — the *recipe*, never geometry). The lineage is **five stages**:
+
+```
+  ① design params      ②  generator        ③ THE ARTIFACT (A)      ④ derived files          views
+    (LLM / designer) ──▶ (deterministic) ──▶ raster, source of ──▶  B command.json  ──▶ 2D command view
+    the RECIPE           params → artifact    truth                 C render.json    ──▶ 3D preview / in-game
+    (not geometry)                                                  D thumb.png      ──▶ designer preview
+```
+
+- **Stage ① (design params)** = what the LLM/user makes. **Not A/B/C/D.** Transient recipe.
+- **Stage ③ (the artifact, file A)** = the source of truth. `legacy.json` sits **in this same slot** but for
+  the *shared current arena* (authored by the network/engine session), **not** per-parcel or LLM-made — see
+  the note under "Which view reads which file".
+- The designer just **re-runs ②→③→④** every time the params change; that is what "generate a new version" is.
+
+### The two layers of a parcel map — BASE TERRAIN, then SEEDING (owner, 2026-07-07)
+A parcel's artifact is built in **two independent passes**, and this is the key to world-scale:
+
+| Layer | What's in it | When it's made | Purpose |
+|---|---|---|---|
+| **① Base terrain** (unseeded) | landscape only — ground/biome, **rivers**, hills, coast, walkable field, bounds, lane/entry skeleton. **No units, no towers, no wild NPCs.** | **Batch, up front** — **~20K** maps generated for the world so **every parcel always has a floor map** (this is what kills the 3-lane drop-in). | the guaranteed, deterministic ground every battle is fought on |
+| **② Seeding** (the game layer) | wild NPCs, towers / CC / defensive structures, resource richness, occupation state — the **"wild-occupied"** dressing on top of the base terrain. | **Lazily, near players** *(preferred)* — when a player approaches, auto-seed that parcel **and its neighbours** on top of the base terrain; **OR** pre-seed all ~20K in detail later when capacity allows. | turns bare terrain into a playable, occupied battlefield |
+
+**So the rollout is:** first the **whole world gets base terrain** (20K unseeded base maps — just landscape +
+rivers), then **seeding grows outward from where players actually are** (auto-seed the nearby parcels' wild
++ towers on top of the base), with **full pre-seeding of all 20K as an optional later batch**. This is a
+refinement of canon decision 9 (battlefields materialize lazily): the **base terrain can be pre-baked in
+bulk**; the **seed (wild/towers/game entities) is the lazy, near-player part**. Both layers live in the
+same artifact (A) — seeding just fills the `structures` / `mobs` / resource fields the base pass left empty.
+
+**Why this matters for other sessions:** a CF parcel battle must load **that parcel's base(+seed) artifact**,
+never the shared 3-lane arena. The base-terrain floor is what guarantees step 2 of the precedence chain
+always resolves, so step 3 (the 3-lane test drop-in) is never hit in production.
 
 ---
 
@@ -134,6 +185,13 @@ artifact.
   why they don't share one file.
 - The **designer 2D preview** is a **third thing** again — just the server-baked `thumb.png` image.
 
+**Where `legacy.json` sits vs A/B/C/D (common question):** it is **not** one of A/B/C/D and not a *derived*
+file. `legacy.json` occupies the **same slot as file A (the artifact / source)** — but for the **one shared
+current arena**, authored by the network/engine session, rather than per-parcel and generator-made. It is
+"the human/engine-made equivalent of a parcel artifact." A/B/C/D exist **per designed parcel**; `legacy.json`
+is a **single world-wide file**. In the CF overworld it is a **fallback/test map only** (see the precedence
+correction) — a real parcel battle uses that parcel's own artifact (A), not `legacy.json`.
+
 ## Live vs static — the precedence (everyone must wire this the same way)
 
 A running battle already ships **its own map** — with that match's actual obstacles — **live** in the
@@ -142,14 +200,29 @@ only the fallback. **Order of truth for what a battle renders:**
 
 ```
   1. LIVE match map (bridge/engine telemetry `battlefield`)     ← wins whenever a match is running
-  2. the parcel's own file  (data/cf-maps/parcels/<id>.json)    ← CF override for that parcel
-  3. legacy.json  (the authoritative arena)                     ← default when no per-parcel map
-  4. legacy-{1,3}lane.json stand-in                             ← last resort (retired once legacy.json lands)
+  2. the parcel's own map  (data/cf-maps/parcels/<id>.json)     ← THE PRODUCTION PATH — every parcel has one
+     └─ base-terrain layer (always present, 1 of ~20K)
+        + optional seeding layer (wild/towers/resources)
+  ─────────────────────────────────────────────────────────────────────────────────────────────
+  3. legacy.json / legacy-{1,3}lane.json                        ← ⚠ TEST DROP-IN ONLY, not a design fallback
 ```
 
-CF already respects this: the engine path attaches the live `battlefield`, and `loadStandbyBattlefield`
-**prefers `data/moba-maps/legacy.json`** over the stand-ins. **If any loader ever prefers a static file
-over live telemetry for a running match, that's a bug** (network session's flag — agreed).
+> **⚠ CORRECTION (owner, 2026-07-07) — the 3-lane is a test crutch, NOT the intended fallback.**
+> "Falling back to `legacy.json`" = dropping into the **single shared 3-lane MOBA arena**. **We do not want
+> that for a CF parcel battle.** The 3-lane map is only in the chain because, before the per-parcel maps
+> existed, it was the **only** map we had to test the integration between the **CF command view** and the
+> **hero-mode session jumping in and out** of a battle. It is a **development drop-in**, not the production
+> default. **The design goal is that step 3 is never reached** — every parcel resolves at step 2 to **its
+> own base-terrain map** (one of the ~20K pre-generated; see the generation section above). Once the 20K
+> base maps are seeded, `legacy.json` / the stand-ins survive **only** as (a) the map for the *current*
+> standalone MOBA game and (b) an integration-test fixture. **Any CF overworld battle that renders the
+> 3-lane arena in production is a bug**, not a fallback.
+
+CF already respects the live-wins rule: the engine path attaches the live `battlefield`, and
+`loadStandbyBattlefield` **prefers `data/moba-maps/legacy.json`** over the stand-ins **for the current
+arena** — but that whole static tier is the test crutch, not the per-parcel design path. **If any loader
+ever prefers a static file over live telemetry for a running match, that's a bug** (network session's flag
+— agreed).
 
 ## The reconciliation & the ONE divergence (read this — it prevents a mis-wire)
 
@@ -254,6 +327,16 @@ cosmetic** props, but every **gameplay-relevant** obstacle + the walkable field 
    spawns), or does it need a one-time conversion before landing at `data/moba-maps/legacy.json`?
 3. **Live `battlefield` shape** — confirm the live `bridgeStart.battlefield` is the same A1 schema CF's
    command view renders, so live + static go through one renderer (they should, per §4f).
+4. **Base-terrain vs seeding split (new, 2026-07-07).** Do OP 48 + the integration session agree with a
+   **two-pass artifact** — a bulk-generated **base-terrain** floor (landscape + rivers, no entities) for all
+   ~20K parcels, then a **seeding** pass (wild NPCs / towers / resources) done **lazily near players** (or
+   pre-batched later)? Specifically: (a) is the base-terrain-only artifact a valid map to load if a battle
+   starts before seeding (i.e. terrain-only is playable), or must every battle-loaded parcel be seeded
+   first? (b) When seeding runs near-player, who triggers it — CF overworld tick, or the match allocate?
+5. **Retire the 3-lane in production.** Confirm the client + bridge will treat `legacy.json` / the
+   `legacy-{1,3}lane` stand-ins as the **current-MOBA / test map only**, and that a **CF parcel** battle
+   must resolve to the parcel's own artifact — never the shared 3-lane arena. (This is the correction above;
+   need OP 48 + integration to concur so no one wires the 3-lane as the CF default.)
 
 ## One-line summary
 
