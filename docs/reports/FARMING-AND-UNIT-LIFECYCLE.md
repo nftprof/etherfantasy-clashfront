@@ -147,6 +147,30 @@ size, farm output, and pet-populace capacity: **one stat**). You **recruit from 
 - **The ≥100-pet floor (`minGarrison`, `BATTLE-MAP-AND-UNIT-SPEC` §5c)** is the *minimum* to hold/defend a
   land; the **draft cap** is the *maximum* you can pull for an army — a land operates between the two.
 
+### 3b. Food — produced by farmers, taxed from population, spent as provisions (ROTK model, 2026-07-06)
+
+Food is the resource that ties **farming → war**: it is the army's **upkeep** and its **battle clock**
+(`BATTLE-MAP-AND-UNIT-SPEC` §5h). The production → tax → spend loop:
+
+- **PRODUCED** by mons in **worker/LABOR** role on the land, at their **Agriculture** aptitude
+  (`PET-APTITUDE-ECONOMY-MAP`) × the land's **food-yield** (biome-set — plains/leaf biomes yield more; §2 of
+  the battle-map spec). More farmers (the scarce premium role, capacity 1,945) + better land = more food.
+- **TAXED into the land's granary.** As in ROTK, the **landowner sets a tax rate** on population output; the
+  taxed share flows to the **granary** (the land's food/gold store). The existing **30% landlord tax**
+  (canon decision 6) is the default cut an owner takes from the population/occupiers; ⚙ `foodTaxRate` is the
+  owner-tunable dial. **Higher tax = more granary income now, but lower population morale/growth** (the ROTK
+  tension — over-tax and the population sickens/stalls, `popRegrowRate` drops).
+- **SPENT** three ways: (1) **provisions** loaded onto a marching army = its **battle clock** (§5h; army
+  size × march distance sets the load); (2) **upkeep** for standing **elites** (food + a little gold/day,
+  `BATTLE-MAP-AND-UNIT-SPEC` §5b); (3) **population growth** — a fed population regrows toward its cap,
+  a starved one shrinks. So food is a **throughput**, not a hoard: you farm it, tax it, and burn it on war.
+- **Net-sink safe:** food is a **backend resource** (no CT minted); it is produced from land + labor and
+  consumed by armies. It makes **farmers valuable** (food gates army projection) without ever paying out CT
+  — the on-chain cap (decision 17) is untouched by the food economy.
+
+**⚙ open dials:** `foodTaxRate` (default ~30%), food-yield per biome, provision-load per unit-km, the
+morale↔food curve (down to the 10% floor), and the over-tax → morale/growth penalty curve.
+
 ---
 
 ## 4. Getting units — NFT = a training right for the class; else catch/recruit it wild
