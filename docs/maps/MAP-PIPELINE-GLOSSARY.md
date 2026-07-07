@@ -104,6 +104,36 @@ So:
   the **seed = the real parcelId** and (b) the **biome/edges come from the world-terrain field** instead of
   hand-picked params. So a parcel map is just "an example map whose id and biome are the land's, not made up."
 
+## Which view reads which file (delivery + tool) — the exact answer
+
+**One source file (the artifact) → three derived files. Each view reads a different one.** So the 2D
+command view and the 3D hero view do **not** read the same file — they read two derivations of the same
+artifact.
+
+### The files (per parcel/design)
+| # | File | Format | Made by | It's the… |
+|---|---|---|---|---|
+| A | **artifact** (`design.v{N}.json`) | **RASTER** JSON (terrain grid `cells`+`walk`, obstacles, lanes, structures, spawns, meta) | the generator | **source of truth** (in the registry) |
+| B | **`command.json`** | **A1 vector** JSON (bounds, `lanes{waypoints}`, `structures` incl CORE, obstacle footprints) | `command_converter` (§3), from A | the **2D command map** data |
+| C | **`render.json`** | manifest JSON (heightfield + biome + scatter) | `battlefield_converter.cjs`, from A | the **3D heightfield** data |
+| D | **`thumb.png`** | PNG image | `thumb.js`→`png.js` (server), from A | the **top-down thumbnail** |
+
+### The four views
+| View | Where | Reads file(s) | Format | Rendering tool |
+|---|---|---|---|---|
+| **Designer 2D preview** | the studio (`designer.html`) | **D `thumb.png`** | PNG (server-rendered) | server `thumb.js`/`png.js` — a top-down raster image; the studio just `<img>`-tags it |
+| **2D command-mode map** | CF game command overlay | **B `command.json`** — or the **A1 `battlefield`** delivered LIVE in `battle_hello`; else static (`cf-maps/parcels/<id>.json`, `legacy.json`) | A1 vector JSON | client `battle.js drawBattlefieldMap` (canvas 2D) |
+| **3D preview** (designer) | `/designer/3d` | **A artifact** (`/internal/v1/designs/<id>`) + optional **C `render.json`** | raster JSON (+ manifest) | client `preview3d.html` (three.js, **placeholder** prefabs) |
+| **Final 3D in-game (hero)** | the real match client | **A artifact** (per `CLIENT_BATTLEFIELD_LOADER.md`) — or the **live match map** | raster JSON (or live) | client `index.html` (three.js, **real** prefabs) |
+
+**So, directly:**
+- **Command mode map** = the **A1 vector** (`command.json`, or the live `battlefield` in `battle_hello`). Tool: `drawBattlefieldMap`.
+- **Final 3D hero map** = the **raster artifact** (+ `render.json` heightfield), or the live match map. Tool: `index.html`.
+- These are **two different files** (B vs A) built from the **same source** (A). The 2D command map is a
+  *vector* derivation (footprints + lanes); the 3D needs the *raster* grid (per-cell terrain) — which is
+  why they don't share one file.
+- The **designer 2D preview** is a **third thing** again — just the server-baked `thumb.png` image.
+
 ## Live vs static — the precedence (everyone must wire this the same way)
 
 A running battle already ships **its own map** — with that match's actual obstacles — **live** in the
