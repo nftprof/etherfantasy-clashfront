@@ -157,9 +157,13 @@ What you keep after a battle decides whether the gold/arms were worth it:
 
 ### 5c. Army composition & caps (owner-decided 2026-07-06)
 
-- **Elite : line ratio — max 1 : 3.** Every battle army must be **≥ 3 line soldiers per elite** (elites
-  **≤ 25%** of the force), matching the current MOBA wave (each wave = 1 : 3). **Elites can never *be* the
-  line** — you can't field an all-elite doomstack. This, not a distinct-species cap, is the elite governor.
+- **Elite : line ratio — max 1 : 3, enforced at DEPLOYMENT (not on the roster).** Units **come out** during
+  the match at **most 1 elite per 3 line** — matching the current MOBA wave (1 : 3). You may **hold any
+  ratio in your roster** (even elite-heavy), and you may field **0 elite** (all-line is fine); the cap only
+  governs **what spawns onto the field**. If your **line runs out**, deployment **cuts off there** — surplus
+  elites beyond what your remaining line can support at 1 : 3 simply **can't deploy**. So line is the
+  throughput that lets elites reach the field; you **can't field an all-elite doomstack** because the field
+  itself throttles it. This, not a distinct-species cap, is the elite governor.
 - **No distinct-elite-per-Master cap — synergy instead.** *(Supersedes the old "2 distinct elite classes
   per Master" line.)* You may train **any** elites and pair them freely, but **Master ↔ unit alignment gives
   synergy**: when a Master sits on land whose **biome/element matches its unit types**, the army fights
@@ -210,6 +214,47 @@ on ordinary tiles. They are **unlocked by beating a BOSS**:
 - So bosses are the **rare-resource faucet control**: rare mats flow only to those who **beat the boss**,
   tying the top of the resource ladder to the hardest fights. (Placement/where exactly = a ⚙ dial: wild
   estates, tier-4+ land, or special boss camps.)
+- **Bosses are tuned HARDER than the attacking player — they are a NET SINK** (owner 2026-07-06). A boss
+  fight should **likely cost the player more resources than the rare mats are worth** in raw CT terms.
+  This is the **slot-machine / house-edge doctrine (decision 17) made literal:** the rare node is *your own
+  spend coming back*, not profit — like every in-game reward here (skill bonus §5e, pillage, land yield),
+  it is a player **earning back their own CT**, bounded by the per-user cap. **In-game play is
+  net-negative-to-neutral by construction.**
+- **The ONLY net-positive channels are house-granted (decision 17):** the **leaderboard payouts** and
+  **discretionary special grants** (e.g. a very strong **weapon-NFT** dropped to a specific vetted user) —
+  paid from the developer **vault** (rake + revenue), unpublished and at our discretion. Nothing in the
+  core loop pays out more CT than went in; the upside is a **granted prize**, never an emergent faucet.
+
+### 5g. Wild / NPC strength scaling (owner-decided 2026-07-06)
+
+Wild forces must never be **trivially weak** vs. players — they scale to the **zone's average strength**:
+
+- **Wild strength band = 30%–200% of the zone's average player strength**, rolled per encounter, **weighted
+  by zone.** Weak zones skew low, dangerous zones skew high — so wild is always a **meaningful** fight, never
+  a free win, and high zones can field wild **stronger than the local players** (a real threat / gate).
+- **Zone `UW3` = high end of the band + ORE-default resource.** It sits in the **upper strength range** (a
+  hard/late zone) and its **default resource is ore/iron** (the industry/arms feedstock). *(Recorded as
+  given; if `UW3` maps to a specific continent/shard id, tag it in the zone table.)*
+- **NPC warlords (later phase):** beyond wild mobs, we can add full **AI players that command whole fleets of
+  Masters** — an AI faction that marches, holds land, and fights like a human empire. Deferred, but the
+  wild-strength model is the seed (wild = leaderless mobs today → NPC-commanded armies later).
+
+### 5h. Food as the battle clock — provisions → morale → effectiveness (owner-decided 2026-07-06)
+
+Units **carry their food** (no in-battle farming, §1); food is the **battle clock**, expressed through the
+existing **morale** stat, not a hard cutoff:
+
+- **On attack, the UI states the provision estimate up front:** *"Provisions will last ≈ X minutes"*
+  (**minimum 5 min** guaranteed at full effectiveness). Clear before you commit — no surprise starvation.
+- **Out of food, the army still fights — but only ≈ 3 more minutes, degrading.** Running out doesn't end
+  the battle; it **collapses morale**: hungrier → lower morale → **down to a 10% floor** (as low as **10%
+  combat effectiveness**). So a starved army can still swing, but at a fraction of its strength.
+- **Food drives morale drives the power formula.** Morale is already a factor in the productivity/combat
+  formula (`PET-APTITUDE-ECONOMY-MAP` §2); **low food = low morale = low effectiveness** — one existing
+  lever, now fed by provisions. This **mechanically enforces the swift-win incentive** (§5e): you literally
+  can't stall forever, and **bigger armies need more food to march**, which naturally caps doomstacks.
+- Food comes from the land's granary (**§ food economy below / FARMING §3b**); army size × march distance
+  sets the provision load, so **food scarcity is the real throttle on how much force you can project.**
 
 ## 6. Structure persistence & pillage — what survives a battle on the CF land
 
