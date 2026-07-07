@@ -18,6 +18,7 @@ resolves every CF battle.
 ## The rest
 | Doc | What |
 |---|---|
+| **`CF-INTEGRATION-PASSDOWN.md`** | **The whole CF↔engine seam in one page** — the L1 overworld > L2 command map > L3 hero-3D stack, per-seam status matrix (works/unverified/pending), coordinate contract that keeps L2 and L3 on the same map, the remaining callback + battlefield-from-JSON queue, and new-agent onboarding. Read after `AGENT-GUIDE.md`. |
 | `BRIDGE-LAYER.md` | The bridge-layer / match-server component reference — what it owns (R1/R2/R10/R11/R12/R13 + ticket + relay), every endpoint, secrets, ops, and seam status. |
 | `TICKET-CONTRACT.md` | Hero-mode join-ticket contract (mint/verify, joinUrl, `joinErr` failure enum) + the live-match seam split (§6). |
 | `REALTIME-NETCODE-HISTORY.md` | The full net-mode lag investigation — root cause was a **client GC leak, not the network/AWS/Edgegap**. Lists everything ruled out so nobody re-chases it. |
