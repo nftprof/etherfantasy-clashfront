@@ -6,9 +6,12 @@
 > `/home/ubuntu/ef-moba-server/maps/` on 13.250.39.41 (the box CF runs on).
 
 ## Docs here
-- **MAP-PIPELINE-GLOSSARY.md** — READ FIRST for shared vocabulary: one map = one artifact (raster JSON,
-  the source of truth); its derived files (A1 command map, render manifest) + its three renders (2D
-  command view, 3D preview, in-game 3D); and template vs example map (`CF-GRASSLAND`) vs real parcel map.
+- **MAP-PIPELINE-GLOSSARY.md** — ⭐ **THE combined cross-session alignment doc — READ FIRST.** One shared
+  vocabulary for every team: the three tiers (stand-in / legacy.json / parcel map), the pipeline (params →
+  artifact → derived files → renders), the four layers (skeleton/obstacles/art/collision), the live-vs-static
+  precedence, the terminology crosswalk, the `legacy.json` delivery plan, and — critically — the ONE
+  divergence (CF parcel maps author obstacles + walkability deterministically; the legacy arena re-rolls
+  them live). Reconciles the CF, network/engine, and BattleEngine models.
 - **ECONOMY-SEAM.md** — the three CF↔maps hooks: ownership feed, invest flow, payout note.
 - **LAND-VALUE-AND-IMPROVEMENT.md** — PROPOSAL (for owner review): the land-layer economic model —
   how a landowner spends/burns CT to raise a parcel/estate's investment tier and unlock more resource

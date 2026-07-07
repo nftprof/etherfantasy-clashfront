@@ -1,9 +1,29 @@
-# Map Pipeline & Glossary — one shared vocabulary for "the map"
+# Map Model — combined alignment for ALL sessions (pipeline · tiers · layers · glossary)
 
-> **The point of confusion this resolves:** there is **ONE map** — a JSON artifact. Everything else is
-> either a **derived data file** (also JSON) or a **render** (pixels on screen). The 2D and 3D things you
-> "see" are NOT separate maps — they are *views* of the same artifact. Use the terms below verbatim so
-> all sessions mean the same thing. Author: Clash Front Overworld design, 2026-07-06.
+> **THE single doc to align every session** (CF Overworld, network/engine, MOBA BattleEngine, map-maker,
+> game-dev). It reconciles three models people have been using: the **pipeline** (data → renders), the
+> **three tiers** (stand-in / legacy.json / parcel map), and the **four layers** (skeleton / obstacles /
+> art / collision). Use these terms verbatim. Author: Clash Front Overworld design, 2026-07-06 (folds in
+> the network/engine session's tier + layer model).
+>
+> **The two things everyone must hold:** (1) there is **ONE map** = a JSON artifact; the 2D/3D things you
+> *see* are **renders** of it, not separate maps. (2) **A live battle's map wins over any static file** —
+> the static files (legacy.json, stand-ins, parcel files) are the **fallback** for when no match is running.
+
+---
+
+## Three tiers of "map" (the word is overloaded — split it)
+
+| Tier | Term | What it is | Status |
+|---|---|---|---|
+| **Stand-in** | `legacy-1lane.json` / `legacy-3lane.json` | CF's **hand-approximated guesses** at the current arena (built before the authoritative coords existed) | what CF renders **today** (placeholder) |
+| **Legacy map** | **`legacy.json`** | the **REAL current single-player arena**, exported **authoritatively** from the engine sim | ← the missing piece; **network/engine session generated it** (`integration/legacy.json` in the moba repo). Replaces the stand-ins. |
+| **Parcel map** | `parcel-<id>.json` (the artifact) | the **future per-parcel CF maps** (the 1000s) — each parcel its own arena | not built (generates on demand) |
+
+**Key:** "CF renders stand-ins, not the actual client map" = *the stand-ins are rough copies; give CF the
+authoritative `legacy.json`.* It is **NOT** about missing parcel maps — different track. (My
+`data/moba-maps/moba-singleplayer.json` was a **reverse-engineered approximation** of the same arena; the
+engine's `legacy.json` is the **authoritative** version and supersedes it when it lands.)
 
 ---
 
@@ -84,6 +104,75 @@ So:
   the **seed = the real parcelId** and (b) the **biome/edges come from the world-terrain field** instead of
   hand-picked params. So a parcel map is just "an example map whose id and biome are the land's, not made up."
 
+## Live vs static — the precedence (everyone must wire this the same way)
+
+A running battle already ships **its own map** — with that match's actual obstacles — **live** in the
+`battlefield` field of the engine/bridge telemetry (`bridgeStart` / `battle_hello`). The static files are
+only the fallback. **Order of truth for what a battle renders:**
+
+```
+  1. LIVE match map (bridge/engine telemetry `battlefield`)     ← wins whenever a match is running
+  2. the parcel's own file  (data/cf-maps/parcels/<id>.json)    ← CF override for that parcel
+  3. legacy.json  (the authoritative arena)                     ← default when no per-parcel map
+  4. legacy-{1,3}lane.json stand-in                             ← last resort (retired once legacy.json lands)
+```
+
+CF already respects this: the engine path attaches the live `battlefield`, and `loadStandbyBattlefield`
+**prefers `data/moba-maps/legacy.json`** over the stand-ins. **If any loader ever prefers a static file
+over live telemetry for a running match, that's a bug** (network session's flag — agreed).
+
+## The reconciliation & the ONE divergence (read this — it prevents a mis-wire)
+
+All three models describe the same thing; they agree on almost everything. The agreements:
+- **legacy.json = the skeleton (layer ①)**, not the whole map. ✅ everyone.
+- **3D art (layer ③) is client-side, never in any JSON.** ✅ everyone.
+- **Live match map wins over static.** ✅ everyone.
+- **"legacy" = the classic/current arena**, not "deprecated"; parcel maps are **additive**, same schema,
+  different files — they never *replace* legacy.json. ✅ everyone.
+
+**The one divergence — obstacles + walkability (layers ② + ④):**
+
+| | **Legacy MOBA arena** (`legacy.json`) | **CF parcel maps** (the artifact) |
+|---|---|---|
+| Obstacles (②) | **per-match, seeded-random** — legacy.json's obstacles are a **sample roll**; every match re-rolls its own and sends them live. Only the skeleton is authoritative. | **AUTHORED + DETERMINISTIC in the artifact** — the AI *designs & saves* the terrain (canon decisions 3, 10). Not re-rolled. |
+| Walkability (④) | derived at runtime from ① + ② | **authored** in the artifact (`terrain.walk`), baked deterministically |
+
+**Why CF can't inherit the legacy "obstacles ride live/random" behavior:** (1) canon — CF fights on a
+**designed** map, not random scenery; (2) **determinism** (AGENTS prime directive) — same seed ⇒
+byte-identical map every load; (3) **command-view ↔ 3D fidelity** — CF's 2D command map is generated from
+the artifact's authored obstacles/walkability; if obstacles were random-live, the command map would be a
+*lie* about the ground units fight on.
+
+**⇒ The integration rule:** for a **CF parcel** battle, the engine must **consume the CF artifact's
+obstacle + walkability layers** (deterministic), NOT re-roll them. Random-per-match obstacles are correct
+for the **legacy arena only**. This is the load-bearing alignment point (see **Open questions** below).
+
+## Terminology crosswalk (network/engine session ↔ this doc)
+
+| Network/engine session says | This doc's term | Note |
+|---|---|---|
+| "stand-ins" | **stand-in** (`legacy-{1,3}lane.json`) | same |
+| "legacy.json / the current arena" | **legacy map** (`legacy.json`) | authoritative; = tier 2 |
+| "parcel maps (the 1000s)" | **parcel map** (the per-parcel artifact) | same |
+| "layer ① skeleton" | the artifact's `lanes`+`structures`(CORE/TOWER)+`spawnZones`+`bounds` | same |
+| "layer ② obstacles" | `obstacles[]` + terrain FOREST/ROCK/WATER cells | legacy: sample/live · CF: authored |
+| "layer ③ 3D terrain+art" | the **in-game render** assets (client) | never in JSON |
+| "layer ④ collision" | `terrain.walk` grid | legacy: runtime · CF: authored |
+| "live map in `bridgeStart.battlefield`" | the **live battlefield** (precedence #1) | wins over static |
+
+## Delivery: `legacy.json` → `data/moba-maps/legacy.json`
+
+- **Source:** the **network/engine session** (owns the sim geometry + the export). Sitting at
+  `integration/legacy.json` in the moba repo.
+- **Destination:** `data/moba-maps/legacy.json` in this (CF) repo — the loader **explicitly looks for it**
+  and auto-prefers it over the stand-ins (`loadStandbyBattlefield`).
+- **My take on "commit direct vs courier":** it's a **data file the loader asks for by name**, not code —
+  committing it straight into `data/moba-maps/legacy.json` **with a change note** is clean and fine (I'd
+  welcome it). One requirement: it must be **A1 Battlefield JSON** (`bounds` + `lanes{id,side,waypoints}` +
+  `structures` incl. `CORE` + `spawnZones`); if the export is a different shape, run it through the
+  converter first. Once it lands, my `data/moba-maps/moba-singleplayer.json` (reverse-engineered) becomes
+  a redundant cross-check — keep or drop.
+
 ## The gap (why 3D preview ≠ in-game 3D)
 
 Same artifact, **different renderer**. The **3D preview** (item 7) uses placeholder prefabs on flat
@@ -92,6 +181,49 @@ maps = making the real client (`index.html`) **data-driven from the artifact** (
 prefabs `mkTower`/`mkNode`/`mkCore`/terrain — they're just wired to hardcoded map data today). That is
 the `CLIENT_BATTLEFIELD_LOADER.md` task (game-dev / OP48). **No new map format is needed — only the
 renderer changes.**
+
+## The 4 layers — reconciled with the integration agent's `legacy.json` model
+
+The integration session models a battle map as **4 stacked layers**, with `legacy.json` = layer ① only.
+That model is **accurate for `legacy.json` / the classic MOBA arena**, and it maps cleanly onto our terms —
+with **one divergence that matters for CF maps**:
+
+| Layer | Integration agent (legacy MOBA) | CF generated maps (the artifact) |
+|---|---|---|
+| **① Skeleton / blueprint** (lanes, towers, cores, spawns, bounds) | `legacy.json` — in the file ✅ | in the artifact ✅ (same) |
+| **② Obstacles / scenery** (trees, boulders) | *"sample only in JSON; real ones ride live, random each match"* | **AUTHORED + DETERMINISTIC in the artifact** (obstacle footprints + terrain FOREST/ROCK/WATER cells). **Not random.** |
+| **③ 3D terrain + art** (ground, models, textures) | client assets, not in JSON ✅ | client assets, not in JSON ✅ (same — this is "the gap") |
+| **④ Collision / walkability** | *"derived at runtime from ① + ②"* | **AUTHORED in the artifact** (`terrain.walk` grid). Derived at BAKE time, not per match. |
+
+**Agreement:** layer ① is the blueprint; layer ③ (3D art) is always client-side, never in the JSON — true
+for every map. And "legacy" = the original single-player arena the game already ships. All correct.
+
+**The divergence (CF ≠ legacy):** for CF parcel maps, layers **② (obstacles) and ④ (walkability) move INTO
+the artifact and are DETERMINISTIC** — they do NOT "ride live / random each match." This is non-negotiable
+for three reasons:
+1. **Canon** — CF battles are fought against a **DESIGNED** map (decisions 3 + 10: terrain is authored, the
+   AI designs + SAVES it), not random scenery.
+2. **Determinism** (AGENTS prime directive) — same seed ⇒ byte-identical map, every load, every player.
+   Random-per-match obstacles break golden-master reproducibility.
+3. **Command-view ↔ 3D fidelity** — the 2D command view is generated from the artifact's authored
+   obstacles/walkability (§3 converter). If obstacles were random-live, the command map would be a *lie*
+   about the terrain the units actually fight on.
+
+**So the alignment for integration:** when CF maps flow into the client, layers ② + ④ must come **from the
+artifact** (deterministic), NOT be scattered live. The client's random-décor path is fine for **purely
+cosmetic** props, but every **gameplay-relevant** obstacle + the walkable field are the artifact's, locked.
+`legacy.json` (skeleton only) ⊂ the CF `artifact` (① + ② + ④ authored; ③ still client art).
+
+## Open integration questions (for the network/engine + map-maker sessions)
+
+1. **CF obstacle authority (the load-bearing one).** For a **CF parcel** battle, does the engine
+   **consume the CF artifact's obstacle + walkability layers** as-is (required for determinism + designed
+   terrain), or does it re-roll obstacles per match like the legacy arena? CF needs the former. What's the
+   allocate-time contract to pass CF's obstacle/walk layer into the match?
+2. **legacy.json format** — is the engine export already A1 Battlefield JSON (bounds/lanes/structures/
+   spawns), or does it need a one-time conversion before landing at `data/moba-maps/legacy.json`?
+3. **Live `battlefield` shape** — confirm the live `bridgeStart.battlefield` is the same A1 schema CF's
+   command view renders, so live + static go through one renderer (they should, per §4f).
 
 ## One-line summary
 
