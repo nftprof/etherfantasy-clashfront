@@ -1,0 +1,404 @@
+{
+  "v": 1,
+  "_source": "reverse-engineered from etherfantasy-browser-moba-game index.html (real single-player map: LANES/mkTower/mkNode/mkCore @ MAPK 1.4)",
+  "meta": {
+    "parcelId": "MOBA-SINGLEPLAYER",
+    "seed": "moba-legacy-3lane",
+    "designVersion": 0,
+    "biome": "TEMPERATE_GRASS",
+    "sizeClass": "SINGLE",
+    "sizeM": 322,
+    "laneCount": 3
+  },
+  "arena": {
+    "shape": "polygon",
+    "sizeM": 322,
+    "bounds": [
+      [
+        -161,
+        -161
+      ],
+      [
+        161,
+        -161
+      ],
+      [
+        161,
+        161
+      ],
+      [
+        -161,
+        161
+      ]
+    ]
+  },
+  "obstacles": [
+    {
+      "id": "grove_0",
+      "kind": "TREE",
+      "x": -120.4,
+      "z": -98,
+      "r": 6,
+      "passable": true
+    },
+    {
+      "id": "grove_1",
+      "kind": "TREE",
+      "x": -109.2,
+      "z": -128.8,
+      "r": 6,
+      "passable": true
+    },
+    {
+      "id": "grove_2",
+      "kind": "TREE",
+      "x": -56,
+      "z": -25.2,
+      "r": 6,
+      "passable": true
+    },
+    {
+      "id": "grove_3",
+      "kind": "TREE",
+      "x": -25.2,
+      "z": -56,
+      "r": 6,
+      "passable": true
+    },
+    {
+      "id": "grove_4",
+      "kind": "TREE",
+      "x": 58.8,
+      "z": 25.2,
+      "r": 6,
+      "passable": true
+    },
+    {
+      "id": "grove_5",
+      "kind": "TREE",
+      "x": 25.2,
+      "z": 58.8,
+      "r": 6,
+      "passable": true
+    },
+    {
+      "id": "grove_6",
+      "kind": "TREE",
+      "x": -72.8,
+      "z": 58.8,
+      "r": 6,
+      "passable": true
+    },
+    {
+      "id": "grove_7",
+      "kind": "TREE",
+      "x": 72.8,
+      "z": -72.8,
+      "r": 6,
+      "passable": true
+    }
+  ],
+  "resources": [
+    {
+      "id": "gold_0",
+      "kind": "GOLD_MINE",
+      "x": -98,
+      "z": -120.4,
+      "richness": 2
+    },
+    {
+      "id": "wood_1",
+      "kind": "WOOD_GROVE",
+      "x": -120.4,
+      "z": -98,
+      "richness": 2
+    },
+    {
+      "id": "gold_2",
+      "kind": "GOLD_MINE",
+      "x": -126,
+      "z": -123.2,
+      "richness": 2
+    },
+    {
+      "id": "wood_3",
+      "kind": "WOOD_GROVE",
+      "x": -109.2,
+      "z": -128.8,
+      "richness": 2
+    },
+    {
+      "id": "wood_4",
+      "kind": "WOOD_GROVE",
+      "x": -56,
+      "z": -25.2,
+      "richness": 2
+    },
+    {
+      "id": "wood_5",
+      "kind": "WOOD_GROVE",
+      "x": -25.2,
+      "z": -56,
+      "richness": 2
+    },
+    {
+      "id": "gold_6",
+      "kind": "GOLD_MINE",
+      "x": -44.8,
+      "z": -44.8,
+      "richness": 2
+    },
+    {
+      "id": "wood_7",
+      "kind": "WOOD_GROVE",
+      "x": 58.8,
+      "z": 25.2,
+      "richness": 2
+    },
+    {
+      "id": "wood_8",
+      "kind": "WOOD_GROVE",
+      "x": 25.2,
+      "z": 58.8,
+      "richness": 2
+    },
+    {
+      "id": "gold_9",
+      "kind": "GOLD_MINE",
+      "x": 44.8,
+      "z": 44.8,
+      "richness": 2
+    },
+    {
+      "id": "wood_10",
+      "kind": "WOOD_GROVE",
+      "x": -72.8,
+      "z": 58.8,
+      "richness": 2
+    },
+    {
+      "id": "wood_11",
+      "kind": "WOOD_GROVE",
+      "x": 72.8,
+      "z": -72.8,
+      "richness": 2
+    },
+    {
+      "id": "gold_12",
+      "kind": "GOLD_MINE",
+      "x": 2.8,
+      "z": 39.2,
+      "richness": 2
+    },
+    {
+      "id": "gold_13",
+      "kind": "GOLD_MINE",
+      "x": -2.8,
+      "z": -39.2,
+      "richness": 2
+    }
+  ],
+  "buildSpots": [],
+  "spawnZones": [
+    {
+      "id": "spawn_atk",
+      "side": "ATTACKER",
+      "edge": "S",
+      "x": -118,
+      "z": -118
+    },
+    {
+      "id": "spawn_def",
+      "side": "DEFENDER",
+      "edge": "N",
+      "x": 118,
+      "z": 118
+    }
+  ],
+  "lanes": [
+    {
+      "id": "lane_mid",
+      "side": "ANY",
+      "waypoints": [
+        [
+          -100.8,
+          -100.8
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          100.8,
+          100.8
+        ]
+      ]
+    },
+    {
+      "id": "lane_top",
+      "side": "ANY",
+      "waypoints": [
+        [
+          -100.8,
+          -84
+        ],
+        [
+          -100.8,
+          100.8
+        ],
+        [
+          84,
+          100.8
+        ]
+      ]
+    },
+    {
+      "id": "lane_bot",
+      "side": "ANY",
+      "waypoints": [
+        [
+          -84,
+          -100.8
+        ],
+        [
+          100.8,
+          -100.8
+        ],
+        [
+          100.8,
+          84
+        ]
+      ]
+    }
+  ],
+  "structures": [
+    {
+      "anchorId": "core_atk",
+      "kind": "CORE",
+      "side": "ATTACKER",
+      "x": -114.8,
+      "z": -114.8
+    },
+    {
+      "anchorId": "core_def",
+      "kind": "CORE",
+      "side": "DEFENDER",
+      "x": 114.8,
+      "z": 114.8
+    },
+    {
+      "anchorId": "tower_0",
+      "kind": "TOWER",
+      "side": "ATTACKER",
+      "x": -56,
+      "z": -56
+    },
+    {
+      "anchorId": "tower_1",
+      "kind": "TOWER",
+      "side": "ATTACKER",
+      "x": -28,
+      "z": -28
+    },
+    {
+      "anchorId": "tower_2",
+      "kind": "TOWER",
+      "side": "ATTACKER",
+      "x": -100.8,
+      "z": -25.2
+    },
+    {
+      "anchorId": "tower_3",
+      "kind": "TOWER",
+      "side": "ATTACKER",
+      "x": -100.8,
+      "z": 44.8
+    },
+    {
+      "anchorId": "tower_4",
+      "kind": "TOWER",
+      "side": "ATTACKER",
+      "x": -2.8,
+      "z": -100.8
+    },
+    {
+      "anchorId": "tower_5",
+      "kind": "TOWER",
+      "side": "ATTACKER",
+      "x": -61.6,
+      "z": -100.8
+    },
+    {
+      "anchorId": "tower_6",
+      "kind": "TOWER",
+      "side": "DEFENDER",
+      "x": 56,
+      "z": 56
+    },
+    {
+      "anchorId": "tower_7",
+      "kind": "TOWER",
+      "side": "DEFENDER",
+      "x": 28,
+      "z": 28
+    },
+    {
+      "anchorId": "tower_8",
+      "kind": "TOWER",
+      "side": "DEFENDER",
+      "x": 100.8,
+      "z": 25.2
+    },
+    {
+      "anchorId": "tower_9",
+      "kind": "TOWER",
+      "side": "DEFENDER",
+      "x": 100.8,
+      "z": -44.8
+    },
+    {
+      "anchorId": "tower_10",
+      "kind": "TOWER",
+      "side": "DEFENDER",
+      "x": 2.8,
+      "z": 100.8
+    },
+    {
+      "anchorId": "tower_11",
+      "kind": "TOWER",
+      "side": "DEFENDER",
+      "x": 61.6,
+      "z": 100.8
+    }
+  ],
+  "mobs": [
+    {
+      "id": "camp_0",
+      "kind": "WILD",
+      "x": -103.6,
+      "z": 14,
+      "count": 4
+    },
+    {
+      "id": "camp_1",
+      "kind": "WILD",
+      "x": 14,
+      "z": -103.6,
+      "count": 4
+    },
+    {
+      "id": "boss_0",
+      "kind": "BOSS_WEAPON",
+      "x": -53.2,
+      "z": 53.2,
+      "count": 1
+    },
+    {
+      "id": "boss_1",
+      "kind": "BOSS_ARMOR",
+      "x": 53.2,
+      "z": -53.2,
+      "count": 1
+    }
+  ]
+}
