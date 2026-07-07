@@ -6,6 +6,9 @@
 > `/home/ubuntu/ef-moba-server/maps/` on 13.250.39.41 (the box CF runs on).
 
 ## Docs here
+- **MAP-PIPELINE-GLOSSARY.md** — READ FIRST for shared vocabulary: one map = one artifact (raster JSON,
+  the source of truth); its derived files (A1 command map, render manifest) + its three renders (2D
+  command view, 3D preview, in-game 3D); and template vs example map (`CF-GRASSLAND`) vs real parcel map.
 - **ECONOMY-SEAM.md** — the three CF↔maps hooks: ownership feed, invest flow, payout note.
 - **LAND-VALUE-AND-IMPROVEMENT.md** — PROPOSAL (for owner review): the land-layer economic model —
   how a landowner spends/burns CT to raise a parcel/estate's investment tier and unlock more resource
