@@ -12,6 +12,12 @@
   precedence, the terminology crosswalk, the `legacy.json` delivery plan, and — critically — the ONE
   divergence (CF parcel maps author obstacles + walkability deterministically; the legacy arena re-rolls
   them live). Reconciles the CF, network/engine, and BattleEngine models.
+- **CONTINUOUS-WORLD-TERRAIN.md** — ⭐ DECISION (Map-maker, 2026-07-07): the default terrain is **one
+  authored continuous world per continent**; each parcel is a **window** cropped from it (rivers/roads/
+  ranges continuous across parcels), modelled on a **real city per continent** from the aerial view. Adds a
+  feature-network layer (roads + districts) to `world-terrain.json`, an **edge-freeze terraform rule**
+  (edges frozen, interior free), and a new **CF aerial mosaic view** (tiled thumbnails). Stamps stay as the
+  floor; author one continent/week. Extends the Atlas + macro-terrain brief.
 - **ECONOMY-SEAM.md** — the three CF↔maps hooks: ownership feed, invest flow, payout note.
 - **LAND-VALUE-AND-IMPROVEMENT.md** — PROPOSAL (for owner review): the land-layer economic model —
   how a landowner spends/burns CT to raise a parcel/estate's investment tier and unlock more resource

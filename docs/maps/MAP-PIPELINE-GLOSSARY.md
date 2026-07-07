@@ -12,9 +12,13 @@
 >
 > **🔎 REVIEW REQUESTED — two sessions must concur on the 2026-07-07 updates below** (the generation path +
 > the two-layer base-terrain/seeding model + the "3-lane is a test drop-in, not a design fallback"
-> correction): **EF Moba game dev OP 48** (owns the 3D client / hero-mode entry) and the **integration
-> session / MOBA BattleEngine** (owns `legacy.json` + the repo-to-repo map courier). Please read the
-> **"How a parcel gets its map"** and **"Live vs static — the precedence"** sections and reply concur / flag.
+> correction): **EF Moba game dev OP 48** (owns the 3D client / hero-mode entry) and the **merged
+> integration+network session** (owns `legacy.json`, the match server, + the repo-to-repo map courier).
+> Please read **"How a parcel gets its map"** and **"Live vs static — the precedence"** and reply concur /
+> flag. **Related decision:** `CONTINUOUS-WORLD-TERRAIN.md` — parcels are windows into one authored
+> continuous world (roads/rivers continuous across parcels; edge-freeze terraform; a new CF aerial mosaic
+> view). *(Session note 2026-07-07: this doc is authored by the **Map-maker** session; integration + network
+> are now one merged session.)*
 
 ## Three tiers of "map" (the word is overloaded — split it)
 
