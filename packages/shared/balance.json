@@ -12,7 +12,12 @@
       "COAST": 1.0,
       "OCEAN": 1.0
     },
-    "openOceanNoLanePenaltyMult": 2.0
+    "openOceanNoLanePenaltyMult": 2.0,
+    "_travelNote": "⚙ Cross-continent = server move (docs/maps/WORLD-MAP-AND-SERVER-TRAVEL.md). Fees modest (1 CT ≈ $0.10): reserve a dock, then move continent. Split owner/occupier/platform-sink; the sink portion follows decision 17 (≥10% burns, rest to vault).",
+    "dockReserveFeeCt": 1,
+    "continentTravelFeeCt": 3,
+    "travelFeeSplit": { "landOwner": 0.35, "occupier": 0.35, "platformSink": 0.30 },
+    "portTypeByTier": { "surface": "SEAPORT", "sky": "AIRPORT", "underworld": "UW_TUNNEL" }
   },
   "development": {
     "maxLevel": 10,

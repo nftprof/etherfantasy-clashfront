@@ -10,6 +10,7 @@ import { createUI } from './ui.js';
 import { createFTUE } from './ftue.js';
 import { createEcon } from './econ.js';
 import { createBattle } from './battle.js';
+import { createWorld } from './world.js';
 import { esc, fmtCT, fmtDur, fmtProv, initAvatarMissTracking, preloadHeroAvatars } from './util.js';
 
 const TOKEN_KEY = 'cf_token';
@@ -288,6 +289,14 @@ document.getElementById('btn-library').addEventListener('click', (e) => {
 document.getElementById('btn-economy').addEventListener('click', (e) => {
   e.preventDefault();
   econ.toggle();
+});
+// 🌐 3D world map — continents on 3 tiers, fog of war, cross-continent (server) travel.
+const world = createWorld({ ui });
+document.getElementById('btn-world').addEventListener('click', (e) => {
+  e.preventDefault();
+  const homeParcelId = [...store.territories.values()][0]?.parcelId
+    ?? [...store.armies.values()][0]?.parcelId;
+  world.toggle({ homeParcelId });
 });
 
 document.addEventListener('keydown', (e) => {

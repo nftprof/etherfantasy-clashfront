@@ -53,22 +53,43 @@ Also: launch is now **three servers** (adds **Tokyo/Japan**), not the two (Montr
 `startContinent` flag per server. Server assignment does **not** block the base-terrain run (it's a shard/
 hosting attribute, not geometry) — but the launch/login routing needs it right.
 
-## 4. Cross-continent travel = server porting (owner, 2026-07-08)
+## 4. Cross-continent travel = server porting (owner-finalized 2026-07-08; BUILT)
 
-Moving between continents is **moving between servers** (an inter-shard handoff), gated physically + by fee:
+Moving between continents is **moving between servers entirely** (an inter-shard handoff), gated physically,
+by fee, and by a hard "everything moves" rule:
 
-- **Ports are the travel nodes.** To leave your continent you go to a **port** (near the coast/edge), then
-  **pay a fee** to **port to another continent** — which transfers you to that continent's server.
-- **Not free teleport** — you must reach the port and pay; it's a deliberate, priced action (a **CT sink**,
-  decision-17-aligned; ⚙ `travelFeeCt`). Distance/tier can scale the fee.
-- **You keep your starting server as home**; travel is round-trippable via ports. (Whether armies/holdings
-  move with you or stay resident on the home continent = an open sub-question, §6.)
+- **Ports are special map locations = the travel nodes.** Port type by tier: **Sea Port** (surface),
+  **Airship Port** (sky), **Underworld Tunnel** (underworld). You go to the port; **units gather there** to
+  travel.
+- **A port only opens for business when NO battle is active on the dock land.** A contested port is closed
+  until the fighting there resolves.
+- **Everything moves — the "all units" rule:** to travel, **all your units must be on the map, and they ALL
+  move together.** Your **Masters travel with you, but ABANDON every soldier they command** — the soldiers
+  are **left behind** on the origin continent (you arrive with your Masters, not their armies). So travel is
+  a real strategic reset, not a free relocation of your whole force.
+- **Two fees, both modest (not criminal):** a **dock-reserve fee** (⚙ `travel.dockReserveFeeCt` = 1 CT) to
+  reserve a dock, then a **separate continent-travel fee** (⚙ `travel.continentTravelFeeCt` = 3 CT) for the
+  server move. Total ≈ 4 CT (≈ $0.40).
+- **Fee split (⚙ `travel.travelFeeSplit`):** **land owner 35% · occupying warlord 35% · platform sink 30%.**
+  The platform-sink portion follows the security invariant (decision 17: **≥10% burns**, remainder to the
+  vault). So travel fees pay the people whose land you dock/embark from, and feed the sink.
+- **March-time option — the third choice on a dock land:** the march menu on a port land offers
+  **March · March & Command · {Sea Port / Airship Port / UW Tunnel}** — the third gathers units at the port
+  for travel instead of marching them into a fight.
+- **You keep your starting server as home.** Travel is round-trippable via ports.
 - This realizes decision 12's "cross-zone = inter-shard handoff" as a **concrete, player-driven, paid port
-  action**, not an invisible seam.
+  action** with real cost (abandoned soldiers + fees), not an invisible seam.
 
-## 5. The 3D fog-of-war WORLD MAP (new UX spec)
+**Build status (2026-07-08):** the **map, fog of war, travel UX, and fee model are BUILT** in the CF client
+(`apps/server/public/js/world.js`, the 🌐 button). The **cross-server handoff itself** (actually moving a
+player between server shards) lands with the **multi-continent / Tokyo-JP server rollout** — the confirm
+button is present but flagged "coming with multi-server launch" until that infra exists.
 
-A single **rotatable 3D world view** the player opens to see the whole world at a glance:
+## 5. The 3D fog-of-war WORLD MAP (BUILT 2026-07-08 — `js/world.js`, the 🌐 button)
+
+A single **rotatable pseudo-3D world view** the player opens to see the whole world at a glance. Shipped as
+a self-contained Canvas2D turntable (no external 3D lib), reading the embedded 12-continent constitution
+(source of truth `data/zone-registry.json`):
 
 - **3D, turntable.** The world renders in 3D and can be **rotated / orbited** ("turn-table it") so the
   player can see the **vertical tiers**: **surface continents in the middle**, **sky / floating islands
@@ -90,11 +111,16 @@ A single **rotatable 3D world view** the player opens to see the whole world at 
 run. It needs: the registry `worldOffset`/tier/`server` per continent (mostly present, pending §3), a
 per-player **visited/fog** state, and port nodes. Scope it after the base maps + the launch server routing.
 
-## 6. Open sub-questions (owner / world-planning)
+## 6. Resolved + still-open sub-questions
+**Resolved (owner 2026-07-08):**
+- **Do holdings/armies travel with the player?** → **Masters travel; soldiers are abandoned** (§4). Land
+  holdings stay resident on their continent (you don't carry land across servers).
+- **Registry update** → **DONE** (§3): `server` column corrected, `jp` server + `startContinent` flags added.
+
+**Still open (owner / world-planning):**
 - **Full continent→server table** — assign HUB + sky + underworld + prestige isles to servers (§2 covers
-  only the three onboarding continents).
-- **Do holdings/armies travel with the player or stay resident** on the home continent when they port?
-- **Travel-fee schedule** (`travelFeeCt`) — flat, or scale by tier/distance? Round-trip discount?
-- **Fog granularity** — per-continent reveal, or finer (per-region within a visited continent)?
-- **Registry update owner** — world-planning session to correct the `server` column + add the `jp` server
-  (§3) and a `startContinent` flag.
+  only the three onboarding continents; the registry currently keeps HUB/prestige on `ca`, sky+UW on `sg`).
+- **Travel-fee schedule** — currently flat (1 + 3 CT). Scale by tier/distance? Round-trip discount?
+- **Fog granularity** — per-continent reveal (current) vs finer (per-region within a visited continent).
+- **Cross-server handoff infra** — the actual player-move-between-shards backend (lands with multi-server
+  rollout; the client UX + fees are already built and flagged).
