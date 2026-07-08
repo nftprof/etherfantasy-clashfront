@@ -106,8 +106,8 @@ extraction — use it, not any earlier guessed bands:**
 
 `zoneAvgStrength = 100 × mult`; the seed pass reads it per zone (keyed by `zoneId`; `zoneCode =
 parcelId.slice(1,3)`). `UW3` = Luxuria, end-game, ore-default. Base-terrain **biome** also derives from the
-zone: `biomeFamily`/`palettes`/`worldOffset`/`viewBox` are in `data/world-zone-detail.json`. **⚠ Sky ×2.0
-(parallel) vs. an earlier 1/2/3× climb is owner-TBD** — see `ECONOMY-SEEDING-RECONCILIATION.md` §3.
+zone: `biomeFamily`/`palettes`/`worldOffset`/`viewBox` are in `data/world-zone-detail.json`. **Sky ×2.0
+(parallel, all three HS islands) is owner-CONFIRMED (2026-07-08)** — the 1/2/3× climb idea is dropped.
 
 ---
 

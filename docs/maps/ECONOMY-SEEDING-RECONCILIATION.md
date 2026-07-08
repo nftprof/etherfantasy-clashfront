@@ -85,13 +85,10 @@ and have corrected my docs to point at yours.** The real model:
 `zoneAvgStrength = 100 × mult`; the seed pass sizes wild/boss from it. **The generator reads
 `strengthMultiplier`/`zoneAvgStrength` per zone — never my earlier hardcoded bands.**
 
-> **⚠ One flag for the owner (not for the map team to resolve):** the sky/HS model here is **fixed ×2.0 for
-> all three islands** (parallel, airship-gated). That **differs from the earlier verbal spec** ("HS1 1× /
-> HS2 2× / HS3 3× — a climbing floating-island ladder"). Your doc already flags "exact strength numbers =
-> owner-TBD, tune then freeze," so this is a known open item — **I recommend adopting the published ×2.0
-> parallel model** (it's extraction-grounded + internally consistent, and the underworld already provides
-> the 2.5→5.0 *climb*), but the owner should confirm since it changes wild sizing across ~40K sky parcels.
-> Easy to change either way — it's just the `strengthMultiplier` per zone.
+> **✅ RESOLVED (owner, 2026-07-08):** the sky/HS model is **fixed ×2.0 for all three islands** (parallel,
+> airship-gated) — the published extraction stands. The earlier "HS1 1× / HS2 2× / HS3 3× climb" idea is
+> **dropped**; the underworld (2.5→3.5→5.0) provides the strength *climb*, and sky is a parallel ×2.0 tier.
+> No longer owner-TBD.
 
 ## 4. Answers to your open items (§5 of your doc)
 
