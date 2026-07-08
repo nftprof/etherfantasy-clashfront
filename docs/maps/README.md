@@ -18,12 +18,16 @@
   feature-network layer (roads + districts) to `world-terrain.json`, an **edge-freeze terraform rule**
   (edges frozen, interior free), and a new **CF aerial mosaic view** (tiled thumbnails). Stamps stay as the
   floor; author one continent/week. Extends the Atlas + macro-terrain brief.
-- **ZONE-REGISTRY.md** + **`../../data/zone-registry.json`** — ⭐ THE CANONICAL 11-ZONE LIST (Map-maker,
-  2026-07-07): the generator/sim input — `zoneId`, `zoneCode` (parcelId→zone lookup), proposed continent
-  **names** (Tianxia/Mythoria/Porthaven/Arcadia/Aeropolis/Emberfall/Empyrea/Ironhold/Blackmere/Luxuria + CGI Founders Isle —
-  owner to lock), `family` + `strengthMultiplier`/`zoneAvgStrength` (SURFACE ×1.0–1.3 progression · SKY
-  fixed ×2.0 · UNDERWORLD range ×2.5/3.5/5.0), biomeFamily, primaryElements, signatureMaterials, real
-  parcel counts. The base pass reads biome/position; the seed pass reads family/strength for wild sizing.
+- **ZONE-REGISTRY.md** + **`../../data/zone-registry.json`** — ⭐ THE CANONICAL 12-ZONE LIST (Map-maker,
+  2026-07-07): the generator/sim input — `zoneId`, `zoneCode` (parcelId→zone lookup), locked continent
+  **names** (Olympus·Fortuna·Tianxia·Mythoria·Porthaven·Arcadia·Aeropolis·Emberfall·Empyrea·Ironhold·
+  Blackmere·Luxuria), `family` + `strengthMultiplier`/`zoneAvgStrength` (SURFACE ×1.0–1.3 · SKY fixed ×2.0 ·
+  UNDERWORLD range ×2.5/3.5/5.0), biomeFamily, primaryElements, signatureMaterials, real parcel counts.
+  The base pass reads biome/position; the seed pass reads family/strength for wild sizing.
+- **WORLD-ZONE-DETAIL.md** + **`../../data/world-zone-detail.json`** — ⭐ FOR WORLD PLANNING (Map-maker,
+  2026-07-07): full per-zone facts computed from the real extraction — parcel counts by L2 size class
+  (EPIC/GIANT/LARGE/MEDIUM/SMALL), L3 singles, totals, density, worldOffset/viewBox, biome/elements/
+  materials/strength. World totals: 8,482 L2 + 284,314 L3 = 292,796 parcels. The 12-zone planning table.
 - **ZONE-BIOME-SEEDING-GUIDANCE.md** — ⭐ FOR THE ECONOMICS DEV (Map-maker, 2026-07-07): the map/terrain
   half of `MAP-ECONOMY-SEEDING-PARAMS.md` — all 10 zones (tier/biome/elements/server), a **materials ×
   zones richness matrix** (food/timber/stone/iron/gold/fish/obsidian/gems/aether/herb/arcane/light/dark),
