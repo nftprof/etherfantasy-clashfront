@@ -5,6 +5,7 @@
     "seed": "1079526986",
     "designVersion": 0,
     "biome": "TEMPERATE_FOREST",
+    "palette": "verdant",
     "sizeClass": "SINGLE",
     "sizeM": 322,
     "laneCount": 1

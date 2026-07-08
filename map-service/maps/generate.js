@@ -35,6 +35,30 @@ export const seedFor = (parcelId, biome = "", zone = "") => fnv1a(`${parcelId}|$
 // regional coherence: neighbouring parcels share a biome palette (region = coarse id bucket)
 export const regionPalette = (parcelId) => PALETTES[fnv1a("region:" + String(parcelId).slice(0, -3)) % PALETTES.length];
 
+// BIOME → ground palette. The colour MUST match the declared biome — a DESERT parcel must never
+// render green. biomeFamily (from data/zone-registry.json) maps to the palette(s) whose PALETTE_RGB
+// reads correctly for that terrain; a seed picks among a biome's variants for coherent variety.
+const BIOME_PALETTES = {
+  TEMPERATE_GRASS: ["verdant", "autumn"],
+  TEMPERATE_FOREST: ["verdant", "autumn", "sakura"],
+  DESERT: ["desert"],
+  SNOW: ["tundra", "ashen"],
+  VOLCANIC: ["volcanic", "ashen"],
+  SWAMP: ["swamp"],
+};
+export function biomePalette(biome, seed = 0) {
+  if (!biome) return null;
+  const key = String(biome).toUpperCase();
+  const opts = BIOME_PALETTES[key];
+  if (opts) {
+    if (opts.length === 1) return opts[0];
+    // bias to the canonical (first) palette; ~1 in 3 rolls a variant for coherent regional variety
+    return (seed % 3 === 0) ? opts[1 + (seed % (opts.length - 1))] : opts[0];
+  }
+  const low = String(biome).toLowerCase();
+  return PALETTES.includes(low) ? low : null;   // biome already given as a palette name
+}
+
 // default parameter roll from the seed (v0 maps) — owner/LLM directives override via `params`.
 // Rolls WITHIN the parcel's investment budget (a fresh tier-0 parcel rolls a modest map).
 export function paramsFromSeed(seed, parcelId, budget = budgetFor(0)) {
@@ -107,6 +131,10 @@ export function generate(parcel, params = null, designVersion = 0) {
   const seed = seedFor(parcelId, biome, zone);
   const budget = budgetFor(parcel.investLevel ?? 0);   // investment tier = hard content budget
   const p = params ? clampParams(params, budget) : paramsFromSeed(seed, parcelId, budget);
+  // biome is authoritative for the ground COLOUR: override the seeded/region palette so the terrain
+  // renders as its declared biome (desert = sandy, not green). An explicit params.palette wins.
+  const bp = biomePalette(biome, seed);
+  if (bp && !(params && params.palette)) p.palette = bp;
   const sizeM = parcel.sizeM || 322;   // CANON (2026-07-08): fixed ±161 world-unit frame, every parcel/battle
   const G = Math.round(sizeM / CELL_M);
   const rng = makeRng(seed ^ fnv1a("v" + designVersion));    // each version rolls fresh, still deterministic

@@ -8,12 +8,9 @@
 
 ## 1. The world at a glance
 
-- **12 zones** on **3 tiers** (surface / sky / underworld) across **3 launch servers** (Montréal `ca`,
-  Singapore `sg`, **Tokyo/Japan `jp`** — coming soon), plus **2 SPECIAL prestige islands** (Olympus/founders,
-  Fortuna/influencers) that ship no extracted parcels yet.
-  - **Server update (owner 2026-07-08, `WORLD-MAP-AND-SERVER-TRAVEL.md`):** onboarding continents are split
-    across the three city servers — **Singapore→Porthaven (BUS)**, **Tokyo→Arcadia (EDU, coming soon)**,
-    **Montréal→Mythoria (ENT)**. (Was: all surface on `ca`.) `data/zone-registry.json` is updated.
+- **12 zones** on **3 tiers** (surface / sky / underworld) across **2 launch servers** (Montréal `ca`,
+  Singapore `sg`), plus **2 SPECIAL prestige islands** (Olympus/founders, Fortuna/influencers) that ship
+  no extracted parcels yet.
 - **World totals (real extraction):** **8,482 L2 estates** + **284,314 L3 singles** = **292,796 parcels**.
 - **L2 by size class:** EPIC 48 · GIANT 172 · LARGE 393 · MEDIUM 1,082 · SMALL 6,787.
 - **Parcel-id → zone:** `zoneCode = parcelId.slice(1,3)` (see the registry).
@@ -28,8 +25,8 @@ urban/dungeon-packed, lower = open country).
 |---|---|---|---|--:|--:|--:|--:|--:|--:|--:|--:|--:|--:|
 | HUB | Tianxia | surface | ca | 24 | 53 | 111 | 238 | 1318 | **1744** | 723 | **58,745** | **60,489** | 710 |
 | ENT | Mythoria | surface | ca | 3 | 14 | 31 | 128 | 1316 | **1492** | 669 | **38,284** | **39,776** | 251 |
-| BUS | Porthaven | surface | sg | 12 | 68 | 127 | 277 | 703 | **1187** | 610 | **70,467** | **71,654** | 821 |
-| EDU | Arcadia | surface | jp | 1 | 8 | 20 | 78 | 265 | **372** | 161 | **13,663** | **14,035** | 593 |
+| BUS | Porthaven | surface | ca | 12 | 68 | 127 | 277 | 703 | **1187** | 610 | **70,467** | **71,654** | 821 |
+| EDU | Arcadia | surface | ca | 1 | 8 | 20 | 78 | 265 | **372** | 161 | **13,663** | **14,035** | 593 |
 | HS1 | Aeropolis | sky | sg | 1 | 6 | 16 | 57 | 266 | **346** | 178 | **14,071** | **14,417** | 1068 |
 | HS2 | Emberfall | sky | sg | 0 | 0 | 16 | 49 | 386 | **451** | 223 | **13,694** | **14,145** | 996 |
 | HS3 | Empyrea | sky | sg | 1 | 0 | 6 | 54 | 403 | **464** | 219 | **11,873** | **12,337** | 883 |

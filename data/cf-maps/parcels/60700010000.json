@@ -5,6 +5,7 @@
     "seed": "3430921386",
     "designVersion": 0,
     "biome": "TEMPERATE_GRASS",
+    "palette": "autumn",
     "sizeClass": "SINGLE",
     "sizeM": 322,
     "laneCount": 1

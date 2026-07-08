@@ -5,6 +5,7 @@
     "seed": "815639107",
     "designVersion": 0,
     "biome": "SWAMP",
+    "palette": "swamp",
     "sizeClass": "SINGLE",
     "sizeM": 322,
     "laneCount": 1
