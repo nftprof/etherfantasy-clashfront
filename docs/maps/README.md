@@ -34,6 +34,11 @@
   the **"broad but thin, concentrated rich"** gradient rule (iron minable everywhere, richest UW3), per-zone
   detail cards (materials/recruits/POI-types/wild-boss/hazards), and the resource-node vocabulary the
   generator must grow into. Grounded in the Atlas + biome-recruitment.
+- **PET-AND-MASTER-HOMES.md** — ⭐ (Map-maker, 2026-07-07): which **PentaPet element-types populate each
+  zone** (the wild + recruit pool per region — UW3/Luxuria = dark/mystic ✅) + each **Master's home zone**
+  (home = the land of the Master's element, which its matching-element buff resonates with). Grounded in the
+  228-pet element roster + the 12-zone registry. Blocker flagged: the 47 Masters have no element data yet
+  (owner/API needed); Bosses (elements in-name) are homed.
 - **MAP-MODES.md** — ⭐ (Map-maker, 2026-07-07): ONE map serves MANY modes — the spawn/entry **anchors are
   not enemy waves**; a MODE (Versus / Siege / Dominion / Guard / Duel / Clash) just lights up a subset +
   sets the win-point. Attacker enters by approach direction; defender holds the middle. Renderer spec for
