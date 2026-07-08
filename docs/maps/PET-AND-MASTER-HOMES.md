@@ -39,31 +39,41 @@ appear **secondarily** in kindred zones.
 *(Light / Dark are reserved future elements — Light → HS3/Empyrea + CGI; Dark folds into Phantom+Mystic in
 the underworld today.)*
 
-## 2. Zone → PentaPet population (the answer: which pets live where)
+## 2. Zone → PentaPet population + RARITY GATE (owner-tuned)
 
-What kind of population each region hosts — its wild creatures + the recruit pool on its battle maps.
+What population each region hosts (wild + recruit pool) **and the rarity band** allowed there. Machine
+form: **`data/zone-pet-population.json`**. Rarity ladder: common < uncommon < rare < legendary < mythic.
 
-| Zone | Name | **Signature pet elements (population)** | example pets | ~pop |
-|---|---|---|---|--:|
-| **HUB** | Tianxia | **Neutral · Combat** (+ Leaf) | Cesstoid, Blockid, Lollipunch | ~25 |
-| **ENT** | Mythoria | **Leaf · Insect** (+ Water) | Dilloom, Vivorin, Mintol | ~46 |
-| **BUS** | Porthaven | **Water · Toxin** | Nageel, Palytid, Windora | ~38 |
-| **EDU** | Arcadia | **Earth · Telepath** (+ Iron, Leaf) | Keradon, Geckno, Swifty | ~19 |
-| **HS1** | Aeropolis | **Flyer** (+ Leaf) | Gremin, Inkami, Tenteink | ~9 |
-| **HS2** | Emberfall | **Fire · Lightning** (+ Dragon) | Dynamouse, Mianari, Chulember | ~29 |
-| **HS3** | Empyrea | **Ice** (+ Telepath, Flyer, *Light*) | Tygloo, Mechloo, Ruffski | ~13 |
-| **UW1** | Ironhold | **Iron · Rock** (+ Earth, Toxin) | Morinori, Thermolophus, Talisment | ~14 |
-| **UW2** | Blackmere | **Phantom** (+ Water, Fire) | Eekape, Vibe, Mirrie | ~13 |
-| **UW3** | Luxuria | **Mystic · Dragon** (+ Phantom) — the dark/mystic deep | Berrball, Baulder, Silvyx | ~22 |
-| **CGI** | Olympus | prestige — **legendary/mythic** residents (Mystic, Dragon, Telepath), no wild recruit pool | Intelix, Dredrock | — |
-| **KOL** | Fortuna | prestige — **Flyer/Neutral** showpieces, no wild recruit pool | Inkami, Geenee | — |
+**Progression (the keystone):** the **up-to-RARE surface is the shared starting world** — **Tianxia** (the
+great convergence hub, biggest land, where everyone joins) + the three starters **Arcadia · Porthaven ·
+Mythoria**. The **Sky (HS) and Underworld (UW) tiers are RARE-GATED** — you need rare-tier progression to
+enter, and they hold the **legendary/mythic** pets. **HS3 + UW3** (highest sky / deepest hell) reach
+**mythic**. Common(31)/uncommon(81)/rare(80) ≈ 192 pets are open to all; legendary(26) gated to HS/UW;
+mythic(10) only HS3/UW3 + the prestige islands.
 
-**UW3/Luxuria = mostly dark/mystic** ✅ (Mystic + Dragon + Phantom) — exactly as you called it. The
-underworld chain reads Iron/stone (UW1) → haunted/drowned (UW2) → dark/mystic/dragon inferno (UW3).
+| Zone | Name | Role | **Rarity band** | **Pet elements (population)** | example pets |
+|---|---|---|---|---|---|
+| **HUB** | Tianxia | convergence hub | **common → rare** | Neutral · Combat · Leaf · Water · Earth · Fire · Lightning · Flyer · Toxin | Cesstoid, Blockid, Nageel |
+| **ENT** | Mythoria | starter | **common → rare** | Leaf · Insect · Fire · Lightning · Water · Earth · Toxin | Dilloom, Vivorin, Kyari |
+| **BUS** | Porthaven | starter | **common → rare** | Water · Toxin · Flyer | Nageel, Palytid, Gremin |
+| **EDU** | Arcadia | starter | **common → rare** | Earth · Telepath · Iron · Leaf | Keradon, Geckno, Mintol |
+| **HS1** | Aeropolis | rare-gated · sky | **uncommon → legendary** | Flyer · Leaf | Gremin, Inkami, Pangrass |
+| **HS2** | Emberfall | rare-gated · sky | **rare → legendary** | Fire · Lightning · Dragon | Chulember, Mianari, Baulder |
+| **HS3** | Empyrea | rare-gated · sky apex | **rare → mythic** | Ice · Telepath · Flyer · *Light* | Tygloo, Swifty, Silvyx |
+| **UW1** | Ironhold | rare-gated · underworld | **uncommon → legendary** | Iron · Rock · Earth · Toxin | Morinori, Thermolophus, Matara |
+| **UW2** | Blackmere | rare-gated · underworld | **rare → legendary** | Phantom · Water · Fire | Eekape, Vibe, Mirrie |
+| **UW3** | Luxuria | rare-gated · deepest | **rare → mythic** | Mystic · Dragon · Phantom — the dark/mystic deep | Berrball, Cobrus, Intelix |
+| **CGI** | Olympus | prestige · founders | **legendary → mythic** | Mystic · Dragon · Telepath (residents, no wild pool) | Intelix, Dredrock |
+| **KOL** | Fortuna | prestige · influencers | **legendary → mythic** | Flyer · Neutral (residents, no wild pool) | Inkami, Geenee |
 
-**Recruitment tie-in:** a parcel's battle map offers the recruit classes of **its zone's signature
-elements** (the biome gate, `BIOME-RECRUITMENT-AND-ARMY.md`) — e.g. you can only muster Fire siege units on
-Emberfall, marines on Porthaven, dark/mystic lineages deep in Luxuria. No one zone gives every class.
+**UW3/Luxuria = mostly dark/mystic, rare→mythic** ✅. Underworld reads Iron/stone (UW1) → haunted/drowned
+(UW2) → dark/mystic/dragon inferno (UW3). Note common/uncommon elements like Fire/Water/Earth appear in BOTH
+a starter band (their low-rarity forms, e.g. Tianxia/Mythoria) AND their gated home (their legendary/mythic
+forms, e.g. Fire→Emberfall) — the *element* spans zones, the *rarity* is what gates.
+
+**Recruitment tie-in:** a parcel's battle map offers the recruit classes of **its zone's elements**, **only
+within the zone's rarity band** (`BIOME-RECRUITMENT-AND-ARMY.md` + the gate above) — so a starter can muster
+common→rare Fire units on Mythoria, but the legendary Fire lineages only unlock on rare-gated Emberfall.
 
 ## 3. Master homes (lore + the element-buff coherence)
 

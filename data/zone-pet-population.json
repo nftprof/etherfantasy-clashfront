@@ -1,0 +1,25 @@
+{
+  "_meta": {
+    "title": "Clash Front zone PentaPet population + rarity gate",
+    "author": "Map-maker session, 2026-07-07 (owner-tuned)",
+    "purpose": "Seed-pass input: which pet ELEMENTS populate each zone (wild + recruit pool) and the RARITY BAND allowed there. Companion to data/zone-registry.json (keyed by the same zoneId) and data/world-zone-detail.json.",
+    "rarityRanks": ["common", "uncommon", "rare", "legendary", "mythic"],
+    "progression": "STARTING = the up-to-RARE surface everyone can reach: Tianxia (the great convergence hub, biggest land) + the three starter zones Arcadia/Porthaven/Mythoria. RARE-GATED = the Sky (HS) and Underworld (UW) tiers — you need rare-tier progression to enter; they hold the legendary/mythic pets. HS3 + UW3 (highest sky / deepest hell) reach MYTHIC. CGI/KOL prestige islands = legendary/mythic residents only.",
+    "gateMeaning": "rarityMin..rarityMax = the inclusive rarity band a pet must fall in to spawn/recruit in the zone. So a 'rare..legendary' zone spawns NO common/uncommon; a 'common..rare' starter spawns no legendary/mythic. Common(31)/uncommon(81)/rare(80) live in the starting band (~192 pets, open to all); legendary(26) gated to HS/UW; mythic(10) only HS3/UW3/CGI/KOL.",
+    "source": "docs/populace-pet-spec/pets-aptitudes.csv (228 typed pets, 17 elements, 5 rarities)"
+  },
+  "zones": {
+    "HUB": { "name": "Tianxia",   "role": "convergence-hub (biggest land, everyone joins)", "elements": ["Neutral", "Combat", "Leaf", "Water", "Earth", "Fire", "Lightning", "Flyer", "Toxin"], "rarityMin": "common",   "rarityMax": "rare" },
+    "ENT": { "name": "Mythoria",  "role": "starter",              "elements": ["Leaf", "Insect", "Fire", "Lightning", "Water", "Earth", "Toxin"], "rarityMin": "common",   "rarityMax": "rare" },
+    "BUS": { "name": "Porthaven", "role": "starter",              "elements": ["Water", "Toxin", "Flyer"],                                       "rarityMin": "common",   "rarityMax": "rare" },
+    "EDU": { "name": "Arcadia",   "role": "starter",              "elements": ["Earth", "Telepath", "Iron", "Leaf"],                             "rarityMin": "common",   "rarityMax": "rare" },
+    "HS1": { "name": "Aeropolis", "role": "rare-gated (sky)",     "elements": ["Flyer", "Leaf"],                                                 "rarityMin": "uncommon", "rarityMax": "legendary" },
+    "HS2": { "name": "Emberfall", "role": "rare-gated (sky)",     "elements": ["Fire", "Lightning", "Dragon"],                                   "rarityMin": "rare",     "rarityMax": "legendary" },
+    "HS3": { "name": "Empyrea",   "role": "rare-gated (sky, apex)", "elements": ["Ice", "Telepath", "Flyer", "Light"],                          "rarityMin": "rare",     "rarityMax": "mythic" },
+    "UW1": { "name": "Ironhold",  "role": "rare-gated (underworld)", "elements": ["Iron", "Rock", "Earth", "Toxin"],                            "rarityMin": "uncommon", "rarityMax": "legendary" },
+    "UW2": { "name": "Blackmere", "role": "rare-gated (underworld)", "elements": ["Phantom", "Water", "Fire"],                                  "rarityMin": "rare",     "rarityMax": "legendary" },
+    "UW3": { "name": "Luxuria",   "role": "rare-gated (underworld, deepest)", "elements": ["Mystic", "Dragon", "Phantom"],                      "rarityMin": "rare",     "rarityMax": "mythic" },
+    "CGI": { "name": "Olympus",   "role": "prestige (founders)",  "elements": ["Mystic", "Dragon", "Telepath"],                                  "rarityMin": "legendary", "rarityMax": "mythic" },
+    "KOL": { "name": "Fortuna",   "role": "prestige (influencers)", "elements": ["Flyer", "Neutral"],                                            "rarityMin": "legendary", "rarityMax": "mythic" }
+  }
+}
