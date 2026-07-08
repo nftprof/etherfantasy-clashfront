@@ -21,6 +21,7 @@ import { fileURLToPath } from "node:url";
 import { mapsApi } from "./maps/api.js";
 import * as reg from "./maps/registry.js";
 import { toBattlefieldA1 } from "./maps/command_converter.js";
+import { renderThumb } from "./maps/thumb.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // NB: :8140 is taken by cf-battle-api on the shared box; the map service uses :8150.
@@ -113,6 +114,11 @@ export function handleRequest(req, res) {
   // gallery landing page (all-maps + my-land filter → click into /designer)
   if (p === "/" || p === "/gallery" || p === "/gallery/") return sendFile(res, "maps/gallery.html", "text/html");
 
+  // multi-format viewer: 2D command · landscape/thumbnail · 3D link · raw JSON — for one parcel/example.
+  // Reads the same public endpoints the CF command view + designer use, so it works for any designed
+  // parcel OR bundled example. (The gallery's "2D" button points here — NOT the designer.)
+  if (p === "/view" || p === "/view/") return sendFile(res, "maps/view.html", "text/html");
+
   // list the bundled example maps (MOBA reverse-engineer + the CF biome references) for the gallery
   if (p === "/gallery/examples") {
     const list = [...EXAMPLES.values()].map((a) => ({
@@ -142,7 +148,16 @@ export function handleRequest(req, res) {
       const sub = ex[2];
       if (sub === "/command.json") { jsonRes(res, 200, toBattlefieldA1(art)); return; }
       if (sub === "/render.json") { jsonRes(res, 404, { ok: false, error: "no_manifest" }); return; }
-      if (sub === "/thumb.png") { res.writeHead(404); res.end(); return; }
+      if (sub === "/thumb.png") {
+        // bake the top-down landscape PNG on the fly (examples have no registry-saved thumb) so the
+        // viewer's Landscape tab + gallery thumbnails work for bundled maps too.
+        try {
+          const png = renderThumb(art);
+          res.writeHead(200, { "content-type": "image/png", "cache-control": "public,max-age=86400", "access-control-allow-origin": "*" });
+          res.end(Buffer.from(png));
+        } catch (e) { res.writeHead(500, { "content-type": "text/plain" }); res.end(String(e && e.message || e)); }
+        return;
+      }
       jsonRes(res, 200, { ok: true, row: { parcelId: art.meta.parcelId, designVersion: 0, status: "EXAMPLE", archetype: art.meta.params?.archetype, palette: art.meta.params?.palette }, artifact: art, budget: { level: 0 } });
       return;
     }

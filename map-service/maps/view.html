@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ether Fantasy — Map Viewer</title>
+<style>
+  :root{--bg:#0d0f13;--panel:#161a21;--panel2:#1d222b;--line:#2a313c;--ink:#e7e3d2;--dim:#9aa3b0;
+        --gold:#d9a441;--blue:#5b8fd6;--green:#5fa86a;--red:#c8624e}
+  *{box-sizing:border-box}
+  body{margin:0;background:radial-gradient(1200px 600px at 50% -200px,#1a2130,#0d0f13);color:var(--ink);
+       font:15px/1.5 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;min-height:100vh}
+  header{display:flex;align-items:center;gap:14px;padding:12px 20px;border-bottom:1px solid var(--line);
+         background:rgba(13,15,19,.7);backdrop-filter:blur(6px);position:sticky;top:0;z-index:10;flex-wrap:wrap}
+  header h1{font-size:16px;margin:0;font-weight:650}
+  header .pid{color:var(--gold);font-weight:600}
+  header .sub{color:var(--dim);font-size:12.5px}
+  a{color:var(--gold);text-decoration:none}
+  .spacer{flex:1}
+  .tabs{display:flex;gap:8px;padding:12px 20px 4px;flex-wrap:wrap}
+  .tab{border:1px solid var(--line);background:var(--panel2);color:var(--ink);border-radius:20px;
+       padding:6px 15px;font:inherit;font-size:13.5px;cursor:pointer;transition:.12s}
+  .tab:hover{border-color:var(--gold)}
+  .tab.on{background:var(--gold);color:#1a1206;border-color:var(--gold);font-weight:600}
+  .wrap{padding:12px 20px 40px;max-width:1100px;margin:0 auto}
+  .pane{display:none}
+  .pane.on{display:block}
+  .stage{display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start}
+  canvas,#thumbimg{background:#0b0e12;border:1px solid var(--line);border-radius:12px;max-width:100%;height:auto}
+  .legend{font-size:12.5px;color:var(--dim);min-width:180px}
+  .legend h4{color:var(--ink);margin:2px 0 8px;font-size:13px}
+  .legend .row{display:flex;align-items:center;gap:8px;margin:4px 0}
+  .sw{width:14px;height:14px;border-radius:3px;flex:none;border:1px solid rgba(255,255,255,.15)}
+  .facts{margin-top:12px;color:var(--dim);font-size:12.5px}
+  .facts b{color:var(--ink)}
+  pre{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;overflow:auto;
+      max-height:70vh;font:12.5px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;color:#cfe0c8}
+  .btn{border:1px solid var(--line);background:var(--panel2);color:var(--ink);border-radius:8px;
+       padding:6px 12px;font:inherit;font-size:13px;cursor:pointer;text-decoration:none}
+  .btn:hover{border-color:var(--gold);color:#fff}
+  .err{color:var(--red)}
+  .muted{color:var(--dim);font-size:12.5px}
+</style>
+</head>
+<body>
+<header>
+  <h1>⚔ Map Viewer <span class="pid" id="pid">…</span></h1>
+  <span class="sub" id="sub"></span>
+  <div class="spacer"></div>
+  <a class="btn" href="/">← gallery</a>
+</header>
+
+<div class="tabs" id="tabs">
+  <button class="tab on" data-pane="command">▣ 2D Command</button>
+  <button class="tab" data-pane="landscape">🗺 Landscape</button>
+  <button class="tab" data-pane="threed">◈ 3D →</button>
+  <button class="tab" data-pane="json">{ } Raw JSON</button>
+</div>
+
+<div class="wrap">
+  <!-- 2D command view -->
+  <div class="pane on" id="pane-command">
+    <div class="stage">
+      <canvas id="cv" width="720" height="720"></canvas>
+      <div class="legend">
+        <h4>Command view (A1)</h4>
+        <div class="row"><span class="sw" style="background:#c8624e"></span> Attacker core / spawn</div>
+        <div class="row"><span class="sw" style="background:#5b8fd6"></span> Defender core / spawn</div>
+        <div class="row"><span class="sw" style="background:#caa96a"></span> Lane path</div>
+        <div class="row"><span class="sw" style="background:#2c4a2e"></span> Forest</div>
+        <div class="row"><span class="sw" style="background:#31597a"></span> Water</div>
+        <div class="row"><span class="sw" style="background:#6d6a63"></span> Rock / cliff</div>
+        <div class="row"><span class="sw" style="background:#e6be3c"></span> Resource node</div>
+        <div class="row"><span class="sw" style="background:#c33ec3"></span> Wild camp</div>
+        <div class="facts" id="facts"></div>
+      </div>
+    </div>
+    <div class="muted" id="cmdErr"></div>
+  </div>
+
+  <!-- landscape / thumbnail -->
+  <div class="pane" id="pane-landscape">
+    <div class="stage">
+      <img id="thumbimg" width="480" height="480" alt="top-down landscape">
+      <div class="legend">
+        <h4>Landscape (top-down raster)</h4>
+        <div class="muted">The baked <code>thumb.png</code> — the biome landscape that textures the CF
+          overworld parcel. Same raster the 3D heightfield is built from.</div>
+        <div style="margin-top:10px"><a class="btn" id="thumbdl" download>⬇ download PNG</a></div>
+        <div class="muted" id="thumbErr" style="margin-top:8px"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3D -->
+  <div class="pane" id="pane-threed">
+    <p class="muted">The <b>3D preview</b> renders the same artifact with schematic prefabs
+      (heightfield + placeholder models).</p>
+    <p><a class="btn" id="threedlink" style="border-color:var(--blue);color:var(--blue)">◈ Open 3D preview →</a></p>
+    <p class="muted">The <b>final in-game 3D</b> (real models/terrain/lighting) is rendered by the game
+      client from this same artifact — it lives in the hero-engine client, not this map service.</p>
+  </div>
+
+  <!-- raw JSON -->
+  <div class="pane" id="pane-json">
+    <div style="display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap">
+      <a class="btn" id="jsonArtifact">⬇ artifact.json (raster A)</a>
+      <a class="btn" id="jsonCommand">⬇ command.json (A1 vector B)</a>
+      <button class="btn" id="toggleJson">show command.json</button>
+    </div>
+    <pre id="jsonOut">…</pre>
+  </div>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const qs=new URLSearchParams(location.search);
+const PID=qs.get("parcel")||qs.get("id")||"";
+const V=qs.get("v");
+const base=`/internal/v1/designs/${encodeURIComponent(PID)}`;
+const vq=V!=null?`?v=${encodeURIComponent(V)}`:"";
+$("pid").textContent=PID||"(no parcel)";
+$("threedlink").href=`/designer/3d?parcel=${encodeURIComponent(PID)}`+(V!=null?`&v=${V}`:"");
+$("thumbimg").src=`${base}/thumb.png${vq}`;
+$("thumbdl").href=`${base}/thumb.png${vq}`;
+$("jsonArtifact").href=base+vq; $("jsonCommand").href=`${base}/command.json${vq}`;
+$("thumbimg").onerror=()=>{$("thumbErr").innerHTML=`<span class="err">No thumbnail available for this map.</span>`;$("thumbimg").style.display="none";};
+
+// tab switching
+document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>{
+  const pane=t.dataset.pane;
+  document.querySelectorAll(".tab").forEach(x=>x.classList.toggle("on",x===t));
+  document.querySelectorAll(".pane").forEach(p=>p.classList.toggle("on",p.id===`pane-${pane}`));
+});
+
+let artifact=null,a1=null;
+async function boot(){
+  try{
+    const [dA,dC]=await Promise.all([
+      fetch(base+vq).then(r=>r.json()).catch(()=>null),
+      fetch(`${base}/command.json${vq}`).then(r=>r.ok?r.json():null).catch(()=>null),
+    ]);
+    artifact=dA&&dA.artifact?dA.artifact:dA;
+    a1=dC;
+    const meta=(a1&&a1.meta)||(artifact&&artifact.meta)||{};
+    $("sub").textContent=[meta.biome,meta.sizeClass,(meta.laneCount||1)+" lane(s)"].filter(Boolean).join(" · ");
+    $("jsonOut").textContent=JSON.stringify(artifact||{error:"no artifact"},null,2);
+    if(a1) drawCommand(a1); else $("cmdErr").innerHTML=`<span class="err">No command map (A1) available.</span>`;
+  }catch(e){ $("cmdErr").innerHTML=`<span class="err">Load failed: ${e.message}</span>`; }
+}
+
+// JSON toggle artifact <-> command
+let showingCmd=false;
+$("toggleJson").onclick=()=>{
+  showingCmd=!showingCmd;
+  $("toggleJson").textContent=showingCmd?"show artifact.json":"show command.json";
+  $("jsonOut").textContent=JSON.stringify((showingCmd?a1:artifact)||{},null,2);
+};
+
+// ---- 2D command renderer (A1 vector: bounds + obstacles + lanes + structures + nodes) ----
+function drawCommand(m){
+  const cv=$("cv"),cx=cv.getContext("2d"),W=cv.width,H=cv.height,PAD=18;
+  const S=(m.arena&&m.arena.sizeM?m.arena.sizeM/2:161);
+  const sc=(Math.min(W,H)-2*PAD)/(2*S);
+  const X=wx=>PAD+(wx+S)*sc, Y=wz=>PAD+(S-wz)*sc;   // +z north = up
+  const side=s=>s==="DEFENDER"?"#5b8fd6":"#c8624e";
+  cx.clearRect(0,0,W,H);
+
+  // bounds polygon = the parcel field
+  const bounds=(m.arena&&m.arena.bounds)||[[-S,-S],[S,-S],[S,S],[-S,S]];
+  cx.beginPath(); bounds.forEach(([x,z],i)=>{const px=X(x),py=Y(z);i?cx.lineTo(px,py):cx.moveTo(px,py);}); cx.closePath();
+  cx.fillStyle="#12181a"; cx.fill(); cx.save(); cx.clip();
+
+  // obstacles (footprint polygons or circles), coloured by kind
+  const OB={FOREST:"#2c4a2e",WATER:"#31597a",ROCK:"#6d6a63",CLIFF:"#5a5450",TREE:"#33633a"};
+  for(const o of m.obstacles||[]){
+    if(o.passable && o.kind==="TREE"){ cx.fillStyle="#33633a"; cx.beginPath(); cx.arc(X(o.x),Y(o.z),Math.max(2,(o.r||2)*sc),0,7); cx.fill(); continue; }
+    cx.fillStyle=OB[o.kind]||"#3a3f47";
+    if(o.footprint&&o.footprint.length>=3){ cx.beginPath(); o.footprint.forEach(([x,z],i)=>{const px=X(x),py=Y(z);i?cx.lineTo(px,py):cx.moveTo(px,py);}); cx.closePath(); cx.fill(); }
+    else if(o.r){ cx.beginPath(); cx.arc(X(o.x),Y(o.z),Math.max(2,o.r*sc),0,7); cx.fill(); }
+  }
+
+  // lanes
+  cx.lineWidth=Math.max(2,3*sc/2); cx.setLineDash([7,6]); cx.strokeStyle="#caa96a";
+  for(const l of m.lanes||[]){ const wp=l.waypoints||[]; if(wp.length<2)continue;
+    cx.beginPath(); wp.forEach(([x,z],i)=>{const px=X(x),py=Y(z);i?cx.lineTo(px,py):cx.moveTo(px,py);}); cx.stroke(); }
+  cx.setLineDash([]);
+
+  // resource nodes (gold diamond / others dot)
+  for(const r of m.resources||[]){ const px=X(r.x),py=Y(r.z),c=r.kind==="WOOD_GROVE"?"#5fa86a":r.kind==="GOLD_MINE"?"#e6be3c":"#c9b26a";
+    cx.fillStyle=c; cx.beginPath(); cx.moveTo(px,py-6);cx.lineTo(px+6,py);cx.lineTo(px,py+6);cx.lineTo(px-6,py);cx.closePath(); cx.fill();
+    cx.strokeStyle="rgba(0,0,0,.4)"; cx.stroke(); }
+
+  // wild camps
+  cx.strokeStyle="#c33ec3"; cx.lineWidth=2;
+  for(const w of m.mobs||[]){ const px=X(w.x),py=Y(w.z);
+    cx.beginPath(); cx.moveTo(px-5,py-5);cx.lineTo(px+5,py+5);cx.moveTo(px+5,py-5);cx.lineTo(px-5,py+5); cx.stroke(); }
+
+  // build spots
+  for(const b of m.buildSpots||[]){ cx.fillStyle="rgba(225,225,235,.5)"; cx.fillRect(X(b.x)-3,Y(b.z)-3,6,6); }
+
+  cx.restore(); // end clip
+
+  // structures on top: CORE (big), GATE (square), TOWER (small), coloured by side
+  for(const s of m.structures||[]){ const px=X(s.x),py=Y(s.z),c=side(s.side);
+    if(s.kind==="CORE"){ cx.fillStyle=c; cx.beginPath(); cx.arc(px,py,10,0,7); cx.fill(); cx.lineWidth=3; cx.strokeStyle="#fff"; cx.stroke(); }
+    else if(s.kind==="GATE"){ cx.fillStyle=c; cx.fillRect(px-6,py-6,12,12); cx.strokeStyle="#0b0e12"; cx.lineWidth=2; cx.strokeRect(px-6,py-6,12,12); }
+    else { cx.fillStyle=c; cx.beginPath(); cx.arc(px,py,5,0,7); cx.fill(); cx.strokeStyle="#0b0e12"; cx.lineWidth=1.5; cx.stroke(); }
+  }
+  // spawn zones (side-tinted ring)
+  for(const z of m.spawnZones||[]){ if(z.side==="ANY")continue; cx.strokeStyle=side(z.side); cx.lineWidth=2;
+    cx.beginPath(); cx.arc(X(z.x),Y(z.z),13,0,7); cx.stroke(); }
+
+  // facts
+  const meta=m.meta||{};
+  $("facts").innerHTML=`<b>${meta.parcelId||PID}</b><br>${(m.obstacles||[]).length} obstacles · `+
+    `${(m.lanes||[]).length} lane(s) · ${(m.resources||[]).length} nodes · ${(m.mobs||[]).length} camps · `+
+    `${(m.structures||[]).length} structures<br>arena ${m.arena&&m.arena.sizeM||"?"} u · seed ${meta.seed??"?"}`;
+}
+boot();
+</script>
+</body>
+</html>

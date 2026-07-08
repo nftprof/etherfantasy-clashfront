@@ -135,12 +135,17 @@ function card(r){
   const id=String(r.parcelId), designed=!!r.status;
   const tags=[r.archetype,r.palette].filter(Boolean).join(" · ")||(designed?"":"click to design");
   const thumb=designed?`background-image:url(/internal/v1/designs/${id}/thumb.png?v=${r.v??r.designVersion??0})`:"";
+  // designed land → thumbnail opens the multi-format viewer (2D/3D/JSON/thumb); undesigned → designer.
+  const thumbHref=designed?`/view?parcel=${id}`:`/designer?parcel=${id}`;
   return`<div class="card">
-    <a class="thumb" style="${thumb}" href="/designer?parcel=${id}">${designed?"":"🗺"}${badge(r)}</a>
+    <a class="thumb" style="${thumb}" href="${thumbHref}">${designed?"":"🗺"}${badge(r)}</a>
     <div class="meta">
       <span class="pid">📍 ${id}</span>
       <span class="tags">${tags}${r.score!=null?` · score ${r.score}`:""}</span>
-      <a class="go btn" href="/designer?parcel=${id}">${designed?"Open in designer":"Design this land"}</a>
+      ${designed?`<div style="display:flex;gap:6px;margin-top:8px">
+        <a class="btn" style="flex:1;text-align:center" href="/view?parcel=${id}">▣ View</a>
+        <a class="btn" style="flex:1;text-align:center" href="/designer?parcel=${id}">✎ Design</a></div>`
+      :`<a class="go btn" href="/designer?parcel=${id}">Design this land</a>`}
     </div>
   </div>`;
 }
@@ -177,12 +182,20 @@ async function renderExamples(){
   el.innerHTML=ex.map(e=>{
     const id=e.parcelId, name=String(id).replace(/^CF-/,"").replace(/-/g," ");
     const tags=[e.biome,e.palette].filter(Boolean).join(" · ");
-    return `<div class="card" style="padding:12px">
-      <div style="font-weight:600">🗺 ${name}</div>
-      <div class="tags" style="color:var(--dim);font-size:11.5px;text-transform:capitalize;margin:2px 0 10px">${tags}</div>
-      <div style="display:flex;gap:8px">
-        <a class="btn" style="flex:1;text-align:center;border-color:var(--gold);color:var(--gold)" href="/designer?parcel=${id}">2D</a>
-        <a class="btn" style="flex:1;text-align:center;border-color:var(--blue);color:var(--blue)" href="/designer/3d?parcel=${id}">3D →</a>
+    const eid=encodeURIComponent(id);
+    // four delivery formats per map: 2D command (viewer) · 3D preview · raw artifact JSON · thumbnail PNG.
+    return `<div class="card" style="padding:0;overflow:hidden">
+      <a class="thumb" style="aspect-ratio:1/1;background-image:url(/internal/v1/designs/${eid}/thumb.png);background-size:cover" href="/view?parcel=${eid}"></a>
+      <div style="padding:10px 12px">
+        <div style="font-weight:600">🗺 ${name}</div>
+        <div class="tags" style="color:var(--dim);font-size:11.5px;text-transform:capitalize;margin:2px 0 10px">${tags}</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+          <a class="btn" style="text-align:center;border-color:var(--gold);color:var(--gold)" href="/view?parcel=${eid}">▣ 2D</a>
+          <a class="btn" style="text-align:center;border-color:var(--blue);color:var(--blue)" href="/designer/3d?parcel=${eid}">◈ 3D →</a>
+          <a class="btn" style="text-align:center" href="/internal/v1/designs/${eid}">{ } JSON</a>
+          <a class="btn" style="text-align:center" href="/internal/v1/designs/${eid}/thumb.png">🖼 Thumb</a>
+        </div>
+        <a class="btn" style="display:block;text-align:center;margin-top:6px" href="/view?parcel=${eid}">All 4 views →</a>
       </div>
     </div>`;
   }).join("");
