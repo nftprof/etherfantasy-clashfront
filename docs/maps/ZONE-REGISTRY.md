@@ -16,17 +16,18 @@
   `zoneCode = parcelId.slice(1,3)` → the zone. (Verified: `60200010000`→EDU, `60700010000`→HUB,
   `60000080000`→BUS.)
 
-## The 10 continents — names (LOCKED 2026-07-07, ENT provisional)
+## The 11 continents — names (LOCKED 2026-07-07; Founders Isle name provisional)
 
-Owner-locked names + the theme each is designed to. **ENT = `Champa` provisional** — owner is picking from
-a mythology/beautiful-scenery shortlist; everything else is final.
+Owner-locked names + the theme each is designed to. **CGI (Founders' Isle) = `Elysium` provisional** —
+owner is choosing; everything else is final.
 
 | zoneId | Name | Subtitle (atlas identity) | Design theme (owner) | Tier |
 |---|---|---|---|---|
+| **CGI** | **Elysium** *(provisional)* | Founders' Isle | Dubai Palm / billionaire-exclusive founders island | surface · special |
 | **HUB** | **Tianxia** | Capital Heartland | mainland China / Romance of the Three Kingdoms ("all under heaven") | surface |
-| **ENT** | **Champa** *(provisional)* | Western Carnival Coast | Thailand/Vietnam + mythology, beautiful scenery | surface |
+| **ENT** | **Mythoria** | Western Carnival Coast | entertainment wonderland — SE-Asian myth, beautiful scenery | surface |
 | **BUS** | **Porthaven** | Northern Commercial Coast | New York + Singapore mercantile port | surface |
-| **EDU** | **Lyceon** | Academy Highlands | famous-school (Lyceum) + Kyoto | surface |
+| **EDU** | **Arcadia** | Academy Highlands | the idyllic scholar's paradise + Kyoto | surface |
 | **HS1** | **Aeropolis** | Cloud Gateway Isle | "Castle in the Sky" (Laputa/Ghibli) | sky |
 | **HS2** | **Emberfall** | Storm & Lava Isle | tiered fire-fortress (Minas Tirith over lava) | sky |
 | **HS3** | **Empyrea** | High Sanctum Isle | tech-modern heaven city; space/parallel-universe gateway (future) | sky |
@@ -36,6 +37,13 @@ a mythology/beautiful-scenery shortlist; everything else is final.
 
 (`zoneId` stays the stable 3-letter code in all data/token ids; the **name** is the display label. So we
 can rename freely without touching parcel ids or the generator.)
+
+**CGI — Founders' Isle (the exclusive island I'd missed).** `zoneCode 01` (`CGI` = "Cryptoverse Genesis
+Island" → the genesis/founders island) exists in the token encoding but **ships no extracted parcels** — a
+curated, Dubai-Palm-style prestige island sold in small parcels to project founders. It's in the registry
+as a `SPECIAL`-family zone with `worldOffset: null` and `l2/l3 = 0` until its geometry + combat role are
+defined. **Open:** confirm the founders island is `CGI` (01) and not `KOL` (08) — the other no-parcel code.
+Name options in the message thread (Elysium / Olympus / Palmyra / Aurelia / Fortuna).
 
 ## Family + strength/multiplier model (the "HS fixed / UW range" rule, finalized)
 

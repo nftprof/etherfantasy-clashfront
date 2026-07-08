@@ -18,9 +18,9 @@
   feature-network layer (roads + districts) to `world-terrain.json`, an **edge-freeze terraform rule**
   (edges frozen, interior free), and a new **CF aerial mosaic view** (tiled thumbnails). Stamps stay as the
   floor; author one continent/week. Extends the Atlas + macro-terrain brief.
-- **ZONE-REGISTRY.md** + **`../../data/zone-registry.json`** — ⭐ THE CANONICAL 10-ZONE LIST (Map-maker,
+- **ZONE-REGISTRY.md** + **`../../data/zone-registry.json`** — ⭐ THE CANONICAL 11-ZONE LIST (Map-maker,
   2026-07-07): the generator/sim input — `zoneId`, `zoneCode` (parcelId→zone lookup), proposed continent
-  **names** (Tianxia/Champa/Porthaven/Lyceon/Aeropolis/Emberfall/Empyrea/Ironhold/Blackmere/Luxuria —
+  **names** (Tianxia/Mythoria/Porthaven/Arcadia/Aeropolis/Emberfall/Empyrea/Ironhold/Blackmere/Luxuria + CGI Founders Isle —
   owner to lock), `family` + `strengthMultiplier`/`zoneAvgStrength` (SURFACE ×1.0–1.3 progression · SKY
   fixed ×2.0 · UNDERWORLD range ×2.5/3.5/5.0), biomeFamily, primaryElements, signatureMaterials, real
   parcel counts. The base pass reads biome/position; the seed pass reads family/strength for wild sizing.
