@@ -30,10 +30,12 @@ So the surface continents are **distributed across three city servers**, each an
 (Which server hosts the remaining continents — HUB/Tianxia, the sky HS1–3, the underworld UW1–3, and the
 prestige isles — still needs assignment; §4.)
 
-## 3. ⚠ Conflict with `data/zone-registry.json` — for the world-planning session to reconcile
+## 3. ✅ APPLIED to `data/zone-registry.json` (owner-approved 2026-07-08)
 
-The published registry's **`server` column disagrees** with the owner mapping above and must be updated
-(I did **not** silently overwrite the world-planning session's frozen file — flagging for them to correct):
+The registry `server` column has been **updated** per the owner mapping: **BUS→`sg`**, **EDU→`jp`** (new
+Tokyo/Japan server, coming soon), ENT stays `ca`; a `startContinent:true` flag was added to the three
+onboarding continents, and a `_meta.servers` block now documents the three city servers. `WORLD-ZONE-
+DETAIL.md`'s Svr column was synced too. Original conflict (kept for the record):
 
 | Continent | Registry `server` (current) | Owner directive (2026-07-08) | Action |
 |---|---|---|---|
