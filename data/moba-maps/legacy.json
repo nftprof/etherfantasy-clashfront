@@ -1,0 +1,617 @@
+{
+  "v": 1,
+  "meta": {
+    "seed": "5eed1234",
+    "designVersion": 0,
+    "biome": "TEMPERATE_FOREST",
+    "sizeClass": "SINGLE",
+    "sizeM": 322,
+    "laneCount": 3
+  },
+  "arena": {
+    "shape": "polygon",
+    "sizeM": 322,
+    "bounds": [
+      [
+        -161,
+        -161
+      ],
+      [
+        161,
+        -161
+      ],
+      [
+        161,
+        161
+      ],
+      [
+        -161,
+        161
+      ]
+    ]
+  },
+  "obstacles": [
+    {
+      "id": "obs_0",
+      "kind": "TREE",
+      "x": -30.5,
+      "z": 25.1,
+      "r": 2,
+      "passable": false
+    },
+    {
+      "id": "obs_1",
+      "kind": "TREE",
+      "x": -12.6,
+      "z": -58.6,
+      "r": 2,
+      "passable": false
+    },
+    {
+      "id": "obs_2",
+      "kind": "TREE",
+      "x": -33,
+      "z": 4.9,
+      "r": 2,
+      "passable": false
+    },
+    {
+      "id": "obs_3",
+      "kind": "TREE",
+      "x": 51.2,
+      "z": -6,
+      "r": 2,
+      "passable": false
+    },
+    {
+      "id": "obs_4",
+      "kind": "TREE",
+      "x": -56.9,
+      "z": 78.1,
+      "r": 2,
+      "passable": false
+    },
+    {
+      "id": "obs_5",
+      "kind": "TREE",
+      "x": 65.6,
+      "z": 10.7,
+      "r": 2,
+      "passable": false
+    },
+    {
+      "id": "obs_6",
+      "kind": "TREE",
+      "x": -32.5,
+      "z": 22.2,
+      "r": 2,
+      "passable": false
+    },
+    {
+      "id": "obs_7",
+      "kind": "TREE",
+      "x": 2.4,
+      "z": -25,
+      "r": 2,
+      "passable": false
+    },
+    {
+      "id": "obs_8",
+      "kind": "TREE",
+      "x": 125.9,
+      "z": -31.7,
+      "r": 2,
+      "passable": false
+    },
+    {
+      "id": "obs_9",
+      "kind": "TREE",
+      "x": 38.1,
+      "z": -4.6,
+      "r": 2,
+      "passable": false
+    },
+    {
+      "id": "obs_10",
+      "kind": "TREE",
+      "x": -11.6,
+      "z": 18.9,
+      "r": 2,
+      "passable": false
+    },
+    {
+      "id": "obs_11",
+      "kind": "TREE",
+      "x": -29.3,
+      "z": 3.7,
+      "r": 2,
+      "passable": false
+    },
+    {
+      "id": "obs_12",
+      "kind": "TREE",
+      "x": 24.4,
+      "z": -72.3,
+      "r": 2,
+      "passable": false
+    },
+    {
+      "id": "obs_13",
+      "kind": "TREE",
+      "x": -28.5,
+      "z": -63,
+      "r": 2,
+      "passable": false
+    },
+    {
+      "id": "obs_14",
+      "kind": "TREE",
+      "x": -69.4,
+      "z": 40.7,
+      "r": 2,
+      "passable": false
+    },
+    {
+      "id": "obs_15",
+      "kind": "TREE",
+      "x": -49.3,
+      "z": 4.7,
+      "r": 2,
+      "passable": false
+    },
+    {
+      "id": "obs_16",
+      "kind": "TREE",
+      "x": 71.5,
+      "z": -25.5,
+      "r": 2,
+      "passable": false
+    },
+    {
+      "id": "obs_17",
+      "kind": "TREE",
+      "x": 16.5,
+      "z": -72.3,
+      "r": 2,
+      "passable": false
+    },
+    {
+      "id": "obs_18",
+      "kind": "TREE",
+      "x": -51,
+      "z": -10.8,
+      "r": 2,
+      "passable": false
+    },
+    {
+      "id": "obs_19",
+      "kind": "TREE",
+      "x": -36.6,
+      "z": 40.8,
+      "r": 2,
+      "passable": false
+    },
+    {
+      "id": "obs_20",
+      "kind": "TREE",
+      "x": -9.6,
+      "z": 26.9,
+      "r": 2,
+      "passable": false
+    },
+    {
+      "id": "obs_21",
+      "kind": "TREE",
+      "x": -31.7,
+      "z": 9.6,
+      "r": 2,
+      "passable": false
+    },
+    {
+      "id": "obs_22",
+      "kind": "TREE",
+      "x": -9.2,
+      "z": 21.1,
+      "r": 2,
+      "passable": false
+    },
+    {
+      "id": "obs_23",
+      "kind": "TREE",
+      "x": -2.2,
+      "z": -35,
+      "r": 2,
+      "passable": false
+    },
+    {
+      "id": "obs_24",
+      "kind": "TREE",
+      "x": -71.4,
+      "z": 60.5,
+      "r": 2,
+      "passable": false
+    },
+    {
+      "id": "obs_25",
+      "kind": "TREE",
+      "x": -2.7,
+      "z": 31.6,
+      "r": 2,
+      "passable": false
+    },
+    {
+      "id": "obs_26",
+      "kind": "TREE",
+      "x": -14,
+      "z": 63.1,
+      "r": 2,
+      "passable": false
+    },
+    {
+      "id": "obs_27",
+      "kind": "TREE",
+      "x": 47.5,
+      "z": -33.3,
+      "r": 2,
+      "passable": false
+    },
+    {
+      "id": "obs_28",
+      "kind": "TREE",
+      "x": 12.2,
+      "z": 68.6,
+      "r": 2,
+      "passable": false
+    },
+    {
+      "id": "obs_29",
+      "kind": "TREE",
+      "x": -70.2,
+      "z": 15.3,
+      "r": 2,
+      "passable": false
+    },
+    {
+      "id": "obs_30",
+      "kind": "TREE",
+      "x": -9.7,
+      "z": 17.8,
+      "r": 2,
+      "passable": false
+    },
+    {
+      "id": "obs_31",
+      "kind": "TREE",
+      "x": -55,
+      "z": 39,
+      "r": 2,
+      "passable": false
+    },
+    {
+      "id": "obs_32",
+      "kind": "BOULDER",
+      "x": 31.3,
+      "z": -63.1,
+      "r": 3,
+      "passable": false
+    },
+    {
+      "id": "obs_33",
+      "kind": "BOULDER",
+      "x": 71,
+      "z": 23,
+      "r": 3,
+      "passable": false
+    },
+    {
+      "id": "obs_34",
+      "kind": "BOULDER",
+      "x": -61.1,
+      "z": 14.8,
+      "r": 3,
+      "passable": false
+    },
+    {
+      "id": "obs_35",
+      "kind": "BOULDER",
+      "x": -63.3,
+      "z": 66.1,
+      "r": 3,
+      "passable": false
+    },
+    {
+      "id": "obs_36",
+      "kind": "BOULDER",
+      "x": 58.4,
+      "z": -38.3,
+      "r": 3,
+      "passable": false
+    },
+    {
+      "id": "obs_37",
+      "kind": "BOULDER",
+      "x": -26.7,
+      "z": 7.1,
+      "r": 3,
+      "passable": false
+    },
+    {
+      "id": "obs_38",
+      "kind": "BOULDER",
+      "x": 33.1,
+      "z": -68.8,
+      "r": 3,
+      "passable": false
+    },
+    {
+      "id": "obs_39",
+      "kind": "BOULDER",
+      "x": -58,
+      "z": 45.8,
+      "r": 3,
+      "passable": false
+    },
+    {
+      "id": "obs_40",
+      "kind": "BOULDER",
+      "x": 22.2,
+      "z": -73.1,
+      "r": 3,
+      "passable": false
+    },
+    {
+      "id": "obs_41",
+      "kind": "BOULDER",
+      "x": -63.4,
+      "z": -16.7,
+      "r": 3,
+      "passable": false
+    },
+    {
+      "id": "obs_42",
+      "kind": "BOULDER",
+      "x": 44.2,
+      "z": 4.6,
+      "r": 3,
+      "passable": false
+    },
+    {
+      "id": "obs_43",
+      "kind": "BOULDER",
+      "x": -72.6,
+      "z": 18.1,
+      "r": 3,
+      "passable": false
+    }
+  ],
+  "spawnZones": [
+    {
+      "id": "spawn_atk_sw",
+      "side": "ATTACKER",
+      "edge": "SW",
+      "x": -131.6,
+      "z": -131.6
+    },
+    {
+      "id": "spawn_def_ne",
+      "side": "DEFENDER",
+      "edge": "NE",
+      "x": 131.6,
+      "z": 131.6
+    }
+  ],
+  "lanes": [
+    {
+      "id": "lane_mid",
+      "side": "ATTACKER",
+      "waypoints": [
+        [
+          -100.8,
+          -100.8
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          100.8,
+          100.8
+        ]
+      ]
+    },
+    {
+      "id": "lane_top",
+      "side": "ATTACKER",
+      "waypoints": [
+        [
+          -100.8,
+          -84
+        ],
+        [
+          -100.8,
+          100.8
+        ],
+        [
+          84,
+          100.8
+        ]
+      ]
+    },
+    {
+      "id": "lane_bot",
+      "side": "ATTACKER",
+      "waypoints": [
+        [
+          -84,
+          -100.8
+        ],
+        [
+          100.8,
+          -100.8
+        ],
+        [
+          100.8,
+          84
+        ]
+      ]
+    }
+  ],
+  "structures": [
+    {
+      "anchorId": "anchor_core_3",
+      "kind": "CORE",
+      "side": "ATTACKER",
+      "x": -114.8,
+      "z": -114.8,
+      "hp": 5000,
+      "hpMax": 5000
+    },
+    {
+      "anchorId": "anchor_core_4",
+      "kind": "CORE",
+      "side": "DEFENDER",
+      "x": 114.8,
+      "z": 114.8,
+      "hp": 5000,
+      "hpMax": 5000
+    },
+    {
+      "anchorId": "anchor_tower_5",
+      "kind": "TOWER",
+      "side": "ATTACKER",
+      "x": -56,
+      "z": -56,
+      "hp": 1400,
+      "hpMax": 1400
+    },
+    {
+      "anchorId": "anchor_tower_6",
+      "kind": "TOWER",
+      "side": "ATTACKER",
+      "x": -28,
+      "z": -28,
+      "hp": 1400,
+      "hpMax": 1400
+    },
+    {
+      "anchorId": "anchor_tower_7",
+      "kind": "TOWER",
+      "side": "ATTACKER",
+      "x": -100.8,
+      "z": -25.2,
+      "hp": 1400,
+      "hpMax": 1400
+    },
+    {
+      "anchorId": "anchor_tower_8",
+      "kind": "TOWER",
+      "side": "ATTACKER",
+      "x": -100.8,
+      "z": 44.8,
+      "hp": 1400,
+      "hpMax": 1400
+    },
+    {
+      "anchorId": "anchor_tower_9",
+      "kind": "TOWER",
+      "side": "ATTACKER",
+      "x": -2.8,
+      "z": -100.8,
+      "hp": 1400,
+      "hpMax": 1400
+    },
+    {
+      "anchorId": "anchor_tower_10",
+      "kind": "TOWER",
+      "side": "ATTACKER",
+      "x": -61.6,
+      "z": -100.8,
+      "hp": 1400,
+      "hpMax": 1400
+    },
+    {
+      "anchorId": "anchor_tower_11",
+      "kind": "TOWER",
+      "side": "DEFENDER",
+      "x": 56,
+      "z": 56,
+      "hp": 1400,
+      "hpMax": 1400
+    },
+    {
+      "anchorId": "anchor_tower_12",
+      "kind": "TOWER",
+      "side": "DEFENDER",
+      "x": 28,
+      "z": 28,
+      "hp": 1400,
+      "hpMax": 1400
+    },
+    {
+      "anchorId": "anchor_tower_13",
+      "kind": "TOWER",
+      "side": "DEFENDER",
+      "x": 100.8,
+      "z": 25.2,
+      "hp": 1400,
+      "hpMax": 1400
+    },
+    {
+      "anchorId": "anchor_tower_14",
+      "kind": "TOWER",
+      "side": "DEFENDER",
+      "x": 100.8,
+      "z": -44.8,
+      "hp": 1400,
+      "hpMax": 1400
+    },
+    {
+      "anchorId": "anchor_tower_15",
+      "kind": "TOWER",
+      "side": "DEFENDER",
+      "x": 2.8,
+      "z": 100.8,
+      "hp": 1400,
+      "hpMax": 1400
+    },
+    {
+      "anchorId": "anchor_tower_16",
+      "kind": "TOWER",
+      "side": "DEFENDER",
+      "x": 61.6,
+      "z": 100.8,
+      "hp": 1400,
+      "hpMax": 1400
+    }
+  ],
+  "mobs": [
+    {
+      "id": "camp_17",
+      "kind": "WILD",
+      "x": 0,
+      "z": -77,
+      "count": 1
+    },
+    {
+      "id": "camp_18",
+      "kind": "WILD",
+      "x": 0,
+      "z": 77,
+      "count": 1
+    },
+    {
+      "id": "camp_19",
+      "kind": "WILD",
+      "x": -77,
+      "z": 0,
+      "count": 1
+    },
+    {
+      "id": "camp_20",
+      "kind": "WILD",
+      "x": 77,
+      "z": 0,
+      "count": 1
+    }
+  ]
+}

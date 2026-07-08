@@ -235,10 +235,14 @@ export function loadParcelBattlefield(parcelId: string | undefined): Battlefield
 }
 
 const FILES: Record<1 | 3, string> = { 1: 'legacy-1lane.json', 3: 'legacy-3lane.json' };
-// The REAL MOBA export. The MOBA BattleEngine session delivers data/moba-maps/
-// legacy.json — the standard ±161 world-unit arena as the client plays it 1:1
-// (the SOURCE OF TRUTH). When present it REPLACES both interim stand-ins for
-// every battle: the arena is fixed, so estates scale by component COUNT, not size.
+// The REAL current-arena export (network/engine session, delivered 2026-07-07).
+// data/moba-maps/legacy.json = the authoritative 3-lane ±161 MOBA arena the client
+// plays 1:1. Per the 2026-07-07 map-pipeline model it is the CURRENT-GAME / TEST-DROP-IN
+// tier, NOT a per-parcel design fallback: a CF parcel battle resolves to its OWN map
+// (loadParcelBattlefield) first; legacy.json is only the estate/default (3-lane) test
+// crutch. It is a 3-lane map, so it stands in ONLY for the 3-lane path — a SINGLE parcel
+// must never render the 3-lane arena (owner correction), so laneCount 1 keeps the
+// 1-lane stand-in until that single's own parcel map exists.
 const REAL_MAP_FILE = 'legacy.json';
 const cache = new Map<1 | 3, Battlefield>();
 
@@ -255,9 +259,11 @@ export function loadStandbyBattlefield(laneCount: 1 | 3 = 3): Battlefield | unde
   const cached = cache.get(laneCount);
   if (cached !== undefined) return cached;
   const dir = resolveMapsDir();
-  // Prefer the real MOBA export (source of truth) over the stand-ins.
+  // Prefer the real 3-lane arena export over the stand-in — but ONLY for the 3-lane
+  // (estate/default) path. legacy.json is a 3-lane map; a single parcel (laneCount 1)
+  // must never fall to it (owner 2026-07-07), so it keeps the 1-lane stand-in.
   const realPath = join(dir, REAL_MAP_FILE);
-  if (existsSync(realPath)) {
+  if (laneCount === 3 && existsSync(realPath)) {
     try {
       const bf = JSON.parse(readFileSync(realPath, 'utf8')) as Battlefield;
       cache.set(laneCount, bf);

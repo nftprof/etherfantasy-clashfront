@@ -31,7 +31,7 @@
  * Wall clock is allowed here (stale/timeout detection) — the bridge is a
  * server boundary, never the sim.
  */
-import { type Battlefield, loadStandbyBattlefield } from './battlefield';
+import { type Battlefield, loadParcelBattlefield, loadStandbyBattlefield } from './battlefield';
 import { ApiError } from './game';
 
 // ── Wire shapes (HTTP, external side) ────────────────────────────────────────
@@ -438,11 +438,12 @@ export class BridgeHub {
     const b = this.battles.get(battleId);
     if (b === undefined) return undefined;
     const sz = b.size;
-    // Real exported map if the match server sent one; else a standard MOBA-style
-    // stand-in (3-lane) so the command view looks like a real battlefield, not a
-    // bare square (ALLOCATE-CALLBACK-SCHEMA §1a). The viewer normalises the
+    // Precedence (map-pipeline model 2026-07-07): (1) the LIVE match map the match
+    // server sent wins; (2) else the parcel's OWN designed map; (3) else the 3-lane
+    // arena — a TEST crutch, never the intended production fallback (a parcel battle
+    // rendering the 3-lane is a bug once parcel maps exist). The viewer normalises the
     // schema's centre-origin coords onto its arena, whatever the arena size.
-    const battlefield = b.battlefield ?? loadStandbyBattlefield(3);
+    const battlefield = b.battlefield ?? loadParcelBattlefield(b.parcelId) ?? loadStandbyBattlefield(3);
     return {
       battleId,
       parcelId: b.parcelId,
