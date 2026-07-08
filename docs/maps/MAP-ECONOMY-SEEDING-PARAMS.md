@@ -53,17 +53,24 @@ units** (§5g). Owner bias may tilt the resource split ±20%.
 
 ---
 
-## 2. Wild strength — the seed must scale mobs to the ZONE (two families)
+## 2. Wild strength — scale mobs to the ZONE (CANONICAL: `ZONE-REGISTRY.md`)
 
-Wild placed in layer ② is **never trivially weak** — it scales to the zone (`BATTLE-MAP-AND-UNIT-SPEC` §5g):
+Wild placed in layer ② is **never trivially weak** — it scales to the zone. **The canonical numbers are the
+world-planning session's `WORLD-ZONE-DETAIL.md` / `ZONE-REGISTRY.md` / `data/world-zone-detail.json`** (this
+supersedes the earlier guessed bands). The real model:
 
-- **UW (Underworld) zones = RANGE:** wild strength **30%–200%** of the zone's average player strength,
-  rolled per encounter, zone-weighted. **`UW3` = high end + ore-default.**
-- **HS (High Society) zones = FIXED multiplier** strictly scaled to the player: **HS1 1× / HS2 2× / HS3
-  (top floating island) 3×.** Heavenly-guarded; later phase.
+| Tier | Zones (`strengthMultiplier`) | `zoneAvgStrength` = 100×mult |
+|---|---|---|
+| **Surface** | HUB 1.0 · ENT 1.1 · BUS 1.2 · EDU 1.3 (gentle unlock progression) | 100 / 110 / 120 / 130 |
+| **Sky (HS)** | HS1 · HS2 · HS3 — **fixed ×2.0 all three** (parallel airship-gated) | 200 each |
+| **Underworld (UW)** | UW1 2.5 · UW2 3.5 · UW3 5.0 (boss-gated descent) | 250 / 350 / **500** |
 
-**Map-team action:** the seed pass needs the **zone id + zone-average-strength** as an input so it can size
-mob camps/boss to the right band. (Zone → family/multiplier table comes from the map team's zone brief.)
+- **`UW3` = Luxuria, ×5.0, end-game** — richest iron/obsidian/dark (ore-default holds).
+- The generator reads **`strengthMultiplier` / `zoneAvgStrength` per zone** and sizes wild/boss from it; a
+  per-encounter roll may vary *around* the zone average. See `ECONOMY-SEEDING-RECONCILIATION.md` §3.
+
+**Map-team input:** `zoneId` + `zoneAvgStrength` come straight from `data/world-zone-detail.json` (keyed by
+`zoneId`; `zoneCode = parcelId.slice(1,3)` maps parcels → zone).
 
 ---
 

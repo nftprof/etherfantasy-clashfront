@@ -93,15 +93,21 @@ false=gold,iron,rare) so the CF overworld tracks **depletion across battles** (a
 
 ---
 
-## §3. Zone strength — the seed pass needs a zone input
+## §3. Zone strength — CANONICAL in `WORLD-ZONE-DETAIL.md` / `data/world-zone-detail.json`
 
-Wild is **never trivially weak** — sized to the zone (`BATTLE-MAP-AND-UNIT-SPEC` §5g). **Two families:**
-- **UW (Underworld) = RANGE** 30%–200% of the zone's average player strength; **`UW3` = high end +
-  ore-default.**
-- **HS (High Society) = FIXED multiplier** vs the player: **HS1 1× / HS2 2× / HS3 (top island) 3×.** Later.
+Wild is **never trivially weak** — sized per zone. **The world-planning session has published the real
+extraction — use it, not any earlier guessed bands:**
 
-**Map-team needs as generator input:** `zoneId` + `zoneAvgStrength` (to size mob camps + boss). The full
-zone→family/multiplier table comes from the map team's own zone brief.
+| Tier | Zones (`strengthMultiplier`) | `zoneAvgStrength` |
+|---|---|---|
+| **Surface** | HUB 1.0 · ENT 1.1 · BUS 1.2 · EDU 1.3 | 100 / 110 / 120 / 130 |
+| **Sky (HS)** | HS1 · HS2 · HS3 — fixed ×2.0 | 200 each |
+| **Underworld (UW)** | UW1 2.5 · UW2 3.5 · UW3 5.0 | 250 / 350 / **500** |
+
+`zoneAvgStrength = 100 × mult`; the seed pass reads it per zone (keyed by `zoneId`; `zoneCode =
+parcelId.slice(1,3)`). `UW3` = Luxuria, end-game, ore-default. Base-terrain **biome** also derives from the
+zone: `biomeFamily`/`palettes`/`worldOffset`/`viewBox` are in `data/world-zone-detail.json`. **⚠ Sky ×2.0
+(parallel) vs. an earlier 1/2/3× climb is owner-TBD** — see `ECONOMY-SEEDING-RECONCILIATION.md` §3.
 
 ---
 
