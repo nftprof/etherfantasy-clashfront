@@ -34,6 +34,10 @@
   the **"broad but thin, concentrated rich"** gradient rule (iron minable everywhere, richest UW3), per-zone
   detail cards (materials/recruits/POI-types/wild-boss/hazards), and the resource-node vocabulary the
   generator must grow into. Grounded in the Atlas + biome-recruitment.
+- **MAP-MODES.md** — ⭐ (Map-maker, 2026-07-07): ONE map serves MANY modes — the spawn/entry **anchors are
+  not enemy waves**; a MODE (Versus / Siege / Dominion / Guard / Duel / Clash) just lights up a subset +
+  sets the win-point. Attacker enters by approach direction; defender holds the middle. Renderer spec for
+  labels + a mode toggle/legend. Also documents the biome→ground-colour fix (desert no longer renders green).
 - **ECONOMY-SEAM.md** — the three CF↔maps hooks: ownership feed, invest flow, payout note.
 - **LAND-VALUE-AND-IMPROVEMENT.md** — PROPOSAL (for owner review): the land-layer economic model —
   how a landowner spends/burns CT to raise a parcel/estate's investment tier and unlock more resource

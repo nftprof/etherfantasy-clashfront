@@ -320,6 +320,7 @@ export function toBattlefieldA1(artifact) {
       seed: String(a.meta?.seed ?? ""),
       designVersion: a.meta?.designVersion ?? 0,
       biome: a.meta?.biome ?? "TEMPERATE_GRASS",
+      palette: a.meta?.params?.palette ?? null,   // biome-derived ground palette (matches thumb/3D colour)
       sizeClass: a.meta?.sizeClass ?? a.meta?.params?.sizeClass ?? "SINGLE",
       sizeM,
       laneCount: a.laneCount ?? lanes.length ?? 1,
