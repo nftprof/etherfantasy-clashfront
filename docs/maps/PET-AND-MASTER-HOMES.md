@@ -90,6 +90,12 @@ element→home lookup:
 | Flyer | **HS1** Aeropolis | | (rare/legendary) | **CGI** Olympus |
 | Fire / Lightning | **HS2** Emberfall | | (celebrity/prestige) | **KOL** Fortuna |
 
+> **⚠ §3 SUPERSEDED (2026-07-10):** Masters are **ELEMENT-FREE** (owner ruling —
+> `MASTERS-ELEMENT-FREE-RULING.md`): no Master element exists, so homes are NOT element-derived and the
+> blocker below is **dissolved**. Homes were instead assigned by **LORE** (website session, live at
+> etherfantasy.com/world) — **source of truth: `src/data/masterHomes.json` in the fe-website repo.**
+> §1–§2 of this doc (pet element→zone ladder, populations, rarity gates) remain adopted canon.
+
 ### ⚠ Blocker: the 47 Masters have **no element data** in any file
 `data/CHARACTER_ROSTER.csv` lists all 47 Masters by name, but the **Element column is empty** for every one
 (only **Bosses** encode element in their names — Centaur_Warrior_**Fire**, Sunwon_Magician_**Fire**, etc.).

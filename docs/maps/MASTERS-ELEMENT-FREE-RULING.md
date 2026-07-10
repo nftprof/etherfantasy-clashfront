@@ -38,3 +38,20 @@ One element system, one home for it: the pets.
    pass** later, nothing blocks on it.
 2. **MOBA/engine:** no element modifiers in Master-vs-Master interactions; pet-vs-pet keeps the wheel.
 3. **CF (this session):** §5c updated; decision-14 duel factor superseded (noted in canon).
+
+## ✅ CLOSED — the lore pass is DONE (2026-07-10, live at etherfantasy.com/world)
+
+The website session delivered the **final Master-homes pass** (their commit `e1e5872`) — homes are
+**lore/story-assigned**, exactly per this ruling. **Source of truth: `src/data/masterHomes.json` in the
+fe-website repo** (one-line edits to move anyone). Highlights:
+
+- **Final spread (47 Masters):** Tianxia 7 · Mythoria 7 · Porthaven 5 · Arcadia 5 · Aeropolis 3 ·
+  Emberfall 7 · Empyrea 4 · Ironhold 4 · Blackmere 4 · Luxuria 5 · Fortuna 1 — **every battle realm
+  populated, no zone empty or bloated.**
+- **Story calls:** Blis→Luxuria (the sin of pleasure) · Dragon Cho→Emberfall (roosts the volcanic sky
+  isle) · Choco→Mythoria · Agena→Empyrea (a star for the sky apex) · **Eldora→Fortuna** (El Dorado on
+  Fortune's isle — the prestige isle's **first resident**). Kept: Kuman = Luxuria's greatest treasure
+  (#1 Mythic in the deepest vault); **two dragon courts** (Cho above/Emberfall, Cor below/Luxuria);
+  Waldo in Tianxia's biggest crowd.
+- **Olympus stays MASTERLESS by design** — the founders' isle; *founders are people, not masters.*
+- The world model is coherent: **pets carry the elements, masters carry the stories, every land has both.**
