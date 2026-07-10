@@ -70,10 +70,13 @@ by fee, and by a hard "everything moves" rule:
   travel.
 - **A port only opens for business when NO battle is active on the dock land.** A contested port is closed
   until the fighting there resolves.
-- **Everything moves — the "all units" rule:** to travel, **all your units must be on the map, and they ALL
-  move together.** Your **Masters travel with you, but ABANDON every soldier they command** — the soldiers
-  are **left behind** on the origin continent (you arrive with your Masters, not their armies). So travel is
-  a real strategic reset, not a free relocation of your whole force.
+- **Everything moves — the "all units" rule (clarified 2026-07-10):** to travel, **all your units must be
+  on the map, and they ALL move together.** **Masters ALWAYS make the crossing** — a Master that can't
+  physically reach the port in time still comes along, but **abandons every soldier it commands**. All
+  soldiers are **left behind = DESERTED and DISPERSED**: each deserted soldier is either **burned** (the
+  sink share, ⚙ `migrateDesertBurnPct`) **or returns to the POPULACE of the land where it disperses**
+  (rejoins that parcel's local population — mons are population, never destroyed as pets; nobody inherits
+  them as fighting units). You arrive with your Masters, not their armies — a real strategic reset.
 - **Two fees, both modest (not criminal):** a **dock-reserve fee** (⚙ `travel.dockReserveFeeCt` = 1 CT) to
   reserve a dock, then a **separate continent-travel fee** (⚙ `travel.continentTravelFeeCt` = 3 CT) for the
   server move. Total ≈ 4 CT (≈ $0.40).
