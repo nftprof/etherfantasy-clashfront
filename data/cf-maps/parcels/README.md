@@ -84,6 +84,14 @@ carry `heroParcels` (the estate's hero-mode 3D POI L3 parcelIds, castle first �
 exactly their estates' `heroParcels[0]`: `60203670103` (Westgate), `60716650182` (Southgate),
 `60011440099` (Fort Tidegate). heroParcels is world-layer metadata only — nothing in this dir changed.
 
+Isle flagships (CGI/KOL ship NO extracted parcels yet — geometry owner-TBD, so these use synthetic
+non-token ids, precedented by the `CF-*` refs, that can't collide with future real tokenIds):
+**`CGI-FLAG-FROND`** — an Olympus marina-finger parcel (quay diagonal, lagoon channels on both flanks;
+no castle — per canon Olympus has no war-castles, the villas ARE the monuments) and
+**`KOL-FLAG-CITADEL`** — the Fortuna Grand citadel-casino parcel at the Golden Strip's head
+(17 `castle_*` structures). Both pass all 5 invariants; the isle fields re-register onto real geometry
+when the isles' land ships (see `_meta.coords` in `data/world-terrain/CGI.json`/`KOL.json`).
+
 ## Rules
 
 - **Filename = `<parcelId>.json`** exactly (the id CF looks up).
