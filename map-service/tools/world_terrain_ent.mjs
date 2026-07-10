@@ -372,13 +372,23 @@ function buildField() {
   // the Grand Carnavale Way — the ONE Sambadrome festival parade avenue, one block inland
   const avenue = offsetRange(coast, 436.5, 462, 2.6, CITY);
   addUrban("The Grand Carnavale Way", "secondary", avenue, "ENT-CW-CARNAVALE");
-  // short festa cross-lanes between strand and avenue (curved — never a grid)
+  // the Ribbon Walk — the third shore-parallel lane on the rising ground (the ribbon's back row)
+  const ribbonWalk = offsetRange(coast, 439, 459, 4.2, CITY);
+  addUrban("The Ribbon Walk", "local", ribbonWalk, "ENT-CW-RIBBON");
+  // short festa cross-lanes climbing from the strand across the avenue to the Ribbon Walk
+  // (curved — never a grid)
   const FESTA = ["Garland Lane", "Mask Lane", "Tambour Lane", "Serenade Lane", "Confetti Lane"];
   for (let k = 0; k < 5; k++) {
     const s = strand[Math.round(((k + 0.5) / 5) * (strand.length - 1))];
-    const { pt } = nearestOn([avenue], s[0], s[1]);
+    const a = nearestOn([avenue], s[0], s[1]).pt;
+    const { pt } = nearestOn([ribbonWalk, avenue], a[0] + (a[0] - s[0]) * 1.2, a[1] + (a[1] - s[1]) * 1.2);
     addUrban(FESTA[k], "local", natural([s, [(s[0] + pt[0]) / 2 + 0.25, (s[1] + pt[1]) / 2], pt], 0.18, 4, `ENT|cap|festa|${k}`, 6));
   }
+  // the Masque Crescent — the festival terrace ringing the Palace of Masks on its hill shelf
+  addUrban("The Masque Crescent", "local", natural(
+    [[CITY[0] - 3.6, CITY[1] + 2.0], [CITY[0] - 0.6, CITY[1] + 3.6], [CITY[0] + 2.8, CITY[1] + 2.6],
+     [CITY[0] + 4.2, CITY[1] - 0.2], [CITY[0] + 2.6, CITY[1] - 3.0], [CITY[0] - 0.8, CITY[1] - 3.8],
+     [CITY[0] - 3.6, CITY[1] - 2.0]], 0.25, 9, "ENT|cap|crescent", 8), "ENT-CW-CRESCENT");
   // two LADEIRA hill lanes winding east off the avenue toward the palace shelf
   const aveAt = (f) => avenue[Math.round(f * (avenue.length - 1))];
   const lad1a = aveAt(0.3), lad2a = aveAt(0.72);
@@ -406,17 +416,24 @@ function buildField() {
   }
 
   // ---- THE VELARIA QUARTER — the Venetian canal quarter on the Serenata delta ---------------------
-  addUrban("Vela Fondamenta", "local", offsetRange(riverVela, 466, 472, 0.9, [55, 461]), "ENT-CW-FONDA-V");
-  addUrban("Lantern Fondamenta", "local", offsetRange(riverLantern, 468, 486, 0.9, [60, 481]), "ENT-CW-FONDA-L");
-  addUrban("The Vela Bridge", "local", straight([[25.6, 464.8], [26.8, 468.2], [28.4, 471.4]], 0.4));      // strand end → over the Vela mouth
-  addUrban("The Plaza Bridge", "local", straight([[57.4, 467.3], [56.7, 470.3]], 0.35));                    // over the Vela Reach into Lantern Plaza
-  addUrban("The Ribbon Bridge", "local", straight([[54.6, 473.4], [50.6, 472.7]], 0.35));                   // over the Ribbon Cut
-  addUrban("The Lantern Bridge", "local", straight([[54.8, 478.9], [51.4, 476.3]], 0.35));                  // over the Lantern Reach
-  // Lantern Plaza — the masked-festival square (a small paved ring between the waters)
+  // Fondamentas hug the water; every bridge/lane endpoint SNAPS onto the lane it serves so the
+  // quarter is one connected web: strand → Vela Gate → Vela Fondamenta → Plaza Bridge (over the
+  // Vela Reach) → Lantern Plaza → Ribbon Bridge (over the Ribbon Cut) + Lantern Bridge (over the
+  // Lantern Reach) → Lantern Fondamenta; the Fan Quay is the quarter's landward gate onto RD1.
+  const fondaV = offsetRange(riverVela, 466, 472, 0.9, [55, 461]);
+  const fondaL = offsetRange(riverLantern, 468, 486, 0.9, [60, 481]);
+  addUrban("Vela Fondamenta", "local", fondaV, "ENT-CW-FONDA-V");
+  addUrban("Lantern Fondamenta", "local", fondaL, "ENT-CW-FONDA-L");
   const plazaR = 0.95, plazaC = [56, 472.2];
   const plaza = [];
   for (let a = 0; a <= 8; a++) plaza.push([+(plazaC[0] + Math.cos((a / 8) * 6.2832) * plazaR).toFixed(2), +(plazaC[1] + Math.sin((a / 8) * 6.2832) * plazaR).toFixed(2)]);
+  const plazaN = [plazaC[0], +(plazaC[1] - plazaR).toFixed(2)], plazaS = [plazaC[0], +(plazaC[1] + plazaR).toFixed(2)], plazaW = [+(plazaC[0] - plazaR).toFixed(2), plazaC[1]];
+  addUrban("The Vela Gate", "local", straight([strand[strand.length - 1], fondaV[fondaV.length - 1]], 0.4));         // strand end → the Vela mouth quay
+  addUrban("The Plaza Bridge", "local", straight([nearestOn([fondaV], plazaN[0], plazaN[1] - 3).pt, plazaN], 0.35)); // over the Vela Reach into Lantern Plaza
+  addUrban("The Ribbon Bridge", "local", straight([plazaW, [50.2, 472.6]], 0.35));                                   // over the Ribbon Cut
+  addUrban("The Lantern Bridge", "local", straight([plazaS, nearestOn([fondaL], plazaS[0] + 2, plazaS[1] + 3).pt], 0.35)); // over the Lantern Reach
   addUrban("Lantern Plaza", "local", plaza, "ENT-CW-PLAZA");
+  addUrban("The Fan Quay", "local", natural([fondaV[0], [(fondaV[0][0] + 6), fondaV[0][1] - 1.2], nearestOn([roadGarland], FAN[0] + 8, FAN[1] - 2).pt], 0.2, 8, "ENT|vel|fanquay", 8), "ENT-CW-FANQUAY");
 
   // ---- RESORT TOWNS — strand lane + harbour way + marina + 2 piers + curved festa lanes -----------
   let mtN = 0;
@@ -441,33 +458,6 @@ function buildField() {
     addTown(`${name} Festa Lane`, "local", natural([[T[0] - 1.7, T[1] + 1.6], [T[0] + 0.2, T[1] + 2.1], [T[0] + 1.9, T[1] + 1.2]], 0.2, 5, `ENT|town|${name}|festa`, 8));
     townQuays.push({ name, at: [+Q[0].toFixed(1), +Q[1].toFixed(1)] });
   });
-
-  // ---- TRUNK HIGHWAYS ------------------------------------------------------------------------------
-  // RD1 the Garland Road: the coastal trunk running the ribbon N→S — north-cap frontier stub →
-  // Petalport → Lanternshore → the Mirthmouth Bridge (its ONE Mirthwater crossing) → the bay strip →
-  // Sunstrand → past the Lady's Crest → behind Carnavale's beach → the Serenata Bridge at the
-  // Velaria Campanile → ends at the canal quarter's head.
-  const roadGarland = natural(
-    [[24, 10], [28, 20], [30, 28.9], [22, 44], [14, 60], [6.5, 84], [14, 100], [20, 108], [15, 122],
-     [14, 138], [12.5, 158], [16, 172], [14, 186], [11, 205], [9.5, 230], [8.6, 255], [10.5, 278],
-     [16, 300], [17.5, 322], [15, 345], [10, 365], [6.5, 378], [20, 382], [34, 384], [46.3, 386],
-     [48.5, 400], [56, 418], [52, 432], [62, 447], [72, 458], [80, 462.5], [88, 468], [92, 471]],
-    0.8, 42, "ENT|road|garland");
-  // RD2 the West Caravan Road (Mythoria leg): received from HUB on the E border at local y=171
-  // (HUB-RD3 exits HUB at world (3,161)); W along the Mirthwater's NORTH bank across the frontier
-  // back-country, through the Mythos Gap, Rivergate Citadel, joins the Garland Road at (16,172).
-  const roadCaravan = natural(
-    [[289.56, 171], [262, 168.5], [235, 166], [208, 164.5], [182, 163.5], [156, 163], [132, 162],
-     [112, 160.5], [92, 159.5], [72, 158.8], [52, 161], [34, 166], [16, 172]],
-    0.7, 40, "ENT|road|caravan");
-  // RD3 the Festival Road: the south-east artery — from the Garland's end at the canal quarter,
-  // E through the southern festival grounds, Festgate Citadel, between the two great festival
-  // EPIC estates, to the E frontier stub.
-  const roadFestival = natural(
-    [[92, 471], [108, 473], [126, 471], [143, 465], [160, 455], [178, 444], [192, 436], [206.2, 430.2],
-     [214, 443], [222, 460], [234, 472], [247, 479], [260, 476], [272, 469], [281, 462], [288.8, 458]],
-    0.8, 40, "ENT|road|festival");
-  const HIGHWAYS = [roadGarland, roadCaravan, roadFestival];
 
   // ---- castles (§3c + the header's pick rules) ----------------------------------------------------
   const CASTLES = [

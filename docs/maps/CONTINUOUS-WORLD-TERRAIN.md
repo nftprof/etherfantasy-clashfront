@@ -185,11 +185,12 @@ unworkable — it is not the design. Assessment: no fallback expected to be need
 fight is the same tick-sim the overworld already runs, just scoped to the estate's parcel graph. Map-side deliverable: field generators emit `heroParcels[]` per
 castle estate (castle + N−1 POIs) — **DONE 2026-07-10, see below**.
 
-**heroParcels[] emission — DONE (2026-07-10, all three field generators).** Every `castles[]`
-entry in `data/world-terrain/{EDU,HUB,BUS}.json` now carries `heroParcels: string[]` — the
-estate's HERO-MODE (3D) POI L3 parcelIds, **castle parcel FIRST**, length = the ladder above
-(LARGE 3 / GIANT 5 / EPIC 8). The pick rule is deterministic and SHARED
-(`map-service/tools/world_hero_parcels.mjs`, imported by all three `world_terrain_*.mjs` tools,
+**heroParcels[] emission — DONE (2026-07-10; all surface-world field generators — EDU/HUB/BUS/ENT
+with real land, plus the authored isles CGI/KOL where estate anchoring is deferred until their land
+ships).** Every `castles[]` entry in `data/world-terrain/{EDU,HUB,BUS,ENT}.json` carries
+`heroParcels: string[]` — the estate's HERO-MODE (3D) POI L3 parcelIds, **castle parcel FIRST**,
+length = the ladder above (LARGE 3 / GIANT 5 / EPIC 8). The pick rule is deterministic and SHARED
+(`map-service/tools/world_hero_parcels.mjs`, imported by all `world_terrain_*.mjs` tools,
 re-derived from data by `map-service/maps/test/hero_parcels.test.js`):
 
 1. **Castle parcel** = the estate's L3 parcel whose bbox contains the castle POI point (among
