@@ -164,11 +164,16 @@ What you keep after a battle decides whether the gold/arms were worth it:
   elites beyond what your remaining line can support at 1 : 3 simply **can't deploy**. So line is the
   throughput that lets elites reach the field; you **can't field an all-elite doomstack** because the field
   itself throttles it. This, not a distinct-species cap, is the elite governor.
-- **No distinct-elite-per-Master cap — synergy instead.** *(Supersedes the old "2 distinct elite classes
-  per Master" line.)* You may train **any** elites and pair them freely, but **Master ↔ unit alignment gives
-  synergy**: when a Master sits on land whose **biome/element matches its unit types**, the army fights
-  **better in battle AND the land farms faster** (⚙ `alignmentFarmBonus`, `alignmentCombatBonus`). Mismatched
-  pairings still work, just without the bonus — so composition is a **soft optimization**, not a hard lock.
+- **MASTERS ARE ELEMENT-FREE (owner-ruled 2026-07-10 — the LoL/AoV model).** A Master has **NO element and
+  no type advantage of its own** — think LoL/AoV champions: **hero-vs-hero combat has no elemental wheel**;
+  it's decided by kit/skill/level. **All elemental type-advantage lives in the PETS** — you play the element
+  game through **pet selection** (which fixed-element beasts you bring), never through the Master. And a
+  Master **commands whichever type of beast you give it** — command is fully unrestricted. *(Supersedes: the
+  old "2 distinct elite classes per Master" cap; the earlier Master↔element buff/synergy idea; and the
+  Addendum-E element-wheel factor in decision-14 lone-Master DUELs — duels are now rating-based, element-free.)*
+- **Alignment synergy is UNITS ↔ LAND, not Master ↔ element:** pets fight/farm/recruit better on land whose
+  **biome matches their element** (already the Species-Affinity factor of the pet power formula,
+  ⚙ `alignmentFarmBonus`). The Master contributes **leadership**, not element — mismatched armies still work.
 - **Master/hero hard cap = 55.** Only **55 commander NFTs** exist (the 47 Masters + heroes). Masters are the
   scarce command layer; scale battles by **more land/pets**, not more commanders.
 - **Any land farms with ≥ 100 pets; masterless land still defends.** A parcel is a working farm/garrison as
