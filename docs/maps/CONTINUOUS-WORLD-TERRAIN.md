@@ -150,7 +150,8 @@ estate. Engine-side this is the locked component model (canon decisions 4 + 4g �
 one ±161 arena): the POI parcels are the components that ever go live; everything else resolves in
 command view. This SUPERSEDES the looser "hero mode drops into any contested component" reading.
 
-**ESTATE BATTLE MODEL (owner-LOCKED 2026-07-10, corrected same day):** an estate battle is **ONE
+**ESTATE BATTLE MODEL (owner-LOCKED FINAL 2026-07-10 — "lets lock it in then for the estate board
+battle with POI parcel 3D battle"; = CLAUDE.md decision 18):** an estate battle is **ONE
 battle fought in command view across the ENTIRE estate map** — an EPIC is the full ~200-parcel board as
 a single battlefield, supporting **many players and many armies simultaneously** maneuvering anywhere
 on it. It is NOT a sequence of component fights. The estate-wide fight runs on the CF sim (command-view
