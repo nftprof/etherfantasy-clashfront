@@ -30,8 +30,8 @@ const CONTINENTS = [
   { id:'UW1', name:'Ironhold',  city:'Singapore',server:'sg', tier:'underworld', depth:-1.35, biome:'SWAMP',    off:[140,60],   vb:[151,151], str:250, l2:1233, l3:28915, sub:'Upper Caverns' },
   { id:'UW2', name:'Blackmere', city:'Singapore',server:'sg', tier:'underworld', depth:-2.0,  biome:'VOLCANIC', off:[140,60],   vb:[150,151], str:350, l2:1101, l3:29777, sub:'Deep Caverns' },
   { id:'UW3', name:'Luxuria',   city:'Singapore',server:'sg', tier:'underworld', depth:-2.6,  biome:'VOLCANIC', off:[184,103],  vb:[63,64],   str:500, l2:92,   l3:4825,  sub:'Inferno Vault' },
-  { id:'CGI', name:'Olympus',   city:'—',        server:'ca', tier:'surface', depth:0, biome:'TEMPERATE_GRASS', off:[-120,560], vb:[60,40],   str:100, l2:0, l3:0, sub:"Founders' Isle", special:true },
-  { id:'KOL', name:'Fortuna',   city:'—',        server:'ca', tier:'surface', depth:0, biome:'TEMPERATE_GRASS', off:[-20,580],  vb:[60,40],   str:100, l2:0, l3:0, sub:"Influencers' Isle", special:true },
+  { id:'CGI', name:'Olympus',   city:'—',        server:'ca', tier:'surface', depth:0, biome:'TEMPERATE_GRASS', off:[-38,240],  vb:[60,40],   str:100, l2:0, l3:0, sub:"Founders' Isle", special:true },
+  { id:'KOL', name:'Fortuna',   city:'—',        server:'ca', tier:'surface', depth:0, biome:'TEMPERATE_GRASS', off:[8,310],    vb:[60,40],   str:100, l2:0, l3:0, sub:"Influencers' Isle", special:true },
 ];
 // NB: sky offs nudged off their registry values only enough to guarantee visual separation at
 // true scale; UW1/UW2 share one center and UW3 sits centered beneath them (the vertical stack).
@@ -352,7 +352,7 @@ export function createWorld({ ui } = {}) {
     if (c.special) {
       panel.innerHTML = `<span class="pcls">✕</span><h3>${c.name} <span class="fogtag">— ${c.sub}</span></h3>
         <div class="csub">A curated prestige isle — no open geometry yet.</div>
-        <div class="rule">✦ <b>${c.name}</b> ships no travellable land yet. Its combat role + geometry are owner-TBD.</div>`;
+        <div class="rule">✦ <b>${c.name}</b> is <b>TELEPORT-only</b> — no sea route or port leads here; there is no direct path. Arrival is by teleport/invitation. (Combat role + geometry owner-TBD.)</div>`;
     } else if (isHome) {
       panel.innerHTML = `<span class="pcls">✕</span><h3>${c.name}</h3>
         <div class="csub">${c.sub} · ${c.city} · <b>${c.server.toUpperCase()}</b> server ${c.soon ? '(coming soon)' : ''}</div>

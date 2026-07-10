@@ -177,6 +177,12 @@ per-player **visited/fog** state, and port nodes. Scope it after the base maps +
   holdings stay resident on their continent (you don't carry land across servers).
 - **Registry update** → **DONE** (§3): `server` column corrected, `jp` server + `startContinent` flags added.
 
+**Resolved (owner 2026-07-10):**
+- **Prestige isles (Olympus/Fortuna) placement + access:** they sit **in the bay between Tianxia (HUB) and
+  Mythoria (ENT)** on the world map, and are **TELEPORT-only** — no sea route or port leads to them; there
+  is no direct path. Arrival is by teleport/invitation (fits their curated/exclusive role; geometry +
+  combat role still owner-TBD).
+
 **Still open (owner / world-planning):**
 - **Full continent→server table** — assign HUB + sky + underworld + prestige isles to servers (§2 covers
   only the three onboarding continents; the registry currently keeps HUB/prestige on `ca`, sky+UW on `sg`).
