@@ -1,6 +1,6 @@
 {
-  "_note": "balance.json v0 — designer-tunable numbers (docs mark these ⚙). Sources: docs/01 (terrain, supply, desertion), docs/02 (prosperity, population, tax, food, development, pillage/occupy), docs/03 (upkeep, units, morale events). Canon CONSTANTS (HERO_IMPACT_MAX, TICK_SECONDS, PILLAGE_*, TAX_SPLIT_LANDLORD_DEFAULT, …) live in code (shared/src/constants.ts per docs/08 §2) and are NOT duplicated here. INVENTED PLACEHOLDERS (not given in docs, flag before tuning around them): supply.drainPer1000Troops (back-derived from 01 §5.3's '1000-troop army holds ~50 min' example), population.basePopCap.WILD/SEA (0), desertion.desertersReturnToWildBanditPct. KNOWN DOC CONFLICT: 01 §5.2 says +5 supply-range hexes per active train, 03 §7 says +3 (chainable up to 3 trains) — using 01's value 5; ❓ OPEN to resolve in docs.",
-  "version": 1,
+  "_note": "balance.json v0 — designer-tunable numbers (docs mark these ⚙). Sources: docs/01 (terrain, supply, desertion), docs/02 (prosperity, population, tax, food, development, pillage/occupy), docs/03 (upkeep, units, morale events). Canon CONSTANTS (HERO_IMPACT_MAX, TICK_SECONDS, PILLAGE_*, TAX_SPLIT_LANDLORD_DEFAULT, …) live in code (shared/src/constants.ts per docs/08 §2) and are NOT duplicated here. INVENTED PLACEHOLDERS (not given in docs, flag before tuning around them): supply.drainPer1000Troops (back-derived from 01 §5.3's '1000-troop army holds ~50 min' example), population.basePopCap.WILD/SEA (0), desertion.desertersReturnToWildBanditPct. KNOWN DOC CONFLICT: 01 §5.2 says +5 supply-range hexes per active train, 03 §7 says +3 (chainable up to 3 trains) — using 01's value 5; ❓ OPEN to resolve in docs. ★ RE-SCALED ÷100 (2026-07-10, owner): 1 CT ≈ $0.02–0.10; anchors — line soldier ≈ 0.02 CT (50 = 1 CT), development L1 ≈ 1–1.5 CT, claim 0.5 CT/step; travel/pass/gate fees were already new-scale, untouched.",
+  "version": 2,
   "travel": {
     "moveCostByTerrain": {
       "PLAINS": 1.0,
@@ -16,8 +16,16 @@
     "_travelNote": "⚙ Cross-continent = server move (docs/maps/WORLD-MAP-AND-SERVER-TRAVEL.md). Fees modest (1 CT ≈ $0.10): reserve a dock, then move continent. Split owner/occupier/platform-sink; the sink portion follows decision 17 (≥10% burns, rest to vault).",
     "dockReserveFeeCt": 1,
     "continentTravelFeeCt": 3,
-    "travelFeeSplit": { "landOwner": 0.35, "occupier": 0.35, "platformSink": 0.30 },
-    "portTypeByTier": { "surface": "SEAPORT", "sky": "AIRPORT", "underworld": "UW_TUNNEL" },
+    "travelFeeSplit": {
+      "landOwner": 0.35,
+      "occupier": 0.35,
+      "platformSink": 0.3
+    },
+    "portTypeByTier": {
+      "surface": "SEAPORT",
+      "sky": "AIRPORT",
+      "underworld": "UW_TUNNEL"
+    },
     "_passNote": "⚙ Right-of-way (docs/maps/WORLD-MAP-AND-SERVER-TRAVEL.md §4a). PASS = pay a landowner's toll to cross toward a port (destination-locked safe-conduct, no diverting/attacking). GATE = mandatory intra-continent chokepoint (mountain pass); its holder controls the passage. Policy: OPEN|ALLIES_ONLY|CLOSED. Fees CT, owner-tunable, decision-17 raked.",
     "passFeeDefaultCt": 1,
     "gateFeeDefaultCt": 2,
@@ -28,17 +36,17 @@
     "maxLevel": 10,
     "costGrowthPerLevel": 1.6,
     "baseCostCtUnits": {
-      "AGRICULTURE": 1000000,
-      "ECONOMY": 1200000,
-      "DEFENSE": 1500000,
-      "MILITARY": 1300000
+      "AGRICULTURE": 10000,
+      "ECONOMY": 12000,
+      "DEFENSE": 15000,
+      "MILITARY": 13000
     },
     "buildTimeHoursPerLevel": 2,
     "repairCostFractionOfBuild": 0.5
   },
   "tax": {
     "cycleTicks": 1440,
-    "baseTaxCtUnitsPerPop": 200,
+    "baseTaxCtUnitsPerPop": 2,
     "economyTrackBonusPerLevel": 0.1
   },
   "prosperity": {
@@ -104,31 +112,31 @@
     "perUnitClassPer100PerDay": {
       "INFANTRY": {
         "food": 100,
-        "ctUnits": 10000
+        "ctUnits": 100
       },
       "ARCHER": {
         "food": 100,
-        "ctUnits": 15000
+        "ctUnits": 150
       },
       "CAVALRY": {
         "food": 150,
-        "ctUnits": 30000
+        "ctUnits": 300
       },
       "SPEAR": {
         "food": 100,
-        "ctUnits": 10000
+        "ctUnits": 100
       },
       "SIEGE": {
         "food": 120,
-        "ctUnits": 40000
+        "ctUnits": 400
       },
       "MARINE": {
         "food": 110,
-        "ctUnits": 20000
+        "ctUnits": 200
       },
       "SHIP": {
         "food": 0,
-        "ctUnits": 60000
+        "ctUnits": 600
       }
     },
     "distanceFactorPerHex": 0.05,
@@ -145,20 +153,20 @@
       "SHIP": 16
     },
     "trainCtUnitsPerSoldier": {
-      "INFANTRY": 20000,
-      "ARCHER": 30000,
-      "CAVALRY": 60000,
-      "SPEAR": 25000,
-      "SIEGE": 100000,
-      "MARINE": 40000,
-      "SHIP": 120000
+      "INFANTRY": 200,
+      "ARCHER": 300,
+      "CAVALRY": 600,
+      "SPEAR": 250,
+      "SIEGE": 1000,
+      "MARINE": 400,
+      "SHIP": 1200
     },
     "armyMaxStacks": 8,
     "shipCapacitySoldiers": 200
   },
   "pillageOccupy": {
     "pillageLootTreasuryPct": 0.8,
-    "pillageLootCtUnitsPerPop": 500,
+    "pillageLootCtUnitsPerPop": 5,
     "occupySeizeTreasuryPct": 0.2
   },
   "draft": {
@@ -168,9 +176,9 @@
   },
   "provisions": {
     "_note": "Battle logistics ⚙ (docs/04 §7c). CT prices per carried unit (ct_units, integer money). defaults* = the standard pack bought at raiseArmy per soldier. battleFoodNeedPer100 = food a battle consumes per 100 soldiers (attacker carries it, defender eats territory foodStock). enduranceFloor = score multiplier at zero food. commandCenterTiers = camp → palisade → fortified camp, requirements scale per 100 attacker soldiers, cost is SPENT win or lose.",
-    "ctUnitsPerFood": 1000,
-    "ctUnitsPerGold": 2000,
-    "ctUnitsPerWood": 2000,
+    "ctUnitsPerFood": 10,
+    "ctUnitsPerGold": 20,
+    "ctUnitsPerWood": 20,
     "defaultFoodPerSoldier": 5,
     "defaultGoldPerSoldier": 1,
     "defaultWoodPerSoldier": 1,
@@ -204,15 +212,15 @@
   "claims": {
     "_": "Land claiming (product owner 2026-07-02): adjacent to your holdings = free; farther = CT per step (dispatching a Master). First-ever claim free (founding). ⚙ demo values.",
     "freeRadiusSteps": 1,
-    "costCtUnitsPerStep": 500000
+    "costCtUnitsPerStep": 5000
   },
   "towns": {
     "_note": "Neutral towns ⚙ (Feature Set 2 F2). pct of garrison-free SYSTEM parcels become TOWNs at genesis; population/treasury/prosperity scale with normalized distance from the slice center (frontier towns are richer). walkInMinPopulation: an army ENDING its march on a garrison-free foreign/SYSTEM TOWN — or any SYSTEM parcel at/above this population — takes it WITHOUT battle via the PILLAGE/OCCUPY walk-in choice (ordinary wild hamlets sit below the threshold; set to 1 to make every populated SYSTEM parcel walk-in-able).",
     "pct": 0.06,
     "popBase": 800,
     "popDistanceBonus": 1600,
-    "treasuryCtUnitsBase": 1000000,
-    "treasuryCtUnitsDistanceBonus": 4000000,
+    "treasuryCtUnitsBase": 10000,
+    "treasuryCtUnitsDistanceBonus": 40000,
     "prosperityBase": 55,
     "prosperityDistanceBonus": 25,
     "foodPerPop": 2,
@@ -221,7 +229,7 @@
   "developmentEffects": {
     "_note": "Feature Set 2 F4 ⚙ — how development tracks bite in the sim. AGRI production uses food.productionBasePerAgriLevelPerDay, applied per tick with an integer carry. defenseWarScorePerLevel: defender WarScore × (1 + x × DEFENSE level) in battles on the parcel. econCtUnitsPerLevelPerDay: CT trickle (ct_units) to the governor per ECONOMY level (integer carry per governor). milRaiseDiscountPerLevel: training-cost discount per MILITARY level of the raising parcel, capped at milRaiseDiscountMax. Level cap = development.maxLevel.",
     "defenseWarScorePerLevel": 0.1,
-    "econCtUnitsPerLevelPerDay": 144000,
+    "econCtUnitsPerLevelPerDay": 1440,
     "milRaiseDiscountPerLevel": 0.05,
     "milRaiseDiscountMax": 0.3
   },
@@ -247,7 +255,7 @@
     "enrichYieldPctPerDay": 0.1,
     "enrichLootPct": 0.35,
     "razeSalvagePct": 0.4,
-    "purchaseCapCtPerEpoch": 200000000,
+    "purchaseCapCtPerEpoch": 2000000,
     "lootWindowTicks": 1440,
     "journalYieldBatchTicks": 20
   },
