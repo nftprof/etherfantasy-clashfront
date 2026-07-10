@@ -154,6 +154,15 @@ const KIND_SPECS = {
   road:  { list: "roads",  zoneCap: 0.055, minW: 5 },
   ridge: { list: "ridges", zoneCap: 0.22, minW: 4 },
 };
+// Road HIERARCHY (CONTINUOUS-WORLD-TERRAIN + owner 2026-07-10): the world field carries tiered
+// roads (highway / secondary / local). Tiers paint progressively thinner at battle scale — the
+// same zone-unit cap for every parcel keeps the band continuous across neighbours, and the small
+// world-unit floor (~4–5 u) keeps slivers legible. Un-tiered roads read as highways (back-compat).
+const ROAD_TIERS = {
+  highway:   { zoneCap: 0.055, minW: 5 },
+  secondary: { zoneCap: 0.036, minW: 4.5 },
+  local:     { zoneCap: 0.026, minW: 4 },
+};
 
 /**
  * Window the zone's macro feature network through one parcel.
@@ -162,7 +171,8 @@ const KIND_SPECS = {
  *                  polygonZone?: [[x,y],…] zone svg coords  — OR —
  *                  polygon?: [[x,z],…] generator frame (zone coords with y already negated),
  *                  sizeM?: 322 }
- * @returns { rivers, roads, ridges: [{ id, kind, width (world-units), pts [[x,z]…] battle frame }],
+ * @returns { rivers, roads, ridges: [{ id, kind, width (world-units), tier? (roads: highway|
+ *            secondary|local), pts [[x,z]…] battle frame }],
  *            edgeCrossings: [{ featureId, kind, at:[x,z], edge:"N|E|S|W", edgeIndex }] }
  */
 export function featuresForParcel(field, parcel) {
@@ -184,13 +194,16 @@ export function featuresForParcel(field, parcel) {
   for (const [kind, spec] of Object.entries(KIND_SPECS)) {
     for (const f of field?.[spec.list] || []) {
       if (!Array.isArray(f.pts) || f.pts.length < 2) continue;
-      const wZone = Math.min(typeof f.width === "number" ? f.width : 0.1, spec.zoneCap);
+      const tier = kind === "road" ? (ROAD_TIERS[f.tier] ? f.tier : "highway") : null;
+      const tierSpec = tier ? ROAD_TIERS[tier] : spec;
+      const wZone = Math.min(typeof f.width === "number" ? f.width : 0.1, tierSpec.zoneCap);
       const mar = baseMar + wZone / 2;                       // wide bands near the edge still paint
       const runs = windowPolyline(f.pts, [bx0 - mar, by0 - mar, bx1 + mar, by1 + mar]);
       for (let r = 0; r < runs.length; r++) {
         const zonePts = runs[r];
-        const width = r1(Math.max(spec.minW, wZone * fit.s));
+        const width = r1(Math.max(tierSpec.minW, wZone * fit.s));
         out[spec.list].push({ id: runs.length > 1 ? `${f.id}#${r}` : f.id, kind, width,
+          ...(tier ? { tier } : {}),
           pts: zonePts.map(([x, y]) => toArena(x, y)) });
         // edge crossings: where the dense curve pierces the parcel BOUNDARY polygon — the
         // continuity contract points (frozen under terraform; entries snap to them).

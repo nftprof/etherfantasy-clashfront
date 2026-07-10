@@ -33,15 +33,18 @@ export function band(g, G, rng, axis, at, width, type, wobble = 8) {
   return pts;
 }
 
-// punch `n` gaps (ROAD) through a painted band — fords / passes / causeway gates
-export function gaps(g, G, rng, centers, n, halfW) {
+// punch `n` gaps through a painted band — fords / passes / causeway gates. `code` is what the
+// gap is paved with: T.ROAD for water fords + designed-arena passes, T.OPEN for countryside
+// passes (owner 2026-07-10: T.ROAD comes ONLY from the world layer + water fords — a rock/cliff
+// pass on a wild single is bare ground, not pavement).
+export function gaps(g, G, rng, centers, n, halfW, code = T.ROAD) {
   const picked = [];
   for (let k = 0; k < n && centers.length; k++) {
     const i = Math.floor(rng() * centers.length);
     const [cx, cz] = centers.splice(i, 1)[0];
     picked.push([cx, cz]);
     for (let z = cz - halfW * 2; z <= cz + halfW * 2; z++) for (let x = cx - halfW * 2; x <= cx + halfW * 2; x++)
-      if (inG(G, x, z) && Math.abs(x - cx) <= halfW + 1 && Math.abs(z - cz) <= halfW + 1) g[gIdx(G, x, z)] = T.ROAD;
+      if (inG(G, x, z) && Math.abs(x - cx) <= halfW + 1 && Math.abs(z - cz) <= halfW + 1) g[gIdx(G, x, z)] = code;
   }
   return picked;
 }
@@ -137,7 +140,7 @@ export const archetypes = {
     const m = Math.round(G * 0.22);   // thick canyon walls framing the heart; gates punched below
     for (let z = m; z < G - m; z++) for (const x of [m, m + 1, m + 2, G - m - 3, G - m - 2, G - m - 1]) g[gIdx(G, x, z)] = T.CLIFF;
     for (let x = m; x < G - m; x++) for (const z of [m, m + 1, m + 2, G - m - 3, G - m - 2, G - m - 1]) g[gIdx(G, x, z)] = T.CLIFF;
-    gaps(g, G, rng, [[m + 1, G >> 1], [G - m - 2, G >> 1], [G >> 1, m + 1], [G >> 1, G - m - 2]], 4, 3);
+    gaps(g, G, rng, [[m + 1, G >> 1], [G - m - 2, G >> 1], [G >> 1, m + 1], [G >> 1, G - m - 2]], 4, 3, p.laneCount === 1 ? T.OPEN : T.ROAD);
     return { features: [{ kind: "canyonHeart", cx: G >> 1, cz: G >> 1 }] };
   },
   cliffTerraces(g, G, rng, p) {
@@ -146,16 +149,20 @@ export const archetypes = {
     let feats = [];
     for (const at of rows) {
       const centers = band(g, G, rng, "x", at, 2, T.CLIFF, 5);
-      feats = feats.concat(gaps(g, G, rng, centers, 2, 3).map(([cx, cz]) => ({ kind: "pass", cx, cz })));
+      feats = feats.concat(gaps(g, G, rng, centers, 2, 3, p.laneCount === 1 ? T.OPEN : T.ROAD).map(([cx, cz]) => ({ kind: "pass", cx, cz })));
     }
     return { features: feats };
   },
   marshCauseways(g, G, rng, p) {
     const mix = biomeMix(p);
     denseFill(g, G, rng, { coverage: 0.42 + p.waterLevel * 0.10, freq: 0.07, mix: { ...mix, water: Math.min(0.7, mix.water + 0.25) }, mirror: p.mirrorFair !== false, rough: Math.max(0.5, p.roughness) });
-    // causeway cross: guaranteed dry roads N-S and W-E through the marsh
-    for (let t = 0; t < G; t++) for (const [x, z] of [[G >> 1, t], [t, G >> 1]])
-      for (let w = -1; w <= 1; w++) { if (inG(G, x + (z === t ? w : 0), z + (x === t ? w : 0))) g[gIdx(G, x + (z === t ? w : 0), z + (x === t ? w : 0))] = T.ROAD; }
+    // causeway cross (DESIGNED arenas only): guaranteed dry roads N-S and W-E through the marsh.
+    // Countryside singles (laneCount 1) get NO cross — that was a per-parcel road template
+    // (owner 2026-07-10: roads live on the world layer); the carve stage fords the marsh where
+    // its organic corridors actually cross water, which is the honest causeway.
+    if (p.laneCount !== 1)
+      for (let t = 0; t < G; t++) for (const [x, z] of [[G >> 1, t], [t, G >> 1]])
+        for (let w = -1; w <= 1; w++) { if (inG(G, x + (z === t ? w : 0), z + (x === t ? w : 0))) g[gIdx(G, x + (z === t ? w : 0), z + (x === t ? w : 0))] = T.ROAD; }
     return { features: [{ kind: "crossroads", cx: G >> 1, cz: G >> 1 }] };
   },
   ridgePasses(g, G, rng, p) {
@@ -167,7 +174,7 @@ export const archetypes = {
       for (let w = -3; w <= 3; w++) if (inG(G, t, c + w)) g[gIdx(G, t, c + w)] = T.ROCK;
       if (t % 10 === 0) centers.push([t, Math.max(0, Math.min(G - 1, c))]);
     }
-    const passes = gaps(g, G, rng, centers, 2 + Math.round(rng()), 3);
+    const passes = gaps(g, G, rng, centers, 2 + Math.round(rng()), 3, p.laneCount === 1 ? T.OPEN : T.ROAD);
     return { features: passes.map(([cx, cz]) => ({ kind: "pass", cx, cz })) };
   },
 };

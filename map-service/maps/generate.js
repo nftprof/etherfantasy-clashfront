@@ -9,13 +9,14 @@
 // reverse-engineered REAL MOBA single-player map): ±161 frame, ATTACKER base SW / DEFENDER NE
 // (spawns at ±118 on the diagonal, matching the reference), laneCount 3 ⇒ mid diagonal lane +
 // top (W→N) + bot (S→E) edge lanes at ±100.8 with shoulders at ±84 (the DESIGNED estate arena —
-// unchanged). laneCount 1 (the ~20K continent singles) ⇒ WORLD-ALIGNED CROSSROADS WEB (owner
-// 2026-07-10): battles can be entered from any side and viewed from any camera bearing, so the
-// tactical axis is NOT baked into the ground as a diagonal — the terrain gets a roughly N–S and
-// a roughly E–W meandering track crossing near center (a real village crossroads, axis-aligned
-// with the world so the continent mosaic has no repeating 45° motif), and the DECLARED battle
-// lane is an instantiation over that web at battle time (atk_S → ride the web through center →
-// def_base). The space between tracks is DENSE jungle (35–55% blocked) — not open field.
+// unchanged). laneCount 1 (the ~20K continent singles) ⇒ ORGANIC COUNTRYSIDE (owner 2026-07-10,
+// supersedes the crossroads-web template): roads belong ONLY to the world layer — a parcel plays
+// whatever world features overlap it and carves NO road template of its own. The ground gets
+// strongly-meandering OPEN corridors (walkability clearings, one per entry, seeded joins that
+// vary per parcel — no repeating motif), and the DECLARED battle lane is an instantiation over
+// those corridors at battle time (atk_S → ride the carved ground through center → def_base).
+// T.ROAD is painted exclusively by the world field (+ water fords). The space between corridors
+// is DENSE jungle (35–55% blocked) — not open field.
 import { makeRng } from "../sim/rng.js";
 import { clampParams, budgetFor, ARCHETYPES, PALETTES, LANDMARKS, BARRIER_KINDS, T, CELL_M, gIdx, inG, cellOf, worldOf, isBlocked, b64, pointInPoly } from "./schema.js";
 import { archetypes } from "./archetypes.js";
@@ -210,14 +211,16 @@ function nearestOnNetwork(network, x, z) {
 // TWO GROUND LAYOUTS (the anchors/spawn contract is identical):
 //   • laneCount 3 (2) — the golden-reference ARENA: mid diagonal + top/bot edge lanes. The
 //     designed estate/castle arena geometry (canon decision 5) — unchanged.
-//   • laneCount 1 — WORLD-ALIGNED CROSSROADS WEB: a roughly N–S and a roughly E–W track, each
-//     with seeded gentle meander (perpendicular displacement, pinned at both ends), crossing
-//     near center; they connect the four entry_e* arrival points WHEREVER they are (the
-//     world-field pass may relocate entries onto road/river crossings), plus two mirrored
-//     arm-to-arm links. Opposite arms share one meander profile, so the web is approximately
-//     180°-rotation symmetric (mirror fairness). The DECLARED lane (the A1 battle line) is an
-//     INSTANTIATION over that web: atk_S → short spur → ride the web through center → spur →
-//     def_base — the command view still gets a real lane; the ground has no diagonal motif.
+//   • laneCount 1 — ORGANIC COUNTRYSIDE CLEARINGS (owner 2026-07-10; supersedes the crossroads
+//     web): each entry_e* arrival wanders its OWN strongly-meandering OPEN corridor into the
+//     middle, WHEREVER the entry is (the world-field pass may relocate entries onto road/river
+//     crossings). The joins VARY per seed — an arm either runs to a seeded hub point near
+//     center or merges into an earlier arm partway — so corridors tree up organically and no
+//     two parcels share a motif (no cross, no diagonal, nothing axis-aligned repeating on the
+//     mosaic). Corridors are walkability CLEARINGS (OPEN), never T.ROAD: painted roads come
+//     exclusively from the continuous world field (+ water fords). The DECLARED lane (the A1
+//     battle line) is an INSTANTIATION over those corridors: atk_S → mount the nearest carved
+//     vertex → ride through center → def_base — the command view still gets a real lane.
 // Returns { lanes (the DECLARED world polylines), resPockets, campPockets }.
 function carveMobaNetwork(g, G, rng, p, { atk, def, poly, half, spawnZones, rimPts }) {
   const inPoly = (x, z) => !poly || pointInPoly(x, z, poly);
@@ -230,21 +233,11 @@ function carveMobaNetwork(g, G, rng, p, { atk, def, poly, half, spawnZones, rimP
   };
   let declared, side, network;
   if (p.laneCount === 1) {
-    // ---- world-aligned crossroads web -----------------------------------------------------------
+    // ---- organic countryside clearings (no template — see the function comment) ----------------
     const lim = half - 4;
     const clampIn = (x, z) => pull(Math.max(-lim, Math.min(lim, x)), Math.max(-lim, Math.min(lim, z)));
-    // representative arrival per compass direction = the entry lying furthest that way (connect to
-    // wherever the entries ARE — a world road/river crossing may have moved them off the midpoint)
     const entries = spawnZones.filter((s) => s.id.startsWith("entry_e"));
-    const pickEntry = (dx, dz) => {
-      let best = null, bd = -1e9;
-      for (const e of entries) { const s = e.x * dx + e.z * dz; if (s > bd) { bd = s; best = e; } }
-      return best ? [best.x, best.z] : clampIn(dx * half * 0.86, dz * half * 0.86);
-    };
-    // seeded meander: one profile per axis, shared by the two OPPOSITE half-arms — the offsets
-    // rotate 180° through center while each arm still lands on its real entry point.
-    const profile = () => ({ phase: rng() * Math.PI * 2, freq: 0.8 + rng() * 1.4, amp: 9 + rng() * 11, drift: (rng() - 0.5) * 30 });
-    // tracks follow the BANK of world water, not braid across it: a waypoint landing on painted
+    // corridors follow the BANK of world water, not braid across it: a waypoint landing on painted
     // WATER slides sideways (perpendicular) to the nearest dry ground — the river gets ONE ford
     // where a crossing is genuinely needed (usually at the entry crossing itself), not a lattice
     // of causeways. Deterministic: probes fixed offsets against the already-painted grid.
@@ -256,40 +249,69 @@ function carveMobaNetwork(g, G, rng, p, { atk, def, poly, half, spawnZones, rimP
       }
       return [x, z];
     };
-    const arm = ([ex, ez], prof) => {                     // entry → center, gently curving track
-      const len = Math.hypot(ex, ez) || 1;
-      const px = ez / len, pz = -ex / len;                // unit perpendicular to the chord
-      const n = Math.max(3, Math.round(len / 26));
-      const pts = [[ex, ez]];
+    // one seeded profile PER ARM (never shared/mirrored): two sine harmonics + a drift bow,
+    // envelope-pinned at both endpoints so the arm still lands exactly on its entry + join.
+    const wander = (from, to) => {
+      const prof = { p1: rng() * Math.PI * 2, f1: 0.7 + rng() * 1.1, a1: 10 + rng() * 14,
+                     p2: rng() * Math.PI * 2, f2: 1.7 + rng() * 1.8, a2: 4 + rng() * 7,
+                     drift: (rng() - 0.5) * 44 };
+      const dx = to[0] - from[0], dz = to[1] - from[1];
+      const len = Math.hypot(dx, dz) || 1;
+      const px = dz / len, pz = -dx / len;                // unit perpendicular to the chord
+      const n = Math.max(4, Math.round(len / 22));
+      const pts = [[from[0], from[1]]];
       for (let k = 1; k < n; k++) {
-        const t = k / n, env = Math.sin(Math.PI * t);     // pinned at entry + center
-        const off = env * (Math.sin(prof.phase + t * prof.freq * Math.PI * 2) * prof.amp + prof.drift * t * (1 - t) * 2);
-        const [wx, wz] = clampIn(ex * (1 - t) + px * off, ez * (1 - t) + pz * off);
+        const t = k / n, env = Math.sin(Math.PI * t);     // pinned at both ends
+        const off = env * (Math.sin(prof.p1 + t * prof.f1 * Math.PI * 2) * prof.a1
+                         + Math.sin(prof.p2 + t * prof.f2 * Math.PI * 2) * prof.a2
+                         + prof.drift * t * (1 - t) * 2);
+        const [wx, wz] = clampIn(from[0] + dx * t + px * off, from[1] + dz * t + pz * off);
         pts.push(dodgeWater(wx, wz, px, pz));
       }
-      pts.push([0, 0]);
+      pts.push([to[0], to[1]]);
       return pts;
     };
-    const profNS = profile(), profEW = profile();
-    const hS = arm(pickEntry(0, -1), profNS), hN = arm(pickEntry(0, 1), profNS);
-    const hW = arm(pickEntry(-1, 0), profEW), hE = arm(pickEntry(1, 0), profEW);
-    const join = (a, b) => [...a, ...b.slice(0, -1).reverse()];   // entryA → center → entryB
-    const web = [join(hS, hN), join(hW, hE)];
-    // DECLARED lane: mount the web at the nearest track vertex to each duel base and ride it
-    // through center — the polyline follows the carved tracks, so it is walkable by construction.
-    const mount = (x, z, arms) => {
-      let best = arms[0], bd = Infinity;
-      for (const h of arms) for (let i = 0; i < h.length; i++) {
-        const d = (h[i][0] - x) ** 2 + (h[i][1] - z) ** 2;
-        if (d < bd) { bd = d; best = h.slice(i); }
+    const arms = [];       // the carved corridor polylines (the physical clearings)
+    const toCenter = [];   // per entry: a vertex path entry → … → [0,0] on carved ground only
+    for (let i = 0; i < entries.length; i++) {
+      const e = entries[i];
+      if (i >= 2 && toCenter.length && rng() < 0.5) {
+        // merge into an earlier arm partway — corridors tree up, joins vary per parcel
+        const tgt = toCenter[Math.floor(rng() * toCenter.length)];
+        const at = pointAt(tgt, 0.35 + rng() * 0.4);
+        const join = clampIn(at.x, at.z);
+        const pts = wander([e.x, e.z], join);
+        let bi = 0, bd = Infinity;
+        for (let k = 0; k < tgt.length; k++) {
+          const d = (tgt[k][0] - join[0]) ** 2 + (tgt[k][1] - join[1]) ** 2;
+          if (d < bd) { bd = d; bi = k; }
+        }
+        arms.push(pts);
+        toCenter.push([...pts, ...tgt.slice(bi)]);
+      } else {
+        // hub arm: approach the middle via a seeded ring point — joins land all around center
+        const a = rng() * Math.PI * 2, rr = 5 + rng() * 10;
+        const hub = clampIn(Math.cos(a) * rr, Math.sin(a) * rr);
+        const pts = [...wander([e.x, e.z], hub), [0, 0]];
+        arms.push(pts);
+        toCenter.push(pts);
       }
-      return best;                                        // [joinPt, …, center]
+    }
+    // DECLARED lane: mount the corridor network at the nearest carved vertex to each duel base
+    // and ride it through center — the polyline follows the carved clearings, so it is walkable
+    // by construction (the base↔mount hops are carved with the lane itself below).
+    const mount = (x, z) => {
+      let best = toCenter[0], bi = 0, bd = Infinity;
+      for (const path of toCenter) for (let k = 0; k < path.length; k++) {
+        const d = (path[k][0] - x) ** 2 + (path[k][1] - z) ** 2;
+        if (d < bd) { bd = d; best = path; bi = k; }
+      }
+      return best.slice(bi);                              // [mountPt, …, center]
     };
-    const rideIn = mount(atk.x, atk.z, [hS, hW]);         // attacker (SW) mounts the S or W arm
-    const rideOut = mount(def.x, def.z, [hN, hE]);        // defender (NE) exits via the N or E arm
+    const rideIn = mount(atk.x, atk.z), rideOut = mount(def.x, def.z);
     declared = [[[atk.x, atk.z], ...rideIn, ...rideOut.slice(0, -1).reverse(), [def.x, def.z]]];
-    side = web;
-    network = [...web, declared[0]];
+    side = arms;
+    network = [...arms, declared[0]];
   } else {
     // ---- golden-reference arena (estates / formal 3-lane maps) — unchanged ---------------------
     // reference geometry: lanes at ±100.8, shoulders at ±84 (fractions of the ±161 frame)
@@ -302,7 +324,7 @@ function carveMobaNetwork(g, G, rng, p, { atk, def, poly, half, spawnZones, rimP
     network = [...declared, ...side];
   }
 
-  // 1) lanes: declared ~10 u wide; undeclared web tracks / side-paths ~8–9 u wide
+  // 1) lanes: declared ~10 u wide; undeclared corridor arms / side-paths ~8–9 u wide
   // Lanes carve as CLEARED TRACKS (OPEN), not paved ROAD — they are battle lines / paths of attack
   // (the A1 lanes[] overlay), not roads on the land. T.ROAD is reserved for REAL roads: the
   // continuous world-field highways + fords/bridges (owner 2026-07-10 — roads must read as one
@@ -315,8 +337,8 @@ function carveMobaNetwork(g, G, rng, p, { atk, def, poly, half, spawnZones, rimP
   disc(g, G, cellOf(G, def.x), cellOf(G, def.z), 12);       // wider: holds the CoC build-spot ring
   disc(g, G, G >> 1, G >> 1, 5);
   for (const s of spawnZones) disc(g, G, cellOf(G, s.x), cellOf(G, s.z), 4.5);
-  // 3) both duel bases connect into the network. Web layout: the declared lane already rides the
-  // web base-to-base; arena layout: every reference lane starts/ends at a base.
+  // 3) both duel bases connect into the network. Countryside layout: the declared lane already
+  // rides the corridors base-to-base; arena layout: every reference lane starts/ends at a base.
   if (p.laneCount !== 1) {
     for (const lane of network) {
       carvePath(g, G, [[atk.x, atk.z], lane[0]], 2.0, false);
@@ -324,21 +346,22 @@ function carveMobaNetwork(g, G, rng, p, { atk, def, poly, half, spawnZones, rimP
     }
   }
   // 4) edge-entry corridors: true rim point → its entry spawn → nearest lane (reinforcements).
-  // Web entries usually sit ON a track (zero-length hop); polygon extras get a short trail.
+  // Countryside entries sit ON their own arm (zero-length hop); polygon extras get a short trail.
   for (let i = 0; i < rimPts.length; i++) {
     const s = rimPts[i];
     carvePath(g, G, [[s.rimX, s.rimZ], [s.x, s.z], nearestOnNetwork(network, s.x, s.z)], 2.0, false);
   }
-  // 5) chokes. Arena: mirrored jungle crossings between mid and each side lane. Web: two mirrored
-  // arm-to-arm links at the same arc fraction (SE + NW quadrants) — the "web" in crossroads-web.
+  // 5) chokes. Arena: mirrored jungle crossings between mid and each side lane. Countryside:
+  // two seeded arm-to-arm shortcut trails between distinct corridors — varied, never mirrored.
   if (p.laneCount === 1) {
-    const tX = 0.42 + rng() * 0.2;
-    const [ns, ew] = side;                                  // web tracks: [S→N], [W→E]
-    const halfArc = (tr, fromStart, t) => pointAt(tr, fromStart ? t / 2 : 1 - t / 2);
-    const a1 = halfArc(ns, true, tX), b1 = halfArc(ew, false, tX);   // S arm ↔ E arm
-    const a2 = halfArc(ns, false, tX), b2 = halfArc(ew, true, tX);   // N arm ↔ W arm (mirror)
-    carvePath(g, G, [[a1.x, a1.z], [b1.x, b1.z]], 1.6, false);
-    carvePath(g, G, [[a2.x, a2.z], [b2.x, b2.z]], 1.6, false);
+    const nArms = side.length;
+    for (let k = 0; k < Math.min(2, nArms - 1); k++) {
+      const ai = Math.floor(rng() * nArms);
+      let bi = Math.floor(rng() * (nArms - 1)); if (bi >= ai) bi++;
+      const a = pointAt(side[ai], 0.3 + rng() * 0.4);
+      const b = pointAt(side[bi], 0.3 + rng() * 0.4);
+      carvePath(g, G, [[a.x, a.z], [b.x, b.z]], 1.6, false);
+    }
   } else {
     const t1 = 0.30 + rng() * 0.12;
     const mid = declared[0];
@@ -371,7 +394,9 @@ function carveMobaNetwork(g, G, rng, p, { atk, def, poly, half, spawnZones, rimP
   const wantRes = Math.max(2, p.resourceNodes), wantCamp = Math.max(1, p.mobCamps);
   for (let i = 0; resPockets.length < wantRes && i < wantRes + 4; i++) {
     const lane = network[i % network.length];
-    digPocket(resPockets, lane, 0.22 + rng() * 0.3, i % 2 ? 1 : -1, 18 + rng() * 12, p.mirrorFair && !poly);
+    // mirrored twins only on the SYMMETRIC arena layout — the countryside corridors are
+    // asymmetric, so a 180°-rotated twin would land in unconnected jungle and get sealed.
+    digPocket(resPockets, lane, 0.22 + rng() * 0.3, i % 2 ? 1 : -1, 18 + rng() * 12, p.mirrorFair && !poly && p.laneCount !== 1);
   }
   for (let i = 0; campPockets.length < wantCamp && i < wantCamp + 4; i++) {
     const lane = network[i % network.length];
