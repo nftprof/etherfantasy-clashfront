@@ -99,27 +99,42 @@ The **edge-crossing set** — for each of the parcel's edges, *what* crosses (ro
 and it's exactly what the terraform rule freezes (§5). It also satisfies the MVP invariant "≥1 entry point
 per edge a reinforcement can arrive from" (`MAP-LAYER-MODEL.md`) — road/river crossings *are* those entries.
 
-### 4b. River crossings — the movement rule (owner + Map-maker, 2026-07-10, PHASED)
+### 4b. River crossings — REAL WATER (owner-hardened 2026-07-10; supersedes the earlier slow-only draft)
 
-How units cross water on a river parcel — three phases, all on the SAME map data (the artifact's grid
-already distinguishes WATER/ROAD cells; no re-bake at any phase):
+**The rule: water is real.** A unit that cannot cross water **cannot cross at all** — it is stuck on its
+side of the river. Exemptions: **Flyer units** (fly over) and **Water-element units** (swim). Everyone
+else needs a **ford or a bridge**. All on the SAME map data (the grid's WATER/ROAD cells; no re-bake):
 
-1. **Phase 1 — NOW (MVP): walk on water.** Rivers are terrain/visual continuity only; the sim ignores the
-   water flag for movement. Zero work, keeps every map playable in every mode while the loader/engine
-   seams land.
-2. **Phase 2 — the real rule: SLOW crossing with element exemptions.** WATER cells apply a movement
-   penalty (~50% speed, ⚙ tunable) **except Flyer units (fly over) and Water-element units (swim)**. A
-   sim rule keyed on the grid cell code + unit element — NOT map data. Payoff: crossings become the
-   tactical chokepoints (attack the enemy mid-ford), and the element system gains battlefield identity
-   (a Tide army flanks across the river at full speed; Flyers ignore terrain).
-3. **Phase 3 — bridges, as the BUILT answer.** Fords already exist by construction (the carve turns water
-   to ROAD wherever a lane/road crosses a river — every map has fast crossings). A **bridge** is the
-   upgrade: a buildable landowner structure (CT sink, `LAND-VALUE-AND-IMPROVEMENT`) converting a slow
-   water crossing into a fast one — and, being a structure, **destructible**: cutting the enemy's bridge
-   is a real campaign move. Rides the existing build-spot/barrier layer.
+1. **Phase 1 — NOW (MVP): walk on water.** Rivers are visual continuity only while the loader/engine
+   seams land. Zero work.
+2. **Phase 2 — REAL water.** WATER cells are impassable except Flyer/Water-element units. Crossings
+   (fords/bridges) are the only paths for everyone else — they become THE tactical chokepoints.
+3. **Bridges are LLM-designable + landowner-promptable.** The landowner prompts the map designer
+   ("build a bridge across the river at …") → the design pass places a BRIDGE (ROAD over WATER, or a
+   bridge structure). Bridges are **destructible structures** — cutting one is a real move. CT-sink via
+   the invest/improvement path (`LAND-VALUE-AND-IMPROVEMENT`).
 
-**Why never hard-block:** a wall-river fights the connectivity validator and turns terrain into a fence.
-Slow-not-block keeps all modes playable while making water matter.
+**Consequences (owner-accepted, by design):**
+- **A bridgeless river DIVIDES the battlefield** — effectively two maps; forces that can't cross can't
+  engage, and the battle **can end in a DRAW**. That is a legitimate outcome, not a bug. (Sim needs a
+  DRAW/stalemate settlement rule — flag to the CF sim + engine sessions.)
+- **Ranged fire crosses water** — units just across the river can be pinned/poked by ranged attackers.
+  Unit AI should not stand and soak (reposition/retreat) — a MOBA-engine behaviour item (OP 48 / engine),
+  not map data.
+- **Moats become a defense strategy:** a landowner may deliberately design AWAY crossings (a moat) — a
+  strong defensive posture whose cost is that battles on that parcel tend to draw (attackers with
+  Flyer/Water armies, or siege that outranges the moat, become the counters). Economy/balance reviews
+  this lever (invest tier could gate how much moat is allowed).
+
+**Map-side implications (mine):**
+- The generator's default maps stay engageable: the carve already creates **fords** (water→ROAD) where
+  lanes/roads cross rivers — so out-of-the-box every river map has crossings; *removing* them is a
+  deliberate design act.
+- The **playability validator needs a water exception** (task): connectivity invariants become
+  per-landmass — a water-divided map is VALID if each side is internally connected and each side's
+  content (base, entries on that bank) is reachable within its landmass. Today's validator requires full
+  connectivity, which would reject legit moat designs.
+- `BRIDGE` joins the feature/structure vocabulary (designer DSL + build-spot layer) — generator follow-up.
 
 Landowners (and the LLM on their behalf, or on system land) may terraform — but continuity is protected by
 **freezing the boundary, freeing the interior**:

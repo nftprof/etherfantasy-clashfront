@@ -47,12 +47,25 @@ function edgeSeedsFor(g, G) {
     return out;
   }
   const h = G / 2;
+  const rim = new Uint8Array(G * G);
   for (let z = 0; z < G; z++) for (let x = 0; x < G; x++) {
     const i = gIdx(G, x, z);
     if (g[i] === T.OOB) continue;
-    let rim = x === 0 || z === 0 || x === G - 1 || z === G - 1;
-    if (!rim) for (const [dx, dz] of N4) { if (g[gIdx(G, x + dx, z + dz)] === T.OOB) { rim = true; break; } }
-    if (!rim) continue;
+    let r = x === 0 || z === 0 || x === G - 1 || z === G - 1;
+    if (!r) for (const [dx, dz] of N4) { if (g[gIdx(G, x + dx, z + dz)] === T.OOB) { r = true; break; } }
+    if (r) rim[i] = 1;
+  }
+  // A rim cell BORDERS OOB, so on the eroded grid it can never open (its OOB neighbour blocks the
+  // width-3 test) — seeding the quadrant bands with the rim itself made EVERY polygon parcel fail
+  // all 4 passes and take the straight cross-fallback carve. Seed ONE CELL INWARD instead (rim-
+  // adjacent, non-rim): the innermost cell a width-3 corridor can actually reach. Thin sliver
+  // lobes with no inward cell leave their quadrant empty = vacuously ok (unchanged rule).
+  for (let z = 0; z < G; z++) for (let x = 0; x < G; x++) {
+    const i = gIdx(G, x, z);
+    if (g[i] === T.OOB || rim[i]) continue;
+    let near = false;
+    for (const [dx, dz] of N4) { const nx = x + dx, nz = z + dz; if (inG(G, nx, nz) && rim[gIdx(G, nx, nz)]) { near = true; break; } }
+    if (!near) continue;
     const dx = x - h, dz = z - h;
     (Math.abs(dz) >= Math.abs(dx) ? (dz >= 0 ? out.N : out.S) : (dx >= 0 ? out.E : out.W)).push(i);
   }

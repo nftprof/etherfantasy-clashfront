@@ -16,16 +16,16 @@ import { clampParams, budgetFor, ARCHETYPES, PALETTES, LANDMARKS, BARRIER_KINDS,
 import { archetypes } from "./archetypes.js";
 import { validateAndRepair, snapOpen, erode, routesToCenter } from "./validate.js";
 import { executeFeatures } from "./features.js";
+import { loadWorldField, featuresForParcel, fitToArena } from "./worldfield.js";
 
 // ---- real-parcel polygon support ------------------------------------------------------------
 // The overworld gives each parcel its actual polygon; the battlefield is built INSIDE it —
 // everything outside is T.OOB (void). Square stays the fallback when no polygon is known.
+// fitToArena (worldfield.js) is the SINGLE source of the parcel→arena fit: world features go
+// through the identical scale+center, so a river and the polygon land in the same frame.
 function normPoly(polygon, sizeM) {          // world-snapshot coords → arena coords (centered, fitted)
-  let x0 = 1e9, x1 = -1e9, z0 = 1e9, z1 = -1e9;
-  for (const [x, z] of polygon) { x0 = Math.min(x0, x); x1 = Math.max(x1, x); z0 = Math.min(z0, z); z1 = Math.max(z1, z); }
-  const s = (sizeM * 0.96) / Math.max(x1 - x0, z1 - z0, 1e-9);
-  const cx = (x0 + x1) / 2, cz = (z0 + z1) / 2;
-  return polygon.map(([x, z]) => [Math.round((x - cx) * s * 10) / 10, Math.round((z - cz) * s * 10) / 10]);
+  const f = fitToArena(polygon, sizeM);
+  return polygon.map(([x, z]) => [Math.round((x - f.cx) * f.s * 10) / 10, Math.round((z - f.cz) * f.s * 10) / 10]);
 }
 function stampOOB(g, G, poly) {
   for (let cz = 0; cz < G; cz++) for (let cx = 0; cx < G; cx++)
@@ -130,6 +130,42 @@ function carvePath(g, G, pts, hw, road = false) {
       disc(g, G, Math.round(ax + ((bx - ax) * k) / steps), Math.round(az + ((bz - az) * k) / steps), hw, road);
   }
 }
+// ---- continuous-world feature painting (CONTINUOUS-WORLD-TERRAIN.md) --------------------------
+// A world feature is a swept band (discs of half-width hw) along a battle-frame polyline that may
+// run far outside the arena (the window has margin) — so NO cellOf clamping here: out-of-grid
+// cells are skipped, never smeared onto the border. Paints the terrain CODE hard (the macro world
+// overrides the archetype coat); OOB is never touched (the band is polygon-cut like everything).
+function paintBand(g, G, pts, hw, code) {
+  const rc = Math.max(0.75, hw / CELL_M);                 // half-width in cells
+  const R = Math.ceil(rc), half = (G * CELL_M) / 2;
+  for (let s = 1; s < pts.length; s++) {
+    const [ax, az] = pts[s - 1], [bx, bz] = pts[s];
+    if (Math.min(ax, bx) > half + hw || Math.max(ax, bx) < -half - hw || Math.min(az, bz) > half + hw || Math.max(az, bz) < -half - hw) continue;   // segment fully outside the grid
+    const steps = Math.max(1, Math.ceil(Math.hypot(bx - ax, bz - az) / CELL_M));
+    for (let k = 0; k <= steps; k++) {
+      const cx = Math.floor((ax + ((bx - ax) * k) / steps + half) / CELL_M);
+      const cz = Math.floor((az + ((bz - az) * k) / steps + half) / CELL_M);
+      if (cx < -R || cz < -R || cx >= G + R || cz >= G + R) continue;
+      for (let dz = -R; dz <= R; dz++) for (let dx = -R; dx <= R; dx++) {
+        if (dx * dx + dz * dz > rc * rc) continue;
+        const x = cx + dx, z = cz + dz;
+        if (!inG(G, x, z)) continue;
+        const i = gIdx(G, x, z);
+        if (g[i] !== T.OOB) g[i] = code;
+      }
+    }
+  }
+}
+// Paint the parcel's window of the zone macro network. Order matters: ridges (rock mass), then
+// rivers (water cuts the rock), then roads LAST — a road crossing a river paints ROAD over WATER,
+// i.e. the causeway/bridge falls out for free. Rivers stay WATER (blocked) in the grid; the carve
+// stage + validator turn lane/corridor crossings into ROAD fords exactly like any other water.
+function paintWorldFeatures(g, G, wf) {
+  for (const r of wf.ridges || []) paintBand(g, G, r.pts, r.width / 2, T.ROCK);
+  for (const r of wf.rivers || []) paintBand(g, G, r.pts, r.width / 2, T.WATER);
+  for (const r of wf.roads || []) paintBand(g, G, r.pts, r.width / 2, T.ROAD);
+}
+
 // point at arc-length fraction t along a world polyline (+ local direction)
 function pointAt(lane, t) {
   const segs = [];
@@ -324,7 +360,14 @@ export function generate(parcel, params = null, designVersion = 0) {
   const p = params ? clampParams(params, budget) : paramsFromSeed(seed, parcelId, budget);
   // biome is authoritative for the ground COLOUR: override the seeded/region palette so the terrain
   // renders as its declared biome (desert = sandy, not green). An explicit params.palette wins.
-  const bp = biomePalette(biome, seed);
+  // Palette VARIANT is rolled per REGION, not per parcel: with a real bbox the region is a spatial
+  // bucket (~6 zone-units), so adjacent parcels share the same biome-family variant and the aerial
+  // mosaic reads as one coherent landscape (CONTINUOUS-WORLD-TERRAIN.md §6); without a bbox it
+  // falls back to the per-parcel seed (unchanged legacy behavior).
+  const palSeed = Array.isArray(parcel.bbox)
+    ? fnv1a(`pal:${zone}:${Math.floor((parcel.bbox[0] + parcel.bbox[2]) / 12)}:${Math.floor((parcel.bbox[1] + parcel.bbox[3]) / 12)}`)
+    : seed;
+  const bp = biomePalette(biome, palSeed);
   if (bp && !(params && params.palette)) p.palette = bp;
   const sizeM = parcel.sizeM || 322;   // CANON (2026-07-08): fixed ±161 world-unit frame, every parcel/battle
   const G = Math.round(sizeM / CELL_M);
@@ -341,6 +384,17 @@ export function generate(parcel, params = null, designVersion = 0) {
     : { landmarkAt: null, resources: [], mobs: [], towers: [] };
   const poly = (Array.isArray(parcel.polygon) && parcel.polygon.length >= 3) ? normPoly(parcel.polygon, sizeM) : null;
   if (poly) stampOOB(g, G, poly);
+  // 1c) CONTINUOUS WORLD TERRAIN: when the zone has an authored macro field, the parcel is a
+  //     WINDOW into it — ridges/rivers/roads clipped to this parcel arrive pre-transformed into
+  //     the SAME arena fit as the polygon (worldfield.js), so adjacent parcels agree at their
+  //     shared boundary by construction. Painted over the archetype coat, under the carve stage.
+  let wf = parcel.worldField;
+  if (wf === undefined && Array.isArray(parcel.bbox) && zone) {
+    const field = loadWorldField(zone);
+    wf = field ? featuresForParcel(field, { bbox: parcel.bbox, polygon: parcel.polygon, sizeM }) : null;
+  }
+  if (wf && !(wf.rivers?.length || wf.roads?.length || wf.ridges?.length)) wf = null;
+  if (wf) paintWorldFeatures(g, G, wf);
   const spot = features[0] || { cx: G >> 1, cz: (G >> 1) + Math.round((rng() - 0.5) * G * 0.3) };
   const landmark = p.landmark !== "NONE"
     ? (placed.landmarkAt
@@ -365,10 +419,22 @@ export function generate(parcel, params = null, designVersion = 0) {
   const boundary = poly || [[-half, -half], [half, -half], [half, half], [-half, half]];
   const ccx = boundary.reduce((s, v) => s + v[0], 0) / boundary.length;
   const ccz = boundary.reduce((s, v) => s + v[1], 0) / boundary.length;
+  // CONTINUITY CONTRACT: where a world ROAD (preferred) or RIVER crosses a boundary edge, the
+  // arrival entry for that edge sits ON the crossing — both neighbours clip the same zone
+  // polyline, so the two parcels' entries meet at the identical world point (a cross-parcel road
+  // IS the march route). Ridges never move entries (a ridge crossing is a wall, not a door).
+  const xingByEdge = new Map();
+  if (wf) for (const c of wf.edgeCrossings || []) {
+    if (c.kind === "ridge" || !Number.isInteger(c.edgeIndex)) continue;
+    const prev = xingByEdge.get(c.edgeIndex);
+    if (!prev || (prev.kind !== "road" && c.kind === "road")) xingByEdge.set(c.edgeIndex, c);
+  }
   const rimPts = [];
   const edgeEntries = boundary.map((v, i) => {
     const w = boundary[(i + 1) % boundary.length];
-    const rimX = (v[0] + w[0]) / 2, rimZ = (v[1] + w[1]) / 2;               // the true boundary midpoint
+    const xing = xingByEdge.get(i);
+    const rimX = xing ? xing.at[0] : (v[0] + w[0]) / 2,                     // world-feature crossing, else
+          rimZ = xing ? xing.at[1] : (v[1] + w[1]) / 2;                     // the true boundary midpoint
     const mx = rimX + (ccx - rimX) * 0.14, mz = rimZ + (ccz - rimZ) * 0.14; // pulled inward off the rim
     const bx = mx - ccx, bz = mz - ccz;
     const edge = Math.abs(bz) >= Math.abs(bx) ? (bz >= 0 ? "N" : "S") : (bx >= 0 ? "E" : "W");
@@ -391,6 +457,15 @@ export function generate(parcel, params = null, designVersion = 0) {
   // 3) carve the MOBA lane network out of the jungle (lanes/entries/chokes/clearings/pockets),
   //    then seal any leftover enclosed bubbles so the map is one connected battlefield.
   const net = carveMobaNetwork(g, G, rng, p, { atk, def: base, poly, half, spawnZones, rimPts });
+  // 3b) world roads JOIN the carved lane network: a short connector trail from each road's
+  //     in-parcel midpoint to the nearest declared lane, so the cross-parcel highway and the
+  //     MOBA network are one connected walkable graph (and the seal pass below never eats a road).
+  if (wf) for (const rd of wf.roads || []) {
+    const inside = rd.pts.filter(([x, z]) => Math.abs(x) < half && Math.abs(z) < half && (!poly || pointInPoly(x, z, poly)));
+    if (!inside.length) continue;
+    const a = inside[inside.length >> 1];
+    carvePath(g, G, [a, nearestOnNetwork(net.lanes, a[0], a[1])], 2.0, false);
+  }
   sealDisconnectedPockets(g, G);
 
   // resource nodes: exactly p.resourceNodes (budget-capped). Explicit resourceAt placements
