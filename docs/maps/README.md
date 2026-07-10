@@ -12,6 +12,12 @@
   precedence, the terminology crosswalk, the `legacy.json` delivery plan, and — critically — the ONE
   divergence (CF parcel maps author obstacles + walkability deterministically; the legacy arena re-rolls
   them live). Reconciles the CF, network/engine, and BattleEngine models.
+- **REGION-GATE-SPEC.md** — ⭐ (Map-maker, 2026-07-07): the CF-overworld travel requirement (§1.9 handoff) —
+  continents **partitioned into REGIONS by barriers (ranges/rivers)**, linked only through **GATE parcels**
+  (pass/bridge). The generator bakes 3 base-terrain fields — per-parcel `regionId`, per-crossing
+  `isGate`/`connects`, per-barrier `regionBoundary` polyline (+ gate markers); CF renders the dotted-border
+  overlay; landlord toll = runtime. ≥1 gate per boundary (reachability invariant). Extends the continuous-
+  world macro layer.
 - **CONTINUOUS-WORLD-TERRAIN.md** — ⭐ DECISION (Map-maker, 2026-07-07): the default terrain is **one
   authored continuous world per continent**; each parcel is a **window** cropped from it (rivers/roads/
   ranges continuous across parcels), modelled on a **real city per continent** from the aerial view. Adds a
