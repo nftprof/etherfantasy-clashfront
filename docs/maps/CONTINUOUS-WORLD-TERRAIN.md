@@ -174,7 +174,14 @@ proven allocate path; command-fee/slot economics per canon decisions 15/16 still
 live); its result feeds back into the estate battle. Engagements anywhere else resolve in command view
 only. This REVISES docs/04 §7b's sequential per-hex component campaign (~480 components for an EPIC):
 one estate = one battle, with 3D windows. ⚠ docs/04 §7b + estate-campaign sections need reconciling
-(flagged to the integration session). Map-side deliverable: field generators emit `heroParcels[]` per
+(flagged to the integration session).
+
+**Why (owner):** battle must come **from ALL directions simultaneously** — attackers enter from any
+estate edge, converge, encircle, cut roads; defenders sortie — never a linear one-after-another chain.
+The **sequential model** ("win 8 in a row", the hero POIs as a linear parcel gauntlet ending at the
+castle) is retained ONLY as the **explicit FALLBACK** if the whole-estate simultaneous sim ever proves
+unworkable — it is not the design. Assessment: no fallback expected to be needed; the whole-estate
+fight is the same tick-sim the overworld already runs, just scoped to the estate's parcel graph. Map-side deliverable: field generators emit `heroParcels[]` per
 castle estate (castle + N−1 POIs) — pending; blocked for HUB EPICs until their L2s are L3-subdivided
 (0/24 today).
 
