@@ -150,26 +150,33 @@ estate. Engine-side this is the locked component model (canon decisions 4 + 4g �
 one ±161 arena): the POI parcels are the components that ever go live; everything else resolves in
 command view. This SUPERSEDES the looser "hero mode drops into any contested component" reading.
 
-**BATTLE-PARCEL LADDER (owner-LOCKED 2026-07-10):** an estate battle is fought over a **fixed small
-number of battle parcels** by estate size — NOT one component per hex:
+**ESTATE BATTLE MODEL (owner-LOCKED 2026-07-10, corrected same day):** an estate battle is **ONE
+battle fought in command view across the ENTIRE estate map** — an EPIC is the full ~200-parcel board as
+a single battlefield, supporting **many players and many armies simultaneously** maneuvering anywhere
+on it. It is NOT a sequence of component fights. The estate-wide fight runs on the CF sim (command-view
+tick resolution, like the overworld — the estate's internal parcel graph IS its battle board), so scale
+costs nothing 30 Hz.
 
-| Estate size | Battle parcels (command-view components) |
-|---|---|
-| **SMALL / MEDIUM** | **1** — just a single-parcel battle (same as any lone parcel) |
-| **LARGE** | **3** |
-| **GIANT** | **5** |
-| **EPIC** | **8** |
+Within that whole-estate battle, a **fixed number of HERO-MODE POI parcels** by estate size are the
+only places that can open a live 3D match:
 
-The battle parcels are the estate's **key POIs, deterministically designated** (the castle parcel is
-always one and is the FINAL component; the rest are gates/bridge/harbour/keep parcels along the
-approach). The full-estate command map shows everything; only the battle parcels are ever *contested
-components*, and **hero (3D) mode opens per battle parcel once your Master's units are in it**. This
-REVISES the docs/04 §7b scale-law reading that an EPIC fights as ~480 per-hex components — component
-count is now a fixed ladder (1/1/3/5/8) per size class, massively simpler for the sim/engine and for
-players. ⚠ docs/04 §7b + the estate-campaign sections need reconciling to this ladder (flagged to the
-integration session). Map-side deliverable: field generators emit a `battleParcels[]` designation per
-castle estate (castle + N−1 approach POIs) — pending; blocked for HUB EPICs until their L2s are
-L3-subdivided (0/24 today).
+| Estate size | Battle scope | Hero-mode (3D) POI parcels |
+|---|---|---|
+| **SMALL / MEDIUM** | a single-parcel battle (same as any lone parcel) | that 1 parcel |
+| **LARGE** | one command-view battle over the whole estate | **3** |
+| **GIANT** | one command-view battle over the whole estate | **5** |
+| **EPIC** | one command-view battle over the whole estate | **8** |
+
+The hero POIs are **deterministically designated key parcels** — the castle parcel always (the final
+stronghold), plus gates/bridge/harbour/keep parcels. When an engagement happens AT a hero POI and
+**your Master's units are in it**, that local fight can be allocated as a live ±161 3D match (the
+proven allocate path; command-fee/slot economics per canon decisions 15/16 still bound how many run
+live); its result feeds back into the estate battle. Engagements anywhere else resolve in command view
+only. This REVISES docs/04 §7b's sequential per-hex component campaign (~480 components for an EPIC):
+one estate = one battle, with 3D windows. ⚠ docs/04 §7b + estate-campaign sections need reconciling
+(flagged to the integration session). Map-side deliverable: field generators emit `heroParcels[]` per
+castle estate (castle + N−1 POIs) — pending; blocked for HUB EPICs until their L2s are L3-subdivided
+(0/24 today).
 
 **Future — EF Hunt / MMORPG reuse (owner vision note 2026-07-10):** these same maps are intended to
 host **EF Hunt** played MMORPG-style inside CF's world — EF Hunt's story is a human's journey from
