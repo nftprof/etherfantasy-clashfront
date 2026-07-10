@@ -8,9 +8,14 @@
 // LAYOUT CANON (2026-07-10, golden reference examples/moba-singleplayer.artifact.json — the
 // reverse-engineered REAL MOBA single-player map): ±161 frame, ATTACKER base SW / DEFENDER NE
 // (spawns at ±118 on the diagonal, matching the reference), laneCount 3 ⇒ mid diagonal lane +
-// top (W→N) + bot (S→E) edge lanes at ±100.8 with shoulders at ±84; laneCount 1 ⇒ the mid lane
-// declared + the two edge lanes carved as undeclared jungle side-paths. The space between lanes
-// is DENSE jungle (35–55% blocked) with carved chokes — not open field.
+// top (W→N) + bot (S→E) edge lanes at ±100.8 with shoulders at ±84 (the DESIGNED estate arena —
+// unchanged). laneCount 1 (the ~20K continent singles) ⇒ WORLD-ALIGNED CROSSROADS WEB (owner
+// 2026-07-10): battles can be entered from any side and viewed from any camera bearing, so the
+// tactical axis is NOT baked into the ground as a diagonal — the terrain gets a roughly N–S and
+// a roughly E–W meandering track crossing near center (a real village crossroads, axis-aligned
+// with the world so the continent mosaic has no repeating 45° motif), and the DECLARED battle
+// lane is an instantiation over that web at battle time (atk_S → ride the web through center →
+// def_base). The space between tracks is DENSE jungle (35–55% blocked) — not open field.
 import { makeRng } from "../sim/rng.js";
 import { clampParams, budgetFor, ARCHETYPES, PALETTES, LANDMARKS, BARRIER_KINDS, T, CELL_M, gIdx, inG, cellOf, worldOf, isBlocked, b64, pointInPoly } from "./schema.js";
 import { archetypes } from "./archetypes.js";
@@ -201,8 +206,19 @@ function nearestOnNetwork(network, x, z) {
   return best || [0, 0];
 }
 
-// Carve the golden-reference lane network + staging clearings + entry corridors + inter-lane
-// chokes + jungle pockets. Returns { lanes (the DECLARED world polylines), resPockets, campPockets }.
+// Carve the lane network + staging clearings + entry corridors + chokes + jungle pockets.
+// TWO GROUND LAYOUTS (the anchors/spawn contract is identical):
+//   • laneCount 3 (2) — the golden-reference ARENA: mid diagonal + top/bot edge lanes. The
+//     designed estate/castle arena geometry (canon decision 5) — unchanged.
+//   • laneCount 1 — WORLD-ALIGNED CROSSROADS WEB: a roughly N–S and a roughly E–W track, each
+//     with seeded gentle meander (perpendicular displacement, pinned at both ends), crossing
+//     near center; they connect the four entry_e* arrival points WHEREVER they are (the
+//     world-field pass may relocate entries onto road/river crossings), plus two mirrored
+//     arm-to-arm links. Opposite arms share one meander profile, so the web is approximately
+//     180°-rotation symmetric (mirror fairness). The DECLARED lane (the A1 battle line) is an
+//     INSTANTIATION over that web: atk_S → short spur → ride the web through center → spur →
+//     def_base — the command view still gets a real lane; the ground has no diagonal motif.
+// Returns { lanes (the DECLARED world polylines), resPockets, campPockets }.
 function carveMobaNetwork(g, G, rng, p, { atk, def, poly, half, spawnZones, rimPts }) {
   const inPoly = (x, z) => !poly || pointInPoly(x, z, poly);
   let pcx = 0, pcz = 0;
@@ -212,45 +228,126 @@ function carveMobaNetwork(g, G, rng, p, { atk, def, poly, half, spawnZones, rimP
     for (let t = 1; t <= 10; t++) { const f = t / 10, nx = x + (pcx - x) * f, nz = z + (pcz - z) * f; if (pointInPoly(nx, nz, poly)) return [nx, nz]; }
     return [pcx, pcz];
   };
-  // reference geometry: lanes at ±100.8, shoulders at ±84 (fractions of the ±161 frame)
-  const L = half * 0.626, S = half * 0.522;
-  const mid = [[atk.x, atk.z], [0, 0], [def.x, def.z]].map(([x, z]) => pull(x, z));
-  const top = [[-L, -S], [-L, L], [S, L]].map(([x, z]) => pull(x, z));      // west edge → north edge
-  const bot = [[-S, -L], [L, -L], [L, S]].map(([x, z]) => pull(x, z));      // south edge → east edge
-  const declared = p.laneCount === 3 ? [mid, top, bot] : p.laneCount === 2 ? [mid, top] : [mid];
-  const side = p.laneCount === 3 ? [] : p.laneCount === 2 ? [bot] : [top, bot];
-  const network = [...declared, ...side];
+  let declared, side, network;
+  if (p.laneCount === 1) {
+    // ---- world-aligned crossroads web -----------------------------------------------------------
+    const lim = half - 4;
+    const clampIn = (x, z) => pull(Math.max(-lim, Math.min(lim, x)), Math.max(-lim, Math.min(lim, z)));
+    // representative arrival per compass direction = the entry lying furthest that way (connect to
+    // wherever the entries ARE — a world road/river crossing may have moved them off the midpoint)
+    const entries = spawnZones.filter((s) => s.id.startsWith("entry_e"));
+    const pickEntry = (dx, dz) => {
+      let best = null, bd = -1e9;
+      for (const e of entries) { const s = e.x * dx + e.z * dz; if (s > bd) { bd = s; best = e; } }
+      return best ? [best.x, best.z] : clampIn(dx * half * 0.86, dz * half * 0.86);
+    };
+    // seeded meander: one profile per axis, shared by the two OPPOSITE half-arms — the offsets
+    // rotate 180° through center while each arm still lands on its real entry point.
+    const profile = () => ({ phase: rng() * Math.PI * 2, freq: 0.8 + rng() * 1.4, amp: 9 + rng() * 11, drift: (rng() - 0.5) * 30 });
+    // tracks follow the BANK of world water, not braid across it: a waypoint landing on painted
+    // WATER slides sideways (perpendicular) to the nearest dry ground — the river gets ONE ford
+    // where a crossing is genuinely needed (usually at the entry crossing itself), not a lattice
+    // of causeways. Deterministic: probes fixed offsets against the already-painted grid.
+    const dodgeWater = (x, z, px, pz) => {
+      if (g[gIdx(G, cellOf(G, x), cellOf(G, z))] !== T.WATER) return [x, z];
+      for (const d of [4, -4, 8, -8, 12, -12, 16, -16]) {
+        const nx = x + px * d, nz = z + pz * d;
+        if (Math.abs(nx) < lim && Math.abs(nz) < lim && inPoly(nx, nz) && g[gIdx(G, cellOf(G, nx), cellOf(G, nz))] !== T.WATER) return [nx, nz];
+      }
+      return [x, z];
+    };
+    const arm = ([ex, ez], prof) => {                     // entry → center, gently curving track
+      const len = Math.hypot(ex, ez) || 1;
+      const px = ez / len, pz = -ex / len;                // unit perpendicular to the chord
+      const n = Math.max(3, Math.round(len / 26));
+      const pts = [[ex, ez]];
+      for (let k = 1; k < n; k++) {
+        const t = k / n, env = Math.sin(Math.PI * t);     // pinned at entry + center
+        const off = env * (Math.sin(prof.phase + t * prof.freq * Math.PI * 2) * prof.amp + prof.drift * t * (1 - t) * 2);
+        const [wx, wz] = clampIn(ex * (1 - t) + px * off, ez * (1 - t) + pz * off);
+        pts.push(dodgeWater(wx, wz, px, pz));
+      }
+      pts.push([0, 0]);
+      return pts;
+    };
+    const profNS = profile(), profEW = profile();
+    const hS = arm(pickEntry(0, -1), profNS), hN = arm(pickEntry(0, 1), profNS);
+    const hW = arm(pickEntry(-1, 0), profEW), hE = arm(pickEntry(1, 0), profEW);
+    const join = (a, b) => [...a, ...b.slice(0, -1).reverse()];   // entryA → center → entryB
+    const web = [join(hS, hN), join(hW, hE)];
+    // DECLARED lane: mount the web at the nearest track vertex to each duel base and ride it
+    // through center — the polyline follows the carved tracks, so it is walkable by construction.
+    const mount = (x, z, arms) => {
+      let best = arms[0], bd = Infinity;
+      for (const h of arms) for (let i = 0; i < h.length; i++) {
+        const d = (h[i][0] - x) ** 2 + (h[i][1] - z) ** 2;
+        if (d < bd) { bd = d; best = h.slice(i); }
+      }
+      return best;                                        // [joinPt, …, center]
+    };
+    const rideIn = mount(atk.x, atk.z, [hS, hW]);         // attacker (SW) mounts the S or W arm
+    const rideOut = mount(def.x, def.z, [hN, hE]);        // defender (NE) exits via the N or E arm
+    declared = [[[atk.x, atk.z], ...rideIn, ...rideOut.slice(0, -1).reverse(), [def.x, def.z]]];
+    side = web;
+    network = [...web, declared[0]];
+  } else {
+    // ---- golden-reference arena (estates / formal 3-lane maps) — unchanged ---------------------
+    // reference geometry: lanes at ±100.8, shoulders at ±84 (fractions of the ±161 frame)
+    const L = half * 0.626, S = half * 0.522;
+    const mid = [[atk.x, atk.z], [0, 0], [def.x, def.z]].map(([x, z]) => pull(x, z));
+    const top = [[-L, -S], [-L, L], [S, L]].map(([x, z]) => pull(x, z));    // west edge → north edge
+    const bot = [[-S, -L], [L, -L], [L, S]].map(([x, z]) => pull(x, z));    // south edge → east edge
+    declared = p.laneCount === 3 ? [mid, top, bot] : [mid, top];
+    side = p.laneCount === 3 ? [] : [bot];
+    network = [...declared, ...side];
+  }
 
-  // 1) lanes: declared = ROAD ~10 u wide; undeclared side-paths = OPEN jungle trails ~8 u wide
+  // 1) lanes: declared ~10 u wide; undeclared web tracks / side-paths ~8–9 u wide
   // Lanes carve as CLEARED TRACKS (OPEN), not paved ROAD — they are battle lines / paths of attack
   // (the A1 lanes[] overlay), not roads on the land. T.ROAD is reserved for REAL roads: the
   // continuous world-field highways + fords/bridges (owner 2026-07-10 — roads must read as one
   // connected network on the map; battle lanes dead-ending at parcel edges looked like broken roads).
-  // disc(road=false) still turns WATER→ROAD, so lane fords stay visible crossings.
+  // disc(road=false) still turns WATER→ROAD, so lane/track fords stay visible crossings.
   for (const lane of declared) carvePath(g, G, lane, 2.5, false);
-  for (const path of side) carvePath(g, G, path, 2.0, false);
+  for (const path of side) carvePath(g, G, path, p.laneCount === 1 ? 2.2 : 2.0, false);
   // 2) base plateaus + center + staging clearings (mirrors command_converter's CORE/SPAWN pockets)
   disc(g, G, cellOf(G, atk.x), cellOf(G, atk.z), 9.5);
   disc(g, G, cellOf(G, def.x), cellOf(G, def.z), 12);       // wider: holds the CoC build-spot ring
   disc(g, G, G >> 1, G >> 1, 5);
   for (const s of spawnZones) disc(g, G, cellOf(G, s.x), cellOf(G, s.z), 4.5);
-  // 3) each lane connects to both base plateaus (the reference lanes all start at a base)
-  for (const lane of network) {
-    carvePath(g, G, [[atk.x, atk.z], lane[0]], 2.0, false);
-    carvePath(g, G, [[def.x, def.z], lane[lane.length - 1]], 2.0, false);
+  // 3) both duel bases connect into the network. Web layout: the declared lane already rides the
+  // web base-to-base; arena layout: every reference lane starts/ends at a base.
+  if (p.laneCount !== 1) {
+    for (const lane of network) {
+      carvePath(g, G, [[atk.x, atk.z], lane[0]], 2.0, false);
+      carvePath(g, G, [[def.x, def.z], lane[lane.length - 1]], 2.0, false);
+    }
   }
-  // 4) edge-entry corridors: true rim point → its entry spawn → nearest lane (reinforcements)
+  // 4) edge-entry corridors: true rim point → its entry spawn → nearest lane (reinforcements).
+  // Web entries usually sit ON a track (zero-length hop); polygon extras get a short trail.
   for (let i = 0; i < rimPts.length; i++) {
     const s = rimPts[i];
     carvePath(g, G, [[s.rimX, s.rimZ], [s.x, s.z], nearestOnNetwork(network, s.x, s.z)], 2.0, false);
   }
-  // 5) inter-lane chokes: mirrored jungle crossings between mid and each side lane
-  const t1 = 0.30 + rng() * 0.12;
-  for (const t of [t1, 1 - t1]) {
-    const m = pointAt(mid, t);
-    for (const other of network) {
-      if (other === mid) continue;
-      carvePath(g, G, [[m.x, m.z], nearestOnNetwork([other], m.x, m.z)], 1.6, false);
+  // 5) chokes. Arena: mirrored jungle crossings between mid and each side lane. Web: two mirrored
+  // arm-to-arm links at the same arc fraction (SE + NW quadrants) — the "web" in crossroads-web.
+  if (p.laneCount === 1) {
+    const tX = 0.42 + rng() * 0.2;
+    const [ns, ew] = side;                                  // web tracks: [S→N], [W→E]
+    const halfArc = (tr, fromStart, t) => pointAt(tr, fromStart ? t / 2 : 1 - t / 2);
+    const a1 = halfArc(ns, true, tX), b1 = halfArc(ew, false, tX);   // S arm ↔ E arm
+    const a2 = halfArc(ns, false, tX), b2 = halfArc(ew, true, tX);   // N arm ↔ W arm (mirror)
+    carvePath(g, G, [[a1.x, a1.z], [b1.x, b1.z]], 1.6, false);
+    carvePath(g, G, [[a2.x, a2.z], [b2.x, b2.z]], 1.6, false);
+  } else {
+    const t1 = 0.30 + rng() * 0.12;
+    const mid = declared[0];
+    for (const t of [t1, 1 - t1]) {
+      const m = pointAt(mid, t);
+      for (const other of network) {
+        if (other === mid) continue;
+        carvePath(g, G, [[m.x, m.z], nearestOnNetwork([other], m.x, m.z)], 1.6, false);
+      }
     }
   }
   // 6) jungle pockets: clearings punched off the lanes (resources) + mid-map dens (camps),
@@ -457,11 +554,13 @@ export function generate(parcel, params = null, designVersion = 0) {
     const a = (i / 6) * Math.PI * 2;
     buildSpots.push({ anchorId: "bs_ring" + i, x: r1(base.x + Math.cos(a) * 22), z: r1(base.z + Math.sin(a) * 22), size: 6 });
   }
-  buildSpots.push({ anchorId: "bs_mid", x: r1(base.x * 0.4), z: r1(base.z * 0.4), size: 6 }); // forward spot on the defender half of the mid lane
-
   // 3) carve the MOBA lane network out of the jungle (lanes/entries/chokes/clearings/pockets),
   //    then seal any leftover enclosed bubbles so the map is one connected battlefield.
   const net = carveMobaNetwork(g, G, rng, p, { atk, def: base, poly, half, spawnZones, rimPts });
+  // forward build spot on the defender half of the DECLARED lane — placed via arc length so it
+  // sits ON carved ground for both layouts (the web's declared lane no longer runs the diagonal)
+  const bm = pointAt(net.lanes[0], 0.7);
+  buildSpots.push({ anchorId: "bs_mid", x: r1(bm.x), z: r1(bm.z), size: 6 });
   // 3b) world roads JOIN the carved lane network: a short connector trail from each road's
   //     in-parcel midpoint to the nearest declared lane, so the cross-parcel highway and the
   //     MOBA network are one connected walkable graph (and the seal pass below never eats a road).
