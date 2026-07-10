@@ -99,7 +99,27 @@ The **edge-crossing set** — for each of the parcel's edges, *what* crosses (ro
 and it's exactly what the terraform rule freezes (§5). It also satisfies the MVP invariant "≥1 entry point
 per edge a reinforcement can arrive from" (`MAP-LAYER-MODEL.md`) — road/river crossings *are* those entries.
 
-## 5. Terraforming — edges frozen, interior free (the ownership rule)
+### 4b. River crossings — the movement rule (owner + Map-maker, 2026-07-10, PHASED)
+
+How units cross water on a river parcel — three phases, all on the SAME map data (the artifact's grid
+already distinguishes WATER/ROAD cells; no re-bake at any phase):
+
+1. **Phase 1 — NOW (MVP): walk on water.** Rivers are terrain/visual continuity only; the sim ignores the
+   water flag for movement. Zero work, keeps every map playable in every mode while the loader/engine
+   seams land.
+2. **Phase 2 — the real rule: SLOW crossing with element exemptions.** WATER cells apply a movement
+   penalty (~50% speed, ⚙ tunable) **except Flyer units (fly over) and Water-element units (swim)**. A
+   sim rule keyed on the grid cell code + unit element — NOT map data. Payoff: crossings become the
+   tactical chokepoints (attack the enemy mid-ford), and the element system gains battlefield identity
+   (a Tide army flanks across the river at full speed; Flyers ignore terrain).
+3. **Phase 3 — bridges, as the BUILT answer.** Fords already exist by construction (the carve turns water
+   to ROAD wherever a lane/road crosses a river — every map has fast crossings). A **bridge** is the
+   upgrade: a buildable landowner structure (CT sink, `LAND-VALUE-AND-IMPROVEMENT`) converting a slow
+   water crossing into a fast one — and, being a structure, **destructible**: cutting the enemy's bridge
+   is a real campaign move. Rides the existing build-spot/barrier layer.
+
+**Why never hard-block:** a wall-river fights the connectivity validator and turns terrain into a fence.
+Slow-not-block keeps all modes playable while making water matter.
 
 Landowners (and the LLM on their behalf, or on system land) may terraform — but continuity is protected by
 **freezing the boundary, freeing the interior**:
