@@ -16,19 +16,26 @@
 - **A player's starting server = where they begin.** You start on the continent that fronts your regional
   server, and you physically **travel** (below) to reach continents on other servers.
 
-## 2. Servers → starting continents (owner-authoritative, 2026-07-08)
+## 2. Servers → starting continents (owner-authoritative, REVISED 2026-07-10)
 
-**Three launch servers**, each with its onboarding continent:
+**FOUR launch servers** (supersedes the 3-server table of 2026-07-08). A user's **default starting zone
+depends on which server they check in on**:
 
-| Server (city) | Starting continent | zoneId | Status |
-|---|---|---|---|
-| **Singapore** | **Porthaven** | BUS | most Singapore players start here |
-| **Tokyo / Japan** | **Arcadia** | EDU | **the current map**; the Japan server is **being added soon** |
-| **Montréal** | **Mythoria** | ENT | Montréal players start here |
+| Server | IP | Starting zone | zoneId | Note |
+|---|---|---|---|---|
+| **Singapore** | 13.250.39.41 ✅ | **Porthaven** | BUS | |
+| **Tokyo** | 18.178.54.54 ✅ | **Arcadia** | EDU | the current map |
+| **US West** | 54.151.57.111 ✅ | **Mythoria — NORTH side** | ENT·north | the west-coast server takes the north slice |
+| **Montréal** | 3.98.68.96 | **Mythoria — SOUTH side** | ENT·south | the east-coast server takes the south slice |
 
-So the surface continents are **distributed across three city servers**, each an onboarding front door.
-(Which server hosts the remaining continents — HUB/Tianxia, the sky HS1–3, the underworld UW1–3, and the
-prestige isles — still needs assignment; §4.)
+- **Mythoria is SLICED north/south between two servers** — the first live use of decision 12's "huge
+  continents may split into sub-zone slices." US West players start on the **north side**, Montréal players
+  on the **south side**; it is still ONE continent on the world map. Registry: `ENT.serverSlices`.
+- **Tianxia (HUB) is NOT a starting zone.** It is the **destination continent** — players advance there
+  **after** their starting zone. **OR**, when a **Europe / MENA** server opens, late-comers may **start
+  directly in Tianxia**; we monitor the user base to decide when to open it. Registry:
+  `HUB.startNote` + the planned `eu_mena_future` server entry.
+- Sky HS1–3 + underworld UW1–3 remain on Singapore; prestige isles teleport-only (§6).
 
 ## 3. ✅ APPLIED to `data/zone-registry.json` (owner-approved 2026-07-08)
 

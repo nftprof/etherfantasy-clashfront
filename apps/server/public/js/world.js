@@ -20,10 +20,10 @@
 // off = real worldOffset [x,z]; vb = viewBox [w,h]; depth = vertical tier level (sky +1,
 // surface 0, underworld −1/−1.9/−2.7 = the stacked descent). l2/l3 = residence populace.
 const CONTINENTS = [
-  { id:'HUB', name:'Tianxia',   city:'—',        server:'ca', tier:'surface', depth:0, biome:'TEMPERATE_GRASS', off:[0,0],      vb:[358,231], str:100, l2:1744, l3:58745, sub:'Capital Heartland' },
-  { id:'ENT', name:'Mythoria',  city:'Montréal', server:'ca', tier:'surface', depth:0, biome:'TEMPERATE_GRASS', off:[-230,-10], vb:[290,526], str:110, l2:1492, l3:38284, sub:'Western Carnival Coast', start:true },
+  { id:'HUB', name:'Tianxia',   city:'—',        server:'ca', tier:'surface', depth:0, tag:'the destination · all roads lead here', note:'Tianxia is NOT a starting zone — warlords advance here from their starting continents. (A future Europe/MENA server may start here directly.)', biome:'TEMPERATE_GRASS', off:[0,0],      vb:[358,231], str:100, l2:1744, l3:58745, sub:'Capital Heartland' },
+  { id:'ENT', name:'Mythoria',  city:'US West (N) / Montréal (S)', server:'us/ca', tier:'surface', depth:0, tag:'N: US West · S: Montréal', note:'Mythoria is split into two server slices: the NORTH side starts US West players, the SOUTH side starts Montréal players — one continent, two onboarding shores.', biome:'TEMPERATE_GRASS', off:[-230,-10], vb:[290,526], str:110, l2:1492, l3:38284, sub:'Western Carnival Coast', start:true },
   { id:'BUS', name:'Porthaven', city:'Singapore',server:'sg', tier:'surface', depth:0, biome:'SWAMP',           off:[40,-250],  vb:[354,242], str:120, l2:1187, l3:70467, sub:'Northern Commercial Coast', start:true },
-  { id:'EDU', name:'Arcadia',   city:'Tokyo',    server:'jp', tier:'surface', depth:0, biome:'TEMPERATE_FOREST',off:[110,265],  vb:[156,148], str:130, l2:372,  l3:13663, sub:'Academy Highlands', start:true, soon:true },
+  { id:'EDU', name:'Arcadia',   city:'Tokyo',    server:'jp', tier:'surface', depth:0, biome:'TEMPERATE_FOREST',off:[110,265],  vb:[156,148], str:130, l2:372,  l3:13663, sub:'Academy Highlands', start:true },
   { id:'HS1', name:'Aeropolis', city:'Singapore',server:'sg', tier:'sky',     depth:1.05, biome:'TEMPERATE_GRASS', off:[620,-100], vb:[114,116], str:200, l2:346,  l3:14071, sub:'Cloud Gateway Isle' },
   { id:'HS2', name:'Emberfall', city:'Singapore',server:'sg', tier:'sky',     depth:1.0,  biome:'VOLCANIC',        off:[815,20],   vb:[118,116], str:200, l2:451,  l3:13694, sub:'Storm & Lava Isle' },
   { id:'HS3', name:'Empyrea',   city:'Singapore',server:'sg', tier:'sky',     depth:1.4,  biome:'SNOW',            off:[645,215],  vb:[115,117], str:200, l2:464,  l3:11873, sub:'High Sanctum Isle' },
@@ -271,7 +271,7 @@ export function createWorld({ ui } = {}) {
       ctx.fillText(c.name, m.cx, ly - 13);
       ctx.fillStyle = '#9aa3b0'; ctx.font = '11px ui-sans-serif';
       const tag = c.special ? '✦ prestige isle'
-        : `${c.city} · ${c.server.toUpperCase()}${c.soon ? ' (soon)' : ''}`;
+        : (c.tag || `${c.city} · ${c.server.toUpperCase()}${c.soon ? ' (soon)' : ''}`);
       ctx.fillText(tag, m.cx, ly);
       if (!kn && !c.special) { ctx.fillStyle = '#7f8794'; ctx.font = 'italic 10px ui-sans-serif'; ctx.fillText('unexplored', m.cx, ly + 12); }
     }
@@ -357,12 +357,14 @@ export function createWorld({ ui } = {}) {
       panel.innerHTML = `<span class="pcls">✕</span><h3>${c.name}</h3>
         <div class="csub">${c.sub} · ${c.city} · <b>${c.server.toUpperCase()}</b> server ${c.soon ? '(coming soon)' : ''}</div>
         ${popRows(c)}
+        ${c.note ? `<div class="rule">ℹ ${c.note}</div>` : ''}
         <div class="rule">📍 This is <b>your home continent</b>. You're already here — sail out from a ${port.name.toLowerCase()} to reach another continent.</div>`;
     } else {
       panel.innerHTML = `<span class="pcls">✕</span>
         <h3>Travel to ${c.name}</h3>
         <div class="csub">${c.sub} · ${c.city} · <b>${c.server.toUpperCase()}</b> server ${c.soon ? '(coming soon)' : ''} ${known ? '' : '· <span class="fogtag">unexplored</span>'}</div>
         ${popRows(c)}
+        ${c.note ? `<div class="rule">ℹ ${c.note}</div>` : ''}
         <div class="port">${port.icon} ${port.name} <span style="color:#9aa3b0;font-weight:400;font-size:12px">— units gather here for travel</span></div>
         <div class="rule">🚢 <b>Moving continent = moving server entirely.</b><br>
           • <b>All your units must be on the map</b>, and <b>all move together</b>.<br>
