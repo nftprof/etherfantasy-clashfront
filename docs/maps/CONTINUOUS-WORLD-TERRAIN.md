@@ -74,12 +74,13 @@ roads, rivers, coast, and districts lay out from above. This is *reference*, not
 | **UW1** | Upper Caverns, fungal swamp (underworld) | **Derinkuyu / Cappadocia (underground)** | a warren of tunnels + chambers (structural, not aerial) |
 | **UW2** | Deep flooded caverns, magma veins (underworld) | **flooded cave network / cenote field** | causeways between black lakes |
 | **UW3** | Inferno Vault, magma throne (underworld) | **volcanic vent chamber** | a single central caldera, magma-river spokes |
+| **CGI** | Olympus — founders' exclusive isle (Dubai-palm model) | **Dubai (Palm Jumeirah) + Monaco** | sculpted marina fingers, private super-estates, yacht quays; exclusivity legible from the air |
+| **KOL** | Fortuna — influencers' isle | **Las Vegas Strip + Monte Carlo waterfront** | one grand promenade/strip as the spine, plaza stages, casino waterfront spectacle |
 
-**On "9 continents":** the atlas geometry is **10 zones**. Seven read as true aerial *cities* (HUB, BUS,
-ENT, EDU + the three sky isles); the three underworld zones use **subterranean structural** references
-(caverns, not aerial cities). If you want exactly **9**, the natural merge is treating UW as one
-descent-continent (UW1→UW2→UW3 as depth tiers of one place) — that gives **9 continent identities**. **Owner
-call:** lock the reference per continent + the 9-vs-10 grouping.
+**On the count:** the registry is **12 zones** (10 atlas continents + the two isles CGI/KOL). Seven read
+as true aerial *cities* (HUB, BUS, ENT, EDU + the three sky isles), the two isles are designed resort
+islands, and the three underworld zones use **subterranean structural** references (caverns, not aerial
+cities).
 
 ### 3b. City ERA per continent — medieval vs modern variety (owner 2026-07-10)
 
@@ -92,9 +93,15 @@ governs the URBAN road pattern + where castles/fortifications sit:
 | **Arcadia** (EDU) | **MEDIEVAL castle town** (jōkamachi — Himeji/Kanazawa; owner-locked ✓) | castle-centred: ring road around the walls, curved radial streets from the gates, short organic lanes (dead-ends fine), the Academy PALACE with a ceremonial approach | the **castle** is the town's heart; walls + gates on the battle maps |
 | **Tianxia** (HUB) | **LAYERED Chinese metropolis** (Beijing/Chengdu/Xi'an — owner-locked 2026-07-10: "major cities in China today… modern living, high population, with an ancient history") | ancient imperial core (walled palace precinct, grand N–S axis, gate towers — Forbidden-City/Xi'an-wall pattern) **wrapped in modern ring roads + radial expressways** (Beijing 2nd/3rd-ring, Chengdu ring-radial); several such cities, not just the capital | the **walled palace city** is the fortification; ring roads are modern, the walls are ancient — both layers visible from the air |
 | **Porthaven** (BUS) | **MODERN port metropolis** (NY/Singapore) | street grid + waterfront piers/quays | citadel/fort at the harbour mouth (star-fort era) |
-| **Mythoria** (ENT) | coastal village ribbon (SE-Asia) | shore-following strands, marina inlets, stilt lanes | watchtowers + temple keeps on headlands |
-| Sky isles (HS1-3) | terraced citadel (Cusco/Lhasa) | contour terraces + switchback ways up | summit citadel |
-| Underworld (UW1-3) | carved warren (Derinkuyu) | tunnels + chambers, gallery rings | gatehouse chokes at level doors |
+| **Mythoria** (ENT) | **FESTIVAL mythic resort coast** (Rio carnival ribbon + a Venetian canal quarter as one POI city) | shore-following strands, marina inlets, canal quarter, stilt lanes | watchtowers + temple keeps on headlands |
+| **Olympus** (CGI) | **ULTRAMODERN luxury enclave** (Dubai Palm / Monaco) | sculpted marina fingers, gated estate drives, one grand corniche | no war-castles — the estates ARE the monuments (private citadel-villas) |
+| **Fortuna** (KOL) | **MODERN spectacle strip** (Las Vegas / Monte Carlo) | one grand strip spine + plaza stages + waterfront promenade | showpiece citadel-casino at the strip's head |
+| **Aeropolis** (HS1) | **ANCIENT terraced sky citadel** (Cusco / Machu Picchu — the castle-in-the-sky isle) | contour terraces + switchback ways up to one airship-dock gateway | summit citadel + dock gatehouse |
+| **Emberfall** (HS2) | **HIGH-MEDIEVAL tiered fortress** (Mont Saint-Michel — the Minas Tirith feel) | concentric tier rings climbing the volcano cone, one switchback gate-road | ringwall per tier; the keep crowns the cone |
+| **Empyrea** (HS3) | **FAR-FUTURE sacred summit** (Lhasa/Potala silhouette, futuristic tech skin — owner: modern tech, space/parallel-universe travel) | pilgrim ways converging up to a levitating precinct; clean radial platforms | the Sanctum — energy walls + gate pylons (sci-fi castle analog) |
+| **Ironhold** (UW1) | **DWARVEN industrial forge-city** (Derinkuyu/Cappadocia warren) | tunnels + gallery rings + great halls | gatehouse chokes at level doors |
+| **Blackmere** (UW2) | **DARK-GOTHIC drowned keep** (cenote/flooded-karst causeways, Minas-Morgul mood) | causeways between black lakes, half-sunken quarters | the Keep on its own island; causeway gates |
+| **Luxuria** (UW3) | **INFERNAL baroque decadence** (Pompeii pleasure-city + vent chamber) | a pleasure-palace ring around the magma throne, spoke boulevards | the Throne precinct; sin-palace compounds as castle analogs |
 
 Rule of thumb: **era applies to the urban core only** — the basin/harbour/terrace district around each
 continent's capital + towns. Everything else is countryside (organic clearings, world roads passing
@@ -111,6 +118,39 @@ carry pre-designed castle/city-wall maps). Arcadia's five castles already follow
 (deterministic picks in `map-service/tools/world_terrain_edu.mjs`): PALACE→the sole EPIC 1020371,
 CASTLE Westgate→GIANT 2020367, CASTLE Southreach→GIANT 2020368, KEEPs→LARGE 3020352/3020351. Other
 continents' field generators must apply the same rule.
+
+**The full fortification ladder (PROPOSED 2026-07-10 — owner to confirm the MEDIUM/SMALL rungs):**
+
+| Estate size | Baked world-layer fortification | On the battle map |
+|---|---|---|
+| **EPIC** | **PALACE** — walled palace precinct | full ring + ceremonial way, gate towers |
+| **GIANT** | **CASTLE** | full WALL ring (8–12) + 2 GATEs + 4 corner TOWERs, courtyard |
+| **LARGE** | **KEEP** | compact: 1 keep TOWER + a partial wall arc + 1 GATE |
+| **MEDIUM** | **fortified MANOR / watchtower** — only where the estate is a world-layer town anchor; otherwise none | 1 TOWER + 2–3 WALL stubs forming a yard (no ring) |
+| **SMALL** | **nothing baked** | pure countryside + build spots |
+
+Rationale: canon decision 5 says only estates carry pre-designed castle/city-wall maps — within estates
+we scale it, keeping world-layer castles scarce and special. **SMALL (and non-anchor MEDIUM) estates get
+their defense from the player-built CoC layer** (canon decision 9: placeable WALL/TOWER/GATE/TRAP
+modules) — a small holding is what you fortify *yourself*; a baked keep everywhere would cheapen the
+real castles and erase the build-layer progression.
+
+### 3d. Estate battles present as ONE command-view map; HERO (3D) mode only at key POIs (owner-LOCKED 2026-07-10)
+
+Marching onto an estate opens a **full-estate command-view map** — the whole estate as one seamless
+board (stitched from its per-parcel maps, which line up by construction — §4's continuity contract).
+The battle is fought in command view across it. **HERO (3D) mode exists ONLY at designated KEY POI
+parcels** — the capital/castle center and a few key POIs (gates, the bridge, the harbour). **Most estate
+parcels have NO 3D mode**: you can only ⚡ take the field once your Master is *in* a POI parcel of that
+estate. Engine-side this is the locked component model (canon decisions 4 + 4g — every live match is
+one ±161 arena): the POI parcels are the components that ever go live; everything else resolves in
+command view. This SUPERSEDES the looser "hero mode drops into any contested component" reading.
+
+**Future — EF Hunt / MMORPG reuse (owner vision note 2026-07-10):** these same maps are intended to
+host **EF Hunt** played MMORPG-style inside CF's world — EF Hunt's story is a human's journey from
+**Tianxia down to Luxuria (UW3)**. The key-POI parcels with 3D mode are the natural scene anchors for
+that journey (each continent's capitals/castles/temples = story stages), which is another reason POI
+maps get the design attention while countryside stays procedural.
 
 ## 4. How a parcel derives its map from the field
 
