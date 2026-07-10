@@ -40,6 +40,16 @@
 //   arrive with the pre-designed ESTATE maps (canon decisions 4/5); the strategic forts + keeps
 //   are constrained to L3-subdivided estates so their castle POIs land on PLAYABLE parcels today.
 //
+// HERO PARCELS (castles[].heroParcels — canon decision 18 / CONTINUOUS-WORLD-TERRAIN §3d, shared
+// rule in world_hero_parcels.mjs, identical in the EDU/HUB/BUS tools): each castle estate lists
+// its HERO-MODE (3D) POI L3 parcelIds — castle parcel FIRST, length = LARGE 3 / GIANT 5 / EPIC 8.
+// Deterministic pick: castle parcel = the L3 parcel containing (else nearest-center to) the
+// castle POI point; the rest = greedy farthest-point spread over L3 centers PREFERRING parcels
+// that intersect roads/rivers/coast polylines (they read as gates/bridge/harbour/approaches;
+// eligible when spread ≥ 0.5× the step's best), ties by parcelId ascending. Estates with NO L3
+// subdivision (all 24 HUB EPICs + Shaftwatch's LARGE) emit heroParcels: [] + heroParcelsNote
+// (designation DEFERRED until subdivision).
+//
 // HYDROLOGY (atlas: EDU plateau → HUB radial → BUS deltas; HUB west-radial → ENT):
 //   RV1 Tianhe (main): receives Arcadia Flow at the S border x=164 (EDU-RV1 exits EDU at world
 //       x = 100+64 = 164; HUB worldOffset = (0,0) so HUB local x = world x — the zone viewBoxes
@@ -57,6 +67,7 @@ import { writeFileSync, readFileSync, mkdirSync } from "node:fs";
 import { createHash } from "node:crypto";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { attachHeroParcels, HERO_PARCELS_META } from "./world_hero_parcels.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "../..");
@@ -615,6 +626,7 @@ function buildField() {
       era: "Tianxia = LAYERED CHINESE METROPOLIS (owner-locked 2026-07-10: Beijing/Chengdu/Xi'an — modern living, high population, ancient history). Ancient imperial cores (rect palace/city walls + straight ceremonial axes — planned rectilinear IS correct here, unlike Arcadia's never-grid rule) wrapped in modern ring roads + radial expressways. Rural countryside stays the organic EDU-style town web verbatim (owner-locked).",
       hierarchy: "roads carry tier: highway (6 radial trunk roads — the national-road star N/S/W/E/NW/SE — plus every modern ring road + the capital's radial expressways) / secondary (city axes, wall roads, bunds, Chengdu radials + the rural town links: towns = the 164 GIANT+LARGE L2 estate anchors, valley curves, ≤2 river bridges each, connect-don't-double dedup) / local (old-town cores, hutong/chord lanes, quays, ~40 seeded MEDIUM feeders, the Worldshaft pilgrim road, castle approaches). Roads belong ONLY to this world layer — parcels play whatever overlaps them.",
       castles: "castles[] per CONTINUOUS-WORLD-TERRAIN §3c (castles on ESTATES; importance→size): PALACE Zhongdu/Vermilion (capital EPIC " + capital.parcelId + ") / CASTLE at each secondary-metro EPIC (" + [port, metroE, metroNW, metroSE].map((p) => p.parcelId).join("/") + ") / CASTLE at 2 strategic L3-subdivided GIANTs (bridge-guard " + bridgeGuard.parcelId + ", fork-guard " + forkGuard.parcelId + ") / KEEP at 3 L3-subdivided massif LARGEs (" + keeps.map((k) => k.parcelId).join("/") + ") + Shaftwatch (" + shaftwatch.parcelId + ", caldera). NO HUB EPIC is L3-subdivided — palace/metro castle battle maps arrive with the pre-designed ESTATE maps (canon 4/5); the forts+keeps sit on playable L3 parcels and grow WALL/GATE/TOWER rings via maps/generate.js castleLayout.",
+      heroParcels: HERO_PARCELS_META,
       continuity: "S border: receives EDU's Arcadia Flow at x=164 (EDU-RV1 exits EDU local (64,0) = world x 100+64; HUB worldOffset (0,0) ⇒ HUB local x = world x; the flat-picker viewBoxes overlap in z, so the S edge is the shared frontier aligned in x) + the Southern Tribute Road stub. N border: Tianhe + Imperial North Road + Beiliu exit toward BUS. W border: Xijiang + West Caravan Road exit toward ENT. E/NE: frontier-rim stubs (beyond-the-frontier).",
     },
     zone: "HUB",
@@ -653,7 +665,9 @@ function buildField() {
       { id: "HUB-PORT-SKY", kind: "AIRSHIP_PORT", at: [+(ME[0] + 8).toFixed(1), +(ME[1] - 5.5).toFixed(1)], note: "Yong'an Sky Dock — the NE-shoulder airship port facing the sky tier (atlas §2.1)" },
     ],
   };
-  return { out, stats: { towns: towns.length, urban: urban.length, secondaries: secondaries.length, locals: locals.length, approaches: approaches.length } };
+  // heroParcels[] designation (canon decision 18 — rule in the header + world_hero_parcels.mjs)
+  const heroStats = attachHeroParcels(out, hub, l3.singles);
+  return { out, stats: { towns: towns.length, urban: urban.length, secondaries: secondaries.length, locals: locals.length, approaches: approaches.length, heroStats } };
 }
 
 // ---- build twice, byte-compare, write once --------------------------------------------------------
@@ -665,6 +679,7 @@ const h2 = createHash("sha256").update(s2).digest("hex");
 if (h1 !== h2) { console.error("NON-DETERMINISTIC BUILD:", h1, "≠", h2); process.exit(1); }
 mkdirSync(path.join(ROOT, "data/world-terrain"), { recursive: true });
 writeFileSync(path.join(ROOT, "data/world-terrain/HUB.json"), s1);
+console.log("heroParcels:", b1.stats.heroStats.map((s) => `${s.id}[${s.sizeClass}]=${s.deferred ? "DEFERRED" : s.count}`).join(" "));
 console.log("wrote data/world-terrain/HUB.json sha256", h1.slice(0, 16),
   "| towns", b1.stats.towns,
   "| urban roads", b1.stats.urban,

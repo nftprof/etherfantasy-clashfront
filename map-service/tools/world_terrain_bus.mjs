@@ -55,6 +55,16 @@
 //   citadels and keeps are constrained to L3-subdivided estates so their castle POIs land on
 //   PLAYABLE parcels today (the HUB build's precedent).
 //
+// HERO PARCELS (castles[].heroParcels — canon decision 18 / CONTINUOUS-WORLD-TERRAIN §3d, shared
+// rule in world_hero_parcels.mjs, identical in the EDU/HUB/BUS tools): each castle estate lists
+// its HERO-MODE (3D) POI L3 parcelIds — castle parcel FIRST, length = LARGE 3 / GIANT 5 / EPIC 8.
+// Deterministic pick: castle parcel = the L3 parcel containing (else nearest-center to) the
+// castle POI point; the rest = greedy farthest-point spread over L3 centers PREFERRING parcels
+// that intersect roads/rivers/coast polylines (they read as gates/bridge/harbour/approaches;
+// eligible when spread ≥ 0.5× the step's best), ties by parcelId ascending. Estates with NO L3
+// subdivision (all 12 BUS EPICs) emit heroParcels: [] + heroParcelsNote (designation DEFERRED
+// until subdivision).
+//
 // HYDROLOGY (atlas: EDU plateau → HUB radial → BUS deltas → the northern ocean):
 //   BUS-SEA  the Northern Ocean shore band (see THE SEA above).
 //   RV1 the Broadwater (lower Tianhe): S border x=128 (HUB-RV1 exits HUB at (168,3); BUS
@@ -73,6 +83,7 @@ import { writeFileSync, readFileSync, mkdirSync } from "node:fs";
 import { createHash } from "node:crypto";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { attachHeroParcels, HERO_PARCELS_META } from "./world_hero_parcels.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "../..");
@@ -581,6 +592,7 @@ function buildField() {
       era: "Porthaven = MODERN PORT METROPOLIS (owner-locked 2026-07-10: New York / Singapore). Rectilinear street grid + one diagonal boulevard (the Longwalk) + expressway ring (Harbour Drive) + Quayside piers — the planned modern grid IS correct here (§3b), unlike Arcadia's never-grid rule. Fortification is star-fort era: Fort Tidegate at the harbour mouth. Rural countryside stays the organic EDU/HUB-style town web verbatim (owner-locked).",
       hierarchy: "roads carry tier: highway (4 trunk roads — Meridian Causeway / Coast Road / West Shore Road / Southeast Frontier Road — plus Harbour Drive) / secondary (grid boulevards, the Longwalk, the Quayside, town harbour streets + the rural town links: towns = the 195 GIANT+LARGE L2 estate anchors, valley curves, ≤2 river bridges each, connect-don't-double dedup) / local (grid avenues/streets, piers, ferry lanes, town grids+quays, ~60 seeded MEDIUM feeders, castle approaches). Roads belong ONLY to this world layer — parcels play whatever overlaps them.",
       castles: "castles[] per CONTINUOUS-WORLD-TERRAIN §3c (castles on ESTATES; importance→size): PALACE the Grand Exchange (capital EPIC " + city.parcelId + ") / CASTLE Fort Tidegate — the star-fort at the harbour mouth (L3-subdivided GIANT " + fort.parcelId + ") / CASTLE at each secondary port town's L3-subdivided GIANT (" + townPicks.map((p) => p.parcelId).join("/") + ") / KEEP at 3 L3-subdivided coastal LARGEs — the harbour lights (" + lightPicks.map((k) => k.parcelId).join("/") + ") + Marshgate (" + marshgate.parcelId + ", the causeway guard). NO BUS EPIC is L3-subdivided (0/12) — the palace battle map arrives with the pre-designed ESTATE maps (canon 4/5); fort+citadels+keeps sit on playable L3 parcels and grow WALL/GATE/TOWER rings via maps/generate.js castleLayout.",
+      heroParcels: HERO_PARCELS_META,
       continuity: "S border (shared frontier with HUB, aligned in world x; BUS worldOffset x=40 ⇒ local = world−40): receives HUB's Tianhe at local x=128 (HUB exit world x=168) as the Broadwater, HUB's Imperial North Road at local x=131 (world x=171) as the Meridian Causeway, and HUB's Beiliu at local x=170 (world x=210). The entries cross ~90 u of parcel-free SW frontier marsh (the clipped-pentagon corner) before landfall at (172,152) — documented, nothing windows there. N/NE: the Northern Ocean (3 delta mouths + the Westwater mouth). E: Coast Road frontier stub at (354,151). W: West Shore Road stub at (3,62) toward the joined oceans. SE: Frontier Road stub at (291,240).",
     },
     zone: "BUS",
@@ -622,7 +634,9 @@ function buildField() {
       { id: "BUS-GATE-W", kind: "GATE", at: [3, 62], connects: ["BUS"], note: "west frontier gate — stub toward the joined oceans (BUS-north meets ENT-west, atlas §7)" },
     ],
   };
-  return { out, stats: { towns: towns.length, urban: urban.length, secondaries: secondaries.length, locals: locals.length, approaches: approaches.length } };
+  // heroParcels[] designation (canon decision 18 — rule in the header + world_hero_parcels.mjs)
+  const heroStats = attachHeroParcels(out, bus, l3.singles);
+  return { out, stats: { towns: towns.length, urban: urban.length, secondaries: secondaries.length, locals: locals.length, approaches: approaches.length, heroStats } };
 }
 
 // ---- build twice, byte-compare, write once --------------------------------------------------------
@@ -634,6 +648,7 @@ const h2 = createHash("sha256").update(s2).digest("hex");
 if (h1 !== h2) { console.error("NON-DETERMINISTIC BUILD:", h1, "≠", h2); process.exit(1); }
 mkdirSync(path.join(ROOT, "data/world-terrain"), { recursive: true });
 writeFileSync(path.join(ROOT, "data/world-terrain/BUS.json"), s1);
+console.log("heroParcels:", b1.stats.heroStats.map((s) => `${s.id}[${s.sizeClass}]=${s.deferred ? "DEFERRED" : s.count}`).join(" "));
 console.log("wrote data/world-terrain/BUS.json sha256", h1.slice(0, 16),
   "| towns", b1.stats.towns,
   "| urban roads", b1.stats.urban,

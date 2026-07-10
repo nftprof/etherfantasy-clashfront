@@ -183,8 +183,33 @@ The **sequential model** ("win 8 in a row", the hero POIs as a linear parcel gau
 castle) is retained ONLY as the **explicit FALLBACK** if the whole-estate simultaneous sim ever proves
 unworkable — it is not the design. Assessment: no fallback expected to be needed; the whole-estate
 fight is the same tick-sim the overworld already runs, just scoped to the estate's parcel graph. Map-side deliverable: field generators emit `heroParcels[]` per
-castle estate (castle + N−1 POIs) — pending; blocked for HUB EPICs until their L2s are L3-subdivided
-(0/24 today).
+castle estate (castle + N−1 POIs) — **DONE 2026-07-10, see below**.
+
+**heroParcels[] emission — DONE (2026-07-10, all three field generators).** Every `castles[]`
+entry in `data/world-terrain/{EDU,HUB,BUS}.json` now carries `heroParcels: string[]` — the
+estate's HERO-MODE (3D) POI L3 parcelIds, **castle parcel FIRST**, length = the ladder above
+(LARGE 3 / GIANT 5 / EPIC 8). The pick rule is deterministic and SHARED
+(`map-service/tools/world_hero_parcels.mjs`, imported by all three `world_terrain_*.mjs` tools,
+re-derived from data by `map-service/maps/test/hero_parcels.test.js`):
+
+1. **Castle parcel** = the estate's L3 parcel whose bbox contains the castle POI point (among
+   several containing bboxes: the nearest center; none containing: the nearest center overall).
+2. **Remaining picks** = greedy farthest-point spread over the estate's L3 parcel centers,
+   seeded {castle}, **preferring parcels that intersect a world feature polyline**
+   (roads entering the estate = gates, river crossings = bridge, coast band = harbour): a
+   feature-touching parcel is eligible when its min-distance-to-picked ≥ 0.5× the step's best
+   spread; when no feature-touching parcel qualifies, all parcels are eligible; pick the max
+   spread. All ties break by parcelId ascending.
+3. **No L3 subdivision** (known data fact: 0/48 EPICs zone-wide — all 24 HUB + 12 BUS + the
+   EDU/others' EPICs — plus HUB's Shaftwatch LARGE 3071605) ⇒ `heroParcels: []` +
+   `heroParcelsNote` — designation **DEFERRED** until subdivision; the castle battle map arrives
+   with the pre-designed estate map (canon decisions 4/5). Fewer L3 parcels than quota ⇒ all of
+   them (castle first) + note.
+
+`worldfield.js` passes `heroParcels`/`heroParcelsNote`/`townEstateId` through verbatim on the
+castle entry in `featuresForParcel()` (and `loadWorldField()` returns the raw field), so the CF
+sim can consume the designation. heroParcels is WORLD-LAYER metadata only — committed battle
+parcels in `data/cf-maps/` are untouched byte-identical.
 
 **Future — EF Hunt / MMORPG reuse (owner vision note 2026-07-10):** these same maps are intended to
 host **EF Hunt** played MMORPG-style inside CF's world — EF Hunt's story is a human's journey from

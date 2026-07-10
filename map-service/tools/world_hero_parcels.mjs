@@ -1,0 +1,158 @@
+// world_hero_parcels.mjs — SHARED deterministic heroParcels[] designation (canon decision 18 /
+// CONTINUOUS-WORLD-TERRAIN §3d). Imported by ALL THREE world-field generators
+// (world_terrain_edu.mjs / world_terrain_hub.mjs / world_terrain_bus.mjs) so the pick rule is
+// identical by construction.
+//
+// CANON (owner-LOCKED 2026-07-10, decision 18): an estate battle is ONE command-view battle over
+// the whole estate; HERO (3D) mode exists only at designated POI parcels — LARGE 3 / GIANT 5 /
+// EPIC 8; the castle parcel is ALWAYS one of them; the rest read as gates/bridge/harbour/keeps/
+// approaches. SMALL/MEDIUM = single-parcel battles (no designation).
+//
+// SCHEMA: each castles[] entry gains
+//   heroParcels: string[]        L3 parcelIds, CASTLE PARCEL FIRST, length = quota by the
+//                                estate's sizeClass (LARGE 3 / GIANT 5 / EPIC 8)
+//   heroParcelsNote?: string     present when the quota could not be met: the estate has NO L3
+//                                subdivision (heroParcels: [] — designation DEFERRED; known data
+//                                fact: 0/48 EPICs are L3-subdivided) or fewer L3 parcels than
+//                                the quota (all of them designated, castle first).
+//
+// THE DETERMINISTIC PICK RULE (identical in all three generators):
+//   1. children = the estate's L3 parcels (l3 singles with parentIndex === estate.sourceIndex),
+//      sorted by parcelId ascending. None ⇒ heroParcels: [] + deferral note.
+//   2. CASTLE PARCEL = the child whose bbox CONTAINS the castle POI point; among several
+//      containing bboxes (they overlap) the one with the nearest center; if none contains it,
+//      the nearest center overall. Ties → ascending parcelId.
+//   3. REMAINING picks = GREEDY FARTHEST-POINT spread over child centers, seeded {castle},
+//      PREFERRING children that intersect a world feature polyline (roads entering the estate =
+//      gates, river crossings = bridge, coast band = harbour): at each step, with
+//      spread(c) = min center-distance to all picked and best = max spread over all candidates,
+//      the eligible pool = feature-touching candidates with spread ≥ FEATURE_SPREAD_FACTOR(0.5) ×
+//      best — or ALL candidates when that pool is empty; pick the eligible candidate with the
+//      max spread. Ties → ascending parcelId. "Feature-touching" = any feature polyline segment
+//      intersects the child's bbox (Liang–Barsky), features = the field's roads[] + rivers[] +
+//      coast[] polylines (zone coords — the same space as the l3 bboxes).
+//   4. children < quota ⇒ take all (castle first, then the greedy order) + note.
+//
+// Pure + deterministic: no RNG at all — same inputs ⇒ identical output (the generators'
+// build-twice sha-compare covers it).
+
+export const HERO_PARCEL_QUOTA = { LARGE: 3, GIANT: 5, EPIC: 8 };
+export const FEATURE_SPREAD_FACTOR = 0.5;
+
+// the _meta documentation string embedded by each generator (kept identical across zones)
+export const HERO_PARCELS_META =
+  "each castles[] entry carries heroParcels: string[] — the estate's HERO-MODE (3D) POI L3 parcelIds " +
+  "(canon decision 18 / CONTINUOUS-WORLD-TERRAIN §3d): castle parcel FIRST, length = LARGE 3 / GIANT 5 / EPIC 8. " +
+  "Deterministic pick (map-service/tools/world_hero_parcels.mjs): castle parcel = the L3 parcel containing " +
+  "(else nearest to) the castle POI point; remaining = greedy farthest-point spread over L3 centers preferring " +
+  "parcels that intersect roads/rivers/coast (gates/bridge/harbour reads), eligible at spread ≥ 0.5× the best; " +
+  "ties by parcelId ascending. Estates with NO L3 subdivision (every EPIC today) emit heroParcels: [] + " +
+  "heroParcelsNote — designation DEFERRED until subdivision.";
+
+// Liang–Barsky: does segment a→b touch the axis-aligned box [x0,y0,x1,y1]?
+function segIntersectsBox(ax, ay, bx, by, x0, y0, x1, y1) {
+  let t0 = 0, t1 = 1;
+  const dx = bx - ax, dy = by - ay;
+  const clip = (p, q) => {
+    if (p === 0) return q >= 0;
+    const r = q / p;
+    if (p < 0) { if (r > t1) return false; if (r > t0) t0 = r; }
+    else { if (r < t0) return false; if (r < t1) t1 = r; }
+    return true;
+  };
+  return clip(-dx, ax - x0) && clip(dx, x1 - ax) && clip(-dy, ay - y0) && clip(dy, y1 - ay);
+}
+
+/**
+ * Designate one estate's hero parcels (the rule in the header).
+ * @param estate    L2 record { parcelId, sizeClass, sourceIndex } (parcels-l2.json row)
+ * @param children  the estate's L3 singles [{ parcelId, center:[x,y], bbox:[x0,y0,x1,y1] }, …]
+ * @param castleAt  [x,y] zone coords of the castle POI
+ * @param featurePolylines  [[[x,y],…], …] zone-coord polylines (roads + rivers + coast)
+ * @returns { heroParcels: string[], heroParcelsNote?: string }
+ */
+export function computeHeroParcels(estate, children, castleAt, featurePolylines) {
+  const quota = HERO_PARCEL_QUOTA[estate?.sizeClass];
+  if (!quota)
+    return { heroParcels: [], heroParcelsNote: `sizeClass ${estate?.sizeClass || "?"} carries no hero-parcel quota (SMALL/MEDIUM estates fight single-parcel battles — §3d)` };
+  const kids = (children || []).slice().sort((a, b) => (a.parcelId < b.parcelId ? -1 : 1));
+  if (!kids.length)
+    return { heroParcels: [], heroParcelsNote: `${estate.sizeClass} estate ${estate.parcelId} has NO L3 subdivision — hero-parcel designation DEFERRED until it is subdivided; its castle battle map arrives with the pre-designed estate map (canon decisions 4/5)` };
+
+  // 2. the castle parcel
+  const d2 = (k) => (k.center[0] - castleAt[0]) ** 2 + (k.center[1] - castleAt[1]) ** 2;
+  const containing = kids.filter((k) => castleAt[0] >= k.bbox[0] && castleAt[0] <= k.bbox[2] && castleAt[1] >= k.bbox[1] && castleAt[1] <= k.bbox[3]);
+  const pool = containing.length ? containing : kids;
+  let castle = pool[0];
+  for (const k of pool) if (d2(k) < d2(castle)) castle = k;      // strict < keeps the lowest parcelId on ties
+
+  // 3. feature-touch precompute — window the feature segments to the estate envelope first
+  let ex0 = Infinity, ey0 = Infinity, ex1 = -Infinity, ey1 = -Infinity;
+  for (const k of kids) { ex0 = Math.min(ex0, k.bbox[0]); ey0 = Math.min(ey0, k.bbox[1]); ex1 = Math.max(ex1, k.bbox[2]); ey1 = Math.max(ey1, k.bbox[3]); }
+  const segs = [];
+  for (const line of featurePolylines || []) {
+    if (!Array.isArray(line) || line.length < 2) continue;
+    for (let i = 1; i < line.length; i++)
+      if (segIntersectsBox(line[i - 1][0], line[i - 1][1], line[i][0], line[i][1], ex0, ey0, ex1, ey1))
+        segs.push([line[i - 1][0], line[i - 1][1], line[i][0], line[i][1]]);
+  }
+  const touches = new Set();
+  for (const k of kids)
+    for (const [ax, ay, bx, by] of segs)
+      if (segIntersectsBox(ax, ay, bx, by, k.bbox[0], k.bbox[1], k.bbox[2], k.bbox[3])) { touches.add(k.parcelId); break; }
+
+  // greedy farthest-point spread, feature-preferred
+  const picked = [castle];
+  const target = Math.min(quota, kids.length);
+  while (picked.length < target) {
+    const cand = kids.filter((k) => !picked.includes(k));
+    const spread = new Map();
+    let best = -1;
+    for (const k of cand) {
+      let m = Infinity;
+      for (const p of picked) m = Math.min(m, Math.hypot(k.center[0] - p.center[0], k.center[1] - p.center[1]));
+      spread.set(k, m);
+      if (m > best) best = m;
+    }
+    const eligible = cand.filter((k) => touches.has(k.parcelId) && spread.get(k) >= FEATURE_SPREAD_FACTOR * best);
+    const from = eligible.length ? eligible : cand;
+    let pick = from[0];
+    for (const k of from) if (spread.get(k) > spread.get(pick)) pick = k;  // strict > keeps the lowest parcelId on ties
+    picked.push(pick);
+  }
+  const out = { heroParcels: picked.map((k) => k.parcelId) };
+  if (kids.length < quota)
+    out.heroParcelsNote = `${estate.sizeClass} estate ${estate.parcelId} has only ${kids.length} L3 parcels (< quota ${quota}) — all designated, castle first`;
+  return out;
+}
+
+/**
+ * Attach heroParcels[] (+ heroParcelsNote) to every castles[] entry of a finished field object,
+ * in place. Call AFTER roads/rivers/coast are assembled (the feature preference reads them).
+ * @param field      the generator's output object ({ roads, rivers, coast?, castles, … })
+ * @param l2Estates  the zone's L2 parcel records (parcels-l2.json rows, zone-filtered)
+ * @param l3Singles  the zone's L3 singles (data/hexagon-city-source/l3/<ZONE>.json .singles)
+ * @returns field (mutated) — also returns per-castle stats for the summary print
+ */
+export function attachHeroParcels(field, l2Estates, l3Singles) {
+  const byParent = new Map();
+  for (const s of l3Singles || []) {
+    let arr = byParent.get(s.parentIndex);
+    if (!arr) { arr = []; byParent.set(s.parentIndex, arr); }
+    arr.push(s);
+  }
+  const l2ById = new Map((l2Estates || []).map((p) => [p.parcelId, p]));
+  const features = [];
+  for (const list of ["roads", "rivers", "coast"])
+    for (const f of field?.[list] || []) if (Array.isArray(f.pts) && f.pts.length >= 2) features.push(f.pts);
+  const stats = [];
+  for (const c of field?.castles || []) {
+    const estate = l2ById.get(c.townEstateId);
+    const kids = estate ? byParent.get(estate.sourceIndex) || [] : [];
+    const res = computeHeroParcels(estate, kids, c.at, features);
+    c.heroParcels = res.heroParcels;
+    if (res.heroParcelsNote) c.heroParcelsNote = res.heroParcelsNote; else delete c.heroParcelsNote;
+    stats.push({ id: c.id, kind: c.kind, estate: c.townEstateId, sizeClass: estate?.sizeClass || "?", count: res.heroParcels.length, deferred: !res.heroParcels.length });
+  }
+  return stats;
+}

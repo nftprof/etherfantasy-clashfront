@@ -28,6 +28,16 @@
 // temple KEEPs (Kiyomizu / Higashiyama) / Southreach Castle (Fushimi). Each carries its estate id
 // and battle maps grow wall rings from them (map-service/maps/generate.js).
 //
+// HERO PARCELS (castles[].heroParcels — canon decision 18 / CONTINUOUS-WORLD-TERRAIN §3d, shared
+// rule in world_hero_parcels.mjs, identical in the EDU/HUB/BUS tools): each castle estate lists
+// its HERO-MODE (3D) POI L3 parcelIds — castle parcel FIRST, length = LARGE 3 / GIANT 5 / EPIC 8.
+// Deterministic pick: castle parcel = the L3 parcel containing (else nearest-center to) the
+// castle POI point; the rest = greedy farthest-point spread over L3 centers PREFERRING parcels
+// that intersect roads/rivers/coast polylines (they read as gates/bridge/harbour/approaches;
+// eligible when spread ≥ 0.5× the step's best), ties by parcelId ascending. Estates with NO L3
+// subdivision (the EDU EPIC 1020371 included — no EPIC is subdivided) emit heroParcels: [] +
+// heroParcelsNote (designation DEFERRED until subdivision).
+//
 // Dedup: a candidate that runs near-parallel (< 2 zone-units) to the existing network for most
 // of its length is NOT drawn — the town gets a short connector instead ("connect, don't double").
 //
@@ -38,6 +48,7 @@
 import { writeFileSync, readFileSync, mkdirSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { attachHeroParcels, HERO_PARCELS_META } from "./world_hero_parcels.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "../..");
@@ -413,6 +424,7 @@ const out = {
     gameplay: "units can walk over water for now (owner 2026-07-10) — rivers are terrain/visual continuity, not hard blockers; fords/bridges come with the toll/gate layer.",
     hierarchy: "roads carry tier: highway (the 3 authored trunk roads) / secondary (the JOKAMACHI castle-town web in the Academy basin — ring road + kinked radials around Westgate Castle, the Grand Academy's ring + ceremonial way (owner 2026-07-10: Arcadia's core is MEDIEVAL, Himeji/Kanazawa style, never a grid) — plus the rural town links: towns = the 28 GIANT+LARGE L2 estate anchors, valley curves, ≤2 river bridges each) / local (short feeders from ~20 seeded MEDIUM estates, castle-town lanes incl. dead-ends, castle approaches). Roads belong ONLY to this world layer — parcels play whatever overlaps them (owner 2026-07-10).",
     castles: "castles[] = the real-Kyoto fortification analogs on the real estate anchors: CASTLE Westgate (Nijō, the GIANT nearest west of the basin) / PALACE Grand Academy (Imperial Palace, EPIC 1020371) / KEEP Cliffwatch + Lantern Hill (Kiyomizu & Higashiyama temples, nearest the East Rimwall) / CASTLE Southreach (Fushimi, southern-most GIANT). Battle maps grow WALL/GATE/TOWER rings from these POIs (maps/generate.js castle layout).",
+    heroParcels: HERO_PARCELS_META,
   },
   zone: "EDU",
   rivers: [
@@ -439,8 +451,12 @@ const out = {
     { id: "EDU-GATE-N", kind: "GATE", at: [63, 0], connects: ["EDU", "HUB"], note: "north gate — river + Academy Road exit toward Tianxia" },
   ],
 };
+// heroParcels[] designation (canon decision 18 — rule in the header + world_hero_parcels.mjs)
+const l3 = JSON.parse(readFileSync(path.join(ROOT, "data/hexagon-city-source/l3/EDU.json"), "utf8"));
+const heroStats = attachHeroParcels(out, eduL2, l3.singles);
 mkdirSync(path.join(ROOT, "data/world-terrain"), { recursive: true });
 writeFileSync(path.join(ROOT, "data/world-terrain/EDU.json"), JSON.stringify(out) + "\n");
+console.log("heroParcels:", heroStats.map((s) => `${s.id}[${s.sizeClass}]=${s.deferred ? "DEFERRED" : s.count}`).join(" "));
 console.log("wrote data/world-terrain/EDU.json:",
   "towns", towns.length,
   "| jokamachi", jokamachi.length,

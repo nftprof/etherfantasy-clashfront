@@ -78,6 +78,12 @@ this star-fort is Porthaven's L3-playable castle today. The 3 committed BUS batc
 `data/world-terrain/BUS.json` landed (same invest tiers 2/1/3); `60000080000` now windows the
 `BUS-SEA` shore band — it is a real beachfront parcel on the Northern Ocean coastline.
 
+**heroParcels[] cross-check (2026-07-10, canon decision 18):** the world fields' `castles[]` now
+carry `heroParcels` (the estate's hero-mode 3D POI L3 parcelIds, castle first — see
+`docs/maps/CONTINUOUS-WORLD-TERRAIN.md` §3d). The three flagship castle parcels committed here are
+exactly their estates' `heroParcels[0]`: `60203670103` (Westgate), `60716650182` (Southgate),
+`60011440099` (Fort Tidegate). heroParcels is world-layer metadata only — nothing in this dir changed.
+
 ## Rules
 
 - **Filename = `<parcelId>.json`** exactly (the id CF looks up).

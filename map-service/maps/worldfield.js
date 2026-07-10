@@ -173,9 +173,12 @@ const ROAD_TIERS = {
  *                  sizeM?: 322 }
  * @returns { rivers, roads, ridges: [{ id, kind, width (world-units), tier? (roads: highway|
  *            secondary|local), pts [[x,z]…] battle frame }],
- *            castles: [{ id, kind (CASTLE|PALACE|KEEP), name, at:[x,z] battle frame }] — the
- *            world fortification POIs on THIS parcel (v1: the parcel containing the POI point;
- *            generate.js grows the WALL/GATE/TOWER ring from it),
+ *            castles: [{ id, kind (CASTLE|PALACE|KEEP), name, at:[x,z] battle frame,
+ *            townEstateId?, heroParcels?: string[], heroParcelsNote? }] — the world fortification
+ *            POIs on THIS parcel (v1: the parcel containing the POI point; generate.js grows the
+ *            WALL/GATE/TOWER ring from it). heroParcels = the estate's HERO-MODE (3D) POI L3
+ *            parcelIds, castle parcel first (canon decision 18 / CONTINUOUS-WORLD-TERRAIN §3d),
+ *            passed through verbatim from the world field for the CF sim,
  *            edgeCrossings: [{ featureId, kind, at:[x,z], edge:"N|E|S|W", edgeIndex }] }
  */
 export function featuresForParcel(field, parcel) {
@@ -199,7 +202,10 @@ export function featuresForParcel(field, parcel) {
     if (!Array.isArray(c.at) || c.at.length < 2) continue;
     const [cx, cy] = c.at;
     if (cx < bx0 || cx > bx1 || cy < by0 || cy > by1) continue;
-    out.castles.push({ id: c.id, kind: c.kind || "CASTLE", name: c.name || c.id, at: toArena(cx, cy) });
+    out.castles.push({ id: c.id, kind: c.kind || "CASTLE", name: c.name || c.id, at: toArena(cx, cy),
+      ...(c.townEstateId ? { townEstateId: c.townEstateId } : {}),
+      ...(Array.isArray(c.heroParcels) ? { heroParcels: c.heroParcels } : {}),
+      ...(c.heroParcelsNote ? { heroParcelsNote: c.heroParcelsNote } : {}) });
   }
   const baseMar = 0.25 * Math.max(bx1 - bx0, by1 - by0, 0.05);
   for (const [kind, spec] of Object.entries(KIND_SPECS)) {
