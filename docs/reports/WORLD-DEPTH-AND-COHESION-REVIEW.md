@@ -150,7 +150,12 @@ every land has both") is a genuinely clean sentence, and the systems underneath 
 
 ## B. The contradictions & drift register (honest list, ranked by severity)
 
-1. **🔴 The two populations problem (real numeric contradiction).** The pet spec caps world capacity at
+1. **✅ RESOLVED (owner, 2026-07-10) — the two populations problem.** Ruling: pet **capacity ≠ body
+   count** — the NFT is the **DNA blueprint** (the right to spawn that class on demand, anywhere, at a
+   premium vs in-battle recruiting); capacity counts **blueprints per species**, unit bodies are uncapped
+   commodity. Docs corrected (`FARMING` §3, `BATTLE-MAP-AND-UNIT-SPEC` §5a). Original finding kept below
+   for the record:
+   **🔴 (was) The two populations problem (real numeric contradiction).** The pet spec caps world capacity at
    **14,175 pets** (per-species ecology, the NFT/collection tier). The unit/land model wants
    `minGarrison=100` per held parcel, land populations of ~10,000, and ≥100-per-side battles across up to
    292K parcels — orders of magnitude more bodies than 14,175. These can't both describe the same

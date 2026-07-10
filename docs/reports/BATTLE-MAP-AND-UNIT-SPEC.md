@@ -122,9 +122,11 @@ mon), so only **worker ⇄ line** interchange. **ELITE is always armed** — it 
 **Correction (owner 2026-07-06):** a **pet NFT is a species/CLASS, not an individual unit.** Master heroes
 are the NFTs that **KO + revive** (7-day CD or pay 5 CT); **pets do NOT KO** — they are population.
 
-- **Own the pet NFT → TRAIN that class directly.** Owning a species' pet NFT is a **training right**: you can
-  **recruit/train that species deliberately**, anywhere (in a battle or outside), instead of hoping it
-  spawns. It buys **access + composition control**, not per-unit power.
+- **Own the pet NFT → SPAWN that class on demand, anywhere.** The NFT is the **DNA BLUEPRINT** — not a pet
+  instance, the **spawn-right for its class** (owner 2026-07-10). You can summon that class **anywhere,
+  any time**, at a **premium cost** (⚙ `blueprintSpawnPremium` — dearer than recruiting the same class
+  in-battle from the wild); non-owners can only catch it where it spawns. It buys **access + composition
+  control**, not per-unit power. Capacity numbers = how many blueprints exist per species, never a body cap.
 - **Don't own it → CATCH IT IN THE WILD.** That species **spawns on maps whose biome hosts it** (§2). You
   recruit the wild version by **fighting/training it on that map** (gold). **Richer / more expensive land has
   a chance to spawn STRONGER units** — so high-tier land is also a better hunting ground for good mons.

@@ -117,9 +117,14 @@ Bounding + safety rules:
 - **Workers accumulate; they are the reserve's backbone.** Because they mostly survive battles (§2), your
   roster pool trends **worker-heavy** over time — which you re-arm each fight. Elites are the scarce,
   kept-on-purpose exception.
-- **World capacity cap** (14,175 total; per-species caps from `role-scarcity-summary.md`) bounds
-  **owned + wild ≤ capacity** for each species. Mythic species cap at ~2 each → the power ceiling is
-  structural, not just economic (pairs with decision 17).
+- **CAPACITY = blueprint scarcity, NOT a body count (owner-corrected 2026-07-10).** A pet NFT is the
+  **DNA BLUEPRINT** — the **right to spawn that class on demand, anywhere** (spawning via your blueprint
+  costs **more** than recruiting the same class in-battle from the wild, but has no location limit). The
+  per-species **capacity** numbers (14,175 total, `role-scarcity-summary.md`) count **how many blueprint
+  NFTs exist per species** — who can access the class — **not** how many unit bodies may exist in the
+  world. Unit bodies (the populace/workers/line, and spawned instances) are **uncapped commodity units**;
+  the mythic ~2-per-species cap means only ~2 *players* can ever summon that class at will — the power
+  ceiling is access-scarcity, not an ecology (pairs with decision 17).
 - **Pets do NOT KO — only Master heroes do (decision 14, clarified 2026-07-06).** A **Master hero** (the
   hero NFT) that falls is **KO'd** and needs a **7-day cooldown or a paid revive (⚙ ~5 CT)**. **Pet
   units** are population: a beaten pet is **not destroyed** — it **disperses back to the wild or your
