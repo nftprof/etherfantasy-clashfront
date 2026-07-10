@@ -1,0 +1,215 @@
+{
+ "_note": "NAMED SINGULARS register v1 (proposal, 2026-07-10) — the one-of-one places, artifacts, and wardens. Names grounded in docs/lore/WORLD-CHRONICLE.md + the EF Hunt source lore. kind: PLACE|ARTIFACT|WARDEN|RELIC. bindTo: where it attaches (zone/gate/asset). Weapon/armor ARTIFACTs are to be BOUND to existing hero gear art extracted from the MOBA client (owner 2026-07-10) — art refs TBD by the MOBA/website teams; names+legends are the proposal, owner to approve/edit.",
+ "places": [
+  {
+   "id": "the_shaft",
+   "name": "The Shaft of Tianxia",
+   "kind": "PLACE",
+   "bindTo": "HUB center",
+   "legend": "The wound where the deep first broke through; the only road down."
+  },
+  {
+   "id": "gap_of_arcadia",
+   "name": "The Scholar's Gap",
+   "kind": "PLACE",
+   "bindTo": "EDU rimwall GATE",
+   "legend": "The one pass through the rimwall; every book in Arcadia entered through it."
+  },
+  {
+   "id": "salt_gate",
+   "name": "The Salt Gate",
+   "kind": "PLACE",
+   "bindTo": "BUS delta GATE",
+   "legend": "Porthaven taxes the tide itself here."
+  },
+  {
+   "id": "carnival_shore",
+   "name": "The Carnival Shore",
+   "kind": "PLACE",
+   "bindTo": "ENT west coast",
+   "legend": "Where the lights first came ashore, and never entirely left."
+  },
+  {
+   "id": "drowned_banquet",
+   "name": "The Drowned Banquet",
+   "kind": "PLACE",
+   "bindTo": "UW2 drowned palaces",
+   "legend": "Five flooded halls still set for a feast no one finished."
+  },
+  {
+   "id": "bastion_dominus",
+   "name": "The Bastion of Dominus",
+   "kind": "PLACE",
+   "bindTo": "UW2 dead keep",
+   "legend": "Seat of the Shadow Warden; its throne is still warm."
+  },
+  {
+   "id": "gardens_enamora",
+   "name": "The Gardens of Enamora",
+   "kind": "PLACE",
+   "bindTo": "UW3 Luxuria heart",
+   "legend": "Perpetual twilight; everything blooms, nothing bears fruit."
+  },
+  {
+   "id": "midas_veins",
+   "name": "The Midas Veins",
+   "kind": "PLACE",
+   "bindTo": "UW1 richest iron/gold seam",
+   "legend": "Gold-lust made mineral; the deeper you follow, the richer, and the less of you comes back."
+  },
+  {
+   "id": "first_dock",
+   "name": "The First Dock",
+   "kind": "PLACE",
+   "bindTo": "BUS grand harbor",
+   "legend": "Every sea-lane in the world was measured from this pier."
+  },
+  {
+   "id": "sky_sanctum",
+   "name": "The High Sanctum",
+   "kind": "PLACE",
+   "bindTo": "HS3 EPIC",
+   "legend": "The stillest place in the world; the light asks nothing, and takes no one unready."
+  },
+  {
+   "id": "gateway_dock",
+   "name": "The Gateway Anchorage",
+   "kind": "PLACE",
+   "bindTo": "HS1 airship dock",
+   "legend": "The first mooring above the clouds; ascent is earned here or nowhere."
+  },
+  {
+   "id": "grand_academy",
+   "name": "The Grand Academy",
+   "kind": "PLACE",
+   "bindTo": "EDU sole EPIC",
+   "legend": "Arcadia's answer to every question except the one that opened the Shaft."
+  }
+ ],
+ "relics": [
+  {
+   "id": "mask_harlequin",
+   "name": "The Harlequin Mask",
+   "kind": "RELIC",
+   "legend": "It laughs so you don't have to."
+  },
+  {
+   "id": "mask_plague",
+   "name": "The Plague Doctor Mask",
+   "kind": "RELIC",
+   "legend": "It has seen every ending and treated none."
+  },
+  {
+   "id": "mask_lunarmoth",
+   "name": "The Lunar Moth Mask",
+   "kind": "RELIC",
+   "legend": "Drawn to what it cannot hold."
+  },
+  {
+   "id": "mask_siren",
+   "name": "The Siren Mask",
+   "kind": "RELIC",
+   "legend": "Whoever wears it is believed."
+  },
+  {
+   "id": "mask_phoenix",
+   "name": "The Phoenix Mask",
+   "kind": "RELIC",
+   "legend": "Worn once per lifetime. Anyone's."
+  },
+  {
+   "id": "sigil_binding",
+   "name": "The Sigil of Binding",
+   "kind": "RELIC",
+   "legend": "The knot that holds the dark below. Do not untie it."
+  }
+ ],
+ "artifacts": [
+  {
+   "id": "enchanted_scimitar",
+   "name": "The Enchanted Scimitar of the Descent",
+   "slot": "sword",
+   "legend": "Raised against the dark in the First Descent; it remembers the way down.",
+   "source": "EF Hunt canon"
+  },
+  {
+   "id": "dawnbreaker",
+   "name": "Dawnbreaker",
+   "slot": "greatsword",
+   "legend": "Forged in Emberfall of storm-aether and first light; it has never been drawn at night."
+  },
+  {
+   "id": "tidechain",
+   "name": "Tidechain",
+   "slot": "flail/chain",
+   "legend": "A Porthaven harbor-chain blessed by every tide it ever held back."
+  },
+  {
+   "id": "the_last_argument",
+   "name": "The Last Argument",
+   "slot": "siege hammer",
+   "legend": "Ironhold diplomacy, final edition."
+  },
+  {
+   "id": "petalfall",
+   "name": "Petalfall",
+   "slot": "bow",
+   "legend": "A Mythoria festival bow; its arrows land soft as blossom and twice as final."
+  },
+  {
+   "id": "lantern_of_the_way",
+   "name": "The Lantern of the Way",
+   "slot": "offhand",
+   "legend": "Lit at the Shaft's mouth in the Second Age; it has not gone out."
+  },
+  {
+   "id": "aegis_of_empyrea",
+   "name": "The Aegis of Empyrea",
+   "slot": "shield",
+   "legend": "It refuses no blow and resents none."
+  },
+  {
+   "id": "covet_shard_crown",
+   "name": "The Covet Crown",
+   "slot": "helm",
+   "legend": "A circlet of Covet Crystal. Power for essence. Read the fine print."
+  }
+ ],
+ "wardens": [
+  {
+   "id": "warden_uw1",
+   "name": "the Gatekeeper Below",
+   "kind": "WARDEN",
+   "bindTo": "UW1 level boss",
+   "legend": "First lock of the Binding."
+  },
+  {
+   "id": "warden_uw2",
+   "name": "the Lake That Watches",
+   "kind": "WARDEN",
+   "bindTo": "UW2 lake boss",
+   "legend": "Second lock; it drowned its own name."
+  },
+  {
+   "id": "warden_uw3",
+   "name": "the Inferno Champion",
+   "kind": "WARDEN",
+   "bindTo": "UW3 final boss",
+   "legend": "Final lock; the vault's own desire, armored."
+  },
+  {
+   "id": "warden_hub",
+   "name": "the Shaft-Guardian",
+   "kind": "WARDEN",
+   "bindTo": "HUB shaft boss",
+   "legend": "It faces DOWN, not up. Think about that."
+  },
+  {
+   "id": "warden_hs2",
+   "name": "the Storm Warden of Emberfall",
+   "kind": "WARDEN",
+   "bindTo": "HS2 sky-boss",
+   "legend": "Tests courage by being exactly worth fearing."
+  }
+ ]
+}
