@@ -136,6 +136,49 @@ else needs a **ford or a bridge**. All on the SAME map data (the grid's WATER/RO
   connectivity, which would reject legit moat designs.
 - `BRIDGE` joins the feature/structure vocabulary (designer DSL + build-spot layer) — generator follow-up.
 
+### 4c. Road × parcel — the overlap taxonomy (parcels play what overlaps them)
+
+Roads are **never forced into a parcel** — the parcel's battle map simply inherits whatever the world
+network does at its footprint. The five cases (all already handled by the clipping; named here so every
+session says the same thing):
+
+| Case | What the world network does | What the battle map gets |
+|---|---|---|
+| **THROUGH** | a road transects the parcel | the road segment + BOTH edge crossings (frozen); entries sit on them — a *road battle* (fight for the corridor) |
+| **BORDER** | a road runs along a parcel edge (real cities: roads ARE the property lines — frontage) | a road strip along that edge; that whole edge is a *frontage edge* — arrivals from that side come in on the road |
+| **CORNER** | clips a corner | a short segment + two crossings on adjacent edges near the corner |
+| **TERMINUS** | a local road dead-ends inside (it serves this land — a farmstead/town lane) | one crossing + an interior endpoint anchored on the parcel's settlement/build cluster |
+| **NONE** | nothing crosses | pure countryside: terrain + organic clearings only. **Most parcels.** Units travel on open ground — no road needed |
+| *(junction)* | two+ roads meet inside | the crossroads parcel — strategically hot (toll/market ground) |
+
+Rivers use the same taxonomy (THROUGH/BORDER/CORNER/NONE); a river TERMINUS = a spring/lake source.
+
+## 5. Terraforming & RIGHT-OF-WAY — the city-planning rulebook
+
+Real cities solved "how do private lots and shared infrastructure coexist" long ago; we borrow their
+rules directly. The protection level follows the **road tier** (and feature kind):
+
+| Feature | Planning concept | Terraform rule |
+|---|---|---|
+| **Highway** | *public trunk / eminent domain* | Owner may NEVER sever or remove it. May reroute the **midspan** inside the parcel (bend it around a town), gate it (toll), build alongside — crossings + continuity absolute. |
+| **Secondary road** | *right-of-way easement* | Reroutable within the parcel; crossings frozen. **Removable only with the "vacation" rule**: a shared road may be vacated only if every neighbour it serves keeps an alternative connected path (the network stays connected without it). |
+| **Local road/lane** | *private drive* | If it serves ONLY this parcel (TERMINUS), the owner may freely reroute/remove it. If a neighbour depends on it, it's an easement — crossings frozen. |
+| **River** | *natural watercourse (riparian law)* | Banks/midspan may be reshaped inside the parcel; **entry/exit points, width class and flow are frozen**; may not be dammed/removed (future mechanic at most). Bridges are additive structures. |
+| **Ridge/pass** | *protected terrain* | The pass (gate crossing) is frozen; the rock is otherwise sculptable inside the parcel. |
+
+Two more borrowed rules that keep battle maps sane:
+- **SETBACK**: player structures must sit ≥ a small buffer off a protected corridor's centerline (the
+  road stays wide enough to march and fight on — a validator rule, ⚙ tunable per tier).
+- **GRANDFATHERING (non-destructive network evolution)**: when the world network gains NEW roads later,
+  owner-designed parcels are never force-rebaked. New routes prefer unowned land; if one must touch an
+  owned parcel it arrives as a **proposal** the owner accepts (or it follows the parcel BORDER instead —
+  the frontage case). The artifact records `meta.worldFieldVersion`, and network updates are **additive**:
+  they may add features but never move an existing frozen crossing on an owned parcel. Unowned parcels
+  simply re-derive on the next bake — that's how the overworld improves without ever "messing up" what
+  players built.
+
+Who may do what, in one line: **the interior belongs to the owner; the through-lines belong to the world.**
+
 Landowners (and the LLM on their behalf, or on system land) may terraform — but continuity is protected by
 **freezing the boundary, freeing the interior**:
 
