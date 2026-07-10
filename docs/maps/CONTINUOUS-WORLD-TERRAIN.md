@@ -64,7 +64,7 @@ roads, rivers, coast, and districts lay out from above. This is *reference*, not
 
 | Zone | Atlas identity | Aerial reference (proposed) | What we borrow from above |
 |---|---|---|---|
-| **HUB** | Capital Heartland, central massif, river crossroads | **Paris** | radial boulevards from a central node; a river crossroads bisecting the capital |
+| **HUB** | Capital Heartland, central massif, river crossroads | **Beijing / Chengdu / Xi'an** (owner-locked 2026-07-10, supersedes Paris) | a LAYERED capital: ancient imperial walled core (palace axis, gate towers) wrapped in modern concentric ring roads + radial expressways; secondary cities each pair a historic core with a modern ring (the "modern living, ancient history" pattern of today's great Chinese cities) |
 | **BUS** | Northern Commercial Coast, urban, delta, N sea-ports | **New York** | dense grid + waterfront piers; commercial coast + harbour |
 | **ENT** | Western Carnival Coast, blossom, resort marinas | **Rio de Janeiro** | coast ribbon between hills + sea; marina inlets; carnival waterfront |
 | **EDU** | Academy Highlands plateau, blossom, Grand Academy | **Kyoto** | grid basin ringed by highlands; temple/academy campus districts |
@@ -90,7 +90,7 @@ governs the URBAN road pattern + where castles/fortifications sit:
 | Continent | Era/style | Urban pattern | Fortification |
 |---|---|---|---|
 | **Arcadia** (EDU) | **MEDIEVAL castle town** (jōkamachi — Himeji/Kanazawa; owner-locked ✓) | castle-centred: ring road around the walls, curved radial streets from the gates, short organic lanes (dead-ends fine), the Academy PALACE with a ceremonial approach | the **castle** is the town's heart; walls + gates on the battle maps |
-| **Tianxia** (HUB) | ancient IMPERIAL capital (Chang'an/RoTK) | grand planned axes + palace city precinct | walled palace city + gate towers |
+| **Tianxia** (HUB) | **LAYERED Chinese metropolis** (Beijing/Chengdu/Xi'an — owner-locked 2026-07-10: "major cities in China today… modern living, high population, with an ancient history") | ancient imperial core (walled palace precinct, grand N–S axis, gate towers — Forbidden-City/Xi'an-wall pattern) **wrapped in modern ring roads + radial expressways** (Beijing 2nd/3rd-ring, Chengdu ring-radial); several such cities, not just the capital | the **walled palace city** is the fortification; ring roads are modern, the walls are ancient — both layers visible from the air |
 | **Porthaven** (BUS) | **MODERN port metropolis** (NY/Singapore) | street grid + waterfront piers/quays | citadel/fort at the harbour mouth (star-fort era) |
 | **Mythoria** (ENT) | coastal village ribbon (SE-Asia) | shore-following strands, marina inlets, stilt lanes | watchtowers + temple keeps on headlands |
 | Sky isles (HS1-3) | terraced citadel (Cusco/Lhasa) | contour terraces + switchback ways up | summit citadel |
@@ -99,6 +99,18 @@ governs the URBAN road pattern + where castles/fortifications sit:
 Rule of thumb: **era applies to the urban core only** — the basin/harbour/terrace district around each
 continent's capital + towns. Everything else is countryside (organic clearings, world roads passing
 through). Arcadia is the template implementation; other continents follow in their weekly authoring pass.
+
+### 3c. Castle placement rule — castles live on ESTATES (owner 2026-07-10)
+
+**Every castle/palace/keep POI is anchored to an L2 ESTATE, never to open ground or a lone L3 parcel —
+and POI importance maps to estate size**: the continent's PALACE (capital seat) goes to the **biggest
+estate** (EPIC where one exists), major CASTLEs to **GIANT** estates, minor KEEPs/temples to **LARGE**.
+Rationale: an estate is mostly one owner's land, so a castle = the estate's heart, which matches canon
+decision 4/5 (estates fight as linked components toward a **castle = final component**, and only estates
+carry pre-designed castle/city-wall maps). Arcadia's five castles already follow this by construction
+(deterministic picks in `map-service/tools/world_terrain_edu.mjs`): PALACE→the sole EPIC 1020371,
+CASTLE Westgate→GIANT 2020367, CASTLE Southreach→GIANT 2020368, KEEPs→LARGE 3020352/3020351. Other
+continents' field generators must apply the same rule.
 
 ## 4. How a parcel derives its map from the field
 
