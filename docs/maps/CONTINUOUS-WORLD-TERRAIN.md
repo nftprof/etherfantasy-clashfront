@@ -81,6 +81,25 @@ ENT, EDU + the three sky isles); the three underworld zones use **subterranean s
 descent-continent (UW1→UW2→UW3 as depth tiers of one place) — that gives **9 continent identities**. **Owner
 call:** lock the reference per continent + the 9-vs-10 grouping.
 
+### 3b. City ERA per continent — medieval vs modern variety (owner 2026-07-10)
+
+Each continent's **settled core** is built in a distinct **city era/style** (variety by continent); the
+**rural land keeps the organic countryside** generator everywhere (owner: rural stays as current). The era
+governs the URBAN road pattern + where castles/fortifications sit:
+
+| Continent | Era/style | Urban pattern | Fortification |
+|---|---|---|---|
+| **Arcadia** (EDU) | **MEDIEVAL castle town** (jōkamachi — Himeji/Kanazawa; owner-locked ✓) | castle-centred: ring road around the walls, curved radial streets from the gates, short organic lanes (dead-ends fine), the Academy PALACE with a ceremonial approach | the **castle** is the town's heart; walls + gates on the battle maps |
+| **Tianxia** (HUB) | ancient IMPERIAL capital (Chang'an/RoTK) | grand planned axes + palace city precinct | walled palace city + gate towers |
+| **Porthaven** (BUS) | **MODERN port metropolis** (NY/Singapore) | street grid + waterfront piers/quays | citadel/fort at the harbour mouth (star-fort era) |
+| **Mythoria** (ENT) | coastal village ribbon (SE-Asia) | shore-following strands, marina inlets, stilt lanes | watchtowers + temple keeps on headlands |
+| Sky isles (HS1-3) | terraced citadel (Cusco/Lhasa) | contour terraces + switchback ways up | summit citadel |
+| Underworld (UW1-3) | carved warren (Derinkuyu) | tunnels + chambers, gallery rings | gatehouse chokes at level doors |
+
+Rule of thumb: **era applies to the urban core only** — the basin/harbour/terrace district around each
+continent's capital + towns. Everything else is countryside (organic clearings, world roads passing
+through). Arcadia is the template implementation; other continents follow in their weekly authoring pass.
+
 ## 4. How a parcel derives its map from the field
 
 ```
