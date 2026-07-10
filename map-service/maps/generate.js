@@ -222,7 +222,12 @@ function carveMobaNetwork(g, G, rng, p, { atk, def, poly, half, spawnZones, rimP
   const network = [...declared, ...side];
 
   // 1) lanes: declared = ROAD ~10 u wide; undeclared side-paths = OPEN jungle trails ~8 u wide
-  for (const lane of declared) carvePath(g, G, lane, 2.5, true);
+  // Lanes carve as CLEARED TRACKS (OPEN), not paved ROAD — they are battle lines / paths of attack
+  // (the A1 lanes[] overlay), not roads on the land. T.ROAD is reserved for REAL roads: the
+  // continuous world-field highways + fords/bridges (owner 2026-07-10 — roads must read as one
+  // connected network on the map; battle lanes dead-ending at parcel edges looked like broken roads).
+  // disc(road=false) still turns WATER→ROAD, so lane fords stay visible crossings.
+  for (const lane of declared) carvePath(g, G, lane, 2.5, false);
   for (const path of side) carvePath(g, G, path, 2.0, false);
   // 2) base plateaus + center + staging clearings (mirrors command_converter's CORE/SPAWN pockets)
   disc(g, G, cellOf(G, atk.x), cellOf(G, atk.z), 9.5);
