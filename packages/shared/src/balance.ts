@@ -28,6 +28,12 @@ export interface Balance {
     /** Fee split (sums to 1): land owner / occupying warlord / platform sink (≥10% burns, decision 17). */
     travelFeeSplit: { landOwner: number; occupier: number; platformSink: number };
     portTypeByTier: Record<string, string>;
+    /** Right-of-way tolls — §4a. PASS = cross a land toward a port; GATE = intra-continent chokepoint. */
+    passFeeDefaultCt: number;
+    gateFeeDefaultCt: number;
+    /** OPEN | ALLIES_ONLY | CLOSED — landowner passage policy. */
+    passPolicyDefault: string;
+    gatePolicyDefault: string;
   };
   development: {
     maxLevel: number;

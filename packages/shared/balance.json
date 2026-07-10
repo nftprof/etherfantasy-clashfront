@@ -17,7 +17,12 @@
     "dockReserveFeeCt": 1,
     "continentTravelFeeCt": 3,
     "travelFeeSplit": { "landOwner": 0.35, "occupier": 0.35, "platformSink": 0.30 },
-    "portTypeByTier": { "surface": "SEAPORT", "sky": "AIRPORT", "underworld": "UW_TUNNEL" }
+    "portTypeByTier": { "surface": "SEAPORT", "sky": "AIRPORT", "underworld": "UW_TUNNEL" },
+    "_passNote": "⚙ Right-of-way (docs/maps/WORLD-MAP-AND-SERVER-TRAVEL.md §4a). PASS = pay a landowner's toll to cross toward a port (destination-locked safe-conduct, no diverting/attacking). GATE = mandatory intra-continent chokepoint (mountain pass); its holder controls the passage. Policy: OPEN|ALLIES_ONLY|CLOSED. Fees CT, owner-tunable, decision-17 raked.",
+    "passFeeDefaultCt": 1,
+    "gateFeeDefaultCt": 2,
+    "passPolicyDefault": "OPEN",
+    "gatePolicyDefault": "OPEN"
   },
   "development": {
     "maxLevel": 10,

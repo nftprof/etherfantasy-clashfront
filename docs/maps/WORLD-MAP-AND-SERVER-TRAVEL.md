@@ -85,6 +85,66 @@ by fee, and by a hard "everything moves" rule:
 player between server shards) lands with the **multi-continent / Tokyo-JP server rollout** — the confirm
 button is present but flagged "coming with multi-server launch" until that infra exists.
 
+## 4a. Right-of-way — the PASS toll + the GATE chokepoints (owner 2026-07-08; design decided)
+
+**The problem:** a player can't always *reach* a port (or another part of their own continent) — enemy,
+guarded, or impassable land sits in the way. Marching through means a fight every time; a landlocked or
+surrounded player could be trapped. **Solution: a landlord-controlled passage/toll system at two scales.**
+
+### A. PASS toll — safe conduct to a port (any owned land)
+- **Every landowner sets a pass fee + a pass policy** (⚙ default, owner-adjustable):
+  **OPEN** (anyone may pass, paying the fee) · **ALLIES_ONLY** (only allies pass — see below) · **CLOSED**
+  (no passage; the only way through is to **march** on it).
+- **To reach a port you PASS through the OPEN lands on your route, paying each one's fee** — the route cost
+  = the **sum of every pass fee** along the way (plus free transit across your own / empty unguarded land).
+- **Destination-locked (the anti-abuse rule the owner insisted on):** Pass is granted **only** when your
+  order is **direct travel to a PORT**. You commit to arriving at the port. You may **not divert, halt, or
+  attack** mid-route — do so and the safe-conduct is **void**: you become a **trespasser** (the land you're
+  standing on may engage you; forfeited fees). **Pass is a way OUT, never a stealth lane INTO** enemy
+  ground. So you can't claim "just passing through" to sneak an army deep into a rival's interior.
+- **Fee recipient = the land owner** (a real toll-income stream), minus the standard CT-flow rake
+  (decision 17: ≥10% burns, remainder to the vault).
+
+### B. GATE — the mountain pass (between REGIONS of one continent)
+A continent's **base terrain** (mountain ranges, rivers, chasms) splits it into **regions** with no natural
+crossing. Where that happens, a parcel is designated a **GATE** — the mountain pass / bridge / ford — the
+**only land route** between those regions. **A GATE works like a seaport, but between regions of a
+continent:** the **landlord who holds the GATE controls the passage** — sets a toll or closes it
+(OPEN / ALLIES_ONLY / CLOSED), exactly like a port dock.
+
+**Design decisions (owner said "decide yourself"):**
+1. **Guaranteed connectivity:** the base-terrain generator places **≥ 1 GATE per region boundary**, at the
+   barrier's **narrowest deterministic chokepoint** — so **no region is ever unreachable**. (This is a
+   **base-terrain-layer feature** → flag for the map team: it bakes into the 20K run; see §4a note below.)
+2. **Gates are strategic objectives.** A CLOSED gate (or one you won't pay) leaves only two options:
+   **capture the gate by force** (march on it) or find another gate. So **holding a gate = controlling
+   movement between regions + a toll income + a defensive wall** — the RoTK chokepoint-fortress dynamic.
+   Default gate fees can sit **higher** than ordinary pass tolls (they're unavoidable chokepoints).
+3. **A gate is a consenting single-parcel crossing** — unlike the port Pass, it needs no destination-lock:
+   the gate *owner's* choice (toll / ally / closed) **is** the gate. Once across, normal movement rules
+   (march or pass) resume in the new region.
+4. **Symmetry:** GATE = intra-continent chokepoint; Sea/Airship/Tunnel Port = inter-continent (server)
+   chokepoint. Both are **landlord-controlled toll chokepoints** with the same OPEN/ALLIES_ONLY/CLOSED
+   policy — one consistent mechanic at two scales.
+
+### Allies (both A and B)
+**ALLIES_ONLY** passes allies free (or at a reduced fee) and blocks everyone else. **Allies = your PG-account
+friends** (all PG friends are allies) — wired later via the **friends system**; until then ALLIES_ONLY
+behaves as CLOSED to non-owners.
+
+**⚙ dials (`balance.json travel`):** `passFeeDefaultCt`, `gateFeeDefaultCt`, `passPolicyDefault`,
+`gatePolicyDefault`. Fees modest + owner-tunable; all CT flows carry the decision-17 rake.
+
+**Base-terrain note for the map team:** GATE designation (§B.1) is part of **layer ① base terrain** —
+the generator must (a) let barriers (mountains/rivers) **partition each continent into regions** and (b)
+mark **≥1 GATE parcel per boundary** at the narrowest crossing, deterministically. This is a **bake-now**
+item (see `MAP-MAKER-HANDOFF-RECAP.md` §1) — region partition + gate parcels bake into all ~20K base maps,
+so it must be settled before the bulk run, not seeded lazily.
+
+**Build status:** **design-captured, build-pending.** The world-map travel UI is built; the overworld
+**movement + toll + gate** sim (pass routing, per-land fee/policy, gate capture, ally checks) is a sim/
+server feature to build alongside the movement system — not yet coded.
+
 ## 5. The 3D fog-of-war WORLD MAP (BUILT 2026-07-08 — `js/world.js`, the 🌐 button)
 
 A single **rotatable pseudo-3D world view** the player opens to see the whole world at a glance. Shipped as
