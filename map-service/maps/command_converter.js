@@ -22,7 +22,9 @@ import { T, CELL_M, worldOf, cellOf } from "./schema.js";
 // hold by construction. Slightly wider than CF's ⚙ BASE_CLEAR_M (14) to cover footprint-vertex slop.
 const CORE_CLEAR = 18;
 const SPAWN_CLEAR = 8;
-const LANE_CLEAR = 5;  // half-width of the walkable corridor swept clear along each lane centerline
+const LANE_CLEAR = 4;  // half-width of the insurance corridor swept clear along each lane centerline —
+                       // must stay ≤ the generator's carved lane half-width (~5 u) so the vector A1
+                       // never opens ground the raster grid kept blocked (walkability parity)
 const NODE_CLEAR = 4;  // pocket around each resource node / mob camp — a node must be reachable to be
                        // harvested/fought (real MOBA maps put them IN the jungle with a small clearing)
 const GATE_INSET = 14; // GATE sits this far toward centre from the CORE (destructible outer door)
@@ -34,7 +36,8 @@ const TERRAIN_KIND = { [T.FOREST]: "FOREST", [T.ROCK]: "ROCK", [T.WATER]: "WATER
 const FOOTPRINT_CODES = [T.FOREST, T.ROCK, T.WATER, T.CLIFF];
 
 const MIN_FOOTPRINT_CELLS = 4;   // smaller specks become a single round obstacle, not a polygon
-const MAX_FOOTPRINT_VERTS = 48;  // decimate huge outlines so the command view stays light
+const MAX_FOOTPRINT_VERTS = 256; // decimate only truly huge outlines — MOBA-density jungle masses
+                                 // need the headroom or decimation cuts across carved corridors
 
 function b64ToU8(b64) {
   if (!b64) return new Uint8Array(0);
@@ -263,7 +266,28 @@ const towardCenter = (p, d) => {
   return { x: +(p.x - (p.x / m) * d).toFixed(1), z: +(p.z - (p.z / m) * d).toFixed(1) };
 };
 
-// synthesize CORE + GATE + TOWER anchors from the base spawn zones + primary lane (empty in raster).
+// point at arc-length fraction t along a waypoint polyline (lanes carry corner waypoints only,
+// so index-rounding would snap every tower to a corner — arc-length walks the actual road).
+function arcAt(wp, t) {
+  const segs = [];
+  let total = 0;
+  for (let i = 1; i < wp.length; i++) { const d = Math.hypot(wp[i][0] - wp[i - 1][0], wp[i][1] - wp[i - 1][1]); segs.push(d); total += d; }
+  let want = Math.max(0, Math.min(1, t)) * total;
+  for (let i = 0; i < segs.length; i++) {
+    if (want <= segs[i] || i === segs.length - 1) {
+      const f = segs[i] ? want / segs[i] : 0;
+      return [wp[i][0] + (wp[i + 1][0] - wp[i][0]) * f, wp[i][1] + (wp[i + 1][1] - wp[i][1]) * f];
+    }
+    want -= segs[i];
+  }
+  return wp[0];
+}
+
+// synthesize CORE + GATE + TOWER anchors from the base spawn zones + lanes (empty in raster).
+// Tower chains mirror the golden reference (examples/moba-singleplayer.artifact.json): per lane,
+// two ATTACKER towers on the attacker half + two DEFENDER towers on the defender half — 12 towers
+// on a 3-lane map, 4 on a single-lane map, sitting ON the carved lane corridor (walkable ground).
+const TOWER_TS = { ATTACKER: [0.17, 0.34], DEFENDER: [0.66, 0.83] };
 function synthStructures(spawnZones, lanes) {
   const out = [];
   const { atk, def } = baseAnchors(spawnZones);
@@ -272,14 +296,16 @@ function synthStructures(spawnZones, lanes) {
   out.push({ anchorId: "core_def", kind: "CORE", side: "DEFENDER", x: +def.x.toFixed(1), z: +def.z.toFixed(1) });
   out.push({ anchorId: "gate_atk", kind: "GATE", side: "ATTACKER", x: aGate.x, z: aGate.z });
   out.push({ anchorId: "gate_def", kind: "GATE", side: "DEFENDER", x: dGate.x, z: dGate.z });
-  // towers along the primary lane at fractional positions (defender holds forward + rear).
-  const wp = lanes?.[0]?.waypoints ?? [];
-  if (wp.length >= 2) {
-    const at = (t) => wp[Math.max(0, Math.min(wp.length - 1, Math.round(t * (wp.length - 1))))];
-    const [ax, az] = at(0.35), [dx1, dz1] = at(0.6), [dx2, dz2] = at(0.82);
-    out.push({ anchorId: "t_atk", kind: "TOWER", side: "ATTACKER", x: +ax.toFixed(1), z: +az.toFixed(1) });
-    out.push({ anchorId: "t_def1", kind: "TOWER", side: "DEFENDER", x: +dx1.toFixed(1), z: +dz1.toFixed(1) });
-    out.push({ anchorId: "t_def2", kind: "TOWER", side: "DEFENDER", x: +dx2.toFixed(1), z: +dz2.toFixed(1) });
+  for (let li = 0; li < (lanes ?? []).length; li++) {
+    const wp = lanes[li]?.waypoints ?? [];
+    if (wp.length < 2) continue;
+    for (const side of ["ATTACKER", "DEFENDER"]) {
+      TOWER_TS[side].forEach((t, k) => {
+        const [x, z] = arcAt(wp, t);
+        out.push({ anchorId: `t_${side === "ATTACKER" ? "atk" : "def"}_l${li}_${k}`, kind: "TOWER", side,
+          x: +x.toFixed(1), z: +z.toFixed(1) });
+      });
+    }
   }
   return out;
 }

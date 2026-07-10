@@ -37,8 +37,10 @@ export function loadBattlefield(refOrJson) {
     obstacles: art.obstacles,         // render/prop list — the GRID is the movement truth
     blockedAt: (x, z) => walk[at(x, z)] === 0,
     terrainAt: (x, z) => cells[at(x, z)],   // T.* code (schema.js)
-    // nearest open point to (x,z) — spawn/reinforcement placement helper
-    clampToOpen(x, z, rMaxM = 24) {
+    // nearest open point to (x,z) — spawn/reinforcement placement helper. MOBA-density maps are
+    // ~35–55% jungle, so a point deep inside a mass can be ~30 cells from a corridor — the
+    // default reach must cover that (the lane network guarantees open ground within ~64 m).
+    clampToOpen(x, z, rMaxM = 64) {
       if (walk[at(x, z)]) return { x, z };
       const c0x = cIdx(x), c0z = cIdx(z), rMax = Math.ceil(rMaxM / cell);
       for (let r = 1; r <= rMax; r++) for (let dz = -r; dz <= r; dz++) for (let dx = -r; dx <= r; dx++) {
