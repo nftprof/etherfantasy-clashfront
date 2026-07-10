@@ -1,0 +1,35 @@
+{
+  "_meta": {
+    "title": "Clash Front Master homes (element → home zone)",
+    "author": "Map-maker session, 2026-07-07",
+    "caveat": "The site's master elements are PROCEDURALLY generated (ELEMENT_KEYS[FNV_hash(name) % 8]) — decorative, deterministic-from-name, NOT canonical game data. This mapping is a RECOMMENDATION built on them so every Master gets a coherent home now; swap in canonical master elements (game/Masters API) if/when they exist and re-derive home via siteElementToZone.",
+    "rule": "masterHome = siteElementToZone[master.siteElement].home. Home is lore (where the Master hails from) AND the land whose pet population its matching-element buff resonates with.",
+    "siteElements": ["Ether", "Flame", "Tide", "Storm", "Verdant", "Frost", "Iron", "Shadow"],
+    "source": "etherfantasy.com/masters#all (52 masters), grouped by the site's element"
+  },
+  "siteElementToZone": {
+    "Verdant": { "petElement": "Leaf",     "home": "HUB", "homeName": "Tianxia"   },
+    "Tide":    { "petElement": "Water",    "home": "BUS", "homeName": "Porthaven" },
+    "Ether":   { "petElement": "Telepath", "home": "EDU", "homeName": "Arcadia"   },
+    "Storm":   { "petElement": "Lightning","home": "HS2", "homeName": "Emberfall" },
+    "Flame":   { "petElement": "Fire",     "home": "HS2", "homeName": "Emberfall" },
+    "Frost":   { "petElement": "Ice",      "home": "HS3", "homeName": "Empyrea"   },
+    "Iron":    { "petElement": "Iron",     "home": "UW1", "homeName": "Ironhold"  },
+    "Shadow":  { "petElement": "Phantom",  "home": "UW2", "homeName": "Blackmere" }
+  },
+  "masters": {
+    "Chris": "Verdant", "Eldora": "Verdant", "Gato": "Verdant", "Gwen": "Verdant", "Hongpa": "Verdant",
+    "Jud": "Verdant", "Kerri": "Verdant", "Kinseri": "Verdant", "Maenak": "Verdant", "Trisha": "Verdant",
+    "Alice": "Shadow", "Blis": "Shadow", "Cor": "Shadow", "Jade": "Shadow", "Jiyeon": "Shadow",
+    "Joel": "Shadow", "Joostar": "Shadow", "Kuman": "Shadow", "MrBen": "Shadow",
+    "Aiden": "Iron", "Amy": "Iron", "Jess": "Iron", "Karen": "Iron", "Lucy": "Iron",
+    "Maple": "Iron", "Mara": "Iron", "Waldo": "Iron",
+    "Dochi": "Tide", "Dragon Cho": "Tide", "Haeun": "Tide", "Lu": "Tide", "Nami": "Tide",
+    "Parma": "Tide", "Shaiya": "Tide",
+    "Agena": "Frost", "Amos": "Frost", "Chenchen": "Frost", "Choco": "Frost", "Doto": "Frost",
+    "Kiki": "Frost", "Pavel": "Frost",
+    "Baron": "Storm", "Bellbird": "Storm", "Chad": "Storm", "Death Jinook": "Storm", "Purin": "Storm",
+    "Camila": "Ether", "Jake": "Ether", "Zeki": "Ether",
+    "Iskall": "Flame", "Ludy": "Flame", "Ruber": "Flame"
+  }
+}

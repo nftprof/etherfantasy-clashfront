@@ -90,19 +90,38 @@ element→home lookup:
 | Flyer | **HS1** Aeropolis | | (rare/legendary) | **CGI** Olympus |
 | Fire / Lightning | **HS2** Emberfall | | (celebrity/prestige) | **KOL** Fortuna |
 
-### ⚠ Blocker: the 47 Masters have **no element data** in any file
-`data/CHARACTER_ROSTER.csv` lists all 47 Masters by name, but the **Element column is empty** for every one
-(only **Bosses** encode element in their names — Centaur_Warrior_**Fire**, Sunwon_Magician_**Fire**, etc.).
-So I can apply the home rule the moment each Master's element is supplied — but I won't invent 47 elements.
+### All 52 Masters homed (from the site's elements) — `data/master-homes.json`
 
-**To finalize, I need the Master → element list** (one of):
-- the **live Masters API** (`api.etherfantasy.com`, `docs/09` §7) almost certainly carries each Master's
-  element — unreachable from this sandbox, but CF can pull it and auto-derive homes via the table above; or
-- an owner-provided `Master,Element` list — drop it in and I'll home all 47 in one pass.
+**⚠ Caveat:** the CSV `Element` column is empty; the site (`etherfantasy.com/masters#all`) shows an element
+per Master, but those are **procedurally generated** (`ELEMENT_KEYS[FNV_hash(name) % 8]`) — decorative,
+deterministic-from-name, **not canonical**. This mapping is a **recommendation** on top of them so every
+Master has a coherent home now; swap in canonical elements (game/Masters API) later and re-derive.
 
-**Provisional (name-inferred, low confidence — confirm):** a few names hint an element →
-`Dragon_Cho` → Dragon → **UW3 Luxuria**; `Death_Jinook` → Phantom/dark → **UW2 Blackmere**. The rest
-(Maple, Purin, Blis, the `Type_*` series, …) need the real element.
+The site uses **8 elements**; I map each to a pet element → its home zone:
+
+| Site element | # | → pet element | Home zone |
+|---|--:|---|---|
+| **Verdant** | 10 | Leaf | **HUB · Tianxia** (the green convergence heartland — biggest land, where all gather) |
+| **Shadow** | 9 | Phantom | **UW2 · Blackmere** (the Minas-Morgul shadow keep) |
+| **Iron** | 8 | Iron | **UW1 · Ironhold** (the dwarven iron city) |
+| **Tide** | 7 | Water | **BUS · Porthaven** (the coast) |
+| **Frost** | 7 | Ice | **HS3 · Empyrea** (the frost summit) — *Choco→Frost→Ice ✓* |
+| **Storm** | 5 | Lightning | **HS2 · Emberfall** (the storm & lava isle) |
+| **Flame** | 3 | Fire | **HS2 · Emberfall** (the volcano) |
+| **Ether** | 3 | Telepath | **EDU · Arcadia** (the arcane academy) |
+
+**Homes by Master (52):**
+- **Tianxia** (Verdant): Chris · Eldora · Gato · Gwen · Hongpa · Jud · Kerri · Kinseri · Maenak · Trisha
+- **Blackmere** (Shadow): Alice · Blis · Cor · Jade · Jiyeon · Joel · Joostar · Kuman · MrBen
+- **Ironhold** (Iron): Aiden · Amy · Jess · Karen · Lucy · Maple · Mara · Waldo
+- **Porthaven** (Tide): Dochi · Dragon Cho · Haeun · Lu · Nami · Parma · Shaiya
+- **Empyrea** (Frost): Agena · Amos · Chenchen · Choco · Doto · Kiki · Pavel
+- **Emberfall** (Storm+Flame): Baron · Bellbird · Chad · Death Jinook · Purin · Iskall · Ludy · Ruber
+- **Arcadia** (Ether): Camila · Jake · Zeki
+
+Zones with no *native* Master (Mythoria, Aeropolis, Luxuria, Olympus, Fortuna) draw from the shared pool —
+Tianxia is every Master's convergence hub regardless. **The matching-element buff is only as meaningful as
+the elements are real** — so if canonical Master elements exist, prefer them over these synthetic ones.
 
 ### Bosses (elements ARE in the data) — homed now
 | Boss | element | Home |
