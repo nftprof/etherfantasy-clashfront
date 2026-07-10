@@ -46,6 +46,12 @@
   underworld axis); which **pet element-types + rarity band populate each zone** (UW3=dark/mystic ✅); and
   all **52 Masters homed** by domain (`master-homes.json` = the file the **website team** updates masters
   from). Master site-elements are decorative (name-hashed) — crosswalked onto real domains.
+- **MAP-QUALITY-GAP-ANALYSIS.md** — ⭐ (Map-maker, 2026-07-08): the honest ledger from the owner's "none
+  of the generated maps seem playable" — the **MOBA-SINGLEPLAYER benchmark set** (all 5 deliverables:
+  artifact/command/thumb + render-gap + playable, both command forms PASS the 5 invariants), the 7-stage
+  pipeline (LLM→generator→artifact→converter→command→engine-ingest→playable) with **gap + owner per
+  stage**, the ship-quality definition (visual parity with the benchmark + MAP-MODES scenario superset),
+  and sequencing. The generator dense-fill rewrite is the load-bearing fix (in progress).
 - **MAP-MODES.md** — ⭐ (Map-maker, 2026-07-07): ONE map serves MANY modes — the spawn/entry **anchors are
   not enemy waves**; a MODE (Versus / Siege / Dominion / Guard / Duel / Clash) just lights up a subset +
   sets the win-point. Attacker enters by approach direction; defender holds the middle. Renderer spec for

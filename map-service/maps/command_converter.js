@@ -23,6 +23,8 @@ import { T, CELL_M, worldOf, cellOf } from "./schema.js";
 const CORE_CLEAR = 18;
 const SPAWN_CLEAR = 8;
 const LANE_CLEAR = 5;  // half-width of the walkable corridor swept clear along each lane centerline
+const NODE_CLEAR = 4;  // pocket around each resource node / mob camp — a node must be reachable to be
+                       // harvested/fought (real MOBA maps put them IN the jungle with a small clearing)
 const GATE_INSET = 14; // GATE sits this far toward centre from the CORE (destructible outer door)
 
 // terrain code → A1 obstacle kind (for footprints derived from the grid = the real blockers)
@@ -160,6 +162,40 @@ function terrainObstacles(terrain, clearPts = []) {
   const w = terrain.w, h = terrain.h;
   if (!src.length || !w || !h) return [];
   const cells = new Uint8Array(src); // copy — determinism + no aliasing
+  // 1) CONNECTIVITY CARVE, on the ORIGINAL grid state: a clear point buried inside a blocked blob
+  //    gets a channel to the nearest open ground (BFS, deterministic). Done BEFORE pocket-punching
+  //    (a punched pocket is locally open, which would mask enclosure) — the blob indents/splits so
+  //    the outer-ring outline can't swallow the node: a real jungle-camp clearing, not a sealed hole.
+  const open = (i) => cells[i] === T.OPEN || cells[i] === T.ROAD;
+  for (const { x, z } of clearPts) {
+    const cx0 = cellOf(w, x), cz0 = cellOf(h, z);
+    if (cx0 < 0 || cz0 < 0 || cx0 >= w || cz0 >= h) continue;
+    const start = cz0 * w + cx0;
+    if (open(start)) continue;                    // already on the field (original grid) — nothing to carve
+    const prev = new Int32Array(w * h).fill(-1);
+    const seen = new Uint8Array(w * h);
+    const q = [start]; seen[start] = 1;
+    let hit = -1;
+    while (q.length && hit < 0) {
+      const cur = q.shift();
+      const ccx = cur % w, ccz = (cur / w) | 0;
+      for (const [dx, dz] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+        const nx = ccx + dx, nz = ccz + dz;
+        if (nx < 0 || nz < 0 || nx >= w || nz >= h) continue;
+        const ni = nz * w + nx;
+        if (seen[ni] || cells[ni] === T.OOB) continue;
+        seen[ni] = 1; prev[ni] = cur;
+        if (open(ni)) { hit = ni; break; }
+        q.push(ni);
+      }
+    }
+    for (let cur = hit; cur >= 0; cur = prev[cur]) {  // open the path INCLUDING start (2-wide, survives outlining)
+      cells[cur] = T.OPEN;
+      if ((cur % w) + 1 < w && cells[cur + 1] !== T.OOB) cells[cur + 1] = T.OPEN;
+      if (cur === start) break;
+    }
+  }
+  // 2) pocket-punch the staging areas
   for (const { x, z, r } of clearPts) {
     const cx0 = cellOf(w, x), cz0 = cellOf(h, z);
     const rad = Math.ceil(r / CELL_M);
@@ -302,6 +338,10 @@ export function toBattlefieldA1(artifact) {
     { x: def.x, z: def.z, r: CORE_CLEAR },
     ...spawnZones.map((s) => ({ x: s.x, z: s.z, r: SPAWN_CLEAR })),
     ...laneClearPts(lanes),
+    // jungle nodes get a small clearing so they sit ON walkable ground (CF invariant: resources
+    // must be harvestable) — matches the real map, where camps/mines are pockets inside the jungle.
+    ...(a.resources ?? []).map((r) => ({ x: r.x ?? 0, z: r.z ?? 0, r: NODE_CLEAR })),
+    ...(a.mobs ?? []).map((m) => ({ x: m.x ?? 0, z: m.z ?? 0, r: NODE_CLEAR })),
   ];
   const obstacles = [...terrainObstacles(a.terrain ?? {}, clearPts), ...decorObstacles(a.obstacles)];
   const resources = (a.resources ?? []).map((r, i) => ({
