@@ -370,6 +370,14 @@ export function toBattlefieldA1(artifact) {
     ...(a.mobs ?? []).map((m) => ({ x: m.x ?? 0, z: m.z ?? 0, r: NODE_CLEAR })),
   ];
   const obstacles = [...terrainObstacles(a.terrain ?? {}, clearPts), ...decorObstacles(a.obstacles)];
+  // castle fortification anchors (castle-v1, generate.js castleLayout): authored castle_* WALL/
+  // GATE/TOWER structures pass through to the A1 VERBATIM — walls are structures, not obstacles,
+  // in v1 (they don't block the walk grid; the generator cleared the ground under the ring, so
+  // CF invariant 3 "structures on walkable ground" holds). Non-castle artifact structures stay
+  // game-time anchors (the synthesized reference chains below own the A1 towers).
+  const castleStructures = (a.structures ?? [])
+    .filter((s) => String(s.anchorId ?? "").startsWith("castle_"))
+    .map((s) => ({ anchorId: s.anchorId, kind: String(s.kind ?? "WALL").toUpperCase(), side: s.side ?? "DEFENDER", x: s.x ?? 0, z: s.z ?? 0 }));
   const resources = (a.resources ?? []).map((r, i) => ({
     id: r.id ?? `res_${i}`, kind: String(r.kind ?? "GOLD_MINE").toUpperCase(),
     x: r.x ?? 0, z: r.z ?? 0, richness: r.richness ?? 1,
@@ -397,7 +405,7 @@ export function toBattlefieldA1(artifact) {
     buildSpots: convertBuildSpots(a.buildSpots),
     spawnZones,
     lanes,
-    structures: synthStructures(spawnZones, lanes),
+    structures: [...synthStructures(spawnZones, lanes), ...castleStructures],
     ...(mobs.length ? { mobs } : {}),
   };
 }

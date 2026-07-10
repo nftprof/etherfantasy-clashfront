@@ -173,6 +173,9 @@ const ROAD_TIERS = {
  *                  sizeM?: 322 }
  * @returns { rivers, roads, ridges: [{ id, kind, width (world-units), tier? (roads: highway|
  *            secondary|local), pts [[x,z]…] battle frame }],
+ *            castles: [{ id, kind (CASTLE|PALACE|KEEP), name, at:[x,z] battle frame }] — the
+ *            world fortification POIs on THIS parcel (v1: the parcel containing the POI point;
+ *            generate.js grows the WALL/GATE/TOWER ring from it),
  *            edgeCrossings: [{ featureId, kind, at:[x,z], edge:"N|E|S|W", edgeIndex }] }
  */
 export function featuresForParcel(field, parcel) {
@@ -189,7 +192,15 @@ export function featuresForParcel(field, parcel) {
   ccx /= zonePoly.length; ccz /= zonePoly.length;
   const label = (X, Z) => { const bx = X - ccx, bz = Z - ccz; return Math.abs(bz) >= Math.abs(bx) ? (bz >= 0 ? "N" : "S") : (bx >= 0 ? "E" : "W"); };
 
-  const out = { rivers: [], roads: [], ridges: [], edgeCrossings: [] };
+  const out = { rivers: [], roads: [], ridges: [], castles: [], edgeCrossings: [] };
+  // castles: a fortification POI lands on the ONE parcel whose footprint contains its point
+  // (v1 — neighbours don't render the spill-over; the wall ring lives on the castle's parcel).
+  for (const c of field?.castles || []) {
+    if (!Array.isArray(c.at) || c.at.length < 2) continue;
+    const [cx, cy] = c.at;
+    if (cx < bx0 || cx > bx1 || cy < by0 || cy > by1) continue;
+    out.castles.push({ id: c.id, kind: c.kind || "CASTLE", name: c.name || c.id, at: toArena(cx, cy) });
+  }
   const baseMar = 0.25 * Math.max(bx1 - bx0, by1 - by0, 0.05);
   for (const [kind, spec] of Object.entries(KIND_SPECS)) {
     for (const f of field?.[spec.list] || []) {

@@ -7,15 +7,26 @@
 // (owner 2026-07-10: roads belong ONLY to the world layer; parcels play whatever overlaps them):
 //
 //   • tier "highway"   — the 3 authored trunk roads (Academy / Terrace / Northwest).
-//   • tier "secondary" — TOWN links. Towns = the real EDU L2 estate anchors (GIANT + LARGE from
-//     data/hexagon-city-source/parcels-l2.json, 28 anchors). Kyoto-style (the Arcadia aerial
-//     reference): near the Grand Academy basin the links run roughly orthogonal (L-shaped grid
-//     streets); elsewhere each town links to its nearest neighbour town + its nearest highway
-//     point with valley-following Catmull-Rom + seeded meander curves. Segments avoid crossing
-//     ridge polylines where a reroute via the rimwall's endpoint gap is cheap (else the pass is
-//     accepted — a mountain road); river crossings are counted and kept ≤ 2 bridges per road.
+//   • tier "secondary" — the JOKAMACHI castle-town web in the Academy basin (owner 2026-07-10:
+//     Arcadia's urban core is a MEDIEVAL castle town, Himeji/Kanazawa style — NOT a planned
+//     grid): a wobbly RING ROAD around Westgate Castle's walls (the Nijō-analog GIANT estate),
+//     5 gently-kinked RADIALS from the castle gates outward to the highways / a river bridge /
+//     the Grand Academy PALACE (which keeps its own short ring + the ceremonial approach), PLUS
+//     the rural TOWN links exactly as before (owner: "the rural area we can use current"):
+//     towns = the real EDU L2 estate anchors (GIANT + LARGE, 28 anchors); each town links to
+//     its nearest neighbour town + its nearest network point with valley-following Catmull-Rom
+//     + seeded meander curves — EXCEPT pairs fully inside the basin (the jokamachi web serves
+//     those; the old orthogonal L-elbows are gone — medieval streets bend, never grid). Segments
+//     avoid crossing ridge polylines where a reroute via the rimwall's endpoint gap is cheap
+//     (else the pass is accepted — a mountain road); river crossings kept ≤ 2 bridges per road.
 //   • tier "local"     — short curvy feeders from ~20 seeded MEDIUM estates to the nearest
-//     secondary/highway point.
+//     secondary/highway point; a few organic inter-radial lanes + dead-end stubs in the castle
+//     town (medieval TERMINUS lanes are fine); short castle approach roads.
+//
+// CASTLES (castles[]): the real-Kyoto fortification analogs mapped onto the real EDU estate
+// anchors — Westgate Castle (Nijō) / the Grand Academy PALACE (Imperial Palace) / two east-hill
+// temple KEEPs (Kiyomizu / Higashiyama) / Southreach Castle (Fushimi). Each carries its estate id
+// and battle maps grow wall rings from them (map-service/maps/generate.js).
 //
 // Dedup: a candidate that runs near-parallel (< 2 zone-units) to the existing network for most
 // of its length is NOT drawn — the town gets a short connector instead ("connect, don't double").
@@ -149,23 +160,57 @@ const mediums = eduL2.filter((p) => p.sizeClass === "MEDIUM")
   .map((p) => ({ id: p.parcelId, at: [p.center[0], p.center[1]] }))
   .sort((a, b) => (a.id < b.id ? -1 : 1));
 
-const BASIN = [126.7, 81.4];               // the Grand Academy basin (Kyoto grid heart)
-const BASIN_R = 32;                        // zone-units: inside → orthogonal street character
+const BASIN = [126.7, 81.4];               // the Grand Academy basin (the Kyoto-analog urban heart)
+const BASIN_R = 35;                        // zone-units: inside → medieval castle-town street character
 const inBasin = ([x, y]) => Math.hypot(x - BASIN[0], y - BASIN[1]) < BASIN_R;
 
+// ---- castles (the real-Kyoto fortification analogs on the real estate anchors) ------------------
+// Deterministic picks from the L2 estate data (no authored coordinates beyond the Academy anchor):
+//   Nijō analog   = the GIANT estate nearest WEST of the basin center (the shogunate seat).
+//   Palace        = the Grand Academy itself (the sole EPIC estate).
+//   Hill temples  = the two GIANT/LARGE estates nearest the East Rimwall (Kiyomizu-analog KEEPs).
+//   Fushimi analog= the southern-most GIANT estate (y down = south).
+const giants = eduL2.filter((p) => p.sizeClass === "GIANT");
+const epicEstate = eduL2.find((p) => p.sizeClass === "EPIC");
+const distToLine = (p, line) => { let m = Infinity; for (const q of line) m = Math.min(m, Math.hypot(q[0] - p[0], q[1] - p[1])); return m; };
+const nijoEstate = giants.filter((p) => p.center[0] < BASIN[0])
+  .sort((a, b) => (Math.hypot(a.center[0] - BASIN[0], a.center[1] - BASIN[1]) - Math.hypot(b.center[0] - BASIN[0], b.center[1] - BASIN[1])) || (a.parcelId < b.parcelId ? -1 : 1))[0];
+const fushimiEstate = giants.slice().sort((a, b) => (b.center[1] - a.center[1]) || (a.parcelId < b.parcelId ? -1 : 1))[0];
+const keepEstates = eduL2.filter((p) => (p.sizeClass === "GIANT" || p.sizeClass === "LARGE") && p !== nijoEstate && p !== fushimiEstate)
+  .sort((a, b) => (distToLine(a.center, ridgeEast) - distToLine(b.center, ridgeEast)) || (a.parcelId < b.parcelId ? -1 : 1))
+  .slice(0, 2);
+const CASTLES = [
+  { id: "EDU-CASTLE-WESTGATE", kind: "CASTLE", at: nijoEstate.center.slice(), townEstateId: nijoEstate.parcelId,
+    name: "Westgate Castle", ref: "Nijō Castle — the shogunate seat west of the palace" },
+  { id: "EDU-PALACE-ACADEMY", kind: "PALACE", at: [126.7, 81.4], townEstateId: epicEstate.parcelId,
+    name: "The Grand Academy", ref: "Kyoto Imperial Palace / the university district" },
+  { id: "EDU-KEEP-CLIFFWATCH", kind: "KEEP", at: keepEstates[0].center.slice(), townEstateId: keepEstates[0].parcelId,
+    name: "Cliffwatch Temple", ref: "Kiyomizu-dera — fortified temple on the eastern hills" },
+  { id: "EDU-KEEP-LANTERNHILL", kind: "KEEP", at: keepEstates[1].center.slice(), townEstateId: keepEstates[1].parcelId,
+    name: "Lantern Hill Temple", ref: "the Higashiyama hill temples" },
+  { id: "EDU-CASTLE-SOUTHREACH", kind: "CASTLE", at: fushimiEstate.center.slice(), townEstateId: fushimiEstate.parcelId,
+    name: "Southreach Castle", ref: "Fushimi Castle — the southern outpost" },
+];
+const CASTLE_AT = CASTLES[0].at;           // Westgate Castle — the basin's centre of gravity
+
 // ---- secondary-road router ----------------------------------------------------------------------
-// Route a→b as a natural curve. Near the basin: Kyoto-style — an L-shaped elbow (orthogonal-ish),
-// light meander. Elsewhere: valley curve (seeded mid-point sway + meander). Ridge crossings get one
-// reroute attempt via the nearest rimwall endpoint gap (accepted as a mountain pass if the detour
-// is absurd); river crossings are minimized down to ≤ 2 bridges by flattening the curve.
+// Route a→b as a natural curve. Near the basin: MEDIEVAL street — a seeded off-axis kink (bends
+// for defense, never an orthogonal grid elbow), light meander. Elsewhere: valley curve (seeded
+// mid-point sway + meander). Ridge crossings get one reroute attempt via the nearest rimwall
+// endpoint gap (accepted as a mountain pass if the detour is absurd); river crossings are
+// minimized down to ≤ 2 bridges by flattening the curve.
 function routeRoad(a, b, key) {
   const r = rng32(fnv1a("route|" + key));
   const build = (ctrl, amp, wl) => natural(ctrl, amp, wl, "EDU|road|" + key);
   const candidates = [];
   if (inBasin(a) && inBasin(b)) {
-    // orthogonal-ish: two possible elbows; both stay candidates, scored below
-    const e1 = [b[0], a[1]], e2 = [a[0], b[1]];
-    candidates.push(build([a, e1, b], 0.35, 16), build([a, e2, b], 0.35, 16));
+    // medieval kink: midpoint pushed off the chord by a seeded perpendicular bend (two mirror
+    // candidates so the ridge/river scoring below can still pick the cleaner side)
+    const mx = (a[0] + b[0]) / 2, my = (a[1] + b[1]) / 2;
+    const dx = b[0] - a[0], dy = b[1] - a[1], L = Math.hypot(dx, dy) || 1;
+    const k = (0.18 + r() * 0.17) * Math.min(L, 14);
+    candidates.push(build([a, [mx - (dy / L) * k, my + (dx / L) * k], b], 0.35, 12),
+                    build([a, [mx + (dy / L) * k, my - (dx / L) * k], b], 0.35, 12));
   } else {
     // valley curve: seeded perpendicular sway on the midpoint
     const mx = (a[0] + b[0]) / 2, my = (a[1] + b[1]) / 2;
@@ -198,16 +243,99 @@ function routeRoad(a, b, key) {
 }
 
 // ---- assemble the hierarchy ---------------------------------------------------------------------
-const secondaries = [];                       // { id, name, pts }
+const secondaries = [];                       // { id, name, pts }  (rural town links, EDU-SEC*)
+const jokamachi = [];                         // { id, name, tier, pts }  (the castle-town web, EDU-JK*)
 const secondaryPts = () => secondaries.map((s) => s.pts);
-const networkFor = (extra = []) => [...HIGHWAYS, ...secondaryPts(), ...extra];
+const networkFor = (extra = []) => [...HIGHWAYS, ...jokamachi.map((j) => j.pts), ...secondaryPts(), ...extra];
 const townName = (t) => `Town ${t.id}`;
 
 let secN = 0;
 const addSecondary = (pts, name) => { secN++; secondaries.push({ id: `EDU-SEC${String(secN).padStart(2, "0")}`, name, pts }); };
 
+// ---- JOKAMACHI castle-town web (owner 2026-07-10: medieval, Himeji/Kanazawa character) ----------
+// Ring road around Westgate Castle's walls, kinked radials from its gates outward, the Grand
+// Academy's own short ring + ceremonial approach, and a few organic inter-radial lanes (dead-ends
+// welcome — medieval towns have them). All seeded; built BEFORE the town links so basin towns
+// connect into the web instead of drawing grid streets.
+const wobblyRing = (c, rad, n, key) => {
+  const r = rng32(fnv1a(key));
+  const pts = [];
+  for (let i = 0; i < n; i++) {
+    const a = (i / n) * Math.PI * 2;
+    const rr = rad * (1 + (r() - 0.5) * 0.22);                 // kinked, hand-laid — never a circle
+    pts.push([+(c[0] + Math.cos(a) * rr).toFixed(2), +(c[1] + Math.sin(a) * rr).toFixed(2)]);
+  }
+  pts.push(pts[0].slice());                                     // closed loop
+  return pts;
+};
+const ringPointToward = (ring, tgt) => {                        // ring vertex nearest the bearing → a gate
+  let best = ring[0], bd = Infinity;
+  for (const p of ring.slice(0, -1)) { const d = Math.hypot(p[0] - tgt[0], p[1] - tgt[1]); if (d < bd) { bd = d; best = p; } }
+  return best;
+};
+// a radial: gently curved/kinked medieval street from a castle gate outward to its target
+const radialRoad = (from, to, key) => {
+  const r = rng32(fnv1a("jk-radial|" + key));
+  const mx = (from[0] + to[0]) / 2, my = (from[1] + to[1]) / 2;
+  const dx = to[0] - from[0], dy = to[1] - from[1], L = Math.hypot(dx, dy) || 1;
+  const k = (r() - 0.5) * Math.min(6, L * 0.3);                 // seeded off-axis bend
+  return natural([from, [mx - (dy / L) * k, my + (dx / L) * k], to], 0.5, 12, "EDU|jk|" + key, 8);
+};
+const JK_RING_R = 3.4, PAL_RING_R = 1.9;
+const castleRing = wobblyRing(CASTLE_AT, JK_RING_R, 14, "EDU|jk|castle-ring");
+const palaceRing = wobblyRing(BASIN, PAL_RING_R, 10, "EDU|jk|palace-ring");
+jokamachi.push({ id: "EDU-JK-RING", name: "Westgate Castle Ring Road", tier: "secondary", pts: castleRing });
+jokamachi.push({ id: "EDU-JK-PALRING", name: "Grand Academy Ring", tier: "secondary", pts: palaceRing });
+// radial targets: the PALACE (the ceremonial approach), the two highways serving the basin, the
+// river bridge west (crossing the Arcadia Flow, +3u of bridgehead on the far bank), and the
+// southern town — 5 radials, each leaving the ring at the gate vertex facing its target.
+const bridgeAt = nearestOn([riverMain], CASTLE_AT[0], CASTLE_AT[1]).pt;
+const bridgeDir = [bridgeAt[0] - CASTLE_AT[0], bridgeAt[1] - CASTLE_AT[1]];
+const bridgeLen = Math.hypot(bridgeDir[0], bridgeDir[1]) || 1;
+const bridgeEnd = [+(bridgeAt[0] + (bridgeDir[0] / bridgeLen) * 3).toFixed(2), +(bridgeAt[1] + (bridgeDir[1] / bridgeLen) * 3).toFixed(2)];
+const southTown = towns.reduce((best, t) => (Math.hypot(t.at[0] - 102.5, t.at[1] - 109.1) < Math.hypot(best.at[0] - 102.5, best.at[1] - 109.1) ? t : best), towns[0]);
+const RADIALS = [
+  { key: "ceremonial", name: "The Ceremonial Way", to: ringPointToward(palaceRing, CASTLE_AT) },
+  { key: "academy-gate", name: "North Gate Street", to: nearestOn([roadAcademy], CASTLE_AT[0], CASTLE_AT[1] - JK_RING_R).pt },
+  { key: "terrace-gate", name: "Terrace Gate Street", to: nearestOn([roadTerrace], CASTLE_AT[0] - JK_RING_R, CASTLE_AT[1]).pt },
+  { key: "river-gate", name: "River Gate Street", to: bridgeEnd },
+  { key: "south-gate", name: "South Gate Street", to: southTown.at },
+];
+const radialPolys = [];
+for (const rd of RADIALS) {
+  const gate = ringPointToward(castleRing, rd.to);
+  const poly = radialRoad(gate, rd.to, rd.key);
+  radialPolys.push(poly);
+  jokamachi.push({ id: `EDU-JK-R${radialPolys.length}`, name: rd.name, tier: "secondary", pts: poly });
+}
+// the castle's own gate road: castle heart → the ring (the maps layer grows the walls from the POI)
+jokamachi.push({ id: "EDU-JK-GATE", name: "Westgate Approach", tier: "local",
+  pts: natural([CASTLE_AT, ringPointToward(castleRing, RADIALS[0].to)], 0.2, 8, "EDU|jk|gate", 8) });
+jokamachi.push({ id: "EDU-JK-PALGATE", name: "Academy Forecourt", tier: "local",
+  pts: natural([BASIN, ringPointToward(palaceRing, CASTLE_AT)], 0.15, 8, "EDU|jk|palgate", 8) });
+// inter-radial lanes: short organic connectors partway out + one dead-end stub (TERMINUS is fine)
+const lanePt = (poly, t) => { const i = Math.max(1, Math.min(poly.length - 1, Math.round(t * (poly.length - 1)))); return poly[i]; };
+const laneR = rng32(fnv1a("EDU|jk|lanes"));
+let jkLaneN = 0;
+for (const [ai, bi] of [[0, 1], [1, 2], [4, 0]]) {
+  const a = lanePt(radialPolys[ai], 0.3 + laneR() * 0.25);
+  const b = lanePt(radialPolys[bi], 0.3 + laneR() * 0.25);
+  if (Math.hypot(a[0] - b[0], a[1] - b[1]) < 1.2) continue;
+  jkLaneN++;
+  jokamachi.push({ id: `EDU-JK-L${jkLaneN}`, name: `Castle Town Lane ${jkLaneN}`, tier: "local",
+    pts: radialRoad(a, b, `lane${jkLaneN}`) });
+}
+{ // dead-end market stub off the south radial
+  const a = lanePt(radialPolys[4], 0.45 + laneR() * 0.2);
+  const ang = laneR() * Math.PI * 2, len = 1.6 + laneR() * 1.4;
+  jkLaneN++;
+  jokamachi.push({ id: `EDU-JK-L${jkLaneN}`, name: "Old Market Lane", tier: "local",
+    pts: natural([a, [+(a[0] + Math.cos(ang) * len).toFixed(2), +(a[1] + Math.sin(ang) * len).toFixed(2)]], 0.25, 6, "EDU|jk|stub", 8) });
+}
+
 // candidate edges, deterministic order: each town → nearest neighbour town (dedup pair),
-// then each town → nearest highway point.
+// then each town → nearest highway point. Pairs fully inside the basin are SKIPPED — the
+// jokamachi web is the basin's street plan (towns there hook on via the second loop instead).
 const seenPairs = new Set();
 for (const t of towns) {
   let nb = null, bd = Infinity;
@@ -217,6 +345,7 @@ for (const t of towns) {
     if (d < bd) { bd = d; nb = u; }
   }
   if (!nb) continue;
+  if (inBasin(t.at) && inBasin(nb.at)) continue;               // the castle town serves basin pairs
   const pk = [t.id, nb.id].sort().join("~");
   if (seenPairs.has(pk)) continue;
   seenPairs.add(pk);
@@ -260,6 +389,18 @@ for (const m of shuffled) {
   locals.push({ id: `EDU-LOC${String(locN).padStart(2, "0")}`, name: `Hamlet ${m.id} Lane`, pts: poly });
 }
 
+// ---- castle approach roads: every castle sits ≤1u from the road network -------------------------
+// (Westgate + the Academy already own gate roads; the hill KEEPs and Southreach get a short
+// tier:local approach from the fort to the nearest network point when nothing passes close by.)
+const approaches = [];
+for (const c of CASTLES) {
+  const net = [...networkFor(), ...locals.map((l) => l.pts), ...approaches.map((a) => a.pts)];
+  const { pt, d } = nearestOn(net, c.at[0], c.at[1]);
+  if (d <= 1.0) continue;
+  approaches.push({ id: `EDU-CAP${String(approaches.length + 1).padStart(2, "0")}`, name: `${c.name} Approach`,
+    pts: natural([c.at, pt], 0.3, 10, "EDU|road|approach|" + c.id, 8) });
+}
+
 // ---- output -------------------------------------------------------------------------------------
 const out = {
   _meta: {
@@ -270,7 +411,8 @@ const out = {
     determinism: "generated by map-service/tools/world_terrain_edu.mjs — control points authored, curvature = Catmull-Rom + seeded meander (fnv1a keys); regenerating yields byte-identical polylines.",
     widths: "world-units at BATTLE scale are derived per-parcel; at zone scale width is in zone-units (1 parcel ≈ 0.68 u across, so the river ~1.2 u wide spans ~2 parcels).",
     gameplay: "units can walk over water for now (owner 2026-07-10) — rivers are terrain/visual continuity, not hard blockers; fords/bridges come with the toll/gate layer.",
-    hierarchy: "roads carry tier: highway (the 3 authored trunk roads) / secondary (town links — towns = the 28 GIANT+LARGE L2 estate anchors, Kyoto-orthogonal near the Academy basin, valley curves elsewhere, ≤2 river bridges each) / local (short feeders from ~20 seeded MEDIUM estates). Roads belong ONLY to this world layer — parcels play whatever overlaps them (owner 2026-07-10).",
+    hierarchy: "roads carry tier: highway (the 3 authored trunk roads) / secondary (the JOKAMACHI castle-town web in the Academy basin — ring road + kinked radials around Westgate Castle, the Grand Academy's ring + ceremonial way (owner 2026-07-10: Arcadia's core is MEDIEVAL, Himeji/Kanazawa style, never a grid) — plus the rural town links: towns = the 28 GIANT+LARGE L2 estate anchors, valley curves, ≤2 river bridges each) / local (short feeders from ~20 seeded MEDIUM estates, castle-town lanes incl. dead-ends, castle approaches). Roads belong ONLY to this world layer — parcels play whatever overlaps them (owner 2026-07-10).",
+    castles: "castles[] = the real-Kyoto fortification analogs on the real estate anchors: CASTLE Westgate (Nijō, the GIANT nearest west of the basin) / PALACE Grand Academy (Imperial Palace, EPIC 1020371) / KEEP Cliffwatch + Lantern Hill (Kiyomizu & Higashiyama temples, nearest the East Rimwall) / CASTLE Southreach (Fushimi, southern-most GIANT). Battle maps grow WALL/GATE/TOWER rings from these POIs (maps/generate.js castle layout).",
   },
   zone: "EDU",
   rivers: [
@@ -281,14 +423,17 @@ const out = {
     { id: "EDU-RD1", name: "Academy Road", tier: "highway", width: 0.5, pts: roadAcademy },
     { id: "EDU-RD2", name: "Terrace Road", tier: "highway", width: 0.4, pts: roadTerrace },
     { id: "EDU-RD3", name: "Northwest Road", tier: "highway", width: 0.4, pts: roadNorthWest },
+    ...jokamachi.map((j) => ({ id: j.id, name: j.name, tier: j.tier, width: j.tier === "secondary" ? 0.32 : 0.22, pts: j.pts })),
     ...secondaries.map((s) => ({ id: s.id, name: s.name, tier: "secondary", width: 0.32, pts: s.pts })),
     ...locals.map((l) => ({ id: l.id, name: l.name, tier: "local", width: 0.22, pts: l.pts })),
+    ...approaches.map((a) => ({ id: a.id, name: a.name, tier: "local", width: 0.22, pts: a.pts })),
   ],
   ridges: [
     { id: "EDU-RG1", name: "East Rimwall", width: 2.5, pts: ridgeEast },
     { id: "EDU-RG2", name: "South Rimwall", width: 2.5, pts: ridgeSouth },
     { id: "EDU-RG3", name: "West Rimwall", width: 2.5, pts: ridgeWest },
   ],
+  castles: CASTLES,
   pois: [
     { id: "EDU-CITY", kind: "GRAND_ACADEMY", at: [126.7, 81.4], note: "the sole EPIC estate 1020371 — the capital city" },
     { id: "EDU-GATE-N", kind: "GATE", at: [63, 0], connects: ["EDU", "HUB"], note: "north gate — river + Academy Road exit toward Tianxia" },
@@ -298,6 +443,9 @@ mkdirSync(path.join(ROOT, "data/world-terrain"), { recursive: true });
 writeFileSync(path.join(ROOT, "data/world-terrain/EDU.json"), JSON.stringify(out) + "\n");
 console.log("wrote data/world-terrain/EDU.json:",
   "towns", towns.length,
+  "| jokamachi", jokamachi.length,
   "| secondary roads", secondaries.length,
   "| local roads", locals.length,
-  "| total roads", out.roads.length);
+  "| approaches", approaches.length,
+  "| total roads", out.roads.length,
+  "| castles", CASTLES.map((c) => `${c.kind}:${c.name}@${c.at.map((n) => n.toFixed(1))}`).join(" "));

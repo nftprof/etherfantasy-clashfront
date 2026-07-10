@@ -48,7 +48,10 @@ export function renderThumb(artifact) {
   for (const r of artifact.resources) dot(r.x, r.z, MARK[r.kind] || MARK.GOLD_MINE, 2);
   for (const s of artifact.spawnZones) if (s.side !== "ANY") dot(s.x, s.z, s.side === "ATTACKER" ? MARK.atk : MARK.def, 3);
   for (const m of artifact.mobs || []) dot(m.x, m.z, [200, 60, 200], 2);          // wild camps (magenta)
-  for (const s of artifact.structures || []) dot(s.x, s.z, [235, 235, 245], 3);   // owned towers (white)
+  // structures by kind: towers white (as before); castle anchors get distinct marks so a castle
+  // parcel's wall ring / gates / keep read on the thumbnail (and on the aerial mosaic)
+  const SKIND = { TOWER: [[235, 235, 245], 3], WALL: [[120, 116, 128], 1], GATE: [[212, 168, 60], 2], CORE: [[240, 210, 90], 3] };
+  for (const s of artifact.structures || []) { const k = SKIND[s.kind] || SKIND.TOWER; dot(s.x, s.z, k[0], k[1]); }
   const lm = artifact.obstacles.find((o) => o.kind !== "TREE" && o.kind !== "ROCK");
   if (lm) dot(lm.x, lm.z, MARK.landmark, 4);
 

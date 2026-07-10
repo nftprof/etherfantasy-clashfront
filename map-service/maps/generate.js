@@ -136,6 +136,69 @@ function carvePath(g, G, pts, hw, road = false) {
       disc(g, G, Math.round(ax + ((bx - ax) * k) / steps), Math.round(az + ((bz - az) * k) / steps), hw, road);
   }
 }
+// ---- BRIDGES (bridges read as bridges) ---------------------------------------------------------
+// A carved corridor that crosses WATER always got a ford (disc turns WATER→ROAD) — but the ford
+// used to sit alone in the river, an orphan stub. carveCorridor wraps carvePath with the water
+// mask captured at carve time (world rivers + archetype pools alike):
+//   • CONSOLIDATE: a crossing whose midpoint lies within BRIDGE_REUSE_U of an already-made
+//     crossing (earlier corridor ford or a world-road bridge) reroutes through that crossing —
+//     one shared bridge instead of a braid of parallel fords.
+//   • APPROACHES: each remaining crossing paints T.ROAD along the corridor for ~BRIDGE_APPR_U on
+//     BOTH banks, so the crossing reads road–bridge–road, never a lone causeway in the water.
+const BRIDGE_REUSE_U = 14;                   // reuse an existing crossing within this range (world-units)
+const BRIDGE_APPR_U = 6;                     // road approach length on each bank (world-units)
+function densify(pts, step = CELL_M) {
+  const out = [pts[0].slice()];
+  for (let s = 1; s < pts.length; s++) {
+    const [ax, az] = pts[s - 1], [bx, bz] = pts[s];
+    const n = Math.max(1, Math.ceil(Math.hypot(bx - ax, bz - az) / step));
+    for (let k = 1; k <= n; k++) out.push([ax + ((bx - ax) * k) / n, az + ((bz - az) * k) / n]);
+  }
+  return out;
+}
+// wet runs: maximal index ranges of dense samples sitting on masked water
+function wetRuns(water, G, dense) {
+  const runs = [];
+  const wet = (p) => water[gIdx(G, cellOf(G, p[0]), cellOf(G, p[1]))] === 1;
+  for (let i = 0; i < dense.length; i++) {
+    if (!wet(dense[i])) continue;
+    let j = i;
+    while (j + 1 < dense.length && wet(dense[j + 1])) j++;
+    runs.push([i, j]); i = j;
+  }
+  return runs;
+}
+function carveCorridor(g, G, pts, hw, bridge) {
+  if (!bridge || !bridge.water || pts.length < 2) { carvePath(g, G, pts, hw, false); return; }
+  let dense = densify(pts);
+  // DE-BRAID: a corridor that dips in and out of water repeatedly (wading diagonally along a
+  // wide river) collapses to ONE clean crossing — straight from just before its first wet
+  // sample to just after its last — instead of a zigzag braid of fords.
+  let runs0 = wetRuns(bridge.water, G, dense);
+  if (runs0.length >= 2) {
+    const a = Math.max(0, runs0[0][0] - 1), b = Math.min(dense.length - 1, runs0[runs0.length - 1][1] + 1);
+    dense = [...dense.slice(0, a), ...densify([dense[a], dense[b]]), ...dense.slice(b + 1)];
+    runs0 = wetRuns(bridge.water, G, dense);
+  }
+  // consolidation pass: reroute each crossing through a nearby existing one (single reroute pass)
+  for (let r = runs0.length - 1; r >= 0; r--) {           // splice back-to-front, indices stay valid
+    const [i0, i1] = runs0[r];
+    const mid = dense[(i0 + i1) >> 1];
+    let via = null, bd = Infinity;
+    for (const c of bridge.reg) {
+      const d = Math.hypot(c[0] - mid[0], c[1] - mid[1]);
+      if (d > 0.5 && d < BRIDGE_REUSE_U && d < bd) { bd = d; via = c; }
+    }
+    if (via) dense.splice(i0, i1 - i0 + 1, [via[0], via[1]]);
+  }
+  carvePath(g, G, dense, hw, false);
+  // approaches + registry on the FINAL polyline (reroutes included)
+  const appr = Math.ceil(BRIDGE_APPR_U / CELL_M);
+  for (const [i0, i1] of wetRuns(bridge.water, G, dense)) {
+    bridge.reg.push([dense[(i0 + i1) >> 1][0], dense[(i0 + i1) >> 1][1]]);
+    carvePath(g, G, dense.slice(Math.max(0, i0 - appr), Math.min(dense.length, i1 + appr + 1)), Math.min(hw, 2.0), true);
+  }
+}
 // ---- continuous-world feature painting (CONTINUOUS-WORLD-TERRAIN.md) --------------------------
 // A world feature is a swept band (discs of half-width hw) along a battle-frame polyline that may
 // run far outside the arena (the window has margin) — so NO cellOf clamping here: out-of-grid
@@ -222,7 +285,7 @@ function nearestOnNetwork(network, x, z) {
 //     battle line) is an INSTANTIATION over those corridors: atk_S → mount the nearest carved
 //     vertex → ride through center → def_base — the command view still gets a real lane.
 // Returns { lanes (the DECLARED world polylines), resPockets, campPockets }.
-function carveMobaNetwork(g, G, rng, p, { atk, def, poly, half, spawnZones, rimPts }) {
+function carveMobaNetwork(g, G, rng, p, { atk, def, poly, half, spawnZones, rimPts, bridge }) {
   const inPoly = (x, z) => !poly || pointInPoly(x, z, poly);
   let pcx = 0, pcz = 0;
   if (poly) { for (const [x, z] of poly) { pcx += x; pcz += z; } pcx /= poly.length; pcz /= poly.length; }
@@ -241,10 +304,33 @@ function carveMobaNetwork(g, G, rng, p, { atk, def, poly, half, spawnZones, rimP
     // WATER slides sideways (perpendicular) to the nearest dry ground — the river gets ONE ford
     // where a crossing is genuinely needed (usually at the entry crossing itself), not a lattice
     // of causeways. Deterministic: probes fixed offsets against the already-painted grid.
+    // STICKY bank-hugging dodge (bridges follow-up 2026-07-10): probes reach much further than
+    // before (±64 u — the Arcadia Flow is ~2 parcels wide at battle scale) AND an arm remembers
+    // which bank it last landed on, preferring that side for the next waypoint — so a corridor
+    // whose chord runs along the river HUGS ONE BANK instead of zigzag-braiding across it. An
+    // arm only ends up crossing when its entry/target genuinely sit on the other side.
+    let dodgeSign = 0;
     const dodgeWater = (x, z, px, pz) => {
       if (g[gIdx(G, cellOf(G, x), cellOf(G, z))] !== T.WATER) return [x, z];
-      for (const d of [4, -4, 8, -8, 12, -12, 16, -16]) {
+      const order = [];
+      if (dodgeSign) {
+        for (let d = 4; d <= 64; d += 4) order.push(dodgeSign * d);
+        for (let d = 4; d <= 64; d += 4) order.push(-dodgeSign * d);
+      } else {
+        for (let d = 4; d <= 64; d += 4) order.push(d, -d);    // no bank yet: nearest first
+      }
+      for (const d of order) {
         const nx = x + px * d, nz = z + pz * d;
+        if (Math.abs(nx) < lim && Math.abs(nz) < lim && inPoly(nx, nz) && g[gIdx(G, cellOf(G, nx), cellOf(G, nz))] !== T.WATER) { dodgeSign = d > 0 ? 1 : -1; return [nx, nz]; }
+      }
+      return [x, z];
+    };
+    // dry-point nudge for corridor JOIN/HUB targets: probe 8 directions outward for the nearest
+    // dry ground so arms don't converge to a mid-river meeting point (deterministic probe order)
+    const dryNear = (x, z) => {
+      if (g[gIdx(G, cellOf(G, x), cellOf(G, z))] !== T.WATER) return [x, z];
+      for (let d = 4; d <= 64; d += 4) for (const [ux, uz] of [[1, 0], [-1, 0], [0, 1], [0, -1], [0.707, 0.707], [0.707, -0.707], [-0.707, 0.707], [-0.707, -0.707]]) {
+        const nx = x + ux * d, nz = z + uz * d;
         if (Math.abs(nx) < lim && Math.abs(nz) < lim && inPoly(nx, nz) && g[gIdx(G, cellOf(G, nx), cellOf(G, nz))] !== T.WATER) return [nx, nz];
       }
       return [x, z];
@@ -252,6 +338,7 @@ function carveMobaNetwork(g, G, rng, p, { atk, def, poly, half, spawnZones, rimP
     // one seeded profile PER ARM (never shared/mirrored): two sine harmonics + a drift bow,
     // envelope-pinned at both endpoints so the arm still lands exactly on its entry + join.
     const wander = (from, to) => {
+      dodgeSign = 0;                                    // each arm picks (and then keeps) its own bank
       const prof = { p1: rng() * Math.PI * 2, f1: 0.7 + rng() * 1.1, a1: 10 + rng() * 14,
                      p2: rng() * Math.PI * 2, f2: 1.7 + rng() * 1.8, a2: 4 + rng() * 7,
                      drift: (rng() - 0.5) * 44 };
@@ -279,7 +366,7 @@ function carveMobaNetwork(g, G, rng, p, { atk, def, poly, half, spawnZones, rimP
         // merge into an earlier arm partway — corridors tree up, joins vary per parcel
         const tgt = toCenter[Math.floor(rng() * toCenter.length)];
         const at = pointAt(tgt, 0.35 + rng() * 0.4);
-        const join = clampIn(at.x, at.z);
+        const join = dryNear(...clampIn(at.x, at.z));
         const pts = wander([e.x, e.z], join);
         let bi = 0, bd = Infinity;
         for (let k = 0; k < tgt.length; k++) {
@@ -291,7 +378,7 @@ function carveMobaNetwork(g, G, rng, p, { atk, def, poly, half, spawnZones, rimP
       } else {
         // hub arm: approach the middle via a seeded ring point — joins land all around center
         const a = rng() * Math.PI * 2, rr = 5 + rng() * 10;
-        const hub = clampIn(Math.cos(a) * rr, Math.sin(a) * rr);
+        const hub = dryNear(...clampIn(Math.cos(a) * rr, Math.sin(a) * rr));
         const pts = [...wander([e.x, e.z], hub), [0, 0]];
         arms.push(pts);
         toCenter.push(pts);
@@ -329,9 +416,10 @@ function carveMobaNetwork(g, G, rng, p, { atk, def, poly, half, spawnZones, rimP
   // (the A1 lanes[] overlay), not roads on the land. T.ROAD is reserved for REAL roads: the
   // continuous world-field highways + fords/bridges (owner 2026-07-10 — roads must read as one
   // connected network on the map; battle lanes dead-ending at parcel edges looked like broken roads).
-  // disc(road=false) still turns WATER→ROAD, so lane/track fords stay visible crossings.
-  for (const lane of declared) carvePath(g, G, lane, 2.5, false);
-  for (const path of side) carvePath(g, G, path, p.laneCount === 1 ? 2.2 : 2.0, false);
+  // disc(road=false) still turns WATER→ROAD, so lane/track fords stay visible crossings —
+  // carveCorridor consolidates those crossings and paints the road–bridge–road approaches.
+  for (const lane of declared) carveCorridor(g, G, lane, 2.5, bridge);
+  for (const path of side) carveCorridor(g, G, path, p.laneCount === 1 ? 2.2 : 2.0, bridge);
   // 2) base plateaus + center + staging clearings (mirrors command_converter's CORE/SPAWN pockets)
   disc(g, G, cellOf(G, atk.x), cellOf(G, atk.z), 9.5);
   disc(g, G, cellOf(G, def.x), cellOf(G, def.z), 12);       // wider: holds the CoC build-spot ring
@@ -341,15 +429,15 @@ function carveMobaNetwork(g, G, rng, p, { atk, def, poly, half, spawnZones, rimP
   // rides the corridors base-to-base; arena layout: every reference lane starts/ends at a base.
   if (p.laneCount !== 1) {
     for (const lane of network) {
-      carvePath(g, G, [[atk.x, atk.z], lane[0]], 2.0, false);
-      carvePath(g, G, [[def.x, def.z], lane[lane.length - 1]], 2.0, false);
+      carveCorridor(g, G, [[atk.x, atk.z], lane[0]], 2.0, bridge);
+      carveCorridor(g, G, [[def.x, def.z], lane[lane.length - 1]], 2.0, bridge);
     }
   }
   // 4) edge-entry corridors: true rim point → its entry spawn → nearest lane (reinforcements).
   // Countryside entries sit ON their own arm (zero-length hop); polygon extras get a short trail.
   for (let i = 0; i < rimPts.length; i++) {
     const s = rimPts[i];
-    carvePath(g, G, [[s.rimX, s.rimZ], [s.x, s.z], nearestOnNetwork(network, s.x, s.z)], 2.0, false);
+    carveCorridor(g, G, [[s.rimX, s.rimZ], [s.x, s.z], nearestOnNetwork(network, s.x, s.z)], 2.0, bridge);
   }
   // 5) chokes. Arena: mirrored jungle crossings between mid and each side lane. Countryside:
   // two seeded arm-to-arm shortcut trails between distinct corridors — varied, never mirrored.
@@ -360,7 +448,7 @@ function carveMobaNetwork(g, G, rng, p, { atk, def, poly, half, spawnZones, rimP
       let bi = Math.floor(rng() * (nArms - 1)); if (bi >= ai) bi++;
       const a = pointAt(side[ai], 0.3 + rng() * 0.4);
       const b = pointAt(side[bi], 0.3 + rng() * 0.4);
-      carvePath(g, G, [[a.x, a.z], [b.x, b.z]], 1.6, false);
+      carveCorridor(g, G, [[a.x, a.z], [b.x, b.z]], 1.6, bridge);
     }
   } else {
     const t1 = 0.30 + rng() * 0.12;
@@ -369,7 +457,7 @@ function carveMobaNetwork(g, G, rng, p, { atk, def, poly, half, spawnZones, rimP
       const m = pointAt(mid, t);
       for (const other of network) {
         if (other === mid) continue;
-        carvePath(g, G, [[m.x, m.z], nearestOnNetwork([other], m.x, m.z)], 1.6, false);
+        carveCorridor(g, G, [[m.x, m.z], nearestOnNetwork([other], m.x, m.z)], 1.6, bridge);
       }
     }
   }
@@ -383,11 +471,11 @@ function carveMobaNetwork(g, G, rng, p, { atk, def, poly, half, spawnZones, rimP
     px = Math.max(-half + 6, Math.min(half - 6, px)); pz = Math.max(-half + 6, Math.min(half - 6, pz));
     if (Math.hypot(px - atk.x, pz - atk.z) < 50 || Math.hypot(px - def.x, pz - def.z) < 50) return;
     disc(g, G, cellOf(G, px), cellOf(G, pz), 3.4);
-    carvePath(g, G, [[a.x, a.z], [px, pz]], 1.6, false);
+    carveCorridor(g, G, [[a.x, a.z], [px, pz]], 1.6, bridge);
     list.push({ x: px, z: pz });
     if (mirror) {                                       // 180°-rotated twin (network is symmetric)
       disc(g, G, cellOf(G, -px), cellOf(G, -pz), 3.4);
-      carvePath(g, G, [[-a.x, -a.z], [-px, -pz]], 1.6, false);
+      carveCorridor(g, G, [[-a.x, -a.z], [-px, -pz]], 1.6, bridge);
       list.push({ x: -px, z: -pz });
     }
   };
@@ -480,6 +568,84 @@ function placeBarriers(g, G, rng, count, avoid, budgetLevel) {
   return out;
 }
 
+// ---- CASTLE LAYOUT (castle-v1 on singles; canon decision 5 — castles are the defended base) ----
+// Grows a fortification around the (already relocated) defender base: a rough wobbly WALL ring
+// (8–12 anchor segments, ~35–50 u radius, following terrain — anchors on WATER/OOB are clipped
+// away, nature defends the gap) with 4 corner TOWERs and 2 opposed GATEs, courtyard cleared OPEN.
+// Gates sit where the ring meets the battle approaches (the bearing the attacker/declared lane
+// arrives on + the opposite side), snapped to usable ring anchors on carved-walkable ground;
+// gate openings are carved courtyard→gate→outside so the courtyard ALWAYS connects out through
+// its gates.
+// v1 SIMPLIFICATION (documented): WALLs are STRUCTURES, not terrain — they do NOT block the walk
+// grid. The ground under the ring is cleared to a thin wall-walk band so every anchor sits on
+// walkable cells (CF invariant 3); when walls turn solid in v2 the carved gate openings already
+// guarantee courtyard↔outside connectivity.
+function castleLayout(g, G, rng, { base, atkPt, poly, half, budgetLevel, bridge }) {
+  const cx = base.x, cz = base.z;
+  // radii: rough rectangle/oval 35–50 u, capped so the ring stays inside the arena square
+  const avail = Math.max(26, half - 6 - Math.max(Math.abs(cx), Math.abs(cz)));
+  const Rx = Math.min(35 + rng() * 15, avail), Rz = Math.min(35 + rng() * 15, avail);
+  const n = 14 + Math.floor(rng() * 5);                   // 14–18 ring anchors ⇒ 8–12 WALLs after the 2 GATEs + 4 TOWERs
+  const rot = rng() * Math.PI * 2;
+  const ring = [];
+  for (let i = 0; i < n; i++) {
+    const a = rot + (i / n) * Math.PI * 2;
+    const w = 1 + (rng() - 0.5) * 0.15;                   // hand-laid wobble, never a circle
+    const x = r1(cx + Math.cos(a) * Rx * w), z = r1(cz + Math.sin(a) * Rz * w);
+    const ci = gIdx(G, cellOf(G, x), cellOf(G, z));
+    const ok = Math.abs(x) < half - 3 && Math.abs(z) < half - 3
+      && (!poly || pointInPoly(x, z, poly)) && g[ci] !== T.OOB && g[ci] !== T.WATER;
+    ring.push({ x, z, a, ok });
+  }
+  const angDiff = (a, b) => Math.abs(Math.atan2(Math.sin(a - b), Math.cos(a - b)));
+  const nearestOk = (want, taken) => {
+    let bi = -1, bd = Infinity;
+    for (let i = 0; i < n; i++) {
+      if (!ring[i].ok || taken.has(i)) continue;
+      const d = angDiff(ring[i].a, want);
+      if (d < bd) { bd = d; bi = i; }
+    }
+    return bi;
+  };
+  // gates: toward the attacker approach + the opposite side (two opposed doors)
+  const aAtk = Math.atan2(atkPt.z - cz, atkPt.x - cx);
+  const taken = new Set();
+  const gates = [];
+  for (const want of [aAtk, aAtk + Math.PI]) {
+    const gi = nearestOk(want, taken);
+    if (gi >= 0) { taken.add(gi); gates.push(gi); }
+  }
+  // ground prep: a thin wall-walk band along the ring (anchors stand on walkable ground)
+  for (let i = 0; i < n; i++) {
+    const a = ring[i], b = ring[(i + 1) % n];
+    if (a.ok && b.ok) carvePath(g, G, [[a.x, a.z], [b.x, b.z]], 1.2, false);
+  }
+  // courtyard: cleared OPEN (the defended base; the 22 u build-spot ring fits inside)
+  disc(g, G, cellOf(G, cx), cellOf(G, cz), Math.max(12, (Math.min(Rx, Rz) - 8) / CELL_M));
+  // gate openings: courtyard → gate → ~12 u beyond the wall line
+  for (const gi of gates) {
+    const gp = ring[gi];
+    const m = Math.hypot(gp.x - cx, gp.z - cz) || 1;
+    const ox = Math.max(-half + 4, Math.min(half - 4, gp.x + ((gp.x - cx) / m) * 12));
+    const oz = Math.max(-half + 4, Math.min(half - 4, gp.z + ((gp.z - cz) / m) * 12));
+    carveCorridor(g, G, [[cx, cz], [gp.x, gp.z], [ox, oz]], 2.0, bridge);
+  }
+  // 4 corner TOWERs at the diagonals between the gates
+  for (let k = 0; k < 4; k++) {
+    const gi = nearestOk(aAtk + Math.PI / 4 + (k * Math.PI) / 2, taken);
+    if (gi >= 0) { taken.add(gi); ring[gi].tower = true; }
+  }
+  const out = [];
+  let wallN = 0, gateN = 0, towerN = 0;
+  for (let i = 0; i < n; i++) {
+    if (!ring[i].ok) continue;
+    if (gates.includes(i)) out.push({ anchorId: `castle_gate_${gateN++}`, kind: "GATE", side: "DEFENDER", x: ring[i].x, z: ring[i].z, hpMax: 700 + budgetLevel * 150 });
+    else if (ring[i].tower) out.push({ anchorId: `castle_tower_${towerN++}`, kind: "TOWER", side: "DEFENDER", x: ring[i].x, z: ring[i].z, hpMax: 1600 + budgetLevel * 250 });
+    else out.push({ anchorId: `castle_wall_${wallN++}`, kind: "WALL", side: "DEFENDER", x: ring[i].x, z: ring[i].z, hpMax: 900 + budgetLevel * 150 });
+  }
+  return out;
+}
+
 export function generate(parcel, params = null, designVersion = 0) {
   const { parcelId, biome = "", zone = "" } = parcel;
   const seed = seedFor(parcelId, biome, zone);
@@ -520,8 +686,31 @@ export function generate(parcel, params = null, designVersion = 0) {
     const field = loadWorldField(zone);
     wf = field ? featuresForParcel(field, { bbox: parcel.bbox, polygon: parcel.polygon, sizeM }) : null;
   }
-  if (wf && !(wf.rivers?.length || wf.roads?.length || wf.ridges?.length)) wf = null;
+  if (wf && !(wf.rivers?.length || wf.roads?.length || wf.ridges?.length || wf.castles?.length)) wf = null;
   if (wf) paintWorldFeatures(g, G, wf);
+  // 1d) BRIDGE context: snapshot every WATER cell at carve time (world rivers + archetype pools
+  //     alike) — carveCorridor uses it to consolidate crossings and paint road–bridge–road
+  //     approaches. The registry is seeded with the WORLD-ROAD bridges (cells the road pass
+  //     painted ROAD with river water beside them) so corridors reuse the real bridge instead
+  //     of fording 10 u upstream.
+  const bridge = { water: new Uint8Array(G * G), reg: [] };
+  let hasWater = false;
+  for (let i = 0; i < g.length; i++) if (g[i] === T.WATER) { bridge.water[i] = 1; hasWater = true; }
+  if (!hasWater) bridge.water = null;
+  if (wf && hasWater) {
+    for (const rd of wf.roads || []) {
+      for (const [x, z] of densify(rd.pts, CELL_M * 2)) {
+        const cx = cellOf(G, x), cz = cellOf(G, z);
+        if (Math.abs(x) > sizeM / 2 || Math.abs(z) > sizeM / 2) continue;
+        if (g[gIdx(G, cx, cz)] !== T.ROAD) continue;
+        let nearWater = false;
+        for (const [dx, dz] of [[1, 0], [-1, 0], [0, 1], [0, -1], [2, 0], [-2, 0], [0, 2], [0, -2]])
+          if (inG(G, cx + dx, cz + dz) && bridge.water[gIdx(G, cx + dx, cz + dz)]) { nearWater = true; break; }
+        if (nearWater && !bridge.reg.some((c) => Math.hypot(c[0] - x, c[1] - z) < BRIDGE_APPR_U))
+          bridge.reg.push([x, z]);
+      }
+    }
+  }
   const spot = features[0] || { cx: G >> 1, cz: (G >> 1) + Math.round((rng() - 0.5) * G * 0.3) };
   const landmark = p.landmark !== "NONE"
     ? (placed.landmarkAt
@@ -538,6 +727,27 @@ export function generate(parcel, params = null, designVersion = 0) {
   const A = (dx, dz, t, fx, fz) => poly ? (({ x, z }) => ({ x: r1(x), z: r1(z) }))(polyAnchor(poly, dx, dz, t)) : { x: fx, z: fz };
   const base = A(1, 1, 0.24, r1(half * SPAWN_F), r1(half * SPAWN_F));       // DEFENDER, NE
   const atk = A(-1, -1, 0.15, r1(-half * SPAWN_F), r1(-half * SPAWN_F));    // ATTACKER, SW
+  // CASTLE (canon decision 5, castle-v1 on singles): a world fortification POI on this parcel
+  // makes the defender base THE castle — def_base relocates INTO the courtyard and the WALL/
+  // GATE/TOWER ring grows around it after the carve stage (castleLayout below).
+  const castle = wf?.castles?.length
+    ? wf.castles.reduce((b, c) => (Math.hypot(c.at[0], c.at[1]) < Math.hypot(b.at[0], b.at[1]) ? c : b), wf.castles[0])
+    : null;
+  if (castle) {
+    const lim = half - 40;                        // keep the courtyard well inside the arena
+    let cxw = Math.max(-lim, Math.min(lim, castle.at[0]));
+    let czw = Math.max(-lim, Math.min(lim, castle.at[1]));
+    if (poly && !pointInPoly(cxw, czw, poly)) {   // pull toward the polygon centroid until inside
+      let pcx = 0, pcz = 0;
+      for (const [x, z] of poly) { pcx += x; pcz += z; }
+      pcx /= poly.length; pcz /= poly.length;
+      for (let t = 1; t <= 10 && !pointInPoly(cxw, czw, poly); t++) {
+        cxw = castle.at[0] + (pcx - castle.at[0]) * (t / 10);
+        czw = castle.at[1] + (pcz - castle.at[1]) * (t / 10);
+      }
+    }
+    base.x = r1(cxw); base.z = r1(czw);
+  }
   // per-edge entries: on the overworld an army always crosses in at the MIDPOINT of the specific
   // parcel edge it approaches from — so we emit one arrival point per REAL edge (4 for a square,
   // N for an N-gon), pulled slightly inward so it lands inside the parcel. The FIRM connectivity
@@ -581,7 +791,7 @@ export function generate(parcel, params = null, designVersion = 0) {
   }
   // 3) carve the MOBA lane network out of the jungle (lanes/entries/chokes/clearings/pockets),
   //    then seal any leftover enclosed bubbles so the map is one connected battlefield.
-  const net = carveMobaNetwork(g, G, rng, p, { atk, def: base, poly, half, spawnZones, rimPts });
+  const net = carveMobaNetwork(g, G, rng, p, { atk, def: base, poly, half, spawnZones, rimPts, bridge });
   // forward build spot on the defender half of the DECLARED lane — placed via arc length so it
   // sits ON carved ground for both layouts (the web's declared lane no longer runs the diagonal)
   const bm = pointAt(net.lanes[0], 0.7);
@@ -593,8 +803,13 @@ export function generate(parcel, params = null, designVersion = 0) {
     const inside = rd.pts.filter(([x, z]) => Math.abs(x) < half && Math.abs(z) < half && (!poly || pointInPoly(x, z, poly)));
     if (!inside.length) continue;
     const a = inside[inside.length >> 1];
-    carvePath(g, G, [a, nearestOnNetwork(net.lanes, a[0], a[1])], 2.0, false);
+    carveCorridor(g, G, [a, nearestOnNetwork(net.lanes, a[0], a[1])], 2.0, bridge);
   }
+  // 3c) CASTLE LAYOUT: grow the WALL/GATE/TOWER ring around the relocated defender base (the
+  //     castle IS the defended base). Runs after the carve so the courtyard/gates stay open.
+  const castleStructures = castle
+    ? castleLayout(g, G, rng, { base, atkPt: atk, poly, half, budgetLevel: budget.level, bridge })
+    : [];
   sealDisconnectedPockets(g, G);
 
   // resource nodes: exactly p.resourceNodes (budget-capped). Explicit resourceAt placements
@@ -675,6 +890,9 @@ export function generate(parcel, params = null, designVersion = 0) {
       x: r1(a.x), z: r1(a.z), hpMax: 1600 + budget.level * 250 });
   }
   snapOpen(structures, v.eroded, G);
+  // castle anchors join AFTER snapOpen — they already stand on the cleared wall-walk band and
+  // snapping would bend the ring out of shape.
+  structures.push(...castleStructures);
 
   // 6) bake: props from final grid; walkability bitmask (1 = open at native cell res)
   const props = sampleProps(g, G, rng);
@@ -691,6 +909,7 @@ export function generate(parcel, params = null, designVersion = 0) {
     obstacles: props,
     resources, buildSpots, spawnZones, lanes, routes, barriers, mobs, structures,
     meta: { seed, designVersion, parcelId, biome, zone, params: p, repairs: v.repairs,
-            budget: { level: budget.level, name: budget.name } },
+            budget: { level: budget.level, name: budget.name },
+            ...(castle ? { castle: { id: castle.id, kind: castle.kind, name: castle.name } } : {}) },
   };
 }

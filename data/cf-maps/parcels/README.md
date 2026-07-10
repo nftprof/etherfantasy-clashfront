@@ -52,6 +52,12 @@ all 9 pass CF `validateBattlefield` (5 invariants) + load via `loadParcelBattlef
   (terrain grid `cells`+`walk` + entities). Schema + seam contract: **`docs/briefs/ARTIFACT-SCHEMA.md`**.
 - Regenerate deterministically from the registry biome + `generate(parcel)`; invest tier varies content.
 
+Plus two flagship EDU parcels generated via `worldParcel` (real polygon + continuous world field):
+`60202790016` (river/road window reference) and **`60203670103` — the Westgate Castle (Nijō-analog)
+parcel**: it contains the `EDU-CASTLE-WESTGATE` POI from `data/world-terrain/EDU.json`, so its map
+carries the castle-v1 WALL/GATE/TOWER ring (`castle_*` structures, walls-as-structures — see
+`map-service/maps/generate.js` castleLayout). Both pass all 5 invariants.
+
 ## Rules
 
 - **Filename = `<parcelId>.json`** exactly (the id CF looks up).
