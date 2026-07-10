@@ -40,11 +40,12 @@
   the **"broad but thin, concentrated rich"** gradient rule (iron minable everywhere, richest UW3), per-zone
   detail cards (materials/recruits/POI-types/wild-boss/hazards), and the resource-node vocabulary the
   generator must grow into. Grounded in the Atlas + biome-recruitment.
-- **PET-AND-MASTER-HOMES.md** — ⭐ (Map-maker, 2026-07-07): which **PentaPet element-types populate each
-  zone** (the wild + recruit pool per region — UW3/Luxuria = dark/mystic ✅) + each **Master's home zone**
-  (home = the land of the Master's element, which its matching-element buff resonates with). Grounded in the
-  228-pet element roster + the 12-zone registry. Blocker flagged: the 47 Masters have no element data yet
-  (owner/API needed); Bosses (elements in-name) are homed.
+- **PET-AND-MASTER-HOMES.md** + **`../../data/{pet-domains,master-homes,zone-pet-population}.json`** — ⭐
+  FROZEN (Map-maker, 2026-07-07): the **7 Master DOMAINS** (Wild/Tide/Ember/Stone/Light/Shadow/Beast) that
+  group the 17 pet species + the **combat rings** (Elemental & Cosmic triangles; **Light▶Shadow** = sky↔
+  underworld axis); which **pet element-types + rarity band populate each zone** (UW3=dark/mystic ✅); and
+  all **52 Masters homed** by domain (`master-homes.json` = the file the **website team** updates masters
+  from). Master site-elements are decorative (name-hashed) — crosswalked onto real domains.
 - **MAP-MODES.md** — ⭐ (Map-maker, 2026-07-07): ONE map serves MANY modes — the spawn/entry **anchors are
   not enemy waves**; a MODE (Versus / Siege / Dominion / Guard / Duel / Clash) just lights up a subset +
   sets the win-point. Attacker enters by approach direction; defender holds the middle. Renderer spec for
