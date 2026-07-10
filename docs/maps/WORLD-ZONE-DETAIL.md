@@ -1,5 +1,7 @@
 # World Zone Detail — full per-zone facts for world planning
 
+> ⚠ **SERVER FIELDS — read `data/zone-registry.json`, never hardcode.** The server/start-zone topology is owned by the world-planning session and lives ONLY in the registry (4 servers: sg Singapore→Porthaven · jp Tokyo→Arcadia LIVE · us US-West→Mythoria-N · ca Montréal→Mythoria-S; Tianxia = destination). Any regeneration of tables in this doc MUST pull the server column from the registry — hardcoded values here have already caused two collisions.
+
 > **Map-maker session, 2026-07-07 — published for the world-planning session.** Everything known about
 > every zone, from the **real extracted map** (`data/hexagon-city-source/`) joined to the canonical
 > **`data/zone-registry.json`**. Machine-readable companion: **`data/world-zone-detail.json`** (same numbers,
@@ -8,9 +10,9 @@
 
 ## 1. The world at a glance
 
-- **12 zones** on **3 tiers** (surface / sky / underworld) across **2 launch servers** (Montréal `ca`,
-  Singapore `sg`), plus **2 SPECIAL prestige islands** (Olympus/founders, Fortuna/influencers) that ship
-  no extracted parcels yet.
+- **12 zones** on **3 tiers** (surface / sky / underworld) across the **live server topology in
+  `data/zone-registry.json`** (source of truth — see the ⚠ header note), plus **2 SPECIAL prestige
+  islands** (Olympus/founders, Fortuna/influencers) that ship no extracted parcels yet.
 - **World totals (real extraction):** **8,482 L2 estates** + **284,314 L3 singles** = **292,796 parcels**.
 - **L2 by size class:** EPIC 48 · GIANT 172 · LARGE 393 · MEDIUM 1,082 · SMALL 6,787.
 - **Parcel-id → zone:** `zoneCode = parcelId.slice(1,3)` (see the registry).

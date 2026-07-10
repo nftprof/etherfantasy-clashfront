@@ -1,5 +1,7 @@
 # Zone & Biome Seeding Guidance — the map-side input for economy seeding params
 
+> ⚠ **SERVER FIELDS — read `data/zone-registry.json`, never hardcode.** The server/start-zone topology is owned by the world-planning session and lives ONLY in the registry (4 servers: sg Singapore→Porthaven · jp Tokyo→Arcadia LIVE · us US-West→Mythoria-N · ca Montréal→Mythoria-S; Tianxia = destination). Any regeneration of tables in this doc MUST pull the server column from the registry — hardcoded values here have already caused two collisions.
+
 > **Map-maker session, 2026-07-07 — for the CF Overworld Economics dev.** This is the **map/terrain
 > half** of `docs/maps/MAP-ECONOMY-SEEDING-PARAMS.md` (your draft): what every **zone** *is* (biome,
 > elevation, elements) and therefore what **materials, resources, POIs, recruits, and hazards** each one
@@ -10,8 +12,8 @@
 
 ## 0. The world is 10 zones, not one (the thing to internalize first)
 
-There is **ONE world** of **10 geometried zones** on **3 vertical tiers**, split across **2 launch servers**
-(decision 12). Every zone is a distinct **continent with its own biome, elements, and economy** — no zone
+There is **ONE world** of **10 geometried zones** on **3 vertical tiers**, served by the live server
+topology in `data/zone-registry.json` (source of truth — see the ⚠ header note; decision 12). Every zone is a distinct **continent with its own biome, elements, and economy** — no zone
 gives everything; players campaign across zones to complete an army *and* a materials base.
 
 | Zone | Tier | Server | Biome identity (atlas) | Primary elements | Economy headline |

@@ -15,20 +15,441 @@
         "SPECIAL": "prestige/curated islands (e.g. Founders Isle CGI) — ships no extracted parcels yet; combat role + geometry owner-TBD; baseline default"
       },
       "note": "zoneAvgStrength = baseline * strengthMultiplier. Relative index; the seed pass scales real wild-garrison size from it. Numbers are a grounded proposal — owner to tune, then freeze."
-    }
+    },
+    "serverTopologySync": "2026-07-10 synced from the world-planning session relay (owner-locked): Singapore(sg 13.250.39.41)->Porthaven start; Tokyo(jp 18.178.54.54)->Arcadia start (LIVE); US West(us 54.151.57.111)->Mythoria NORTH; Montreal(ca 3.98.68.96)->Mythoria SOUTH (first sub-zone slice, decision 12); Tianxia = the DESTINATION not a start (possible direct start for a future eu_mena server). THEIR registry copy is the source of truth for server fields — if this file and theirs ever differ, take theirs verbatim. Doc regenerators: ALWAYS read the server column from this file, never hardcode."
   },
   "zones": [
-    { "zoneId": "CGI", "zoneCode": "01", "name": "Olympus",   "subtitle": "Founders' Isle",             "tier": "surface",    "family": "SPECIAL",     "server": "ca", "unlockOrder": 0, "strengthMultiplier": 1.0, "zoneAvgStrength": 100, "biomeFamily": "TEMPERATE_GRASS", "palettes": ["sakura","verdant"],            "primaryElements": ["Light","Water"],        "signatureMaterials": ["Gold","Herb"],              "cityRef": "Palm Jumeirah (Dubai)", "l2Estates": 0, "l3Singles": 0, "worldOffset": null, "special": "FOUNDERS-exclusive prestige island (Dubai-Palm vibe); curated sale to project founders (small parcels). The seat of the world's makers. Ships NO extracted parcels yet — geometry + combat role owner-TBD." },
-    { "zoneId": "KOL", "zoneCode": "08", "name": "Fortuna",   "subtitle": "Influencers' Isle",          "tier": "surface",    "family": "SPECIAL",     "server": "ca", "unlockOrder": 0, "strengthMultiplier": 1.0, "zoneAvgStrength": 100, "biomeFamily": "TEMPERATE_GRASS", "palettes": ["sakura","verdant"],            "primaryElements": ["Wind","Light"],         "signatureMaterials": ["Gold","Herb"],              "cityRef": "Monaco (Riviera glamour)", "l2Estates": 0, "l3Singles": 0, "worldOffset": null, "special": "INFLUENCER-exclusive prestige island (KOL = Key Opinion Leaders); glamour/fame/fortune. Ships NO extracted parcels yet — geometry + combat role owner-TBD." },
-    { "zoneId": "HUB", "zoneCode": "07", "name": "Tianxia",   "subtitle": "Capital Heartland",          "tier": "surface",    "family": "SURFACE",     "server": "ca", "unlockOrder": 1, "strengthMultiplier": 1.0, "zoneAvgStrength": 100, "biomeFamily": "TEMPERATE_GRASS", "palettes": ["verdant","autumn"],            "primaryElements": ["Grass","Earth"],        "signatureMaterials": ["Food","Gold"],              "cityRef": "Paris",     "l2Estates": 1744, "l3Singles": 58745, "worldOffset": [0,0] },
-    { "zoneId": "ENT", "zoneCode": "03", "name": "Mythoria",   "subtitle": "Western Carnival Coast",      "tier": "surface",    "family": "SURFACE",     "server": "ca", "unlockOrder": 2, "strengthMultiplier": 1.1, "zoneAvgStrength": 110, "biomeFamily": "TEMPERATE_GRASS", "palettes": ["sakura","verdant","autumn"],   "primaryElements": ["Wind","Water","Grass"], "signatureMaterials": ["Herb","Fish"],              "cityRef": "Rio de Janeiro", "l2Estates": 1492, "l3Singles": 38284, "worldOffset": [-190,-10] },
-    { "zoneId": "BUS", "zoneCode": "00", "name": "Porthaven", "subtitle": "Northern Commercial Coast",   "tier": "surface",    "family": "SURFACE",     "server": "ca", "unlockOrder": 3, "strengthMultiplier": 1.2, "zoneAvgStrength": 120, "biomeFamily": "SWAMP",           "palettes": ["verdant","ashen","swamp"],     "primaryElements": ["Water","Grass"],        "signatureMaterials": ["Fish","Salt","Gold"],       "cityRef": "New York",  "l2Estates": 1187, "l3Singles": 70467, "worldOffset": [40,-200] },
-    { "zoneId": "EDU", "zoneCode": "02", "name": "Arcadia",   "subtitle": "Academy Highlands",           "tier": "surface",    "family": "SURFACE",     "server": "ca", "unlockOrder": 4, "strengthMultiplier": 1.3, "zoneAvgStrength": 130, "biomeFamily": "TEMPERATE_FOREST","palettes": ["sakura","autumn","verdant"],   "primaryElements": ["Earth","Electric","Wind"],"signatureMaterials": ["Arcane","Stone","Iron"],   "cityRef": "Kyoto",     "l2Estates": 372,  "l3Singles": 13663, "worldOffset": [100,150] },
-    { "zoneId": "HS1", "zoneCode": "04", "name": "Aeropolis",   "subtitle": "Cloud Gateway Isle",          "tier": "sky",        "family": "SKY",         "server": "sg", "unlockOrder": 5, "strengthMultiplier": 2.0, "zoneAvgStrength": 200, "biomeFamily": "TEMPERATE_GRASS", "palettes": ["verdant","sakura"],            "primaryElements": ["Wind","Grass"],         "signatureMaterials": ["Aether","Timber"],          "cityRef": "Cusco",     "l2Estates": 346,  "l3Singles": 14071, "worldOffset": [300,100] },
-    { "zoneId": "HS2", "zoneCode": "05", "name": "Emberfall", "subtitle": "Storm & Lava Isle",           "tier": "sky",        "family": "SKY",         "server": "sg", "unlockOrder": 6, "strengthMultiplier": 2.0, "zoneAvgStrength": 200, "biomeFamily": "VOLCANIC",        "palettes": ["volcanic","ashen","verdant"],  "primaryElements": ["Fire","Electric"],      "signatureMaterials": ["Obsidian","Sulfur","Aether"],"cityRef": "Reykjavik caldera", "l2Estates": 451, "l3Singles": 13694, "worldOffset": [425,175] },
-    { "zoneId": "HS3", "zoneCode": "06", "name": "Empyrea",  "subtitle": "High Sanctum Isle",           "tier": "sky",        "family": "SKY",         "server": "sg", "unlockOrder": 7, "strengthMultiplier": 2.0, "zoneAvgStrength": 200, "biomeFamily": "SNOW",            "palettes": ["ashen","tundra","verdant"],    "primaryElements": ["Wind","Light"],         "signatureMaterials": ["Light-essence","Herb","Aether"],"cityRef": "Lhasa", "l2Estates": 464, "l3Singles": 11873, "worldOffset": [300,245] },
-    { "zoneId": "UW1", "zoneCode": "09", "name": "Ironhold", "subtitle": "Upper Caverns",              "tier": "underworld", "family": "UNDERWORLD",  "server": "sg", "unlockOrder": 8, "strengthMultiplier": 2.5, "zoneAvgStrength": 250, "biomeFamily": "SWAMP",           "palettes": ["ashen","swamp"],               "primaryElements": ["Earth","Dark"],         "signatureMaterials": ["Stone","Iron","Gems"],      "cityRef": "Derinkuyu",  "l2Estates": 1233, "l3Singles": 28915, "worldOffset": [310,-210] },
-    { "zoneId": "UW2", "zoneCode": "10", "name": "Blackmere",  "subtitle": "Deep Caverns",               "tier": "underworld", "family": "UNDERWORLD",  "server": "sg", "unlockOrder": 9, "strengthMultiplier": 3.5, "zoneAvgStrength": 350, "biomeFamily": "VOLCANIC",        "palettes": ["swamp","volcanic","ashen"],    "primaryElements": ["Water","Fire","Dark"],  "signatureMaterials": ["Iron","Obsidian","Gems"],   "cityRef": "flooded cavern network", "l2Estates": 1101, "l3Singles": 29777, "worldOffset": [475,-210] },
-    { "zoneId": "UW3", "zoneCode": "11", "name": "Luxuria",   "subtitle": "Inferno Vault",              "tier": "underworld", "family": "UNDERWORLD",  "server": "sg", "unlockOrder": 10, "strengthMultiplier": 5.0, "zoneAvgStrength": 500, "biomeFamily": "VOLCANIC",        "palettes": ["volcanic","ashen"],            "primaryElements": ["Fire","Dark"],          "signatureMaterials": ["Iron","Obsidian","Dark-essence"],"cityRef": "volcanic vent chamber", "l2Estates": 92, "l3Singles": 4825, "worldOffset": [600,-210] }
-  ]
+    {
+      "zoneId": "CGI",
+      "zoneCode": "01",
+      "name": "Olympus",
+      "subtitle": "Founders' Isle",
+      "tier": "surface",
+      "family": "SPECIAL",
+      "server": "ca",
+      "unlockOrder": 0,
+      "strengthMultiplier": 1,
+      "zoneAvgStrength": 100,
+      "biomeFamily": "TEMPERATE_GRASS",
+      "palettes": [
+        "sakura",
+        "verdant"
+      ],
+      "primaryElements": [
+        "Light",
+        "Water"
+      ],
+      "signatureMaterials": [
+        "Gold",
+        "Herb"
+      ],
+      "cityRef": "Palm Jumeirah (Dubai)",
+      "l2Estates": 0,
+      "l3Singles": 0,
+      "worldOffset": null,
+      "special": "FOUNDERS-exclusive prestige island (Dubai-Palm vibe); curated sale to project founders (small parcels). The seat of the world's makers. Ships NO extracted parcels yet — geometry + combat role owner-TBD."
+    },
+    {
+      "zoneId": "KOL",
+      "zoneCode": "08",
+      "name": "Fortuna",
+      "subtitle": "Influencers' Isle",
+      "tier": "surface",
+      "family": "SPECIAL",
+      "server": "ca",
+      "unlockOrder": 0,
+      "strengthMultiplier": 1,
+      "zoneAvgStrength": 100,
+      "biomeFamily": "TEMPERATE_GRASS",
+      "palettes": [
+        "sakura",
+        "verdant"
+      ],
+      "primaryElements": [
+        "Wind",
+        "Light"
+      ],
+      "signatureMaterials": [
+        "Gold",
+        "Herb"
+      ],
+      "cityRef": "Monaco (Riviera glamour)",
+      "l2Estates": 0,
+      "l3Singles": 0,
+      "worldOffset": null,
+      "special": "INFLUENCER-exclusive prestige island (KOL = Key Opinion Leaders); glamour/fame/fortune. Ships NO extracted parcels yet — geometry + combat role owner-TBD."
+    },
+    {
+      "zoneId": "HUB",
+      "zoneCode": "07",
+      "name": "Tianxia",
+      "subtitle": "Capital Heartland",
+      "tier": "surface",
+      "family": "SURFACE",
+      "server": "ca",
+      "unlockOrder": 1,
+      "strengthMultiplier": 1,
+      "zoneAvgStrength": 100,
+      "biomeFamily": "TEMPERATE_GRASS",
+      "palettes": [
+        "verdant",
+        "autumn"
+      ],
+      "primaryElements": [
+        "Grass",
+        "Earth"
+      ],
+      "signatureMaterials": [
+        "Food",
+        "Gold"
+      ],
+      "cityRef": "Paris",
+      "l2Estates": 1744,
+      "l3Singles": 58745,
+      "worldOffset": [
+        0,
+        0
+      ],
+      "role": "destination",
+      "roleNote": "the destination, not a start — all roads lead here; players advance from their starting zones (or a future eu_mena direct start)"
+    },
+    {
+      "zoneId": "ENT",
+      "zoneCode": "03",
+      "name": "Mythoria",
+      "subtitle": "Western Carnival Coast",
+      "tier": "surface",
+      "family": "SURFACE",
+      "server": "ca",
+      "unlockOrder": 2,
+      "strengthMultiplier": 1.1,
+      "zoneAvgStrength": 110,
+      "biomeFamily": "TEMPERATE_GRASS",
+      "palettes": [
+        "sakura",
+        "verdant",
+        "autumn"
+      ],
+      "primaryElements": [
+        "Wind",
+        "Water",
+        "Grass"
+      ],
+      "signatureMaterials": [
+        "Herb",
+        "Fish"
+      ],
+      "cityRef": "Rio de Janeiro",
+      "l2Estates": 1492,
+      "l3Singles": 38284,
+      "worldOffset": [
+        -190,
+        -10
+      ],
+      "serverSlices": {
+        "north": "us",
+        "south": "ca"
+      }
+    },
+    {
+      "zoneId": "BUS",
+      "zoneCode": "00",
+      "name": "Porthaven",
+      "subtitle": "Northern Commercial Coast",
+      "tier": "surface",
+      "family": "SURFACE",
+      "server": "sg",
+      "unlockOrder": 3,
+      "strengthMultiplier": 1.2,
+      "zoneAvgStrength": 120,
+      "biomeFamily": "SWAMP",
+      "palettes": [
+        "verdant",
+        "ashen",
+        "swamp"
+      ],
+      "primaryElements": [
+        "Water",
+        "Grass"
+      ],
+      "signatureMaterials": [
+        "Fish",
+        "Salt",
+        "Gold"
+      ],
+      "cityRef": "New York",
+      "l2Estates": 1187,
+      "l3Singles": 70467,
+      "worldOffset": [
+        40,
+        -200
+      ]
+    },
+    {
+      "zoneId": "EDU",
+      "zoneCode": "02",
+      "name": "Arcadia",
+      "subtitle": "Academy Highlands",
+      "tier": "surface",
+      "family": "SURFACE",
+      "server": "jp",
+      "unlockOrder": 4,
+      "strengthMultiplier": 1.3,
+      "zoneAvgStrength": 130,
+      "biomeFamily": "TEMPERATE_FOREST",
+      "palettes": [
+        "sakura",
+        "autumn",
+        "verdant"
+      ],
+      "primaryElements": [
+        "Earth",
+        "Electric",
+        "Wind"
+      ],
+      "signatureMaterials": [
+        "Arcane",
+        "Stone",
+        "Iron"
+      ],
+      "cityRef": "Kyoto",
+      "l2Estates": 372,
+      "l3Singles": 13663,
+      "worldOffset": [
+        100,
+        150
+      ]
+    },
+    {
+      "zoneId": "HS1",
+      "zoneCode": "04",
+      "name": "Aeropolis",
+      "subtitle": "Cloud Gateway Isle",
+      "tier": "sky",
+      "family": "SKY",
+      "server": "sg",
+      "unlockOrder": 5,
+      "strengthMultiplier": 2,
+      "zoneAvgStrength": 200,
+      "biomeFamily": "TEMPERATE_GRASS",
+      "palettes": [
+        "verdant",
+        "sakura"
+      ],
+      "primaryElements": [
+        "Wind",
+        "Grass"
+      ],
+      "signatureMaterials": [
+        "Aether",
+        "Timber"
+      ],
+      "cityRef": "Cusco",
+      "l2Estates": 346,
+      "l3Singles": 14071,
+      "worldOffset": [
+        300,
+        100
+      ]
+    },
+    {
+      "zoneId": "HS2",
+      "zoneCode": "05",
+      "name": "Emberfall",
+      "subtitle": "Storm & Lava Isle",
+      "tier": "sky",
+      "family": "SKY",
+      "server": "sg",
+      "unlockOrder": 6,
+      "strengthMultiplier": 2,
+      "zoneAvgStrength": 200,
+      "biomeFamily": "VOLCANIC",
+      "palettes": [
+        "volcanic",
+        "ashen",
+        "verdant"
+      ],
+      "primaryElements": [
+        "Fire",
+        "Electric"
+      ],
+      "signatureMaterials": [
+        "Obsidian",
+        "Sulfur",
+        "Aether"
+      ],
+      "cityRef": "Reykjavik caldera",
+      "l2Estates": 451,
+      "l3Singles": 13694,
+      "worldOffset": [
+        425,
+        175
+      ]
+    },
+    {
+      "zoneId": "HS3",
+      "zoneCode": "06",
+      "name": "Empyrea",
+      "subtitle": "High Sanctum Isle",
+      "tier": "sky",
+      "family": "SKY",
+      "server": "sg",
+      "unlockOrder": 7,
+      "strengthMultiplier": 2,
+      "zoneAvgStrength": 200,
+      "biomeFamily": "SNOW",
+      "palettes": [
+        "ashen",
+        "tundra",
+        "verdant"
+      ],
+      "primaryElements": [
+        "Wind",
+        "Light"
+      ],
+      "signatureMaterials": [
+        "Light-essence",
+        "Herb",
+        "Aether"
+      ],
+      "cityRef": "Lhasa",
+      "l2Estates": 464,
+      "l3Singles": 11873,
+      "worldOffset": [
+        300,
+        245
+      ]
+    },
+    {
+      "zoneId": "UW1",
+      "zoneCode": "09",
+      "name": "Ironhold",
+      "subtitle": "Upper Caverns",
+      "tier": "underworld",
+      "family": "UNDERWORLD",
+      "server": "sg",
+      "unlockOrder": 8,
+      "strengthMultiplier": 2.5,
+      "zoneAvgStrength": 250,
+      "biomeFamily": "SWAMP",
+      "palettes": [
+        "ashen",
+        "swamp"
+      ],
+      "primaryElements": [
+        "Earth",
+        "Dark"
+      ],
+      "signatureMaterials": [
+        "Stone",
+        "Iron",
+        "Gems"
+      ],
+      "cityRef": "Derinkuyu",
+      "l2Estates": 1233,
+      "l3Singles": 28915,
+      "worldOffset": [
+        310,
+        -210
+      ]
+    },
+    {
+      "zoneId": "UW2",
+      "zoneCode": "10",
+      "name": "Blackmere",
+      "subtitle": "Deep Caverns",
+      "tier": "underworld",
+      "family": "UNDERWORLD",
+      "server": "sg",
+      "unlockOrder": 9,
+      "strengthMultiplier": 3.5,
+      "zoneAvgStrength": 350,
+      "biomeFamily": "VOLCANIC",
+      "palettes": [
+        "swamp",
+        "volcanic",
+        "ashen"
+      ],
+      "primaryElements": [
+        "Water",
+        "Fire",
+        "Dark"
+      ],
+      "signatureMaterials": [
+        "Iron",
+        "Obsidian",
+        "Gems"
+      ],
+      "cityRef": "flooded cavern network",
+      "l2Estates": 1101,
+      "l3Singles": 29777,
+      "worldOffset": [
+        475,
+        -210
+      ]
+    },
+    {
+      "zoneId": "UW3",
+      "zoneCode": "11",
+      "name": "Luxuria",
+      "subtitle": "Inferno Vault",
+      "tier": "underworld",
+      "family": "UNDERWORLD",
+      "server": "sg",
+      "unlockOrder": 10,
+      "strengthMultiplier": 5,
+      "zoneAvgStrength": 500,
+      "biomeFamily": "VOLCANIC",
+      "palettes": [
+        "volcanic",
+        "ashen"
+      ],
+      "primaryElements": [
+        "Fire",
+        "Dark"
+      ],
+      "signatureMaterials": [
+        "Iron",
+        "Obsidian",
+        "Dark-essence"
+      ],
+      "cityRef": "volcanic vent chamber",
+      "l2Estates": 92,
+      "l3Singles": 4825,
+      "worldOffset": [
+        600,
+        -210
+      ]
+    }
+  ],
+  "servers": {
+    "sg": {
+      "name": "Singapore",
+      "ip": "13.250.39.41",
+      "startZone": "BUS"
+    },
+    "jp": {
+      "name": "Tokyo",
+      "ip": "18.178.54.54",
+      "startZone": "EDU",
+      "live": true
+    },
+    "us": {
+      "name": "US West",
+      "ip": "54.151.57.111",
+      "startZone": "ENT",
+      "slice": "north"
+    },
+    "ca": {
+      "name": "Montreal",
+      "ip": "3.98.68.96",
+      "startZone": "ENT",
+      "slice": "south"
+    },
+    "eu_mena_future": {
+      "planned": true,
+      "startZone": "HUB",
+      "note": "possible direct start for late-comers; timing monitored on user base"
+    }
+  }
 }
