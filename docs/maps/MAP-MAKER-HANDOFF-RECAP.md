@@ -60,8 +60,20 @@ iterate. Do **not** bake any economy content into the base pass.
 8. **Land size → component count** — one ±161 map = the smallest parcel; estates are a **series** of ±161
    components (single 1 → EPIC ~480; castle = the final component). Base pass must know a parcel's component
    count from its size. *(Estates get pre-designed castle/wall maps — `CASTLE-TEMPLATE-LIBRARY.md`.)*
+9. **REGION partition + GATE parcels** (owner 2026-07-08 — the intercontinent/movement system; full design
+   in `WORLD-MAP-AND-SERVER-TRAVEL.md` §4a). Natural barriers (mountain ranges / rivers / chasms in the
+   base terrain) **partition each continent into regions**; where a barrier has no natural crossing, the
+   generator **designates a GATE parcel** — the mountain-pass/bridge chokepoint. **Requirements to bake:**
+   (a) mark each parcel's **`regionId`**; (b) tag **`isGate:true`** on the chosen crossing parcels with a
+   **`connects:[regionA,regionB]`**; (c) guarantee **≥1 GATE per region boundary** (no region unreachable),
+   placed at the barrier's **narrowest deterministic crossing**; (d) emit a **`regionBoundary` polyline** per
+   barrier so the client can draw it as a **dotted line / overlay** (the owner's ask — dotted region borders
+   + a gate marker at each crossing). This is a **base-terrain (bake-now)** feature → **it must be in the
+   20K bake, then rebake** if added after. Landlord toll/policy on gates is the lazy seed/runtime layer
+   (`gateFeeDefaultCt`/`gatePolicyDefault`), NOT baked. **CF owns the client overlay renderer** (dotted
+   boundary + gate icons) — it just needs the generator to emit `regionId`/`isGate`/`regionBoundary`.
 
-**If any of §1 is wrong, it's a 20K/293K rebuild. Confirm all 8 with OP 48 (3D client geometry) + the
+**If any of §1 is wrong, it's a 20K/293K rebuild. Confirm all 9 with OP 48 (3D client geometry) + the
 integration/network session (match server) BEFORE the bulk run.**
 
 ---
