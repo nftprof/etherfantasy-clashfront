@@ -81,6 +81,14 @@ companion saga, the *EF Hunt*, let mortals live for themselves): **Jiro**, who w
   and the old graveyards are what became of them. *(Every Phantom in the world was once somebody's
   descent that ran out of rice.)*
 
+**And the shrinking of the Stair never fully reverses.** This is the Diminution — the deep's oldest law:
+it does not grow to swallow you; **it diminishes you**. In Blackmere every soul stands at two-thirds of
+its surface height — just enough that everything feels *wrong* and nothing can be pointed at. In Luxuria
+you stand at **a sixth**, and the Gardens seem a country, the Vault a mountain, the warden a god. None
+of it is large. **You are small.** The land deceives every soul the same way, and the deception is the
+realm's first defense: armies that broke the gates have turned back at the sight of walls no ladder
+could ever crest — walls a surface-child could step over.
+
 Seven trials through the sin-domains; the **five Masks** of the carnival worn and set aside (Harlequin,
 Plague Doctor, Lunar Moth, Siren, Phoenix — relics that survive to this day); and at the end the
 **Sigil of Binding** — the knot-pattern seal by which the Shadow Warden was not slain but *bound*.

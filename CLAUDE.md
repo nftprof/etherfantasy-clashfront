@@ -194,6 +194,14 @@ export can be converted to the documented format. See `data/README.md`.
     sink)**, inns (rest/morale + rumor board reading the Chronicle). `docs/briefs/WORLD-REMEMBERS-AND-
     TOWNS.md` §2.
 
+21. THE DIMINUTION (2026-07-10, locked): the deep diminishes CHARACTERS, not the world — same ±161
+    arena, zero extra geometry; smaller character + proportionally lower camera ⇒ the world READS
+    bigger. TWO KNOBS: visual (lore-locked: UW2 1/1.5 = uncanny "something is weird"; UW3 1/6 = the
+    deception, the number is 6 on purpose; UW1/sky/surface 1.0) and kinematic (⚙, UW3 ≈ 1/2.5 ≈ √6 —
+    full 1/6 speed would be unplayable). Stats/counts/geometry unchanged (perception, never combat
+    power). `data/zone-registry.json _meta.charScale` + `docs/briefs/DIMINUTION-SCALE-SPEC.md`;
+    lore = the Stair's shrinking never fully reverses (`WORLD-CHRONICLE.md`).
+
 ## 📜 v0.2 VISION BIBLE (2026-07-02): `docs/VISION-BIBLE-v0.2.md` + `docs/ADDENDUM-E-PentaPet-Species-Affinity.pdf`
 Overarching new spec from the product owner: PentaPets = the living population (workers/soldiers/
 units, species affinities), terraforming, geology/materials, blueprint NFTs, living cities.
