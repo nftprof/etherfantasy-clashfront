@@ -92,6 +92,33 @@ seeded for you (marked PROPOSED, you own them): `ENT.hunt.json` (the Fortune-Tel
 Midway, the Sambadrome stage, the Mask-Seller, Descenders' Rest) and `UW2.hunt.json` (the
 Stair-foot Camp, the Bowl-Keeper's Alcove, the Drowned Banquet door).
 
+## 5c. Travel vessels — the shared visual language (owner 2026-07-11)
+
+Hunt already has working **boats + sea** (the pier-and-sailboat rig) — that rig is the **alignment
+reference** for what boat travel looks like world-wide. The shared vocabulary, so CF / Hunt / any
+future media draw the same ships:
+
+- **Small boats / ferries** (Hunt's current rig): river + lagoon + harbour-local hops. Map anchors
+  already exist: the jetty piers on every marina (Carnavale, the Quayside, resort towns), the two
+  Carnavale ferry lanes, the Velaria canal quarter.
+- **Big ships** (scale the same silhouette up — owner: "much bigger boats"): inter-continent SEA
+  LANES port-to-port. Map anchors: the `SEA_PORT` POIs (the First Dock / Broadwater harbour,
+  Middlequay/Capemeet/Eastreach, the Carnavale marinas, resort quays) + the overview map's anchor
+  icons; routes = `zoneLinks` sea connections. Ships dock at piers — the pier is the door, the
+  voyage is presentation.
+- **Airships — the Final Fantasy IV reference** (owner: "think FF II USA game like airship"): a
+  wooden sailing-ship HULL that flies — deck, rigging, propellers — not a balloon, not a plane.
+  The only way UP (lore: no road leads to the sky; ascent is earned). Map anchors already exist:
+  **Skyreach Anchorage** (`BUS-PORT-SKY`, AIRSHIP_PORT) and HS1's **Gateway Anchorage**
+  (`gateway_dock` singular — "the first mooring above the clouds"); routes = the `zoneLinks`
+  AIRSHIP_WAYs (Arcadia↔Empyrea, Porthaven↔Empyrea). EDU needs its airship-dock POI marked when
+  its route gets a concrete anchor — flag to Agent D when Hunt builds that leg.
+- Overlay kinds for vessel infrastructure Hunt adds (moorings, ticket offices, shipwrights):
+  ordinary `data/world-elements/*.hunt.json` point elements — `MOORING`, `DOCK_OFFICE`, etc.
+
+Vessel MODELS are client-side art (Hunt/MOBA teams own the meshes); the map layer owns WHERE ships
+exist (ports, piers, lanes, anchorages) and the registry owns WHICH zones connect (`zoneLinks`).
+
 ## 6. What EF Hunt should NOT do
 
 - Don't regenerate maps with different seeds/params — determinism is the cross-game contract (the same
