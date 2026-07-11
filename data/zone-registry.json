@@ -451,5 +451,34 @@
       "startZone": "HUB",
       "note": "possible direct start for late-comers; timing monitored on user base"
     }
+  },
+  "zoneLinks": {
+    "_note": "Inter-zone travel linkage — OWNER-LOCKED deltas 2026-07-11 (map-maker/Agent D records; Agent C's overview map renders). Links NOT listed here are unaffected. Lore grounding: docs/lore/WORLD-CHRONICLE.md (airship ways = built aspiration; the Diminishing Stair = the second deep's door).",
+    "locked": [
+      {
+        "from": "EDU",
+        "to": "HS3",
+        "kind": "AIRSHIP_WAY",
+        "status": "existing — keep",
+        "note": "Arcadia ↔ Empyrea sky linkage (already on the overview map)"
+      },
+      {
+        "from": "BUS",
+        "to": "HS3",
+        "kind": "AIRSHIP_WAY",
+        "status": "ADD (owner 2026-07-11)",
+        "anchorPoi": "BUS-PORT-SKY",
+        "note": "NEW: Porthaven ↔ Empyrea — second surface route to HS3, anchored at Skyreach Anchorage (the inland high-ground airship port already in data/world-terrain/BUS.json pois)"
+      },
+      {
+        "from": "ENT",
+        "to": "UW2",
+        "kind": "SECRET_ENTRANCE",
+        "status": "ADD (owner 2026-07-11, lore-locked)",
+        "anchorPoi": "ENT-STAIR-DIMINISHING",
+        "secret": true,
+        "note": "the Diminishing Stair: upper mouth on Carnavale's carnival midway, lower mouth somewhere in Blackmere (WORLD-CHRONICLE Second Age). SINGLE FILE — one soul at a time, never an army (armies take the Shaft). Mythoria's ONLY depth link; deliberately NO ENT↔HS3 linkage; do NOT draw as a public dashed route — surface it as lore/discovery"
+      }
+    ]
   }
 }

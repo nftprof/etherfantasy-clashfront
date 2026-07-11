@@ -218,6 +218,19 @@ host **EF Hunt** played MMORPG-style inside CF's world — EF Hunt's story is a 
 that journey (each continent's capitals/castles/temples = story stages), which is another reason POI
 maps get the design attention while countryside stays procedural.
 
+### 3e. Inter-zone linkage (owner-locked deltas 2026-07-11)
+
+Recorded in **`data/zone-registry.json` → `zoneLinks`** (Agent D records; Agent C's overview map
+renders; links not listed are unaffected): **① Arcadia ↔ Empyrea** airship way — existing, keep.
+**② Porthaven ↔ Empyrea — ADDED**: the second surface route to HS3, anchored at **Skyreach Anchorage**
+(`BUS-PORT-SKY`, already a POI in the BUS field). **③ Mythoria gets NO sky link.** Its only depth
+connection is **the Diminishing Stair** (`ENT-STAIR-DIMINISHING`, new SECRET_ENTRANCE POI on Carnavale's
+carnival midway): per `docs/lore/WORLD-CHRONICLE.md` (Second Age), the upper mouth opens on the midway
+(the Midway Potion + the Last Fortune are the rite of entry), the lower mouth "somewhere in Blackmere"
+(UW2), and it is **single file — one soul at a time, never an army** (armies take the Shaft in Tianxia
+and break the sealed gates). Deliberately NOT a public dashed route on the overview map — surface it as
+lore/discovery. Map-side placement of the LOWER mouth waits for the UW2 field authoring pass.
+
 ## 4. How a parcel derives its map from the field
 
 ```
