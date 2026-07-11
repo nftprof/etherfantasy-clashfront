@@ -52,7 +52,10 @@ export function renderThumb(artifact) {
   // parcel's wall ring / gates / keep read on the thumbnail (and on the aerial mosaic)
   const SKIND = { TOWER: [[235, 235, 245], 3], WALL: [[120, 116, 128], 1], GATE: [[212, 168, 60], 2], CORE: [[240, 210, 90], 3] };
   for (const s of artifact.structures || []) { const k = SKIND[s.kind] || SKIND.TOWER; dot(s.x, s.z, k[0], k[1]); }
-  const lm = artifact.obstacles.find((o) => o.kind !== "TREE" && o.kind !== "ROCK");
+  // RUIN (the seeded Chronicle layer): a small distinct grey/ashen mark — dark ring, pale core —
+  // so a fallen keep/cairn reads on the thumbnail without shouting like a landmark.
+  for (const o of artifact.obstacles) if (o.kind === "RUIN") { dot(o.x, o.z, [58, 56, 52], 4); dot(o.x, o.z, [204, 200, 190], 2); }
+  const lm = artifact.obstacles.find((o) => o.kind !== "TREE" && o.kind !== "ROCK" && o.kind !== "RUIN");
   if (lm) dot(lm.x, lm.z, MARK.landmark, 4);
 
   return encodePNG(W, W, px);

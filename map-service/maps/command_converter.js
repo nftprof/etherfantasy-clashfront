@@ -234,12 +234,15 @@ function terrainObstacles(terrain, clearPts = []) {
 }
 
 // décor props (artifact.obstacles) → passable:true visual layer (the grid already owns walkability).
+// RUINs (the seeded Chronicle layer) carry their lore through — like resource nodes they are
+// non-blocking decorative anchors in the A1 (kind "RUIN", passable:true, + ruinType/name/inscription).
 function decorObstacles(list) {
   return (list ?? []).map((o, i) => ({
     id: o.id ?? `prop_${i}`,
     kind: String(o.kind ?? "TREE").toUpperCase(),
     x: o.x ?? 0, z: o.z ?? 0, r: o.r ?? 3,
     passable: true,
+    ...(o.kind === "RUIN" ? { ruinType: o.ruinType, name: o.name, inscription: o.inscription } : {}),
   }));
 }
 

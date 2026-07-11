@@ -447,8 +447,15 @@ const out = {
   ],
   castles: CASTLES,
   pois: [
-    { id: "EDU-CITY", kind: "GRAND_ACADEMY", at: [126.7, 81.4], note: "the sole EPIC estate 1020371 — the capital city" },
+    // SINGULAR PLACES (depth-layer 2, data/singulars.json): `grand_academy` binds to the existing
+    // EDU-CITY POI; `gap_of_arcadia` = the Scholar's Gap, the pass through the rimwall — pinned at
+    // the SE col where the East and South Rimwalls meet ([136,140], already a RIDGE_GAPS reroute
+    // candidate, i.e. the field's own machinery treats it as the traversable notch).
+    { id: "EDU-CITY", kind: "GRAND_ACADEMY", at: [126.7, 81.4], singularId: "grand_academy", name: "The Grand Academy",
+      note: "the sole EPIC estate 1020371 — the capital city" },
     { id: "EDU-GATE-N", kind: "GATE", at: [63, 0], connects: ["EDU", "HUB"], note: "north gate — river + Academy Road exit toward Tianxia" },
+    { id: "EDU-GATE-GAP", kind: "GATE", at: [136, 140], connects: ["EDU"], singularId: "gap_of_arcadia", name: "The Scholar's Gap",
+      note: "the pass through the rimwall — the southeastern col where the East and South Rimwalls meet, above the Arcadia Flow's spring; the plateau's only door through its own mountains" },
   ],
 };
 // heroParcels[] designation (canon decision 18 — rule in the header + world_hero_parcels.mjs)

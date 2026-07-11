@@ -23,6 +23,7 @@ import { archetypes } from "./archetypes.js";
 import { validateAndRepair, snapOpen, erode, routesToCenter } from "./validate.js";
 import { executeFeatures } from "./features.js";
 import { loadWorldField, featuresForParcel, fitToArena } from "./worldfield.js";
+import { ruinLore, RUIN_TYPES } from "./chronicle.js";
 
 // ---- real-parcel polygon support ------------------------------------------------------------
 // The overworld gives each parcel its actual polygon; the battlefield is built INSIDE it —
@@ -107,6 +108,43 @@ function sampleProps(g, G, rng) {
   return props;
 }
 const r1 = (n) => Math.round(n * 10) / 10;
+
+// ---- RUIN — the seeded Chronicle layer (depth-layer 1) ------------------------------------------
+// A low-density seeded entity like the landmark: fallen keeps / cairns / old walls / sunken
+// shrines of the pre-Sundering kingdoms, named + inscribed from the Chronicle table
+// (chronicle.js). PASSIVE DÉCOR: never painted into the grid — walkability and the 5 CF
+// invariants are untouched (it rides obstacles[] like the landmark props and becomes a
+// passable:true décor anchor in the A1). Rolled on its OWN rng stream (seed ^ fnv1a("ruin")),
+// so the layer never disturbs the rest of the map: regenerating an existing parcel yields the
+// byte-identical artifact plus (sometimes) a ruin — a re-runnable seed layer, NOT base-bake.
+// Density: ~1 in 7 parcels, wilds-biased — castle parcels never roll one; road-laced ground
+// (urban cores / trunk crossings) rolls at a quarter of the odds. Deterministic placement:
+// seeded probes over the FINAL grid for an OPEN pocket away from every spawn/base.
+const RUIN_R = { FALLEN_KEEP: 6, OLD_WALL: 5, SUNKEN_SHRINE: 4, CAIRN: 3 };
+const RUIN_P_WILD = 0.14;       // ~1 in 7 countryside parcels
+const RUIN_P_URBAN = 0.035;     // ~1 in 29 road-laced (urban-core) parcels
+const RUIN_ROAD_FRAC = 0.06;    // grid ROAD fraction above which ground reads as urban
+export function placeRuin(g, G, { seed, zone, castle, avoidPts }) {
+  if (castle) return null;                                    // castle parcels are LIVING strongholds
+  const rng = makeRng((seed ^ fnv1a("ruin")) >>> 0);
+  let inb = 0, road = 0;
+  for (let i = 0; i < g.length; i++) if (g[i] !== T.OOB) { inb++; if (g[i] === T.ROAD) road++; }
+  if (rng() >= (road / Math.max(1, inb) > RUIN_ROAD_FRAC ? RUIN_P_URBAN : RUIN_P_WILD)) return null;
+  for (let t = 0; t < 80; t++) {                              // seeded probes, first fit wins
+    const cx = 8 + Math.floor(rng() * (G - 16)), cz = 8 + Math.floor(rng() * (G - 16));
+    if (g[gIdx(G, cx, cz)] !== T.OPEN) continue;              // open natural ground (never a road/ford)
+    const x = worldOf(G, cx), z = worldOf(G, cz);
+    if (avoidPts.some((a) => Math.hypot(x - a.x, z - a.z) < a.d)) continue;
+    let open = 0;                                             // needs a mostly-open pocket around it
+    for (let dz = -2; dz <= 2; dz++) for (let dx = -2; dx <= 2; dx++)
+      if (inG(G, cx + dx, cz + dz) && !isBlocked(g, gIdx(G, cx + dx, cz + dz))) open++;
+    if (open < 19) continue;
+    const ruinType = RUIN_TYPES[Math.floor(rng() * RUIN_TYPES.length)];
+    const { name, inscription } = ruinLore(rng, zone, ruinType);
+    return { kind: "RUIN", ruinType, name, inscription, x: r1(x), z: r1(z), r: RUIN_R[ruinType] };
+  }
+  return null;
+}
 
 // ---- MOBA lane-network carving ----------------------------------------------------------------
 // Everything below carves WALKABLE geometry out of the archetype's dense jungle: never touches
@@ -894,8 +932,18 @@ export function generate(parcel, params = null, designVersion = 0) {
   // snapping would bend the ring out of shape.
   structures.push(...castleStructures);
 
+  // 5c) RUIN — the seeded Chronicle layer (own rng stream — see placeRuin; décor only, so the
+  //     grid/walk mask and every invariant are untouched). Avoid points come from the FINAL
+  //     (snapped) spawn zones so placement is recoverable from the artifact alone: wide berth
+  //     around the duel bases, a smaller one around every entry + the center objective.
+  const ruin = placeRuin(g, G, {
+    seed, zone, castle: !!castle,
+    avoidPts: spawnZones.map((s) => ({ x: s.x, z: s.z, d: s.side === "ATTACKER" || s.side === "DEFENDER" ? 45 : 18 })),
+  });
+
   // 6) bake: props from final grid; walkability bitmask (1 = open at native cell res)
   const props = sampleProps(g, G, rng);
+  if (ruin) props.unshift(ruin);
   if (landmark) props.unshift(landmark);
   const walk = new Uint8Array(G * G);
   for (let i = 0; i < g.length; i++) walk[i] = isBlocked(g, i) ? 0 : 1;

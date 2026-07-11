@@ -36,6 +36,7 @@ schema + the committed sample is the input it was waiting on.
   "laneCount":  1,                              // 1 (single) | 3 (estate component)
   "terrain":    { "cellM": 2, "w": 161, "h": 161, "cells": "<b64>", "walk": "<b64>" },
   "obstacles":  [ { "kind":"TREE"|"ROCK", "x":n, "z":n, "r":n } ],   // point PROPS (lone scenery)
+                                                // + optional RUIN entry (additive — see §3)
   "resources":  [ { "kind":"GOLD_MINE"|"WOOD_GROVE", "x":n, "z":n, "richness":0..1 } ],
   "buildSpots": [ { "anchorId":"bs_…", "x":n, "z":n, "size":n } ],
   "spawnZones": [ { "id":s, "side":"ATTACKER"|"DEFENDER"|"ANY"|"OBJECTIVE", "edge":"N|S|E|W|C", "x":n, "z":n } ],
@@ -76,6 +77,15 @@ const walkable = (cx, cz) => bytes[idx(cx, cz)] === 1;            // for `walk`
 - **`obstacles`** are **point props** (`{kind,x,z,r}`, lone trees/rocks) — cosmetic-ish scatter. **Dense,
   blocking terrain is in the grid** (`cells`=FOREST/ROCK/WATER + `walk`=0), *not* here. (In the **B**
   vector these grid-blocks become obstacle **footprint polygons**; in **A** they stay in the grid.)
+  **ADDITIVE (2026-07-11, depth-layer 1):** obstacles may include at most one **RUIN** décor prop —
+  `{ "kind":"RUIN", "ruinType":"FALLEN_KEEP"|"CAIRN"|"OLD_WALL"|"SUNKEN_SHRINE", "name":s,
+  "inscription":s, "x":n, "z":n, "r":n }` — the seeded Chronicle layer (`generate.js placeRuin` +
+  `chronicle.js`; ~1 in 7 parcels, wilds-biased, never on castle parcels; rolled on its own rng
+  stream so regeneration stays byte-identical otherwise). Like the landmark props it is **pure
+  décor**: never painted into the grid, so `walk` and all 5 playability invariants are unaffected.
+  `toBattlefieldA1` carries it into **B** as a `passable:true` obstacle with `ruinType`/`name`/
+  `inscription` intact (non-blocking decorative anchor, like resource nodes). Consumers that don't
+  know `RUIN` can ignore it — the 13 frozen keys are unchanged.
 - **`structures`** in A are the DEFENDER **towers** only. **CORE is NOT in A** — `toBattlefieldA1`
   **synthesizes** the ATTACKER/DEFENDER COREs in **B** from the base spawns (`def_base` / `atk_S`). If the
   sim needs cores, take them from `spawnZones` (`def_base`, `atk_S`) or from **B**.

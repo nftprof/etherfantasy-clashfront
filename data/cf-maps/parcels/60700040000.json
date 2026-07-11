@@ -7965,6 +7965,17 @@
     },
     {
       "id": "prop_0",
+      "kind": "RUIN",
+      "x": 74,
+      "z": 142,
+      "r": 3,
+      "passable": true,
+      "ruinType": "CAIRN",
+      "name": "Jiro's Rest",
+      "inscription": "Jiro slept here the night before the First Descent, the Chronicle says, and dreamed of the door."
+    },
+    {
+      "id": "prop_1",
       "kind": "TREE",
       "x": -91.8,
       "z": -160,
@@ -7972,7 +7983,7 @@
       "passable": true
     },
     {
-      "id": "prop_1",
+      "id": "prop_2",
       "kind": "ROCK",
       "x": -35.7,
       "z": -160.7,
@@ -7980,7 +7991,7 @@
       "passable": true
     },
     {
-      "id": "prop_2",
+      "id": "prop_3",
       "kind": "ROCK",
       "x": -31,
       "z": -159.3,
@@ -7988,7 +7999,7 @@
       "passable": true
     },
     {
-      "id": "prop_3",
+      "id": "prop_4",
       "kind": "TREE",
       "x": 15.2,
       "z": -159.6,
@@ -7996,7 +8007,7 @@
       "passable": true
     },
     {
-      "id": "prop_4",
+      "id": "prop_5",
       "kind": "TREE",
       "x": 51.1,
       "z": -160,
@@ -8004,7 +8015,7 @@
       "passable": true
     },
     {
-      "id": "prop_5",
+      "id": "prop_6",
       "kind": "TREE",
       "x": 136.9,
       "z": -159.9,
@@ -8012,7 +8023,7 @@
       "passable": true
     },
     {
-      "id": "prop_6",
+      "id": "prop_7",
       "kind": "TREE",
       "x": -140.4,
       "z": -155.8,
@@ -8020,7 +8031,7 @@
       "passable": true
     },
     {
-      "id": "prop_7",
+      "id": "prop_8",
       "kind": "TREE",
       "x": -136.1,
       "z": -155.2,
@@ -8028,7 +8039,7 @@
       "passable": true
     },
     {
-      "id": "prop_8",
+      "id": "prop_9",
       "kind": "TREE",
       "x": -127.9,
       "z": -156.5,
@@ -8036,7 +8047,7 @@
       "passable": true
     },
     {
-      "id": "prop_9",
+      "id": "prop_10",
       "kind": "TREE",
       "x": -124.3,
       "z": -156.1,
@@ -8044,7 +8055,7 @@
       "passable": true
     },
     {
-      "id": "prop_10",
+      "id": "prop_11",
       "kind": "ROCK",
       "x": -23.5,
       "z": -156.4,
@@ -8052,7 +8063,7 @@
       "passable": true
     },
     {
-      "id": "prop_11",
+      "id": "prop_12",
       "kind": "TREE",
       "x": 36.7,
       "z": -155.7,
@@ -8060,7 +8071,7 @@
       "passable": true
     },
     {
-      "id": "prop_12",
+      "id": "prop_13",
       "kind": "TREE",
       "x": 52.5,
       "z": -156,
@@ -8068,7 +8079,7 @@
       "passable": true
     },
     {
-      "id": "prop_13",
+      "id": "prop_14",
       "kind": "TREE",
       "x": 55.1,
       "z": -156.8,
@@ -8076,7 +8087,7 @@
       "passable": true
     },
     {
-      "id": "prop_14",
+      "id": "prop_15",
       "kind": "TREE",
       "x": -131.5,
       "z": -152.9,
@@ -8084,7 +8095,7 @@
       "passable": true
     },
     {
-      "id": "prop_15",
+      "id": "prop_16",
       "kind": "TREE",
       "x": -100.8,
       "z": -152.1,
@@ -8092,7 +8103,7 @@
       "passable": true
     },
     {
-      "id": "prop_16",
+      "id": "prop_17",
       "kind": "TREE",
       "x": 16.5,
       "z": -151.8,
@@ -8100,7 +8111,7 @@
       "passable": true
     },
     {
-      "id": "prop_17",
+      "id": "prop_18",
       "kind": "TREE",
       "x": 35.2,
       "z": -151,
@@ -8108,7 +8119,7 @@
       "passable": true
     },
     {
-      "id": "prop_18",
+      "id": "prop_19",
       "kind": "TREE",
       "x": 39.6,
       "z": -152.3,
@@ -8116,7 +8127,7 @@
       "passable": true
     },
     {
-      "id": "prop_19",
+      "id": "prop_20",
       "kind": "TREE",
       "x": -120.4,
       "z": -148.6,
@@ -8124,7 +8135,7 @@
       "passable": true
     },
     {
-      "id": "prop_20",
+      "id": "prop_21",
       "kind": "TREE",
       "x": -108.6,
       "z": -149,
@@ -8132,7 +8143,7 @@
       "passable": true
     },
     {
-      "id": "prop_21",
+      "id": "prop_22",
       "kind": "TREE",
       "x": -84.1,
       "z": -148.7,
@@ -8140,7 +8151,7 @@
       "passable": true
     },
     {
-      "id": "prop_22",
+      "id": "prop_23",
       "kind": "TREE",
       "x": -40.9,
       "z": -147.9,
@@ -8148,7 +8159,7 @@
       "passable": true
     },
     {
-      "id": "prop_23",
+      "id": "prop_24",
       "kind": "TREE",
       "x": -36.3,
       "z": -148.4,
@@ -8156,7 +8167,7 @@
       "passable": true
     },
     {
-      "id": "prop_24",
+      "id": "prop_25",
       "kind": "TREE",
       "x": 11.7,
       "z": -148.8,
@@ -8164,7 +8175,7 @@
       "passable": true
     },
     {
-      "id": "prop_25",
+      "id": "prop_26",
       "kind": "TREE",
       "x": 43.7,
       "z": -148,
@@ -8172,7 +8183,7 @@
       "passable": true
     },
     {
-      "id": "prop_26",
+      "id": "prop_27",
       "kind": "TREE",
       "x": 52.1,
       "z": -148.5,
@@ -8180,7 +8191,7 @@
       "passable": true
     },
     {
-      "id": "prop_27",
+      "id": "prop_28",
       "kind": "TREE",
       "x": 99.9,
       "z": -147.5,
@@ -8188,7 +8199,7 @@
       "passable": true
     },
     {
-      "id": "prop_28",
+      "id": "prop_29",
       "kind": "TREE",
       "x": 120.6,
       "z": -148.4,
@@ -8196,7 +8207,7 @@
       "passable": true
     },
     {
-      "id": "prop_29",
+      "id": "prop_30",
       "kind": "TREE",
       "x": -148.8,
       "z": -144.3,
@@ -8204,7 +8215,7 @@
       "passable": true
     },
     {
-      "id": "prop_30",
+      "id": "prop_31",
       "kind": "TREE",
       "x": -107.8,
       "z": -144.1,
@@ -8212,7 +8223,7 @@
       "passable": true
     },
     {
-      "id": "prop_31",
+      "id": "prop_32",
       "kind": "TREE",
       "x": 45,
       "z": -144.5,
@@ -8220,7 +8231,7 @@
       "passable": true
     },
     {
-      "id": "prop_32",
+      "id": "prop_33",
       "kind": "TREE",
       "x": 48.9,
       "z": -143.9,
@@ -8228,7 +8239,7 @@
       "passable": true
     },
     {
-      "id": "prop_33",
+      "id": "prop_34",
       "kind": "TREE",
       "x": 63.1,
       "z": -143.1,
@@ -8236,7 +8247,7 @@
       "passable": true
     },
     {
-      "id": "prop_34",
+      "id": "prop_35",
       "kind": "TREE",
       "x": -148.7,
       "z": -141,
@@ -8244,7 +8255,7 @@
       "passable": true
     },
     {
-      "id": "prop_35",
+      "id": "prop_36",
       "kind": "TREE",
       "x": -124,
       "z": -139.2,
@@ -8252,7 +8263,7 @@
       "passable": true
     },
     {
-      "id": "prop_36",
+      "id": "prop_37",
       "kind": "TREE",
       "x": -119.9,
       "z": -140.6,
@@ -8260,7 +8271,7 @@
       "passable": true
     },
     {
-      "id": "prop_37",
+      "id": "prop_38",
       "kind": "TREE",
       "x": 95.8,
       "z": -140.8,
@@ -8268,7 +8279,7 @@
       "passable": true
     },
     {
-      "id": "prop_38",
+      "id": "prop_39",
       "kind": "TREE",
       "x": 71.9,
       "z": -136.9,
@@ -8276,7 +8287,7 @@
       "passable": true
     },
     {
-      "id": "prop_39",
+      "id": "prop_40",
       "kind": "TREE",
       "x": 79.9,
       "z": -136.2,
@@ -8284,7 +8295,7 @@
       "passable": true
     },
     {
-      "id": "prop_40",
+      "id": "prop_41",
       "kind": "TREE",
       "x": 72.4,
       "z": -132.5,
@@ -8292,7 +8303,7 @@
       "passable": true
     },
     {
-      "id": "prop_41",
+      "id": "prop_42",
       "kind": "TREE",
       "x": 75.1,
       "z": -132.8,
@@ -8300,7 +8311,7 @@
       "passable": true
     },
     {
-      "id": "prop_42",
+      "id": "prop_43",
       "kind": "TREE",
       "x": 108.1,
       "z": -132.5,
@@ -8308,7 +8319,7 @@
       "passable": true
     },
     {
-      "id": "prop_43",
+      "id": "prop_44",
       "kind": "TREE",
       "x": 120.5,
       "z": -131.6,
@@ -8316,7 +8327,7 @@
       "passable": true
     },
     {
-      "id": "prop_44",
+      "id": "prop_45",
       "kind": "TREE",
       "x": -52.7,
       "z": -128.2,
@@ -8324,7 +8335,7 @@
       "passable": true
     },
     {
-      "id": "prop_45",
+      "id": "prop_46",
       "kind": "TREE",
       "x": -16,
       "z": -128.9,
@@ -8332,7 +8343,7 @@
       "passable": true
     },
     {
-      "id": "prop_46",
+      "id": "prop_47",
       "kind": "TREE",
       "x": -8.9,
       "z": -128.8,
@@ -8340,7 +8351,7 @@
       "passable": true
     },
     {
-      "id": "prop_47",
+      "id": "prop_48",
       "kind": "TREE",
       "x": 11.8,
       "z": -127.7,
@@ -8348,7 +8359,7 @@
       "passable": true
     },
     {
-      "id": "prop_48",
+      "id": "prop_49",
       "kind": "TREE",
       "x": 99.1,
       "z": -128.8,
@@ -8356,7 +8367,7 @@
       "passable": true
     },
     {
-      "id": "prop_49",
+      "id": "prop_50",
       "kind": "TREE",
       "x": -8.3,
       "z": -123.1,
@@ -8364,7 +8375,7 @@
       "passable": true
     },
     {
-      "id": "prop_50",
+      "id": "prop_51",
       "kind": "TREE",
       "x": 72.2,
       "z": -124.6,
@@ -8372,7 +8383,7 @@
       "passable": true
     },
     {
-      "id": "prop_51",
+      "id": "prop_52",
       "kind": "TREE",
       "x": 103.7,
       "z": -124.2,
@@ -8380,7 +8391,7 @@
       "passable": true
     },
     {
-      "id": "prop_52",
+      "id": "prop_53",
       "kind": "TREE",
       "x": 111,
       "z": -123.2,
@@ -8388,7 +8399,7 @@
       "passable": true
     },
     {
-      "id": "prop_53",
+      "id": "prop_54",
       "kind": "TREE",
       "x": 123.9,
       "z": -123.9,
@@ -8396,7 +8407,7 @@
       "passable": true
     },
     {
-      "id": "prop_54",
+      "id": "prop_55",
       "kind": "TREE",
       "x": 104.4,
       "z": -119.8,
@@ -8404,7 +8415,7 @@
       "passable": true
     },
     {
-      "id": "prop_55",
+      "id": "prop_56",
       "kind": "TREE",
       "x": 11.3,
       "z": -115.8,
@@ -8412,7 +8423,7 @@
       "passable": true
     },
     {
-      "id": "prop_56",
+      "id": "prop_57",
       "kind": "TREE",
       "x": 95.4,
       "z": -115.6,
@@ -8420,7 +8431,7 @@
       "passable": true
     },
     {
-      "id": "prop_57",
+      "id": "prop_58",
       "kind": "TREE",
       "x": 75.5,
       "z": -112.4,
@@ -8428,7 +8439,7 @@
       "passable": true
     },
     {
-      "id": "prop_58",
+      "id": "prop_59",
       "kind": "TREE",
       "x": 139.5,
       "z": -111.9,
@@ -8436,7 +8447,7 @@
       "passable": true
     },
     {
-      "id": "prop_59",
+      "id": "prop_60",
       "kind": "ROCK",
       "x": -88.2,
       "z": -108.2,
@@ -8444,7 +8455,7 @@
       "passable": true
     },
     {
-      "id": "prop_60",
+      "id": "prop_61",
       "kind": "TREE",
       "x": 68.6,
       "z": -107.4,
@@ -8452,7 +8463,7 @@
       "passable": true
     },
     {
-      "id": "prop_61",
+      "id": "prop_62",
       "kind": "TREE",
       "x": 112.6,
       "z": -108.1,
@@ -8460,7 +8471,7 @@
       "passable": true
     },
     {
-      "id": "prop_62",
+      "id": "prop_63",
       "kind": "TREE",
       "x": -108.9,
       "z": -99.4,
@@ -8468,7 +8479,7 @@
       "passable": true
     },
     {
-      "id": "prop_63",
+      "id": "prop_64",
       "kind": "TREE",
       "x": -104.4,
       "z": -100.7,
@@ -8476,7 +8487,7 @@
       "passable": true
     },
     {
-      "id": "prop_64",
+      "id": "prop_65",
       "kind": "ROCK",
       "x": -87.9,
       "z": -100.5,
@@ -8484,7 +8495,7 @@
       "passable": true
     },
     {
-      "id": "prop_65",
+      "id": "prop_66",
       "kind": "TREE",
       "x": -12.2,
       "z": -99.1,
@@ -8492,7 +8503,7 @@
       "passable": true
     },
     {
-      "id": "prop_66",
+      "id": "prop_67",
       "kind": "TREE",
       "x": -160.8,
       "z": -96.2,
@@ -8500,7 +8511,7 @@
       "passable": true
     },
     {
-      "id": "prop_67",
+      "id": "prop_68",
       "kind": "ROCK",
       "x": -88.7,
       "z": -96.4,
@@ -8508,7 +8519,7 @@
       "passable": true
     },
     {
-      "id": "prop_68",
+      "id": "prop_69",
       "kind": "TREE",
       "x": -123.4,
       "z": -93,
@@ -8516,7 +8527,7 @@
       "passable": true
     },
     {
-      "id": "prop_69",
+      "id": "prop_70",
       "kind": "ROCK",
       "x": -83.6,
       "z": -93,
@@ -8524,7 +8535,7 @@
       "passable": true
     },
     {
-      "id": "prop_70",
+      "id": "prop_71",
       "kind": "TREE",
       "x": 79.9,
       "z": -92.5,
@@ -8532,7 +8543,7 @@
       "passable": true
     },
     {
-      "id": "prop_71",
+      "id": "prop_72",
       "kind": "TREE",
       "x": 136,
       "z": -83.2,
@@ -8540,7 +8551,7 @@
       "passable": true
     },
     {
-      "id": "prop_72",
+      "id": "prop_73",
       "kind": "TREE",
       "x": -160.3,
       "z": -79.3,
@@ -8548,7 +8559,7 @@
       "passable": true
     },
     {
-      "id": "prop_73",
+      "id": "prop_74",
       "kind": "ROCK",
       "x": -43.2,
       "z": -79.5,
@@ -8556,7 +8567,7 @@
       "passable": true
     },
     {
-      "id": "prop_74",
+      "id": "prop_75",
       "kind": "TREE",
       "x": 119.6,
       "z": -79,
@@ -8564,7 +8575,7 @@
       "passable": true
     },
     {
-      "id": "prop_75",
+      "id": "prop_76",
       "kind": "TREE",
       "x": -123.8,
       "z": -76.1,
@@ -8572,7 +8583,7 @@
       "passable": true
     },
     {
-      "id": "prop_76",
+      "id": "prop_77",
       "kind": "ROCK",
       "x": -68.6,
       "z": -75.3,
@@ -8580,7 +8591,7 @@
       "passable": true
     },
     {
-      "id": "prop_77",
+      "id": "prop_78",
       "kind": "TREE",
       "x": 103.2,
       "z": -76.4,
@@ -8588,7 +8599,7 @@
       "passable": true
     },
     {
-      "id": "prop_78",
+      "id": "prop_79",
       "kind": "TREE",
       "x": 112.8,
       "z": -76.8,
@@ -8596,7 +8607,7 @@
       "passable": true
     },
     {
-      "id": "prop_79",
+      "id": "prop_80",
       "kind": "TREE",
       "x": -120.1,
       "z": -71.4,
@@ -8604,7 +8615,7 @@
       "passable": true
     },
     {
-      "id": "prop_80",
+      "id": "prop_81",
       "kind": "ROCK",
       "x": -68,
       "z": -71.5,
@@ -8612,7 +8623,7 @@
       "passable": true
     },
     {
-      "id": "prop_81",
+      "id": "prop_82",
       "kind": "TREE",
       "x": -20,
       "z": -71,
@@ -8620,7 +8631,7 @@
       "passable": true
     },
     {
-      "id": "prop_82",
+      "id": "prop_83",
       "kind": "TREE",
       "x": 144.2,
       "z": -72.5,
@@ -8628,7 +8639,7 @@
       "passable": true
     },
     {
-      "id": "prop_83",
+      "id": "prop_84",
       "kind": "TREE",
       "x": -135.4,
       "z": -68.2,
@@ -8636,7 +8647,7 @@
       "passable": true
     },
     {
-      "id": "prop_84",
+      "id": "prop_85",
       "kind": "TREE",
       "x": -83.3,
       "z": -67.3,
@@ -8644,7 +8655,7 @@
       "passable": true
     },
     {
-      "id": "prop_85",
+      "id": "prop_86",
       "kind": "TREE",
       "x": -76.7,
       "z": -67.1,
@@ -8652,7 +8663,7 @@
       "passable": true
     },
     {
-      "id": "prop_86",
+      "id": "prop_87",
       "kind": "TREE",
       "x": 92,
       "z": -67.5,
@@ -8660,7 +8671,7 @@
       "passable": true
     },
     {
-      "id": "prop_87",
+      "id": "prop_88",
       "kind": "TREE",
       "x": -161,
       "z": -64.3,
@@ -8668,7 +8679,7 @@
       "passable": true
     },
     {
-      "id": "prop_88",
+      "id": "prop_89",
       "kind": "TREE",
       "x": -148.8,
       "z": -64.3,
@@ -8676,7 +8687,7 @@
       "passable": true
     },
     {
-      "id": "prop_89",
+      "id": "prop_90",
       "kind": "TREE",
       "x": -140.8,
       "z": -64.1,
@@ -8684,7 +8695,7 @@
       "passable": true
     },
     {
-      "id": "prop_90",
+      "id": "prop_91",
       "kind": "ROCK",
       "x": -51.5,
       "z": -64.4,
@@ -8692,7 +8703,7 @@
       "passable": true
     },
     {
-      "id": "prop_91",
+      "id": "prop_92",
       "kind": "TREE",
       "x": 95.7,
       "z": -64.1,
@@ -8700,7 +8711,7 @@
       "passable": true
     },
     {
-      "id": "prop_92",
+      "id": "prop_93",
       "kind": "TREE",
       "x": 99.4,
       "z": -64.5,
@@ -8708,7 +8719,7 @@
       "passable": true
     },
     {
-      "id": "prop_93",
+      "id": "prop_94",
       "kind": "TREE",
       "x": 127.4,
       "z": -64.3,
@@ -8716,7 +8727,7 @@
       "passable": true
     },
     {
-      "id": "prop_94",
+      "id": "prop_95",
       "kind": "TREE",
       "x": -84.8,
       "z": -59.4,
@@ -8724,7 +8735,7 @@
       "passable": true
     },
     {
-      "id": "prop_95",
+      "id": "prop_96",
       "kind": "TREE",
       "x": 32.6,
       "z": -60.8,
@@ -8732,7 +8743,7 @@
       "passable": true
     },
     {
-      "id": "prop_96",
+      "id": "prop_97",
       "kind": "TREE",
       "x": -153,
       "z": -56.6,
@@ -8740,7 +8751,7 @@
       "passable": true
     },
     {
-      "id": "prop_97",
+      "id": "prop_98",
       "kind": "TREE",
       "x": -91.6,
       "z": -55.4,
@@ -8748,7 +8759,7 @@
       "passable": true
     },
     {
-      "id": "prop_98",
+      "id": "prop_99",
       "kind": "TREE",
       "x": -84.8,
       "z": -56.9,
@@ -8756,7 +8767,7 @@
       "passable": true
     },
     {
-      "id": "prop_99",
+      "id": "prop_100",
       "kind": "TREE",
       "x": -71.1,
       "z": -56.2,
@@ -8764,7 +8775,7 @@
       "passable": true
     },
     {
-      "id": "prop_100",
+      "id": "prop_101",
       "kind": "TREE",
       "x": 20.5,
       "z": -55.6,
@@ -8772,7 +8783,7 @@
       "passable": true
     },
     {
-      "id": "prop_101",
+      "id": "prop_102",
       "kind": "TREE",
       "x": 64.5,
       "z": -56.3,
@@ -8780,7 +8791,7 @@
       "passable": true
     },
     {
-      "id": "prop_102",
+      "id": "prop_103",
       "kind": "TREE",
       "x": 156.7,
       "z": -56.4,
@@ -8788,7 +8799,7 @@
       "passable": true
     },
     {
-      "id": "prop_103",
+      "id": "prop_104",
       "kind": "TREE",
       "x": -160.9,
       "z": -52.9,
@@ -8796,7 +8807,7 @@
       "passable": true
     },
     {
-      "id": "prop_104",
+      "id": "prop_105",
       "kind": "TREE",
       "x": -83.6,
       "z": -52.7,
@@ -8804,7 +8815,7 @@
       "passable": true
     },
     {
-      "id": "prop_105",
+      "id": "prop_106",
       "kind": "TREE",
       "x": 31.3,
       "z": -52.6,
@@ -8812,7 +8823,7 @@
       "passable": true
     },
     {
-      "id": "prop_106",
+      "id": "prop_107",
       "kind": "TREE",
       "x": 95.9,
       "z": -51.6,
@@ -8820,7 +8831,7 @@
       "passable": true
     },
     {
-      "id": "prop_107",
+      "id": "prop_108",
       "kind": "TREE",
       "x": 100.6,
       "z": -53,
@@ -8828,7 +8839,7 @@
       "passable": true
     },
     {
-      "id": "prop_108",
+      "id": "prop_109",
       "kind": "TREE",
       "x": -107.3,
       "z": -48.7,
@@ -8836,7 +8847,7 @@
       "passable": true
     },
     {
-      "id": "prop_109",
+      "id": "prop_110",
       "kind": "TREE",
       "x": 31.2,
       "z": -48.6,
@@ -8844,7 +8855,7 @@
       "passable": true
     },
     {
-      "id": "prop_110",
+      "id": "prop_111",
       "kind": "TREE",
       "x": 47.5,
       "z": -48.5,
@@ -8852,7 +8863,7 @@
       "passable": true
     },
     {
-      "id": "prop_111",
+      "id": "prop_112",
       "kind": "TREE",
       "x": 83.2,
       "z": -47.8,
@@ -8860,7 +8871,7 @@
       "passable": true
     },
     {
-      "id": "prop_112",
+      "id": "prop_113",
       "kind": "TREE",
       "x": 147.7,
       "z": -47.3,
@@ -8868,7 +8879,7 @@
       "passable": true
     },
     {
-      "id": "prop_113",
+      "id": "prop_114",
       "kind": "TREE",
       "x": 39.8,
       "z": -44.5,
@@ -8876,7 +8887,7 @@
       "passable": true
     },
     {
-      "id": "prop_114",
+      "id": "prop_115",
       "kind": "TREE",
       "x": 96,
       "z": -44.7,
@@ -8884,7 +8895,7 @@
       "passable": true
     },
     {
-      "id": "prop_115",
+      "id": "prop_116",
       "kind": "TREE",
       "x": 104.3,
       "z": -44.8,
@@ -8892,7 +8903,7 @@
       "passable": true
     },
     {
-      "id": "prop_116",
+      "id": "prop_117",
       "kind": "TREE",
       "x": 140.5,
       "z": -44.9,
@@ -8900,7 +8911,7 @@
       "passable": true
     },
     {
-      "id": "prop_117",
+      "id": "prop_118",
       "kind": "TREE",
       "x": 143,
       "z": -43.6,
@@ -8908,7 +8919,7 @@
       "passable": true
     },
     {
-      "id": "prop_118",
+      "id": "prop_119",
       "kind": "TREE",
       "x": -64.4,
       "z": -40.5,
@@ -8916,7 +8927,7 @@
       "passable": true
     },
     {
-      "id": "prop_119",
+      "id": "prop_120",
       "kind": "TREE",
       "x": -60.4,
       "z": -40.3,
@@ -8924,7 +8935,7 @@
       "passable": true
     },
     {
-      "id": "prop_120",
+      "id": "prop_121",
       "kind": "TREE",
       "x": 8.6,
       "z": -40,
@@ -8932,7 +8943,7 @@
       "passable": true
     },
     {
-      "id": "prop_121",
+      "id": "prop_122",
       "kind": "TREE",
       "x": 24.4,
       "z": -39.1,
@@ -8940,7 +8951,7 @@
       "passable": true
     },
     {
-      "id": "prop_122",
+      "id": "prop_123",
       "kind": "TREE",
       "x": 32.1,
       "z": -39.3,
@@ -8948,7 +8959,7 @@
       "passable": true
     },
     {
-      "id": "prop_123",
+      "id": "prop_124",
       "kind": "TREE",
       "x": 108.9,
       "z": -39.1,
@@ -8956,7 +8967,7 @@
       "passable": true
     },
     {
-      "id": "prop_124",
+      "id": "prop_125",
       "kind": "TREE",
       "x": 132.4,
       "z": -39.6,
@@ -8964,7 +8975,7 @@
       "passable": true
     },
     {
-      "id": "prop_125",
+      "id": "prop_126",
       "kind": "TREE",
       "x": 60.2,
       "z": -36.6,
@@ -8972,7 +8983,7 @@
       "passable": true
     },
     {
-      "id": "prop_126",
+      "id": "prop_127",
       "kind": "TREE",
       "x": 103.3,
       "z": -36.8,
@@ -8980,7 +8991,7 @@
       "passable": true
     },
     {
-      "id": "prop_127",
+      "id": "prop_128",
       "kind": "TREE",
       "x": 141,
       "z": -36.2,
@@ -8988,7 +8999,7 @@
       "passable": true
     },
     {
-      "id": "prop_128",
+      "id": "prop_129",
       "kind": "TREE",
       "x": -63,
       "z": -32.6,
@@ -8996,7 +9007,7 @@
       "passable": true
     },
     {
-      "id": "prop_129",
+      "id": "prop_130",
       "kind": "TREE",
       "x": 23.5,
       "z": -31.6,
@@ -9004,7 +9015,7 @@
       "passable": true
     },
     {
-      "id": "prop_130",
+      "id": "prop_131",
       "kind": "TREE",
       "x": 39.2,
       "z": -32.7,
@@ -9012,7 +9023,7 @@
       "passable": true
     },
     {
-      "id": "prop_131",
+      "id": "prop_132",
       "kind": "TREE",
       "x": -72.3,
       "z": -29,
@@ -9020,7 +9031,7 @@
       "passable": true
     },
     {
-      "id": "prop_132",
+      "id": "prop_133",
       "kind": "TREE",
       "x": 11.1,
       "z": -28.7,
@@ -9028,7 +9039,7 @@
       "passable": true
     },
     {
-      "id": "prop_133",
+      "id": "prop_134",
       "kind": "TREE",
       "x": 27.4,
       "z": -27.7,
@@ -9036,7 +9047,7 @@
       "passable": true
     },
     {
-      "id": "prop_134",
+      "id": "prop_135",
       "kind": "TREE",
       "x": 43.1,
       "z": -28.4,
@@ -9044,7 +9055,7 @@
       "passable": true
     },
     {
-      "id": "prop_135",
+      "id": "prop_136",
       "kind": "TREE",
       "x": -63.4,
       "z": -24.8,
@@ -9052,7 +9063,7 @@
       "passable": true
     },
     {
-      "id": "prop_136",
+      "id": "prop_137",
       "kind": "TREE",
       "x": 31.5,
       "z": -24.6,
@@ -9060,7 +9071,7 @@
       "passable": true
     },
     {
-      "id": "prop_137",
+      "id": "prop_138",
       "kind": "TREE",
       "x": 96.1,
       "z": -23.5,
@@ -9068,7 +9079,7 @@
       "passable": true
     },
     {
-      "id": "prop_138",
+      "id": "prop_139",
       "kind": "TREE",
       "x": 131.5,
       "z": -23.2,
@@ -9076,7 +9087,7 @@
       "passable": true
     },
     {
-      "id": "prop_139",
+      "id": "prop_140",
       "kind": "TREE",
       "x": 136.1,
       "z": -24.2,
@@ -9084,7 +9095,7 @@
       "passable": true
     },
     {
-      "id": "prop_140",
+      "id": "prop_141",
       "kind": "TREE",
       "x": 55.4,
       "z": -19.9,
@@ -9092,7 +9103,7 @@
       "passable": true
     },
     {
-      "id": "prop_141",
+      "id": "prop_142",
       "kind": "TREE",
       "x": 116,
       "z": -20.2,
@@ -9100,7 +9111,7 @@
       "passable": true
     },
     {
-      "id": "prop_142",
+      "id": "prop_143",
       "kind": "TREE",
       "x": -120.8,
       "z": -16.3,
@@ -9108,7 +9119,7 @@
       "passable": true
     },
     {
-      "id": "prop_143",
+      "id": "prop_144",
       "kind": "TREE",
       "x": 60.5,
       "z": -15,
@@ -9116,7 +9127,7 @@
       "passable": true
     },
     {
-      "id": "prop_144",
+      "id": "prop_145",
       "kind": "TREE",
       "x": 84.7,
       "z": -15.5,
@@ -9124,7 +9135,7 @@
       "passable": true
     },
     {
-      "id": "prop_145",
+      "id": "prop_146",
       "kind": "TREE",
       "x": 115.5,
       "z": -15.7,
@@ -9132,7 +9143,7 @@
       "passable": true
     },
     {
-      "id": "prop_146",
+      "id": "prop_147",
       "kind": "TREE",
       "x": 131.5,
       "z": -15.6,
@@ -9140,7 +9151,7 @@
       "passable": true
     },
     {
-      "id": "prop_147",
+      "id": "prop_148",
       "kind": "TREE",
       "x": 155.6,
       "z": -15.6,
@@ -9148,7 +9159,7 @@
       "passable": true
     },
     {
-      "id": "prop_148",
+      "id": "prop_149",
       "kind": "TREE",
       "x": -120.1,
       "z": -12.6,
@@ -9156,7 +9167,7 @@
       "passable": true
     },
     {
-      "id": "prop_149",
+      "id": "prop_150",
       "kind": "TREE",
       "x": 32.5,
       "z": -12,
@@ -9164,7 +9175,7 @@
       "passable": true
     },
     {
-      "id": "prop_150",
+      "id": "prop_151",
       "kind": "TREE",
       "x": 35.7,
       "z": -11.6,
@@ -9172,7 +9183,7 @@
       "passable": true
     },
     {
-      "id": "prop_151",
+      "id": "prop_152",
       "kind": "TREE",
       "x": 127.3,
       "z": -11.5,
@@ -9180,7 +9191,7 @@
       "passable": true
     },
     {
-      "id": "prop_152",
+      "id": "prop_153",
       "kind": "TREE",
       "x": 116,
       "z": -8.1,
@@ -9188,7 +9199,7 @@
       "passable": true
     },
     {
-      "id": "prop_153",
+      "id": "prop_154",
       "kind": "TREE",
       "x": 45,
       "z": -4.9,
@@ -9196,7 +9207,7 @@
       "passable": true
     },
     {
-      "id": "prop_154",
+      "id": "prop_155",
       "kind": "TREE",
       "x": -39.4,
       "z": 0.7,
@@ -9204,7 +9215,7 @@
       "passable": true
     },
     {
-      "id": "prop_155",
+      "id": "prop_156",
       "kind": "TREE",
       "x": 52.7,
       "z": 0.1,
@@ -9212,7 +9223,7 @@
       "passable": true
     },
     {
-      "id": "prop_156",
+      "id": "prop_157",
       "kind": "TREE",
       "x": -104.5,
       "z": 4.8,
@@ -9220,7 +9231,7 @@
       "passable": true
     },
     {
-      "id": "prop_157",
+      "id": "prop_158",
       "kind": "TREE",
       "x": -44.3,
       "z": 3.3,
@@ -9228,7 +9239,7 @@
       "passable": true
     },
     {
-      "id": "prop_158",
+      "id": "prop_159",
       "kind": "TREE",
       "x": 119.6,
       "z": 3.9,
@@ -9236,7 +9247,7 @@
       "passable": true
     },
     {
-      "id": "prop_159",
+      "id": "prop_160",
       "kind": "TREE",
       "x": -131.8,
       "z": 8.3,
@@ -9244,7 +9255,7 @@
       "passable": true
     },
     {
-      "id": "prop_160",
+      "id": "prop_161",
       "kind": "TREE",
       "x": -127.2,
       "z": 8.7,
@@ -9252,7 +9263,7 @@
       "passable": true
     },
     {
-      "id": "prop_161",
+      "id": "prop_162",
       "kind": "TREE",
       "x": 123.8,
       "z": 8.4,
@@ -9260,7 +9271,7 @@
       "passable": true
     },
     {
-      "id": "prop_162",
+      "id": "prop_163",
       "kind": "TREE",
       "x": -160.9,
       "z": 11.1,
@@ -9268,7 +9279,7 @@
       "passable": true
     },
     {
-      "id": "prop_163",
+      "id": "prop_164",
       "kind": "TREE",
       "x": -131.6,
       "z": 11.2,
@@ -9276,7 +9287,7 @@
       "passable": true
     },
     {
-      "id": "prop_164",
+      "id": "prop_165",
       "kind": "TREE",
       "x": -124.2,
       "z": 11.2,
@@ -9284,7 +9295,7 @@
       "passable": true
     },
     {
-      "id": "prop_165",
+      "id": "prop_166",
       "kind": "TREE",
       "x": -95.5,
       "z": 12.5,
@@ -9292,7 +9303,7 @@
       "passable": true
     },
     {
-      "id": "prop_166",
+      "id": "prop_167",
       "kind": "TREE",
       "x": -92.5,
       "z": 15.6,
@@ -9300,7 +9311,7 @@
       "passable": true
     },
     {
-      "id": "prop_167",
+      "id": "prop_168",
       "kind": "TREE",
       "x": 128.8,
       "z": 16.2,
@@ -9308,7 +9319,7 @@
       "passable": true
     },
     {
-      "id": "prop_168",
+      "id": "prop_169",
       "kind": "TREE",
       "x": -131.8,
       "z": 19.1,
@@ -9316,7 +9327,7 @@
       "passable": true
     },
     {
-      "id": "prop_169",
+      "id": "prop_170",
       "kind": "TREE",
       "x": -128.4,
       "z": 20.5,
@@ -9324,7 +9335,7 @@
       "passable": true
     },
     {
-      "id": "prop_170",
+      "id": "prop_171",
       "kind": "TREE",
       "x": -115.7,
       "z": 20.6,
@@ -9332,7 +9343,7 @@
       "passable": true
     },
     {
-      "id": "prop_171",
+      "id": "prop_172",
       "kind": "TREE",
       "x": 67.9,
       "z": 19.8,
@@ -9340,7 +9351,7 @@
       "passable": true
     },
     {
-      "id": "prop_172",
+      "id": "prop_173",
       "kind": "TREE",
       "x": -60.7,
       "z": 24.4,
@@ -9348,7 +9359,7 @@
       "passable": true
     },
     {
-      "id": "prop_173",
+      "id": "prop_174",
       "kind": "TREE",
       "x": -51.9,
       "z": 24.3,
@@ -9356,7 +9367,7 @@
       "passable": true
     },
     {
-      "id": "prop_174",
+      "id": "prop_175",
       "kind": "TREE",
       "x": -28.8,
       "z": 23.6,
@@ -9364,7 +9375,7 @@
       "passable": true
     },
     {
-      "id": "prop_175",
+      "id": "prop_176",
       "kind": "TREE",
       "x": 76.4,
       "z": 24,
@@ -9372,7 +9383,7 @@
       "passable": true
     },
     {
-      "id": "prop_176",
+      "id": "prop_177",
       "kind": "TREE",
       "x": 79.9,
       "z": 23.4,
@@ -9380,7 +9391,7 @@
       "passable": true
     },
     {
-      "id": "prop_177",
+      "id": "prop_178",
       "kind": "TREE",
       "x": -140.1,
       "z": 28.5,
@@ -9388,7 +9399,7 @@
       "passable": true
     },
     {
-      "id": "prop_178",
+      "id": "prop_179",
       "kind": "TREE",
       "x": -127.7,
       "z": 28.5,
@@ -9396,7 +9407,7 @@
       "passable": true
     },
     {
-      "id": "prop_179",
+      "id": "prop_180",
       "kind": "TREE",
       "x": 64.2,
       "z": 28.2,
@@ -9404,7 +9415,7 @@
       "passable": true
     },
     {
-      "id": "prop_180",
+      "id": "prop_181",
       "kind": "TREE",
       "x": -124.6,
       "z": 32.6,
@@ -9412,7 +9423,7 @@
       "passable": true
     },
     {
-      "id": "prop_181",
+      "id": "prop_182",
       "kind": "TREE",
       "x": -116.8,
       "z": 31.4,
@@ -9420,7 +9431,7 @@
       "passable": true
     },
     {
-      "id": "prop_182",
+      "id": "prop_183",
       "kind": "TREE",
       "x": -111,
       "z": 31.6,
@@ -9428,7 +9439,7 @@
       "passable": true
     },
     {
-      "id": "prop_183",
+      "id": "prop_184",
       "kind": "TREE",
       "x": 79.8,
       "z": 31.7,
@@ -9436,7 +9447,7 @@
       "passable": true
     },
     {
-      "id": "prop_184",
+      "id": "prop_185",
       "kind": "TREE",
       "x": -44.3,
       "z": 37,
@@ -9444,7 +9455,7 @@
       "passable": true
     },
     {
-      "id": "prop_185",
+      "id": "prop_186",
       "kind": "TREE",
       "x": 76.3,
       "z": 35.9,
@@ -9452,7 +9463,7 @@
       "passable": true
     },
     {
-      "id": "prop_186",
+      "id": "prop_187",
       "kind": "ROCK",
       "x": -119.2,
       "z": 40,
@@ -9460,7 +9471,7 @@
       "passable": true
     },
     {
-      "id": "prop_187",
+      "id": "prop_188",
       "kind": "TREE",
       "x": 59.5,
       "z": 39.6,
@@ -9468,7 +9479,7 @@
       "passable": true
     },
     {
-      "id": "prop_188",
+      "id": "prop_189",
       "kind": "TREE",
       "x": -140.8,
       "z": 44.8,
@@ -9476,7 +9487,7 @@
       "passable": true
     },
     {
-      "id": "prop_189",
+      "id": "prop_190",
       "kind": "TREE",
       "x": -128.3,
       "z": 43.2,
@@ -9484,7 +9495,7 @@
       "passable": true
     },
     {
-      "id": "prop_190",
+      "id": "prop_191",
       "kind": "TREE",
       "x": -107.5,
       "z": 43.6,
@@ -9492,7 +9503,7 @@
       "passable": true
     },
     {
-      "id": "prop_191",
+      "id": "prop_192",
       "kind": "TREE",
       "x": -100.2,
       "z": 44.6,
@@ -9500,7 +9511,7 @@
       "passable": true
     },
     {
-      "id": "prop_192",
+      "id": "prop_193",
       "kind": "TREE",
       "x": -83.3,
       "z": 43.2,
@@ -9508,7 +9519,7 @@
       "passable": true
     },
     {
-      "id": "prop_193",
+      "id": "prop_194",
       "kind": "TREE",
       "x": -33,
       "z": 43.5,
@@ -9516,7 +9527,7 @@
       "passable": true
     },
     {
-      "id": "prop_194",
+      "id": "prop_195",
       "kind": "TREE",
       "x": 68,
       "z": 44.5,
@@ -9524,7 +9535,7 @@
       "passable": true
     },
     {
-      "id": "prop_195",
+      "id": "prop_196",
       "kind": "TREE",
       "x": 72.2,
       "z": 44.2,
@@ -9532,7 +9543,7 @@
       "passable": true
     },
     {
-      "id": "prop_196",
+      "id": "prop_197",
       "kind": "TREE",
       "x": 99.9,
       "z": 44.4,
@@ -9540,7 +9551,7 @@
       "passable": true
     },
     {
-      "id": "prop_197",
+      "id": "prop_198",
       "kind": "TREE",
       "x": -148.4,
       "z": 48.5,
@@ -9548,7 +9559,7 @@
       "passable": true
     },
     {
-      "id": "prop_198",
+      "id": "prop_199",
       "kind": "TREE",
       "x": -111.8,
       "z": 47,
@@ -9556,7 +9567,7 @@
       "passable": true
     },
     {
-      "id": "prop_199",
+      "id": "prop_200",
       "kind": "TREE",
       "x": -40.7,
       "z": 47.2,
@@ -9564,7 +9575,7 @@
       "passable": true
     },
     {
-      "id": "prop_200",
+      "id": "prop_201",
       "kind": "TREE",
       "x": -35.6,
       "z": 49,
@@ -9572,7 +9583,7 @@
       "passable": true
     },
     {
-      "id": "prop_201",
+      "id": "prop_202",
       "kind": "TREE",
       "x": -31.7,
       "z": 49,
@@ -9580,7 +9591,7 @@
       "passable": true
     },
     {
-      "id": "prop_202",
+      "id": "prop_203",
       "kind": "TREE",
       "x": -28.3,
       "z": 47.9,
@@ -9588,7 +9599,7 @@
       "passable": true
     },
     {
-      "id": "prop_203",
+      "id": "prop_204",
       "kind": "TREE",
       "x": 71.9,
       "z": 48.9,
@@ -9596,7 +9607,7 @@
       "passable": true
     },
     {
-      "id": "prop_204",
+      "id": "prop_205",
       "kind": "TREE",
       "x": 76.3,
       "z": 47.9,
@@ -9604,7 +9615,7 @@
       "passable": true
     },
     {
-      "id": "prop_205",
+      "id": "prop_206",
       "kind": "TREE",
       "x": 95.8,
       "z": 47,
@@ -9612,7 +9623,7 @@
       "passable": true
     },
     {
-      "id": "prop_206",
+      "id": "prop_207",
       "kind": "TREE",
       "x": 156.1,
       "z": 47.4,
@@ -9620,7 +9631,7 @@
       "passable": true
     },
     {
-      "id": "prop_207",
+      "id": "prop_208",
       "kind": "TREE",
       "x": 160.6,
       "z": 48.2,
@@ -9628,7 +9639,7 @@
       "passable": true
     },
     {
-      "id": "prop_208",
+      "id": "prop_209",
       "kind": "TREE",
       "x": -151.4,
       "z": 52.2,
@@ -9636,7 +9647,7 @@
       "passable": true
     },
     {
-      "id": "prop_209",
+      "id": "prop_210",
       "kind": "TREE",
       "x": -132.8,
       "z": 52.1,
@@ -9644,7 +9655,7 @@
       "passable": true
     },
     {
-      "id": "prop_210",
+      "id": "prop_211",
       "kind": "TREE",
       "x": -115.3,
       "z": 52,
@@ -9652,7 +9663,7 @@
       "passable": true
     },
     {
-      "id": "prop_211",
+      "id": "prop_212",
       "kind": "TREE",
       "x": -107.7,
       "z": 52.6,
@@ -9660,7 +9671,7 @@
       "passable": true
     },
     {
-      "id": "prop_212",
+      "id": "prop_213",
       "kind": "TREE",
       "x": -100.6,
       "z": 51.8,
@@ -9668,7 +9679,7 @@
       "passable": true
     },
     {
-      "id": "prop_213",
+      "id": "prop_214",
       "kind": "TREE",
       "x": -92.1,
       "z": 52.2,
@@ -9676,7 +9687,7 @@
       "passable": true
     },
     {
-      "id": "prop_214",
+      "id": "prop_215",
       "kind": "TREE",
       "x": 71,
       "z": 51.4,
@@ -9684,7 +9695,7 @@
       "passable": true
     },
     {
-      "id": "prop_215",
+      "id": "prop_216",
       "kind": "TREE",
       "x": 75.4,
       "z": 52.4,
@@ -9692,7 +9703,7 @@
       "passable": true
     },
     {
-      "id": "prop_216",
+      "id": "prop_217",
       "kind": "TREE",
       "x": 103,
       "z": 52.8,
@@ -9700,7 +9711,7 @@
       "passable": true
     },
     {
-      "id": "prop_217",
+      "id": "prop_218",
       "kind": "TREE",
       "x": -128,
       "z": 56.3,
@@ -9708,7 +9719,7 @@
       "passable": true
     },
     {
-      "id": "prop_218",
+      "id": "prop_219",
       "kind": "TREE",
       "x": -119.9,
       "z": 57,
@@ -9716,7 +9727,7 @@
       "passable": true
     },
     {
-      "id": "prop_219",
+      "id": "prop_220",
       "kind": "TREE",
       "x": -68.8,
       "z": 56,
@@ -9724,7 +9735,7 @@
       "passable": true
     },
     {
-      "id": "prop_220",
+      "id": "prop_221",
       "kind": "TREE",
       "x": 68.3,
       "z": 55.5,
@@ -9732,7 +9743,7 @@
       "passable": true
     },
     {
-      "id": "prop_221",
+      "id": "prop_222",
       "kind": "TREE",
       "x": 92.7,
       "z": 56.6,
@@ -9740,7 +9751,7 @@
       "passable": true
     },
     {
-      "id": "prop_222",
+      "id": "prop_223",
       "kind": "TREE",
       "x": 95.4,
       "z": 55.2,
@@ -9748,7 +9759,7 @@
       "passable": true
     },
     {
-      "id": "prop_223",
+      "id": "prop_224",
       "kind": "TREE",
       "x": 152.5,
       "z": 55.8,
@@ -9756,7 +9767,7 @@
       "passable": true
     },
     {
-      "id": "prop_224",
+      "id": "prop_225",
       "kind": "TREE",
       "x": 160.9,
       "z": 56.5,
@@ -9764,7 +9775,7 @@
       "passable": true
     },
     {
-      "id": "prop_225",
+      "id": "prop_226",
       "kind": "TREE",
       "x": 71.6,
       "z": 59.7,
@@ -9772,7 +9783,7 @@
       "passable": true
     },
     {
-      "id": "prop_226",
+      "id": "prop_227",
       "kind": "TREE",
       "x": 76.2,
       "z": 59.2,
@@ -9780,7 +9791,7 @@
       "passable": true
     },
     {
-      "id": "prop_227",
+      "id": "prop_228",
       "kind": "TREE",
       "x": 160.8,
       "z": 60.3,
@@ -9788,7 +9799,7 @@
       "passable": true
     },
     {
-      "id": "prop_228",
+      "id": "prop_229",
       "kind": "TREE",
       "x": -151.4,
       "z": 63.7,
@@ -9796,7 +9807,7 @@
       "passable": true
     },
     {
-      "id": "prop_229",
+      "id": "prop_230",
       "kind": "TREE",
       "x": -131.1,
       "z": 64.3,
@@ -9804,7 +9815,7 @@
       "passable": true
     },
     {
-      "id": "prop_230",
+      "id": "prop_231",
       "kind": "TREE",
       "x": -116.9,
       "z": 63.6,
@@ -9812,7 +9823,7 @@
       "passable": true
     },
     {
-      "id": "prop_231",
+      "id": "prop_232",
       "kind": "TREE",
       "x": 155.3,
       "z": 64,
@@ -9820,7 +9831,7 @@
       "passable": true
     },
     {
-      "id": "prop_232",
+      "id": "prop_233",
       "kind": "TREE",
       "x": -140.4,
       "z": 68.3,
@@ -9828,7 +9839,7 @@
       "passable": true
     },
     {
-      "id": "prop_233",
+      "id": "prop_234",
       "kind": "ROCK",
       "x": 55.2,
       "z": 67.5,
@@ -9836,7 +9847,7 @@
       "passable": true
     },
     {
-      "id": "prop_234",
+      "id": "prop_235",
       "kind": "TREE",
       "x": 75,
       "z": 68.1,
@@ -9844,7 +9855,7 @@
       "passable": true
     },
     {
-      "id": "prop_235",
+      "id": "prop_236",
       "kind": "TREE",
       "x": 79.8,
       "z": 68.1,
@@ -9852,7 +9863,7 @@
       "passable": true
     },
     {
-      "id": "prop_236",
+      "id": "prop_237",
       "kind": "TREE",
       "x": 148.7,
       "z": 68.6,
@@ -9860,7 +9871,7 @@
       "passable": true
     },
     {
-      "id": "prop_237",
+      "id": "prop_238",
       "kind": "TREE",
       "x": -160,
       "z": 72.3,
@@ -9868,7 +9879,7 @@
       "passable": true
     },
     {
-      "id": "prop_238",
+      "id": "prop_239",
       "kind": "TREE",
       "x": -156.5,
       "z": 72.9,
@@ -9876,7 +9887,7 @@
       "passable": true
     },
     {
-      "id": "prop_239",
+      "id": "prop_240",
       "kind": "TREE",
       "x": -151.7,
       "z": 72,
@@ -9884,7 +9895,7 @@
       "passable": true
     },
     {
-      "id": "prop_240",
+      "id": "prop_241",
       "kind": "TREE",
       "x": 12.8,
       "z": 72.6,
@@ -9892,7 +9903,7 @@
       "passable": true
     },
     {
-      "id": "prop_241",
+      "id": "prop_242",
       "kind": "ROCK",
       "x": 48.3,
       "z": 72.2,
@@ -9900,7 +9911,7 @@
       "passable": true
     },
     {
-      "id": "prop_242",
+      "id": "prop_243",
       "kind": "TREE",
       "x": 71.8,
       "z": 72.4,
@@ -9908,7 +9919,7 @@
       "passable": true
     },
     {
-      "id": "prop_243",
+      "id": "prop_244",
       "kind": "TREE",
       "x": 123.7,
       "z": 71.7,
@@ -9916,7 +9927,7 @@
       "passable": true
     },
     {
-      "id": "prop_244",
+      "id": "prop_245",
       "kind": "TREE",
       "x": 128.4,
       "z": 71,
@@ -9924,7 +9935,7 @@
       "passable": true
     },
     {
-      "id": "prop_245",
+      "id": "prop_246",
       "kind": "TREE",
       "x": 152.4,
       "z": 71.1,
@@ -9932,7 +9943,7 @@
       "passable": true
     },
     {
-      "id": "prop_246",
+      "id": "prop_247",
       "kind": "TREE",
       "x": -155.5,
       "z": 75.2,
@@ -9940,7 +9951,7 @@
       "passable": true
     },
     {
-      "id": "prop_247",
+      "id": "prop_248",
       "kind": "TREE",
       "x": -116.5,
       "z": 76.9,
@@ -9948,7 +9959,7 @@
       "passable": true
     },
     {
-      "id": "prop_248",
+      "id": "prop_249",
       "kind": "ROCK",
       "x": 43.7,
       "z": 76.4,
@@ -9956,7 +9967,7 @@
       "passable": true
     },
     {
-      "id": "prop_249",
+      "id": "prop_250",
       "kind": "ROCK",
       "x": 60.5,
       "z": 75.7,
@@ -9964,7 +9975,7 @@
       "passable": true
     },
     {
-      "id": "prop_250",
+      "id": "prop_251",
       "kind": "TREE",
       "x": 160.9,
       "z": 75.7,
@@ -9972,7 +9983,7 @@
       "passable": true
     },
     {
-      "id": "prop_251",
+      "id": "prop_252",
       "kind": "TREE",
       "x": -128.3,
       "z": 79.7,
@@ -9980,7 +9991,7 @@
       "passable": true
     },
     {
-      "id": "prop_252",
+      "id": "prop_253",
       "kind": "TREE",
       "x": -159.6,
       "z": 83.2,
@@ -9988,7 +9999,7 @@
       "passable": true
     },
     {
-      "id": "prop_253",
+      "id": "prop_254",
       "kind": "TREE",
       "x": -155.6,
       "z": 84.9,
@@ -9996,7 +10007,7 @@
       "passable": true
     },
     {
-      "id": "prop_254",
+      "id": "prop_255",
       "kind": "TREE",
       "x": -120.7,
       "z": 84,
@@ -10004,7 +10015,7 @@
       "passable": true
     },
     {
-      "id": "prop_255",
+      "id": "prop_256",
       "kind": "TREE",
       "x": -100.9,
       "z": 83.2,
@@ -10012,7 +10023,7 @@
       "passable": true
     },
     {
-      "id": "prop_256",
+      "id": "prop_257",
       "kind": "TREE",
       "x": -148.5,
       "z": 88.9,
@@ -10020,7 +10031,7 @@
       "passable": true
     },
     {
-      "id": "prop_257",
+      "id": "prop_258",
       "kind": "TREE",
       "x": -128,
       "z": 88.8,
@@ -10028,7 +10039,7 @@
       "passable": true
     },
     {
-      "id": "prop_258",
+      "id": "prop_259",
       "kind": "TREE",
       "x": -116,
       "z": 88.6,
@@ -10036,7 +10047,7 @@
       "passable": true
     },
     {
-      "id": "prop_259",
+      "id": "prop_260",
       "kind": "TREE",
       "x": 160.4,
       "z": 87.3,
@@ -10044,7 +10055,7 @@
       "passable": true
     },
     {
-      "id": "prop_260",
+      "id": "prop_261",
       "kind": "TREE",
       "x": -151.7,
       "z": 91.5,
@@ -10052,7 +10063,7 @@
       "passable": true
     },
     {
-      "id": "prop_261",
+      "id": "prop_262",
       "kind": "TREE",
       "x": -148.3,
       "z": 92.2,
@@ -10060,7 +10071,7 @@
       "passable": true
     },
     {
-      "id": "prop_262",
+      "id": "prop_263",
       "kind": "TREE",
       "x": -135.1,
       "z": 91.8,
@@ -10068,7 +10079,7 @@
       "passable": true
     },
     {
-      "id": "prop_263",
+      "id": "prop_264",
       "kind": "TREE",
       "x": -100.1,
       "z": 92.8,
@@ -10076,7 +10087,7 @@
       "passable": true
     },
     {
-      "id": "prop_264",
+      "id": "prop_265",
       "kind": "TREE",
       "x": -96.9,
       "z": 91.9,
@@ -10084,7 +10095,7 @@
       "passable": true
     },
     {
-      "id": "prop_265",
+      "id": "prop_266",
       "kind": "TREE",
       "x": -75.1,
       "z": 92.3,
@@ -10092,7 +10103,7 @@
       "passable": true
     },
     {
-      "id": "prop_266",
+      "id": "prop_267",
       "kind": "ROCK",
       "x": 87.2,
       "z": 92.8,
@@ -10100,7 +10111,7 @@
       "passable": true
     },
     {
-      "id": "prop_267",
+      "id": "prop_268",
       "kind": "TREE",
       "x": 116.2,
       "z": 93,
@@ -10108,7 +10119,7 @@
       "passable": true
     },
     {
-      "id": "prop_268",
+      "id": "prop_269",
       "kind": "TREE",
       "x": 120.4,
       "z": 91.6,
@@ -10116,7 +10127,7 @@
       "passable": true
     },
     {
-      "id": "prop_269",
+      "id": "prop_270",
       "kind": "TREE",
       "x": -139.5,
       "z": 96.6,
@@ -10124,7 +10135,7 @@
       "passable": true
     },
     {
-      "id": "prop_270",
+      "id": "prop_271",
       "kind": "TREE",
       "x": -12.1,
       "z": 96.9,
@@ -10132,7 +10143,7 @@
       "passable": true
     },
     {
-      "id": "prop_271",
+      "id": "prop_272",
       "kind": "TREE",
       "x": 160.4,
       "z": 96.6,
@@ -10140,7 +10151,7 @@
       "passable": true
     },
     {
-      "id": "prop_272",
+      "id": "prop_273",
       "kind": "TREE",
       "x": -155.9,
       "z": 99.9,
@@ -10148,7 +10159,7 @@
       "passable": true
     },
     {
-      "id": "prop_273",
+      "id": "prop_274",
       "kind": "TREE",
       "x": -151.4,
       "z": 100.2,
@@ -10156,7 +10167,7 @@
       "passable": true
     },
     {
-      "id": "prop_274",
+      "id": "prop_275",
       "kind": "TREE",
       "x": -144,
       "z": 100,
@@ -10164,7 +10175,7 @@
       "passable": true
     },
     {
-      "id": "prop_275",
+      "id": "prop_276",
       "kind": "TREE",
       "x": -100.3,
       "z": 100.2,
@@ -10172,7 +10183,7 @@
       "passable": true
     },
     {
-      "id": "prop_276",
+      "id": "prop_277",
       "kind": "TREE",
       "x": -96.8,
       "z": 100,
@@ -10180,7 +10191,7 @@
       "passable": true
     },
     {
-      "id": "prop_277",
+      "id": "prop_278",
       "kind": "TREE",
       "x": -87.9,
       "z": 99.9,
@@ -10188,7 +10199,7 @@
       "passable": true
     },
     {
-      "id": "prop_278",
+      "id": "prop_279",
       "kind": "TREE",
       "x": -79.3,
       "z": 99.8,
@@ -10196,7 +10207,7 @@
       "passable": true
     },
     {
-      "id": "prop_279",
+      "id": "prop_280",
       "kind": "TREE",
       "x": -37,
       "z": 100.4,
@@ -10204,7 +10215,7 @@
       "passable": true
     },
     {
-      "id": "prop_280",
+      "id": "prop_281",
       "kind": "TREE",
       "x": -24.6,
       "z": 100.8,
@@ -10212,7 +10223,7 @@
       "passable": true
     },
     {
-      "id": "prop_281",
+      "id": "prop_282",
       "kind": "TREE",
       "x": -159.3,
       "z": 105,
@@ -10220,7 +10231,7 @@
       "passable": true
     },
     {
-      "id": "prop_282",
+      "id": "prop_283",
       "kind": "TREE",
       "x": -147.7,
       "z": 103.8,
@@ -10228,7 +10239,7 @@
       "passable": true
     },
     {
-      "id": "prop_283",
+      "id": "prop_284",
       "kind": "TREE",
       "x": -80.9,
       "z": 103.5,
@@ -10236,7 +10247,7 @@
       "passable": true
     },
     {
-      "id": "prop_284",
+      "id": "prop_285",
       "kind": "ROCK",
       "x": -44.7,
       "z": 103.2,
@@ -10244,7 +10255,7 @@
       "passable": true
     },
     {
-      "id": "prop_285",
+      "id": "prop_286",
       "kind": "TREE",
       "x": -32,
       "z": 104.6,
@@ -10252,7 +10263,7 @@
       "passable": true
     },
     {
-      "id": "prop_286",
+      "id": "prop_287",
       "kind": "TREE",
       "x": -23.3,
       "z": 103.6,
@@ -10260,7 +10271,7 @@
       "passable": true
     },
     {
-      "id": "prop_287",
+      "id": "prop_288",
       "kind": "TREE",
       "x": -0.8,
       "z": 104.9,
@@ -10268,7 +10279,7 @@
       "passable": true
     },
     {
-      "id": "prop_288",
+      "id": "prop_289",
       "kind": "TREE",
       "x": -155.2,
       "z": 108.5,
@@ -10276,7 +10287,7 @@
       "passable": true
     },
     {
-      "id": "prop_289",
+      "id": "prop_290",
       "kind": "TREE",
       "x": -132.5,
       "z": 108.2,
@@ -10284,7 +10295,7 @@
       "passable": true
     },
     {
-      "id": "prop_290",
+      "id": "prop_291",
       "kind": "TREE",
       "x": -120.3,
       "z": 107.5,
@@ -10292,7 +10303,7 @@
       "passable": true
     },
     {
-      "id": "prop_291",
+      "id": "prop_292",
       "kind": "TREE",
       "x": -104.6,
       "z": 108.6,
@@ -10300,7 +10311,7 @@
       "passable": true
     },
     {
-      "id": "prop_292",
+      "id": "prop_293",
       "kind": "TREE",
       "x": -96.4,
       "z": 107.9,
@@ -10308,7 +10319,7 @@
       "passable": true
     },
     {
-      "id": "prop_293",
+      "id": "prop_294",
       "kind": "TREE",
       "x": -88,
       "z": 108.8,
@@ -10316,7 +10327,7 @@
       "passable": true
     },
     {
-      "id": "prop_294",
+      "id": "prop_295",
       "kind": "TREE",
       "x": -15.7,
       "z": 108.7,
@@ -10324,7 +10335,7 @@
       "passable": true
     },
     {
-      "id": "prop_295",
+      "id": "prop_296",
       "kind": "ROCK",
       "x": 75.1,
       "z": 108.3,
@@ -10332,7 +10343,7 @@
       "passable": true
     },
     {
-      "id": "prop_296",
+      "id": "prop_297",
       "kind": "TREE",
       "x": -99.7,
       "z": 112.3,
@@ -10340,7 +10351,7 @@
       "passable": true
     },
     {
-      "id": "prop_297",
+      "id": "prop_298",
       "kind": "TREE",
       "x": -88.5,
       "z": 112.1,
@@ -10348,7 +10359,7 @@
       "passable": true
     },
     {
-      "id": "prop_298",
+      "id": "prop_299",
       "kind": "TREE",
       "x": -19.8,
       "z": 113,
@@ -10356,7 +10367,7 @@
       "passable": true
     },
     {
-      "id": "prop_299",
+      "id": "prop_300",
       "kind": "TREE",
       "x": 15.1,
       "z": 112.7,
@@ -10364,7 +10375,7 @@
       "passable": true
     },
     {
-      "id": "prop_300",
+      "id": "prop_301",
       "kind": "TREE",
       "x": -156.6,
       "z": 115.2,
@@ -10372,7 +10383,7 @@
       "passable": true
     },
     {
-      "id": "prop_301",
+      "id": "prop_302",
       "kind": "TREE",
       "x": -71.8,
       "z": 115.5,
@@ -10380,7 +10391,7 @@
       "passable": true
     },
     {
-      "id": "prop_302",
+      "id": "prop_303",
       "kind": "TREE",
       "x": -8,
       "z": 115.5,
@@ -10388,7 +10399,7 @@
       "passable": true
     },
     {
-      "id": "prop_303",
+      "id": "prop_304",
       "kind": "TREE",
       "x": 15,
       "z": 115.9,
@@ -10396,7 +10407,7 @@
       "passable": true
     },
     {
-      "id": "prop_304",
+      "id": "prop_305",
       "kind": "TREE",
       "x": -124.2,
       "z": 119.7,
@@ -10404,7 +10415,7 @@
       "passable": true
     },
     {
-      "id": "prop_305",
+      "id": "prop_306",
       "kind": "TREE",
       "x": -116.2,
       "z": 120.1,
@@ -10412,7 +10423,7 @@
       "passable": true
     },
     {
-      "id": "prop_306",
+      "id": "prop_307",
       "kind": "TREE",
       "x": -109,
       "z": 120.3,
@@ -10420,7 +10431,7 @@
       "passable": true
     },
     {
-      "id": "prop_307",
+      "id": "prop_308",
       "kind": "TREE",
       "x": -71.7,
       "z": 120.8,
@@ -10428,7 +10439,7 @@
       "passable": true
     },
     {
-      "id": "prop_308",
+      "id": "prop_309",
       "kind": "TREE",
       "x": -8.2,
       "z": 119.9,
@@ -10436,7 +10447,7 @@
       "passable": true
     },
     {
-      "id": "prop_309",
+      "id": "prop_310",
       "kind": "TREE",
       "x": -3.2,
       "z": 120.3,
@@ -10444,7 +10455,7 @@
       "passable": true
     },
     {
-      "id": "prop_310",
+      "id": "prop_311",
       "kind": "TREE",
       "x": 11.6,
       "z": 119.6,
@@ -10452,7 +10463,7 @@
       "passable": true
     },
     {
-      "id": "prop_311",
+      "id": "prop_312",
       "kind": "ROCK",
       "x": 92.6,
       "z": 119,
@@ -10460,7 +10471,7 @@
       "passable": true
     },
     {
-      "id": "prop_312",
+      "id": "prop_313",
       "kind": "TREE",
       "x": -136.5,
       "z": 123.5,
@@ -10468,7 +10479,7 @@
       "passable": true
     },
     {
-      "id": "prop_313",
+      "id": "prop_314",
       "kind": "TREE",
       "x": -116.4,
       "z": 124.3,
@@ -10476,7 +10487,7 @@
       "passable": true
     },
     {
-      "id": "prop_314",
+      "id": "prop_315",
       "kind": "TREE",
       "x": -83.3,
       "z": 123.4,
@@ -10484,7 +10495,7 @@
       "passable": true
     },
     {
-      "id": "prop_315",
+      "id": "prop_316",
       "kind": "TREE",
       "x": -20.7,
       "z": 123.6,
@@ -10492,7 +10503,7 @@
       "passable": true
     },
     {
-      "id": "prop_316",
+      "id": "prop_317",
       "kind": "TREE",
       "x": -139.5,
       "z": 128.8,
@@ -10500,7 +10511,7 @@
       "passable": true
     },
     {
-      "id": "prop_317",
+      "id": "prop_318",
       "kind": "TREE",
       "x": -136.7,
       "z": 128.7,
@@ -10508,7 +10519,7 @@
       "passable": true
     },
     {
-      "id": "prop_318",
+      "id": "prop_319",
       "kind": "TREE",
       "x": -68.4,
       "z": 129,
@@ -10516,7 +10527,7 @@
       "passable": true
     },
     {
-      "id": "prop_319",
+      "id": "prop_320",
       "kind": "TREE",
       "x": -15.4,
       "z": 128.1,
@@ -10524,7 +10535,7 @@
       "passable": true
     },
     {
-      "id": "prop_320",
+      "id": "prop_321",
       "kind": "TREE",
       "x": 7.8,
       "z": 127.1,
@@ -10532,7 +10543,7 @@
       "passable": true
     },
     {
-      "id": "prop_321",
+      "id": "prop_322",
       "kind": "TREE",
       "x": 16.8,
       "z": 127,
@@ -10540,7 +10551,7 @@
       "passable": true
     },
     {
-      "id": "prop_322",
+      "id": "prop_323",
       "kind": "TREE",
       "x": -136.9,
       "z": 131.8,
@@ -10548,7 +10559,7 @@
       "passable": true
     },
     {
-      "id": "prop_323",
+      "id": "prop_324",
       "kind": "TREE",
       "x": -124.6,
       "z": 132.9,
@@ -10556,7 +10567,7 @@
       "passable": true
     },
     {
-      "id": "prop_324",
+      "id": "prop_325",
       "kind": "TREE",
       "x": -51,
       "z": 133,
@@ -10564,7 +10575,7 @@
       "passable": true
     },
     {
-      "id": "prop_325",
+      "id": "prop_326",
       "kind": "TREE",
       "x": -48.5,
       "z": 132.2,
@@ -10572,7 +10583,7 @@
       "passable": true
     },
     {
-      "id": "prop_326",
+      "id": "prop_327",
       "kind": "TREE",
       "x": 41,
       "z": 132.6,
@@ -10580,7 +10591,7 @@
       "passable": true
     },
     {
-      "id": "prop_327",
+      "id": "prop_328",
       "kind": "TREE",
       "x": 44.5,
       "z": 131.3,
@@ -10588,7 +10599,7 @@
       "passable": true
     },
     {
-      "id": "prop_328",
+      "id": "prop_329",
       "kind": "TREE",
       "x": -107.9,
       "z": 135.8,
@@ -10596,7 +10607,7 @@
       "passable": true
     },
     {
-      "id": "prop_329",
+      "id": "prop_330",
       "kind": "TREE",
       "x": -96.9,
       "z": 136,
@@ -10604,7 +10615,7 @@
       "passable": true
     },
     {
-      "id": "prop_330",
+      "id": "prop_331",
       "kind": "TREE",
       "x": -84.5,
       "z": 135.1,
@@ -10612,7 +10623,7 @@
       "passable": true
     },
     {
-      "id": "prop_331",
+      "id": "prop_332",
       "kind": "TREE",
       "x": 40.8,
       "z": 135.9,
@@ -10620,7 +10631,7 @@
       "passable": true
     },
     {
-      "id": "prop_332",
+      "id": "prop_333",
       "kind": "TREE",
       "x": 44.5,
       "z": 136.8,
@@ -10628,7 +10639,7 @@
       "passable": true
     },
     {
-      "id": "prop_333",
+      "id": "prop_334",
       "kind": "TREE",
       "x": -135.1,
       "z": 140,
@@ -10636,7 +10647,7 @@
       "passable": true
     },
     {
-      "id": "prop_334",
+      "id": "prop_335",
       "kind": "TREE",
       "x": -131.6,
       "z": 141,
@@ -10644,7 +10655,7 @@
       "passable": true
     },
     {
-      "id": "prop_335",
+      "id": "prop_336",
       "kind": "TREE",
       "x": -120.9,
       "z": 139.6,
@@ -10652,7 +10663,7 @@
       "passable": true
     },
     {
-      "id": "prop_336",
+      "id": "prop_337",
       "kind": "TREE",
       "x": -91.8,
       "z": 140.5,
@@ -10660,7 +10671,7 @@
       "passable": true
     },
     {
-      "id": "prop_337",
+      "id": "prop_338",
       "kind": "TREE",
       "x": 127.6,
       "z": 140.7,
@@ -10668,7 +10679,7 @@
       "passable": true
     },
     {
-      "id": "prop_338",
+      "id": "prop_339",
       "kind": "TREE",
       "x": 147.5,
       "z": 141,
@@ -10676,7 +10687,7 @@
       "passable": true
     },
     {
-      "id": "prop_339",
+      "id": "prop_340",
       "kind": "TREE",
       "x": -115.4,
       "z": 143.5,
@@ -10684,7 +10695,7 @@
       "passable": true
     },
     {
-      "id": "prop_340",
+      "id": "prop_341",
       "kind": "TREE",
       "x": -100.7,
       "z": 143.6,
@@ -10692,7 +10703,7 @@
       "passable": true
     },
     {
-      "id": "prop_341",
+      "id": "prop_342",
       "kind": "TREE",
       "x": -72.7,
       "z": 144.2,
@@ -10700,7 +10711,7 @@
       "passable": true
     },
     {
-      "id": "prop_342",
+      "id": "prop_343",
       "kind": "TREE",
       "x": -67.2,
       "z": 143.5,
@@ -10708,7 +10719,7 @@
       "passable": true
     },
     {
-      "id": "prop_343",
+      "id": "prop_344",
       "kind": "TREE",
       "x": -64.1,
       "z": 143.9,
@@ -10716,7 +10727,7 @@
       "passable": true
     },
     {
-      "id": "prop_344",
+      "id": "prop_345",
       "kind": "TREE",
       "x": -51.9,
       "z": 144.3,
@@ -10724,7 +10735,7 @@
       "passable": true
     },
     {
-      "id": "prop_345",
+      "id": "prop_346",
       "kind": "TREE",
       "x": 109,
       "z": 144.1,
@@ -10732,7 +10743,7 @@
       "passable": true
     },
     {
-      "id": "prop_346",
+      "id": "prop_347",
       "kind": "TREE",
       "x": -148.6,
       "z": 148.1,
@@ -10740,7 +10751,7 @@
       "passable": true
     },
     {
-      "id": "prop_347",
+      "id": "prop_348",
       "kind": "TREE",
       "x": -124.3,
       "z": 148.4,
@@ -10748,7 +10759,7 @@
       "passable": true
     },
     {
-      "id": "prop_348",
+      "id": "prop_349",
       "kind": "TREE",
       "x": -64.6,
       "z": 147.6,
@@ -10756,7 +10767,7 @@
       "passable": true
     },
     {
-      "id": "prop_349",
+      "id": "prop_350",
       "kind": "TREE",
       "x": -60.4,
       "z": 147.7,
@@ -10764,7 +10775,7 @@
       "passable": true
     },
     {
-      "id": "prop_350",
+      "id": "prop_351",
       "kind": "TREE",
       "x": 40.4,
       "z": 147.4,
@@ -10772,7 +10783,7 @@
       "passable": true
     },
     {
-      "id": "prop_351",
+      "id": "prop_352",
       "kind": "TREE",
       "x": 87.7,
       "z": 147.1,
@@ -10780,7 +10791,7 @@
       "passable": true
     },
     {
-      "id": "prop_352",
+      "id": "prop_353",
       "kind": "TREE",
       "x": 127.9,
       "z": 147.7,
@@ -10788,7 +10799,7 @@
       "passable": true
     },
     {
-      "id": "prop_353",
+      "id": "prop_354",
       "kind": "TREE",
       "x": 147.3,
       "z": 147.5,
@@ -10796,7 +10807,7 @@
       "passable": true
     },
     {
-      "id": "prop_354",
+      "id": "prop_355",
       "kind": "TREE",
       "x": -148.1,
       "z": 152.9,
@@ -10804,7 +10815,7 @@
       "passable": true
     },
     {
-      "id": "prop_355",
+      "id": "prop_356",
       "kind": "TREE",
       "x": -131.7,
       "z": 151.9,
@@ -10812,7 +10823,7 @@
       "passable": true
     },
     {
-      "id": "prop_356",
+      "id": "prop_357",
       "kind": "TREE",
       "x": -115,
       "z": 151.6,
@@ -10820,7 +10831,7 @@
       "passable": true
     },
     {
-      "id": "prop_357",
+      "id": "prop_358",
       "kind": "TREE",
       "x": -55.8,
       "z": 151.5,
@@ -10828,7 +10839,7 @@
       "passable": true
     },
     {
-      "id": "prop_358",
+      "id": "prop_359",
       "kind": "TREE",
       "x": -35.4,
       "z": 152.1,
@@ -10836,7 +10847,7 @@
       "passable": true
     },
     {
-      "id": "prop_359",
+      "id": "prop_360",
       "kind": "TREE",
       "x": 27.2,
       "z": 152,
@@ -10844,7 +10855,7 @@
       "passable": true
     },
     {
-      "id": "prop_360",
+      "id": "prop_361",
       "kind": "TREE",
       "x": 88.1,
       "z": 152.2,
@@ -10852,7 +10863,7 @@
       "passable": true
     },
     {
-      "id": "prop_361",
+      "id": "prop_362",
       "kind": "TREE",
       "x": 96.1,
       "z": 151.5,
@@ -10860,7 +10871,7 @@
       "passable": true
     },
     {
-      "id": "prop_362",
+      "id": "prop_363",
       "kind": "TREE",
       "x": -148.6,
       "z": 156.8,
@@ -10868,7 +10879,7 @@
       "passable": true
     },
     {
-      "id": "prop_363",
+      "id": "prop_364",
       "kind": "TREE",
       "x": -128.9,
       "z": 155,
@@ -10876,7 +10887,7 @@
       "passable": true
     },
     {
-      "id": "prop_364",
+      "id": "prop_365",
       "kind": "TREE",
       "x": -40.9,
       "z": 155.9,
@@ -10884,7 +10895,7 @@
       "passable": true
     },
     {
-      "id": "prop_365",
+      "id": "prop_366",
       "kind": "TREE",
       "x": -23,
       "z": 156.6,
@@ -10892,7 +10903,7 @@
       "passable": true
     },
     {
-      "id": "prop_366",
+      "id": "prop_367",
       "kind": "TREE",
       "x": -15.8,
       "z": 156.7,
@@ -10900,7 +10911,7 @@
       "passable": true
     },
     {
-      "id": "prop_367",
+      "id": "prop_368",
       "kind": "TREE",
       "x": 123.4,
       "z": 156.8,
@@ -10908,7 +10919,7 @@
       "passable": true
     },
     {
-      "id": "prop_368",
+      "id": "prop_369",
       "kind": "TREE",
       "x": 136.8,
       "z": 155.7,
@@ -10916,7 +10927,7 @@
       "passable": true
     },
     {
-      "id": "prop_369",
+      "id": "prop_370",
       "kind": "TREE",
       "x": -140.9,
       "z": 159.4,
@@ -10924,7 +10935,7 @@
       "passable": true
     },
     {
-      "id": "prop_370",
+      "id": "prop_371",
       "kind": "TREE",
       "x": -99.4,
       "z": 159.1,
@@ -10932,7 +10943,7 @@
       "passable": true
     },
     {
-      "id": "prop_371",
+      "id": "prop_372",
       "kind": "TREE",
       "x": -60.6,
       "z": 160.9,
@@ -10940,7 +10951,7 @@
       "passable": true
     },
     {
-      "id": "prop_372",
+      "id": "prop_373",
       "kind": "TREE",
       "x": -39.2,
       "z": 160.7,
@@ -10948,7 +10959,7 @@
       "passable": true
     },
     {
-      "id": "prop_373",
+      "id": "prop_374",
       "kind": "TREE",
       "x": -35.4,
       "z": 160.3,
@@ -10956,7 +10967,7 @@
       "passable": true
     },
     {
-      "id": "prop_374",
+      "id": "prop_375",
       "kind": "TREE",
       "x": 43.1,
       "z": 161,
@@ -10964,7 +10975,7 @@
       "passable": true
     },
     {
-      "id": "prop_375",
+      "id": "prop_376",
       "kind": "TREE",
       "x": 84.2,
       "z": 160.7,
@@ -10972,7 +10983,7 @@
       "passable": true
     },
     {
-      "id": "prop_376",
+      "id": "prop_377",
       "kind": "TREE",
       "x": 87.3,
       "z": 160.7,
@@ -10980,7 +10991,7 @@
       "passable": true
     },
     {
-      "id": "prop_377",
+      "id": "prop_378",
       "kind": "TREE",
       "x": 128.8,
       "z": 160.1,
