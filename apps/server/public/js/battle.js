@@ -1002,7 +1002,11 @@ export function createBattle({ store, ui, send, ftue }) {
         `<span>${master.alive ? `<b>${esc(master.name ?? 'Master')}</b>` : master.revives > 0 ? `respawn ${Math.ceil(master.respawnIn / tickHz)}s` : '<b class="bad">down</b>'}` +
         `<em>${'♥'.repeat(Math.max(0, master.revives) + (master.alive ? 1 : 0)) || '—'} runs</em></span></span>`
       : '';
-    const waves = snap ? `<span class="bt-stat" title="Wave budget — squads still to spawn">🌊 <b>${snap.waves.stock}</b><em>/${snap.waves.stockStart} squads</em></span>` : '';
+    // soldiers remaining (sprint #3): your reserve via waves (engine cfpump now sends the
+    // waves:{stock,stockStart} shape), enemy reserve via the per-side reserves slot (-1 = ∞)
+    const waves = snap ? `<span class="bt-stat" title="Your reserve — line soldiers still to spawn">🌊 <b>${snap.waves.stock}</b><em>/${snap.waves.stockStart} soldiers</em></span>` : '';
+    const foeRes = snap?.reserves && snap.reserves.d >= 0
+      ? `<span class="bt-stat" title="Enemy reserve — their line soldiers still to spawn">🛡 <b>${snap.reserves.d}</b><em> enemy</em></span>` : '';
     const mobs = snap ? `<span class="bt-stat" title="Wild defenders remaining">☠ <b>${snap.mobs}</b><em>/${snap.mobsStart}</em></span>` : '';
     const towers = snap ? `<span class="bt-stat" title="Defender towers standing">🗼 <b>${snap.towersAlive}</b><em>/${snap.towersStart}</em></span>` : '';
     const prog = snap && snap.mobsStart > 0 ? Math.round((1 - snap.mobs / snap.mobsStart) * 100) : 0;
@@ -1018,7 +1022,7 @@ export function createBattle({ store, ui, send, ftue }) {
     hud.innerHTML =
       `<div class="bt-title"><span class="bt-live${ended ? ' done' : stale ? ' stale' : ''}">●</span>` +
       title + `</div>` +
-      `<div class="bt-stats">${masterBit}${waves}${mobs}${towers}` +
+      `<div class="bt-stats">${masterBit}${waves}${foeRes}${mobs}${towers}` +
       `<span class="bt-stat" title="Battle clock — expiry means the attack guttered out">⏱ <b>${clock}</b></span>` +
       `<span class="bt-prog" title="Lair broken at 100%"><span style="width:${prog}%"></span></span></div>` +
       `<div class="bt-btns">` +

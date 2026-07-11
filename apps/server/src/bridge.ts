@@ -64,6 +64,8 @@ export interface BridgeSnapshotIn {
   score?: { a: number; b: number };
   /** Attacker wave budget, if the match models waves. */
   waves?: { stock: number; stockStart: number };
+  /** Per-side line-soldier reserves (-1 = infinite) — engine cfpump shape (sprint #3). */
+  stock?: { ATTACKER?: number; DEFENDER?: number };
   /** Master revives remaining ("runs"), if the match models them. */
   runs?: number;
   /**
@@ -425,6 +427,10 @@ export class BridgeHub {
       towersAlive,
       towersStart: b.towersStart,
       ...(spawns.length > 0 ? { spawns } : {}),
+      // per-side reserves for the HUD's defender slot (a/d, -1 = infinite) — sprint #3
+      ...(s.stock !== undefined
+        ? { reserves: { a: Math.round(s.stock.ATTACKER ?? -1), d: Math.round(s.stock.DEFENDER ?? -1) } }
+        : {}),
       ...(s.score !== undefined ? { score: s.score } : {}),
       ...(b.rally !== undefined ? { rally: b.rally } : {}),
       ...(b.focus !== undefined ? { focus: b.focus } : {}),
