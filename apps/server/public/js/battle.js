@@ -57,6 +57,44 @@ export function createBattle({ store, ui, send, ftue }) {
   root.appendChild(reviewEl);
   injectReviewStyles();
 
+  // ── ⓘ Map legend (command-mode sprint #1) ──────────────────────────────────
+  // Owner: "not sure what the grey dots on the screen are". Collapsible panel
+  // explaining every mark the renderer draws; swatches use the renderer's own
+  // palette constants so they can't drift. Scoped CSS injected here (app.css
+  // untouched — the visual session owns that file).
+  let legendOpen = false;
+  const legendEl = document.createElement('div');
+  legendEl.className = 'bt-legend';
+  legendEl.hidden = true;
+  legendEl.innerHTML =
+    `<b>Map legend</b>` +
+    `<div class="lg-row"><span class="lg-dot" style="background:#5a5f66"></span> Rocks / boulders — block movement</div>` +
+    `<div class="lg-row"><span class="lg-dot" style="background:#25421c"></span> Forest — blocks movement</div>` +
+    `<div class="lg-row"><span class="lg-dot" style="background:#27506b"></span> Water</div>` +
+    `<div class="lg-row"><span class="lg-line" style="background:${ATK}"></span> Your side (blue): units · towers · core</div>` +
+    `<div class="lg-row"><span class="lg-line" style="background:${FOE}"></span> Enemy side (red): units · towers · core</div>` +
+    `<div class="lg-row"><span class="lg-ring" style="border-color:${GOLD}"></span> Gold ring = your Master</div>` +
+    `<div class="lg-row"><span class="lg-flag" style="background:${GOLD}"></span> Gold flag = rally point (right-click while steering)</div>` +
+    `<div class="lg-row"><span class="lg-line lg-dash"></span> Dashed corridors = lanes the soldier waves march</div>` +
+    `<div class="lg-row"><span class="lg-dot" style="background:rgba(240,200,80,0.9)"></span> ◆ Gold mine · ▲ wood grove (resources)</div>` +
+    `<div class="lg-hint">Toggle with the ⓘ button.</div>`;
+  stage.appendChild(legendEl);
+  (() => {
+    const s = document.createElement('style');
+    s.textContent =
+      `.bt-legend{position:absolute;right:12px;top:52px;z-index:6;background:rgba(10,14,19,0.93);border:1px solid #26313f;` +
+      `border-radius:8px;padding:10px 12px;max-width:270px;color:#cdd7e2;font:12px/1.55 "Segoe UI",system-ui,sans-serif;pointer-events:none;}` +
+      `.bt-legend b{display:block;margin-bottom:6px;color:#eaf0f6;font-size:12px;}` +
+      `.bt-legend .lg-row{display:flex;align-items:center;gap:7px;margin:2px 0;}` +
+      `.bt-legend .lg-dot{width:10px;height:10px;border-radius:50%;flex:none;}` +
+      `.bt-legend .lg-line{width:14px;height:3px;border-radius:2px;flex:none;}` +
+      `.bt-legend .lg-dash{background:repeating-linear-gradient(90deg,#9aa7b5 0 3px,transparent 3px 6px);height:2px;}` +
+      `.bt-legend .lg-ring{width:10px;height:10px;border-radius:50%;border:2px solid;flex:none;}` +
+      `.bt-legend .lg-flag{width:9px;height:7px;clip-path:polygon(0 0,100% 35%,0 70%);flex:none;}` +
+      `.bt-legend .lg-hint{margin-top:6px;color:#6b7f93;font-size:11px;}`;
+    document.head.appendChild(s);
+  })();
+
   const tipKey = (k) => `tip:${store.me?.governorId}:${k}`;
   const tipSeen = (k) => { try { return localStorage.getItem(tipKey(k)) === '1'; } catch { return true; } };
   const tipMark = (k) => { try { localStorage.setItem(tipKey(k), '1'); } catch { /* private mode */ } };
@@ -962,7 +1000,9 @@ export function createBattle({ store, ui, send, ftue }) {
             ? `<button class="bt-hero live" data-bt="hero" title="Hero Mode — drop into this battle as your Master in the full MOBA client. While embodied you cannot issue commands here (one-hero rule).">⚡ Take the field</button>`
             : `<button class="bt-hero" disabled title="Hero Mode — drop into this battle as your Master (full MOBA combat). Coming soon.">⚡ Take the field<span class="soon">SOON</span></button>`)
         : '') +
+      `<button data-bt="legend" title="Map legend — what every mark on this map means">ⓘ</button>` +
       `<button data-bt="leave">✕ Leave</button></div>`;
+    legendEl.hidden = !legendOpen;
     foot.innerHTML = ended
       ? `<span>The armies disperse — outcome lands on the war map…</span>`
       : stale
@@ -978,6 +1018,7 @@ export function createBattle({ store, ui, send, ftue }) {
     const btn = e.target.closest('button');
     if (!btn) return;
     if (btn.dataset.bt === 'leave') close();
+    else if (btn.dataset.bt === 'legend') { legendOpen = !legendOpen; legendEl.hidden = !legendOpen; }
     else if (btn.dataset.bt === 'steer') { steer = !steer; renderHud(); }
     else if (btn.dataset.bt === 'hero' && field?.joinUrl) {
       // ONE-HERO rule: taking the field surrenders the command channel here.
