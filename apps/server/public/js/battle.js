@@ -57,6 +57,44 @@ export function createBattle({ store, ui, send, ftue }) {
   root.appendChild(reviewEl);
   injectReviewStyles();
 
+  // ── ⓘ Map legend (command-mode sprint #1) ──────────────────────────────────
+  // Owner: "not sure what the grey dots on the screen are". Collapsible panel
+  // explaining every mark the renderer draws; swatches use the renderer's own
+  // palette constants so they can't drift. Scoped CSS injected here (app.css
+  // untouched — the visual session owns that file).
+  let legendOpen = false;
+  const legendEl = document.createElement('div');
+  legendEl.className = 'bt-legend';
+  legendEl.hidden = true;
+  legendEl.innerHTML =
+    `<b>Map legend</b>` +
+    `<div class="lg-row"><span class="lg-dot" style="background:#5a5f66"></span> Rocks / boulders — block movement</div>` +
+    `<div class="lg-row"><span class="lg-dot" style="background:#25421c"></span> Forest — blocks movement</div>` +
+    `<div class="lg-row"><span class="lg-dot" style="background:#27506b"></span> Water</div>` +
+    `<div class="lg-row"><span class="lg-line" style="background:${ATK}"></span> Your side (blue): units · towers · core</div>` +
+    `<div class="lg-row"><span class="lg-line" style="background:${FOE}"></span> Enemy side (red): units · towers · core</div>` +
+    `<div class="lg-row"><span class="lg-ring" style="border-color:${GOLD}"></span> Gold ring = your Master</div>` +
+    `<div class="lg-row"><span class="lg-flag" style="background:${GOLD}"></span> Gold flag = rally point (right-click while steering)</div>` +
+    `<div class="lg-row"><span class="lg-line lg-dash"></span> Dashed corridors = lanes the soldier waves march</div>` +
+    `<div class="lg-row"><span class="lg-dot" style="background:rgba(240,200,80,0.9)"></span> ◆ Gold mine · ▲ wood grove (resources)</div>` +
+    `<div class="lg-hint">Toggle with the ⓘ button.</div>`;
+  stage.appendChild(legendEl);
+  (() => {
+    const s = document.createElement('style');
+    s.textContent =
+      `.bt-legend{position:absolute;right:12px;top:52px;z-index:6;background:rgba(10,14,19,0.93);border:1px solid #26313f;` +
+      `border-radius:8px;padding:10px 12px;max-width:270px;color:#cdd7e2;font:12px/1.55 "Segoe UI",system-ui,sans-serif;pointer-events:none;}` +
+      `.bt-legend b{display:block;margin-bottom:6px;color:#eaf0f6;font-size:12px;}` +
+      `.bt-legend .lg-row{display:flex;align-items:center;gap:7px;margin:2px 0;}` +
+      `.bt-legend .lg-dot{width:10px;height:10px;border-radius:50%;flex:none;}` +
+      `.bt-legend .lg-line{width:14px;height:3px;border-radius:2px;flex:none;}` +
+      `.bt-legend .lg-dash{background:repeating-linear-gradient(90deg,#9aa7b5 0 3px,transparent 3px 6px);height:2px;}` +
+      `.bt-legend .lg-ring{width:10px;height:10px;border-radius:50%;border:2px solid;flex:none;}` +
+      `.bt-legend .lg-flag{width:9px;height:7px;clip-path:polygon(0 0,100% 35%,0 70%);flex:none;}` +
+      `.bt-legend .lg-hint{margin-top:6px;color:#6b7f93;font-size:11px;}`;
+    document.head.appendChild(s);
+  })();
+
   const tipKey = (k) => `tip:${store.me?.governorId}:${k}`;
   const tipSeen = (k) => { try { return localStorage.getItem(tipKey(k)) === '1'; } catch { return true; } };
   const tipMark = (k) => { try { localStorage.setItem(tipKey(k), '1'); } catch { /* private mode */ } };
@@ -135,6 +173,11 @@ export function createBattle({ store, ui, send, ftue }) {
   let raf = 0;
   let blotches = null;    // painterly ground stains (visual only, per battle)
   let flashes = [];       // death/hit effects {x, y, t0, kind}
+  // Order acknowledgment (sprint #2): steer clicks get instant feedback, and the rally flag is
+  // drawn HOLLOW while the order is still in flight (~1.5s command poll + apply) — the bridge
+  // echoes the flag position immediately, which used to read as "done" before the engine heard it.
+  let orders = [];        // "order sent" fx {x, y, t0, label}
+  let rallyPendingUntil = 0;
   let dpr = 1, w = 0, h = 0;
 
   // ── open/close ─────────────────────────────────────────────────────────────
@@ -147,6 +190,8 @@ export function createBattle({ store, ui, send, ftue }) {
     prev = cur = null;
     ended = null;
     flashes = [];
+    orders = [];
+    rallyPendingUntil = 0;
     steer = false;
     subRetries = 0;
     if (subRetryTimer) { clearTimeout(subRetryTimer); subRetryTimer = null; }
@@ -724,22 +769,25 @@ export function createBattle({ store, ui, send, ftue }) {
       ctx.setLineDash([]);
     }
 
-    // rally flag
+    // rally flag — HOLLOW + dashed while the order is still in flight to the engine
+    // (the bridge echoes the position instantly; solid used to falsely read as "executing")
     const rally = cur.snap.rally;
     if (rally) {
+      const pending = now < rallyPendingUntil;
       ctx.strokeStyle = GOLD;
       ctx.lineWidth = lw(1.6);
+      if (pending) ctx.setLineDash([lw(2), lw(2)]);
       ctx.beginPath();
       ctx.moveTo(rally.x, rally.y);
       ctx.lineTo(rally.x, rally.y - 7);
       ctx.stroke();
-      ctx.fillStyle = GOLD;
       ctx.beginPath();
       ctx.moveTo(rally.x, rally.y - 7);
       ctx.lineTo(rally.x + 5.5, rally.y - 5.2);
       ctx.lineTo(rally.x, rally.y - 3.4);
       ctx.closePath();
-      ctx.fill();
+      if (pending) { ctx.stroke(); ctx.setLineDash([]); }
+      else { ctx.fillStyle = GOLD; ctx.fill(); }
     }
 
     // towers: range ring + body + hp bar (rubble once dead)
@@ -871,6 +919,26 @@ export function createBattle({ store, ui, send, ftue }) {
       }
     }
 
+    // order acknowledgment (sprint #2): expanding gold ring + fading label at the click point —
+    // instant feedback that the order left the console (execution follows in ~1.5s via the relay)
+    for (let i = orders.length - 1; i >= 0; i--) {
+      const o = orders[i];
+      const k = (now - o.t0) / 2200;
+      if (k >= 1) { orders.splice(i, 1); continue; }
+      ctx.strokeStyle = `rgba(255,215,106,${0.7 * (1 - k)})`;
+      ctx.lineWidth = lw(1.6);
+      ctx.beginPath();
+      ctx.arc(o.x, o.y, 2 + k * 10, 0, 7);
+      ctx.stroke();
+      if (k < 0.8) {
+        ctx.fillStyle = `rgba(255,225,150,${0.9 * (1 - k / 0.8)})`;
+        ctx.font = `${lw(11)}px "Segoe UI", system-ui, sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.fillText(o.label, o.x, o.y - lw(14) - k * lw(6));
+        ctx.textAlign = 'start';
+      }
+    }
+
     // outcome stamp
     if (ended) {
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -962,7 +1030,9 @@ export function createBattle({ store, ui, send, ftue }) {
             ? `<button class="bt-hero live" data-bt="hero" title="Hero Mode — drop into this battle as your Master in the full MOBA client. While embodied you cannot issue commands here (one-hero rule).">⚡ Take the field</button>`
             : `<button class="bt-hero" disabled title="Hero Mode — drop into this battle as your Master (full MOBA combat). Coming soon.">⚡ Take the field<span class="soon">SOON</span></button>`)
         : '') +
+      `<button data-bt="legend" title="Map legend — what every mark on this map means">ⓘ</button>` +
       `<button data-bt="leave">✕ Leave</button></div>`;
+    legendEl.hidden = !legendOpen;
     foot.innerHTML = ended
       ? `<span>The armies disperse — outcome lands on the war map…</span>`
       : stale
@@ -978,6 +1048,7 @@ export function createBattle({ store, ui, send, ftue }) {
     const btn = e.target.closest('button');
     if (!btn) return;
     if (btn.dataset.bt === 'leave') close();
+    else if (btn.dataset.bt === 'legend') { legendOpen = !legendOpen; legendEl.hidden = !legendOpen; }
     else if (btn.dataset.bt === 'steer') { steer = !steer; renderHud(); }
     else if (btn.dataset.bt === 'hero' && field?.joinUrl) {
       // ONE-HERO rule: taking the field surrenders the command channel here.
@@ -1009,10 +1080,12 @@ export function createBattle({ store, ui, send, ftue }) {
     const enemy = pickEnemy(sx, sy);
     if (enemy) {
       send({ t: 'battle_cmd', battleId: openId, cmd: { kind: 'focus', targetId: enemy } });
+      const [x, y] = toWorld(sx, sy);
+      orders.push({ x, y, t0: performance.now(), label: '⚔ focus order sent' });
     } else {
       const [x, y] = toWorld(sx, sy);
       send({ t: 'battle_cmd', battleId: openId, cmd: { kind: 'move', x, y } });
-      flashes.push({ x, y, t0: performance.now(), kind: 'hit' });
+      orders.push({ x, y, t0: performance.now(), label: '➤ move order sent' });
     }
     if (coach?.beat === 1) coachAdvance(); // beat 2 advances on a REAL move/focus
   });
@@ -1022,6 +1095,8 @@ export function createBattle({ store, ui, send, ftue }) {
     const r = canvas.getBoundingClientRect();
     const [x, y] = toWorld(e.clientX - r.left, e.clientY - r.top);
     send({ t: 'battle_cmd', battleId: openId, cmd: { kind: 'rally', x, y } });
+    orders.push({ x, y, t0: performance.now(), label: '🚩 rally order sent' });
+    rallyPendingUntil = performance.now() + 3500; // ~2 command polls — flag draws hollow until then
     if (coach?.beat === 2) coachAdvance(); // beat 3 advances on the rally order (or its 6 s timer)
   });
 
