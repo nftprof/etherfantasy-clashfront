@@ -102,12 +102,14 @@ export interface BridgeStartIn {
 
 export interface BridgeCommandOut {
   seq: number;
-  kind: 'move' | 'focus' | 'rally';
+  kind: 'move' | 'focus' | 'rally' | 'stance';
   /** MOBA units (square arena) — present for move/rally. */
   x?: number;
   z?: number;
   /** Present for focus. */
   targetId?: string;
+  /** Present for stance (sprint #4; engine whitelist — CLEAR also clears the rally). */
+  stance?: 'ALL_IN' | 'DEFEND' | 'FOLLOW' | 'CLEAR';
   /** Governor who issued it ('' when exhibition commands are open to any viewer). */
   by: string;
   /** Wall-clock ms when queued (freshness hint for the AI officer). */
@@ -169,6 +171,7 @@ interface BridgeBattle {
   /** Last steering markers, echoed into snapshots so the viewer renders them. */
   rally?: { x: number; y: number };
   focus?: string;
+  stance?: string;
   /** Real exported map for this match (§1a); undefined ⇒ command view uses a stand-in. */
   battlefield?: Battlefield;
 }
@@ -434,6 +437,7 @@ export class BridgeHub {
       ...(s.score !== undefined ? { score: s.score } : {}),
       ...(b.rally !== undefined ? { rally: b.rally } : {}),
       ...(b.focus !== undefined ? { focus: b.focus } : {}),
+      ...(b.stance !== undefined ? { stance: b.stance } : {}),
     };
   }
 
@@ -517,8 +521,17 @@ export class BridgeHub {
     } else if (kind === 'focus' && typeof c?.['targetId'] === 'string') {
       out = { seq: b.nextSeq++, kind: 'focus', targetId: c['targetId'], by: governorId, atMs };
       b.focus = c['targetId'];
+    } else if (
+      kind === 'stance' &&
+      (c?.['stance'] === 'ALL_IN' || c?.['stance'] === 'DEFEND' || c?.['stance'] === 'FOLLOW' || c?.['stance'] === 'CLEAR')
+    ) {
+      // sprint #4 (+#6 CLEAR): army posture — passed through verbatim; the engine's applyStance
+      // whitelist is authoritative. CLEAR also drops our local rally echo (engine clears both).
+      out = { seq: b.nextSeq++, kind: 'stance', stance: c['stance'], by: governorId, atMs };
+      b.stance = c['stance'] === 'CLEAR' ? undefined : (c['stance'] as string);
+      if (c['stance'] === 'CLEAR') b.rally = undefined;
     } else {
-      throw new ApiError(400, 'BAD_CMD', 'cmd must be {kind:move|rally,x,y} or {kind:focus,targetId}');
+      throw new ApiError(400, 'BAD_CMD', 'cmd must be {kind:move|rally,x,y}, {kind:focus,targetId} or {kind:stance,stance:ALL_IN|DEFEND|FOLLOW|CLEAR}');
     }
     b.commands.push(out);
     if (b.commands.length > COMMAND_QUEUE_CAP) b.commands.splice(0, b.commands.length - COMMAND_QUEUE_CAP);

@@ -91,7 +91,12 @@ export function createBattle({ store, ui, send, ftue }) {
       `.bt-legend .lg-dash{background:repeating-linear-gradient(90deg,#9aa7b5 0 3px,transparent 3px 6px);height:2px;}` +
       `.bt-legend .lg-ring{width:10px;height:10px;border-radius:50%;border:2px solid;flex:none;}` +
       `.bt-legend .lg-flag{width:9px;height:7px;clip-path:polygon(0 0,100% 35%,0 70%);flex:none;}` +
-      `.bt-legend .lg-hint{margin-top:6px;color:#6b7f93;font-size:11px;}`;
+      `.bt-legend .lg-hint{margin-top:6px;color:#6b7f93;font-size:11px;}` +
+      `.bt-stances{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;}` +
+      `.bt-stances button{background:#141c26;border:1px solid #2a3644;border-radius:6px;color:#cdd7e2;` +
+      `font:12px "Segoe UI",system-ui,sans-serif;padding:4px 9px;cursor:pointer;}` +
+      `.bt-stances button:hover{border-color:#4da3ff;}` +
+      `.bt-stances button.on{border-color:#ffd76a;color:#ffd76a;background:#1c1a12;}`;
     document.head.appendChild(s);
   })();
 
@@ -1035,7 +1040,17 @@ export function createBattle({ store, ui, send, ftue }) {
             : `<button class="bt-hero" disabled title="Hero Mode — drop into this battle as your Master (full MOBA combat). Coming soon.">⚡ Take the field<span class="soon">SOON</span></button>`)
         : '') +
       `<button data-bt="legend" title="Map legend — what every mark on this map means">ⓘ</button>` +
-      `<button data-bt="leave">✕ Leave</button></div>`;
+      `<button data-bt="leave">✕ Leave</button></div>` +
+      // army STANCES (sprint #4/#6): posture orders for your soldier waves — engine consumes as
+      // deterministic biases. 🚩 Regroup = right-click rally (no button); ✋ also clears the rally.
+      (canSteer && !ended && steer
+        ? `<div class="bt-stances">` +
+          `<button data-st="ALL_IN"${snap?.stance === 'ALL_IN' ? ' class="on"' : ''} title="Everything converges on the enemy core">⚔ All-in</button>` +
+          `<button data-st="DEFEND"${snap?.stance === 'DEFEND' ? ' class="on"' : ''} title="Hold a ring at your own core — engage what comes">🛡 Defend</button>` +
+          `<button data-st="FOLLOW"${snap?.stance === 'FOLLOW' ? ' class="on"' : ''} title="Soldiers escort your Master as a warband">🎯 Follow Master</button>` +
+          `<button data-st="CLEAR" title="Resume default — clears stance AND rally flag">✋ Clear</button>` +
+          `</div>`
+        : '');
     legendEl.hidden = !legendOpen;
     foot.innerHTML = ended
       ? `<span>The armies disperse — outcome lands on the war map…</span>`
@@ -1053,6 +1068,12 @@ export function createBattle({ store, ui, send, ftue }) {
     if (!btn) return;
     if (btn.dataset.bt === 'leave') close();
     else if (btn.dataset.bt === 'legend') { legendOpen = !legendOpen; legendEl.hidden = !legendOpen; }
+    else if (btn.dataset.st) {
+      // army stance order (sprint #4/#6) — same command channel as steering clicks
+      send({ t: 'battle_cmd', battleId: openId, cmd: { kind: 'stance', stance: btn.dataset.st } });
+      btn.classList.add('on');                       // optimistic; snapshot echo confirms
+      if (btn.dataset.st === 'CLEAR') rallyPendingUntil = 0;
+    }
     else if (btn.dataset.bt === 'steer') { steer = !steer; renderHud(); }
     else if (btn.dataset.bt === 'hero' && field?.joinUrl) {
       // ONE-HERO rule: taking the field surrenders the command channel here.
