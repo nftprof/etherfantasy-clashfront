@@ -88,12 +88,23 @@ parcel-by-parcel like open-world chunks.
 - The Diminishing Stair is single-file lore: a solo/party RPG door (perfect for Hunt), never an army
   route; don't surface it as a public map route.
 
-## 7. Asks / open items for the Hunt team
+## 7. Asks / open items — ANSWERED by the Hunt team (2026-07-11, confirmed by Agent D)
 
-1. First region is settled by the journey spine: **Carnavale + the Stair route (ready today)**. The
-   real blocker is **UW2 (Blackmere) + UW3 (Luxuria) fields — the main story's home** — now moved to
-   the TOP of Agent D's authoring queue (they also carry the deferred singular pins: the Drowned
-   Banquet, the Bastion of Dominus, the Gardens of Enamora, and the Stair's lower mouth).
-2. Do you consume the raster artifact directly, or do you need the engine team's `render.json`
-   converter output? (That converter is owned by the MOBA engine team, not CF.)
-3. The sky fields (HS1–3) matter only for late pet-catching travel — say when you need them.
+1. **Start region**: Tianxia capital + the Diminishing Stair route (they verified the map service
+   live — fetched `60716650182` and confirmed the raster drops into their Three.js scene as-is).
+   **UW2 + UW3 fields are IN BUILD at the top of Agent D's queue** (they carry the Stair's lower
+   mouth, the Bastion of Dominus, the Drowned Banquet, the Gardens of Enamora, and the UW3
+   final-boss stage POI).
+2. **Consumption**: raster artifact DIRECT — same ±161 frame (`sizeM=322`), x/z entity props read
+   natively; no `render.json` converter needed. The engine-team converter is now MOBA-only scope.
+3. **Sky fields (HS1–3)**: deferred until late-game pet-travel needs them.
+
+**Seam-streaming caveat (Agent D, honest print):** cross-parcel continuity is guaranteed for the
+WORLD-FIELD features — roads, rivers, ridges, biome/palette enter and exit at exactly matching border
+points (same polyline, same transform). The archetype NOISE COAT (tree/rock scatter micro-texture) is
+seeded per-parcel: biome and density agree across a seam but individual props don't mirror — at
+walking speed this reads as natural variation, not a cliff. Also each artifact pads OUTSIDE its parcel
+polygon with `T.OOB` cells: when streaming chunks, clip to the polygon and let the neighbour own the
+far side — never draw the OOB padding. Hunt-side economy notes (DNA 100/50, spend-weighted
+RewardDistributor odds on-chain) are Agent C/owner scope — no map-side blocker; ruins (dig-sites) and
+`zone-pet-population.json` are the map hooks.
