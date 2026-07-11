@@ -173,6 +173,11 @@ export function createBattle({ store, ui, send, ftue }) {
   let raf = 0;
   let blotches = null;    // painterly ground stains (visual only, per battle)
   let flashes = [];       // death/hit effects {x, y, t0, kind}
+  // Order acknowledgment (sprint #2): steer clicks get instant feedback, and the rally flag is
+  // drawn HOLLOW while the order is still in flight (~1.5s command poll + apply) — the bridge
+  // echoes the flag position immediately, which used to read as "done" before the engine heard it.
+  let orders = [];        // "order sent" fx {x, y, t0, label}
+  let rallyPendingUntil = 0;
   let dpr = 1, w = 0, h = 0;
 
   // ── open/close ─────────────────────────────────────────────────────────────
@@ -185,6 +190,8 @@ export function createBattle({ store, ui, send, ftue }) {
     prev = cur = null;
     ended = null;
     flashes = [];
+    orders = [];
+    rallyPendingUntil = 0;
     steer = false;
     subRetries = 0;
     if (subRetryTimer) { clearTimeout(subRetryTimer); subRetryTimer = null; }
@@ -762,22 +769,25 @@ export function createBattle({ store, ui, send, ftue }) {
       ctx.setLineDash([]);
     }
 
-    // rally flag
+    // rally flag — HOLLOW + dashed while the order is still in flight to the engine
+    // (the bridge echoes the position instantly; solid used to falsely read as "executing")
     const rally = cur.snap.rally;
     if (rally) {
+      const pending = now < rallyPendingUntil;
       ctx.strokeStyle = GOLD;
       ctx.lineWidth = lw(1.6);
+      if (pending) ctx.setLineDash([lw(2), lw(2)]);
       ctx.beginPath();
       ctx.moveTo(rally.x, rally.y);
       ctx.lineTo(rally.x, rally.y - 7);
       ctx.stroke();
-      ctx.fillStyle = GOLD;
       ctx.beginPath();
       ctx.moveTo(rally.x, rally.y - 7);
       ctx.lineTo(rally.x + 5.5, rally.y - 5.2);
       ctx.lineTo(rally.x, rally.y - 3.4);
       ctx.closePath();
-      ctx.fill();
+      if (pending) { ctx.stroke(); ctx.setLineDash([]); }
+      else { ctx.fillStyle = GOLD; ctx.fill(); }
     }
 
     // towers: range ring + body + hp bar (rubble once dead)
@@ -906,6 +916,26 @@ export function createBattle({ store, ui, send, ftue }) {
         ctx.beginPath();
         ctx.arc(f.x, f.y - k * 3, 1.6 * (1 - k * 0.5), 0, 7);
         ctx.fill();
+      }
+    }
+
+    // order acknowledgment (sprint #2): expanding gold ring + fading label at the click point —
+    // instant feedback that the order left the console (execution follows in ~1.5s via the relay)
+    for (let i = orders.length - 1; i >= 0; i--) {
+      const o = orders[i];
+      const k = (now - o.t0) / 2200;
+      if (k >= 1) { orders.splice(i, 1); continue; }
+      ctx.strokeStyle = `rgba(255,215,106,${0.7 * (1 - k)})`;
+      ctx.lineWidth = lw(1.6);
+      ctx.beginPath();
+      ctx.arc(o.x, o.y, 2 + k * 10, 0, 7);
+      ctx.stroke();
+      if (k < 0.8) {
+        ctx.fillStyle = `rgba(255,225,150,${0.9 * (1 - k / 0.8)})`;
+        ctx.font = `${lw(11)}px "Segoe UI", system-ui, sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.fillText(o.label, o.x, o.y - lw(14) - k * lw(6));
+        ctx.textAlign = 'start';
       }
     }
 
@@ -1050,10 +1080,12 @@ export function createBattle({ store, ui, send, ftue }) {
     const enemy = pickEnemy(sx, sy);
     if (enemy) {
       send({ t: 'battle_cmd', battleId: openId, cmd: { kind: 'focus', targetId: enemy } });
+      const [x, y] = toWorld(sx, sy);
+      orders.push({ x, y, t0: performance.now(), label: '⚔ focus order sent' });
     } else {
       const [x, y] = toWorld(sx, sy);
       send({ t: 'battle_cmd', battleId: openId, cmd: { kind: 'move', x, y } });
-      flashes.push({ x, y, t0: performance.now(), kind: 'hit' });
+      orders.push({ x, y, t0: performance.now(), label: '➤ move order sent' });
     }
     if (coach?.beat === 1) coachAdvance(); // beat 2 advances on a REAL move/focus
   });
@@ -1063,6 +1095,8 @@ export function createBattle({ store, ui, send, ftue }) {
     const r = canvas.getBoundingClientRect();
     const [x, y] = toWorld(e.clientX - r.left, e.clientY - r.top);
     send({ t: 'battle_cmd', battleId: openId, cmd: { kind: 'rally', x, y } });
+    orders.push({ x, y, t0: performance.now(), label: '🚩 rally order sent' });
+    rallyPendingUntil = performance.now() + 3500; // ~2 command polls — flag draws hollow until then
     if (coach?.beat === 2) coachAdvance(); // beat 3 advances on the rally order (or its 6 s timer)
   });
 
