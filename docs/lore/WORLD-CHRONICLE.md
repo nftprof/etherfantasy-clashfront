@@ -53,12 +53,23 @@ Then came the **First Descent** — the story every tavern in the world still te
 companion saga, the *EF Hunt*, let mortals live for themselves): **Jiro**, who went down for love, and
 **Ayume**, who was taken and did not wait to be saved but fought her own way through the trials.
 
-**The Descent has two rites, and every soul who goes below learns them:**
+**The Descent has its rites, and every soul who goes below learns them:**
 
-- **The Cut.** The deepest realm cannot be walked into. The only passage to the third deep is the
-  **Blood Scimitar** — the blade without peer: one cut, shoulder to shoulder, painless, **the sacrifice
-  you choose**. It does not kill you. It *takes* you — and you wake in Luxuria. (This is why no army has
-  ever marched into the third deep, and why its gate-warden faces those who *chose* to come.)
+- **The Way Down.** You do not find the deep; you accept its invitation. At the carnival, with the
+  lights still turning, you **drink the Potion** — it takes you nowhere; it makes you *ready to be
+  taken* — and then you **look through the Crystal Ball**. The carnival is gone. You stand at the head
+  of **the Diminishing Stair**: the second deep's own door, standing apart from the Shaft (its lower
+  mouth opens somewhere in Blackmere; its upper answers the call from Tianxia's fairs as easily as any).
+- **The Stair.** You walk down. With every step **you grow smaller and the steps grow vaster**. The
+  stair is **single file**, cliff-edged on both sides — there is no turning around, no going back, and
+  **thousands queue behind you**, pressing you forward one step at a time. *(This is why no army has
+  ever taken the direct way down: the Stair admits one soul at a time. Armies must take the Shaft and
+  break the sealed gates — the long, loud way.)*
+- **The Cut.** At the foot of the Stair, when your turn comes, the bargain is spoken: **you will have
+  all that you desire** — if you choose it. You may say no. But the stair is single file, the cliff is
+  on both sides, and a thousand souls stand behind you. You say yes. And the **Blood Scimitar** passes
+  through you — **from your left arm, through your chest and your heart, out through your right arm —
+  without pain, and without blood.** The sacrifice you chose. It does not kill you: it *admits* you.
 - **The Bowl.** Every descender carries a **Rice Bowl** filled with mortal rice — the taste of the world
   above, and the anchor of their humanity. While the bowl holds, you remain human in a realm that is
   not. **Empty it — lose it — and you are human no longer:** the world above disowns you, the hunters

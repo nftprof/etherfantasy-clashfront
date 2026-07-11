@@ -9,6 +9,14 @@
    "legend": "The wound where the deep first broke through; the only road down."
   },
   {
+   "id": "diminishing_stair",
+   "name": "The Diminishing Stair",
+   "kind": "PLACE",
+   "bindTo": "standing portal: Tianxia → the UW2 entrance (separate from the Shaft; its lower mouth is a fixed site somewhere in UW2)",
+   "legend": "The steps down to the second deep. With every step you grow smaller and the steps grow vaster; the stair is single file, cliff-edged both sides — there is no turning back, and thousands queue behind you. At the bottom waits the bargain, and the Cut.",
+   "source": "owner 2026-07-10 (Hunt lore)"
+  },
+  {
    "id": "gap_of_arcadia",
    "name": "The Scholar's Gap",
    "kind": "PLACE",
@@ -88,11 +96,26 @@
  ],
  "relics": [
   {
+   "id": "carnival_potion",
+   "name": "The Potion",
+   "kind": "RELIC",
+   "legend": "Drunk at the carnival, with the lights still turning. It does not take you anywhere — it makes you ready to be taken.",
+   "source": "owner 2026-07-10 (Hunt lore — the first half of the way down)"
+  },
+  {
+   "id": "crystal_ball",
+   "name": "The Crystal Ball",
+   "kind": "RELIC",
+   "legend": "Look through it after the Potion, and the carnival is gone: you stand at the head of the Diminishing Stair. The pair are the only door — no gate to break, no wall to climb.",
+   "source": "owner 2026-07-10 (Hunt lore — the second half of the way down)"
+  },
+  {
    "id": "blood_scimitar",
    "name": "The Blood Scimitar",
    "kind": "RELIC",
-   "legend": "The blade without peer: one cut, shoulder to shoulder, painless — the sacrifice you CHOOSE. Its cut is the only passage to the third deep: it does not kill you, it takes you to Luxuria.",
-   "source": "owner 2026-07-10 (the Scimitar of the Descent's true form)"
+   "legend": "The blade of the bargain at the Diminishing Stair's foot. When your turn comes you are offered ALL THAT YOU DESIRE — you may refuse, but the stair is single file and thousands press behind you. Say yes, and the Scimitar passes through you from left arm through chest and heart to right arm — no pain, no blood. The sacrifice you choose. It does not kill you: it admits you to the deep.",
+   "source": "owner 2026-07-10 (the Scimitar of the Descent's true form)",
+   "bindTo": "the rite at the foot of the Diminishing Stair (UW2 entrance)"
   },
   {
    "id": "rice_bowl",

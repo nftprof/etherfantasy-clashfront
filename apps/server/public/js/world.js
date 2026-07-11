@@ -48,8 +48,11 @@ const ROUTES = [
   { a: 'HUB', b: 'EDU', k: 'sea' }, { a: 'EDU', b: 'ENT', k: 'sea' },
   { a: 'EDU', b: 'HS1', k: 'air' }, { a: 'HS1', b: 'HS2', k: 'air' }, { a: 'HS1', b: 'HS3', k: 'air' },
   { a: 'HUB', b: 'UW1', k: 'shaft' }, { a: 'UW1', b: 'UW2', k: 'gate' }, { a: 'UW2', b: 'UW3', k: 'gate' },
+  // the Diminishing Stair: the carnival's own door — a direct portal Tianxia → Blackmere (single file,
+  // souls only, no armies; lore: docs/lore/WORLD-CHRONICLE.md 'The Way Down')
+  { a: 'HUB', b: 'UW2', k: 'portal' },
 ];
-const ROUTE_STYLE = { sea: '#5b8fd6', air: '#9ac2ff', shaft: '#c8926a', gate: '#c8624e' };
+const ROUTE_STYLE = { sea: '#5b8fd6', air: '#9ac2ff', shaft: '#c8926a', gate: '#c8624e', portal: '#a678d1' };
 const BIOME_COL = {
   TEMPERATE_GRASS: ['#6c9a52', '#42632f'], SWAMP: ['#5a6e46', '#37472b'],
   TEMPERATE_FOREST: ['#4f7a44', '#2f4c22'], VOLCANIC: ['#8a4838', '#54291d'], SNOW: ['#c6d2d6', '#7f929c'],
@@ -211,7 +214,7 @@ export function createWorld({ ui } = {}) {
     // route geometry (port anchors, projected at each side's depth)
     const routes = ROUTES.map(r => {
       const A = byId.get(r.a), B = byId.get(r.b);
-      const vertical = r.k === 'shaft' || r.k === 'gate';
+      const vertical = r.k === 'shaft' || r.k === 'gate' || r.k === 'portal';
       const pa = vertical ? [A.off[0] + A.vb[0] / 2, A.off[1] + A.vb[1] / 2] : portAnchor(A, B);
       const pb = vertical ? [B.off[0] + B.vb[0] / 2, B.off[1] + B.vb[1] / 2] : portAnchor(B, A);
       return { ...r, A, B,
@@ -261,7 +264,7 @@ export function createWorld({ ui } = {}) {
         ctx.restore();
       }
       // vertical routes leaving THIS continent (shaft/gates render with the stack)
-      for (const r of routes) if ((r.k === 'shaft' || r.k === 'gate') && r.a === c.id) drawRoute(r);
+      for (const r of routes) if ((r.k === 'shaft' || r.k === 'gate' || r.k === 'portal') && r.a === c.id) drawRoute(r);
       for (const r of routes) if (r.k === 'air' && (r.a === c.id)) drawRoute(r);
 
       // ── labels: the NAME is ALWAYS shown (fog never hides identity) ──
