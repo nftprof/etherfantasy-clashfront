@@ -55,10 +55,11 @@ companion saga, the *EF Hunt*, let mortals live for themselves): **Jiro**, who w
 
 **The Descent has its rites, and every soul who goes below learns them:**
 
-- **The Way Down.** You do not find the deep; you accept its invitation. At the carnival, with the
-  lights still turning, you **drink the Potion** — it takes you nowhere; it makes you *ready to be
-  taken* — and then you **look through the Crystal Ball**. The carnival is gone. You stand at the head
-  of **the Diminishing Stair**: the second deep's own door, standing apart from the Shaft. Its upper
+- **The Way Down.** You do not find the deep; you accept its invitation. On the carnival midway, with
+  the lights still turning, you drink **the Midway Potion** — it takes you nowhere; it leaves you
+  *midway between worlds, ready to be taken* — and then you look through **the Last Fortune**, the
+  fortune-teller's crystal, which tells you the last fortune you will ever need: your own. The carnival
+  is gone. You stand at the head of **the Diminishing Stair**: the second deep's own door, standing apart from the Shaft. Its upper
   mouth is in **Carnavale** — the carnival capital on Mythoria's southwest coast, the carnival that
   never left grown into a city — and its lower mouth opens somewhere in Blackmere.
 - **The Stair.** You walk down. With every step **you grow smaller and the steps grow vaster**. The
@@ -71,9 +72,9 @@ companion saga, the *EF Hunt*, let mortals live for themselves): **Jiro**, who w
   on both sides, and a thousand souls stand behind you. You say yes. And the **Blood Scimitar** passes
   through you — **from your left arm, through your chest and your heart, out through your right arm —
   without pain, and without blood.** The sacrifice you chose. It does not kill you: it *admits* you.
-- **The Bowl.** Every descender carries a **Rice Bowl** filled with mortal rice — the taste of the world
-  above, and the anchor of their humanity. While the bowl holds, you remain human in a realm that is
-  not. **Empty it — lose it — and you are human no longer:** the world above disowns you, the hunters
+- **The Bowl.** Every descender carries **the Homeward Bowl**, filled with mortal rice — the taste of
+  the world above, and the anchor of their humanity. While the bowl holds, the way home holds, and you
+  remain human in a realm that is not. **Empty it — lose it — and you are human no longer:** the world above disowns you, the hunters
   come for you, and you become **one of the haunting instead of the haunted**. The Hollowed, they are
   called: they can never return above ground, and the phantom-kin that drift Blackmere's lantern-dark
   and the old graveyards are what became of them. *(Every Phantom in the world was once somebody's

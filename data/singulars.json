@@ -13,7 +13,7 @@
    "name": "Carnavale, the Carnival Capital",
    "kind": "PLACE",
    "bindTo": "Mythoria southwest coast (city site planned by the map session)",
-   "legend": "The carnival that never left, grown into a city. Its lights still turn; its games still pay out; and for those who drink the Potion and look through the Crystal Ball, one of its tents has no back wall — only the Stair.",
+   "legend": "The carnival that never left, grown into a city. Its lights still turn; its games still pay out; and for those who drink the Midway Potion and look through the Last Fortune, one of its tents has no back wall — only the Stair.",
    "source": "owner 2026-07-10"
   },
   {
@@ -105,16 +105,16 @@
  "relics": [
   {
    "id": "carnival_potion",
-   "name": "The Potion",
+   "name": "The Midway Potion",
    "kind": "RELIC",
-   "legend": "Drunk at the carnival, with the lights still turning. It does not take you anywhere — it makes you ready to be taken.",
+   "legend": "Drunk on the carnival midway, with the lights still turning. It does not take you anywhere — it leaves you midway between worlds, ready to be taken.",
    "source": "owner 2026-07-10 (Hunt lore — the first half of the way down)"
   },
   {
    "id": "crystal_ball",
-   "name": "The Crystal Ball",
+   "name": "The Last Fortune",
    "kind": "RELIC",
-   "legend": "Look through it after the Potion, and the carnival is gone: you stand at the head of the Diminishing Stair. The pair are the only door — no gate to break, no wall to climb.",
+   "legend": "The fortune-teller's crystal. Look through it after the Midway Potion and it tells you the last fortune you will ever need — your own. The carnival is gone; you stand at the head of the Diminishing Stair. The pair are the only door: no gate to break, no wall to climb.",
    "source": "owner 2026-07-10 (Hunt lore — the second half of the way down)"
   },
   {
@@ -127,9 +127,9 @@
   },
   {
    "id": "rice_bowl",
-   "name": "The Rice Bowl",
+   "name": "The Homeward Bowl",
    "kind": "RELIC",
-   "legend": "Filled with mortal rice, it keeps you human in the deep. Empty it, lose it, and you are human no longer — hunted by the world you came from, one of the haunting instead of the haunted, and the way above closes to you forever.",
+   "legend": "Filled with mortal rice — the taste of the world above. While the bowl holds, the way home holds, and you remain human in a realm that is not. Empty it — lose it — and home closes forever: hunted by the world you came from, you become one of the haunting instead of the haunted.",
    "source": "owner 2026-07-10 (the humanity anchor of the Descent)"
   },
   {
