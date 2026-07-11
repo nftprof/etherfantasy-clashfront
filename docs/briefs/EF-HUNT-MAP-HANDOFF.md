@@ -58,8 +58,15 @@ parcel-by-parcel like open-world chunks.
   feeding the research/DNA economies (depth-layer 1, in build now).
 - **Scene anchors**: each continent field's `castles[]` (+ `heroParcels`) and `pois[]` — including
   lore singulars (the Shaft of Tianxia, the Diminishing Stair in Carnavale → Blackmere, the First
-  Dock…) — are the quest/dungeon anchors. The journey spine: Tianxia (start, "all roads lead here") →
-  surface continents → the Shaft or the Diminishing Stair → Ironhold → Blackmere → Luxuria.
+  Dock…) — are the quest/dungeon anchors.
+- **The Hunt journey spine (owner-locked 2026-07-11):** the story **starts in Carnavale** (Mythoria's
+  carnival town — the field, city, marinas, Sambadrome, and the `ENT-STAIR-DIMINISHING` POI are DONE)
+  → **straight down the Diminishing Stair to Blackmere (UW2)** for the main story → **Luxuria (UW3)**
+  to finish it → then open-world **pet-catching travel across the other continents** (all six surface
+  fields ready; the rarity geography in `zone-pet-population.json` is the progression curve) → an
+  **end-game revisit to the UW3 final-boss stage** — with **Leah and Irene** (the Hunt story's renamed
+  leads; CF's Chronicle keeps the old-chronicle names Jiro/Ayume/Yui — treat it as the same figures at
+  different remove, a name crosswalk the Hunt team owns).
 
 ## 5. Zone metadata + docs index
 
@@ -83,9 +90,10 @@ parcel-by-parcel like open-world chunks.
 
 ## 7. Asks / open items for the Hunt team
 
-1. Which parcels/regions do you want first? (Recommend: Tianxia capital region + the Diminishing Stair
-   route — the story spine; all six surface fields are ready.)
+1. First region is settled by the journey spine: **Carnavale + the Stair route (ready today)**. The
+   real blocker is **UW2 (Blackmere) + UW3 (Luxuria) fields — the main story's home** — now moved to
+   the TOP of Agent D's authoring queue (they also carry the deferred singular pins: the Drowned
+   Banquet, the Bastion of Dominus, the Gardens of Enamora, and the Stair's lower mouth).
 2. Do you consume the raster artifact directly, or do you need the engine team's `render.json`
    converter output? (That converter is owned by the MOBA engine team, not CF.)
-3. HS/UW fields (the second half of the journey) are unauthored — say when Hunt needs them and they
-   move up Agent D's queue.
+3. The sky fields (HS1–3) matter only for late pet-catching travel — say when you need them.
