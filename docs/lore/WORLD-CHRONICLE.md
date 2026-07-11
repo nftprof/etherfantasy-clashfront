@@ -58,8 +58,9 @@ companion saga, the *EF Hunt*, let mortals live for themselves): **Jiro**, who w
 - **The Way Down.** You do not find the deep; you accept its invitation. At the carnival, with the
   lights still turning, you **drink the Potion** — it takes you nowhere; it makes you *ready to be
   taken* — and then you **look through the Crystal Ball**. The carnival is gone. You stand at the head
-  of **the Diminishing Stair**: the second deep's own door, standing apart from the Shaft (its lower
-  mouth opens somewhere in Blackmere; its upper answers the call from Tianxia's fairs as easily as any).
+  of **the Diminishing Stair**: the second deep's own door, standing apart from the Shaft. Its upper
+  mouth is in **Carnavale** — the carnival capital on Mythoria's southwest coast, the carnival that
+  never left grown into a city — and its lower mouth opens somewhere in Blackmere.
 - **The Stair.** You walk down. With every step **you grow smaller and the steps grow vaster**. The
   stair is **single file**, cliff-edged on both sides — there is no turning around, no going back, and
   **thousands queue behind you**, pressing you forward one step at a time. *(This is why no army has

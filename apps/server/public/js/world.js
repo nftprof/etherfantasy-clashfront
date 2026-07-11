@@ -48,9 +48,9 @@ const ROUTES = [
   { a: 'HUB', b: 'EDU', k: 'sea' }, { a: 'EDU', b: 'ENT', k: 'sea' },
   { a: 'EDU', b: 'HS1', k: 'air' }, { a: 'HS1', b: 'HS2', k: 'air' }, { a: 'HS1', b: 'HS3', k: 'air' },
   { a: 'HUB', b: 'UW1', k: 'shaft' }, { a: 'UW1', b: 'UW2', k: 'gate' }, { a: 'UW2', b: 'UW3', k: 'gate' },
-  // the Diminishing Stair: the carnival's own door — a direct portal Tianxia → Blackmere (single file,
-  // souls only, no armies; lore: docs/lore/WORLD-CHRONICLE.md 'The Way Down')
-  { a: 'HUB', b: 'UW2', k: 'portal' },
+  // the Diminishing Stair: the carnival's own door — a portal from Carnavale (Mythoria SW coast)
+  // to Blackmere (single file, souls only, no armies; docs/lore/WORLD-CHRONICLE.md 'The Way Down')
+  { a: 'ENT', b: 'UW2', k: 'portal' },
 ];
 const ROUTE_STYLE = { sea: '#5b8fd6', air: '#9ac2ff', shaft: '#c8926a', gate: '#c8624e', portal: '#a678d1' };
 const BIOME_COL = {

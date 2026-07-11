@@ -9,10 +9,18 @@
    "legend": "The wound where the deep first broke through; the only road down."
   },
   {
+   "id": "carnavale",
+   "name": "Carnavale, the Carnival Capital",
+   "kind": "PLACE",
+   "bindTo": "Mythoria southwest coast (city site planned by the map session)",
+   "legend": "The carnival that never left, grown into a city. Its lights still turn; its games still pay out; and for those who drink the Potion and look through the Crystal Ball, one of its tents has no back wall — only the Stair.",
+   "source": "owner 2026-07-10"
+  },
+  {
    "id": "diminishing_stair",
    "name": "The Diminishing Stair",
    "kind": "PLACE",
-   "bindTo": "standing portal: Tianxia → the UW2 entrance (separate from the Shaft; its lower mouth is a fixed site somewhere in UW2)",
+   "bindTo": "standing portal: Carnavale (Mythoria's carnival capital, southwest coast — per the map session's plan) → the UW2 entrance (separate from the Shaft; its lower mouth is a fixed site somewhere in Blackmere)",
    "legend": "The steps down to the second deep. With every step you grow smaller and the steps grow vaster; the stair is single file, cliff-edged both sides — there is no turning back, and thousands queue behind you. At the bottom waits the bargain, and the Cut.",
    "source": "owner 2026-07-10 (Hunt lore)"
   },
