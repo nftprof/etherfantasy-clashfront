@@ -1,0 +1,621 @@
+{
+  "_meta": {
+    "title": "Clash Front world zone detail (computed)",
+    "author": "Map-maker session, 2026-07-07",
+    "source": "data/zone-registry.json + data/hexagon-city-source/{parcels-l2.json,zone-layout.json}",
+    "note": "Per-zone parcel counts by L2 size class + L3 singles, dims, density, biome, strength. CGI/KOL prestige islands ship 0 extracted parcels (geometry TBD).",
+    "worldTotals": {
+      "l2Total": 8482,
+      "l2ByClass": {
+        "EPIC": 48,
+        "GIANT": 172,
+        "LARGE": 393,
+        "MEDIUM": 1082,
+        "SMALL": 6787
+      },
+      "l3Singles": 284314,
+      "parcelsTotal": 292796
+    },
+    "zoneCount": 12
+  },
+  "zones": [
+    {
+      "zoneId": "CGI",
+      "zoneCode": "01",
+      "name": "Olympus",
+      "subtitle": "Founders' Isle",
+      "tier": "surface",
+      "family": "SPECIAL",
+      "server": "ca",
+      "unlockOrder": 0,
+      "strengthMultiplier": 1,
+      "zoneAvgStrength": 100,
+      "biomeFamily": "TEMPERATE_GRASS",
+      "palettes": [
+        "sakura",
+        "verdant"
+      ],
+      "primaryElements": [
+        "Light",
+        "Water"
+      ],
+      "signatureMaterials": [
+        "Gold",
+        "Herb"
+      ],
+      "cityRef": "Palm Jumeirah (Dubai)",
+      "worldOffset": null,
+      "viewBox": {
+        "w": 0,
+        "h": 0,
+        "area": 0
+      },
+      "counts": {
+        "l2Total": 0,
+        "l2ByClass": {
+          "EPIC": 0,
+          "GIANT": 0,
+          "LARGE": 0,
+          "MEDIUM": 0,
+          "SMALL": 0
+        },
+        "l2WithL3": 0,
+        "l3Singles": 0,
+        "parcelsTotal": 0
+      },
+      "densityL3per1000u2": null
+    },
+    {
+      "zoneId": "KOL",
+      "zoneCode": "08",
+      "name": "Fortuna",
+      "subtitle": "Influencers' Isle",
+      "tier": "surface",
+      "family": "SPECIAL",
+      "server": "ca",
+      "unlockOrder": 0,
+      "strengthMultiplier": 1,
+      "zoneAvgStrength": 100,
+      "biomeFamily": "TEMPERATE_GRASS",
+      "palettes": [
+        "sakura",
+        "verdant"
+      ],
+      "primaryElements": [
+        "Wind",
+        "Light"
+      ],
+      "signatureMaterials": [
+        "Gold",
+        "Herb"
+      ],
+      "cityRef": "Monaco (Riviera glamour)",
+      "worldOffset": null,
+      "viewBox": {
+        "w": 0,
+        "h": 0,
+        "area": 0
+      },
+      "counts": {
+        "l2Total": 0,
+        "l2ByClass": {
+          "EPIC": 0,
+          "GIANT": 0,
+          "LARGE": 0,
+          "MEDIUM": 0,
+          "SMALL": 0
+        },
+        "l2WithL3": 0,
+        "l3Singles": 0,
+        "parcelsTotal": 0
+      },
+      "densityL3per1000u2": null
+    },
+    {
+      "zoneId": "HUB",
+      "zoneCode": "07",
+      "name": "Tianxia",
+      "subtitle": "Capital Heartland",
+      "tier": "surface",
+      "family": "SURFACE",
+      "server": "ca",
+      "unlockOrder": 1,
+      "strengthMultiplier": 1,
+      "zoneAvgStrength": 100,
+      "biomeFamily": "TEMPERATE_GRASS",
+      "palettes": [
+        "verdant",
+        "autumn"
+      ],
+      "primaryElements": [
+        "Grass",
+        "Earth"
+      ],
+      "signatureMaterials": [
+        "Food",
+        "Gold"
+      ],
+      "cityRef": "Paris",
+      "worldOffset": [
+        0,
+        0
+      ],
+      "viewBox": {
+        "w": 358.16,
+        "h": 231.1,
+        "area": 82771
+      },
+      "counts": {
+        "l2Total": 1744,
+        "l2ByClass": {
+          "EPIC": 24,
+          "GIANT": 53,
+          "LARGE": 111,
+          "MEDIUM": 238,
+          "SMALL": 1318
+        },
+        "l2WithL3": 723,
+        "l3Singles": 58745,
+        "parcelsTotal": 60489
+      },
+      "densityL3per1000u2": 710
+    },
+    {
+      "zoneId": "ENT",
+      "zoneCode": "03",
+      "name": "Mythoria",
+      "subtitle": "Western Carnival Coast",
+      "tier": "surface",
+      "family": "SURFACE",
+      "server": "ca",
+      "unlockOrder": 2,
+      "strengthMultiplier": 1.1,
+      "zoneAvgStrength": 110,
+      "biomeFamily": "TEMPERATE_GRASS",
+      "palettes": [
+        "sakura",
+        "verdant",
+        "autumn"
+      ],
+      "primaryElements": [
+        "Wind",
+        "Water",
+        "Grass"
+      ],
+      "signatureMaterials": [
+        "Herb",
+        "Fish"
+      ],
+      "cityRef": "Rio de Janeiro",
+      "worldOffset": [
+        -190,
+        -10
+      ],
+      "viewBox": {
+        "w": 289.56,
+        "h": 525.86,
+        "area": 152268
+      },
+      "counts": {
+        "l2Total": 1492,
+        "l2ByClass": {
+          "EPIC": 3,
+          "GIANT": 14,
+          "LARGE": 31,
+          "MEDIUM": 128,
+          "SMALL": 1316
+        },
+        "l2WithL3": 669,
+        "l3Singles": 38284,
+        "parcelsTotal": 39776
+      },
+      "densityL3per1000u2": 251
+    },
+    {
+      "zoneId": "BUS",
+      "zoneCode": "00",
+      "name": "Porthaven",
+      "subtitle": "Northern Commercial Coast",
+      "tier": "surface",
+      "family": "SURFACE",
+      "server": "ca",
+      "unlockOrder": 3,
+      "strengthMultiplier": 1.2,
+      "zoneAvgStrength": 120,
+      "biomeFamily": "SWAMP",
+      "palettes": [
+        "verdant",
+        "ashen",
+        "swamp"
+      ],
+      "primaryElements": [
+        "Water",
+        "Grass"
+      ],
+      "signatureMaterials": [
+        "Fish",
+        "Salt",
+        "Gold"
+      ],
+      "cityRef": "New York",
+      "worldOffset": [
+        40,
+        -200
+      ],
+      "viewBox": {
+        "w": 354.05,
+        "h": 242.41,
+        "area": 85825
+      },
+      "counts": {
+        "l2Total": 1187,
+        "l2ByClass": {
+          "EPIC": 12,
+          "GIANT": 68,
+          "LARGE": 127,
+          "MEDIUM": 277,
+          "SMALL": 703
+        },
+        "l2WithL3": 610,
+        "l3Singles": 70467,
+        "parcelsTotal": 71654
+      },
+      "densityL3per1000u2": 821
+    },
+    {
+      "zoneId": "EDU",
+      "zoneCode": "02",
+      "name": "Arcadia",
+      "subtitle": "Academy Highlands",
+      "tier": "surface",
+      "family": "SURFACE",
+      "server": "ca",
+      "unlockOrder": 4,
+      "strengthMultiplier": 1.3,
+      "zoneAvgStrength": 130,
+      "biomeFamily": "TEMPERATE_FOREST",
+      "palettes": [
+        "sakura",
+        "autumn",
+        "verdant"
+      ],
+      "primaryElements": [
+        "Earth",
+        "Electric",
+        "Wind"
+      ],
+      "signatureMaterials": [
+        "Arcane",
+        "Stone",
+        "Iron"
+      ],
+      "cityRef": "Kyoto",
+      "worldOffset": [
+        100,
+        150
+      ],
+      "viewBox": {
+        "w": 155.77,
+        "h": 148.06,
+        "area": 23063
+      },
+      "counts": {
+        "l2Total": 372,
+        "l2ByClass": {
+          "EPIC": 1,
+          "GIANT": 8,
+          "LARGE": 20,
+          "MEDIUM": 78,
+          "SMALL": 265
+        },
+        "l2WithL3": 161,
+        "l3Singles": 13663,
+        "parcelsTotal": 14035
+      },
+      "densityL3per1000u2": 592
+    },
+    {
+      "zoneId": "HS1",
+      "zoneCode": "04",
+      "name": "Aeropolis",
+      "subtitle": "Cloud Gateway Isle",
+      "tier": "sky",
+      "family": "SKY",
+      "server": "sg",
+      "unlockOrder": 5,
+      "strengthMultiplier": 2,
+      "zoneAvgStrength": 200,
+      "biomeFamily": "TEMPERATE_GRASS",
+      "palettes": [
+        "verdant",
+        "sakura"
+      ],
+      "primaryElements": [
+        "Wind",
+        "Grass"
+      ],
+      "signatureMaterials": [
+        "Aether",
+        "Timber"
+      ],
+      "cityRef": "Cusco",
+      "worldOffset": [
+        300,
+        100
+      ],
+      "viewBox": {
+        "w": 113.62,
+        "h": 116.02,
+        "area": 13182
+      },
+      "counts": {
+        "l2Total": 346,
+        "l2ByClass": {
+          "EPIC": 1,
+          "GIANT": 6,
+          "LARGE": 16,
+          "MEDIUM": 57,
+          "SMALL": 266
+        },
+        "l2WithL3": 178,
+        "l3Singles": 14071,
+        "parcelsTotal": 14417
+      },
+      "densityL3per1000u2": 1067
+    },
+    {
+      "zoneId": "HS2",
+      "zoneCode": "05",
+      "name": "Emberfall",
+      "subtitle": "Storm & Lava Isle",
+      "tier": "sky",
+      "family": "SKY",
+      "server": "sg",
+      "unlockOrder": 6,
+      "strengthMultiplier": 2,
+      "zoneAvgStrength": 200,
+      "biomeFamily": "VOLCANIC",
+      "palettes": [
+        "volcanic",
+        "ashen",
+        "verdant"
+      ],
+      "primaryElements": [
+        "Fire",
+        "Electric"
+      ],
+      "signatureMaterials": [
+        "Obsidian",
+        "Sulfur",
+        "Aether"
+      ],
+      "cityRef": "Reykjavik caldera",
+      "worldOffset": [
+        425,
+        175
+      ],
+      "viewBox": {
+        "w": 118.01,
+        "h": 116.48,
+        "area": 13746
+      },
+      "counts": {
+        "l2Total": 451,
+        "l2ByClass": {
+          "EPIC": 0,
+          "GIANT": 0,
+          "LARGE": 16,
+          "MEDIUM": 49,
+          "SMALL": 386
+        },
+        "l2WithL3": 223,
+        "l3Singles": 13694,
+        "parcelsTotal": 14145
+      },
+      "densityL3per1000u2": 996
+    },
+    {
+      "zoneId": "HS3",
+      "zoneCode": "06",
+      "name": "Empyrea",
+      "subtitle": "High Sanctum Isle",
+      "tier": "sky",
+      "family": "SKY",
+      "server": "sg",
+      "unlockOrder": 7,
+      "strengthMultiplier": 2,
+      "zoneAvgStrength": 200,
+      "biomeFamily": "SNOW",
+      "palettes": [
+        "ashen",
+        "tundra",
+        "verdant"
+      ],
+      "primaryElements": [
+        "Wind",
+        "Light"
+      ],
+      "signatureMaterials": [
+        "Light-essence",
+        "Herb",
+        "Aether"
+      ],
+      "cityRef": "Lhasa",
+      "worldOffset": [
+        300,
+        245
+      ],
+      "viewBox": {
+        "w": 114.68,
+        "h": 117.21,
+        "area": 13442
+      },
+      "counts": {
+        "l2Total": 464,
+        "l2ByClass": {
+          "EPIC": 1,
+          "GIANT": 0,
+          "LARGE": 6,
+          "MEDIUM": 54,
+          "SMALL": 403
+        },
+        "l2WithL3": 219,
+        "l3Singles": 11873,
+        "parcelsTotal": 12337
+      },
+      "densityL3per1000u2": 883
+    },
+    {
+      "zoneId": "UW1",
+      "zoneCode": "09",
+      "name": "Ironhold",
+      "subtitle": "Upper Caverns",
+      "tier": "underworld",
+      "family": "UNDERWORLD",
+      "server": "sg",
+      "unlockOrder": 8,
+      "strengthMultiplier": 2.5,
+      "zoneAvgStrength": 250,
+      "biomeFamily": "SWAMP",
+      "palettes": [
+        "ashen",
+        "swamp"
+      ],
+      "primaryElements": [
+        "Earth",
+        "Dark"
+      ],
+      "signatureMaterials": [
+        "Stone",
+        "Iron",
+        "Gems"
+      ],
+      "cityRef": "Derinkuyu",
+      "worldOffset": [
+        310,
+        -210
+      ],
+      "viewBox": {
+        "w": 150.51,
+        "h": 150.52,
+        "area": 22655
+      },
+      "counts": {
+        "l2Total": 1233,
+        "l2ByClass": {
+          "EPIC": 1,
+          "GIANT": 9,
+          "LARGE": 27,
+          "MEDIUM": 98,
+          "SMALL": 1098
+        },
+        "l2WithL3": 592,
+        "l3Singles": 28915,
+        "parcelsTotal": 30148
+      },
+      "densityL3per1000u2": 1276
+    },
+    {
+      "zoneId": "UW2",
+      "zoneCode": "10",
+      "name": "Blackmere",
+      "subtitle": "Deep Caverns",
+      "tier": "underworld",
+      "family": "UNDERWORLD",
+      "server": "sg",
+      "unlockOrder": 9,
+      "strengthMultiplier": 3.5,
+      "zoneAvgStrength": 350,
+      "biomeFamily": "VOLCANIC",
+      "palettes": [
+        "swamp",
+        "volcanic",
+        "ashen"
+      ],
+      "primaryElements": [
+        "Water",
+        "Fire",
+        "Dark"
+      ],
+      "signatureMaterials": [
+        "Iron",
+        "Obsidian",
+        "Gems"
+      ],
+      "cityRef": "flooded cavern network",
+      "worldOffset": [
+        475,
+        -210
+      ],
+      "viewBox": {
+        "w": 150.48,
+        "h": 150.52,
+        "area": 22650
+      },
+      "counts": {
+        "l2Total": 1101,
+        "l2ByClass": {
+          "EPIC": 5,
+          "GIANT": 14,
+          "LARGE": 29,
+          "MEDIUM": 73,
+          "SMALL": 980
+        },
+        "l2WithL3": 546,
+        "l3Singles": 29777,
+        "parcelsTotal": 30878
+      },
+      "densityL3per1000u2": 1315
+    },
+    {
+      "zoneId": "UW3",
+      "zoneCode": "11",
+      "name": "Luxuria",
+      "subtitle": "Inferno Vault",
+      "tier": "underworld",
+      "family": "UNDERWORLD",
+      "server": "sg",
+      "unlockOrder": 10,
+      "strengthMultiplier": 5,
+      "zoneAvgStrength": 500,
+      "biomeFamily": "VOLCANIC",
+      "palettes": [
+        "volcanic",
+        "ashen"
+      ],
+      "primaryElements": [
+        "Fire",
+        "Dark"
+      ],
+      "signatureMaterials": [
+        "Iron",
+        "Obsidian",
+        "Dark-essence"
+      ],
+      "cityRef": "volcanic vent chamber",
+      "worldOffset": [
+        600,
+        -210
+      ],
+      "viewBox": {
+        "w": 63.29,
+        "h": 64.04,
+        "area": 4053
+      },
+      "counts": {
+        "l2Total": 92,
+        "l2ByClass": {
+          "EPIC": 0,
+          "GIANT": 0,
+          "LARGE": 10,
+          "MEDIUM": 30,
+          "SMALL": 52
+        },
+        "l2WithL3": 43,
+        "l3Singles": 4825,
+        "parcelsTotal": 4917
+      },
+      "densityL3per1000u2": 1190
+    }
+  ]
+}

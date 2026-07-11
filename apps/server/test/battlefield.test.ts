@@ -9,7 +9,8 @@
  * tickMs: null — world ticks driven by hand.
  */
 import assert from 'node:assert/strict';
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
 import { CONSTANTS } from '@clashfront/shared';
@@ -19,6 +20,7 @@ import {
   ClashServer,
   Game,
   type GameConfig,
+  loadParcelBattlefield,
   loadStandbyBattlefield,
   parseMasterNames,
   validateBattlefield,
@@ -148,6 +150,31 @@ test('battlefield: validator rejects a lane blocked by an impassable obstacle', 
   const res = validateBattlefield(bad);
   assert.equal(res.ok, false);
   assert.ok(res.errors.some((e) => e.includes('lane mid is blocked')), res.errors.join('; '));
+});
+
+test('battlefield: a placed parcel map is the tier preferred over the 3-lane test crutch', () => {
+  // The map-pipeline precedence (2026-07-07): live match map > the parcel's OWN
+  // designed map > the 3-lane arena (a TEST drop-in, never the production fallback).
+  // Regression for the bridge path, which used to jump live→3-lane, skipping the
+  // parcel tier — so a live parcel battle with no exported map rendered the 3-lane
+  // arena (owner: "a CF parcel battle rendering the 3-lane is a bug").
+  const dir = mkdtempSync(join(tmpdir(), 'cf-parcels-'));
+  const parcelId = 'TEST-PARCEL-42';
+  const own = loadStandbyBattlefield(1)!; // a known-valid single-parcel layout as this parcel's own map
+  const tagged = { ...own, meta: { ...(own.meta ?? {}), parcelId, _test: 'own-parcel-map' } };
+  writeFileSync(join(dir, `${parcelId}.json`), JSON.stringify(tagged));
+  const prev = process.env['CF_PARCEL_MAPS_DIR'];
+  process.env['CF_PARCEL_MAPS_DIR'] = dir;
+  try {
+    const bf = loadParcelBattlefield(parcelId);
+    assert.ok(bf, 'the parcel map loads');
+    assert.equal((bf!.meta as { _test?: string })._test, 'own-parcel-map', 'returns the parcel-specific map, not a stand-in');
+    assert.deepEqual(validateBattlefield(bf!).errors, [], 'the parcel map is playable');
+    assert.equal(loadParcelBattlefield('NO-SUCH-PARCEL'), undefined, 'absent parcel ⇒ undefined ⇒ caller falls back');
+  } finally {
+    if (prev === undefined) delete process.env['CF_PARCEL_MAPS_DIR'];
+    else process.env['CF_PARCEL_MAPS_DIR'] = prev;
+  }
 });
 
 // ── the command-view payload carries the map (bridge / engine / wild all wired) ─

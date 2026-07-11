@@ -80,6 +80,23 @@ function commandJson(req, res, parcelId) {
   }
 }
 
+// Bundled EXAMPLE maps (hand-authored raster artifacts, e.g. the real MOBA single-player map
+// reverse-engineered from the client) — served exactly like registry designs so /designer,
+// /designer/3d and /command.json work for them without a seed in the registry. Keyed by parcelId.
+const EXAMPLES = (() => {
+  const out = new Map();
+  try {
+    const dir = path.join(__dirname, "maps", "examples");
+    for (const f of fs.readdirSync(dir)) {
+      if (!f.endsWith(".artifact.json")) continue;
+      const art = JSON.parse(fs.readFileSync(path.join(dir, f), "utf8"));
+      out.set(String(art.meta?.parcelId || f.replace(".artifact.json", "")), art);
+    }
+  } catch { /* no examples dir */ }
+  return out;
+})();
+const jsonRes = (res, code, obj) => { res.writeHead(code, { "content-type": "application/json", "access-control-allow-origin": "*" }); res.end(JSON.stringify(obj)); };
+
 const sendFile = (res, file, type) => {
   fs.readFile(path.join(__dirname, file), (e, buf) => {
     if (e) { res.writeHead(404); return res.end("not found"); }
@@ -96,6 +113,16 @@ export function handleRequest(req, res) {
   // gallery landing page (all-maps + my-land filter → click into /designer)
   if (p === "/" || p === "/gallery" || p === "/gallery/") return sendFile(res, "maps/gallery.html", "text/html");
 
+  // list the bundled example maps (MOBA reverse-engineer + the CF biome references) for the gallery
+  if (p === "/gallery/examples") {
+    const list = [...EXAMPLES.values()].map((a) => ({
+      parcelId: a.meta?.parcelId, biome: a.meta?.biome, palette: a.meta?.params?.palette,
+      archetype: a.meta?.params?.archetype, laneCount: a.laneCount ?? a.meta?.laneCount ?? 1,
+    }));
+    res.writeHead(200, { "content-type": "application/json", "cache-control": "no-cache" });
+    return res.end(JSON.stringify({ ok: true, examples: list }));
+  }
+
   // same-origin owners feed for the gallery's "my land" filter
   if (p === "/gallery/owners") {
     ownersMap().then((owners) => {
@@ -103,6 +130,22 @@ export function handleRequest(req, res) {
       res.end(JSON.stringify({ ok: true, owners }));
     }).catch(() => { res.writeHead(200, { "content-type": "application/json" }); res.end('{"ok":false,"owners":{}}'); });
     return;
+  }
+
+  // Bundled EXAMPLE maps (e.g. MOBA-SINGLEPLAYER) — serve like a registry design so /designer +
+  // /designer/3d + command.json render them. render.json 404s → the 3D preview falls back to flat
+  // (MOBA maps are flat anyway), which is exactly the "current 3D from the 2D spec" the owner wants.
+  {
+    const ex = /^\/internal\/v1\/designs\/([^/]+)(\/command\.json|\/render\.json|\/thumb\.png)?$/.exec(p);
+    if (ex && EXAMPLES.has(decodeURIComponent(ex[1]))) {
+      const art = EXAMPLES.get(decodeURIComponent(ex[1]));
+      const sub = ex[2];
+      if (sub === "/command.json") { jsonRes(res, 200, toBattlefieldA1(art)); return; }
+      if (sub === "/render.json") { jsonRes(res, 404, { ok: false, error: "no_manifest" }); return; }
+      if (sub === "/thumb.png") { res.writeHead(404); res.end(); return; }
+      jsonRes(res, 200, { ok: true, row: { parcelId: art.meta.parcelId, designVersion: 0, status: "EXAMPLE", archetype: art.meta.params?.archetype, palette: art.meta.params?.palette }, artifact: art, budget: { level: 0 } });
+      return;
+    }
   }
 
   // A1 command-view battlefield for a parcel (raster registry artifact → §3 converter). This is the

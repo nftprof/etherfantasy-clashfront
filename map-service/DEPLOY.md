@@ -88,7 +88,7 @@ The maps loop closes in two steps CF already ships:
 1. **Produce/serve the A1**: `GET /internal/v1/designs/<parcelId>/command.json` returns the parcel's
    designed battlefield (raster registry artifact → §3 `command_converter`), cached per version.
 2. **CF prefers the parcel's own map**: CF's `battleStatic` calls `loadParcelBattlefield(parcelId)` —
-   it reads `<CF_PARCEL_MAPS_DIR>/<parcelId>.json` (default `<CF map dir>/parcels/`), validates it
+   it reads `<CF_PARCEL_MAPS_DIR>/<parcelId>.json` (default `data/cf-maps/parcels/`), validates it
    against the 5 playability invariants, and uses it in place of the stand-in; missing/invalid ⇒
    falls back to `legacy-{1,3}lane.json`. A bridge/match-server map still wins upstream (engine path).
 

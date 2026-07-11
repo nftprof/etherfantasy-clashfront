@@ -14,6 +14,7 @@
       <header id="rail-head">
         <span id="conn-pip" class="pip connecting" title="connection"></span>
         <span id="rail-title">CLASH FRONT</span>
+        <a href="#" id="btn-world" class="head-btn" title="World map — continents, servers &amp; travel">🌐</a>
         <a href="#" id="btn-economy" class="head-btn" title="War economy — supply, flows &amp; warzone gold rush">💰</a>
         <a href="#" id="btn-library" class="head-btn" title="Tutorial library — every lesson &amp; tip, replayable">📖</a>
         <a href="#" id="btn-tutorial" class="head-btn" title="Tutorial — replay the guided intro">🎓</a>
@@ -43,6 +44,13 @@
         <div class="bt-hud"></div>
         <div class="bt-stage"><canvas id="battle-canvas"></canvas></div>
         <div class="bt-foot"></div>
+      </div>
+      <!-- 3D world map: continents on 3 tiers (surface/sky/underworld), fog of war,
+           server-travel (docs/maps/WORLD-MAP-AND-SERVER-TRAVEL.md) — js/world.js -->
+      <div id="world" hidden>
+        <div class="wm-hud"></div>
+        <canvas id="world-canvas"></canvas>
+        <div class="wm-panel" hidden></div>
       </div>
     </main>
 

@@ -114,7 +114,9 @@ export can be converted to the documented format. See `data/README.md`.
 
 14. LONE OCCUPATIONS (2026-07-03): Masters may hold land without an army — encounter = 
     OVERWHELM (attacker loses a few soldiers, defender KO'd via the LIVE Masters KO API) |
-    DUEL (one seeded core: rating × Addendum-E element wheel × ⚙ bounded chance; v1 = 
+    DUEL (one seeded core: rating × ⚙ bounded chance — element-wheel factor DROPPED 2026-07-10:
+    **Masters are ELEMENT-FREE (LoL/AoV model)**, no type advantage on heroes, all element play
+    lives in PET selection; command unrestricted; `docs/maps/MASTERS-ELEMENT-FREE-RULING.md`; v1 = 
     Uncharted-Waters-style best-of-3 auto-duel animation, M2+ = tiny-arena live 1v1 on the
     engine) | FLEE (rating-based escape roll, failed = caught). Offline-proof via per-Master
     standing orders (DUEL/FLEE/STAND). NFT pets = passive homesteads: farm yield, never
@@ -162,6 +164,33 @@ export can be converted to the documented format. See `data/README.md`.
     in-game-rich ≠ on-chain-profit. Net-sink doctrine (decision 13) made per-user + contract-enforced.
     Full model: `docs/reports/ECONOMY-MASTER-SUMMARY.md` §0b (+ RESOURCE-MAP, WARGAME-DESIGN-STUDY,
     `docs/maps/LAND-VALUE-AND-IMPROVEMENT.md`). Economy design is in REVIEW; this invariant is locked.
+    **NB (2026-07-10): the CT economy RE-SCALE is DONE** — balance.json v2, ÷100 (line soldier 0.02 CT,
+    dev L1 ≈ 1–1.5 CT); 187 tests green.
+
+18. PET NFT = DNA BLUEPRINT (2026-07-10): the NFT is the **spawn-RIGHT for its class, not a pet
+    instance** — owner may summon that class **on demand, anywhere**, at a premium (⚙) vs recruiting the
+    same class in-battle from the wild. **Capacity numbers (14,175; role-scarcity) count BLUEPRINTS per
+    species, never unit bodies** — bodies (populace/workers/line/spawns) are uncapped commodity. Mythic
+    ~2/species = only ~2 players can ever summon that class at will. Fixes the "two populations"
+    contradiction (`WORLD-DEPTH-AND-COHESION-REVIEW.md` §B.1, `FARMING` §3, `BATTLE-MAP…` §5a).
+
+19. THE WORLD REMEMBERS (2026-07-10, locked): great battles (casualties ≥ ⚙) **auto-name themselves**
+    after where they happened, archive forever in a public World Chronicle feed, and leave **monument
+    POIs** (graveyards seed Phantom pets); **first deeds are INSCRIBED IN THE PLAYER'S NAME at the site**
+    (first through each gate/port, first boss-kill, EPIC holders, town founders). The authored past =
+    `docs/lore/WORLD-CHRONICLE.md` (3 ages, grounded in the EF Hunt Underworld lore —
+    `docs/lore/UNDERWORLD-SOURCE-EXTRACT.md`; UW = desire sinking, HS = aspiration rising, surface
+    between; the Shaft/boss-gates/floating isles all EXPLAINED). Spec:
+    `docs/briefs/WORLD-REMEMBERS-AND-TOWNS.md`. Companions: `data/singulars.json` (31 named one-of-ones,
+    proposal — weapon artifacts to be bound to existing MOBA hero-gear art) + `docs/lore/ZONE-CULTURES.md`
+    / `data/zone-cultures.json` (12 culture cards).
+
+20. TOWNS (2026-07-10, locked): port-like special locations, **player-ownable**; plus **famous dev-placed
+    towns** selling specific goods (occupier takes a ⚙ benefit share). **No-war sanctuary rules:** on
+    occupation change a town is war-locked ⚙ 7–30 days; some dev towns permanently no-war (dev-held,
+    no owner). In-town: markets/commerce, the **treasure hunt (CT gamble — house-edged, decision-17
+    sink)**, inns (rest/morale + rumor board reading the Chronicle). `docs/briefs/WORLD-REMEMBERS-AND-
+    TOWNS.md` §2.
 
 ## 📜 v0.2 VISION BIBLE (2026-07-02): `docs/VISION-BIBLE-v0.2.md` + `docs/ADDENDUM-E-PentaPet-Species-Affinity.pdf`
 Overarching new spec from the product owner: PentaPets = the living population (workers/soldiers/

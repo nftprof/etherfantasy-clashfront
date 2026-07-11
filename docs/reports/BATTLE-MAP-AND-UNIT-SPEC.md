@@ -122,9 +122,11 @@ mon), so only **worker ⇄ line** interchange. **ELITE is always armed** — it 
 **Correction (owner 2026-07-06):** a **pet NFT is a species/CLASS, not an individual unit.** Master heroes
 are the NFTs that **KO + revive** (7-day CD or pay 5 CT); **pets do NOT KO** — they are population.
 
-- **Own the pet NFT → TRAIN that class directly.** Owning a species' pet NFT is a **training right**: you can
-  **recruit/train that species deliberately**, anywhere (in a battle or outside), instead of hoping it
-  spawns. It buys **access + composition control**, not per-unit power.
+- **Own the pet NFT → SPAWN that class on demand, anywhere.** The NFT is the **DNA BLUEPRINT** — not a pet
+  instance, the **spawn-right for its class** (owner 2026-07-10). You can summon that class **anywhere,
+  any time**, at a **premium cost** (⚙ `blueprintSpawnPremium` — dearer than recruiting the same class
+  in-battle from the wild); non-owners can only catch it where it spawns. It buys **access + composition
+  control**, not per-unit power. Capacity numbers = how many blueprints exist per species, never a body cap.
 - **Don't own it → CATCH IT IN THE WILD.** That species **spawns on maps whose biome hosts it** (§2). You
   recruit the wild version by **fighting/training it on that map** (gold). **Richer / more expensive land has
   a chance to spawn STRONGER units** — so high-tier land is also a better hunting ground for good mons.
@@ -164,11 +166,16 @@ What you keep after a battle decides whether the gold/arms were worth it:
   elites beyond what your remaining line can support at 1 : 3 simply **can't deploy**. So line is the
   throughput that lets elites reach the field; you **can't field an all-elite doomstack** because the field
   itself throttles it. This, not a distinct-species cap, is the elite governor.
-- **No distinct-elite-per-Master cap — synergy instead.** *(Supersedes the old "2 distinct elite classes
-  per Master" line.)* You may train **any** elites and pair them freely, but **Master ↔ unit alignment gives
-  synergy**: when a Master sits on land whose **biome/element matches its unit types**, the army fights
-  **better in battle AND the land farms faster** (⚙ `alignmentFarmBonus`, `alignmentCombatBonus`). Mismatched
-  pairings still work, just without the bonus — so composition is a **soft optimization**, not a hard lock.
+- **MASTERS ARE ELEMENT-FREE (owner-ruled 2026-07-10 — the LoL/AoV model).** A Master has **NO element and
+  no type advantage of its own** — think LoL/AoV champions: **hero-vs-hero combat has no elemental wheel**;
+  it's decided by kit/skill/level. **All elemental type-advantage lives in the PETS** — you play the element
+  game through **pet selection** (which fixed-element beasts you bring), never through the Master. And a
+  Master **commands whichever type of beast you give it** — command is fully unrestricted. *(Supersedes: the
+  old "2 distinct elite classes per Master" cap; the earlier Master↔element buff/synergy idea; and the
+  Addendum-E element-wheel factor in decision-14 lone-Master DUELs — duels are now rating-based, element-free.)*
+- **Alignment synergy is UNITS ↔ LAND, not Master ↔ element:** pets fight/farm/recruit better on land whose
+  **biome matches their element** (already the Species-Affinity factor of the pet power formula,
+  ⚙ `alignmentFarmBonus`). The Master contributes **leadership**, not element — mismatched armies still work.
 - **Master/hero hard cap = 55.** Only **55 commander NFTs** exist (the 47 Masters + heroes). Masters are the
   scarce command layer; scale battles by **more land/pets**, not more commanders.
 - **Any land farms with ≥ 100 pets; masterless land still defends.** A parcel is a working farm/garrison as

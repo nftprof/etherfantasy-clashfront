@@ -347,14 +347,16 @@ test(`oversight cap: claim #${CONSTANTS.MAX_OVERSEEN_TERRITORIES + 1} rejected e
 test('raiseArmy with insufficient CT throws without mutating; balances never negative', () => {
   const rng = createRng('poor');
   const state = loadDemoWorld(makeGrid(4, 4), rng.fork('worldgen'), { monsterParcelPct: 0 });
+  // post-re-scale (balance v2, ÷100): a STANDARD raise costs ~a few CT, so a true pauper
+  // holds a fraction of one CT (0.01 CT) — still cannot afford any raise.
   const { governorId } = addGovernor(state, rng.fork('gov'), {
-    name: 'Pauper', kind: 'PLAYER', ctUnits: 100 * CT, officerNames: ['Choco'],
+    name: 'Pauper', kind: 'PLAYER', ctUnits: CT / 100, officerNames: ['Choco'],
   });
   const home = firstClaimable(state);
   claimTerritory(state, home, governorId);
   const armiesBefore = state.armies.size;
   assert.throws(() => raiseArmy(state, home, 'STANDARD', rng.fork('orders')), /insufficient CT/);
-  assert.equal(state.ctBalances!.get(governorId), 100 * CT, 'failed raise must not charge');
+  assert.equal(state.ctBalances!.get(governorId), CT / 100, 'failed raise must not charge');
   assert.equal(state.armies.size, armiesBefore);
   checkBasicInvariants(state);
 });

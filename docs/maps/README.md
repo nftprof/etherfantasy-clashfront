@@ -6,6 +6,43 @@
 > `/home/ubuntu/ef-moba-server/maps/` on 13.250.39.41 (the box CF runs on).
 
 ## Docs here
+- **MAP-PIPELINE-GLOSSARY.md** — ⭐ **THE combined cross-session alignment doc — READ FIRST.** One shared
+  vocabulary for every team: the three tiers (stand-in / legacy.json / parcel map), the pipeline (params →
+  artifact → derived files → renders), the four layers (skeleton/obstacles/art/collision), the live-vs-static
+  precedence, the terminology crosswalk, the `legacy.json` delivery plan, and — critically — the ONE
+  divergence (CF parcel maps author obstacles + walkability deterministically; the legacy arena re-rolls
+  them live). Reconciles the CF, network/engine, and BattleEngine models.
+- **CONTINUOUS-WORLD-TERRAIN.md** — ⭐ DECISION (Map-maker, 2026-07-07): the default terrain is **one
+  authored continuous world per continent**; each parcel is a **window** cropped from it (rivers/roads/
+  ranges continuous across parcels), modelled on a **real city per continent** from the aerial view. Adds a
+  feature-network layer (roads + districts) to `world-terrain.json`, an **edge-freeze terraform rule**
+  (edges frozen, interior free), and a new **CF aerial mosaic view** (tiled thumbnails). Stamps stay as the
+  floor; author one continent/week. Extends the Atlas + macro-terrain brief.
+- **ZONE-REGISTRY.md** + **`../../data/zone-registry.json`** — ⭐ THE CANONICAL 12-ZONE LIST (Map-maker,
+  2026-07-07): the generator/sim input — `zoneId`, `zoneCode` (parcelId→zone lookup), locked continent
+  **names** (Olympus·Fortuna·Tianxia·Mythoria·Porthaven·Arcadia·Aeropolis·Emberfall·Empyrea·Ironhold·
+  Blackmere·Luxuria), `family` + `strengthMultiplier`/`zoneAvgStrength` (SURFACE ×1.0–1.3 · SKY fixed ×2.0 ·
+  UNDERWORLD range ×2.5/3.5/5.0), biomeFamily, primaryElements, signatureMaterials, real parcel counts.
+  The base pass reads biome/position; the seed pass reads family/strength for wild sizing.
+- **WORLD-ZONE-DETAIL.md** + **`../../data/world-zone-detail.json`** — ⭐ FOR WORLD PLANNING (Map-maker,
+  2026-07-07): full per-zone facts computed from the real extraction — parcel counts by L2 size class
+  (EPIC/GIANT/LARGE/MEDIUM/SMALL), L3 singles, totals, density, worldOffset/viewBox, biome/elements/
+  materials/strength. World totals: 8,482 L2 + 284,314 L3 = 292,796 parcels. The 12-zone planning table.
+- **ZONE-BIOME-SEEDING-GUIDANCE.md** — ⭐ FOR THE ECONOMICS DEV (Map-maker, 2026-07-07): the map/terrain
+  half of `MAP-ECONOMY-SEEDING-PARAMS.md` — all 10 zones (tier/biome/elements/server), a **materials ×
+  zones richness matrix** (food/timber/stone/iron/gold/fish/obsidian/gems/aether/herb/arcane/light/dark),
+  the **"broad but thin, concentrated rich"** gradient rule (iron minable everywhere, richest UW3), per-zone
+  detail cards (materials/recruits/POI-types/wild-boss/hazards), and the resource-node vocabulary the
+  generator must grow into. Grounded in the Atlas + biome-recruitment.
+- **PET-AND-MASTER-HOMES.md** — ⭐ (Map-maker, 2026-07-07): which **PentaPet element-types populate each
+  zone** (the wild + recruit pool per region — UW3/Luxuria = dark/mystic ✅) + each **Master's home zone**
+  (home = the land of the Master's element, which its matching-element buff resonates with). Grounded in the
+  228-pet element roster + the 12-zone registry. Blocker flagged: the 47 Masters have no element data yet
+  (owner/API needed); Bosses (elements in-name) are homed.
+- **MAP-MODES.md** — ⭐ (Map-maker, 2026-07-07): ONE map serves MANY modes — the spawn/entry **anchors are
+  not enemy waves**; a MODE (Versus / Siege / Dominion / Guard / Duel / Clash) just lights up a subset +
+  sets the win-point. Attacker enters by approach direction; defender holds the middle. Renderer spec for
+  labels + a mode toggle/legend. Also documents the biome→ground-colour fix (desert no longer renders green).
 - **ECONOMY-SEAM.md** — the three CF↔maps hooks: ownership feed, invest flow, payout note.
 - **LAND-VALUE-AND-IMPROVEMENT.md** — PROPOSAL (for owner review): the land-layer economic model —
   how a landowner spends/burns CT to raise a parcel/estate's investment tier and unlock more resource
@@ -25,6 +62,12 @@
   position-role + edge-type system) each parcel map is designed inside.
 - **../briefs/MAP-GENERATOR-LLM-CURRICULUM.md** — the fitness function + repair loop + difficulty
   ladder that challenges the LLM to design playable, novel maps within that envelope.
+- **MAP-LAYER-MODEL.md** — PROPOSAL: a map = a stack of toggleable OVERLAYS (pathing, entry points,
+  build spots, resources, wild masters, walkability, ground texture…), each = an A1 array, each
+  LLM-designable per-layer, each tier-limited; plus the ≥1-entry-per-edge invariant. The designer-UI
+  + per-layer-LLM spec.
+- **BIOME-RECRUITMENT-AND-ARMY.md** — PROPOSAL: biome-gated recruitment (element↔biome → which
+  soldier/worker classes recruit on a map) feeding the persistent army.
 
 ## Live API quick-reference (moba.etherfantasy.com, lobby :8090 on the shared box)
 - `GET  /internal/v1/designs[?status=]` · `GET /internal/v1/designs/:parcelId` (lazy v0; returns

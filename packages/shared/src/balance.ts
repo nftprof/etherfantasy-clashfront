@@ -22,6 +22,18 @@ export interface Balance {
   travel: {
     moveCostByTerrain: Record<HexTerrain, number>;
     openOceanNoLanePenaltyMult: number;
+    /** Cross-continent (server) travel — docs/maps/WORLD-MAP-AND-SERVER-TRAVEL.md §4. */
+    dockReserveFeeCt: number;
+    continentTravelFeeCt: number;
+    /** Fee split (sums to 1): land owner / occupying warlord / platform sink (≥10% burns, decision 17). */
+    travelFeeSplit: { landOwner: number; occupier: number; platformSink: number };
+    portTypeByTier: Record<string, string>;
+    /** Right-of-way tolls — §4a. PASS = cross a land toward a port; GATE = intra-continent chokepoint. */
+    passFeeDefaultCt: number;
+    gateFeeDefaultCt: number;
+    /** OPEN | ALLIES_ONLY | CLOSED — landowner passage policy. */
+    passPolicyDefault: string;
+    gatePolicyDefault: string;
   };
   development: {
     maxLevel: number;
