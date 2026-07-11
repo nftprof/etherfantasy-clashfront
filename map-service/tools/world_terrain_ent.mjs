@@ -648,12 +648,19 @@ function buildField() {
     ],
     castles: CASTLES,
     pois: [
-      { id: "ENT-CITY", kind: "CAPITAL", at: [18, 451], note: "Carnavale, the carnival capital — the festival ribbon between the hills and the Western Ocean; EPIC estate " + city.parcelId + " (the Palace of Masks) on the shelf above the beach" },
+      // SINGULAR PLACES (depth-layer 2, data/singulars.json): `carnavale` + `diminishing_stair`
+      // bind to their existing POIs; `carnival_shore` gets its own POI on the capital's shore —
+      // pinned to the authored coastline vertex nearest the capital (deterministic).
+      { id: "ENT-CITY", kind: "CAPITAL", at: [18, 451], singularId: "carnavale", name: "Carnavale, the Carnival Capital",
+        note: "Carnavale, the carnival capital — the festival ribbon between the hills and the Western Ocean; EPIC estate " + city.parcelId + " (the Palace of Masks) on the shelf above the beach" },
       { id: "ENT-MARINA", kind: "SEA_PORT", at: [14, 452], note: "the Carnavale marinas — twin inlets combed with jetty piers along the Mirella Strand" },
+      { id: "ENT-SHORE", kind: "LANDMARK", at: nearestOn([coast], 18, 451).pt.slice(), singularId: "carnival_shore", name: "The Carnival Shore",
+        legend: "Where the lights first came ashore, and never entirely left.",
+        note: "the capital's west-coast beach — the Mirella Strand shore where Carnavale meets the Western Ocean" },
       ...townQuays.map((q) => ({ id: `ENT-PORT-${q.name.toUpperCase()}`, kind: "SEA_PORT", at: q.at, note: `${q.name} quay — resort marina on the carnival coast` })),
       { id: "ENT-LADY", kind: "LANDMARK", at: [43, 418], note: "the Lady of Tides — the colossal statue on the Lady's Crest above Carnavale's bay (the Corcovado moment), kept by Tidewatch Temple" },
       { id: "ENT-SAMBADROME", kind: "LANDMARK", at: [20.5, 450], note: "the Grand Sambadrome — the parade stands of the Grand Carnavale Way, the festival avenue's heart" },
-      { id: "ENT-STAIR-DIMINISHING", kind: "SECRET_ENTRANCE", at: [21.4, 449.2], connects: ["ENT", "UW2"], secret: true, note: "the Diminishing Stair — upper mouth on the carnival midway (docs/lore/WORLD-CHRONICLE.md, Second Age): drink the Midway Potion, look through the Last Fortune, and the carnival is gone — the second deep's own door, apart from the Shaft; lower mouth opens somewhere in Blackmere. SINGLE FILE, cliff-edged: one soul at a time, never an army (armies take the Shaft and break the sealed gates). Owner 2026-07-11: this is Mythoria's ONLY depth link — no ENT sky/HS3 linkage; NOT a public route on the overview map" },
+      { id: "ENT-STAIR-DIMINISHING", kind: "SECRET_ENTRANCE", at: [21.4, 449.2], connects: ["ENT", "UW2"], secret: true, singularId: "diminishing_stair", name: "The Diminishing Stair", note: "the Diminishing Stair — upper mouth on the carnival midway (docs/lore/WORLD-CHRONICLE.md, Second Age): drink the Midway Potion, look through the Last Fortune, and the carnival is gone — the second deep's own door, apart from the Shaft; lower mouth opens somewhere in Blackmere. SINGLE FILE, cliff-edged: one soul at a time, never an army (armies take the Shaft and break the sealed gates). Owner 2026-07-11: this is Mythoria's ONLY depth link — no ENT sky/HS3 linkage; NOT a public route on the overview map" },
       { id: "ENT-PLAZA", kind: "LANDMARK", at: [56, 472.2], note: "Lantern Plaza — the Velaria Quarter's masked-festival square between the canal reaches" },
       { id: "ENT-GATE-E", kind: "GATE", at: [289.56, 171], connects: ["ENT", "HUB"], note: "east gate — receives the West Caravan Road (world z=161) and, at local y=178, the Xijiang (→ the Mirthwater) from Tianxia across the eastern back-country" },
       { id: "ENT-GATE-SE", kind: "GATE", at: [288.8, 458], connects: ["ENT"], note: "southeast frontier gate — the Festival Road's beyond-the-frontier stub" },

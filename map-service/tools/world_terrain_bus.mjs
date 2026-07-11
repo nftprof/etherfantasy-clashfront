@@ -624,10 +624,18 @@ function buildField() {
     castles: CASTLES,
     pois: [
       { id: "BUS-CITY", kind: "CAPITAL", at: CITY.slice(), note: "Porthaven, the port metropolis — EPIC estate " + city.parcelId + " on the Broadwater's west bank (grid core, Harbour Drive, the Longwalk, Quayside piers)" },
-      { id: "BUS-HARBOUR", kind: "SEA_PORT", at: [+(CITY[0] + 8.7).toFixed(1), +(CITY[1] - 8).toFixed(1)], note: "the Broadwater harbour — Porthaven's deep-water roadstead between the Quayside and Fort Tidegate" },
+      // SINGULAR PLACE (depth-layer 2, data/singulars.json `first_dock`): the grand harbour POI
+      // IS the singular — bound in place, never duplicated.
+      { id: "BUS-HARBOUR", kind: "SEA_PORT", at: [+(CITY[0] + 8.7).toFixed(1), +(CITY[1] - 8).toFixed(1)], singularId: "first_dock", name: "The First Dock",
+        legend: "Every sea-lane in the world was measured from this pier.",
+        note: "the Broadwater harbour — Porthaven's deep-water roadstead between the Quayside and Fort Tidegate" },
       ...townQuays.map((q, i) => ({ id: `BUS-PORT-${TOWN_NAMES[i].toUpperCase()}`, kind: "SEA_PORT", at: q.at, note: `${q.name} quay — secondary port on the commercial coast` })),
       { id: "BUS-PORT-SKY", kind: "AIRSHIP_PORT", at: [296, 178], note: "Skyreach Anchorage — inland high-ground airship port facing the sky tier (atlas §2.2: BUS is the sky tier's closest dense surface population)" },
-      { id: "BUS-GATE-S", kind: "GATE", at: [130, 240.8], connects: ["BUS", "HUB"], note: "south gate — receives the Tianhe (→ the Broadwater) + the Imperial North Road (→ the Meridian Causeway) from Tianxia across the frontier marsh" },
+      // SINGULAR PLACE (depth-layer 2, data/singulars.json `salt_gate`): the delta's south gate —
+      // the Tianhe enters the world's tax ledger here.
+      { id: "BUS-GATE-S", kind: "GATE", at: [130, 240.8], connects: ["BUS", "HUB"], singularId: "salt_gate", name: "The Salt Gate",
+        legend: "Porthaven taxes the tide itself here.",
+        note: "south gate — receives the Tianhe (→ the Broadwater) + the Imperial North Road (→ the Meridian Causeway) from Tianxia across the frontier marsh" },
       { id: "BUS-GATE-SB", kind: "GATE", at: [170, 240.8], connects: ["BUS", "HUB"], note: "south-east water gate — receives the Beiliu from Tianxia" },
       { id: "BUS-GATE-SE", kind: "GATE", at: [291, 240.2], connects: ["BUS"], note: "southeast frontier gate — beyond-the-frontier stub" },
       { id: "BUS-GATE-E", kind: "GATE", at: [354, 151], connects: ["BUS"], note: "east frontier gate — beyond-the-frontier stub toward the sky tier's shoulder" },
