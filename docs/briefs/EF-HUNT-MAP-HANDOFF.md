@@ -99,17 +99,16 @@ parcel-by-parcel like open-world chunks.
    natively; no `render.json` converter needed. The engine-team converter is now MOBA-only scope.
 3. **Sky fields (HS1–3)**: deferred until late-game pet-travel needs them.
 
-**Diminishment mechanic (owner-locked 2026-07-11 — "we are not scaling the world, we scale the
-character"):** in the underworld the CHARACTER shrinks, never the geometry — **UW2 Blackmere:
-you are 2× smaller** (world reads 2× vaster); **UW3 Luxuria: 6× smaller** (six, for the sins —
-structures become massive; magnitude is a dial if 6× proves too much, the mechanic is locked).
-This is the Diminishing Stair made literal ("with every step you grow smaller and the steps grow
-vaster" — the Chronicle). Implementation: client-side character/camera scale ONLY — the ±161 frame,
-walk grids, coordinates, and all map data are untouched; enormous perceived world for zero extra
-geometry. Machine-readable: `characterScale` on the UW2/UW3 entries in `data/zone-registry.json`
-(0.5 / 0.1667; absent = 1.0). NOTE for CF/MOBA consumers: if CF battles or the MOBA client ever
-play these zones, the same per-zone scale applies to units — read it from the registry, don't
-hardcode.
+**THE DIMINUTION (owner-locked; FINAL numbers 2026-07-11, Agent C's spec supersedes the earlier
+2×/6× draft):** the deep diminishes CHARACTERS, never the geometry — the Diminishing Stair made
+literal ("with every step you grow smaller and the steps grow vaster"). TWO knobs per tier, both in
+**`data/zone-registry.json` → `_meta.charScale`** (the single machine-readable source; never
+hardcode): **visual** (model+camera together — the lore numbers, LOCKED: surface/sky/UW1 = 1.0 the
+contrast anchor; **UW2 = 1/1.5** the uncanny step; **UW3 = 1/6** the deception, six on purpose) and
+**kinematic** (move speed/ranges — ⚙ playtest dial: UW2 0.667, UW3 0.4 ≈ √6). Camera follows the
+scale down — that's what sells it. Terrain, structures, arena bounds, unit counts, and stats are
+UNCHANGED (perception, never combat power); all combatants in a realm share its scale. Full engine
+hand-off: `docs/briefs/DIMINUTION-SCALE-SPEC.md` (hub branch).
 
 **Seam-streaming caveat (Agent D, honest print):** cross-parcel continuity is guaranteed for the
 WORLD-FIELD features — roads, rivers, ridges, biome/palette enter and exit at exactly matching border

@@ -16,7 +16,30 @@
       },
       "note": "zoneAvgStrength = baseline * strengthMultiplier. Relative index; the seed pass scales real wild-garrison size from it. Numbers are a grounded proposal — owner to tune, then freeze."
     },
-    "serverTopologySync": "2026-07-10 synced from the world-planning session relay (owner-locked): Singapore(sg 13.250.39.41)->Porthaven start; Tokyo(jp 18.178.54.54)->Arcadia start (LIVE); US West(us 54.151.57.111)->Mythoria NORTH; Montreal(ca 3.98.68.96)->Mythoria SOUTH (first sub-zone slice, decision 12); Tianxia = the DESTINATION not a start (possible direct start for a future eu_mena server). THEIR registry copy is the source of truth for server fields — if this file and theirs ever differ, take theirs verbatim. Doc regenerators: ALWAYS read the server column from this file, never hardcode."
+    "serverTopologySync": "2026-07-10 synced from the world-planning session relay (owner-locked): Singapore(sg 13.250.39.41)->Porthaven start; Tokyo(jp 18.178.54.54)->Arcadia start (LIVE); US West(us 54.151.57.111)->Mythoria NORTH; Montreal(ca 3.98.68.96)->Mythoria SOUTH (first sub-zone slice, decision 12); Tianxia = the DESTINATION not a start (possible direct start for a future eu_mena server). THEIR registry copy is the source of truth for server fields — if this file and theirs ever differ, take theirs verbatim. Doc regenerators: ALWAYS read the server column from this file, never hardcode.",
+    "charScale": {
+      "_note": "THE DIMINUTION (owner 2026-07-10, Hunt lore): the deep diminishes CHARACTERS, not the world. Same ±161 arena, zero extra geometry — smaller character + proportionally lower camera = the world READS bigger (structures become massive; the land only SEEMS vast). TWO KNOBS: 'visual' (model+camera scale — carries the LORE numbers, locked: UW2 1/1.5 = uncanny 'something is weird'; UW3 1/6 = the deception, the number is 6 on purpose) and 'kinematic' (move speed/ranges — ⚙ tuned for feel; full 1/6 speed would be unplayable, √6≈1/2.45 reads vast but playable). Terrain/structures/arena bounds/unit counts/stats UNCHANGED. Spec: docs/briefs/DIMINUTION-SCALE-SPEC.md",
+      "surface": {
+        "visual": 1.0,
+        "kinematic": 1.0
+      },
+      "sky": {
+        "visual": 1.0,
+        "kinematic": 1.0
+      },
+      "UW1": {
+        "visual": 1.0,
+        "kinematic": 1.0
+      },
+      "UW2": {
+        "visual": 0.667,
+        "kinematic": 0.667
+      },
+      "UW3": {
+        "visual": 0.167,
+        "kinematic": 0.4
+      }
+    }
   },
   "zones": [
     {
@@ -386,9 +409,7 @@
       "worldOffset": [
         475,
         -210
-      ],
-      "characterScale": 0.5,
-      "characterScaleNote": "owner 2026-07-11 (Hunt lore, the Diminishing Stair made literal): the WORLD is never scaled - the CHARACTER is. In Blackmere you are 2x smaller, so the same geometry reads 2x vaster. Client-side render/camera scale only; walk grids, coords, and the +-161 frame unchanged."
+      ]
     },
     {
       "zoneId": "UW3",
@@ -421,9 +442,7 @@
       "worldOffset": [
         600,
         -210
-      ],
-      "characterScale": 0.1667,
-      "characterScaleNote": "owner 2026-07-11: in Luxuria you are 6x smaller (six, for the sins) - structures become massive, you seem so small. Same rule: scale the character, never the world; zero extra geometry. Magnitude tunable if 6x proves too much - the mechanic is locked, the number is a dial."
+      ]
     }
   ],
   "servers": {
