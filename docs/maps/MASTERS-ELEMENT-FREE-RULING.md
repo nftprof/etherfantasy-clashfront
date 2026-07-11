@@ -41,11 +41,14 @@ One element system, one home for it: the pets.
 
 ## ✅ CLOSED — the lore pass is DONE (2026-07-10, live at etherfantasy.com/world)
 
+> **Count correction (owner):** there are **52 Masters** (the spread below sums to 52) — the 47-row
+> `CHARACTER_ROSTER.csv` is stale by 5. SoT for the roster = the live site / `masterHomes.json`.
+
 The website session delivered the **final Master-homes pass** (their commit `e1e5872`) — homes are
 **lore/story-assigned**, exactly per this ruling. **Source of truth: `src/data/masterHomes.json` in the
 fe-website repo** (one-line edits to move anyone). Highlights:
 
-- **Final spread (47 Masters):** Tianxia 7 · Mythoria 7 · Porthaven 5 · Arcadia 5 · Aeropolis 3 ·
+- **Final spread (52 Masters):** Tianxia 7 · Mythoria 7 · Porthaven 5 · Arcadia 5 · Aeropolis 3 ·
   Emberfall 7 · Empyrea 4 · Ironhold 4 · Blackmere 4 · Luxuria 5 · Fortuna 1 — **every battle realm
   populated, no zone empty or bloated.**
 - **Story calls:** Blis→Luxuria (the sin of pleasure) · Dragon Cho→Emberfall (roosts the volcanic sky

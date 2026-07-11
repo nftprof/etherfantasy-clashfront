@@ -88,6 +88,20 @@
  ],
  "relics": [
   {
+   "id": "blood_scimitar",
+   "name": "The Blood Scimitar",
+   "kind": "RELIC",
+   "legend": "The blade without peer: one cut, shoulder to shoulder, painless — the sacrifice you CHOOSE. Its cut is the only passage to the third deep: it does not kill you, it takes you to Luxuria.",
+   "source": "owner 2026-07-10 (the Scimitar of the Descent's true form)"
+  },
+  {
+   "id": "rice_bowl",
+   "name": "The Rice Bowl",
+   "kind": "RELIC",
+   "legend": "Filled with mortal rice, it keeps you human in the deep. Empty it, lose it, and you are human no longer — hunted by the world you came from, one of the haunting instead of the haunted, and the way above closes to you forever.",
+   "source": "owner 2026-07-10 (the humanity anchor of the Descent)"
+  },
+  {
    "id": "mask_harlequin",
    "name": "The Harlequin Mask",
    "kind": "RELIC",
@@ -125,13 +139,6 @@
   }
  ],
  "artifacts": [
-  {
-   "id": "enchanted_scimitar",
-   "name": "The Enchanted Scimitar of the Descent",
-   "slot": "sword",
-   "legend": "Raised against the dark in the First Descent; it remembers the way down.",
-   "source": "EF Hunt canon"
-  },
   {
    "id": "dawnbreaker",
    "name": "Dawnbreaker",

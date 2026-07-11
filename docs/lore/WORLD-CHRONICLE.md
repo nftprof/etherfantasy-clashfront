@@ -51,11 +51,25 @@ very center: the **SHAFT** that pierces Tianxia's heart is the wound where the d
 
 Then came the **First Descent** — the story every tavern in the world still tells (and which the old
 companion saga, the *EF Hunt*, let mortals live for themselves): **Jiro**, who went down for love, and
-**Ayume**, who was taken and did not wait to be saved but fought her own way through the trials. Seven
-trials through the sin-domains; the **five Masks** of the carnival worn and set aside (Harlequin, Plague
-Doctor, Lunar Moth, Siren, Phoenix — relics that survive to this day); the **Enchanted Scimitar** raised
-against the dark; and at the end the **Sigil of Binding** — the knot-pattern seal by which the Shadow
-Warden was not slain but *bound*.
+**Ayume**, who was taken and did not wait to be saved but fought her own way through the trials.
+
+**The Descent has two rites, and every soul who goes below learns them:**
+
+- **The Cut.** The deepest realm cannot be walked into. The only passage to the third deep is the
+  **Blood Scimitar** — the blade without peer: one cut, shoulder to shoulder, painless, **the sacrifice
+  you choose**. It does not kill you. It *takes* you — and you wake in Luxuria. (This is why no army has
+  ever marched into the third deep, and why its gate-warden faces those who *chose* to come.)
+- **The Bowl.** Every descender carries a **Rice Bowl** filled with mortal rice — the taste of the world
+  above, and the anchor of their humanity. While the bowl holds, you remain human in a realm that is
+  not. **Empty it — lose it — and you are human no longer:** the world above disowns you, the hunters
+  come for you, and you become **one of the haunting instead of the haunted**. The Hollowed, they are
+  called: they can never return above ground, and the phantom-kin that drift Blackmere's lantern-dark
+  and the old graveyards are what became of them. *(Every Phantom in the world was once somebody's
+  descent that ran out of rice.)*
+
+Seven trials through the sin-domains; the **five Masks** of the carnival worn and set aside (Harlequin,
+Plague Doctor, Lunar Moth, Siren, Phoenix — relics that survive to this day); and at the end the
+**Sigil of Binding** — the knot-pattern seal by which the Shadow Warden was not slain but *bound*.
 
 **The boss-gates of the underworld are the locks of that binding.** Ironhold's gate, Blackmere's gate,
 the final vault of Luxuria — each seal holds a portion of the old dark, and each is guarded. This is why
@@ -67,7 +81,7 @@ what leaks past the seals — the wild, the bosses — must be beaten back over 
 After the Descent, the world exhaled.
 
 The old kingdoms that had fought in the Sundering crumbled — their keeps are the **ruins** that dot every
-continent, their wars the **cairns** on the old battlefields. The **Masters** — the forty-seven great
+continent, their wars the **cairns** on the old battlefields. The **Masters** — the fifty-two great
 generals of the age — hung up their banners and settled into the lands whose stories fit them (the homes
 they keep today). The wilds crept back over the untended parcels. The aspirants built the **airship
 ways** to the sky isles and the sanctums grew bright and strict above (*High Society* — the heavens keep

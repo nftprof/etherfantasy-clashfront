@@ -183,8 +183,7 @@ every land has both") is a genuinely clean sentence, and the systems underneath 
 7. **🟡 Travel fee vs starter wealth** — 4 CT to migrate vs 5 CT starting balance = 80% of a starter's
    worth. Probably right (migration *should* be weighty) but it should be a deliberate call in the
    re-scale pass (#2), not an accident.
-8. **🟡 Master cap arithmetic** — "55 commander NFTs (47 Masters + heroes)" vs 3 MOBA heroes in the roster
-   = 50, not 55. Trivial, but canon numbers shouldn't wobble.
+8. **✅ RESOLVED (2026-07-10) Master cap arithmetic** — the real count is **52 Masters** (owner + the homes-pass spread sums to 52; the 47-row CSV is stale by 5), so **52 + 3 MOBA heroes = 55** ✓. Ask the website agent to refresh CHARACTER_ROSTER.csv.
 
 ## C. Top risks (not contradictions — things that could sink phases)
 

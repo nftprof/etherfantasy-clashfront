@@ -176,7 +176,7 @@ What you keep after a battle decides whether the gold/arms were worth it:
 - **Alignment synergy is UNITS ↔ LAND, not Master ↔ element:** pets fight/farm/recruit better on land whose
   **biome matches their element** (already the Species-Affinity factor of the pet power formula,
   ⚙ `alignmentFarmBonus`). The Master contributes **leadership**, not element — mismatched armies still work.
-- **Master/hero hard cap = 55.** Only **55 commander NFTs** exist (the 47 Masters + heroes). Masters are the
+- **Master/hero hard cap = 55.** Only **55 commander NFTs** exist — **52 Masters** (owner-confirmed vs the live etherfantasy.com/masters roster + the homes-pass spread, 2026-07-10; the 47-row CHARACTER_ROSTER.csv is stale by 5) **+ 3 MOBA heroes = 55** ✓. Masters are the
   scarce command layer; scale battles by **more land/pets**, not more commanders.
 - **Any land farms with ≥ 100 pets; masterless land still defends.** A parcel is a working farm/garrison as
   long as it holds a **minimum ⚙ `minGarrison` = 100 pets** — **no Master required** (a Master adds command +
