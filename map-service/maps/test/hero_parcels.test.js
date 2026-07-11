@@ -16,12 +16,12 @@ const ok = (cond, name) => { if (cond) { pass++; console.log("  ✓", name); } e
 
 const l2 = JSON.parse(fs.readFileSync(path.join(ROOT, "data/hexagon-city-source/parcels-l2.json"), "utf8")).parcels;
 const l2ById = new Map(l2.map((p) => [p.parcelId, p]));
-const zoneCode = { BUS: "00", EDU: "02", ENT: "03", HUB: "07" };
+const zoneCode = { BUS: "00", EDU: "02", ENT: "03", HUB: "07", UW2: "10", UW3: "11" };
 const loadL3 = (z) => JSON.parse(fs.readFileSync(path.join(ROOT, `data/hexagon-city-source/l3/${z}.json`), "utf8")).singles;
 
-console.log("— the ladder + ownership + castle-first (all three committed fields) —");
+console.log("— the ladder + ownership + castle-first (all committed fields) —");
 clearWorldFieldCache();
-for (const zone of ["EDU", "HUB", "BUS", "ENT"]) {
+for (const zone of ["EDU", "HUB", "BUS", "ENT", "UW2", "UW3"]) {
   const field = loadWorldField(zone);
   ok(field && Array.isArray(field.castles) && field.castles.length > 0, `${zone}: field loads with castles[]`);
   const l3 = loadL3(zone);
