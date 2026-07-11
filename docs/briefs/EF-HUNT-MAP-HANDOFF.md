@@ -80,6 +80,18 @@ parcel-by-parcel like open-world chunks.
 - `docs/maps/MAP-PIPELINE-GLOSSARY.md` — pipeline stages + which view reads which file.
 - `docs/lore/WORLD-CHRONICLE.md` + `data/singulars.json` (hub branch) — the lore the maps encode.
 
+## 5b. Putting YOUR lore onto the maps — the WORLD-ELEMENTS OVERLAY (the reverse path)
+
+Hunt can POPULATE CF's maps with its own quest sites / NPC spots / camps / dungeon doors /
+shrines / markets — point elements committed as **`data/world-elements/<ZONE>.hunt.json`**
+(this repo, PR flow). They merge read-time into the zone field (`field.overlayElements` +
+`allPlaces()`), window into parcels, and materialize on the battle maps as passive named décor
+that CF reuses too — "two of the same world". Full contract (schema, point-only rule, id
+precedence, ownership): **`docs/briefs/WORLD-ELEMENTS-OVERLAY.md`**. Starter sets are already
+seeded for you (marked PROPOSED, you own them): `ENT.hunt.json` (the Fortune-Teller's Tent, the
+Midway, the Sambadrome stage, the Mask-Seller, Descenders' Rest) and `UW2.hunt.json` (the
+Stair-foot Camp, the Bowl-Keeper's Alcove, the Drowned Banquet door).
+
 ## 6. What EF Hunt should NOT do
 
 - Don't regenerate maps with different seeds/params — determinism is the cross-game contract (the same

@@ -236,13 +236,26 @@ function terrainObstacles(terrain, clearPts = []) {
 // décor props (artifact.obstacles) → passable:true visual layer (the grid already owns walkability).
 // RUINs (the seeded Chronicle layer) carry their lore through — like resource nodes they are
 // non-blocking decorative anchors in the A1 (kind "RUIN", passable:true, + ruinType/name/inscription).
+// WORLD-ELEMENTS OVERLAY décor (docs/briefs/WORLD-ELEMENTS-OVERLAY.md) rides the same channel:
+// a prop carrying `layer` is an overlay element (kind = the element's open kind, e.g. QUEST_SITE)
+// and keeps its layer/name/note/singularId/loreRef so any consumer (Hunt, the CF command view)
+// can pick its own layer's elements back off the battlefield JSON.
 function decorObstacles(list) {
-  return (list ?? []).map((o, i) => ({
-    id: o.id ?? `prop_${i}`,
+  let auto = 0;   // fallback ids count only id-less props, so prepended overlay décor (which
+                  // always carries its element id) never shifts the prop_N numbering
+  return (list ?? []).map((o) => ({
+    id: o.id ?? `prop_${auto++}`,
     kind: String(o.kind ?? "TREE").toUpperCase(),
     x: o.x ?? 0, z: o.z ?? 0, r: o.r ?? 3,
     passable: true,
     ...(o.kind === "RUIN" ? { ruinType: o.ruinType, name: o.name, inscription: o.inscription } : {}),
+    ...(o.layer ? {
+      layer: o.layer,
+      ...(o.name ? { name: o.name } : {}),
+      ...(o.note ? { note: o.note } : {}),
+      ...(o.singularId ? { singularId: o.singularId } : {}),
+      ...(o.loreRef ? { loreRef: o.loreRef } : {}),
+    } : {}),
   }));
 }
 

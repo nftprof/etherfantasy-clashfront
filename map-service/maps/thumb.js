@@ -55,7 +55,7 @@ export function renderThumb(artifact) {
   // RUIN (the seeded Chronicle layer): a small distinct grey/ashen mark — dark ring, pale core —
   // so a fallen keep/cairn reads on the thumbnail without shouting like a landmark.
   for (const o of artifact.obstacles) if (o.kind === "RUIN") { dot(o.x, o.z, [58, 56, 52], 4); dot(o.x, o.z, [204, 200, 190], 2); }
-  const lm = artifact.obstacles.find((o) => o.kind !== "TREE" && o.kind !== "ROCK" && o.kind !== "RUIN");
+  const lm = artifact.obstacles.find((o) => o.kind !== "TREE" && o.kind !== "ROCK" && o.kind !== "RUIN" && !o.layer);
   if (lm) dot(lm.x, lm.z, MARK.landmark, 4);
 
   return encodePNG(W, W, px);

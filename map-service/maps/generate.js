@@ -146,6 +146,46 @@ export function placeRuin(g, G, { seed, zone, castle, avoidPts }) {
   return null;
 }
 
+// ---- WORLD-ELEMENTS OVERLAY décor (docs/briefs/WORLD-ELEMENTS-OVERLAY.md) ----------------------
+// Overlay elements windowed into the parcel (worldfield.js featuresForParcel .overlayElements)
+// materialize as seed-layer DÉCOR anchors exactly like the RUIN: never painted into the walk
+// grid, no invariant can move, rng-free (pure deterministic snap) — so a parcel with no overlay
+// regenerates byte-identically, and one WITH an overlay regenerates as the identical map plus
+// the décor. Placement follows the ruin placer's ground rule: the authored point snaps to the
+// nearest OPEN natural cell (never a road/ford/water) on the FINAL grid; an element with no open
+// ground within OVERLAY_SNAP_MAX cells is dropped (logged in artifact meta.overlay.dropped).
+const OVERLAY_DECOR_CAP = 6;      // per-parcel cap; overflow dropped by (layer-file order, id)
+const OVERLAY_SNAP_MAX = 30;      // snap search radius in cells (~60 world-units)
+const OVERLAY_DECOR_R = 4;        // décor anchor radius (world-units) — passive, RUIN-class
+function snapDecorOpen(g, G, x, z) {
+  const cx0 = cellOf(G, x), cz0 = cellOf(G, z);
+  let best = null, bd = Infinity;
+  for (let dz = -OVERLAY_SNAP_MAX; dz <= OVERLAY_SNAP_MAX; dz++) for (let dx = -OVERLAY_SNAP_MAX; dx <= OVERLAY_SNAP_MAX; dx++) {
+    const cx = cx0 + dx, cz = cz0 + dz;
+    if (!inG(G, cx, cz) || g[gIdx(G, cx, cz)] !== T.OPEN) continue;
+    const d = dx * dx + dz * dz;                          // fixed scan order ⇒ deterministic ties
+    if (d < bd) { bd = d; best = { x: worldOf(G, cx), z: worldOf(G, cz) }; }
+  }
+  return best;
+}
+function placeOverlayDecor(g, G, overlayElements) {
+  const decor = [], dropped = [];
+  // deterministic priority under the cap: overlay-file (layer) order, then id — the windowed
+  // list already arrives in file order, the sort makes the contract explicit + id-stable.
+  const els = [...overlayElements].sort((a, b) => (a.layer < b.layer ? -1 : a.layer > b.layer ? 1 : a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
+  for (const el of els) {
+    if (decor.length >= OVERLAY_DECOR_CAP) { dropped.push({ id: el.id, why: "cap" }); continue; }
+    const s = snapDecorOpen(g, G, el.at[0], el.at[1]);
+    if (!s) { dropped.push({ id: el.id, why: "no-open-ground" }); continue; }
+    decor.push({ id: el.id, kind: el.kind, x: r1(s.x), z: r1(s.z), r: OVERLAY_DECOR_R, layer: el.layer,
+      ...(el.name ? { name: el.name } : {}),
+      ...(el.note ? { note: el.note } : {}),
+      ...(el.singularId ? { singularId: el.singularId } : {}),
+      ...(el.loreRef ? { loreRef: el.loreRef } : {}) });
+  }
+  return { decor, dropped };
+}
+
 // ---- MOBA lane-network carving ----------------------------------------------------------------
 // Everything below carves WALKABLE geometry out of the archetype's dense jungle: never touches
 // OOB, water under a corridor becomes ROAD (ford/causeway), blocked becomes OPEN. Lane corridors
@@ -755,9 +795,9 @@ export function generate(parcel, params = null, designVersion = 0) {
   let wf = parcel.worldField;
   if (wf === undefined && Array.isArray(parcel.bbox) && zone) {
     const field = loadWorldField(zone);
-    wf = field ? featuresForParcel(field, { bbox: parcel.bbox, polygon: parcel.polygon, sizeM }) : null;
+    wf = field ? featuresForParcel(field, { bbox: parcel.bbox, polygon: parcel.polygon, sizeM, parcelId }) : null;
   }
-  if (wf && !(wf.rivers?.length || wf.roads?.length || wf.ridges?.length || wf.castles?.length)) wf = null;
+  if (wf && !(wf.rivers?.length || wf.roads?.length || wf.ridges?.length || wf.castles?.length || wf.overlayElements?.length)) wf = null;
   if (wf) paintWorldFeatures(g, G, wf);
   // 1d) BRIDGE context: snapshot every WATER cell at carve time (world rivers + archetype pools
   //     alike) — carveCorridor uses it to consolidate crossings and paint road–bridge–road
@@ -974,10 +1014,19 @@ export function generate(parcel, params = null, designVersion = 0) {
     avoidPts: spawnZones.map((s) => ({ x: s.x, z: s.z, d: s.side === "ATTACKER" || s.side === "DEFENDER" ? 45 : 18 })),
   });
 
+  // 5d) WORLD-ELEMENTS OVERLAY décor: lore elements another team authored onto this ground
+  //     (Hunt quest sites, NPC spots, camps, dungeon doors…) become RUIN-class passive décor
+  //     anchors — rng-free, grid untouched, so a zone with no overlay files is a byte-identical
+  //     no-op (see placeOverlayDecor above + docs/briefs/WORLD-ELEMENTS-OVERLAY.md).
+  const overlay = wf?.overlayElements?.length
+    ? placeOverlayDecor(g, G, wf.overlayElements)
+    : { decor: [], dropped: [] };
+
   // 6) bake: props from final grid; walkability bitmask (1 = open at native cell res)
   const props = sampleProps(g, G, rng);
   if (ruin) props.unshift(ruin);
   if (landmark) props.unshift(landmark);
+  if (overlay.decor.length) props.unshift(...overlay.decor);
   const walk = new Uint8Array(G * G);
   for (let i = 0; i < g.length; i++) walk[i] = isBlocked(g, i) ? 0 : 1;
 
@@ -991,6 +1040,9 @@ export function generate(parcel, params = null, designVersion = 0) {
     resources, buildSpots, spawnZones, lanes, routes, barriers, mobs, structures,
     meta: { seed, designVersion, parcelId, biome, zone, params: p, repairs: v.repairs,
             budget: { level: budget.level, name: budget.name },
-            ...(castle ? { castle: { id: castle.id, kind: castle.kind, name: castle.name } } : {}) },
+            ...(castle ? { castle: { id: castle.id, kind: castle.kind, name: castle.name } } : {}),
+            ...(overlay.decor.length || overlay.dropped.length
+              ? { overlay: { placed: overlay.decor.length, ...(overlay.dropped.length ? { dropped: overlay.dropped } : {}) } }
+              : {}) },
   };
 }

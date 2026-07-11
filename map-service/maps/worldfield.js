@@ -22,7 +22,77 @@ const r1 = (n) => Math.round(n * 10) / 10;
 
 // ---- field loading (cached; null when a zone has no authored field yet — stamp floor) ---------
 const fieldDir = () => process.env.WORLD_TERRAIN_DIR || path.resolve(__dirname, "../../data/world-terrain");
+const elementsDir = () => process.env.WORLD_ELEMENTS_DIR || path.resolve(__dirname, "../../data/world-elements");
 const _fields = new Map();
+
+// ---- WORLD-ELEMENTS OVERLAY (docs/briefs/WORLD-ELEMENTS-OVERLAY.md) ----------------------------
+// The shared lore-population layer: other teams (EF Hunt first) drop POINT elements onto a zone's
+// world field via data/world-elements/<ZONE>.<layer>.json — quest sites, NPC spots, camps,
+// dungeon doors, shrines, markets, stages… Kinds are OPEN strings; consumers filter by what they
+// know. Rules enforced here (read-time merge — the frozen field JSONs are never rewritten):
+//   • POINTS ONLY — an element carrying geometry (pts/footprint/polygon/width) is skipped: roads/
+//     rivers/ridges/castles stay the base-geometry layer's frozen scope.
+//   • id/kind/at required; `at` must sit inside the zone's field bbox (+25% slack) in ZONE SVG
+//     coords (the same frame as the field JSON — see the field's _meta.coords).
+//   • ids unique across the zone's field pois + castles + ALL overlays. Collision = skip + warn;
+//     deterministic precedence: field first, then overlay files in FILENAME order.
+// bbox of everything the field authors — the sanity window for overlay `at` validation
+function fieldBBox(field) {
+  let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+  const take = (x, y) => { x0 = Math.min(x0, x); y0 = Math.min(y0, y); x1 = Math.max(x1, x); y1 = Math.max(y1, y); };
+  for (const list of ["rivers", "roads", "ridges", "coast"]) for (const f of field[list] || []) for (const p of f.pts || []) take(p[0], p[1]);
+  for (const list of ["castles", "pois"]) for (const p of field[list] || []) if (Array.isArray(p.at)) take(p.at[0], p.at[1]);
+  if (!Number.isFinite(x0)) return null;
+  const slack = 0.25 * Math.max(x1 - x0, y1 - y0, 1);
+  return [x0 - slack, y0 - slack, x1 + slack, y1 + slack];
+}
+function loadOverlayElements(key, field) {
+  let files = [];
+  try {
+    files = fs.readdirSync(elementsDir()).filter((f) => f.startsWith(`${key}.`) && f.endsWith(".json")).sort();
+  } catch { files = []; }
+  if (!files.length) return [];
+  const bb = fieldBBox(field);
+  const seen = new Set();
+  for (const list of ["pois", "castles"]) for (const p of field[list] || []) if (p.id) seen.add(p.id);
+  const out = [];
+  for (const file of files) {
+    const layer = file.slice(key.length + 1, -".json".length);   // <ZONE>.<layer>.json
+    let raw = null;
+    try { raw = JSON.parse(fs.readFileSync(path.join(elementsDir(), file), "utf8")); }
+    catch (e) { console.warn(`[world-elements] ${file}: unreadable (${e.message}) — layer skipped`); continue; }
+    for (const el of raw?.elements || []) {
+      if (!el || typeof el.id !== "string" || !el.id || typeof el.kind !== "string" || !el.kind
+          || !Array.isArray(el.at) || el.at.length < 2 || !Number.isFinite(el.at[0]) || !Number.isFinite(el.at[1])) {
+        console.warn(`[world-elements] ${file}: element missing id/kind/at — skipped (${JSON.stringify(el && el.id)})`);
+        continue;
+      }
+      if (el.pts || el.footprint || el.polygon || el.width !== undefined) {   // POINTS ONLY
+        console.warn(`[world-elements] ${file}: ${el.id} carries geometry — overlay elements are points only, skipped`);
+        continue;
+      }
+      if (bb && (el.at[0] < bb[0] || el.at[0] > bb[2] || el.at[1] < bb[1] || el.at[1] > bb[3])) {
+        console.warn(`[world-elements] ${file}: ${el.id} at [${el.at}] is outside the ${key} field bbox — skipped`);
+        continue;
+      }
+      if (seen.has(el.id)) {
+        console.warn(`[world-elements] ${file}: duplicate id ${el.id} — skipped (field pois/castles + earlier overlay files win)`);
+        continue;
+      }
+      seen.add(el.id);
+      out.push({
+        id: el.id, kind: el.kind, at: [el.at[0], el.at[1]], layer,
+        ...(el.name ? { name: el.name } : {}),
+        ...(el.note ? { note: el.note } : {}),
+        ...(el.parcelId ? { parcelId: String(el.parcelId) } : {}),
+        ...(el.singularId ? { singularId: el.singularId } : {}),
+        ...(el.loreRef ? { loreRef: el.loreRef } : {}),
+      });
+    }
+  }
+  return out;
+}
+
 export function loadWorldField(zone) {
   const key = String(zone || "").toUpperCase();
   if (!key) return null;
@@ -32,10 +102,27 @@ export function loadWorldField(zone) {
     const raw = JSON.parse(fs.readFileSync(path.join(fieldDir(), `${key}.json`), "utf8"));
     if (raw && (raw.rivers || raw.roads || raw.ridges)) field = raw;
   } catch { field = null; }
+  if (field) {
+    const overlay = loadOverlayElements(key, field);
+    if (overlay.length) field.overlayElements = overlay;   // absent when the zone has no overlays
+  }
   _fields.set(key, field);
   return field;
 }
 export function clearWorldFieldCache() { _fields.clear(); }   // tests / WORLD_TERRAIN_DIR swaps
+
+// The union of every named PLACE on a zone's field, each tagged with its layer: the authored
+// pois + castles (layer "field") and every overlay element (layer = its file's <layer> segment).
+// Consumers that want "everything on the map" call this instead of poking pois[] — overlay
+// elements are deliberately NOT mixed into field.pois (the field JSON stays the frozen canon).
+export function allPlaces(field) {
+  if (!field) return [];
+  return [
+    ...(field.pois || []).map((p) => ({ ...p, layer: "field" })),
+    ...(field.castles || []).map((c) => ({ ...c, layer: "field" })),
+    ...(field.overlayElements || []),
+  ];
+}
 
 // ---- the shared parcel→arena fit (THE continuity keystone) ------------------------------------
 // Identical math to the generator's normPoly: bbox-center origin, uniform scale fitting the max
@@ -180,7 +267,7 @@ const ROAD_TIERS = {
  * @param parcel  { bbox:[x0,y0,x1,y1] (zone svg coords, y down),
  *                  polygonZone?: [[x,y],…] zone svg coords  — OR —
  *                  polygon?: [[x,z],…] generator frame (zone coords with y already negated),
- *                  sizeM?: 322 }
+ *                  sizeM?: 322, parcelId?: string (enables explicit-parcelId overlay pinning) }
  * @returns { rivers, roads, ridges: [{ id, kind, width (world-units), tier? (roads: highway|
  *            secondary|local), fill? (rivers: true = lake/caldera, honest uncapped width —
  *            generate.js paints its true footprint), pts [[x,z]…] battle frame }],
@@ -190,6 +277,9 @@ const ROAD_TIERS = {
  *            WALL/GATE/TOWER ring from it). heroParcels = the estate's HERO-MODE (3D) POI L3
  *            parcelIds, castle parcel first (canon decision 18 / CONTINUOUS-WORLD-TERRAIN §3d),
  *            passed through verbatim from the world field for the CF sim,
+ *            overlayElements: [{ id, kind, layer, at:[x,z] battle frame, name?, note?,
+ *            singularId?, loreRef? }] — WORLD-ELEMENTS OVERLAY points on this parcel
+ *            (docs/briefs/WORLD-ELEMENTS-OVERLAY.md),
  *            edgeCrossings: [{ featureId, kind, at:[x,z], edge:"N|E|S|W", edgeIndex }] }
  */
 export function featuresForParcel(field, parcel) {
@@ -206,7 +296,22 @@ export function featuresForParcel(field, parcel) {
   ccx /= zonePoly.length; ccz /= zonePoly.length;
   const label = (X, Z) => { const bx = X - ccx, bz = Z - ccz; return Math.abs(bz) >= Math.abs(bx) ? (bz >= 0 ? "N" : "S") : (bx >= 0 ? "E" : "W"); };
 
-  const out = { rivers: [], roads: [], ridges: [], castles: [], edgeCrossings: [] };
+  const out = { rivers: [], roads: [], ridges: [], castles: [], overlayElements: [], edgeCrossings: [] };
+  // WORLD-ELEMENTS OVERLAY: point elements window into a parcel exactly like castles (bbox test),
+  // transformed through the same fit and tagged with their layer — a Hunt quest site authored in
+  // zone coords lands on the CF parcel window (and from there on the battle map as décor).
+  // An element with an EXPLICIT parcelId is pinned: it only windows into that parcel (kills the
+  // bbox-overlap double-landing ambiguity); without one, plain bbox containment decides.
+  for (const el of field?.overlayElements || []) {
+    const [ex, ey] = el.at;
+    if (el.parcelId && parcel.parcelId && String(parcel.parcelId) !== el.parcelId) continue;
+    if (ex < bx0 || ex > bx1 || ey < by0 || ey > by1) continue;
+    out.overlayElements.push({ id: el.id, kind: el.kind, layer: el.layer, at: toArena(ex, ey),
+      ...(el.name ? { name: el.name } : {}),
+      ...(el.note ? { note: el.note } : {}),
+      ...(el.singularId ? { singularId: el.singularId } : {}),
+      ...(el.loreRef ? { loreRef: el.loreRef } : {}) });
+  }
   // castles: a fortification POI lands on the ONE parcel whose footprint contains its point
   // (v1 — neighbours don't render the spill-over; the wall ring lives on the castle's parcel).
   for (const c of field?.castles || []) {
@@ -266,6 +371,6 @@ export function worldParcel(snap, opts = {}) {
   };
   const field = loadWorldField(parcel.zone);
   if (field && Array.isArray(snap.bbox))
-    parcel.worldField = featuresForParcel(field, { bbox: snap.bbox, polygonZone: zonePoly, sizeM: opts.sizeM || 322 });
+    parcel.worldField = featuresForParcel(field, { bbox: snap.bbox, polygonZone: zonePoly, sizeM: opts.sizeM || 322, parcelId: parcel.parcelId });
   return parcel;
 }
