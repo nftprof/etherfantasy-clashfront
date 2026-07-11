@@ -1,6 +1,7 @@
 # THE WORLD CHRONICLE — the three ages of the Ether Fantasy world
 
-> **v1, 2026-07-10 (Fable 5, CF Overworld design).** The deep-time backbone the depth review called for
+> **✅ LOCKED CANON — owner-approved 2026-07-10** (v1 authored by Fable 5, CF Overworld design;
+> the Descent rites, Carnavale, and all relic names approved verbatim). The deep-time backbone the depth review called for
 > (`WORLD-DEPTH-AND-COHESION-REVIEW.md` Part I #1). **Grounded in the owner's real Underworld lore**
 > (`UNDERWORLD-SOURCE-EXTRACT.md` — the EF Hunt story, which shipped as the companion MMORPG: Desire
 > Weave, Covet Crystals, the sin-domains, Jiro/Ayume/Yui and Kage no Mamoru). The UW half is therefore

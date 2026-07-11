@@ -1,5 +1,5 @@
 {
- "_note": "NAMED SINGULARS register v1 (proposal, 2026-07-10) — the one-of-one places, artifacts, and wardens. Names grounded in docs/lore/WORLD-CHRONICLE.md + the EF Hunt source lore. kind: PLACE|ARTIFACT|WARDEN|RELIC. bindTo: where it attaches (zone/gate/asset). Weapon/armor ARTIFACTs are to be BOUND to existing hero gear art extracted from the MOBA client (owner 2026-07-10) — art refs TBD by the MOBA/website teams; names+legends are the proposal, owner to approve/edit.",
+ "_note": "NAMED SINGULARS register — ✅ LOCKED (owner-approved 2026-07-10): all names + legend lines are canon (places incl. Carnavale + the Diminishing Stair; relics incl. the Midway Potion / the Last Fortune / the Blood Scimitar / the Homeward Bowl + the five Masks + the Sigil; 7 artifacts; 5 wardens). Still pending: ARTIFACT ART BINDING (weapon-art catalog per docs/briefs/WEAPON-ART-EXTRACTION-SPEC.md; the art wins, names may flex per slot) and PLACE pinning to real parcels (ParcelMap agent). kind: PLACE|ARTIFACT|WARDEN|RELIC.",
  "places": [
   {
    "id": "the_shaft",

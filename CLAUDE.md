@@ -181,9 +181,11 @@ export can be converted to the documented format. See `data/README.md`.
     `docs/lore/WORLD-CHRONICLE.md` (3 ages, grounded in the EF Hunt Underworld lore —
     `docs/lore/UNDERWORLD-SOURCE-EXTRACT.md`; UW = desire sinking, HS = aspiration rising, surface
     between; the Shaft/boss-gates/floating isles all EXPLAINED). Spec:
-    `docs/briefs/WORLD-REMEMBERS-AND-TOWNS.md`. Companions: `data/singulars.json` (31 named one-of-ones,
-    proposal — weapon artifacts to be bound to existing MOBA hero-gear art) + `docs/lore/ZONE-CULTURES.md`
-    / `data/zone-cultures.json` (12 culture cards).
+    `docs/briefs/WORLD-REMEMBERS-AND-TOWNS.md`. Companions — ALL ✅ OWNER-LOCKED 2026-07-10: `data/singulars.json` (36 named one-of-ones incl. the
+    Descent rites: Midway Potion → Last Fortune → Diminishing Stair (Carnavale, Mythoria SW ⇄ Blackmere)
+    → Blood Scimitar → Homeward Bowl; weapon artifacts still to be bound to existing MOBA hero-gear art
+    per `docs/briefs/WEAPON-ART-EXTRACTION-SPEC.md`) + `docs/lore/ZONE-CULTURES.md` /
+    `data/zone-cultures.json` (12 culture cards).
 
 20. TOWNS (2026-07-10, locked): port-like special locations, **player-ownable**; plus **famous dev-placed
     towns** selling specific goods (occupier takes a ⚙ benefit share). **No-war sanctuary rules:** on
