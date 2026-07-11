@@ -386,7 +386,9 @@
       "worldOffset": [
         475,
         -210
-      ]
+      ],
+      "characterScale": 0.5,
+      "characterScaleNote": "owner 2026-07-11 (Hunt lore, the Diminishing Stair made literal): the WORLD is never scaled - the CHARACTER is. In Blackmere you are 2x smaller, so the same geometry reads 2x vaster. Client-side render/camera scale only; walk grids, coords, and the +-161 frame unchanged."
     },
     {
       "zoneId": "UW3",
@@ -419,7 +421,9 @@
       "worldOffset": [
         600,
         -210
-      ]
+      ],
+      "characterScale": 0.1667,
+      "characterScaleNote": "owner 2026-07-11: in Luxuria you are 6x smaller (six, for the sins) - structures become massive, you seem so small. Same rule: scale the character, never the world; zero extra geometry. Magnitude tunable if 6x proves too much - the mechanic is locked, the number is a dial."
     }
   ],
   "servers": {
