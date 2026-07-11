@@ -263,13 +263,46 @@ function paintBand(g, G, pts, hw, code) {
     }
   }
 }
+// FILL water (worldfield.js `fill: true` rivers — lakes/calderas at their honest uncapped width).
+// A fill band's half-width can exceed the whole arena (a single parcel deep inside the Mere of
+// Dominus is 100% underwater), so the disc-sweep of paintBand would be O((2R)²) per sample —
+// paintFill instead tests every grid cell ONCE against the windowed centerline segments
+// (distance-to-segment ≤ hw ⇒ water). Deterministic float math; OOB never touched.
+// PLAYABILITY: fill water is honest, the map stays valid — the carve stage turns corridor water
+// into ROAD fords and validateAndRepair carves edge→base corridors as a last resort; on a
+// water-dominant parcel that repair carve IS the causeway across the mere (WATER→ROAD, the
+// documented causeway/ford guarantee). A 100%-submerged parcel still ends valid after repair.
+function paintFill(g, G, pts, hw, code) {
+  if (!pts || pts.length < 2) return;
+  const half = (G * CELL_M) / 2, hw2 = hw * hw;
+  const segs = [];
+  for (let s = 1; s < pts.length; s++) {
+    const [ax, az] = pts[s - 1], [bx, bz] = pts[s];
+    if (Math.min(ax, bx) > half + hw || Math.max(ax, bx) < -half - hw ||
+        Math.min(az, bz) > half + hw || Math.max(az, bz) < -half - hw) continue;  // fully clear of the grid
+    segs.push([ax, az, bx - ax, bz - az, (bx - ax) ** 2 + (bz - az) ** 2]);
+  }
+  if (!segs.length) return;
+  for (let cz = 0; cz < G; cz++) for (let cx = 0; cx < G; cx++) {
+    const i = gIdx(G, cx, cz);
+    if (g[i] === T.OOB) continue;
+    const x = worldOf(G, cx), z = worldOf(G, cz);
+    for (const [ax, az, dx, dz, L2] of segs) {
+      let t = L2 > 0 ? ((x - ax) * dx + (z - az) * dz) / L2 : 0;
+      t = t < 0 ? 0 : t > 1 ? 1 : t;
+      const ex = x - ax - dx * t, ez = z - az - dz * t;
+      if (ex * ex + ez * ez <= hw2) { g[i] = code; break; }
+    }
+  }
+}
 // Paint the parcel's window of the zone macro network. Order matters: ridges (rock mass), then
 // rivers (water cuts the rock), then roads LAST — a road crossing a river paints ROAD over WATER,
 // i.e. the causeway/bridge falls out for free. Rivers stay WATER (blocked) in the grid; the carve
 // stage + validator turn lane/corridor crossings into ROAD fords exactly like any other water.
+// `fill: true` rivers (lakes/calderas) paint their TRUE footprint via paintFill (above).
 function paintWorldFeatures(g, G, wf) {
   for (const r of wf.ridges || []) paintBand(g, G, r.pts, r.width / 2, T.ROCK);
-  for (const r of wf.rivers || []) paintBand(g, G, r.pts, r.width / 2, T.WATER);
+  for (const r of wf.rivers || []) (r.fill ? paintFill : paintBand)(g, G, r.pts, r.width / 2, T.WATER);
   for (const r of wf.roads || []) paintBand(g, G, r.pts, r.width / 2, T.ROAD);
 }
 

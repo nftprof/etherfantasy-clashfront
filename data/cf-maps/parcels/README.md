@@ -106,6 +106,37 @@ full castle ring (15 `castle_*` structures). This parcel is also the **UW3-VAULT
 stage** (the third lock of the Binding, warden the Inferno Champion — the EF Hunt end-game revisit).
 Both pass all 5 invariants.
 
+## Estate palace maps (key-by-ESTATE-id, 2026-07-11)
+
+**The five PALACE estate battle maps** (canon decisions 4/5/18 — palaces get PRE-DESIGNED estate
+maps; owner fix-it: no EPIC estate anywhere has L3 subdivision, so every palace "deferred" until
+these). Each is the ±161 arena windowed over the **ESTATE's own L2 polygon**
+(`data/hexagon-city-source/parcels-l2.json` svgPath/bbox — the same zone coordinate space as the
+world fields) through the SAME continuous world field + generator pipeline as every L3 parcel map.
+Generated reproducibly by **`map-service/tools/estate_palace_maps.mjs`** (the deterministic snap —
+investLevel 3 "Prosperous", per-zone flagship biome precedent — is documented in the tool header;
+it builds twice + byte-compares before writing, and validates the 5 CF invariants via the
+apps/server dist build).
+
+| Estate id (the file key) | Palace | Zone | Notes |
+|---|---|---|---|
+| `1101100` | **The Bastion of Dominus** | UW2 | EF-Hunt main-story keep. The island keep inside the **Mere of Dominus** — a real ring-lake now (`fill: true` water), castle ring on the dry island, the Bastion Causeway crossing the mere from the NE. biome SWAMP. |
+| `1031491` | **The Palace of Masks** | ENT | EF-Hunt story START (Carnavale). Castle ring on the shelf, Way-of-Masks road window, sakura festival palette. |
+| `1020371` | **The Grand Academy** | EDU | Highmar's palace. TEMPERATE_FOREST. |
+| `1071732` | **The Vermilion Palace (Zhongdu)** | HUB | The capital: palace-wall ring roads + Meridian axis window through the estate. |
+| `1001178` | **The Grand Exchange** | BUS | Porthaven's palace: canal-grid core + quays window. SWAMP. |
+
+**Key-by-ESTATE-id convention:** filename = the estate's own parcelId (`1101100.json`) — CF's
+`loadParcelBattlefield` and the map service key by id STRING, so estate ids load verbatim
+(`apps/server/test/parcelSample.test.ts` covers all five). The world fields mark each PALACE
+`castles[]` entry with **`estateMapId: "<estateId>"`** (shared `world_hero_parcels.mjs` rule,
+passed through `featuresForParcel`) so consumers know the palace map's key. **L3 subdivision
+arriving later does NOT invalidate these maps** — the world field is frozen, and parcel maps and
+the estate map derive from the same geometry; subdivision only adds the per-parcel maps and the
+heroParcels designation alongside. Both A (artifact) + B (A1) forms are committed, like the
+flagships. All five pass the 5 invariants. The other four UW2 EPICs (incl. the Drowned Banquet)
+carry no castle — no estate map owed there.
+
 Isle flagships (CGI/KOL ship NO extracted parcels yet — geometry owner-TBD, so these use synthetic
 non-token ids, precedented by the `CF-*` refs, that can't collide with future real tokenIds):
 **`CGI-FLAG-FROND`** — an Olympus marina-finger parcel (quay diagonal, lagoon channels on both flanks;

@@ -69,6 +69,9 @@ console.log("— the headline case: a GIANT castle estate in EDU has exactly 5, 
      first.bbox[1] <= westgate.at[1] && westgate.at[1] <= first.bbox[3], "first entry = the castle parcel (bbox contains the POI)");
   const epic = field.castles.find((c) => c.id === "EDU-PALACE-ACADEMY");
   ok(epic.heroParcels.length === 0 && /DEFERRED/i.test(epic.heroParcelsNote || ""), "EPIC 1020371 (no L3 subdivision) defers with a note");
+  // estate palace maps (2026-07-11): every PALACE entry names its pre-designed estate map's key
+  ok(epic.estateMapId === epic.townEstateId, "PALACE carries estateMapId = its estate id (the estate map's file key)");
+  ok(field.castles.every((c) => c.kind === "PALACE" || c.estateMapId === undefined), "only PALACEs carry estateMapId");
   const keep = field.castles.find((c) => c.id === "EDU-KEEP-CLIFFWATCH");
   ok(keep.heroParcels.length === 3, "LARGE ladder: exactly 3 heroParcels");
 

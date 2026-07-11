@@ -149,6 +149,16 @@ function windowPolyline(pts, box) {
 // (the same cap for every parcel ⇒ neighbours still paint the same zone-space band = width stays
 // continuous in the mosaic), then scale by the parcel fit, then apply a small world-unit floor so
 // slivers still read (the floor is the only per-parcel term and only binds on tiny parcels).
+//
+// FILL water (2026-07-11, owner fix-it): a rivers[] entry may carry `fill: true` — a LAKE /
+// CALDERA / flooded-hall DISC, not a linear flow. A fill entry BYPASSES the zoneCap clamp: its
+// full authored width windows into the parcel honestly (UW2's Mere of Dominus ring reads as a
+// real black lake, UW3's Magma Throne as a lava lake — not narrow stripes). The clamp exists to
+// keep battle maps playable; for fill water playability is guaranteed downstream instead by the
+// generator's carve + validateAndRepair machinery (water under a corridor/carve becomes a ROAD
+// causeway/ford — on a water-dominant parcel the repair carve IS the causeway). The flag passes
+// through on the output entry so generate.js paints the true footprint (paintFill). Same cap-free
+// width for every parcel ⇒ the lake stays continuous across the mosaic, like any band.
 const KIND_SPECS = {
   river: { list: "rivers", zoneCap: 0.26, minW: 4 },
   road:  { list: "roads",  zoneCap: 0.055, minW: 5 },
@@ -172,7 +182,8 @@ const ROAD_TIERS = {
  *                  polygon?: [[x,z],…] generator frame (zone coords with y already negated),
  *                  sizeM?: 322 }
  * @returns { rivers, roads, ridges: [{ id, kind, width (world-units), tier? (roads: highway|
- *            secondary|local), pts [[x,z]…] battle frame }],
+ *            secondary|local), fill? (rivers: true = lake/caldera, honest uncapped width —
+ *            generate.js paints its true footprint), pts [[x,z]…] battle frame }],
  *            castles: [{ id, kind (CASTLE|PALACE|KEEP), name, at:[x,z] battle frame,
  *            townEstateId?, heroParcels?: string[], heroParcelsNote? }] — the world fortification
  *            POIs on THIS parcel (v1: the parcel containing the POI point; generate.js grows the
@@ -205,7 +216,8 @@ export function featuresForParcel(field, parcel) {
     out.castles.push({ id: c.id, kind: c.kind || "CASTLE", name: c.name || c.id, at: toArena(cx, cy),
       ...(c.townEstateId ? { townEstateId: c.townEstateId } : {}),
       ...(Array.isArray(c.heroParcels) ? { heroParcels: c.heroParcels } : {}),
-      ...(c.heroParcelsNote ? { heroParcelsNote: c.heroParcelsNote } : {}) });
+      ...(c.heroParcelsNote ? { heroParcelsNote: c.heroParcelsNote } : {}),
+      ...(c.estateMapId ? { estateMapId: c.estateMapId } : {}) });   // PALACE: the pre-designed estate map's key
   }
   const baseMar = 0.25 * Math.max(bx1 - bx0, by1 - by0, 0.05);
   for (const [kind, spec] of Object.entries(KIND_SPECS)) {
@@ -213,7 +225,10 @@ export function featuresForParcel(field, parcel) {
       if (!Array.isArray(f.pts) || f.pts.length < 2) continue;
       const tier = kind === "road" ? (ROAD_TIERS[f.tier] ? f.tier : "highway") : null;
       const tierSpec = tier ? ROAD_TIERS[tier] : spec;
-      const wZone = Math.min(typeof f.width === "number" ? f.width : 0.1, tierSpec.zoneCap);
+      const isFill = kind === "river" && f.fill === true;    // lake/caldera disc — honest full width
+      const wZone = isFill
+        ? (typeof f.width === "number" ? f.width : 0.1)      // fill bypasses the zoneCap clamp
+        : Math.min(typeof f.width === "number" ? f.width : 0.1, tierSpec.zoneCap);
       const mar = baseMar + wZone / 2;                       // wide bands near the edge still paint
       const runs = windowPolyline(f.pts, [bx0 - mar, by0 - mar, bx1 + mar, by1 + mar]);
       for (let r = 0; r < runs.length; r++) {
@@ -221,6 +236,7 @@ export function featuresForParcel(field, parcel) {
         const width = r1(Math.max(tierSpec.minW, wZone * fit.s));
         out[spec.list].push({ id: runs.length > 1 ? `${f.id}#${r}` : f.id, kind, width,
           ...(tier ? { tier } : {}),
+          ...(isFill ? { fill: true } : {}),
           pts: zonePts.map(([x, y]) => toArena(x, y)) });
         // edge crossings: where the dense curve pierces the parcel BOUNDARY polygon — the
         // continuity contract points (frozen under terraform; entries snap to them).
