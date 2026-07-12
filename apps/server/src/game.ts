@@ -47,7 +47,7 @@ import {
   type DemoArmyPreset,
   type DemoOfficer,
   type DemoWorldFile,
-  type DuelRound,
+  type DuelExchange,
   type DuelSide,
   type BuildSpot,
   buildStructure,
@@ -429,9 +429,9 @@ export interface RecentDuelRecord {
   /** 'A' (challenger) | 'D' (target). */
   winner: 'A' | 'D';
   winnerName: string;
-  rounds: DuelRound[];
+  exchanges: DuelExchange[];
   resolvedTick: number;
-  /** True when a human picked at least one card live (vs pure auto/NPC). */
+  /** True when a human picked at least one stance live (vs pure auto/NPC). */
   wasLive: boolean;
 }
 
@@ -2484,7 +2484,7 @@ export class Game {
     A: DuelSide;
     D: DuelSide;
     winner: 'A' | 'D';
-    rounds: DuelRound[];
+    exchanges: DuelExchange[];
     parcelId?: string;
     hexId?: string;
     wasLive: boolean;
@@ -2523,7 +2523,7 @@ export class Game {
       ...(args.D.artifactName !== undefined ? { targetArtifact: args.D.artifactName } : {}),
       winner: args.winner,
       winnerName: winnerSide.name,
-      rounds: args.rounds,
+      exchanges: args.exchanges,
       resolvedTick: this.state.world.tick,
       wasLive: args.wasLive,
     };

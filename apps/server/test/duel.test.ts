@@ -60,7 +60,7 @@ function fight(game: Game, challenger: string, targetGov: string): { winner: 'A'
     A: built.A,
     D: built.D,
     winner: res.winner,
-    rounds: res.rounds,
+    exchanges: res.exchanges,
     parcelId: built.parcelId,
     wasLive: false,
     nowMs: 1_700_000_000_000,
@@ -109,7 +109,7 @@ test('a resolved duel: KOs the loser, queues duel_resolved for both, and enters 
   assert.equal(mineP1.length, 1);
   assert.equal(mineP1[0]!.mine, true);
   assert.equal(mineP1[0]!.duelId, built.duelId);
-  assert.equal(mineP1[0]!.rounds.length >= 2, true);
+  assert.equal(mineP1[0]!.exchanges.length >= 1, true);
   assert.equal(game.recentDuelsFor(bystander).length, 0, 'fog-gated from a bystander');
 });
 
@@ -127,7 +127,7 @@ test('deterministic — a rebuilt+resolved duel with the same nonce reproduces t
   const r2 = resolveDuel(built2.A, built2.D, built2.seed, {}, {}, g2.duelConfig());
 
   assert.equal(built1.seed, built2.seed, 'same governors + tick + nonce ⇒ same seed');
-  assert.deepEqual(r1.rounds, r2.rounds);
+  assert.deepEqual(r1.exchanges, r2.exchanges);
   assert.equal(r1.winner, r2.winner);
 });
 

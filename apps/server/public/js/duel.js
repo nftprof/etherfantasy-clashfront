@@ -1,30 +1,28 @@
 /**
- * HERO-vs-HERO CARD DUEL overlay (docs/briefs/HERO-DUEL-SPEC.md, decision 14).
+ * HERO-vs-HERO DUEL overlay — the animated HP fight (docs/briefs/HERO-DUEL-SPEC.md,
+ * decision 14; v2, owner 2026-07-12).
  *
- * v1 is a CARD game, NOT a skill fight. A best-of-3 rock-paper-scissors
- * (AGGRESSIVE > TRICK > DEFENSIVE) that the SERVER resolves deterministically —
- * a Master's rating dominates (via per-round initiative) and Named artifacts are
- * the wildcard. This overlay is the interactive skin: it opens OVER command mode
- * (so a challenge mid-battle never tears down the command view), lets an online
- * player PICK a card each round within the pick window (timeout ⇒ the server's
- * NPC auto-pick), and re-reveals every round beat-by-beat.
+ * Two hero "models" face off with HP bars, ATK stats and a named-artifact spell.
+ * They trade blows across exchanges (server-authoritative, deterministic): each
+ * blow LUNGES the attacker, SHAKES + flashes the struck hero, pops a floating
+ * damage number (crits bigger/gold, artifact SPELLS flare their name), and drops
+ * the HP bar — ending on a K.O. A stance CARD each exchange (aggressive/trick/
+ * defensive) is the player's tactical swing; timeout ⇒ the server's NPC pick.
+ * Opens OVER command mode so a mid-battle challenge never tears it down.
  *
- * WS protocol (server-authoritative — this client only sends picks):
- *   ← duel_open {duelId, A, D, shareA, pickWindowSec, yourSide, parcelId}
- *   ← duel_round_prompt {duelId, round}          → show the card buttons + timer
- *   → duel_pick {duelId, round, card}            → your choice this round
- *   ← duel_round {duelId, round, cA, cD, by, reason, proc, winsA, winsD}
- *   ← duel_end {duelId, winner, winnerName, rounds}
- *   ← duel_err {code, message}
+ * WS: ← duel_open {A,D,maxExchanges,pickWindowSec,yourSide,parcelId}
+ *     ← duel_round_prompt {round}   → stance buttons + timer
+ *     → duel_pick {duelId,round,card}
+ *     ← duel_round {round,cA,cD,blows[],hpA,hpD,maxHpA,maxHpD,koA,koD}
+ *     ← duel_end {winner,winnerName,hpA,hpD}   ← duel_err {code,message}
  */
-import { esc } from './util.js';
+import { avatarHtml, esc } from './util.js';
 
 const CARDS = [
-  { key: 'AGGRESSIVE', icon: '⚔', label: 'Aggressive', beats: 'Trick', tip: 'All-out attack — blows through a Trick.' },
-  { key: 'TRICK', icon: '🎭', label: 'Trick', beats: 'Defensive', tip: 'A feint — bypasses a Defensive guard.' },
-  { key: 'DEFENSIVE', icon: '🛡', label: 'Defensive', beats: 'Aggressive', tip: 'Turtle up — turns an Aggressive charge.' },
+  { key: 'AGGRESSIVE', icon: '⚔', label: 'Aggressive', tip: 'All-out — more damage, but you take more. Beats Trick.' },
+  { key: 'TRICK', icon: '🎭', label: 'Trick', tip: 'A feint — wins the exchange against a Defensive guard.' },
+  { key: 'DEFENSIVE', icon: '🛡', label: 'Defensive', tip: 'Turtle — take far less, deal less. Beats Aggressive.' },
 ];
-const CARD_BY_KEY = Object.fromEntries(CARDS.map((c) => [c.key, c]));
 
 export function createDuel({ ui, send }) {
   injectStyles();
@@ -33,19 +31,18 @@ export function createDuel({ ui, send }) {
   root.hidden = true;
   document.body.appendChild(root);
 
-  let session = null;        // { duelId, A, D, shareA, yourSide, winsA, winsD, round, pickWindowSec, ended }
-  let timer = null;          // client-side countdown rAF/interval id
-  let picked = false;        // did we pick this round yet
+  let s = null;        // session
+  let timer = null;    // pick countdown rAF
+  let anim = null;     // blow-animation timeout chain
 
-  const foeSide = () => (session.yourSide === 'A' ? 'D' : 'A');
-  const meName = () => (session.yourSide === 'A' ? session.A : session.D).name;
-  const foeName = () => (session.yourSide === 'A' ? session.D : session.A).name;
+  const meName = () => (s.yourSide === 'A' ? s.A : s.D).name;
+  const foeName = () => (s.yourSide === 'A' ? s.D : s.A).name;
 
   function onMsg(msg) {
     switch (msg.t) {
       case 'duel_open': return open(msg);
       case 'duel_round_prompt': return prompt(msg);
-      case 'duel_round': return reveal(msg);
+      case 'duel_round': return playExchange(msg);
       case 'duel_end': return end(msg);
       case 'duel_err':
         ui?.toast?.('⚔ Duel', esc(msg.message ?? 'the duel could not start'), 'bad');
@@ -55,208 +52,278 @@ export function createDuel({ ui, send }) {
   }
 
   function open(msg) {
-    session = {
-      duelId: msg.duelId,
-      A: msg.A, D: msg.D,
-      shareA: msg.shareA ?? 0.5,
-      yourSide: msg.yourSide ?? 'A',
-      pickWindowSec: msg.pickWindowSec ?? 10,
-      parcelId: msg.parcelId,
-      winsA: 0, winsD: 0, round: 0, ended: false,
+    s = {
+      duelId: msg.duelId, A: msg.A, D: msg.D, yourSide: msg.yourSide ?? 'A',
+      pickWindowSec: msg.pickWindowSec ?? 10, maxExchanges: msg.maxExchanges ?? 12,
+      parcelId: msg.parcelId, hpA: msg.A.maxHp, hpD: msg.D.maxHp,
+      round: 0, picked: false, ended: false,
     };
-    picked = false;
     root.hidden = false;
-    renderShell('The champions square off…');
+    renderStage();
   }
 
   function prompt(msg) {
-    if (!session || msg.duelId !== session.duelId) return;
-    session.round = msg.round;
-    picked = false;
-    renderShell();
+    if (!s || msg.duelId !== s.duelId) return;
+    s.round = msg.round;
+    s.picked = false;
+    showStance(true);
     startCountdown();
   }
 
-  function reveal(msg) {
-    if (!session || msg.duelId !== session.duelId) return;
+  function pick(card) {
+    if (!s || s.ended || s.picked) return;
+    s.picked = true;
     stopCountdown();
-    session.winsA = msg.winsA;
-    session.winsD = msg.winsD;
-    session.lastRound = msg; // {round, cA, cD, by, reason, proc}
-    picked = false;
-    renderShell();
+    send({ t: 'duel_pick', duelId: s.duelId, round: s.round, card });
+    showStance(false);
+    setStatus(`You chose ${card.toLowerCase()} — clash!`);
+  }
+
+  function playExchange(msg) {
+    if (!s || msg.duelId !== s.duelId) return;
+    stopCountdown();
+    showStance(false);
+    setRoundLabel(`Exchange ${msg.round}`);
+    // Animate blows in order, then settle HP to the authoritative values.
+    const blows = msg.blows ?? [];
+    let i = 0;
+    const step = () => {
+      if (!s) return;
+      if (i >= blows.length) {
+        // settle to authoritative HP (covers any rounding)
+        setHp('A', msg.hpA, msg.maxHpA);
+        setHp('D', msg.hpD, msg.maxHpD);
+        if (msg.koA) knockout('A');
+        if (msg.koD) knockout('D');
+        return;
+      }
+      animBlow(blows[i]);
+      i++;
+      anim = setTimeout(step, 780);
+    };
+    step();
   }
 
   function end(msg) {
-    if (!session || msg.duelId !== session.duelId) return;
+    if (!s || msg.duelId !== s.duelId) return;
     stopCountdown();
-    session.ended = true;
-    session.winner = msg.winner;
-    session.winnerName = msg.winnerName;
-    renderShell();
-    const iWon = msg.winner === session.yourSide;
-    ui?.toast?.('⚔ Duel', iWon ? `${esc(meName())} wins the duel!` : `${esc(foeName())} takes the duel.`, iWon ? 'good' : 'bad', session.parcelId);
-  }
-
-  function pick(card) {
-    if (!session || session.ended || picked) return;
-    picked = true;
-    stopCountdown();
-    send({ t: 'duel_pick', duelId: session.duelId, round: session.round, card });
-    renderShell();
+    const finish = () => {
+      if (!s) return;
+      s.ended = true;
+      s.winner = msg.winner;
+      s.winnerName = msg.winnerName;
+      renderResult();
+      const iWon = msg.winner === s.yourSide;
+      ui?.toast?.('⚔ Duel', iWon ? `${esc(meName())} wins the duel!` : `${esc(foeName())} takes the duel.`, iWon ? 'good' : 'bad', s.parcelId);
+    };
+    // let the last exchange's blow animation land first
+    setTimeout(finish, 900);
   }
 
   function close() {
     stopCountdown();
-    session = null;
+    if (anim) { clearTimeout(anim); anim = null; }
+    s = null;
     root.hidden = true;
     root.innerHTML = '';
   }
 
-  // ── countdown (cosmetic — the server is authoritative on timing) ─────────────
+  // ── animation primitives ─────────────────────────────────────────────────────
+  function heroEl(side) { return root.querySelector(`.duel-hero.${side === 'A' ? 'atk' : 'def'}`); }
+
+  function animBlow(b) {
+    const atk = heroEl(b.by);
+    const defSide = b.by === 'A' ? 'D' : 'A';
+    const def = heroEl(defSide);
+    if (!atk || !def) return;
+    atk.classList.remove('lunge-a', 'lunge-d');
+    void atk.offsetWidth; // reflow to restart the animation
+    atk.classList.add(b.by === 'A' ? 'lunge-a' : 'lunge-d');
+    if (b.spell) atk.classList.add('cast');
+    setTimeout(() => {
+      def.classList.remove('hit'); void def.offsetWidth; def.classList.add('hit');
+      if (b.crit || b.spell) { root.querySelector('.duel-stage')?.classList.add('flash'); setTimeout(() => root.querySelector('.duel-stage')?.classList.remove('flash'), 160); }
+      floatDamage(defSide, b);
+      // deplete the struck side's HP progressively as blows land
+      const key = defSide;
+      const cur = key === 'A' ? (s.hpA -= b.dmg) : (s.hpD -= b.dmg);
+      setHp(key, Math.max(0, cur), key === 'A' ? s.A.maxHp : s.D.maxHp);
+      atk.classList.remove('cast');
+    }, 230);
+  }
+
+  function floatDamage(side, b) {
+    const host = heroEl(side);
+    if (!host) return;
+    const el = document.createElement('div');
+    el.className = `duel-dmg${b.crit ? ' crit' : ''}${b.spell ? ' spell' : ''}`;
+    el.innerHTML = (b.spell ? `<span class="duel-spellname">✦ ${esc(b.spell.label)}</span>` : '') +
+      `<span class="duel-dmgn">-${b.dmg}${b.crit ? ' CRIT!' : ''}</span>`;
+    host.appendChild(el);
+    setTimeout(() => el.remove(), 1100);
+  }
+
+  function knockout(side) {
+    heroEl(side)?.classList.add('ko');
+  }
+
+  function setHp(side, hp, maxHp) {
+    if (!s) return;
+    if (side === 'A') s.hpA = hp; else s.hpD = hp;
+    const pct = Math.max(0, Math.min(100, (hp / maxHp) * 100));
+    const bar = root.querySelector(`.duel-hpfill.${side === 'A' ? 'atk' : 'def'}`);
+    if (bar) { bar.style.width = `${pct}%`; bar.classList.toggle('low', pct < 30); }
+    const num = root.querySelector(`.duel-hpnum.${side === 'A' ? 'atk' : 'def'}`);
+    if (num) num.textContent = `${Math.max(0, Math.round(hp))}`;
+  }
+
+  // ── render ───────────────────────────────────────────────────────────────────
+  function hero(side) {
+    const d = side === 'A' ? s.A : s.D;
+    const me = side === s.yourSide;
+    const cls = side === 'A' ? 'atk' : 'def';
+    return `<div class="duel-hero ${cls}${me ? ' me' : ''}">` +
+      `<div class="duel-portrait">${avatarHtml({ name: d.name }, 92)}</div>` +
+      `<div class="duel-hname">${esc(d.name)}${me ? ' <em>(you)</em>' : ''}</div>` +
+      `<div class="duel-stats">⚔ ${d.atk}${d.artifact ? ` · <span class="duel-art">✦ ${esc(d.artifact)}</span>` : ''}</div>` +
+      `</div>`;
+  }
+
+  function hpBar(side) {
+    const d = side === 'A' ? s.A : s.D;
+    const cls = side === 'A' ? 'atk' : 'def';
+    return `<div class="duel-hprow ${cls}">` +
+      `<span class="duel-hpname">${esc(d.name)}</span>` +
+      `<div class="duel-hpbar"><span class="duel-hpfill ${cls}" style="width:100%"></span></div>` +
+      `<span class="duel-hpnum ${cls}">${d.maxHp}</span></div>`;
+  }
+
+  function renderStage() {
+    const ctx = s.parcelId ? ` · ${esc(s.parcelId)}` : '';
+    root.innerHTML =
+      `<div class="duel-panel">` +
+        `<div class="duel-head"><b>⚔ Hero Duel</b><span class="duel-ctx">a fight to the K.O.${ctx}</span></div>` +
+        `<div class="duel-hpbars">${hpBar('A')}${hpBar('D')}</div>` +
+        `<div class="duel-stage">${hero('A')}<div class="duel-vs"><span class="duel-round-label">Ready…</span><div class="duel-clash">VS</div></div>${hero('D')}</div>` +
+        `<div class="duel-foot"><div class="duel-status">The champions square off…</div>` +
+          `<div class="duel-stance" hidden>` +
+            `<div class="duel-timer"><span class="duel-timer-fill"></span><b class="duel-timer-num">${s.pickWindowSec}s</b></div>` +
+            `<div class="duel-cards">` +
+            CARDS.map((c) => `<button class="duel-card" data-card="${c.key}" title="${esc(c.tip)}">` +
+              `<span class="duel-card-icon">${c.icon}</span><span class="duel-card-name">${c.label}</span></button>`).join('') +
+            `</div></div>` +
+        `</div>` +
+      `</div>`;
+  }
+
+  function renderResult() {
+    const iWon = s.winner === s.yourSide;
+    const foot = root.querySelector('.duel-foot');
+    if (foot) {
+      foot.innerHTML =
+        `<div class="duel-result ${iWon ? 'win' : 'lose'}">` +
+          `<div class="duel-result-big">${iWon ? '🏆 Victory' : '☠ Defeated'}</div>` +
+          `<div class="duel-result-sub">${esc(s.winnerName)} wins the duel — the loser is carried from the field. Troops were spared.</div>` +
+          `<button class="duel-close" data-duel="close">Close</button></div>`;
+    }
+    setRoundLabel('K.O.');
+  }
+
+  function showStance(on) {
+    const box = root.querySelector('.duel-stance');
+    if (box) box.hidden = !on;
+    root.querySelectorAll('.duel-card').forEach((b) => { b.disabled = !on; });
+    if (on) setStatus(`Exchange ${s.round} — choose your stance!`);
+  }
+  function setStatus(t) { const el = root.querySelector('.duel-status'); if (el) el.textContent = t; }
+  function setRoundLabel(t) { const el = root.querySelector('.duel-round-label'); if (el) el.textContent = t; }
+
   function startCountdown() {
     stopCountdown();
-    const total = session.pickWindowSec * 1000;
+    const total = s.pickWindowSec * 1000;
     const start = performance.now();
-    const tick = () => {
-      if (!session || session.ended) return;
-      const left = Math.max(0, total - (performance.now() - start));
-      const bar = root.querySelector('.duel-timer-fill');
-      if (bar) bar.style.width = `${Math.round((left / total) * 100)}%`;
+    const tick = (now) => {
+      if (!s || s.ended) return;
+      const left = Math.max(0, total - (now - start));
+      const fill = root.querySelector('.duel-timer-fill');
+      if (fill) fill.style.width = `${Math.round((left / total) * 100)}%`;
       const num = root.querySelector('.duel-timer-num');
       if (num) num.textContent = `${Math.ceil(left / 1000)}s`;
-      if (left <= 0) { stopCountdown(); return; } // server will auto-pick + send duel_round
+      if (left <= 0) { stopCountdown(); setStatus('Your Master reads the moment…'); return; }
       timer = requestAnimationFrame(tick);
     };
     timer = requestAnimationFrame(tick);
   }
   function stopCountdown() { if (timer) { cancelAnimationFrame(timer); timer = null; } }
 
-  // ── render ───────────────────────────────────────────────────────────────────
-  function pips(wins) {
-    return `<span class="duel-pips">${'●'.repeat(wins)}${'○'.repeat(Math.max(0, 2 - wins))}</span>`;
-  }
-
-  function masterCard(side) {
-    const s = side === 'A' ? session.A : session.D;
-    const wins = side === 'A' ? session.winsA : session.winsD;
-    const me = side === session.yourSide;
-    const cls = side === 'A' ? 'atk' : 'def';
-    return `<div class="duel-master ${cls}${me ? ' me' : ''}">` +
-      `<div class="duel-mname">${esc(s.name)}${me ? ' <em>(you)</em>' : ''}</div>` +
-      (s.artifact ? `<div class="duel-art" title="Named artifact — the wildcard">✦ ${esc(s.artifact)}</div>` : '') +
-      `<div class="duel-wins">${pips(wins)}</div></div>`;
-  }
-
-  function centre() {
-    if (session.ended) {
-      const iWon = session.winner === session.yourSide;
-      return `<div class="duel-result ${iWon ? 'win' : 'lose'}">` +
-        `<div class="duel-result-big">${iWon ? '🏆 Victory' : '☠ Defeated'}</div>` +
-        `<div class="duel-result-sub">${esc(session.winnerName)} wins the duel — the loser is carried from the field. Troops were spared.</div>` +
-        `<button class="duel-close" data-duel="close">Close</button></div>`;
-    }
-    const r = session.lastRound;
-    const revealBit = r
-      ? `<div class="duel-reveal">${roundReveal(r)}</div>`
-      : '';
-    // Card buttons appear when a round is in progress and we haven't picked.
-    const canPick = session.round > 0 && !picked;
-    const buttons = session.round > 0
-      ? `<div class="duel-round-label">Round ${session.round} — play your card</div>` +
-        `<div class="duel-timer"><span class="duel-timer-fill"></span><b class="duel-timer-num">${session.pickWindowSec}s</b></div>` +
-        `<div class="duel-cards">` +
-        CARDS.map((c) => `<button class="duel-card" data-card="${c.key}"${canPick ? '' : ' disabled'} title="${esc(c.tip)}">` +
-          `<span class="duel-card-icon">${c.icon}</span><span class="duel-card-name">${c.label}</span>` +
-          `<span class="duel-card-beats">beats ${c.beats}</span></button>`).join('') +
-        `</div>` +
-        (picked ? `<div class="duel-wait">✓ Card locked — awaiting your foe…</div>` : `<div class="duel-hint">Aggressive → Trick → Defensive → Aggressive. If you don't pick, your Master decides.</div>`)
-      : `<div class="duel-round-label">Get ready…</div>`;
-    return revealBit + buttons;
-  }
-
-  function roundReveal(r) {
-    const cA = CARD_BY_KEY[r.cA], cD = CARD_BY_KEY[r.cD];
-    const mineKey = session.yourSide === 'A' ? r.cA : r.cD;
-    const foeKey = session.yourSide === 'A' ? r.cD : r.cA;
-    const iTook = r.by === session.yourSide;
-    const reason = r.reason === 'PROC' ? `✦ ${esc(r.proc?.label ?? 'artifact')} flared`
-      : r.reason === 'INITIATIVE' ? 'seized the initiative'
-        : r.reason === 'RATING' ? 'won on the tie (rating)'
-          : 'won the exchange';
-    const card = (k) => `<span class="duel-rc"><span class="ic">${CARD_BY_KEY[k].icon}</span>${CARD_BY_KEY[k].label}</span>`;
-    return `<div class="duel-rev-row"><b>Round ${r.round}:</b> you ${card(mineKey)} vs ${card(foeKey)} — ` +
-      `<span class="${iTook ? 'good' : 'bad'}">${iTook ? 'you' : 'foe'} ${reason}</span></div>`;
-  }
-
-  function renderShell(subtitle) {
-    if (!session) return;
-    const ctx = session.parcelId ? ` · ${esc(session.parcelId)}` : '';
-    root.innerHTML =
-      `<div class="duel-panel">` +
-        `<div class="duel-head"><b>⚔ Hero Duel</b><span class="duel-ctx">best of 3${ctx}</span>` +
-          (session.ended ? `<button class="duel-x" data-duel="close" title="Close">✕</button>` : '') + `</div>` +
-        `<div class="duel-body">` +
-          masterCard('A') +
-          `<div class="duel-centre">${subtitle ? `<div class="duel-sub">${esc(subtitle)}</div>` : ''}${centre()}</div>` +
-          masterCard('D') +
-        `</div>` +
-      `</div>`;
-  }
-
   root.addEventListener('click', (e) => {
-    const cardBtn = e.target.closest('button.duel-card');
-    if (cardBtn && !cardBtn.disabled) { pick(cardBtn.dataset.card); return; }
-    const closeBtn = e.target.closest('[data-duel="close"]');
-    if (closeBtn) close();
+    const card = e.target.closest('button.duel-card');
+    if (card && !card.disabled) { pick(card.dataset.card); return; }
+    if (e.target.closest('[data-duel="close"]')) close();
   });
 
-  return { onMsg, close, get open() { return session !== null && !root.hidden; } };
+  return { onMsg, close, get open() { return s !== null && !root.hidden; } };
 }
 
 function injectStyles() {
   if (document.getElementById('duel-styles')) return;
-  const s = document.createElement('style');
-  s.id = 'duel-styles';
-  s.textContent =
-    `.duel-overlay{position:fixed;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;` +
-    `background:rgba(4,7,11,0.66);backdrop-filter:blur(2px);font:14px "Segoe UI",system-ui,sans-serif;}` +
-    `.duel-panel{width:min(760px,94vw);background:linear-gradient(180deg,#141b24,#0e141b);border:1px solid #2a3644;` +
-    `border-radius:14px;box-shadow:0 20px 60px rgba(0,0,0,0.6);overflow:hidden;}` +
-    `.duel-head{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid #212c39;}` +
-    `.duel-head b{font-size:16px;color:#eaf0f6;}` +
-    `.duel-ctx{color:#7d8da0;font-size:12px;}` +
-    `.duel-x{margin-left:auto;background:none;border:none;color:#8ea1b5;font-size:16px;cursor:pointer;}` +
-    `.duel-body{display:grid;grid-template-columns:1fr 1.5fr 1fr;gap:12px;padding:18px 16px 22px;align-items:start;}` +
-    `.duel-master{text-align:center;padding:12px 8px;border-radius:10px;border:1px solid #24303e;background:#0f1620;}` +
-    `.duel-master.atk{border-color:#2c4a68;} .duel-master.def{border-color:#5a2f2a;}` +
-    `.duel-master.me{box-shadow:0 0 0 1px #ffd76a inset;}` +
-    `.duel-mname{font-weight:600;color:#eaf0f6;font-size:15px;} .duel-mname em{color:#ffd76a;font-style:normal;font-size:11px;}` +
-    `.duel-art{margin-top:5px;color:#ffce8a;font-size:12px;}` +
-    `.duel-wins{margin-top:8px;} .duel-pips{letter-spacing:4px;color:#ffd76a;font-size:15px;}` +
-    `.duel-centre{text-align:center;min-height:180px;}` +
-    `.duel-sub{color:#9fb0c2;margin-bottom:10px;}` +
-    `.duel-round-label{color:#cdd7e2;font-weight:600;margin-bottom:8px;}` +
-    `.duel-timer{position:relative;height:6px;background:#1a232e;border-radius:4px;margin:0 auto 12px;max-width:260px;overflow:hidden;}` +
-    `.duel-timer-fill{position:absolute;left:0;top:0;bottom:0;width:100%;background:linear-gradient(90deg,#ffd76a,#ff9a3c);transition:width .1s linear;}` +
-    `.duel-timer-num{position:absolute;right:-30px;top:-6px;color:#9fb0c2;font-size:11px;}` +
-    `.duel-cards{display:flex;gap:10px;justify-content:center;}` +
-    `.duel-card{flex:1;max-width:140px;display:flex;flex-direction:column;align-items:center;gap:3px;padding:14px 8px;` +
-    `background:#121a24;border:1px solid #2a3644;border-radius:10px;color:#cdd7e2;cursor:pointer;transition:.12s;}` +
-    `.duel-card:hover:not(:disabled){border-color:#ffd76a;transform:translateY(-2px);background:#17212d;}` +
-    `.duel-card:disabled{opacity:.45;cursor:default;}` +
-    `.duel-card-icon{font-size:26px;} .duel-card-name{font-weight:600;color:#eaf0f6;} .duel-card-beats{font-size:10px;color:#6b7f93;}` +
-    `.duel-hint{margin-top:12px;color:#6b7f93;font-size:11px;}` +
-    `.duel-wait{margin-top:12px;color:#8fd39a;font-size:12px;}` +
-    `.duel-reveal{margin-bottom:14px;padding:8px 10px;background:#0c1219;border:1px solid #212c39;border-radius:8px;}` +
-    `.duel-rev-row{color:#b8c4d0;font-size:12px;} .duel-rc{display:inline-flex;align-items:center;gap:3px;color:#eaf0f6;}` +
-    `.duel-rc .ic{font-size:14px;}` +
-    `.duel-result{padding:14px;} .duel-result-big{font-size:26px;font-weight:700;margin-bottom:8px;}` +
-    `.duel-result.win .duel-result-big{color:#ffd76a;} .duel-result.lose .duel-result-big{color:#e0483c;}` +
-    `.duel-result-sub{color:#9fb0c2;font-size:13px;margin-bottom:16px;}` +
-    `.duel-close,.duel-x{cursor:pointer;} .duel-close{background:#1c2733;border:1px solid #2a3644;color:#eaf0f6;` +
-    `border-radius:8px;padding:8px 22px;font-size:14px;}` +
-    `.duel-close:hover{border-color:#ffd76a;color:#ffd76a;}` +
-    `.good{color:#8fd39a;} .bad{color:#e0483c;}`;
-  document.head.appendChild(s);
+  const el = document.createElement('style');
+  el.id = 'duel-styles';
+  el.textContent = `
+.duel-overlay{position:fixed;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;background:rgba(3,6,10,0.72);backdrop-filter:blur(2px);font:14px "Segoe UI",system-ui,sans-serif;}
+.duel-panel{width:min(820px,96vw);background:linear-gradient(180deg,#151d27,#0d131b);border:1px solid #2a3644;border-radius:16px;box-shadow:0 24px 70px rgba(0,0,0,0.65);overflow:hidden;}
+.duel-head{display:flex;align-items:center;gap:10px;padding:12px 18px;border-bottom:1px solid #202b38;}
+.duel-head b{font-size:16px;color:#eaf0f6;} .duel-ctx{color:#7d8da0;font-size:12px;}
+.duel-hpbars{display:flex;gap:16px;padding:14px 18px 4px;}
+.duel-hprow{flex:1;display:flex;align-items:center;gap:8px;}
+.duel-hprow.def{flex-direction:row-reverse;text-align:right;}
+.duel-hpname{font-size:12px;color:#cdd7e2;white-space:nowrap;max-width:120px;overflow:hidden;text-overflow:ellipsis;}
+.duel-hpbar{flex:1;height:14px;background:#0b1119;border:1px solid #263140;border-radius:8px;overflow:hidden;}
+.duel-hpfill{display:block;height:100%;border-radius:7px;transition:width .35s ease;}
+.duel-hpfill.atk{background:linear-gradient(90deg,#2f77c4,#4da3ff);}
+.duel-hprow.def .duel-hpbar{transform:scaleX(-1);}
+.duel-hpfill.def{background:linear-gradient(90deg,#c43f34,#ff6a5c);}
+.duel-hpfill.low{background:linear-gradient(90deg,#c43f34,#ffb020)!important;}
+.duel-hpnum{font-size:12px;color:#9fb0c2;min-width:34px;font-variant-numeric:tabular-nums;}
+.duel-stage{position:relative;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;padding:22px 18px;min-height:210px;background:radial-gradient(ellipse at center,#16202c,#0c1119);}
+.duel-stage.flash::after{content:"";position:absolute;inset:0;background:rgba(255,240,190,0.22);pointer-events:none;}
+.duel-hero{display:flex;flex-direction:column;align-items:center;gap:6px;transition:transform .18s ease;}
+.duel-hero.atk{justify-self:start;} .duel-hero.def{justify-self:end;}
+.duel-portrait{width:96px;height:96px;border-radius:50%;overflow:hidden;border:3px solid #2c4a68;box-shadow:0 6px 18px rgba(0,0,0,0.5);background:#0e1620;}
+.duel-hero.def .duel-portrait{border-color:#5a2f2a;}
+.duel-hero.me .duel-portrait{border-color:#ffd76a;}
+.duel-portrait img,.duel-portrait .avatar{width:100%;height:100%;object-fit:cover;}
+.duel-hname{font-weight:600;color:#eaf0f6;} .duel-hname em{color:#ffd76a;font-style:normal;font-size:11px;}
+.duel-stats{font-size:12px;color:#9fb0c2;} .duel-art{color:#ffce8a;}
+.duel-vs{display:flex;flex-direction:column;align-items:center;gap:6px;color:#6b7f93;}
+.duel-round-label{font-size:12px;color:#9fb0c2;} .duel-clash{font-size:22px;font-weight:800;color:#3a4756;}
+.duel-foot{padding:14px 18px 20px;text-align:center;border-top:1px solid #202b38;}
+.duel-status{color:#9fb0c2;margin-bottom:10px;min-height:18px;}
+.duel-timer{position:relative;height:6px;background:#1a232e;border-radius:4px;margin:0 auto 12px;max-width:280px;overflow:hidden;}
+.duel-timer-fill{position:absolute;inset:0;width:100%;background:linear-gradient(90deg,#ffd76a,#ff9a3c);}
+.duel-timer-num{position:absolute;right:-30px;top:-6px;color:#9fb0c2;font-size:11px;}
+.duel-cards{display:flex;gap:10px;justify-content:center;}
+.duel-card{flex:1;max-width:150px;display:flex;flex-direction:column;align-items:center;gap:3px;padding:12px 8px;background:#121a24;border:1px solid #2a3644;border-radius:10px;color:#cdd7e2;cursor:pointer;transition:.12s;}
+.duel-card:hover:not(:disabled){border-color:#ffd76a;transform:translateY(-2px);background:#17212d;}
+.duel-card:disabled{opacity:.4;cursor:default;}
+.duel-card-icon{font-size:24px;} .duel-card-name{font-weight:600;color:#eaf0f6;}
+.duel-dmg{position:absolute;top:-6px;left:50%;transform:translateX(-50%);pointer-events:none;animation:duelfloat 1.1s ease-out forwards;text-align:center;white-space:nowrap;}
+.duel-dmgn{font-weight:800;font-size:20px;color:#ff8a7a;text-shadow:0 2px 4px rgba(0,0,0,0.7);}
+.duel-dmg.crit .duel-dmgn{font-size:26px;color:#ffd76a;}
+.duel-spellname{display:block;font-size:12px;color:#c9a6ff;font-weight:700;}
+@keyframes duelfloat{0%{opacity:0;transform:translate(-50%,6px);}15%{opacity:1;}100%{opacity:0;transform:translate(-50%,-46px);}}
+.duel-hero.lunge-a{animation:lungeA .34s ease;} .duel-hero.lunge-d{animation:lungeD .34s ease;}
+@keyframes lungeA{40%{transform:translateX(46px) scale(1.05);}100%{transform:translateX(0);}}
+@keyframes lungeD{40%{transform:translateX(-46px) scale(1.05);}100%{transform:translateX(0);}}
+.duel-hero.hit{animation:duelshake .3s ease;} @keyframes duelshake{0%,100%{transform:translateX(0);}20%{transform:translateX(-7px);}40%{transform:translateX(7px);}60%{transform:translateX(-5px);}80%{transform:translateX(5px);}}
+.duel-hero.hit .duel-portrait{box-shadow:0 0 0 4px rgba(255,80,60,0.55),0 6px 18px rgba(0,0,0,0.5);}
+.duel-hero.cast .duel-portrait{box-shadow:0 0 22px 6px rgba(180,120,255,0.7);border-color:#c9a6ff!important;}
+.duel-hero.ko{animation:duelko .7s ease forwards;} @keyframes duelko{100%{transform:rotate(-14deg) translateY(16px);opacity:.35;filter:grayscale(1);}}
+.duel-result{padding:6px;} .duel-result-big{font-size:26px;font-weight:800;margin-bottom:8px;}
+.duel-result.win .duel-result-big{color:#ffd76a;} .duel-result.lose .duel-result-big{color:#e0483c;}
+.duel-result-sub{color:#9fb0c2;font-size:13px;margin-bottom:16px;}
+.duel-close{cursor:pointer;background:#1c2733;border:1px solid #2a3644;color:#eaf0f6;border-radius:8px;padding:8px 24px;font-size:14px;}
+.duel-close:hover{border-color:#ffd76a;color:#ffd76a;}
+`;
+  document.head.appendChild(el);
 }

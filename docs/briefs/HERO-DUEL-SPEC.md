@@ -19,12 +19,27 @@ A **lone Master holds land without an army** and a hostile Master walks on. Eith
 duel resolves **immediately** against the standing order — no one need be online. **Duels spare troops**
 (that's the point: champions settle it, armies don't die).
 
-## 2. THE RESOLUTION CORE — a CARD DUEL (owner-locked v1, 2026-07-10)
+## 2. THE RESOLUTION CORE — an HP FIGHT (owner update v2, 2026-07-12)
 
-**v1 is a CARD game, NOT a skill fight.** Genuine skill-based live PVP is a **later version** (§3).
-For now every duel **auto-resolves** through this deterministic core — so offline defenders are handled
-and battles resolve instantly — but **a player who's online gets to pick their card each round**; if
-they don't click in time, an **NPC auto-picks** for them. Either way the *odds* are set here.
+> **v2 SUPERSEDES the best-of-3 card pips.** Owner feedback on the shipped v1: *"a bit underwhelming…
+> it's essentially like paper-scissors-hand. Use their actual HP and stats of the two masters, show HP
+> bars, two hero models attacking + spells, play as many animations as we can — not 2-of-3 wins."*
+> So the duel is now an **animated HP fight**: each Master has **STATS derived from rating + artifacts**
+> (`atk`, `maxHp` — `duelStats()`), they **trade blows across exchanges**, HP bars deplete, crits land,
+> equipped Named artifacts **flare as SPELLS**, and it ends on a **K.O.** (or higher HP% at the clock).
+> The dials live in `balance.json duel._note`; resolution is `packages/sim-engine/src/duel.ts`
+> (`resolveDuel` / `resolveDuelExchange` / `duelStats`). The stance CARD each exchange
+> (aggressive/trick/defensive, RPS-flavored) is the player's tactical swing, not the win condition.
+> **A genuinely skill-decided LIVE 1v1 on the 3D engine is still the deferred separate version (§3).**
+
+Every duel still **auto-resolves** deterministically (offline defenders handled, instant settlement),
+and **an online player picks a stance each exchange** within `duel.pickWindowSec`; on timeout an **NPC
+auto-picks**. Two things move the odds: the **Master's stats** (rating → ATK + HP) and **equipped Named
+artifacts** (the wildcard — bigger ATK/HP + spell flares). Tuning (verified): a clear favourite wins
+~83%, an even match ~50%, and an artifact roughly **doubles** a big underdog's chance (16% → 37%).
+
+*Historical v1 (below) described a best-of-3 rock-paper-scissors; kept for provenance, but the HP fight
+above is what ships. The stance RPS wheel survives as the per-exchange damage swing.*
 
 Two things move the odds, nothing else: **the Master's rating** (a strong Master still matters) and
 **equipped Named artifacts** (the wildcard — see §2c).

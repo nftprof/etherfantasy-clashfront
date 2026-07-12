@@ -326,17 +326,36 @@ export interface Balance {
    * an NPC auto-picks. ELEMENT-FREE. See balance.json `duel._note`.
    */
   duel: {
-    /** ± swing applied when a same-card round is decided by effective rating (lets an underdog steal a tie). */
-    ratingSwing: number;
-    /** Per-round initiative probability floor: readBase + effRatingShare·readRatingSpan. */
-    readBase: number;
-    /** How hard effective-rating share biases per-round initiative (the stronger Master dictates the exchange). */
-    readRatingSpan: number;
-    /** Per-round human card-pick timer (seconds); on timeout the NPC auto-picks. */
+    /** ATK = atkBase + eff·atkPerRating. */
+    atkBase: number;
+    atkPerRating: number;
+    /** maxHp = hpBase + eff·hpPerRating. */
+    hpBase: number;
+    hpPerRating: number;
+    /** Max exchanges before the clock decides (higher HP% wins). */
+    maxExchanges: number;
+    /** Crit blow: chance + damage multiplier. */
+    critChance: number;
+    critMult: number;
+    /** Equipped Named artifact SPELL flare damage multiplier (fires at signatureProcChance). */
+    spellMult: number;
+    /** ± per-blow damage roll. */
+    damageVariance: number;
+    /** Stance modifiers (RPS: aggressive>trick>defensive>aggressive). */
+    stance: {
+      aggressiveAtk: number;
+      aggressiveDef: number;
+      defensiveAtk: number;
+      defensiveDef: number;
+      /** Damage multiplier for the RPS clash winner / loser this exchange. */
+      clashWinAtk: number;
+      clashLoseAtk: number;
+    };
+    /** Per-exchange human stance-pick timer (seconds); on timeout the NPC auto-picks. */
     pickWindowSec: number;
-    /** Effective-rating multiplier ADDED per equipped Named artifact (the "boosts stats unexpectedly" wildcard). */
+    /** Effective-rating multiplier ADDED per equipped Named artifact (the wildcard). */
     artifactRatingBonus: number;
-    /** Per-round seeded chance an equipped Named artifact "flares" and takes the round outright. */
+    /** Per-blow seeded chance an equipped Named artifact "flares" as a spell. */
     signatureProcChance: number;
     /** The FLEE standing-order escape roll and the penalty when a failed flee is caught into a forced duel. */
     flee: { baseOdds: number; caughtPenalty: number };

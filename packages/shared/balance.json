@@ -283,10 +283,24 @@
     "joinWindowSec": 90
   },
   "duel": {
-    "_note": "⚙ HERO-vs-HERO card duel (docs/briefs/HERO-DUEL-SPEC.md, decision 14). v1 is a CARD game, NOT a skill fight: best-of-3 rock-paper-scissors (AGGRESSIVE>TRICK>DEFENSIVE>AGGRESSIVE) where a Master's RATING dominates via per-round INITIATIVE (the stronger general dictates the exchange) and equipped Named artifacts are the wildcard. It AUTO-RESOLVES (offline Masters handled, instant settlement); an ONLINE player picks their card each round within pickWindowSec, else an NPC auto-picks. ELEMENT-FREE (no type wheel). ratingSwing = ± tie-break swing so an underdog can steal a same-card round; readBase/readRatingSpan = per-round initiative probability = readBase + effRatingShare·readRatingSpan (stronger Master seizes initiative more often → wins the round outright); pickWindowSec = per-round human pick timer; artifactRatingBonus = effective-rating multiplier added per equipped Named artifact; signatureProcChance = per-round seeded chance an equipped artifact 'flares' and takes the round; flee.baseOdds/caughtPenalty = the FLEE standing-order escape roll and the penalty when a failed flee is caught into a forced duel. Deterministic (seeded, replay-safe) — CF owns resolution; a genuinely skill-decided LIVE 1v1 on the battle engine is a deferred, separate version.",
-    "ratingSwing": 0.25,
-    "readBase": 0.5,
-    "readRatingSpan": 0.4,
+    "_note": "⚙ HERO-vs-HERO DUEL (docs/briefs/HERO-DUEL-SPEC.md, decision 14). v2 (owner 2026-07-12): an actual HP FIGHT, not best-of-3 pips. Each Master has STATS from its effective rating (artifact-adjusted): atk = atkBase + eff·atkPerRating; maxHp = hpBase + eff·hpPerRating. They trade blows across up to maxExchanges; the faster (higher-atk) Master strikes first so a KO can pre-empt the counter. A stance CARD each exchange (AGGRESSIVE>TRICK>DEFENSIVE>AGGRESSIVE) swings damage: aggressiveAtk/Def raise output but expose; defensiveAtk/Def turtle; the RPS clash winner gets clashWinAtk, the loser clashLoseAtk. critChance/critMult = a crit blow; signatureProcChance/spellMult = an equipped Named artifact flaring as a SPELL (the wildcard); damageVariance = ± per-blow roll. Ends on KO (or, at maxExchanges, higher HP%). ELEMENT-FREE. It AUTO-RESOLVES (offline handled); an ONLINE player picks a stance each exchange within pickWindowSec, else NPC. artifactRatingBonus = effective-rating multiplier per equipped artifact. flee.baseOdds/caughtPenalty = the FLEE standing-order roll. Deterministic (seeded, replay-safe).",
+    "atkBase": 45,
+    "atkPerRating": 0.022,
+    "hpBase": 420,
+    "hpPerRating": 0.06,
+    "maxExchanges": 12,
+    "critChance": 0.18,
+    "critMult": 1.9,
+    "spellMult": 2.2,
+    "damageVariance": 0.35,
+    "stance": {
+      "aggressiveAtk": 1.35,
+      "aggressiveDef": 1.25,
+      "defensiveAtk": 0.7,
+      "defensiveDef": 0.62,
+      "clashWinAtk": 1.5,
+      "clashLoseAtk": 0.82
+    },
     "pickWindowSec": 10,
     "artifactRatingBonus": 0.2,
     "signatureProcChance": 0.16,

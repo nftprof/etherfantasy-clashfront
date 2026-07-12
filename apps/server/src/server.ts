@@ -22,10 +22,12 @@ import { WebSocketServer, type WebSocket } from 'ws';
 import {
   duelEffective,
   duelNpcCard,
-  resolveDuelRound,
+  duelStats,
+  resolveDuelExchange,
   type DuelCard,
-  type DuelRound,
+  type DuelExchange,
   type DuelSide,
+  type DuelStats,
 } from '@clashfront/sim-engine';
 import { allocateBattle, type BattleEngineConfig, verifyCallbackSignature } from './battleEngine';
 import { BridgeHub } from './bridge';
@@ -89,21 +91,23 @@ const MIME: Record<string, string> = {
   '.ico': 'image/x-icon',
 };
 
-/** In-flight state for one real-time card duel (server-side; the sim resolver decides each round). */
+/** In-flight state for one real-time HP duel (server-side; the sim resolver decides each exchange). */
 interface DuelSession {
   duelId: string;
   seed: string;
   A: DuelSide;
   D: DuelSide;
   shareA: number;
+  statsA: DuelStats;
+  statsD: DuelStats;
+  hpA: number;
+  hpD: number;
   cfg: ReturnType<Game['duelConfig']>;
   challengerGovernorId: string;
   targetGovernorId: string;
   parcelId?: string;
   round: number;
-  winsA: number;
-  winsD: number;
-  rounds: DuelRound[];
+  exchanges: DuelExchange[];
   picks: { A?: DuelCard; D?: DuelCard };
   /** Sides with an online human who may pick this duel; the rest auto-pick (NPC). */
   humanSides: Set<'A' | 'D'>;
@@ -642,7 +646,9 @@ export class ClashServer {
     }
     const built = this.game.buildDuelChallenge(challengerGovernorId, req);
     const cfg = this.game.duelConfig();
-    const { shareA } = duelEffective(built.A, built.D, cfg);
+    const { effA, effD, shareA } = duelEffective(built.A, built.D, cfg);
+    const statsA = duelStats(effA, cfg);
+    const statsD = duelStats(effD, cfg);
     const humanSides = new Set<'A' | 'D'>(['A']);
     if (this.governorOnline(built.targetGovernorId)) humanSides.add('D');
     const session: DuelSession = {
@@ -651,14 +657,16 @@ export class ClashServer {
       A: built.A,
       D: built.D,
       shareA,
+      statsA,
+      statsD,
+      hpA: statsA.maxHp,
+      hpD: statsD.maxHp,
       cfg,
       challengerGovernorId,
       targetGovernorId: built.targetGovernorId,
       parcelId: built.parcelId,
       round: 0,
-      winsA: 0,
-      winsD: 0,
-      rounds: [],
+      exchanges: [],
       picks: {},
       humanSides,
       wasLive: false,
@@ -669,9 +677,10 @@ export class ClashServer {
       t: 'duel_open',
       duelId: session.duelId,
       seed: session.seed,
-      A: { name: built.A.name, artifact: built.A.artifactName },
-      D: { name: built.D.name, artifact: built.D.artifactName },
+      A: { name: built.A.name, artifact: built.A.artifactName, atk: statsA.atk, maxHp: statsA.maxHp },
+      D: { name: built.D.name, artifact: built.D.artifactName, atk: statsD.atk, maxHp: statsD.maxHp },
       shareA,
+      maxExchanges: cfg.maxExchanges,
       pickWindowSec: cfg.pickWindowSec,
       challengerGovernorId,
       targetGovernorId: built.targetGovernorId,
@@ -718,21 +727,35 @@ export class ClashServer {
     const round = session.round;
     const cA = session.picks.A ?? duelNpcCard(session.seed, round, 'A');
     const cD = session.picks.D ?? duelNpcCard(session.seed, round, 'D');
-    const rd = resolveDuelRound(session.A, session.D, session.shareA, round, cA, cD, session.seed, session.cfg);
-    session.rounds.push(rd);
-    if (rd.by === 'A') session.winsA++;
-    else session.winsD++;
-    const roundMsg = { t: 'duel_round', duelId: session.duelId, ...rd, winsA: session.winsA, winsD: session.winsD };
+    const ex = resolveDuelExchange(
+      session.A, session.D, session.statsA, session.statsD, session.hpA, session.hpD, round, cA, cD, session.seed, session.cfg,
+    );
+    session.exchanges.push(ex);
+    session.hpA = ex.hpA;
+    session.hpD = ex.hpD;
+    const roundMsg = {
+      t: 'duel_round', duelId: session.duelId, ...ex,
+      maxHpA: session.statsA.maxHp, maxHpD: session.statsD.maxHp,
+    };
     this.sendToGovernor(session.challengerGovernorId, roundMsg);
     if (session.humanSides.has('D')) this.sendToGovernor(session.targetGovernorId, roundMsg);
-    if (session.winsA === 2 || session.winsD === 2) this.endDuel(session);
+    if (ex.koA || ex.koD || round >= session.cfg.maxExchanges) this.endDuel(session);
     else this.startDuelRound(session, round + 1);
   }
 
   private endDuel(session: DuelSession): void {
     session.done = true;
     if (session.timer !== undefined) { clearTimeout(session.timer); session.timer = undefined; }
-    const winner: 'A' | 'D' = session.winsA > session.winsD ? 'A' : 'D';
+    // Winner: whoever is standing; on a double-KO / the clock, higher HP% (rating tiebreak).
+    let winner: 'A' | 'D';
+    if (session.hpA <= 0 && session.hpD <= 0) winner = session.shareA >= 0.5 ? 'A' : 'D';
+    else if (session.hpD <= 0) winner = 'A';
+    else if (session.hpA <= 0) winner = 'D';
+    else {
+      const sA = session.hpA / session.statsA.maxHp;
+      const sD = session.hpD / session.statsD.maxHp;
+      winner = sA === sD ? (session.shareA >= 0.5 ? 'A' : 'D') : sA > sD ? 'A' : 'D';
+    }
     const winnerName = winner === 'A' ? session.A.name : session.D.name;
     this.game.recordDuelResult({
       duelId: session.duelId,
@@ -742,12 +765,15 @@ export class ClashServer {
       A: session.A,
       D: session.D,
       winner,
-      rounds: session.rounds,
+      exchanges: session.exchanges,
       parcelId: session.parcelId,
       wasLive: session.wasLive,
       nowMs: Date.now(),
     });
-    const endMsg = { t: 'duel_end', duelId: session.duelId, winner, winnerName, rounds: session.rounds };
+    const endMsg = {
+      t: 'duel_end', duelId: session.duelId, winner, winnerName,
+      hpA: session.hpA, hpD: session.hpD, exchanges: session.exchanges,
+    };
     this.sendToGovernor(session.challengerGovernorId, endMsg);
     if (session.humanSides.has('D')) this.sendToGovernor(session.targetGovernorId, endMsg);
     this.duels.delete(session.duelId);

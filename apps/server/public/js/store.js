@@ -29,7 +29,7 @@ export function createStore() {
     // viewer, newest-first; REPLACED wholesale each tick + on snapshot load.
     recentBattles: [],         // [{battleId, parcelId, parcelName, winner, reason, casualties, survivors, timeline, wasLive, mine, …}]
     // Recently-settled hero-duel ring (HERO-DUEL-SPEC.md) — same per-viewer filter.
-    recentDuels: [],           // [{duelId, challengerName, targetName, winner, winnerName, rounds, wasLive, mine, …}]
+    recentDuels: [],           // [{duelId, challengerName, targetName, winner, winnerName, exchanges, wasLive, mine, …}]
 
     // economy telemetry (FS3): latest GET /api/economy payload (boot + dashboard refresh)
     econ: null,
