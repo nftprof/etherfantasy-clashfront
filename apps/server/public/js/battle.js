@@ -193,6 +193,7 @@ export function createBattle({ store, ui, send, ftue }) {
   // echoes the flag position immediately, which used to read as "done" before the engine heard it.
   let orders = [];        // "order sent" fx {x, y, t0, label}
   let rallyPendingUntil = 0;
+  let rallyQueue = [];     // local echo of shift+right-click waypoints (engine chains them)
   let dpr = 1, w = 0, h = 0;
 
   // ── open/close ─────────────────────────────────────────────────────────────
@@ -207,6 +208,7 @@ export function createBattle({ store, ui, send, ftue }) {
     flashes = [];
     orders = [];
     rallyPendingUntil = 0;
+    rallyQueue = [];
     steer = false;
     subRetries = 0;
     if (subRetryTimer) { clearTimeout(subRetryTimer); subRetryTimer = null; }
@@ -815,6 +817,21 @@ export function createBattle({ store, ui, send, ftue }) {
       ctx.closePath();
       if (pending) { ctx.stroke(); ctx.setLineDash([]); }
       else { ctx.fillStyle = GOLD; ctx.fill(); }
+      // queued waypoints (shift+right-click): smaller hollow pennants, numbered in screen space
+      for (let qi = 0; qi < rallyQueue.length; qi++) {
+        const q = rallyQueue[qi];
+        ctx.strokeStyle = GOLD;
+        ctx.lineWidth = lw(1.2);
+        ctx.setLineDash([lw(1.5), lw(1.5)]);
+        ctx.beginPath(); ctx.moveTo(q.x, q.y); ctx.lineTo(q.x, q.y - 5); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(q.x, q.y - 5); ctx.lineTo(q.x + 4, q.y - 3.8); ctx.lineTo(q.x, q.y - 2.6); ctx.closePath(); ctx.stroke();
+        ctx.setLineDash([]);
+        const [qx, qy] = toScr(q.x, q.y);
+        ctx.save(); ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        ctx.fillStyle = 'rgba(255,215,106,0.9)'; ctx.font = '10px "Segoe UI",system-ui,sans-serif'; ctx.textAlign = 'center';
+        ctx.fillText(String(qi + 2), qx + 8, qy - 6);
+        ctx.restore();
+      }
     }
 
     // towers: range ring + body + hp bar (rubble once dead)
@@ -1083,7 +1100,7 @@ export function createBattle({ store, ui, send, ftue }) {
       : stale
         ? `<span class="bad">⚠ Signal lost — awaiting the battle relay…</span>`
         : steer
-          ? `<span><b>Click</b>: move Master · <b>click an enemy</b>: focus fire · <b>right-click</b>: rally the waves</span>`
+          ? `<span><b>Click</b>: move Master · <b>click an enemy</b>: focus fire · <b>right-click</b>: rally · <b>shift+right-click</b>: queue waypoints</span>`
           : canSteer
             ? `<span>Watching. Press <b>🎮 Steer</b> to command your Master and waves.</span>`
             : `<span>Watching a battle for ${esc(terr?.name ?? 'wild land')} — spectator only.</span>`;
@@ -1098,7 +1115,7 @@ export function createBattle({ store, ui, send, ftue }) {
       // army stance order (sprint #4/#6) — same command channel as steering clicks
       send({ t: 'battle_cmd', battleId: openId, cmd: { kind: 'stance', stance: btn.dataset.st } });
       btn.classList.add('on');                       // optimistic; snapshot echo confirms
-      if (btn.dataset.st === 'CLEAR') rallyPendingUntil = 0;
+      if (btn.dataset.st === 'CLEAR') { rallyPendingUntil = 0; rallyQueue = []; }
     }
     else if (btn.dataset.bt === 'steer') { steer = !steer; renderHud(); }
     else if (btn.dataset.bt === 'hero' && field?.joinUrl) {
@@ -1145,9 +1162,17 @@ export function createBattle({ store, ui, send, ftue }) {
     if (!steer || !openId || ended) return;
     const r = canvas.getBoundingClientRect();
     const [x, y] = toWorld(e.clientX - r.left, e.clientY - r.top);
-    send({ t: 'battle_cmd', battleId: openId, cmd: { kind: 'rally', x, y } });
-    orders.push({ x, y, t0: performance.now(), label: '🚩 rally order sent' });
-    rallyPendingUntil = performance.now() + 3500; // ~2 command polls — flag draws hollow until then
+    if (e.shiftKey && cur?.snap?.rally) {
+      // shift+right-click = APPEND a waypoint (owner 2026-07-11) — troops march flag→flag
+      send({ t: 'battle_cmd', battleId: openId, cmd: { kind: 'rally', x, y, queue: 1 } });
+      rallyQueue.push({ x, y });
+      orders.push({ x, y, t0: performance.now(), label: '🚩 waypoint ' + (rallyQueue.length + 1) + ' queued' });
+    } else {
+      send({ t: 'battle_cmd', battleId: openId, cmd: { kind: 'rally', x, y } });
+      rallyQueue = [];                              // plain rally replaces flag + queue
+      orders.push({ x, y, t0: performance.now(), label: '🚩 rally order sent' });
+      rallyPendingUntil = performance.now() + 3500; // ~2 command polls — flag draws hollow until then
+    }
     if (coach?.beat === 2) coachAdvance(); // beat 3 advances on the rally order (or its 6 s timer)
   });
 
