@@ -13,8 +13,8 @@
 
 **Tianxia (HUB) is the hub — "all roads lead here."** The three starter continents each border Tianxia
 by a **river-gate** (a land/river crossing), and NOT directly to each other by land. Everything else is
-sea lanes (ports), airship ways (to the sky), the secret Stair, and the boss-gated descent. There is
-**no Aeropolis↔Arcadia airship route** (if the live map shows one, that's the error).
+sea lanes (ports), airship ways (to the sky — **always via the Aeropolis/HS1 gateway**, §3), the secret
+Stair, and the boss-gated descent.
 
 ## 1. SURFACE land/river borders — the 3 starter↔Tianxia crossings (DATA-CONFIRMED)
 
@@ -105,9 +105,9 @@ Underworld is a **linear descent** (HUB Shaft → UW1 → UW2 → UW3), boss-gat
 
 ## 6. What the LIVE overworld gets wrong (fix list)
 
-1. **Aeropolis↔Arcadia airship line** — not a defined route. Either remove it, or it's the unratified
-   "gateway model" (§3 open decision). Per data today: the airship ways are Arcadia↔**Empyrea** and
-   Porthaven↔**Empyrea**.
+1. **Airship routes (§3, owner-LOCKED):** surface airships go **Arcadia → HS1** and **Porthaven → HS1**
+   (the Aeropolis gateway) — NOT surface→HS3 direct. From HS1 they branch to **HS2 OR HS3**. There is
+   **no HS2↔HS3 route** (war-severed). Fix the live map to this.
 2. **Verify every sea-lane anchor** lands on a real `SEA_PORT` POI from §2 — not an arbitrary coast
    point.
 3. **The Stair must not appear as a public route** (§4).
