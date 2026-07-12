@@ -1,5 +1,7 @@
 # World Zone Detail — full per-zone facts for world planning
 
+> ⚠ **SERVER FIELDS — read `data/zone-registry.json`, never hardcode.** The server/start-zone topology is owned by the world-planning session and lives ONLY in the registry (4 servers: sg Singapore→Porthaven · jp Tokyo→Arcadia LIVE · us US-West→Mythoria-N · ca Montréal→Mythoria-S; Tianxia = destination). Any regeneration of tables in this doc MUST pull the server column from the registry — hardcoded values here have already caused two collisions.
+
 > **Map-maker session, 2026-07-07 — published for the world-planning session.** Everything known about
 > every zone, from the **real extracted map** (`data/hexagon-city-source/`) joined to the canonical
 > **`data/zone-registry.json`**. Machine-readable companion: **`data/world-zone-detail.json`** (same numbers,
@@ -8,15 +10,9 @@
 
 ## 1. The world at a glance
 
-- **12 zones** on **3 tiers** (surface / sky / underworld) across **4 launch servers** (Singapore `sg`,
-  Tokyo `jp`, US West `us`, Montréal `ca`), plus **2 SPECIAL prestige islands** (Olympus/founders,
-  Fortuna/influencers — teleport-only) that ship no extracted parcels yet.
-  - **Starting zones (owner 2026-07-10, `WORLD-MAP-AND-SERVER-TRAVEL.md` §2):** Singapore→Porthaven (BUS) ·
-    Tokyo→Arcadia (EDU) · US West→Mythoria NORTH (ENT·north) · Montréal→Mythoria SOUTH (ENT·south) —
-    Mythoria is sub-zone-SLICED between two servers. **Tianxia (HUB) is NOT a starting zone** (post-start
-    destination; may open directly for a future Europe/MENA server). Canonical: `data/zone-registry.json`
-    (`servers` block with IPs, `ENT.serverSlices`, `HUB.startNote`). ⚠ Map-maker: when regenerating this
-    doc, read the Svr column from the registry — it has drifted twice.
+- **12 zones** on **3 tiers** (surface / sky / underworld) across the **live server topology in
+  `data/zone-registry.json`** (source of truth — see the ⚠ header note), plus **2 SPECIAL prestige
+  islands** (Olympus/founders, Fortuna/influencers) that ship no extracted parcels yet.
 - **World totals (real extraction):** **8,482 L2 estates** + **284,314 L3 singles** = **292,796 parcels**.
 - **L2 by size class:** EPIC 48 · GIANT 172 · LARGE 393 · MEDIUM 1,082 · SMALL 6,787.
 - **Parcel-id → zone:** `zoneCode = parcelId.slice(1,3)` (see the registry).
@@ -30,9 +26,9 @@ urban/dungeon-packed, lower = open country).
 | Zone | Name | Tier | Svr | EPIC | GIANT | LARGE | MED | SMALL | **L2** | L2✦L3 | **L3 singles** | **Total parcels** | Density |
 |---|---|---|---|--:|--:|--:|--:|--:|--:|--:|--:|--:|--:|
 | HUB | Tianxia | surface | ca | 24 | 53 | 111 | 238 | 1318 | **1744** | 723 | **58,745** | **60,489** | 710 |
-| ENT | Mythoria | surface | us·ca | 3 | 14 | 31 | 128 | 1316 | **1492** | 669 | **38,284** | **39,776** | 251 |
-| BUS | Porthaven | surface | sg | 12 | 68 | 127 | 277 | 703 | **1187** | 610 | **70,467** | **71,654** | 821 |
-| EDU | Arcadia | surface | jp | 1 | 8 | 20 | 78 | 265 | **372** | 161 | **13,663** | **14,035** | 593 |
+| ENT | Mythoria | surface | ca | 3 | 14 | 31 | 128 | 1316 | **1492** | 669 | **38,284** | **39,776** | 251 |
+| BUS | Porthaven | surface | ca | 12 | 68 | 127 | 277 | 703 | **1187** | 610 | **70,467** | **71,654** | 821 |
+| EDU | Arcadia | surface | ca | 1 | 8 | 20 | 78 | 265 | **372** | 161 | **13,663** | **14,035** | 593 |
 | HS1 | Aeropolis | sky | sg | 1 | 6 | 16 | 57 | 266 | **346** | 178 | **14,071** | **14,417** | 1068 |
 | HS2 | Emberfall | sky | sg | 0 | 0 | 16 | 49 | 386 | **451** | 223 | **13,694** | **14,145** | 996 |
 | HS3 | Empyrea | sky | sg | 1 | 0 | 6 | 54 | 403 | **464** | 219 | **11,873** | **12,337** | 883 |

@@ -12,6 +12,12 @@
   precedence, the terminology crosswalk, the `legacy.json` delivery plan, and — critically — the ONE
   divergence (CF parcel maps author obstacles + walkability deterministically; the legacy arena re-rolls
   them live). Reconciles the CF, network/engine, and BattleEngine models.
+- **REGION-GATE-SPEC.md** — ⭐ (Map-maker, 2026-07-07): the CF-overworld travel requirement (§1.9 handoff) —
+  continents **partitioned into REGIONS by barriers (ranges/rivers)**, linked only through **GATE parcels**
+  (pass/bridge). The generator bakes 3 base-terrain fields — per-parcel `regionId`, per-crossing
+  `isGate`/`connects`, per-barrier `regionBoundary` polyline (+ gate markers); CF renders the dotted-border
+  overlay; landlord toll = runtime. ≥1 gate per boundary (reachability invariant). Extends the continuous-
+  world macro layer.
 - **CONTINUOUS-WORLD-TERRAIN.md** — ⭐ DECISION (Map-maker, 2026-07-07): the default terrain is **one
   authored continuous world per continent**; each parcel is a **window** cropped from it (rivers/roads/
   ranges continuous across parcels), modelled on a **real city per continent** from the aerial view. Adds a
@@ -34,11 +40,18 @@
   the **"broad but thin, concentrated rich"** gradient rule (iron minable everywhere, richest UW3), per-zone
   detail cards (materials/recruits/POI-types/wild-boss/hazards), and the resource-node vocabulary the
   generator must grow into. Grounded in the Atlas + biome-recruitment.
-- **PET-AND-MASTER-HOMES.md** — ⭐ (Map-maker, 2026-07-07): which **PentaPet element-types populate each
-  zone** (the wild + recruit pool per region — UW3/Luxuria = dark/mystic ✅) + each **Master's home zone**
-  (home = the land of the Master's element, which its matching-element buff resonates with). Grounded in the
-  228-pet element roster + the 12-zone registry. Blocker flagged: the 47 Masters have no element data yet
-  (owner/API needed); Bosses (elements in-name) are homed.
+- **PET-AND-MASTER-HOMES.md** + **`../../data/{pet-domains,master-homes,zone-pet-population}.json`** — ⭐
+  FROZEN (Map-maker, 2026-07-07): the **7 Master DOMAINS** (Wild/Tide/Ember/Stone/Light/Shadow/Beast) that
+  group the 17 pet species + the **combat rings** (Elemental & Cosmic triangles; **Light▶Shadow** = sky↔
+  underworld axis); which **pet element-types + rarity band populate each zone** (UW3=dark/mystic ✅); and
+  all **52 Masters homed** by domain (`master-homes.json` = the file the **website team** updates masters
+  from). Master site-elements are decorative (name-hashed) — crosswalked onto real domains.
+- **MAP-QUALITY-GAP-ANALYSIS.md** — ⭐ (Map-maker, 2026-07-08): the honest ledger from the owner's "none
+  of the generated maps seem playable" — the **MOBA-SINGLEPLAYER benchmark set** (all 5 deliverables:
+  artifact/command/thumb + render-gap + playable, both command forms PASS the 5 invariants), the 7-stage
+  pipeline (LLM→generator→artifact→converter→command→engine-ingest→playable) with **gap + owner per
+  stage**, the ship-quality definition (visual parity with the benchmark + MAP-MODES scenario superset),
+  and sequencing. The generator dense-fill rewrite is the load-bearing fix (in progress).
 - **MAP-MODES.md** — ⭐ (Map-maker, 2026-07-07): ONE map serves MANY modes — the spawn/entry **anchors are
   not enemy waves**; a MODE (Versus / Siege / Dominion / Guard / Duel / Clash) just lights up a subset +
   sets the win-point. Attacker enters by approach direction; defender holds the middle. Renderer spec for

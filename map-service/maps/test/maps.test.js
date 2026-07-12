@@ -263,6 +263,46 @@ console.log("— real parcel polygon (hexagon cut-out) —");
   ok(reached, "attacker spawn pathable to base inside the polygon");
 }
 
+console.log("— RUIN: the seeded Chronicle layer (depth-layer 1) —");
+{
+  const { RUIN_TYPES } = await import("../chronicle.js");
+  const { toBattlefieldA1 } = await import("../command_converter.js");
+  const ruinOf = (a) => (a.obstacles || []).find((o) => o.kind === "RUIN") || null;
+  // density band + shape over a seeded batch (~1 in 7 target; band allows binomial noise)
+  const arts = [];
+  for (let i = 0; i < 70; i++) arts.push(generate({ parcelId: "RUINP" + i, biome: "b" + (i % 3), zone: ["EDU", "HUB", "BUS", "ENT"][i % 4] }));
+  const ruined = arts.filter((a) => ruinOf(a));
+  ok(ruined.length >= 3 && ruined.length <= 20, `ruin density in the 1-in-6–10 band: ${ruined.length}/70 parcels`);
+  ok(ruined.every((a) => { const r = ruinOf(a); return RUIN_TYPES.includes(r.ruinType) && r.name && r.inscription && r.r > 0; }),
+     "every ruin carries a valid ruinType + Chronicle name + one-line inscription");
+  ok(arts.every((a) => (a.obstacles || []).filter((o) => o.kind === "RUIN").length <= 1), "at most one ruin per parcel");
+  // placement: on OPEN walkable ground, away from both duel bases (never breaks a route — décor only)
+  ok(ruined.every((a) => {
+    const r = ruinOf(a), G = a.terrain.w, walk = decode(a.terrain.walk);
+    if (walk[gIdx(G, cellOf(G, r.x), cellOf(G, r.z))] !== 1) return false;
+    const atk = a.spawnZones.find((s) => s.id === "atk_S"), def = a.spawnZones.find((s) => s.id === "def_base");
+    return Math.hypot(r.x - atk.x, r.z - atk.z) >= 40 && Math.hypot(r.x - def.x, r.z - def.z) >= 40;
+  }), "every ruin sits on open walkable ground, clear of both bases");
+  ok(ruined.every(edgesReachBase), "ruined maps still pass every-edge pathability (décor breaks no route)");
+  // determinism: same parcel ⇒ same ruin, byte-identical artifact
+  const twin = ruined[0] ? generate({ parcelId: ruined[0].meta.parcelId, biome: ruined[0].meta.biome, zone: ruined[0].meta.zone }) : null;
+  ok(twin && JSON.stringify(ruinOf(twin)) === JSON.stringify(ruinOf(ruined[0])), "same parcel ⇒ identical ruin (seeded)");
+  // castle parcels never roll a ruin (living strongholds are not ruins)
+  const rp = ruined[0].meta;
+  const castled = generate({ parcelId: rp.parcelId, biome: rp.biome, zone: rp.zone,
+    worldField: { rivers: [], roads: [], ridges: [], edgeCrossings: [], castles: [{ id: "T-KEEP", kind: "KEEP", name: "Test Keep", at: [20, 20] }] } });
+  ok(ruinOf(castled) === null, "a castle parcel never rolls a ruin");
+  // A1 pass-through: the ruin rides obstacles[] as a passable décor anchor with its lore intact
+  const bf = toBattlefieldA1(ruined[0]);
+  const bfRuin = (bf.obstacles || []).find((o) => o.kind === "RUIN");
+  ok(bfRuin && bfRuin.passable === true && bfRuin.ruinType === ruinOf(ruined[0]).ruinType
+     && bfRuin.name === ruinOf(ruined[0]).name && bfRuin.inscription === ruinOf(ruined[0]).inscription,
+     "toBattlefieldA1 carries the ruin as passable décor with ruinType/name/inscription");
+  // zone flavor: the same table reads differently per zone culture (seed includes zone)
+  const zoneNames = new Set(ruined.map((a) => ruinOf(a).name));
+  ok(zoneNames.size >= 2, `ruin names vary across the batch (${zoneNames.size} distinct)`);
+}
+
 console.log("— registry lifecycle —");
 {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "efmaps-"));

@@ -1,0 +1,366 @@
+{
+  "_meta": {
+    "title": "Clash Front Master homes (domain + home)",
+    "author": "Map-maker session, 2026-07-07",
+    "caveat": "The site master elements are procedurally name-hashed (decorative, NOT canonical). This maps them onto the 7 locked DOMAINS as a RECOMMENDATION so every Master has a domain+home now; a real per-Master domain assignment (design/lore) can replace it. Domain = the Masters buff class (buffs all that domains pet elements).",
+    "rule": "domain = siteElementToDomain[siteElement]; home = siteElementToHome[siteElement]."
+  },
+  "siteElementToDomain": {
+    "Verdant": "Wild",
+    "Tide": "Tide",
+    "Frost": "Tide",
+    "Flame": "Ember",
+    "Storm": "Light",
+    "Ether": "Light",
+    "Iron": "Stone",
+    "Shadow": "Shadow"
+  },
+  "siteElementToHome": {
+    "Verdant": {
+      "zone": "ENT",
+      "name": "Mythoria"
+    },
+    "Tide": {
+      "zone": "BUS",
+      "name": "Porthaven"
+    },
+    "Frost": {
+      "zone": "HS3",
+      "name": "Empyrea"
+    },
+    "Flame": {
+      "zone": "HS2",
+      "name": "Emberfall"
+    },
+    "Storm": {
+      "zone": "HS1",
+      "name": "Aeropolis"
+    },
+    "Ether": {
+      "zone": "EDU",
+      "name": "Arcadia"
+    },
+    "Iron": {
+      "zone": "UW1",
+      "name": "Ironhold"
+    },
+    "Shadow": {
+      "zone": "UW2",
+      "name": "Blackmere"
+    }
+  },
+  "masters": {
+    "Chris": {
+      "siteElement": "Verdant",
+      "domain": "Wild",
+      "home": "Mythoria",
+      "homeZone": "ENT"
+    },
+    "Eldora": {
+      "siteElement": "Verdant",
+      "domain": "Wild",
+      "home": "Mythoria",
+      "homeZone": "ENT"
+    },
+    "Gato": {
+      "siteElement": "Verdant",
+      "domain": "Wild",
+      "home": "Mythoria",
+      "homeZone": "ENT"
+    },
+    "Gwen": {
+      "siteElement": "Verdant",
+      "domain": "Wild",
+      "home": "Mythoria",
+      "homeZone": "ENT"
+    },
+    "Hongpa": {
+      "siteElement": "Verdant",
+      "domain": "Wild",
+      "home": "Mythoria",
+      "homeZone": "ENT"
+    },
+    "Jud": {
+      "siteElement": "Verdant",
+      "domain": "Wild",
+      "home": "Mythoria",
+      "homeZone": "ENT"
+    },
+    "Kerri": {
+      "siteElement": "Verdant",
+      "domain": "Wild",
+      "home": "Mythoria",
+      "homeZone": "ENT"
+    },
+    "Kinseri": {
+      "siteElement": "Verdant",
+      "domain": "Wild",
+      "home": "Mythoria",
+      "homeZone": "ENT"
+    },
+    "Maenak": {
+      "siteElement": "Verdant",
+      "domain": "Wild",
+      "home": "Mythoria",
+      "homeZone": "ENT"
+    },
+    "Trisha": {
+      "siteElement": "Verdant",
+      "domain": "Wild",
+      "home": "Mythoria",
+      "homeZone": "ENT"
+    },
+    "Alice": {
+      "siteElement": "Shadow",
+      "domain": "Shadow",
+      "home": "Blackmere",
+      "homeZone": "UW2"
+    },
+    "Blis": {
+      "siteElement": "Shadow",
+      "domain": "Shadow",
+      "home": "Blackmere",
+      "homeZone": "UW2"
+    },
+    "Cor": {
+      "siteElement": "Shadow",
+      "domain": "Shadow",
+      "home": "Blackmere",
+      "homeZone": "UW2"
+    },
+    "Jade": {
+      "siteElement": "Shadow",
+      "domain": "Shadow",
+      "home": "Blackmere",
+      "homeZone": "UW2"
+    },
+    "Jiyeon": {
+      "siteElement": "Shadow",
+      "domain": "Shadow",
+      "home": "Blackmere",
+      "homeZone": "UW2"
+    },
+    "Joel": {
+      "siteElement": "Shadow",
+      "domain": "Shadow",
+      "home": "Blackmere",
+      "homeZone": "UW2"
+    },
+    "Joostar": {
+      "siteElement": "Shadow",
+      "domain": "Shadow",
+      "home": "Blackmere",
+      "homeZone": "UW2"
+    },
+    "Kuman": {
+      "siteElement": "Shadow",
+      "domain": "Shadow",
+      "home": "Blackmere",
+      "homeZone": "UW2"
+    },
+    "MrBen": {
+      "siteElement": "Shadow",
+      "domain": "Shadow",
+      "home": "Blackmere",
+      "homeZone": "UW2"
+    },
+    "Aiden": {
+      "siteElement": "Iron",
+      "domain": "Stone",
+      "home": "Ironhold",
+      "homeZone": "UW1"
+    },
+    "Amy": {
+      "siteElement": "Iron",
+      "domain": "Stone",
+      "home": "Ironhold",
+      "homeZone": "UW1"
+    },
+    "Jess": {
+      "siteElement": "Iron",
+      "domain": "Stone",
+      "home": "Ironhold",
+      "homeZone": "UW1"
+    },
+    "Karen": {
+      "siteElement": "Iron",
+      "domain": "Stone",
+      "home": "Ironhold",
+      "homeZone": "UW1"
+    },
+    "Lucy": {
+      "siteElement": "Iron",
+      "domain": "Stone",
+      "home": "Ironhold",
+      "homeZone": "UW1"
+    },
+    "Maple": {
+      "siteElement": "Iron",
+      "domain": "Stone",
+      "home": "Ironhold",
+      "homeZone": "UW1"
+    },
+    "Mara": {
+      "siteElement": "Iron",
+      "domain": "Stone",
+      "home": "Ironhold",
+      "homeZone": "UW1"
+    },
+    "Waldo": {
+      "siteElement": "Iron",
+      "domain": "Stone",
+      "home": "Ironhold",
+      "homeZone": "UW1"
+    },
+    "Dochi": {
+      "siteElement": "Tide",
+      "domain": "Tide",
+      "home": "Porthaven",
+      "homeZone": "BUS"
+    },
+    "Dragon Cho": {
+      "siteElement": "Tide",
+      "domain": "Tide",
+      "home": "Porthaven",
+      "homeZone": "BUS"
+    },
+    "Haeun": {
+      "siteElement": "Tide",
+      "domain": "Tide",
+      "home": "Porthaven",
+      "homeZone": "BUS"
+    },
+    "Lu": {
+      "siteElement": "Tide",
+      "domain": "Tide",
+      "home": "Porthaven",
+      "homeZone": "BUS"
+    },
+    "Nami": {
+      "siteElement": "Tide",
+      "domain": "Tide",
+      "home": "Porthaven",
+      "homeZone": "BUS"
+    },
+    "Parma": {
+      "siteElement": "Tide",
+      "domain": "Tide",
+      "home": "Porthaven",
+      "homeZone": "BUS"
+    },
+    "Shaiya": {
+      "siteElement": "Tide",
+      "domain": "Tide",
+      "home": "Porthaven",
+      "homeZone": "BUS"
+    },
+    "Agena": {
+      "siteElement": "Frost",
+      "domain": "Tide",
+      "home": "Empyrea",
+      "homeZone": "HS3"
+    },
+    "Amos": {
+      "siteElement": "Frost",
+      "domain": "Tide",
+      "home": "Empyrea",
+      "homeZone": "HS3"
+    },
+    "Chenchen": {
+      "siteElement": "Frost",
+      "domain": "Tide",
+      "home": "Empyrea",
+      "homeZone": "HS3"
+    },
+    "Choco": {
+      "siteElement": "Frost",
+      "domain": "Tide",
+      "home": "Empyrea",
+      "homeZone": "HS3"
+    },
+    "Doto": {
+      "siteElement": "Frost",
+      "domain": "Tide",
+      "home": "Empyrea",
+      "homeZone": "HS3"
+    },
+    "Kiki": {
+      "siteElement": "Frost",
+      "domain": "Tide",
+      "home": "Empyrea",
+      "homeZone": "HS3"
+    },
+    "Pavel": {
+      "siteElement": "Frost",
+      "domain": "Tide",
+      "home": "Empyrea",
+      "homeZone": "HS3"
+    },
+    "Baron": {
+      "siteElement": "Storm",
+      "domain": "Light",
+      "home": "Aeropolis",
+      "homeZone": "HS1"
+    },
+    "Bellbird": {
+      "siteElement": "Storm",
+      "domain": "Light",
+      "home": "Aeropolis",
+      "homeZone": "HS1"
+    },
+    "Chad": {
+      "siteElement": "Storm",
+      "domain": "Light",
+      "home": "Aeropolis",
+      "homeZone": "HS1"
+    },
+    "Death Jinook": {
+      "siteElement": "Storm",
+      "domain": "Light",
+      "home": "Aeropolis",
+      "homeZone": "HS1"
+    },
+    "Purin": {
+      "siteElement": "Storm",
+      "domain": "Light",
+      "home": "Aeropolis",
+      "homeZone": "HS1"
+    },
+    "Camila": {
+      "siteElement": "Ether",
+      "domain": "Light",
+      "home": "Arcadia",
+      "homeZone": "EDU"
+    },
+    "Jake": {
+      "siteElement": "Ether",
+      "domain": "Light",
+      "home": "Arcadia",
+      "homeZone": "EDU"
+    },
+    "Zeki": {
+      "siteElement": "Ether",
+      "domain": "Light",
+      "home": "Arcadia",
+      "homeZone": "EDU"
+    },
+    "Iskall": {
+      "siteElement": "Flame",
+      "domain": "Ember",
+      "home": "Emberfall",
+      "homeZone": "HS2"
+    },
+    "Ludy": {
+      "siteElement": "Flame",
+      "domain": "Ember",
+      "home": "Emberfall",
+      "homeZone": "HS2"
+    },
+    "Ruber": {
+      "siteElement": "Flame",
+      "domain": "Ember",
+      "home": "Emberfall",
+      "homeZone": "HS2"
+    }
+  }
+}

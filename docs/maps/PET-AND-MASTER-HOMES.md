@@ -75,40 +75,62 @@ forms, e.g. Fire→Emberfall) — the *element* spans zones, the *rarity* is wha
 within the zone's rarity band** (`BIOME-RECRUITMENT-AND-ARMY.md` + the gate above) — so a starter can muster
 common→rare Fire units on Mythoria, but the legendary Fire lineages only unlock on rare-gated Emberfall.
 
-## 3. Master homes (lore + the element-buff coherence)
+## 3. The 7 Master DOMAINS + combat rings (FROZEN 2026-07-07) — `data/pet-domains.json`
 
-**Rule:** `masterHome = primaryZoneOf(master.element)` — a Master hails from, and homes in, the land of its
-element, which is also where its **matching-element buff** resonates with the pet population (§2). Use the
-element→home lookup:
+A Master is human — it doesn't "become a bug." It **commands a DOMAIN of nature** that groups several pet
+species, and its **matching-type buff applies to every element in its domain**. The 7 domains cover all 17
+pet species:
 
-| Master element | Home zone | | Master element | Home zone |
-|---|---|---|---|---|
-| Neutral / Combat | **HUB** Tianxia | | Ice | **HS3** Empyrea |
-| Leaf / Insect | **ENT** Mythoria | | Iron / Rock / Earth | **UW1** Ironhold |
-| Water / Toxin | **BUS** Porthaven | | Phantom | **UW2** Blackmere |
-| Earth / Telepath | **EDU** Arcadia | | Mystic / Dragon | **UW3** Luxuria |
-| Flyer | **HS1** Aeropolis | | (rare/legendary) | **CGI** Olympus |
-| Fire / Lightning | **HS2** Emberfall | | (celebrity/prestige) | **KOL** Fortuna |
+| Domain | Commands (pet elements) | Feel |
+|---|---|---|
+| **Wild** | Leaf · Insect | growth, forests, swarms |
+| **Tide** | Water · Ice | seas, rivers, frost |
+| **Ember** | Fire · Dragon | flame, dragons |
+| **Stone** | Earth · Iron · Rock | mountains, metal, siege |
+| **Light** | Lightning · Flyer · Telepath | radiance, sky, the mind |
+| **Shadow** | Phantom · Mystic · Toxin | the spectral, dark arcane, blight |
+| **Beast** | Neutral · Combat | mundane warriors & beasts (neutral baseline) |
 
-> **⚠ §3 SUPERSEDED (2026-07-10):** Masters are **ELEMENT-FREE** (owner ruling —
-> `MASTERS-ELEMENT-FREE-RULING.md`): no Master element exists, so homes are NOT element-derived and the
-> blocker below is **dissolved**. Homes were instead assigned by **LORE** (website session, live at
-> etherfantasy.com/world) — **source of truth: `src/data/masterHomes.json` in the fe-website repo.**
-> §1–§2 of this doc (pet element→zone ladder, populations, rarity gates) remain adopted canon.
+**Combat (type advantage) — two triangles + a neutral:**
+- **Elemental:** Tide ▶ Ember ▶ Wild ▶ Tide  *(water > fire > nature > water)*
+- **Cosmic:** **Light ▶ Shadow** ▶ Stone ▶ Light  *(light banishes shadow; shadow rusts stone; stone eclipses light)*
+- **Beast** = neutral (no advantage, no weakness).
+- **Light ▶ Shadow is the marquee**, and it maps onto the world's vertical axis — **Light rules the sky +
+  prestige isles, Shadow rules the underworld** (§2 domains). Reconcile multipliers with the MOBA's existing
+  type chart if one is coded (OP48/network).
 
-### ⚠ Blocker: the 47 Masters have **no element data** in any file
-`data/CHARACTER_ROSTER.csv` lists all 47 Masters by name, but the **Element column is empty** for every one
-(only **Bosses** encode element in their names — Centaur_Warrior_**Fire**, Sunwon_Magician_**Fire**, etc.).
-So I can apply the home rule the moment each Master's element is supplied — but I won't invent 47 elements.
+## 3b. Master homes — the 52 mapped by domain (FROZEN) — `data/master-homes.json`
 
-**To finalize, I need the Master → element list** (one of):
-- the **live Masters API** (`api.etherfantasy.com`, `docs/09` §7) almost certainly carries each Master's
-  element — unreachable from this sandbox, but CF can pull it and auto-derive homes via the table above; or
-- an owner-provided `Master,Element` list — drop it in and I'll home all 47 in one pass.
+**⚠ Caveat (for the website team):** the site's per-Master element is **procedurally name-hashed**
+(`ELEMENT_KEYS[FNV_hash(name) % 8]`) — decorative, **not canonical**. This freezes a **domain + home** for
+each of the 52 by crosswalking those site elements onto the 7 real domains, so every Master is coherent
+now. If a real per-Master domain is ever authored (design/lore), it replaces this.
 
-**Provisional (name-inferred, low confidence — confirm):** a few names hint an element →
-`Dragon_Cho` → Dragon → **UW3 Luxuria**; `Death_Jinook` → Phantom/dark → **UW2 Blackmere**. The rest
-(Maple, Purin, Blis, the `Type_*` series, …) need the real element.
+**Crosswalk (site element → domain → home continent):**
+| Site element | # | → Domain | → Home |
+|---|--:|---|---|
+| Verdant | 10 | **Wild** | **Mythoria** (ENT) |
+| Shadow | 9 | **Shadow** | **Blackmere** (UW2) |
+| Iron | 8 | **Stone** | **Ironhold** (UW1) |
+| Tide | 7 | **Tide** | **Porthaven** (BUS) |
+| Frost | 7 | **Tide** | **Empyrea** (HS3) — *Choco ✓* |
+| Storm | 5 | **Light** | **Aeropolis** (HS1) |
+| Ether | 3 | **Light** | **Arcadia** (EDU) |
+| Flame | 3 | **Ember** | **Emberfall** (HS2) |
+
+**Homes by continent (52):**
+- **Mythoria** (Wild): Chris · Eldora · Gato · Gwen · Hongpa · Jud · Kerri · Kinseri · Maenak · Trisha
+- **Blackmere** (Shadow): Alice · Blis · Cor · Jade · Jiyeon · Joel · Joostar · Kuman · MrBen
+- **Ironhold** (Stone): Aiden · Amy · Jess · Karen · Lucy · Maple · Mara · Waldo
+- **Porthaven** (Tide/water): Dochi · Dragon Cho · Haeun · Lu · Nami · Parma · Shaiya
+- **Empyrea** (Tide/frost): Agena · Amos · Chenchen · Choco · Doto · Kiki · Pavel
+- **Aeropolis** (Light): Baron · Bellbird · Chad · Death Jinook · Purin
+- **Emberfall** (Ember): Iskall · Ludy · Ruber
+- **Arcadia** (Light): Camila · Jake · Zeki
+
+Domain totals: Wild 10 · Tide 14 · Shadow 9 · Stone 8 · Light 8 · Ember 3. Per-Master `{siteElement, domain,
+home, homeZone}` in `data/master-homes.json` — **this is the file for the website team to update the
+masters** (add `domain` + `home` per master; drop the decorative element or keep it as flavor).
 
 ### Bosses (elements ARE in the data) — homed now
 | Boss | element | Home |

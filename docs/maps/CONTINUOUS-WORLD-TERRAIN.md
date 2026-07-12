@@ -64,7 +64,7 @@ roads, rivers, coast, and districts lay out from above. This is *reference*, not
 
 | Zone | Atlas identity | Aerial reference (proposed) | What we borrow from above |
 |---|---|---|---|
-| **HUB** | Capital Heartland, central massif, river crossroads | **Paris** | radial boulevards from a central node; a river crossroads bisecting the capital |
+| **HUB** | Capital Heartland, central massif, river crossroads | **Beijing / Chengdu / Xi'an** (owner-locked 2026-07-10, supersedes Paris) | a LAYERED capital: ancient imperial walled core (palace axis, gate towers) wrapped in modern concentric ring roads + radial expressways; secondary cities each pair a historic core with a modern ring (the "modern living, ancient history" pattern of today's great Chinese cities) |
 | **BUS** | Northern Commercial Coast, urban, delta, N sea-ports | **New York** | dense grid + waterfront piers; commercial coast + harbour |
 | **ENT** | Western Carnival Coast, blossom, resort marinas | **Rio de Janeiro** | coast ribbon between hills + sea; marina inlets; carnival waterfront |
 | **EDU** | Academy Highlands plateau, blossom, Grand Academy | **Kyoto** | grid basin ringed by highlands; temple/academy campus districts |
@@ -74,12 +74,162 @@ roads, rivers, coast, and districts lay out from above. This is *reference*, not
 | **UW1** | Upper Caverns, fungal swamp (underworld) | **Derinkuyu / Cappadocia (underground)** | a warren of tunnels + chambers (structural, not aerial) |
 | **UW2** | Deep flooded caverns, magma veins (underworld) | **flooded cave network / cenote field** | causeways between black lakes |
 | **UW3** | Inferno Vault, magma throne (underworld) | **volcanic vent chamber** | a single central caldera, magma-river spokes |
+| **CGI** | Olympus — founders' exclusive isle (Dubai-palm model) | **Dubai (Palm Jumeirah) + Monaco** | sculpted marina fingers, private super-estates, yacht quays; exclusivity legible from the air |
+| **KOL** | Fortuna — influencers' isle | **Las Vegas Strip + Monte Carlo waterfront** | one grand promenade/strip as the spine, plaza stages, casino waterfront spectacle |
 
-**On "9 continents":** the atlas geometry is **10 zones**. Seven read as true aerial *cities* (HUB, BUS,
-ENT, EDU + the three sky isles); the three underworld zones use **subterranean structural** references
-(caverns, not aerial cities). If you want exactly **9**, the natural merge is treating UW as one
-descent-continent (UW1→UW2→UW3 as depth tiers of one place) — that gives **9 continent identities**. **Owner
-call:** lock the reference per continent + the 9-vs-10 grouping.
+**On the count:** the registry is **12 zones** (10 atlas continents + the two isles CGI/KOL). Seven read
+as true aerial *cities* (HUB, BUS, ENT, EDU + the three sky isles), the two isles are designed resort
+islands, and the three underworld zones use **subterranean structural** references (caverns, not aerial
+cities).
+
+### 3b. City ERA per continent — medieval vs modern variety (owner 2026-07-10)
+
+Each continent's **settled core** is built in a distinct **city era/style** (variety by continent); the
+**rural land keeps the organic countryside** generator everywhere (owner: rural stays as current). The era
+governs the URBAN road pattern + where castles/fortifications sit:
+
+| Continent | Era/style | Urban pattern | Fortification |
+|---|---|---|---|
+| **Arcadia** (EDU) | **MEDIEVAL castle town** (jōkamachi — Himeji/Kanazawa; owner-locked ✓) | castle-centred: ring road around the walls, curved radial streets from the gates, short organic lanes (dead-ends fine), the Academy PALACE with a ceremonial approach | the **castle** is the town's heart; walls + gates on the battle maps |
+| **Tianxia** (HUB) | **LAYERED Chinese metropolis** (Beijing/Chengdu/Xi'an — owner-locked 2026-07-10: "major cities in China today… modern living, high population, with an ancient history") | ancient imperial core (walled palace precinct, grand N–S axis, gate towers — Forbidden-City/Xi'an-wall pattern) **wrapped in modern ring roads + radial expressways** (Beijing 2nd/3rd-ring, Chengdu ring-radial); several such cities, not just the capital | the **walled palace city** is the fortification; ring roads are modern, the walls are ancient — both layers visible from the air |
+| **Porthaven** (BUS) | **MODERN port metropolis** (NY/Singapore) | street grid + waterfront piers/quays | citadel/fort at the harbour mouth (star-fort era) |
+| **Mythoria** (ENT) | **FESTIVAL mythic resort coast** (Rio carnival ribbon + a Venetian canal quarter as one POI city) | shore-following strands, marina inlets, canal quarter, stilt lanes | watchtowers + temple keeps on headlands |
+| **Olympus** (CGI) | **ULTRAMODERN luxury enclave** (Dubai Palm / Monaco) | sculpted marina fingers, gated estate drives, one grand corniche | no war-castles — the estates ARE the monuments (private citadel-villas) |
+| **Fortuna** (KOL) | **MODERN spectacle strip** (Las Vegas / Monte Carlo) | one grand strip spine + plaza stages + waterfront promenade | showpiece citadel-casino at the strip's head |
+| **Aeropolis** (HS1) | **ANCIENT terraced sky citadel** (Cusco / Machu Picchu — the castle-in-the-sky isle) | contour terraces + switchback ways up to one airship-dock gateway | summit citadel + dock gatehouse |
+| **Emberfall** (HS2) | **HIGH-MEDIEVAL tiered fortress** (Mont Saint-Michel — the Minas Tirith feel) | concentric tier rings climbing the volcano cone, one switchback gate-road | ringwall per tier; the keep crowns the cone |
+| **Empyrea** (HS3) | **FAR-FUTURE sacred summit** (Lhasa/Potala silhouette, futuristic tech skin — owner: modern tech, space/parallel-universe travel) | pilgrim ways converging up to a levitating precinct; clean radial platforms | the Sanctum — energy walls + gate pylons (sci-fi castle analog) |
+| **Ironhold** (UW1) | **DWARVEN industrial forge-city** (Derinkuyu/Cappadocia warren) | tunnels + gallery rings + great halls | gatehouse chokes at level doors |
+| **Blackmere** (UW2) | **DARK-GOTHIC drowned keep** (cenote/flooded-karst causeways, Minas-Morgul mood) | causeways between black lakes, half-sunken quarters | the Keep on its own island; causeway gates |
+| **Luxuria** (UW3) | **INFERNAL baroque decadence** (Pompeii pleasure-city + vent chamber) | a pleasure-palace ring around the magma throne, spoke boulevards | the Throne precinct; sin-palace compounds as castle analogs |
+
+Rule of thumb: **era applies to the urban core only** — the basin/harbour/terrace district around each
+continent's capital + towns. Everything else is countryside (organic clearings, world roads passing
+through). Arcadia is the template implementation; other continents follow in their weekly authoring pass.
+
+### 3c. Castle placement rule — castles live on ESTATES (owner 2026-07-10)
+
+**Every castle/palace/keep POI is anchored to an L2 ESTATE, never to open ground or a lone L3 parcel —
+and POI importance maps to estate size**: the continent's PALACE (capital seat) goes to the **biggest
+estate** (EPIC where one exists), major CASTLEs to **GIANT** estates, minor KEEPs/temples to **LARGE**.
+Rationale: an estate is mostly one owner's land, so a castle = the estate's heart, which matches canon
+decision 4/5 (estates fight as linked components toward a **castle = final component**, and only estates
+carry pre-designed castle/city-wall maps). Arcadia's five castles already follow this by construction
+(deterministic picks in `map-service/tools/world_terrain_edu.mjs`): PALACE→the sole EPIC 1020371,
+CASTLE Westgate→GIANT 2020367, CASTLE Southreach→GIANT 2020368, KEEPs→LARGE 3020352/3020351. Other
+continents' field generators must apply the same rule.
+
+**The full fortification ladder (owner-CONFIRMED 2026-07-10 — "okay proceed with small medium"):**
+
+| Estate size | Baked world-layer fortification | On the battle map |
+|---|---|---|
+| **EPIC** | **PALACE** — walled palace precinct | full ring + ceremonial way, gate towers |
+| **GIANT** | **CASTLE** | full WALL ring (8–12) + 2 GATEs + 4 corner TOWERs, courtyard |
+| **LARGE** | **KEEP** | compact: 1 keep TOWER + a partial wall arc + 1 GATE |
+| **MEDIUM** | **fortified MANOR / watchtower** — only where the estate is a world-layer town anchor; otherwise none | 1 TOWER + 2–3 WALL stubs forming a yard (no ring) |
+| **SMALL** | **nothing baked** | pure countryside + build spots |
+
+Rationale: canon decision 5 says only estates carry pre-designed castle/city-wall maps — within estates
+we scale it, keeping world-layer castles scarce and special. **SMALL (and non-anchor MEDIUM) estates get
+their defense from the player-built CoC layer** (canon decision 9: placeable WALL/TOWER/GATE/TRAP
+modules) — a small holding is what you fortify *yourself*; a baked keep everywhere would cheapen the
+real castles and erase the build-layer progression.
+
+Implementation note: the MEDIUM-manor rung has **no instances yet** — both built continents' town
+anchors are GIANT+LARGE estates, and MEDIUMs only seed local feeders. It activates automatically the
+first time a continent's field generator designates a MEDIUM estate as a town anchor.
+
+### 3d. Estate battles present as ONE command-view map; HERO (3D) mode only at key POIs (owner-LOCKED 2026-07-10)
+
+Marching onto an estate opens a **full-estate command-view map** — the whole estate as one seamless
+board (stitched from its per-parcel maps, which line up by construction — §4's continuity contract).
+The battle is fought in command view across it. **HERO (3D) mode exists ONLY at designated KEY POI
+parcels** — the capital/castle center and a few key POIs (gates, the bridge, the harbour). **Most estate
+parcels have NO 3D mode**: you can only ⚡ take the field once your Master is *in* a POI parcel of that
+estate. Engine-side this is the locked component model (canon decisions 4 + 4g — every live match is
+one ±161 arena): the POI parcels are the components that ever go live; everything else resolves in
+command view. This SUPERSEDES the looser "hero mode drops into any contested component" reading.
+
+**ESTATE BATTLE MODEL (owner-LOCKED FINAL 2026-07-10 — "lets lock it in then for the estate board
+battle with POI parcel 3D battle"; = CLAUDE.md decision 18):** an estate battle is **ONE
+battle fought in command view across the ENTIRE estate map** — an EPIC is the full ~200-parcel board as
+a single battlefield, supporting **many players and many armies simultaneously** maneuvering anywhere
+on it. It is NOT a sequence of component fights. The estate-wide fight runs on the CF sim (command-view
+tick resolution, like the overworld — the estate's internal parcel graph IS its battle board), so scale
+costs nothing 30 Hz.
+
+Within that whole-estate battle, a **fixed number of HERO-MODE POI parcels** by estate size are the
+only places that can open a live 3D match:
+
+| Estate size | Battle scope | Hero-mode (3D) POI parcels |
+|---|---|---|
+| **SMALL / MEDIUM** | a single-parcel battle (same as any lone parcel) | that 1 parcel |
+| **LARGE** | one command-view battle over the whole estate | **3** |
+| **GIANT** | one command-view battle over the whole estate | **5** |
+| **EPIC** | one command-view battle over the whole estate | **8** |
+
+The hero POIs are **deterministically designated key parcels** — the castle parcel always (the final
+stronghold), plus gates/bridge/harbour/keep parcels. When an engagement happens AT a hero POI and
+**your Master's units are in it**, that local fight can be allocated as a live ±161 3D match (the
+proven allocate path; command-fee/slot economics per canon decisions 15/16 still bound how many run
+live); its result feeds back into the estate battle. Engagements anywhere else resolve in command view
+only. This REVISES docs/04 §7b's sequential per-hex component campaign (~480 components for an EPIC):
+one estate = one battle, with 3D windows. ⚠ docs/04 §7b + estate-campaign sections need reconciling
+(flagged to the integration session).
+
+**Why (owner):** battle must come **from ALL directions simultaneously** — attackers enter from any
+estate edge, converge, encircle, cut roads; defenders sortie — never a linear one-after-another chain.
+The **sequential model** ("win 8 in a row", the hero POIs as a linear parcel gauntlet ending at the
+castle) is retained ONLY as the **explicit FALLBACK** if the whole-estate simultaneous sim ever proves
+unworkable — it is not the design. Assessment: no fallback expected to be needed; the whole-estate
+fight is the same tick-sim the overworld already runs, just scoped to the estate's parcel graph. Map-side deliverable: field generators emit `heroParcels[]` per
+castle estate (castle + N−1 POIs) — **DONE 2026-07-10, see below**.
+
+**heroParcels[] emission — DONE (2026-07-10; all surface-world field generators — EDU/HUB/BUS/ENT
+with real land, plus the authored isles CGI/KOL where estate anchoring is deferred until their land
+ships).** Every `castles[]` entry in `data/world-terrain/{EDU,HUB,BUS,ENT}.json` carries
+`heroParcels: string[]` — the estate's HERO-MODE (3D) POI L3 parcelIds, **castle parcel FIRST**,
+length = the ladder above (LARGE 3 / GIANT 5 / EPIC 8). The pick rule is deterministic and SHARED
+(`map-service/tools/world_hero_parcels.mjs`, imported by all `world_terrain_*.mjs` tools,
+re-derived from data by `map-service/maps/test/hero_parcels.test.js`):
+
+1. **Castle parcel** = the estate's L3 parcel whose bbox contains the castle POI point (among
+   several containing bboxes: the nearest center; none containing: the nearest center overall).
+2. **Remaining picks** = greedy farthest-point spread over the estate's L3 parcel centers,
+   seeded {castle}, **preferring parcels that intersect a world feature polyline**
+   (roads entering the estate = gates, river crossings = bridge, coast band = harbour): a
+   feature-touching parcel is eligible when its min-distance-to-picked ≥ 0.5× the step's best
+   spread; when no feature-touching parcel qualifies, all parcels are eligible; pick the max
+   spread. All ties break by parcelId ascending.
+3. **No L3 subdivision** (known data fact: 0/48 EPICs zone-wide — all 24 HUB + 12 BUS + the
+   EDU/others' EPICs — plus HUB's Shaftwatch LARGE 3071605) ⇒ `heroParcels: []` +
+   `heroParcelsNote` — designation **DEFERRED** until subdivision; the castle battle map arrives
+   with the pre-designed estate map (canon decisions 4/5). Fewer L3 parcels than quota ⇒ all of
+   them (castle first) + note.
+
+`worldfield.js` passes `heroParcels`/`heroParcelsNote`/`townEstateId` through verbatim on the
+castle entry in `featuresForParcel()` (and `loadWorldField()` returns the raw field), so the CF
+sim can consume the designation. heroParcels is WORLD-LAYER metadata only — committed battle
+parcels in `data/cf-maps/` are untouched byte-identical.
+
+**Future — EF Hunt / MMORPG reuse (owner vision note 2026-07-10):** these same maps are intended to
+host **EF Hunt** played MMORPG-style inside CF's world — EF Hunt's story is a human's journey from
+**Tianxia down to Luxuria (UW3)**. The key-POI parcels with 3D mode are the natural scene anchors for
+that journey (each continent's capitals/castles/temples = story stages), which is another reason POI
+maps get the design attention while countryside stays procedural.
+
+### 3e. Inter-zone linkage (owner-locked deltas 2026-07-11)
+
+Recorded in **`data/zone-registry.json` → `zoneLinks`** (Agent D records; Agent C's overview map
+renders; links not listed are unaffected): **① Arcadia ↔ Empyrea** airship way — existing, keep.
+**② Porthaven ↔ Empyrea — ADDED**: the second surface route to HS3, anchored at **Skyreach Anchorage**
+(`BUS-PORT-SKY`, already a POI in the BUS field). **③ Mythoria gets NO sky link.** Its only depth
+connection is **the Diminishing Stair** (`ENT-STAIR-DIMINISHING`, new SECRET_ENTRANCE POI on Carnavale's
+carnival midway): per `docs/lore/WORLD-CHRONICLE.md` (Second Age), the upper mouth opens on the midway
+(the Midway Potion + the Last Fortune are the rite of entry), the lower mouth "somewhere in Blackmere"
+(UW2), and it is **single file — one soul at a time, never an army** (armies take the Shaft in Tianxia
+and break the sealed gates). Deliberately NOT a public dashed route on the overview map — surface it as
+lore/discovery. Map-side placement of the LOWER mouth waits for the UW2 field authoring pass.
 
 ## 4. How a parcel derives its map from the field
 
@@ -99,7 +249,85 @@ The **edge-crossing set** — for each of the parcel's edges, *what* crosses (ro
 and it's exactly what the terraform rule freezes (§5). It also satisfies the MVP invariant "≥1 entry point
 per edge a reinforcement can arrive from" (`MAP-LAYER-MODEL.md`) — road/river crossings *are* those entries.
 
-## 5. Terraforming — edges frozen, interior free (the ownership rule)
+### 4b. River crossings — REAL WATER (owner-hardened 2026-07-10; supersedes the earlier slow-only draft)
+
+**The rule: water is real.** A unit that cannot cross water **cannot cross at all** — it is stuck on its
+side of the river. Exemptions: **Flyer units** (fly over) and **Water-element units** (swim). Everyone
+else needs a **ford or a bridge**. All on the SAME map data (the grid's WATER/ROAD cells; no re-bake):
+
+1. **Phase 1 — NOW (MVP): walk on water.** Rivers are visual continuity only while the loader/engine
+   seams land. Zero work.
+2. **Phase 2 — REAL water.** WATER cells are impassable except Flyer/Water-element units. Crossings
+   (fords/bridges) are the only paths for everyone else — they become THE tactical chokepoints.
+3. **Bridges are LLM-designable + landowner-promptable.** The landowner prompts the map designer
+   ("build a bridge across the river at …") → the design pass places a BRIDGE (ROAD over WATER, or a
+   bridge structure). Bridges are **destructible structures** — cutting one is a real move. CT-sink via
+   the invest/improvement path (`LAND-VALUE-AND-IMPROVEMENT`).
+
+**Consequences (owner-accepted, by design):**
+- **A bridgeless river DIVIDES the battlefield** — effectively two maps; forces that can't cross can't
+  engage, and the battle **can end in a DRAW**. That is a legitimate outcome, not a bug. (Sim needs a
+  DRAW/stalemate settlement rule — flag to the CF sim + engine sessions.)
+- **Ranged fire crosses water** — units just across the river can be pinned/poked by ranged attackers.
+  Unit AI should not stand and soak (reposition/retreat) — a MOBA-engine behaviour item (OP 48 / engine),
+  not map data.
+- **Moats become a defense strategy:** a landowner may deliberately design AWAY crossings (a moat) — a
+  strong defensive posture whose cost is that battles on that parcel tend to draw (attackers with
+  Flyer/Water armies, or siege that outranges the moat, become the counters). Economy/balance reviews
+  this lever (invest tier could gate how much moat is allowed).
+
+**Map-side implications (mine):**
+- The generator's default maps stay engageable: the carve already creates **fords** (water→ROAD) where
+  lanes/roads cross rivers — so out-of-the-box every river map has crossings; *removing* them is a
+  deliberate design act.
+- The **playability validator needs a water exception** (task): connectivity invariants become
+  per-landmass — a water-divided map is VALID if each side is internally connected and each side's
+  content (base, entries on that bank) is reachable within its landmass. Today's validator requires full
+  connectivity, which would reject legit moat designs.
+- `BRIDGE` joins the feature/structure vocabulary (designer DSL + build-spot layer) — generator follow-up.
+
+### 4c. Road × parcel — the overlap taxonomy (parcels play what overlaps them)
+
+Roads are **never forced into a parcel** — the parcel's battle map simply inherits whatever the world
+network does at its footprint. The five cases (all already handled by the clipping; named here so every
+session says the same thing):
+
+| Case | What the world network does | What the battle map gets |
+|---|---|---|
+| **THROUGH** | a road transects the parcel | the road segment + BOTH edge crossings (frozen); entries sit on them — a *road battle* (fight for the corridor) |
+| **BORDER** | a road runs along a parcel edge (real cities: roads ARE the property lines — frontage) | a road strip along that edge; that whole edge is a *frontage edge* — arrivals from that side come in on the road |
+| **CORNER** | clips a corner | a short segment + two crossings on adjacent edges near the corner |
+| **TERMINUS** | a local road dead-ends inside (it serves this land — a farmstead/town lane) | one crossing + an interior endpoint anchored on the parcel's settlement/build cluster |
+| **NONE** | nothing crosses | pure countryside: terrain + organic clearings only. **Most parcels.** Units travel on open ground — no road needed |
+| *(junction)* | two+ roads meet inside | the crossroads parcel — strategically hot (toll/market ground) |
+
+Rivers use the same taxonomy (THROUGH/BORDER/CORNER/NONE); a river TERMINUS = a spring/lake source.
+
+## 5. Terraforming & RIGHT-OF-WAY — the city-planning rulebook
+
+Real cities solved "how do private lots and shared infrastructure coexist" long ago; we borrow their
+rules directly. The protection level follows the **road tier** (and feature kind):
+
+| Feature | Planning concept | Terraform rule |
+|---|---|---|
+| **Highway** | *public trunk / eminent domain* | Owner may NEVER sever or remove it. May reroute the **midspan** inside the parcel (bend it around a town), gate it (toll), build alongside — crossings + continuity absolute. |
+| **Secondary road** | *right-of-way easement* | Reroutable within the parcel; crossings frozen. **Removable only with the "vacation" rule**: a shared road may be vacated only if every neighbour it serves keeps an alternative connected path (the network stays connected without it). |
+| **Local road/lane** | *private drive* | If it serves ONLY this parcel (TERMINUS), the owner may freely reroute/remove it. If a neighbour depends on it, it's an easement — crossings frozen. |
+| **River** | *natural watercourse (riparian law)* | Banks/midspan may be reshaped inside the parcel; **entry/exit points, width class and flow are frozen**; may not be dammed/removed (future mechanic at most). Bridges are additive structures. |
+| **Ridge/pass** | *protected terrain* | The pass (gate crossing) is frozen; the rock is otherwise sculptable inside the parcel. |
+
+Two more borrowed rules that keep battle maps sane:
+- **SETBACK**: player structures must sit ≥ a small buffer off a protected corridor's centerline (the
+  road stays wide enough to march and fight on — a validator rule, ⚙ tunable per tier).
+- **GRANDFATHERING (non-destructive network evolution)**: when the world network gains NEW roads later,
+  owner-designed parcels are never force-rebaked. New routes prefer unowned land; if one must touch an
+  owned parcel it arrives as a **proposal** the owner accepts (or it follows the parcel BORDER instead —
+  the frontage case). The artifact records `meta.worldFieldVersion`, and network updates are **additive**:
+  they may add features but never move an existing frozen crossing on an owned parcel. Unowned parcels
+  simply re-derive on the next bake — that's how the overworld improves without ever "messing up" what
+  players built.
+
+Who may do what, in one line: **the interior belongs to the owner; the through-lines belong to the world.**
 
 Landowners (and the LLM on their behalf, or on system land) may terraform — but continuity is protected by
 **freezing the boundary, freeing the interior**:

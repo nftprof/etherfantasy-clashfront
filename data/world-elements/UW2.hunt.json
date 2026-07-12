@@ -1,0 +1,35 @@
+{
+  "_meta": {
+    "layer": "hunt",
+    "zone": "UW2",
+    "owner": "EF Hunt team",
+    "status": "PROPOSED — starter set seeded by Agent D (CF ParcelMap Design Agent) 2026-07-11; the Hunt team owns and edits this file (docs/briefs/WORLD-ELEMENTS-OVERLAY.md contribution flow)",
+    "note": "Blackmere main-story elements for the Hunt journey spine (EF-HUNT-MAP-HANDOFF.md §4): the Stair-foot arrival camp, the Bowl-Keeper's shrine, and the Drowned Banquet dungeon door.",
+    "coords": "zone svg coords (same frame as data/world-terrain/UW2.json — viewBox 0 0 150.48 150.52, y down)"
+  },
+  "elements": [
+    {
+      "id": "UW2-HUNT-STAIRFOOT-CAMP",
+      "kind": "CAMP",
+      "at": [16.9, 45.8],
+      "name": "The Stair-foot Camp",
+      "note": "the arrival camp on the terrace at the Foot of the Diminishing Stair (UW2-STAIR-FOOT) — where the Cut is spoken and descenders first stand at Blackmere's scale"
+    },
+    {
+      "id": "UW2-HUNT-BOWLKEEPER-SHRINE",
+      "kind": "SHRINE",
+      "at": [17.4, 46.4],
+      "name": "The Bowl-Keeper's Alcove",
+      "note": "a lamplit alcove off the Stair-foot terrace where the Homeward Bowl is kept — the way back up for those the deep releases",
+      "loreRef": "docs/lore/WORLD-CHRONICLE.md — the Homeward Bowl"
+    },
+    {
+      "id": "UW2-HUNT-BANQUET-DOOR",
+      "kind": "DUNGEON_DOOR",
+      "at": [71.3, 88.7],
+      "name": "The Drowned Banquet — First Hall",
+      "note": "the door into the first of the five flooded halls of the Drowned Banquet (UW2-BANQUET, EPIC 1101096) — still set for a feast no one finished",
+      "singularId": "drowned_banquet"
+    }
+  ]
+}

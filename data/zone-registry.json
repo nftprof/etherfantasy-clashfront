@@ -74,7 +74,8 @@
         "visual": 0.167,
         "kinematic": 0.4
       }
-    }
+    },
+    "serverTopologySync": "2026-07-10 synced from the world-planning session relay (owner-locked): Singapore(sg 13.250.39.41)->Porthaven start; Tokyo(jp 18.178.54.54)->Arcadia start (LIVE); US West(us 54.151.57.111)->Mythoria NORTH; Montreal(ca 3.98.68.96)->Mythoria SOUTH (first sub-zone slice, decision 12); Tianxia = the DESTINATION not a start (possible direct start for a future eu_mena server). THEIR registry copy is the source of truth for server fields — if this file and theirs ever differ, take theirs verbatim. Doc regenerators: ALWAYS read the server column from this file, never hardcode."
   },
   "zones": [
     {
@@ -163,13 +164,15 @@
         "Food",
         "Gold"
       ],
-      "cityRef": "Paris",
+      "cityRef": "Beijing / Chengdu / Xi'an (layered: ancient imperial core + modern rings; owner-locked 2026-07-10)",
       "l2Estates": 1744,
       "l3Singles": 58745,
       "worldOffset": [
         0,
         0
-      ]
+      ],
+      "role": "destination",
+      "roleNote": "the destination, not a start — all roads lead here; players advance from their starting zones (or a future eu_mena direct start)"
     },
     {
       "zoneId": "ENT",
@@ -488,5 +491,60 @@
         -210
       ]
     }
-  ]
+  ],
+  "zoneLinks": {
+    "_note": "Inter-zone travel — OWNER-LOCKED 2026-07-11. SKY: Aeropolis (HS1) = the GATE TO HEAVEN. ALL surface airships (Arcadia, Porthaven) land at HS1 FIRST, then BRANCH to ONE of HS2 (Emberfall) or HS3 (Empyrea) — the two are AT WAR (skyWar) and have NO direct link; you reach each only through HS1 and pick a side at the gate. Empyrea (HS3) = the rightful pinnacle; Emberfall (HS2) = the fallen-angel usurper. Mirror-with-variation of the underworld's LINEAR descent (Shaft) HUB→UW1→UW2→UW3 (owner: 'intentional variation of UW rules'). Agent D records; Agent C wires world.js to read routes straight from here. Full spec: docs/maps/OVERWORLD-CONNECTIONS.md.",
+    "locked": [
+      {
+        "from": "EDU",
+        "to": "HS1",
+        "kind": "AIRSHIP_WAY",
+        "status": "owner-LOCKED 2026-07-11",
+        "surfaceAnchor": "EDU-PORT-SKY (OWED — EDU field needs an airship-dock POI)",
+        "skyAnchor": "HS1 Gateway Anchorage (gateway_dock; HS1 field unbuilt)",
+        "note": "Arcadia → Aeropolis. ALL surface airships land at HS1 FIRST — the GATE TO HEAVEN."
+      },
+      {
+        "from": "BUS",
+        "to": "HS1",
+        "kind": "AIRSHIP_WAY",
+        "status": "owner-LOCKED 2026-07-11",
+        "surfaceAnchor": "BUS-PORT-SKY (Skyreach Anchorage @[296,178])",
+        "skyAnchor": "HS1 Gateway Anchorage",
+        "note": "Porthaven → Aeropolis. Surface airships land at HS1 first."
+      },
+      {
+        "from": "HS1",
+        "to": "HS2",
+        "kind": "AIRSHIP_WAY",
+        "status": "owner-LOCKED 2026-07-11 (branch from the gateway)",
+        "note": "Aeropolis → Emberfall. From the gateway you ascend to ONE side of the sky (HS2 OR HS3, player's choice) — they are AT WAR and not connected to each other."
+      },
+      {
+        "from": "HS1",
+        "to": "HS3",
+        "kind": "AIRSHIP_WAY",
+        "status": "owner-LOCKED 2026-07-11 (branch from the gateway)",
+        "note": "Aeropolis → Empyrea, THE PINNACLE. The other sky branch from the gateway. Empyrea holds the rightful summit; Emberfall (HS2) is the fallen-angel usurper besieging it."
+      },
+      {
+        "from": "ENT",
+        "to": "UW2",
+        "kind": "SECRET_ENTRANCE",
+        "status": "owner-LOCKED 2026-07-11, lore-locked",
+        "anchorPoi": "ENT-STAIR-DIMINISHING",
+        "secret": true,
+        "note": "the Diminishing Stair: upper mouth on Carnavale's carnival midway, lower mouth somewhere in Blackmere. SINGLE FILE — never an army. Mythoria's ONLY depth link; NOT a public dashed route — lore/discovery only."
+      }
+    ],
+    "skyWar": {
+      "belligerents": [
+        "HS2",
+        "HS3"
+      ],
+      "status": "AT WAR — no traversable HS2↔HS3 link (severed by the war)",
+      "lore": "The War of the Sky Throne: Emberfall (HS2) = the FALLEN ANGELS (Ember-fall), UW-corrupted, returned to heaven to claim the throne — besieging Empyrea (HS3), the rightful pinnacle. Each sky isle is reached ONLY through the Aeropolis (HS1) gateway; you pick a side of the war from the gate. This is a lore/status flag, NOT an edge — do not draw a HS2↔HS3 route.",
+      "owner": "2026-07-11"
+    }
+  }
 }

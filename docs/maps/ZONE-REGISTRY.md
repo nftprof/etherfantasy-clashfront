@@ -1,5 +1,7 @@
 # Zone Registry — the canonical 10-continent list (names · strength · family/multiplier)
 
+> ⚠ **SERVER FIELDS — read `data/zone-registry.json`, never hardcode.** The server/start-zone topology is owned by the world-planning session and lives ONLY in the registry (4 servers: sg Singapore→Porthaven · jp Tokyo→Arcadia LIVE · us US-West→Mythoria-N · ca Montréal→Mythoria-S; Tianxia = destination). Any regeneration of tables in this doc MUST pull the server column from the registry — hardcoded values here have already caused two collisions.
+
 > **Map-maker session, 2026-07-07.** The **machine-readable** registry is **`data/zone-registry.json`** —
 > the generator + sim input the CF main session asked for (`zoneId`, `zoneAvgStrength`, the family/
 > multiplier table). This doc explains it and carries the **naming decision** (owner to finalize with me).

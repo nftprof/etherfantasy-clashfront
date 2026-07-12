@@ -1,0 +1,92 @@
+{
+  "_meta": {
+    "title": "Clash Front PentaPet domains + combat rings",
+    "author": "Map-maker session, 2026-07-07 (owner-locked)",
+    "note": "7 nature DOMAINS group the 17 pet species. A Master commands a domain (buffs all its elements). Domains overlay the zone/region maps — they do not change which species live where.",
+    "combatRule": "In a triangle [A,B,C]: A beats B, B beats C, C beats A. Beast is the neutral baseline (no advantage/weakness). Light>Shadow is the marquee; it maps onto the sky(Light)<->underworld(Shadow) world axis.",
+    "reconcile": "CHECK the MOBA client for an existing type-advantage chart (OP48/network) before finalizing damage multipliers; align to it if it exists."
+  },
+  "domains": {
+    "Wild": {
+      "elements": [
+        "Leaf",
+        "Insect"
+      ],
+      "feel": "growth, forests, swarms"
+    },
+    "Tide": {
+      "elements": [
+        "Water",
+        "Ice"
+      ],
+      "feel": "seas, rivers, frost"
+    },
+    "Ember": {
+      "elements": [
+        "Fire",
+        "Dragon"
+      ],
+      "feel": "flame, dragons"
+    },
+    "Stone": {
+      "elements": [
+        "Earth",
+        "Iron",
+        "Rock"
+      ],
+      "feel": "mountains, metal, siege"
+    },
+    "Light": {
+      "elements": [
+        "Lightning",
+        "Flyer",
+        "Telepath"
+      ],
+      "feel": "radiance, sky, the mind"
+    },
+    "Shadow": {
+      "elements": [
+        "Phantom",
+        "Mystic",
+        "Toxin"
+      ],
+      "feel": "spectral, dark arcane, blight"
+    },
+    "Beast": {
+      "elements": [
+        "Neutral",
+        "Combat"
+      ],
+      "feel": "mundane warriors & beasts (neutral baseline)"
+    }
+  },
+  "combat": {
+    "triangles": [
+      {
+        "name": "Elemental",
+        "cycle": [
+          "Tide",
+          "Ember",
+          "Wild"
+        ]
+      },
+      {
+        "name": "Cosmic",
+        "cycle": [
+          "Light",
+          "Shadow",
+          "Stone"
+        ]
+      }
+    ],
+    "neutral": "Beast",
+    "beats": {
+      "Tide": "Ember",
+      "Ember": "Wild",
+      "Wild": "Tide",
+      "Light": "Shadow",
+      "Shadow": "Stone",
+      "Stone": "Light"
+    }
+  }
+}

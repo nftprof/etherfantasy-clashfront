@@ -202,6 +202,22 @@ export can be converted to the documented format. See `data/README.md`.
     power). `data/zone-registry.json _meta.charScale` + `docs/briefs/DIMINUTION-SCALE-SPEC.md`;
     lore = the Stair's shrinking never fully reverses (`WORLD-CHRONICLE.md`).
 
+22. **ESTATE BOARD BATTLE + POI 3D (2026-07-10, LOCKED — map decision, was #18 on the nftprof mirror):**
+    an estate battle = **ONE battle in command view across the ENTIRE estate map** (EPIC = the full
+    ~200-parcel board), many players + many armies simultaneously, attacks from ALL directions (enter
+    any edge, converge, encircle, cut roads; defenders sortie) — never a linear stage chain. Within it,
+    a fixed count of **HERO-MODE POI parcels** (LARGE 3 / GIANT 5 / EPIC 8 — castle always, +
+    gates/bridge/harbour/keeps) are the ONLY places a local engagement can open a live ±161 3D match
+    (Master's units must be there; decisions 15/16 fee/slot economics bound live windows; result feeds
+    back into the board battle). SMALL/MEDIUM estates = a single-parcel battle. The sequential "win N in
+    a row" gauntlet is the explicit FALLBACK only. SUPERSEDES the docs/04 §7b per-hex component campaign.
+    Fortification ladder: EPIC=PALACE / GIANT=CASTLE / LARGE=KEEP / MEDIUM=manor iff town anchor /
+    SMALL=nothing baked. Field generators emit `heroParcels[]` per castle estate (DONE, all zones). Full
+    text: `docs/maps/CONTINUOUS-WORLD-TERRAIN.md` §3c/§3d + §3e overworld connections + §3b 12-continent
+    city/era plan (all 8 surface+UW fields DELIVERED `data/world-terrain/`). Airship/depth travel canon:
+    `zoneLinks` (surface→HS1 gateway→HS2|HS3, war-severed; the Diminishing Stair ENT→UW2; Shaft
+    HUB→UW1). EF Hunt plays MMORPG-style in these maps (Tianxia→UW3; POI parcels = scene anchors).
+
 ## 📜 v0.2 VISION BIBLE (2026-07-02): `docs/VISION-BIBLE-v0.2.md` + `docs/ADDENDUM-E-PentaPet-Species-Affinity.pdf`
 Overarching new spec from the product owner: PentaPets = the living population (workers/soldiers/
 units, species affinities), terraforming, geology/materials, blueprint NFTs, living cities.

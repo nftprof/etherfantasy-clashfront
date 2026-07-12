@@ -82,6 +82,34 @@ curl -fsS https://map.etherfantasy.com/healthz    # → ok
 
 No cert/vhost rework needed — only the `proxy_pass` port changes.
 
+## Retire the old `:8090` maps mount (owner-approved 2026-07-11 — "we only use map.etherfantasy.com")
+
+`map.etherfantasy.com` → `:8150` (the standalone map-service) is now the ONLY map path. The old maps
+API mounted in the MOBA lobby (`:8090`) is superseded and must stop sharing `~/ef-battlefields` —
+two writers on one registry race and serve each other stale rows (the exact bug the deploy session
+hit). Box steps (needs SSH; run once):
+
+1. **Confirm nginx points to `:8150`** (the deploy session already did this): `grep proxy_pass
+   /etc/nginx/sites-available/map.etherfantasy.com` → `:8150`. If not, do the one-line repoint above.
+2. **⚠ Check what else `:8090` serves before stopping it.** `:8090` is `ef-moba-lobby` — it may still
+   serve the MOBA game lobby (auth/matchmaking), not only maps. So:
+   - If `:8090` is **ONLY** the maps mount (fully superseded) → stop it: `pm2 stop ef-moba-lobby &&
+     pm2 delete ef-moba-lobby && pm2 save`.
+   - If `:8090` **also** serves the live MOBA lobby → do NOT kill it; instead remove its maps route
+     (or point ITS maps at a throwaway dir) so it stops writing `~/ef-battlefields`. The map-service
+     (`:8150`) becomes the sole writer.
+   - Belt-and-suspenders alternative (no `:8090` change): give the map-service its **own** registry —
+     start `ef-map-service` with `MAPS_DIR=$HOME/ef-map-registry` (a fresh dir) so the two processes
+     never share storage. Trade-off: existing frozen/owner designs in `~/ef-battlefields` would need
+     a one-time copy into the new dir.
+3. **Verify one writer:** `lsof +D ~/ef-battlefields 2>/dev/null | awk '{print $2}' | sort -u` should
+   show only the `:8150` process. Then `curl -fsS https://map.etherfantasy.com/healthz` → ok.
+
+Recommended: option in step 2 that leaves the live MOBA lobby untouched if it's still needed —
+retire the maps ROUTE, not necessarily the whole process. The owner's intent ("retire the old map
+path/site") is satisfied the moment `~/ef-battlefields` has a single writer and the public map path
+is `map.etherfantasy.com → :8150` only.
+
 ## Last mile — generated maps in live battles
 
 The maps loop closes in two steps CF already ships:

@@ -47,12 +47,25 @@ function edgeSeedsFor(g, G) {
     return out;
   }
   const h = G / 2;
+  const rim = new Uint8Array(G * G);
   for (let z = 0; z < G; z++) for (let x = 0; x < G; x++) {
     const i = gIdx(G, x, z);
     if (g[i] === T.OOB) continue;
-    let rim = x === 0 || z === 0 || x === G - 1 || z === G - 1;
-    if (!rim) for (const [dx, dz] of N4) { if (g[gIdx(G, x + dx, z + dz)] === T.OOB) { rim = true; break; } }
-    if (!rim) continue;
+    let r = x === 0 || z === 0 || x === G - 1 || z === G - 1;
+    if (!r) for (const [dx, dz] of N4) { if (g[gIdx(G, x + dx, z + dz)] === T.OOB) { r = true; break; } }
+    if (r) rim[i] = 1;
+  }
+  // A rim cell BORDERS OOB, so on the eroded grid it can never open (its OOB neighbour blocks the
+  // width-3 test) — seeding the quadrant bands with the rim itself made EVERY polygon parcel fail
+  // all 4 passes and take the straight cross-fallback carve. Seed ONE CELL INWARD instead (rim-
+  // adjacent, non-rim): the innermost cell a width-3 corridor can actually reach. Thin sliver
+  // lobes with no inward cell leave their quadrant empty = vacuously ok (unchanged rule).
+  for (let z = 0; z < G; z++) for (let x = 0; x < G; x++) {
+    const i = gIdx(G, x, z);
+    if (g[i] === T.OOB || rim[i]) continue;
+    let near = false;
+    for (const [dx, dz] of N4) { const nx = x + dx, nz = z + dz; if (inG(G, nx, nz) && rim[gIdx(G, nx, nz)]) { near = true; break; } }
+    if (!near) continue;
     const dx = x - h, dz = z - h;
     (Math.abs(dz) >= Math.abs(dx) ? (dz >= 0 ? out.N : out.S) : (dx >= 0 ? out.E : out.W)).push(i);
   }
@@ -175,4 +188,17 @@ export function snapOpen(items, e, G) {
     if (c) { it.x = worldOf(G, c[0]); it.z = worldOf(G, c[1]); }
   }
   return items;
+}
+
+// snapOpen for OPTIONAL anchors (build spots): wider search (sliver polygons can put a blind ring
+// point >12 cells into OOB), and anything STILL unsnappable is DROPPED rather than left on
+// unwalkable ground (CF invariant 3). Spots snappable at r≤12 resolve byte-identically to
+// snapOpen — rMax only extends the same search — so previously-passing maps never change.
+export function snapOpenOrDrop(items, e, G, rMax = 30) {
+  const kept = [];
+  for (const it of items) {
+    const c = nearestOpen(e, G, cellOf(G, it.x), cellOf(G, it.z), rMax);
+    if (c) { it.x = worldOf(G, c[0]); it.z = worldOf(G, c[1]); kept.push(it); }
+  }
+  return kept;
 }

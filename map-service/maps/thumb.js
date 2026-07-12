@@ -11,7 +11,7 @@ const PALETTE_RGB = {
   volcanic: [[60, 52, 50],  [70, 44, 36],  [88, 80, 78],   [190, 74, 30], [50, 44, 44],   [110, 96, 84]],   // water reads as lava
   tundra:   [[168, 178, 182], [96, 116, 110], [140, 146, 150], [110, 140, 160], [120, 126, 132], [180, 172, 158]],
   desert:   [[188, 162, 110], [120, 124, 62], [150, 128, 96], [70, 120, 140], [140, 116, 84], [204, 182, 136]],
-  swamp:    [[74, 88, 58],  [44, 60, 38],  [96, 98, 86],   [58, 74, 52],  [80, 84, 66],   [128, 116, 84]],
+  swamp:    [[74, 88, 58],  [44, 60, 38],  [96, 98, 86],   [46, 78, 92],  [80, 84, 66],   [128, 116, 84]],   // water = murky teal (was ground-green — deltas were invisible)
   ashen:    [[96, 94, 92],  [64, 66, 62],  [118, 114, 110], [70, 80, 92], [84, 80, 78],   [140, 132, 120]],
   sakura:   [[120, 140, 96], [172, 120, 140], [130, 124, 128], [96, 130, 160], [110, 102, 106], [168, 150, 130]],
 };
@@ -48,8 +48,14 @@ export function renderThumb(artifact) {
   for (const r of artifact.resources) dot(r.x, r.z, MARK[r.kind] || MARK.GOLD_MINE, 2);
   for (const s of artifact.spawnZones) if (s.side !== "ANY") dot(s.x, s.z, s.side === "ATTACKER" ? MARK.atk : MARK.def, 3);
   for (const m of artifact.mobs || []) dot(m.x, m.z, [200, 60, 200], 2);          // wild camps (magenta)
-  for (const s of artifact.structures || []) dot(s.x, s.z, [235, 235, 245], 3);   // owned towers (white)
-  const lm = artifact.obstacles.find((o) => o.kind !== "TREE" && o.kind !== "ROCK");
+  // structures by kind: towers white (as before); castle anchors get distinct marks so a castle
+  // parcel's wall ring / gates / keep read on the thumbnail (and on the aerial mosaic)
+  const SKIND = { TOWER: [[235, 235, 245], 3], WALL: [[120, 116, 128], 1], GATE: [[212, 168, 60], 2], CORE: [[240, 210, 90], 3] };
+  for (const s of artifact.structures || []) { const k = SKIND[s.kind] || SKIND.TOWER; dot(s.x, s.z, k[0], k[1]); }
+  // RUIN (the seeded Chronicle layer): a small distinct grey/ashen mark — dark ring, pale core —
+  // so a fallen keep/cairn reads on the thumbnail without shouting like a landmark.
+  for (const o of artifact.obstacles) if (o.kind === "RUIN") { dot(o.x, o.z, [58, 56, 52], 4); dot(o.x, o.z, [204, 200, 190], 2); }
+  const lm = artifact.obstacles.find((o) => o.kind !== "TREE" && o.kind !== "ROCK" && o.kind !== "RUIN" && !o.layer);
   if (lm) dot(lm.x, lm.z, MARK.landmark, 4);
 
   return encodePNG(W, W, px);

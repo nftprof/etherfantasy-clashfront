@@ -1,0 +1,49 @@
+{
+  "_meta": {
+    "layer": "hunt",
+    "zone": "ENT",
+    "owner": "EF Hunt team",
+    "status": "PROPOSED — starter set seeded by Agent D (CF ParcelMap Design Agent) 2026-07-11; the Hunt team owns and edits this file (docs/briefs/WORLD-ELEMENTS-OVERLAY.md contribution flow)",
+    "note": "Carnavale story-start elements for the Hunt journey spine (EF-HUNT-MAP-HANDOFF.md §4): the carnival midway, the Fortune-Teller's Tent (the rite of entry to the Diminishing Stair), the Sambadrome stage, the Velaria mask-seller, and the descenders' queue camp.",
+    "coords": "zone svg coords (same frame as data/world-terrain/ENT.json — viewBox 0 0 289.56 525.86, y down)"
+  },
+  "elements": [
+    {
+      "id": "ENT-HUNT-MIDWAY-TENT",
+      "kind": "QUEST_SITE",
+      "at": [21.2, 449.4],
+      "name": "The Fortune-Teller's Tent",
+      "note": "the crystal-ball tent on the carnival midway, beside the upper mouth of the Diminishing Stair (ENT-STAIR-DIMINISHING) — the Last Fortune is read here before a soul descends",
+      "singularId": "crystal_ball",
+      "loreRef": "docs/lore/WORLD-CHRONICLE.md — Second Age, the rite of entry (the Midway Potion + the Last Fortune)"
+    },
+    {
+      "id": "ENT-HUNT-MIDWAY",
+      "kind": "MARKET",
+      "at": [20.9, 449.7],
+      "name": "The Midway",
+      "note": "the carnival games row on the Grand Carnavale Way — stalls, potions, prizes; where the Midway Potion is bought"
+    },
+    {
+      "id": "ENT-HUNT-SAMBADROME-STAGE",
+      "kind": "STAGE",
+      "at": [20.6, 450.1],
+      "name": "The Sambadrome Stage",
+      "note": "the parade stage of the Grand Sambadrome (ENT-SAMBADROME) — the festival avenue's performance heart"
+    },
+    {
+      "id": "ENT-HUNT-MASK-SELLER",
+      "kind": "NPC",
+      "at": [56.2, 472.0],
+      "name": "The Mask-Seller of Lantern Plaza",
+      "note": "mask stall on Lantern Plaza (ENT-PLAZA), the Velaria Quarter's masked-festival square between the canal reaches"
+    },
+    {
+      "id": "ENT-HUNT-DESCENDERS-REST",
+      "kind": "CAMP",
+      "at": [21.0, 449.0],
+      "name": "Descenders' Rest",
+      "note": "the queue camp on the approach to the Fortune-Teller's Tent — thousands queue behind you for the Stair, per the Chronicle; single file, one soul at a time"
+    }
+  ]
+}
