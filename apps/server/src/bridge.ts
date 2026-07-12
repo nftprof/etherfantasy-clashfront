@@ -110,6 +110,8 @@ export interface BridgeCommandOut {
   targetId?: string;
   /** Present for stance (sprint #4; engine whitelist — CLEAR also clears the rally). */
   stance?: 'ALL_IN' | 'DEFEND' | 'FOLLOW' | 'CLEAR';
+  /** rally only: 1 = append as a waypoint (shift+right-click) instead of replacing the flag. */
+  queue?: 1;
   /** Governor who issued it ('' when exhibition commands are open to any viewer). */
   by: string;
   /** Wall-clock ms when queued (freshness hint for the AI officer). */
@@ -517,7 +519,10 @@ export class BridgeHub {
       const vy = Math.max(0, Math.min(b.size, c!['y'] as number));
       const m = viewerToMoba(vx, vy, b.size);
       out = { seq: b.nextSeq++, kind, x: Math.round(m.x * 10) / 10, z: Math.round(m.z * 10) / 10, by: governorId, atMs };
-      if (kind === 'rally') b.rally = { x: vx, y: vy };
+      if (kind === 'rally') {
+        if (c?.['queue'] === 1) out.queue = 1;      // waypoint append — engine chains it
+        else b.rally = { x: vx, y: vy };            // plain rally: the echoed flag moves
+      }
     } else if (kind === 'focus' && typeof c?.['targetId'] === 'string') {
       out = { seq: b.nextSeq++, kind: 'focus', targetId: c['targetId'], by: governorId, atMs };
       b.focus = c['targetId'];
