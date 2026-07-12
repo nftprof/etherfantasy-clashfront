@@ -49,26 +49,41 @@ quays (`ENT-PORT-LANTERNSHORE`, `ENT-PORT-SUNSTRAND`) are **local ports** (intra
 mark them as ports, not necessarily as inter-continent lanes. The prestige isles **Olympus (CGI)** and
 **Fortuna (KOL)** are reachable by sea (these ports) AND air (their skydocks, §3) — never by land.
 
-## 3. AIRSHIP ways — to the sky isles (DATA-CONFIRMED via `zoneLinks`; the FF-IV flying ships)
+## 3. AIRSHIP ways — the TIERED CLIMB to heaven (owner-LOCKED 2026-07-11; the FF-IV flying ships)
 
-**Only two airship ways exist, and BOTH go to Empyrea (HS3), not Aeropolis (HS1):**
+**The sky is a tiered climb that MIRRORS the underworld's tiered descent.** Aeropolis (HS1) is the
+**GATE TO HEAVEN** — every surface airship lands there FIRST; you then ascend HS1 → HS2 → HS3, with
+**Empyrea (HS3) the PINNACLE** (reached last). There is **no surface→HS2/HS3 direct route** — the two
+upper isles are reached only *through* the gateway.
 
-| Airship way | Surface anchor | Sky anchor | Status |
+| Airship way | From anchor | To anchor | Note |
 |---|---|---|---|
-| **Arcadia ↔ Empyrea (HS3)** | EDU airship dock ⚠ *not yet marked — owes an EDU-PORT-SKY POI* | HS3 gateway (field unbuilt) | existing — keep |
-| **Porthaven ↔ Empyrea (HS3)** | `BUS-PORT-SKY` @[296,178] (Skyreach Anchorage) | HS3 gateway (field unbuilt) | ADDED 2026-07-11 |
+| **Arcadia → Aeropolis (HS1)** | EDU airship dock ⚠ *owes an `EDU-PORT-SKY` POI* | HS1 Gateway Anchorage (`gateway_dock`; field unbuilt) | surface → the gateway |
+| **Porthaven → Aeropolis (HS1)** | `BUS-PORT-SKY` @[296,178] (Skyreach) | HS1 Gateway Anchorage | surface → the gateway |
+| **Aeropolis → Emberfall (HS1→HS2)** | HS1 | HS2 (field unbuilt) | ascend, tier 2 |
+| **Emberfall → Empyrea (HS2→HS3)** | HS2 | HS3 (field unbuilt) | ascend to the **pinnacle** |
 
-Tianxia also has an airship berth (`HUB-PORT-SKY` @[305,64], Yong'an Sky Dock) but **no airship route
-is defined from it** — do not draw one unless the owner adds it. The isles' skydocks (`CGI-SKYDOCK`,
-`KOL-SKYDOCK`) are how the prestige isles are reached by air.
+**The mirror (why it's built this way):** the underworld DESCENDS `(Shaft) HUB → UW1 → UW2 → UW3` with
+**Luxuria (UW3) the deepest**; the sky ASCENDS `surface → HS1 → HS2 → HS3` with **Empyrea (HS3) the
+highest**. Each tier carries intentional per-level rule variation (owner: *"intentional variation of
+UW rules, one level deeper than the other"* — e.g. the Diminution `charScale` deepens by level).
 
-> ⚠ **OPEN OWNER DECISION — the Aeropolis gateway.** Lore-wise, **HS1 Aeropolis is the "Cloud Gateway
-> Isle"** — `gateway_dock` = *"the first mooring above the clouds; ascent is earned here or nowhere."*
-> So the natural topology is: surface airships land at **Aeropolis (HS1) first**, then travel deeper
-> into the sky (HS1→HS2→HS3). The current `zoneLinks` instead route surface→HS3 directly, skipping the
-> gateway. **The live map showing Aeropolis↔Arcadia may be an attempt at the gateway model.** Owner to
-> rule: (a) keep direct surface↔HS3, or (b) re-route all surface airships through **Aeropolis (HS1)**
-> as the gateway, with HS1→HS2→HS3 as the internal sky chain. Until ruled, the DATA says HS3.
+**The War of the Sky Throne (owner lore 2026-07-11).** The `HS2 → HS3` link is a **contested war
+front**, not a calm ascent: **Emberfall (HS2) = the FALLEN ANGELS** (Ember*fall* — the name is the
+tell), corrupted out of the underworld (UW), returned to heaven to **claim the throne** — at war with
+**Empyrea (HS3)**, the rightful pinnacle. So the sky's top two tiers are a live conflict: Empyrea holds
+the summit; Emberfall assaults it from below with UW-tainted power. (Overworld: mark the HS2↔HS3 link
+as a war front / contested, once those fields are built. Belongs in `docs/lore/WORLD-CHRONICLE.md` —
+flagged to the lore session; it also deepens the sky/underworld mirror: the corruption that sank into
+the deep now rises to besiege the height.)
+
+Tianxia has an airship berth (`HUB-PORT-SKY` @[305,64], Yong'an Sky Dock) but **no route is defined
+from it** — do not draw one unless the owner adds it. The prestige isles' skydocks (`CGI-SKYDOCK`,
+`KOL-SKYDOCK`) are how **Olympus/Fortuna** are reached by air (they are NOT part of the sky climb —
+they sit in the surface bay).
+
+⚠ **Fix the live map:** it routes surface→HS3 (or Aeropolis↔Arcadia loosely) — replace with the chain
+above: **surface → HS1 → HS2 → HS3**, gateway first, Empyrea last.
 
 ## 4. The SECRET Stair — Mythoria → Blackmere (DATA-CONFIRMED; NOT a public route)
 
