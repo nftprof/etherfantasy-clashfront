@@ -189,3 +189,16 @@ export function snapOpen(items, e, G) {
   }
   return items;
 }
+
+// snapOpen for OPTIONAL anchors (build spots): wider search (sliver polygons can put a blind ring
+// point >12 cells into OOB), and anything STILL unsnappable is DROPPED rather than left on
+// unwalkable ground (CF invariant 3). Spots snappable at r≤12 resolve byte-identically to
+// snapOpen — rMax only extends the same search — so previously-passing maps never change.
+export function snapOpenOrDrop(items, e, G, rMax = 30) {
+  const kept = [];
+  for (const it of items) {
+    const c = nearestOpen(e, G, cellOf(G, it.x), cellOf(G, it.z), rMax);
+    if (c) { it.x = worldOf(G, c[0]); it.z = worldOf(G, c[1]); kept.push(it); }
+  }
+  return kept;
+}

@@ -20,7 +20,7 @@
 import { makeRng } from "../sim/rng.js";
 import { clampParams, budgetFor, ARCHETYPES, PALETTES, LANDMARKS, BARRIER_KINDS, T, CELL_M, gIdx, inG, cellOf, worldOf, isBlocked, b64, pointInPoly } from "./schema.js";
 import { archetypes } from "./archetypes.js";
-import { validateAndRepair, snapOpen, erode, routesToCenter } from "./validate.js";
+import { validateAndRepair, snapOpen, snapOpenOrDrop, erode, routesToCenter } from "./validate.js";
 import { executeFeatures } from "./features.js";
 import { loadWorldField, featuresForParcel, fitToArena } from "./worldfield.js";
 import { ruinLore, RUIN_TYPES } from "./chronicle.js";
@@ -895,7 +895,7 @@ export function generate(parcel, params = null, designVersion = 0) {
     ...edgeEntries,                                                      // one arrival point per edge midpoint
     { id: "center", side: "OBJECTIVE", edge: "C", x: 0, z: 0 },          // SIEGE/GUARD/DOMINION hold-point
   ];
-  const buildSpots = [];
+  let buildSpots = [];
   for (let i = 0; i < 6; i++) {                               // ring of anchors around the defender CC
     const a = (i / 6) * Math.PI * 2;
     buildSpots.push({ anchorId: "bs_ring" + i, x: r1(base.x + Math.cos(a) * 22), z: r1(base.z + Math.sin(a) * 22), size: 6 });
@@ -949,7 +949,7 @@ export function generate(parcel, params = null, designVersion = 0) {
 
   // 5) validate + repair (edge corridors, base clearing, safety net) then snap points to open
   const v = validateAndRepair(g, G, base, laneStarts);
-  snapOpen(resources, v.eroded, G); snapOpen(buildSpots, v.eroded, G); snapOpen(spawnZones, v.eroded, G);
+  snapOpen(resources, v.eroded, G); buildSpots = snapOpenOrDrop(buildSpots, v.eroded, G); snapOpen(spawnZones, v.eroded, G);
   const lanes = net.lanes.map((wp) => wp.map(([x, z]) => [r1(x), r1(z)]));
   // per-edge NPC routes: entry→center chain for every arrival edge (multi-sided modes). lanes[]
   // stays the DUEL attacker→base push; routes[] is what a unit arriving from an arbitrary edge
