@@ -106,7 +106,9 @@ export function createBattle({ store, ui, send, ftue }) {
       `.bt-stances button.on{border-color:#ffd76a;color:#ffd76a;background:#1c1a12;}` +
       `.bt-compass{position:absolute;left:12px;bottom:12px;z-index:6;background:rgba(10,14,19,0.85);` +
       `border:1px solid #26313f;border-radius:6px;padding:3px 8px;color:#8ea1b5;` +
-      `font:11px "Segoe UI",system-ui,sans-serif;pointer-events:none;}`;
+      `font:11px "Segoe UI",system-ui,sans-serif;pointer-events:none;}` +
+      `.bt-duel{border-color:#7a3b2e!important;color:#ffceba!important;background:linear-gradient(180deg,#2a1712,#1c0f0b)!important;}` +
+      `.bt-duel:hover:not(:disabled){border-color:#ffd76a!important;color:#ffd76a!important;}`;
     document.head.appendChild(s);
   })();
 
@@ -1080,7 +1082,12 @@ export function createBattle({ store, ui, send, ftue }) {
           // (real MOBA client match); ONE-HERO rule — commanding pauses there.
           (field.joinUrl
             ? `<button class="bt-hero live" data-bt="hero" title="Hero Mode — drop into this battle as your Master in the full MOBA client. While embodied you cannot issue commands here (one-hero rule).">⚡ Take the field</button>`
-            : `<button class="bt-hero" disabled title="Hero Mode — drop into this battle as your Master (full MOBA combat). Coming soon.">⚡ Take the field<span class="soon">SOON</span></button>`)
+            : `<button class="bt-hero" disabled title="Hero Mode — drop into this battle as your Master (full MOBA combat). Coming soon.">⚡ Take the field<span class="soon">SOON</span></button>`) +
+          // HERO DUEL (decision 14 / HERO-DUEL-SPEC.md): challenge the enemy
+          // commander to a best-of-3 card duel — champions settle it, troops are
+          // spared. Opens the duel overlay OVER command mode when the server
+          // replies with duel_open.
+          `<button class="bt-duel" data-bt="duel" title="Challenge the enemy commander to a HERO DUEL — champions settle it, troops are spared (best-of-3 cards; your Master's rating + any Named artifact decide it).">⚔ Duel</button>`
         : '') +
       `<button data-bt="legend" title="Map legend — what every mark on this map means">ⓘ</button>` +
       `<button data-bt="leave">✕ Leave</button></div>` +
@@ -1116,6 +1123,13 @@ export function createBattle({ store, ui, send, ftue }) {
       send({ t: 'battle_cmd', battleId: openId, cmd: { kind: 'stance', stance: btn.dataset.st } });
       btn.classList.add('on');                       // optimistic; snapshot echo confirms
       if (btn.dataset.st === 'CLEAR') { rallyPendingUntil = 0; rallyQueue = []; }
+    }
+    else if (btn.dataset.bt === 'duel') {
+      // Challenge the enemy commander to a hero duel (server derives the target
+      // from this battle). The duel overlay opens over command mode on duel_open.
+      send({ t: 'duel_challenge', battleId: openId });
+      btn.disabled = true;
+      ui?.toast?.('⚔ Duel', 'Challenge sent — the champions square off…', 'info');
     }
     else if (btn.dataset.bt === 'steer') { steer = !steer; renderHud(); }
     else if (btn.dataset.bt === 'hero' && field?.joinUrl) {

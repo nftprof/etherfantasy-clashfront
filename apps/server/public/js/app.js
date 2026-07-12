@@ -10,6 +10,7 @@ import { createUI } from './ui.js';
 import { createFTUE } from './ftue.js';
 import { createEcon } from './econ.js';
 import { createBattle } from './battle.js';
+import { createDuel } from './duel.js';
 import { createWorld } from './world.js';
 import { esc, fmtCT, fmtDur, fmtProv, initAvatarMissTracking, preloadHeroAvatars } from './util.js';
 
@@ -275,6 +276,8 @@ const econ = createEcon({ store, map, ui }); // FS3 — 💰 economy dashboard
 // LIVE wild-battle viewer (docs/04 §7b) — WS battle channel through the live socket.
 const battle = createBattle({ store, ui, send: (m) => ws?.send(m), ftue });
 ftue.registerBattleCoach(() => battle.startCoach(true)); // 📖 library replay hook
+// ⚔ HERO DUEL overlay (decision 14 / HERO-DUEL-SPEC.md) — opens OVER command mode.
+const duel = createDuel({ ui, send: (m) => ws?.send(m) });
 initAvatarMissTracking(); // officer avatars: 404s degrade to medallions, once, silently
 preloadHeroAvatars();
 
@@ -298,6 +301,32 @@ document.getElementById('btn-world').addEventListener('click', (e) => {
     ?? [...store.armies.values()][0]?.parcelId;
   world.toggle({ homeParcelId });
 });
+
+// ⚔ DEV force-duel — a preview shortcut (HERO-DUEL-SPEC.md). The real entry is the
+// ⚔ Duel button in command mode (during a live battle); this lets you preview the
+// card overlay INSTANTLY without setting up a battle, by challenging another
+// governor directly (prefers the NPC kingdom, which is always present → its
+// Master auto-picks). Gated: add ?dev=1 to the URL, or set localStorage.cf_dev='1'.
+(function devDuel() {
+  const on = new URLSearchParams(location.search).has('dev') || localStorage.getItem('cf_dev') === '1';
+  if (!on) return;
+  const btn = document.createElement('a');
+  btn.href = '#';
+  btn.id = 'btn-duel-dev';
+  btn.className = 'head-btn';
+  btn.title = 'DEV: force a hero duel now (challenges the NPC kingdom or another player) — previews the card overlay without a battle';
+  btn.textContent = '⚔';
+  document.getElementById('rail-head')?.appendChild(btn);
+  btn.addEventListener('click', (e) => {
+    e.preventDefault();
+    const me = store.me?.governorId;
+    const others = [...store.players.values()].filter((p) => p.governorId !== me);
+    const target = others.find((p) => p.kind === 'NPC_KINGDOM' || p.kind === 'SYSTEM') ?? others[0];
+    if (!target) { ui.toast('⚔ Duel', 'No other governor to duel yet — wait for the NPC or another player.', 'bad'); return; }
+    ws?.send({ t: 'duel_challenge', targetGovernorId: target.governorId });
+    ui.toast('⚔ Duel (dev)', `Challenging ${esc(target.name)}…`, 'info');
+  });
+})();
 
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') { ui.selectArmy(null); ui.closePopover(); ui.closeCard(); }
@@ -492,6 +521,19 @@ function handleEvents(events) {
         if (mine) ui.raidAlert(ev.armyId, ev.toParcelId, who);
         break;
       }
+      case 'duel_resolved': { // ⚔ HERO DUEL settled (decision 14) — champions settle it, troops spared
+        // The two duellists already saw the live overlay; this is the world beat
+        // for bystanders (and a fallback if a participant's overlay was closed).
+        const iChallenged = store.isMine(ev.challengerGovernorId);
+        const iDefended = store.isMine(ev.targetGovernorId);
+        if (iChallenged || iDefended) {
+          const iWon = (iChallenged && ev.challengerWon) || (iDefended && !ev.challengerWon);
+          ui.feedPush(`⚔ Duel: ${esc(ev.winnerName)} bested ${esc(ev.loserName)}${iWon ? '' : ' ⚠'}`, 't-battle', ev.parcelId);
+        } else {
+          ui.feedPush(`⚔ ${esc(ev.winnerName)} won a duel against ${esc(ev.loserName)}`, 't-battle', ev.parcelId);
+        }
+        break;
+      }
       case 'army_arrived': {
         if (movedByBattle.has(ev.armyId)) { marchDest.delete(ev.armyId); break; } // retreat/scatter toast covers it
         const dest = marchDest.get(ev.armyId);
@@ -533,6 +575,7 @@ function openWS() {
   ws = connectWS(token, {
     onStatus: (s) => ui.setConn(s),
     onMessage: (msg) => {
+      if (typeof msg.t === 'string' && msg.t.startsWith('duel_')) { duel.onMsg(msg); return; }
       if (typeof msg.t === 'string' && msg.t.startsWith('battle_')) { battle.onMsg(msg); return; }
       if (msg.t !== 'tick') return;
       store.applyTick(msg);   // deltas first, so event rendering sees fresh views

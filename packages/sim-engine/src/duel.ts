@@ -82,29 +82,46 @@ function npcPick(roll: number): DuelCard {
   return DUEL_CARDS[Math.min(DUEL_CARDS.length - 1, Math.floor(roll * DUEL_CARDS.length))];
 }
 
+/** Effective (artifact-adjusted) ratings + A's win-share — the odds base for a matchup. */
+export function duelEffective(A: DuelSide, D: DuelSide, cfg: Balance['duel']): { effA: number; effD: number; shareA: number } {
+  const effA = Math.max(1, A.rating) * artifactMult(A, cfg);
+  const effD = Math.max(1, D.rating) * artifactMult(D, cfg);
+  return { effA, effD, shareA: effA / (effA + effD) };
+}
+
 /**
- * Resolve one round. Order (each stage draws an independent, order-stable child
- * stream so branches never desync):
- *   1. cards chosen (human pick overrides NPC)
- *   2. artifact signature proc (each side, low prob) — a lone proc takes the round
- *   3. initiative (rating) — a lone seize dictates the exchange, taking the round
- *   4. cards decide (RPS); a tie → higher effective rating ± ratingSwing
+ * The deterministic NPC card for a side in a given round — the auto-pick used
+ * when no online human picks in time. The live server MUST use this so an
+ * offline (auto) duel and an online (round-driven) duel with the same non-picks
+ * produce byte-identical outcomes.
  */
-function resolveRound(
-  round: number,
+export function duelNpcCard(seed: string, round: number, side: 'A' | 'D'): DuelCard {
+  const r = createRng(`${seed}/duel/round${round}`);
+  return npcPick(r.fork(side === 'A' ? 'cardA' : 'cardD').next());
+}
+
+/**
+ * Resolve ONE round given the FINAL cards both sides played (already decided:
+ * human pick or `duelNpcCard`). Order — each stage draws an independent,
+ * order-stable child stream so branches never desync:
+ *   1. artifact signature proc (each side, low prob) — a lone proc takes the round
+ *   2. initiative (rating) — a lone seize dictates the exchange, taking the round
+ *   3. cards decide (RPS); a tie → higher effective rating ± ratingSwing
+ * Pure + deterministic on (seed, round, cards, ratings, cfg).
+ */
+export function resolveDuelRound(
   A: DuelSide,
   D: DuelSide,
   shareA: number,
-  humanA: DuelPicks,
-  humanD: DuelPicks,
+  round: number,
+  cA: DuelCard,
+  cD: DuelCard,
+  seed: string,
   cfg: Balance['duel'],
-  rootSeed: string,
 ): DuelRound {
-  const r = createRng(`${rootSeed}/round${round}`);
-  const cA = humanA[round] ?? npcPick(r.fork('cardA').next());
-  const cD = humanD[round] ?? npcPick(r.fork('cardD').next());
+  const r = createRng(`${seed}/duel/round${round}`);
 
-  // 2. artifact signature proc
+  // 1. artifact signature proc
   const procA = !!A.artifactId && r.fork('procA').next() < cfg.signatureProcChance;
   const procD = !!D.artifactId && r.fork('procD').next() < cfg.signatureProcChance;
   if (procA !== procD) {
@@ -112,31 +129,32 @@ function resolveRound(
     const who = procA ? A : D;
     return {
       round, cA, cD, by: side, reason: 'PROC',
-      proc: { side, artifactId: who.artifactId as string, label: who.artifactName ?? who.artifactId as string },
+      proc: { side, artifactId: who.artifactId as string, label: who.artifactName ?? (who.artifactId as string) },
     };
   }
 
-  // 3. initiative (rating dominates here)
+  // 2. initiative (rating dominates here)
   const seizeA = r.fork('initA').next() < initiativeProb(shareA, cfg);
   const seizeD = r.fork('initD').next() < initiativeProb(1 - shareA, cfg);
   if (seizeA !== seizeD) {
     return { round, cA, cD, by: seizeA ? 'A' : 'D', reason: 'INITIATIVE' };
   }
 
-  // 4. cards decide
+  // 3. cards decide
   const clash = rps(cA, cD);
   if (clash !== 'TIE') return { round, cA, cD, by: clash, reason: 'CLASH' };
 
   // tie → effective rating with a bounded swing so the underdog can steal it
   const swing = (r.fork('swing').next() * 2 - 1) * cfg.ratingSwing; // ±ratingSwing
-  const edgeA = shareA + swing;
-  return { round, cA, cD, by: edgeA >= 0.5 ? 'A' : 'D', reason: 'RATING' };
+  return { round, cA, cD, by: shareA + swing >= 0.5 ? 'A' : 'D', reason: 'RATING' };
 }
 
 /**
  * Resolve a full best-of-3 card duel. `humanPicksA/D` supply any live card picks
- * (missing rounds ⇒ NPC). The returned `rounds[]` is the deterministic replay
- * script the card UI reveals beat-by-beat. Stops at the first side to reach 2.
+ * (missing rounds ⇒ `duelNpcCard`). The returned `rounds[]` is the deterministic
+ * replay script the card UI reveals beat-by-beat. Stops at the first side to
+ * reach 2. Built from the same blocks the live round-driven loop uses, so the
+ * offline (auto) and online (round-driven) paths can never disagree.
  */
 export function resolveDuel(
   A: DuelSide,
@@ -146,16 +164,14 @@ export function resolveDuel(
   humanPicksD: DuelPicks = {},
   cfg: Balance['duel'],
 ): DuelResult {
-  const rootSeed = `${seed}/duel`;
-  const effA = Math.max(1, A.rating) * artifactMult(A, cfg);
-  const effD = Math.max(1, D.rating) * artifactMult(D, cfg);
-  const shareA = effA / (effA + effD);
-
+  const { effA, effD, shareA } = duelEffective(A, D, cfg);
   const rounds: DuelRound[] = [];
   let winsA = 0;
   let winsD = 0;
   for (let round = 1; round <= 3; round++) {
-    const res = resolveRound(round, A, D, shareA, humanPicksA, humanPicksD, cfg, rootSeed);
+    const cA = humanPicksA[round] ?? duelNpcCard(seed, round, 'A');
+    const cD = humanPicksD[round] ?? duelNpcCard(seed, round, 'D');
+    const res = resolveDuelRound(A, D, shareA, round, cA, cD, seed, cfg);
     rounds.push(res);
     if (res.by === 'A') winsA++;
     else winsD++;

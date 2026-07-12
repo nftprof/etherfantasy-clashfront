@@ -19,6 +19,14 @@ import { readFile } from 'node:fs/promises';
 import * as http from 'node:http';
 import { extname, join, normalize } from 'node:path';
 import { WebSocketServer, type WebSocket } from 'ws';
+import {
+  duelEffective,
+  duelNpcCard,
+  resolveDuelRound,
+  type DuelCard,
+  type DuelRound,
+  type DuelSide,
+} from '@clashfront/sim-engine';
 import { allocateBattle, type BattleEngineConfig, verifyCallbackSignature } from './battleEngine';
 import { BridgeHub } from './bridge';
 import { ApiError, type Game, type TickResult } from './game';
@@ -81,6 +89,29 @@ const MIME: Record<string, string> = {
   '.ico': 'image/x-icon',
 };
 
+/** In-flight state for one real-time card duel (server-side; the sim resolver decides each round). */
+interface DuelSession {
+  duelId: string;
+  seed: string;
+  A: DuelSide;
+  D: DuelSide;
+  shareA: number;
+  cfg: ReturnType<Game['duelConfig']>;
+  challengerGovernorId: string;
+  targetGovernorId: string;
+  parcelId?: string;
+  round: number;
+  winsA: number;
+  winsD: number;
+  rounds: DuelRound[];
+  picks: { A?: DuelCard; D?: DuelCard };
+  /** Sides with an online human who may pick this duel; the rest auto-pick (NPC). */
+  humanSides: Set<'A' | 'D'>;
+  timer?: NodeJS.Timeout;
+  wasLive: boolean;
+  done: boolean;
+}
+
 export class ClashServer {
   readonly http: http.Server;
   private readonly wss = new WebSocketServer({ noServer: true });
@@ -95,6 +126,8 @@ export class ClashServer {
   private battleTimer?: NodeJS.Timeout;
   /** LIVE wild-battle spectators: battleId → sockets receiving battle_tick frames. */
   private readonly battleSubs = new Map<string, Set<WebSocket>>();
+  /** Active HERO-vs-HERO card duels (real-time; docs/briefs/HERO-DUEL-SPEC.md). */
+  private readonly duels = new Map<string, DuelSession>();
   /** /api/economy response cache (10 s wall clock — server boundary, never the sim). */
   private economyCache?: { body: string; at: number };
   /**
@@ -241,6 +274,8 @@ export class ClashServer {
           deltas: this.game.deltasFor(governorId),
           // Recently-resolved review ring (docs/04 §7b) — fog-filtered, newest-first.
           recentBattles: this.game.recentBattlesFor(governorId),
+          // Recently-settled hero-duel ring (HERO-DUEL-SPEC.md) — fog-filtered, newest-first.
+          recentDuels: this.game.recentDuelsFor(governorId),
         });
         perGovernor.set(governorId, msg);
       }
@@ -553,6 +588,169 @@ export class ClashServer {
       }
       return;
     }
+    // ── HERO-vs-HERO card duel (docs/briefs/HERO-DUEL-SPEC.md) ──────────────────
+    if (t === 'duel_challenge') {
+      try {
+        this.startDuel(governorId, {
+          targetGovernorId: typeof msg['targetGovernorId'] === 'string' ? msg['targetGovernorId'] : undefined,
+          battleId,
+          championId: typeof msg['championId'] === 'string' ? msg['championId'] : undefined,
+        });
+      } catch (e) {
+        if (e instanceof ApiError) ws.send(JSON.stringify({ t: 'duel_err', code: e.code, message: e.message }));
+      }
+      return;
+    }
+    if (t === 'duel_pick') {
+      const duelId = typeof msg['duelId'] === 'string' ? msg['duelId'] : undefined;
+      const round = typeof msg['round'] === 'number' ? msg['round'] : undefined;
+      const card = typeof msg['card'] === 'string' ? (msg['card'] as DuelCard) : undefined;
+      if (duelId !== undefined && round !== undefined && card !== undefined) {
+        this.duelPick(governorId, duelId, round, card);
+      }
+      return;
+    }
+  }
+
+  // ── Duel session orchestration (real-time; the shared sim resolver decides) ──
+
+  /** Send an object to every open socket of a governor (per-governor push). */
+  private sendToGovernor(governorId: string, obj: unknown): void {
+    const raw = JSON.stringify(obj);
+    for (const [ws, gid] of this.clients) {
+      if (gid === governorId && ws.readyState === ws.OPEN) ws.send(raw);
+    }
+  }
+
+  private governorOnline(governorId: string): boolean {
+    for (const [ws, gid] of this.clients) {
+      if (gid === governorId && ws.readyState === ws.OPEN) return true;
+    }
+    return false;
+  }
+
+  /** Begin a card duel. The challenger is always an online human; the target may pick too if online, else NPC. */
+  private startDuel(
+    challengerGovernorId: string,
+    req: { targetGovernorId?: string; battleId?: string; championId?: string },
+  ): void {
+    // One live duel per challenger at a time (anti-spam; the ladder cap lives in canon, this is the transport guard).
+    for (const s of this.duels.values()) {
+      if (s.challengerGovernorId === challengerGovernorId && !s.done) {
+        throw new ApiError(409, 'DUEL_BUSY', 'you are already in a duel');
+      }
+    }
+    const built = this.game.buildDuelChallenge(challengerGovernorId, req);
+    const cfg = this.game.duelConfig();
+    const { shareA } = duelEffective(built.A, built.D, cfg);
+    const humanSides = new Set<'A' | 'D'>(['A']);
+    if (this.governorOnline(built.targetGovernorId)) humanSides.add('D');
+    const session: DuelSession = {
+      duelId: built.duelId,
+      seed: built.seed,
+      A: built.A,
+      D: built.D,
+      shareA,
+      cfg,
+      challengerGovernorId,
+      targetGovernorId: built.targetGovernorId,
+      parcelId: built.parcelId,
+      round: 0,
+      winsA: 0,
+      winsD: 0,
+      rounds: [],
+      picks: {},
+      humanSides,
+      wasLive: false,
+      done: false,
+    };
+    this.duels.set(session.duelId, session);
+    const openMsg = {
+      t: 'duel_open',
+      duelId: session.duelId,
+      seed: session.seed,
+      A: { name: built.A.name, artifact: built.A.artifactName },
+      D: { name: built.D.name, artifact: built.D.artifactName },
+      shareA,
+      pickWindowSec: cfg.pickWindowSec,
+      challengerGovernorId,
+      targetGovernorId: built.targetGovernorId,
+      ...(built.parcelId !== undefined ? { parcelId: built.parcelId } : {}),
+    };
+    this.sendToGovernor(challengerGovernorId, { ...openMsg, yourSide: 'A' });
+    if (humanSides.has('D')) this.sendToGovernor(built.targetGovernorId, { ...openMsg, yourSide: 'D' });
+    this.startDuelRound(session, 1);
+  }
+
+  private startDuelRound(session: DuelSession, round: number): void {
+    session.round = round;
+    session.picks = {};
+    const prompt = { t: 'duel_round_prompt', duelId: session.duelId, round };
+    if (session.humanSides.has('A')) this.sendToGovernor(session.challengerGovernorId, prompt);
+    if (session.humanSides.has('D')) this.sendToGovernor(session.targetGovernorId, prompt);
+    if (session.humanSides.size === 0) {
+      this.finalizeDuelRound(session); // pure-auto path (no online human): resolve at once
+      return;
+    }
+    session.timer = setTimeout(() => this.finalizeDuelRound(session), session.cfg.pickWindowSec * 1000);
+  }
+
+  private duelPick(governorId: string, duelId: string, round: number, card: DuelCard): void {
+    const session = this.duels.get(duelId);
+    if (session === undefined || session.done || session.round !== round) return;
+    if (!(card === 'AGGRESSIVE' || card === 'TRICK' || card === 'DEFENSIVE')) return;
+    const side: 'A' | 'D' | undefined =
+      governorId === session.challengerGovernorId ? 'A' : governorId === session.targetGovernorId ? 'D' : undefined;
+    if (side === undefined || !session.humanSides.has(side)) return;
+    session.picks[side] = card;
+    session.wasLive = true;
+    // Resolve as soon as every online human this round has picked.
+    const allPicked = [...session.humanSides].every((s) => session.picks[s] !== undefined);
+    if (allPicked) {
+      if (session.timer !== undefined) { clearTimeout(session.timer); session.timer = undefined; }
+      this.finalizeDuelRound(session);
+    }
+  }
+
+  private finalizeDuelRound(session: DuelSession): void {
+    if (session.done) return;
+    if (session.timer !== undefined) { clearTimeout(session.timer); session.timer = undefined; }
+    const round = session.round;
+    const cA = session.picks.A ?? duelNpcCard(session.seed, round, 'A');
+    const cD = session.picks.D ?? duelNpcCard(session.seed, round, 'D');
+    const rd = resolveDuelRound(session.A, session.D, session.shareA, round, cA, cD, session.seed, session.cfg);
+    session.rounds.push(rd);
+    if (rd.by === 'A') session.winsA++;
+    else session.winsD++;
+    const roundMsg = { t: 'duel_round', duelId: session.duelId, ...rd, winsA: session.winsA, winsD: session.winsD };
+    this.sendToGovernor(session.challengerGovernorId, roundMsg);
+    if (session.humanSides.has('D')) this.sendToGovernor(session.targetGovernorId, roundMsg);
+    if (session.winsA === 2 || session.winsD === 2) this.endDuel(session);
+    else this.startDuelRound(session, round + 1);
+  }
+
+  private endDuel(session: DuelSession): void {
+    session.done = true;
+    if (session.timer !== undefined) { clearTimeout(session.timer); session.timer = undefined; }
+    const winner: 'A' | 'D' = session.winsA > session.winsD ? 'A' : 'D';
+    const winnerName = winner === 'A' ? session.A.name : session.D.name;
+    this.game.recordDuelResult({
+      duelId: session.duelId,
+      seed: session.seed,
+      challengerGovernorId: session.challengerGovernorId,
+      targetGovernorId: session.targetGovernorId,
+      A: session.A,
+      D: session.D,
+      winner,
+      rounds: session.rounds,
+      parcelId: session.parcelId,
+      wasLive: session.wasLive,
+      nowMs: Date.now(),
+    });
+    const endMsg = { t: 'duel_end', duelId: session.duelId, winner, winnerName, rounds: session.rounds };
+    this.sendToGovernor(session.challengerGovernorId, endMsg);
+    if (session.humanSides.has('D')) this.sendToGovernor(session.targetGovernorId, endMsg);
+    this.duels.delete(session.duelId);
   }
 
   // ── HTTP routing ───────────────────────────────────────────────────────────

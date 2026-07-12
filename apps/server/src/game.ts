@@ -47,6 +47,8 @@ import {
   type DemoArmyPreset,
   type DemoOfficer,
   type DemoWorldFile,
+  type DuelRound,
+  type DuelSide,
   type EconomyState,
   engineCommandSlotCount,
   type EngineBattleState,
@@ -318,6 +320,27 @@ export type GameEvent =
       troops: number;
       fromParcelId: string;
       toParcelId: string;
+    }
+  | {
+      /**
+       * A HERO-vs-HERO card duel settled (docs/briefs/HERO-DUEL-SPEC.md, decision 14).
+       * Champions settle it; troops are spared. The loser Master is KO'd. Visible
+       * to both governors (challenger + target) and ACCURATE-intel bystanders of
+       * the parcel it happened on — a great-deed style public beat.
+       */
+      type: 'duel_resolved';
+      tick: number;
+      duelId: string;
+      parcelId?: string;
+      challengerGovernorId: string;
+      targetGovernorId: string;
+      /** Both governor ids, so eventsFor lets each participant through. */
+      attackerGovernorIds: string[];
+      defenderGovernorIds: string[];
+      winnerName: string;
+      loserName: string;
+      /** True when the challenger (side A) won. */
+      challengerWon: boolean;
     };
 
 export interface TickDeltas {
@@ -381,6 +404,31 @@ export interface RecentBattleRecord {
   timeline: BattleTimelineFrame[];
 }
 
+/**
+ * A recently-settled HERO-vs-HERO card duel kept in a bounded ring for review
+ * (docs/briefs/HERO-DUEL-SPEC.md). The `rounds[]` is the deterministic replay
+ * script (played cards + who won each round + any artifact proc) the card UI
+ * re-reveals. `hexId` is the internal fog gate — stripped by `recentDuelsFor`.
+ */
+export interface RecentDuelRecord {
+  duelId: string;
+  parcelId?: string;
+  hexId?: string;
+  challengerGovernorId: string;
+  targetGovernorId: string;
+  challengerName: string;
+  targetName: string;
+  challengerArtifact?: string;
+  targetArtifact?: string;
+  /** 'A' (challenger) | 'D' (target). */
+  winner: 'A' | 'D';
+  winnerName: string;
+  rounds: DuelRound[];
+  resolvedTick: number;
+  /** True when a human picked at least one card live (vs pure auto/NPC). */
+  wasLive: boolean;
+}
+
 // ── Sessions / governors ─────────────────────────────────────────────────────
 
 export interface Session {
@@ -431,6 +479,10 @@ interface SaveFileV1 {
   purchases?: [string, number][];
   /** Recently-resolved battle review ring (docs/04 §7b). Optional for pre-review saves. */
   recentBattles?: RecentBattleRecord[];
+  /** Recently-settled hero-duel review ring (HERO-DUEL-SPEC.md). Optional for pre-duel saves. */
+  recentDuels?: RecentDuelRecord[];
+  /** Monotonic duel counter (seeds each duel's deterministic RNG). Optional for pre-duel saves. */
+  duelSeq?: number;
   state: SerializedWorldState;
 }
 
@@ -513,6 +565,13 @@ export class Game {
    * in tick(), restored from the snapshot. Fog-filtered per viewer on read.
    */
   private recentBattles: RecentBattleRecord[] = [];
+  /**
+   * Recently-settled HERO-vs-HERO card duels (docs/briefs/HERO-DUEL-SPEC.md),
+   * newest-last, capped at ⚙ review.ringCap. A monotonic counter seeds each
+   * duel's deterministic RNG (duels are real-time, outside the tick).
+   */
+  private recentDuels: RecentDuelRecord[] = [];
+  private duelSeq = 0;
   private readonly lastViews = {
     territories: new Map<string, string>(),
     armies: new Map<string, string>(),
@@ -538,6 +597,8 @@ export class Game {
       for (const [gid, uname] of save.pgUsernames ?? []) this.pgUsernames.set(gid, uname);
       for (const [gid, amt] of save.purchases ?? []) this.purchases.set(gid, amt);
       this.recentBattles = save.recentBattles ?? [];
+      this.recentDuels = save.recentDuels ?? [];
+      this.duelSeq = save.duelSeq ?? 0;
       for (const [id, b] of this.state.battles) {
         if (b.result?.territoryOutcome !== undefined) this.emittedOutcomes.add(id);
       }
@@ -2203,6 +2264,184 @@ export class Game {
     return out;
   }
 
+  // ── HERO-vs-HERO card duel (docs/briefs/HERO-DUEL-SPEC.md, decision 14) ─────
+  //
+  // v1 is a CARD duel owned entirely by CF: rating + Named artifacts set the
+  // odds; it AUTO-RESOLVES; an online player picks a card per round (else NPC).
+  // game.ts owns validation + the deterministic side inputs + settlement (record
+  // the KO, emit the event, push the review ring). The real-time round loop +
+  // pick-window timers live in server.ts (the WS/wall-clock boundary), driven by
+  // the shared sim-engine resolver so online and auto never disagree.
+
+  duelConfig(): Balance['duel'] {
+    return this.balance.duel;
+  }
+
+  /** A governor's lead champion for a duel = highest-fame officer (deterministic tiebreak by id). */
+  private leadOfficerOf(governorId: string): DemoOfficer | undefined {
+    const pool = this.state.officers?.get(governorId) ?? [];
+    if (pool.length === 0) return undefined;
+    return [...pool].sort((a, b) => (b.fame ?? 0) - (a.fame ?? 0) || (a.id < b.id ? -1 : 1))[0];
+  }
+
+  /**
+   * A Master's element-FREE duel rating (docs/maps/MASTERS-ELEMENT-FREE-RULING.md):
+   * a fame term + a deterministic per-Master component so champions differ even at
+   * fame 0 (a fair, seeded spread — never Math.random). Higher ⇒ more initiative.
+   */
+  private duelRatingOf(o: DemoOfficer): number {
+    const idComponent = createRng(`duel-rating/${o.masterId ?? o.id}`).int(0, 400);
+    return 400 + (o.fame ?? 0) * 8 + idComponent;
+  }
+
+  private duelSideOf(o: DemoOfficer): DuelSide {
+    // Artifacts are not yet equipped in the demo roster — the hook exists (the
+    // wildcard) and is surfaced the moment officers carry an equipped artifact.
+    return { ref: o.id, name: o.name, rating: this.duelRatingOf(o) };
+  }
+
+  /** A synthesized NPC/wild opponent when the target governor has no officer (e.g. a lair warden). */
+  private duelNpcSide(name: string, seedKey: string): DuelSide {
+    return { ref: `npc:${seedKey}`, name, rating: 350 + createRng(`duel-npc/${seedKey}`).int(0, 350) };
+  }
+
+  /**
+   * Validate + build a challenge. `battleId` (a live battle in command mode) scopes
+   * the target to the opposing side; otherwise `targetGovernorId` names a foe
+   * directly (lone-occupation style). Returns the two element-free DuelSides + a
+   * deterministic seed + the duelId. Throws ApiError on an illegal challenge.
+   */
+  buildDuelChallenge(
+    challengerGovernorId: string,
+    req: { championId?: string; targetGovernorId?: string; battleId?: string },
+  ): { duelId: string; seed: string; A: DuelSide; D: DuelSide; targetGovernorId: string; parcelId?: string } {
+    if (this.governors.get(challengerGovernorId) === undefined) {
+      throw new ApiError(401, 'UNAUTHORIZED', 'unknown challenger');
+    }
+    // Resolve the target governor + the parcel context.
+    let targetGovernorId = typeof req.targetGovernorId === 'string' ? req.targetGovernorId : undefined;
+    let parcelId: string | undefined;
+    let hexId: string | undefined;
+    if (typeof req.battleId === 'string') {
+      const wb = this.state.wildBattles?.get(req.battleId);
+      const eb = this.state.engineBattles?.get(req.battleId);
+      const b = wb ?? eb;
+      if (b === undefined) throw new ApiError(404, 'NO_BATTLE', 'that battle is not running');
+      const atk = b.attackerGovernorId;
+      const def = b.defenderGovernorId;
+      if (challengerGovernorId !== atk && challengerGovernorId !== def) {
+        throw new ApiError(403, 'NOT_A_COMBATANT', 'you are not fighting in that battle');
+      }
+      targetGovernorId = challengerGovernorId === atk ? def : atk;
+      hexId = b.hexId;
+      parcelId = this.parcelId(b.hexId);
+    }
+    if (targetGovernorId === undefined) throw new ApiError(400, 'NO_TARGET', 'no duel target');
+    if (targetGovernorId === challengerGovernorId) throw new ApiError(400, 'SELF_DUEL', 'you cannot duel yourself');
+
+    // Challenger champion (chosen or lead).
+    const chPool = this.state.officers?.get(challengerGovernorId) ?? [];
+    const champion = req.championId !== undefined ? chPool.find((o) => o.id === req.championId) : this.leadOfficerOf(challengerGovernorId);
+    if (champion === undefined) throw new ApiError(409, 'NO_CHAMPION', 'you have no Master to send to the duel');
+
+    // Target champion (lead officer, else a synthesized warden).
+    const targetLead = this.leadOfficerOf(targetGovernorId);
+    const A = this.duelSideOf(champion);
+    const D = targetLead !== undefined
+      ? this.duelSideOf(targetLead)
+      : this.duelNpcSide(this.governors.get(targetGovernorId)?.name ?? 'Warden', `${targetGovernorId}:${this.duelSeq}`);
+
+    const nonce = this.duelSeq++;
+    const duelId = `duel_${nonce}_${this.state.world.tick}`;
+    const seed = `${this.state.world.seed}/duel/${nonce}/${this.state.world.tick}/${challengerGovernorId}/${targetGovernorId}`;
+    return { duelId, seed, A, D, targetGovernorId, ...(parcelId !== undefined && hexId !== undefined ? { parcelId } : {}) };
+  }
+
+  /**
+   * Apply a settled duel: KO the loser Master (record koUntil — enforcement is
+   * post-MVP per state.ts), emit the `duel_resolved` event (visible to both
+   * governors), and push the review ring (capped at ⚙ review.ringCap). `nowMs`
+   * is the wall clock from the server boundary (game.ts stays Date.now-free).
+   */
+  recordDuelResult(args: {
+    duelId: string;
+    seed: string;
+    challengerGovernorId: string;
+    targetGovernorId: string;
+    A: DuelSide;
+    D: DuelSide;
+    winner: 'A' | 'D';
+    rounds: DuelRound[];
+    parcelId?: string;
+    hexId?: string;
+    wasLive: boolean;
+    nowMs: number;
+  }): void {
+    const loserSide = args.winner === 'A' ? args.D : args.A;
+    const winnerSide = args.winner === 'A' ? args.A : args.D;
+    // KO the loser Master if it is a real officer (not a synthesized warden).
+    const koIso = new Date(args.nowMs + this.balance.wildBattle.masterRespawnTicks * 1000).toISOString();
+    for (const gid of [args.challengerGovernorId, args.targetGovernorId]) {
+      const o = this.state.officers?.get(gid)?.find((x) => x.id === loserSide.ref);
+      if (o !== undefined) o.koUntil = koIso;
+    }
+    this.pendingEvents.push({
+      type: 'duel_resolved',
+      tick: this.state.world.tick,
+      duelId: args.duelId,
+      ...(args.parcelId !== undefined ? { parcelId: args.parcelId } : {}),
+      challengerGovernorId: args.challengerGovernorId,
+      targetGovernorId: args.targetGovernorId,
+      attackerGovernorIds: [args.challengerGovernorId],
+      defenderGovernorIds: [args.targetGovernorId],
+      winnerName: winnerSide.name,
+      loserName: loserSide.name,
+      challengerWon: args.winner === 'A',
+    });
+    const rec: RecentDuelRecord = {
+      duelId: args.duelId,
+      ...(args.parcelId !== undefined ? { parcelId: args.parcelId } : {}),
+      ...(args.hexId !== undefined ? { hexId: args.hexId } : {}),
+      challengerGovernorId: args.challengerGovernorId,
+      targetGovernorId: args.targetGovernorId,
+      challengerName: args.A.name,
+      targetName: args.D.name,
+      ...(args.A.artifactName !== undefined ? { challengerArtifact: args.A.artifactName } : {}),
+      ...(args.D.artifactName !== undefined ? { targetArtifact: args.D.artifactName } : {}),
+      winner: args.winner,
+      winnerName: winnerSide.name,
+      rounds: args.rounds,
+      resolvedTick: this.state.world.tick,
+      wasLive: args.wasLive,
+    };
+    this.recentDuels.push(rec);
+    const cap = this.balance.review.ringCap;
+    if (this.recentDuels.length > cap) this.recentDuels.splice(0, this.recentDuels.length - cap);
+  }
+
+  /**
+   * Fog-filtered recent-duels ring for /api/state + WS ticks. A duel is visible
+   * to its two governors always, and to ACCURATE-intel bystanders of the parcel
+   * it happened on. `hexId` is stripped; a per-viewer `mine` flag is added.
+   */
+  recentDuelsFor(viewerGovernorId?: string): (Omit<RecentDuelRecord, 'hexId'> & { mine: boolean })[] {
+    const viewer = viewerGovernorId === undefined ? undefined : this.viewerContext(viewerGovernorId);
+    const out: (Omit<RecentDuelRecord, 'hexId'> & { mine: boolean })[] = [];
+    for (let i = this.recentDuels.length - 1; i >= 0; i--) {
+      const rec = this.recentDuels[i]!;
+      const participant =
+        viewerGovernorId !== undefined &&
+        (rec.challengerGovernorId === viewerGovernorId || rec.targetGovernorId === viewerGovernorId);
+      const accurate =
+        viewer !== undefined && rec.hexId !== undefined && intelGrade(viewer.grades, rec.hexId) === 'ACCURATE';
+      if (!participant && !accurate) continue;
+      const { hexId: _hex, ...wire } = rec;
+      void _hex;
+      out.push({ ...wire, mine: participant });
+    }
+    return out;
+  }
+
   // ── Recently-resolved battle review (docs/04 §7b) ──────────────────────────
 
   /**
@@ -2539,6 +2778,7 @@ export class Game {
     battles: BattleView[];
     liveBattles: ReturnType<Game['liveBattleSummaries']>;
     recentBattles: ReturnType<Game['recentBattlesFor']>;
+    recentDuels: ReturnType<Game['recentDuelsFor']>;
   } {
     const viewer = this.viewerContext(viewerGovernorId);
     const territories = sortedIds(this.state.territories).map((id) =>
@@ -2564,6 +2804,7 @@ export class Game {
       battles,
       liveBattles: this.liveBattleSummaries(viewerGovernorId),
       recentBattles: this.recentBattlesFor(viewerGovernorId),
+      recentDuels: this.recentDuelsFor(viewerGovernorId),
     };
   }
 
@@ -2764,6 +3005,8 @@ export class Game {
       pgUsernames: [...this.pgUsernames.entries()],
       purchases: [...this.purchases.entries()],
       recentBattles: this.recentBattles,
+      recentDuels: this.recentDuels,
+      duelSeq: this.duelSeq,
       state: serializeWorldState(this.state),
     };
   }

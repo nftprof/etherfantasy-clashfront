@@ -28,6 +28,8 @@ export function createStore() {
     // Recently-resolved battle review ring (docs/04 §7b) — server-filtered per
     // viewer, newest-first; REPLACED wholesale each tick + on snapshot load.
     recentBattles: [],         // [{battleId, parcelId, parcelName, winner, reason, casualties, survivors, timeline, wasLive, mine, …}]
+    // Recently-settled hero-duel ring (HERO-DUEL-SPEC.md) — same per-viewer filter.
+    recentDuels: [],           // [{duelId, challengerName, targetName, winner, winnerName, rounds, wasLive, mine, …}]
 
     // economy telemetry (FS3): latest GET /api/economy payload (boot + dashboard refresh)
     econ: null,
@@ -81,6 +83,7 @@ export function createStore() {
       this.liveBattles.clear();
       for (const b of state.liveBattles ?? []) this.putLiveBattle(b);
       this.recentBattles = state.recentBattles ?? [];
+      this.recentDuels = state.recentDuels ?? [];
       if (state.my) {
         this.ctBalance = state.my.ctBalance;
         this.officers = state.my.officers;
@@ -118,6 +121,7 @@ export function createStore() {
       // Review ring (docs/04 §7b): the server sends the viewer's fog-filtered,
       // newest-first list every tick — replace wholesale (like liveBattles).
       if (msg.recentBattles) this.recentBattles = msg.recentBattles;
+      if (msg.recentDuels) this.recentDuels = msg.recentDuels;
       for (const t of msg.deltas.territories) this.putTerritory(t);
       for (const a of msg.deltas.armies) this.putArmy(a);
       for (const b of msg.deltas.battles) this.battles.set(b.id, b);
