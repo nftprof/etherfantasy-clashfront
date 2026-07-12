@@ -443,7 +443,11 @@ export function applyWildBattleCommand(s: WildBattleState, cmd: WildBattleCmd): 
   switch (cmd.kind) {
     case 'move':
       if (s.master !== undefined) s.master.moveTo = { x: clamp(cmd.x), y: clamp(cmd.y) };
-      // A live move order also DISENGAGES the Master from any focused target.
+      // A live move order DISENGAGES the Master from combat: drop the current
+      // target immediately. The step's auto-acquire is gated by goal distance
+      // so the Master genuinely marches (won't re-latch on a nearby foe until
+      // it arrives — canon "disengage mid-fight").
+      for (const e of s.entities) if (e.kind === 'MASTER' && e.side === 'ATTACKER') e.tgt = undefined;
       return;
     case 'rally': {
       const pt = { x: clamp(cmd.x), y: clamp(cmd.y) };
@@ -456,6 +460,11 @@ export function applyWildBattleCommand(s: WildBattleState, cmd: WildBattleCmd): 
       }
       // A rally order also cancels a retreat — the commander wants to fight.
       s.retreating = false;
+      // DISENGAGE all attacker soldiers so they actually MARCH to the flag
+      // instead of finishing whatever they were fighting mid-map. Focus-fire
+      // is also cleared (rally supersedes it).
+      s.focusTgt = undefined;
+      for (const e of s.entities) if (e.side === 'ATTACKER' && e.kind !== 'MASTER') e.tgt = undefined;
       return;
     }
     case 'focus': {
@@ -648,7 +657,17 @@ export function stepWildBattle(s: WildBattleState, balance: Balance): void {
         const p = posOf(s.focusTgt);
         if (p !== undefined && Math.hypot(p.x - e.x, p.y - e.y) < wb.acquireRange * 2.5) e.tgt = s.focusTgt;
       }
-      if (e.tgt === undefined) {
+      // MARCHING gate — while a Master/soldier is FAR from a fresh move/rally
+      // goal, skip auto-acquire so the unit actually walks past nearby foes
+      // instead of getting stuck fighting. Once it arrives (within ~acquireRange
+      // × marchArriveMult) normal engagement resumes.
+      const marchGoal: { x: number; y: number } | undefined =
+        e.kind === 'MASTER' ? m?.moveTo :
+        (s.stance !== 'DEFEND' && s.stance !== 'FOLLOW' && s.stance !== 'ALL_IN') ? s.rally :
+        undefined;
+      const marching =
+        marchGoal !== undefined && Math.hypot(marchGoal.x - e.x, marchGoal.y - e.y) > wb.acquireRange * 1.1;
+      if (e.tgt === undefined && !marching) {
         e.tgt = nearestEnemyOf(s, e, wb.acquireRange, towersAlive);
       }
       // Advance a waypoint queue: pop when the current rally is reached (within a

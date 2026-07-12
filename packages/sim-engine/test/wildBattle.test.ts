@@ -457,3 +457,49 @@ test('DEFEND stance holds units near spawn (no lane push all the way to the hear
   const outside = attackers.filter((e) => Math.hypot(e.x - spawn.x, e.y - spawn.y) > cap);
   assert.ok(outside.length < attackers.length * 0.3, `DEFEND keeps most units near spawn (${outside.length}/${attackers.length})`);
 });
+
+// ── Batch 2: move/rally DISENGAGE + march-past-foes (owner "mid-fight break") ────
+
+test('move (Master) DISENGAGES immediately — Master target cleared + moveTo set', () => {
+  const s = createWildBattle(setup(STANDARD, MID_GARRISON, 'move-disengage'), BALANCE);
+  for (let i = 0; i < 40; i++) stepWildBattle(s, BALANCE);
+  const masterBefore = s.entities.find((e) => e.kind === 'MASTER');
+  assert.ok(masterBefore !== undefined);
+  // Force a target so we can prove the move clears it.
+  masterBefore.tgt = 't-fake';
+  applyWildBattleCommand(s, { kind: 'move', x: 100, y: 100 });
+  const masterAfter = s.entities.find((e) => e.kind === 'MASTER');
+  assert.equal(masterAfter?.tgt, undefined, 'move clears the Master target immediately');
+  assert.deepEqual(s.master?.moveTo, { x: 100, y: 100 });
+});
+
+test('rally DISENGAGES all attacker soldiers + clears focus (they actually MARCH to the flag)', () => {
+  const s = createWildBattle(setup(STANDARD, MID_GARRISON, 'rally-disengage'), BALANCE);
+  for (let i = 0; i < 60; i++) stepWildBattle(s, BALANCE);
+  // Set up a focus + some engagements.
+  const tower = s.towers.find((t) => t.hp > 0);
+  applyWildBattleCommand(s, { kind: 'focus', targetId: tower!.id });
+  const engagedBefore = s.entities.filter((e) => e.side === 'ATTACKER' && e.kind !== 'MASTER' && e.tgt !== undefined).length;
+  assert.ok(engagedBefore > 0, 'engagement precondition');
+  applyWildBattleCommand(s, { kind: 'rally', x: 100, y: 100 });
+  assert.equal(s.focusTgt, undefined, 'rally clears focus');
+  const engagedAfter = s.entities.filter((e) => e.side === 'ATTACKER' && e.kind !== 'MASTER' && e.tgt !== undefined).length;
+  assert.equal(engagedAfter, 0, 'rally clears every attacker target');
+});
+
+test('marching gate — soldiers walk past nearby foes until they arrive at the rally', () => {
+  const s = createWildBattle(setup(STANDARD, MID_GARRISON, 'march-past'), BALANCE);
+  // Force spawn a few attackers so we have units to test with.
+  for (let i = 0; i < 20; i++) stepWildBattle(s, BALANCE);
+  const wb = BALANCE.wildBattle;
+  // Rally far away so units are unambiguously "marching".
+  applyWildBattleCommand(s, { kind: 'rally', x: s.field.heart.x, y: s.field.heart.y });
+  // One more step — auto-acquire should be gated because units are far from the rally.
+  stepWildBattle(s, BALANCE);
+  const attackers = s.entities.filter((e) => e.side === 'ATTACKER' && e.kind !== 'MASTER');
+  const farOnes = attackers.filter((e) => Math.hypot(s.rally!.x - e.x, s.rally!.y - e.y) > wb.acquireRange * 1.2);
+  // A far-from-rally unit that has no target proves the marching gate is working
+  // (otherwise auto-acquire would have latched them onto a nearby mob).
+  const marchingUntargeted = farOnes.filter((e) => e.tgt === undefined);
+  assert.ok(marchingUntargeted.length > 0, `at least one far unit is untargeted (marching): ${marchingUntargeted.length}/${farOnes.length}`);
+});
