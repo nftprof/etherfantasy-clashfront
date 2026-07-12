@@ -143,6 +143,18 @@ export function createBattle({ store, ui, send, ftue }) {
   const tipKey = (k) => `tip:${store.me?.governorId}:${k}`;
   const tipSeen = (k) => { try { return localStorage.getItem(tipKey(k)) === '1'; } catch { return true; } };
   const tipMark = (k) => { try { localStorage.setItem(tipKey(k), '1'); } catch { /* private mode */ } };
+  // Persistent DEFAULT STRATEGY (owner 2026-07-12) — a player's "always X" pick,
+  // localStorage-backed, pushed once per battle at battle_hello (only if the sim
+  // hasn't already got a per-battle strategy set by the commander).
+  const stratDefaultKey = () => `cmd:${store.me?.governorId}:defaultStrategy`;
+  const defaultStrategy = () => { try { return localStorage.getItem(stratDefaultKey()) ?? 'HOLD'; } catch { return 'HOLD'; } };
+  const setDefaultStrategy = (v) => { try { localStorage.setItem(stratDefaultKey(), v); } catch { /* private mode */ } };
+  // Is this hello for a battle the local player owns (mirrors `steerable()` intent
+  // without the coach-mode noise). Used to gate the auto-strategy push.
+  const mineFor = (msg) => {
+    const lb = store.liveBattles?.get(msg.battleId);
+    return lb?.mine === true;
+  };
 
   /**
    * May the local player steer this view? Own assaults always; BRIDGE
@@ -277,6 +289,16 @@ export function createBattle({ store, ui, send, ftue }) {
       prev = cur;
       blotches = makeBlotches(msg);
       if (steerable()) steer = true; // your assault (or open exhibition) — command it by default
+      // Persistent DEFAULT STRATEGY (owner 2026-07-12): a player who prefers
+      // "Flee if losing" doesn't want to set it each fight. Read the localStorage
+      // default and push it once at hello so the sim honors it even if the player
+      // never opens the HUD (offline defenders benefit too).
+      if (mineFor(field) && !msg.snap?.strategy) {
+        const def = defaultStrategy();
+        if (def && def !== 'HOLD') {
+          send({ t: 'battle_cmd', battleId: openId, cmd: { kind: 'strategy', strategy: def } });
+        }
+      }
       renderHud();
       if (steerable()) startCoach(coachPending); // first steerable view → 3-beat mini-coach
       else ftue?.tip('spectate');                // watch-only open → one-shot spectate tip
@@ -1335,11 +1357,14 @@ export function createBattle({ store, ui, send, ftue }) {
           `<button data-st="FOLLOW"${snap?.stance === 'FOLLOW' ? ' class="on"' : ''} title="Soldiers escort your Master as a warband (F)">🎯 Follow</button>` +
           `<button data-st="CLEAR" title="Resume default — clears stance AND rally flag (X)">✋ Clear</button>` +
           `<button class="bt-retreat${snap?.retreating ? ' on' : ''}" data-bt="retreat" title="RETREAT — break contact + fall back to the spawn corner. Troops spared, defender holds the field (R)">🏳 Retreat</button>` +
-          `<label class="bt-strat" title="Standing order the sim honors when you're offline. FLEE_IF_LOSING auto-retreats once the fight goes bad.">` +
+          `<label class="bt-strat" title="Standing order the sim honors when you're offline. FLEE_IF_LOSING auto-retreats once the fight goes bad. Your choice is saved as your default for future battles.">` +
             `<select data-strat>` +
-              `<option value="FIGHT_TO_DEATH"${snap?.strategy === 'FIGHT_TO_DEATH' ? ' selected' : ''}>⚔ Fight to the death</option>` +
-              `<option value="HOLD"${(snap?.strategy ?? 'HOLD') === 'HOLD' ? ' selected' : ''}>🛡 Hold</option>` +
-              `<option value="FLEE_IF_LOSING"${snap?.strategy === 'FLEE_IF_LOSING' ? ' selected' : ''}>🏳 Flee if losing</option>` +
+              (() => {
+                const cur = snap?.strategy ?? defaultStrategy();
+                return `<option value="FIGHT_TO_DEATH"${cur === 'FIGHT_TO_DEATH' ? ' selected' : ''}>⚔ Fight to the death</option>` +
+                  `<option value="HOLD"${cur === 'HOLD' ? ' selected' : ''}>🛡 Hold</option>` +
+                  `<option value="FLEE_IF_LOSING"${cur === 'FLEE_IF_LOSING' ? ' selected' : ''}>🏳 Flee if losing</option>`;
+              })() +
             `</select>` +
           `</label>` +
           `</div>`
@@ -1391,10 +1416,14 @@ export function createBattle({ store, ui, send, ftue }) {
   });
 
   // Standing STRATEGY dropdown — HOLD by default; FLEE_IF_LOSING auto-retreats.
+  // Every change is applied to THIS fight AND saved as the player's default for
+  // future battles (localStorage-backed; pushed at battle_hello). Silent — the
+  // dropdown itself reads back from the snapshot so the state is obvious.
   hud.addEventListener('change', (e) => {
     const sel = e.target?.closest?.('select[data-strat]');
     if (!sel) return;
     send({ t: 'battle_cmd', battleId: openId, cmd: { kind: 'strategy', strategy: sel.value } });
+    setDefaultStrategy(sel.value);
   });
 
   // ── steering input ─────────────────────────────────────────────────────────
