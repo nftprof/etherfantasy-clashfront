@@ -16,7 +16,23 @@
  *     ← duel_round {round,cA,cD,blows[],hpA,hpD,maxHpA,maxHpD,koA,koD}
  *     ← duel_end {winner,winnerName,hpA,hpD}   ← duel_err {code,message}
  */
-import { avatarHtml, esc } from './util.js';
+import { avatarHtml, esc, nameHue } from './util.js';
+
+/**
+ * Master head-shot portrait. Prefers the champion-slug art
+ * (public/avatars/<slug>.png — the EF Masters slug, e.g. "choco.png"); the <img>
+ * removes itself on 404 so the name-hued initials medallion underneath shows.
+ * Falls back to the name-based avatar when no slug is known.
+ */
+function portraitHtml(d, px = 96) {
+  if (!d.slug) return avatarHtml({ name: d.name }, px);
+  const name = d.name ?? '?';
+  const slug = String(d.slug).trim().toLowerCase().replace(/[^a-z0-9_]+/g, '_');
+  const initials = esc((name.match(/[A-Za-z0-9]+/g) ?? []).map((w) => w[0]).join('').slice(0, 2).toUpperCase() || '?');
+  const url = `/avatars/${encodeURIComponent(slug)}.png`;
+  return `<span class="avatar av-master" style="--av:${px}px;--avh:${nameHue(name)}" title="${esc(name)}">` +
+    `<i>${initials}</i><img src="${url}" alt="" loading="lazy" onerror="this.remove()"></span>`;
+}
 
 const CARDS = [
   { key: 'AGGRESSIVE', icon: '⚔', label: 'Aggressive', tip: 'All-out — more damage, but you take more. Beats Trick.' },
@@ -183,7 +199,7 @@ export function createDuel({ ui, send }) {
     const me = side === s.yourSide;
     const cls = side === 'A' ? 'atk' : 'def';
     return `<div class="duel-hero ${cls}${me ? ' me' : ''}">` +
-      `<div class="duel-portrait">${avatarHtml({ name: d.name }, 92)}</div>` +
+      `<div class="duel-portrait">${portraitHtml(d, 92)}</div>` +
       `<div class="duel-hname">${esc(d.name)}${me ? ' <em>(you)</em>' : ''}</div>` +
       `<div class="duel-stats">⚔ ${d.atk}${d.artifact ? ` · <span class="duel-art">✦ ${esc(d.artifact)}</span>` : ''}</div>` +
       `</div>`;

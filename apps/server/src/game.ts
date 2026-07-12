@@ -2410,7 +2410,8 @@ export class Game {
   private duelSideOf(o: DemoOfficer): DuelSide {
     // Artifacts are not yet equipped in the demo roster — the hook exists (the
     // wildcard) and is surfaced the moment officers carry an equipped artifact.
-    return { ref: o.id, name: o.name, rating: this.duelRatingOf(o) };
+    // The champion slug resolves the head-shot portrait (public/avatars/<slug>.png).
+    return { ref: o.id, name: o.name, rating: this.duelRatingOf(o), ...(o.slug !== undefined ? { slug: o.slug } : {}) };
   }
 
   /** A synthesized NPC/wild opponent when the target governor has no officer (e.g. a lair warden). */

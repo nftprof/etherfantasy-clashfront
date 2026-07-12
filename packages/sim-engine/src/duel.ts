@@ -23,6 +23,8 @@ export interface DuelSide {
   /** Reference id (masterId/hero_… ) — carried through, never affects odds. */
   ref: string;
   name: string;
+  /** Champion slug (EF Masters API), if known — resolves the head-shot portrait. */
+  slug?: string;
   /** Base power input. Higher rating ⇒ higher ATK + HP. */
   rating: number;
   /** Equipped Named artifact (data/singulars.json artifacts[].id), if any — the wildcard. */
