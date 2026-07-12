@@ -653,14 +653,16 @@ A Master (or pet) may hold land WITHOUT an army. Encounter rules when a hostile 
    (`POST api.etherfantasy.com/api/gameplay/masters/result` → `koUntil`, `revivesRemaining`;
    endpoints verified live, `docs/09` §7).
 2. **DUEL** — if the attacker fields a Master, either side may call a 1v1. ONE resolution
-   core, TWO presentations:
-   - Core odds (always): **Master rating** (level/fame) × **elemental wheel** (Addendum E
-     species-affinity matrix) × bounded chance (⚙ ±25% swing), seeded/deterministic.
+   core, TWO presentations. **Implementation spec: `docs/briefs/HERO-DUEL-SPEC.md`.**
+   - Core odds (always): **Master rating** (level/fame/gear) × bounded chance (⚙ ±25% swing),
+     seeded/deterministic. **ELEMENT-FREE** (Masters have no element — LoL/AoV model, decision 14 /
+     `docs/maps/MASTERS-ELEMENT-FREE-RULING.md`; the old Addendum-E wheel factor is DROPPED). A duel
+     is Masters only, no pets ⇒ nothing carries an element into it.
    - v1 presentation: **auto-duel** — Uncharted-Waters-style best-of-3 stance exchange
-     (aggressive/defensive/trick RPS, stats weight each round), rendered as a short animated
-     exchange in the overworld viewer; resolves offline-vs-offline, replayable.
+     (aggressive/defensive/trick RPS, rating weights each round), rendered as a short animated
+     exchange in the overworld viewer; resolves offline-vs-offline, replayable/deterministic.
    - M2+ presentation: **live 1v1 micro-match** on the battle engine (tiny arena battlefield,
-     2–3 min, both ⚡ doorways light, AI stand-ins keep the same odds).
+     2–3 min, both ⚡ doorways light, AI stand-ins keep the same odds; engine `TEAM_SIZE=1` already).
    Winner holds/takes the ground; loser KO'd (same API). Duels spare troops.
 3. **FLEE** — the defender declines and escapes to the owner's inventory: an **escape roll**
    (rating-based ⚙ ~70–90%), NOT free — a failed flee = caught ⇒ forced duel at a penalty ⚙.

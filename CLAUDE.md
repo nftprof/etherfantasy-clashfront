@@ -116,7 +116,7 @@ export can be converted to the documented format. See `data/README.md`.
     OVERWHELM (attacker loses a few soldiers, defender KO'd via the LIVE Masters KO API) |
     DUEL (one seeded core: rating × ⚙ bounded chance — element-wheel factor DROPPED 2026-07-10:
     **Masters are ELEMENT-FREE (LoL/AoV model)**, no type advantage on heroes, all element play
-    lives in PET selection; command unrestricted; `docs/maps/MASTERS-ELEMENT-FREE-RULING.md`; v1 = 
+    lives in PET selection; command unrestricted; `docs/maps/MASTERS-ELEMENT-FREE-RULING.md`; **impl spec `docs/briefs/HERO-DUEL-SPEC.md`**; v1 = 
     Uncharted-Waters-style best-of-3 auto-duel animation, M2+ = tiny-arena live 1v1 on the
     engine) | FLEE (rating-based escape roll, failed = caught). Offline-proof via per-Master
     standing orders (DUEL/FLEE/STAND). NFT pets = passive homesteads: farm yield, never
