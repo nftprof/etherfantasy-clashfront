@@ -319,6 +319,29 @@ export interface Balance {
     joinWindowSec: number;
   };
   /**
+   * ⚙ HERO-vs-HERO card duel (docs/briefs/HERO-DUEL-SPEC.md, decision 14). v1 is a
+   * CARD best-of-3 (AGGRESSIVE>TRICK>DEFENSIVE>AGGRESSIVE) where Master RATING
+   * dominates via per-round INITIATIVE and Named artifacts are the wildcard. It
+   * AUTO-RESOLVES; an online player may pick each round within pickWindowSec, else
+   * an NPC auto-picks. ELEMENT-FREE. See balance.json `duel._note`.
+   */
+  duel: {
+    /** ± swing applied when a same-card round is decided by effective rating (lets an underdog steal a tie). */
+    ratingSwing: number;
+    /** Per-round initiative probability floor: readBase + effRatingShare·readRatingSpan. */
+    readBase: number;
+    /** How hard effective-rating share biases per-round initiative (the stronger Master dictates the exchange). */
+    readRatingSpan: number;
+    /** Per-round human card-pick timer (seconds); on timeout the NPC auto-picks. */
+    pickWindowSec: number;
+    /** Effective-rating multiplier ADDED per equipped Named artifact (the "boosts stats unexpectedly" wildcard). */
+    artifactRatingBonus: number;
+    /** Per-round seeded chance an equipped Named artifact "flares" and takes the round outright. */
+    signatureProcChance: number;
+    /** The FLEE standing-order escape roll and the penalty when a failed flee is caught into a forced duel. */
+    flee: { baseOdds: number; caughtPenalty: number };
+  };
+  /**
    * ⚙ Post-battle "Recent battles" review (docs/04 §7b). Battles resolve fast
    * (accelerated is the default), so the player reviews a fight AFTER it ends
    * from a bounded, fog-filtered ring. See balance.json `review._note`.
@@ -338,7 +361,7 @@ export interface Balance {
 const REQUIRED_SECTIONS: readonly (keyof Balance)[] = [
   'travel', 'development', 'tax', 'prosperity', 'food', 'population',
   'supply', 'morale', 'desertion', 'upkeep', 'units', 'pillageOccupy', 'draft', 'provisions', 'claims',
-  'intel', 'towns', 'wildRaids', 'developmentEffects', 'economy', 'training', 'wildBattle', 'battle', 'review',
+  'intel', 'towns', 'wildRaids', 'developmentEffects', 'economy', 'training', 'wildBattle', 'battle', 'duel', 'review',
 ];
 
 function resolveBalancePath(): string {

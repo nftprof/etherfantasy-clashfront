@@ -12,3 +12,4 @@ export * from './develop';
 export * from './economy';
 export * from './wildBattle';
 export * from './engineBattle';
+export * from './duel';
