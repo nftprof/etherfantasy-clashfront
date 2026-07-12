@@ -964,6 +964,41 @@ export function createBattle({ store, ui, send, ftue }) {
       ctx.beginPath();
       ctx.arc(field.spawn.x, field.spawn.y, 6 + pulse * 1.5, 0, 7);
       ctx.stroke();
+      // Master RESPAWN pulse — while your Master is down and returning, pulse a
+      // gold ring at the spawn corner where they'll re-enter, with a "12s" label.
+      if (cur.snap.master && cur.snap.master.alive === false && cur.snap.master.revives > 0) {
+        const secs = Math.ceil((cur.snap.master.respawnIn ?? 0) / (field?.tickHz ?? 4));
+        const p = 0.5 + 0.5 * Math.sin(now / 260);
+        ctx.strokeStyle = `rgba(255,215,106,${0.35 + 0.45 * p})`;
+        ctx.lineWidth = lw(1.4);
+        ctx.setLineDash([lw(2), lw(2)]);
+        ctx.beginPath();
+        ctx.arc(field.spawn.x, field.spawn.y, 10 + p * 3, 0, 7);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        const [sxp, syp] = toScr(field.spawn.x, field.spawn.y);
+        ctx.save(); ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        ctx.fillStyle = 'rgba(255,215,106,0.85)';
+        ctx.font = '700 11px "Segoe UI",system-ui,sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(`⭐ ${secs}s`, sxp, syp - 26);
+        ctx.restore();
+      }
+      // Wave arrival countdown — small clock arc filling to next wave (owner
+      // "fun to watch"). Draws on the spawn dot.
+      if (cur.snap.waves && cur.snap.waves.nextIn !== undefined) {
+        const total = Math.max(1, cur.snap.waves.nextIn +
+          ((field?.tickHz ?? 4) * 0) // nextIn is already ticks; total = the interval (unknown here) — use nextIn itself for a shrinking arc
+        );
+        const remaining = cur.snap.waves.nextIn;
+        const frac = 1 - Math.min(1, remaining / (24 * 2)); // 24 = ⚙ waveEveryTicks (approx)
+        ctx.strokeStyle = `rgba(140,200,255,${frac > 0.75 ? 0.9 : 0.5})`;
+        ctx.lineWidth = lw(1.4);
+        ctx.beginPath();
+        ctx.arc(field.spawn.x, field.spawn.y, 8, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * frac);
+        ctx.stroke();
+        void total;
+      }
       // DEFEND guard ring — while the DEFEND stance is set, show the perimeter
       // your soldiers hold at (⚙ command.defendRadius; matches the sim's cap).
       if (cur.snap.stance === 'DEFEND') {
