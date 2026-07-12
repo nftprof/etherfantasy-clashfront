@@ -160,6 +160,7 @@ export function createBattle({ store, ui, send, ftue }) {
       `font:11px "Segoe UI",system-ui,sans-serif;color:#eaf0f6;text-shadow:0 1px 2px rgba(0,0,0,0.7);pointer-events:none;}` +
       `.bt-tug.win{box-shadow:inset 0 0 0 1px rgba(120,220,140,0.35);}` +
       `.bt-tug.lose{box-shadow:inset 0 0 0 1px rgba(230,90,80,0.4);}` +
+      `.bt-stat.focus{background:linear-gradient(180deg,#241811,#180f09);border-color:#7a3b2e;color:#ffce8a;}` +
       `.bt-feed{position:absolute;right:12px;top:100px;z-index:6;display:flex;flex-direction:column;gap:3px;` +
       `pointer-events:none;max-width:220px;}` +
       `.bt-feed .bf-line{background:rgba(10,14,19,0.82);border:1px solid #26313f;border-radius:5px;` +
@@ -1395,8 +1396,24 @@ export function createBattle({ store, ui, send, ftue }) {
         `<em>${'♥'.repeat(Math.max(0, master.revives) + (master.alive ? 1 : 0)) || '—'} runs</em></span></span>`
       : '';
     // soldiers remaining (sprint #3): your reserve via waves (engine cfpump now sends the
-    // waves:{stock,stockStart} shape), enemy reserve via the per-side reserves slot (-1 = ∞)
-    const waves = snap ? `<span class="bt-stat" title="Your reserve — line soldiers still to spawn">🌊 <b>${snap.waves.stock}</b><em>/${snap.waves.stockStart} soldiers</em></span>` : '';
+    // waves:{stock,stockStart} shape), enemy reserve via the per-side reserves slot (-1 = ∞).
+    // Wave-arrival countdown appended so the player knows when reinforcements land.
+    const waveNextSec = snap?.waves?.nextIn !== undefined ? Math.ceil(snap.waves.nextIn / tickHz) : null;
+    const waves = snap ? `<span class="bt-stat" title="Your reserve — line soldiers still to spawn; next arrival in ${waveNextSec ?? '?'}s">🌊 <b>${snap.waves.stock}</b><em>/${snap.waves.stockStart}${waveNextSec !== null ? ` · next ${waveNextSec}s` : ''}</em></span>` : '';
+    // Focused target HP callout — when you've set focus fire, keep the target's
+    // HP badge in the HUD so you know when it's about to break.
+    let focusStat = '';
+    if (snap?.focus) {
+      const t = snap.towers?.find((x) => x.id === snap.focus);
+      const u = t ? null : snap.units?.find((x) => x.id === snap.focus);
+      if (t && t.hp > 0) {
+        const pct = Math.round((t.hp / t.mh) * 100);
+        focusStat = `<span class="bt-stat focus" title="Focus-fire target — click a different enemy to change">⚔ FOCUS: 🗼 <b>${pct}%</b></span>`;
+      } else if (u) {
+        const pct = Math.round((u.hp / u.mh) * 100);
+        focusStat = `<span class="bt-stat focus" title="Focus-fire target — click a different enemy to change">⚔ FOCUS: ${u.k === 'm' ? '☠' : '⚔'} <b>${pct}%</b></span>`;
+      }
+    }
     const foeRes = snap?.reserves && snap.reserves.d >= 0
       ? `<span class="bt-stat" title="Enemy reserve — their line soldiers still to spawn">🛡 <b>${snap.reserves.d}</b><em> enemy</em></span>` : '';
     const mobs = snap ? `<span class="bt-stat" title="Wild defenders remaining">☠ <b>${snap.mobs}</b><em>/${snap.mobsStart}</em></span>` : '';
@@ -1442,7 +1459,7 @@ export function createBattle({ store, ui, send, ftue }) {
     hud.innerHTML =
       `<div class="bt-title"><span class="bt-live${ended ? ' done' : stale ? ' stale' : ''}">●</span>` +
       title + `</div>` +
-      `<div class="bt-stats">${masterBit}${waves}${foeRes}${mobs}${towers}` +
+      `<div class="bt-stats">${masterBit}${waves}${foeRes}${mobs}${towers}${focusStat}` +
       `<span class="bt-stat" title="Battle clock — expiry means the attack guttered out">⏱ <b>${clock}</b></span>` +
       `<span class="bt-prog" title="Lair broken at 100%"><span style="width:${prog}%"></span></span></div>` +
       tugBar +
