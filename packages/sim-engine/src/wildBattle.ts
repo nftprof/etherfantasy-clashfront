@@ -659,14 +659,20 @@ export function stepWildBattle(s: WildBattleState, balance: Balance): void {
       }
       // MARCHING gate — while a Master/soldier is FAR from a fresh move/rally
       // goal, skip auto-acquire so the unit actually walks past nearby foes
-      // instead of getting stuck fighting. Once it arrives (within ~acquireRange
-      // × marchArriveMult) normal engagement resumes.
+      // instead of getting stuck fighting. Once it arrives, normal engagement
+      // resumes. For the MASTER specifically the gate is much tighter (a click
+      // more than ~2×masterRange away = obey) so a commanded move actually
+      // happens instead of getting cancelled by the next tick's auto-acquire
+      // (owner "moving masters doesn't work if engaged" — this is the fix).
       const marchGoal: { x: number; y: number } | undefined =
         e.kind === 'MASTER' ? m?.moveTo :
         (s.stance !== 'DEFEND' && s.stance !== 'FOLLOW' && s.stance !== 'ALL_IN') ? s.rally :
         undefined;
+      const marchArriveDist = e.kind === 'MASTER'
+        ? Math.max(5, st.range * 2)          // Master obeys any click > ~7 units
+        : wb.acquireRange * 1.1;             // Soldiers keep the lane-push threshold
       const marching =
-        marchGoal !== undefined && Math.hypot(marchGoal.x - e.x, marchGoal.y - e.y) > wb.acquireRange * 1.1;
+        marchGoal !== undefined && Math.hypot(marchGoal.x - e.x, marchGoal.y - e.y) > marchArriveDist;
       if (e.tgt === undefined && !marching) {
         e.tgt = nearestEnemyOf(s, e, wb.acquireRange, towersAlive);
       }

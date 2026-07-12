@@ -548,3 +548,29 @@ function pointInPolyLocal(poly: readonly [number, number][], x: number, y: numbe
   }
   return inside;
 }
+
+// ── Owner-reported fix: Master OBEYS a mid-fight move (not just clears tgt once) ─
+test('Master OBEYS a mid-fight move — no re-acquire on the next tick', () => {
+  const s = createWildBattle(setup(STANDARD, MID_GARRISON, 'master-obey'), BALANCE);
+  // Play out to a full engagement so the Master is fighting something.
+  for (let i = 0; i < 80; i++) stepWildBattle(s, BALANCE);
+  const master0 = s.entities.find((e) => e.kind === 'MASTER');
+  if (master0 === undefined) return; // rare seed with the Master already dead — trivially passes
+  // Click a point ~15 units away (well over the master's ~7-unit obey gate but
+  // well UNDER the prior 24.2-unit gate — this is the case the bug bit).
+  const goal = { x: Math.min(s.field.size - 10, master0.x + 15), y: master0.y };
+  applyWildBattleCommand(s, { kind: 'move', x: goal.x, y: goal.y });
+  // Step several ticks: the Master must actually be moving toward the goal,
+  // not stopped fighting a nearby foe. Distance to goal must strictly decrease.
+  let d0 = Math.hypot(goal.x - master0.x, goal.y - master0.y);
+  let obeyed = true;
+  for (let i = 0; i < 8; i++) {
+    stepWildBattle(s, BALANCE);
+    const m = s.entities.find((e) => e.kind === 'MASTER');
+    if (m === undefined) { obeyed = false; break; } // died mid-move — inconclusive
+    const d = Math.hypot(goal.x - m.x, goal.y - m.y);
+    if (d >= d0 - 0.1) { obeyed = false; break; } // stalled — the bug
+    d0 = d;
+  }
+  assert.ok(obeyed, 'Master obeys a mid-fight move without stalling to re-acquire');
+});

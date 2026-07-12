@@ -161,6 +161,10 @@ export function createBattle({ store, ui, send, ftue }) {
       `.bt-tug.win{box-shadow:inset 0 0 0 1px rgba(120,220,140,0.35);}` +
       `.bt-tug.lose{box-shadow:inset 0 0 0 1px rgba(230,90,80,0.4);}` +
       `.bt-stat.focus{background:linear-gradient(180deg,#241811,#180f09);border-color:#7a3b2e;color:#ffce8a;}` +
+      `.bt-stat.respawning{border-color:#8a6a1a!important;background:linear-gradient(180deg,#22190a,#1a130a)!important;` +
+      `animation:respawnpulse 1.4s ease-in-out infinite;}` +
+      `@keyframes respawnpulse{50%{box-shadow:0 0 0 3px rgba(255,215,106,0.22);}}` +
+      `.mrespawn{color:#ffd76a;}` +
       `.bt-feed{position:absolute;right:12px;top:100px;z-index:6;display:flex;flex-direction:column;gap:3px;` +
       `pointer-events:none;max-width:220px;}` +
       `.bt-feed .bf-line{background:rgba(10,14,19,0.82);border:1px solid #26313f;border-radius:5px;` +
@@ -746,11 +750,11 @@ export function createBattle({ store, ui, send, ftue }) {
     }
     // ── running out of soldiers
     if (waveFrac > 0 && waveFrac < 0.25) {
-      advSay('waves-low', '🌊 Waves thinning', `Only ${snap.waves.stock} soldiers left in reserve — consider RETREAT (R).`, 'warn', 4200);
+      advSay('waves-low', '🌊 Waves thinning', `Only ${snap.waves.stock} soldiers left in reserve — consider FLEE (R) to save the rest.`, 'warn', 4200);
     }
     // ── flee-if-losing tripped
     if (snap.retreating) {
-      advSay('retreating', '🏳 The line breaks', `Falling back — troops spared. Rally (right-click) to fight again.`, 'warn', 4200);
+      advSay('retreating', '🏳 Fleeing the fight', `Full withdrawal in progress — troops spared, equipment dropped. Rally (right-click) to cancel and fight again.`, 'warn', 4200);
     }
     // ── victory in sight
     if (mobsFrac > 0 && mobsFrac < 0.15) {
@@ -1388,11 +1392,18 @@ export function createBattle({ store, ui, send, ftue }) {
     const masterEntity = master?.alive ? snap?.units?.find((u) => u.k === 'M' && u.s === 'A') : null;
     const masterHpPct = masterEntity ? Math.max(0, Math.round((masterEntity.hp / masterEntity.mh) * 100)) : 0;
     const masterHpCls = masterHpPct > 60 ? '' : masterHpPct > 25 ? ' warn' : ' bad';
+    // Master status: HP% while alive; a prominent ⭐ respawn countdown when down
+    // but still has runs left; "down" when out of runs. Owner ask: "command map
+    // should indicate how long before master respawn if there is a master".
+    const respawnSec = master && !master.alive && master.revives > 0
+      ? Math.ceil((master.respawnIn ?? 0) / tickHz) : 0;
     const masterBit = master
-      ? `<span class="bt-stat" title="Your Master — HP + limited runs">${avatarHtml({ name: master.name ?? field?.masterName ?? 'Master' }, 30)}` +
+      ? `<span class="bt-stat${!master.alive && master.revives > 0 ? ' respawning' : ''}" title="Your Master — HP + limited runs${respawnSec ? ` · respawns in ${respawnSec}s` : ''}">${avatarHtml({ name: master.name ?? field?.masterName ?? 'Master' }, 30)}` +
         `<span>${master.alive
           ? `<b>${esc(master.name ?? 'Master')}</b><em class="mhp${masterHpCls}">${masterHpPct}% HP</em>`
-          : master.revives > 0 ? `respawn ${Math.ceil(master.respawnIn / tickHz)}s` : '<b class="bad">down</b>'}` +
+          : master.revives > 0
+            ? `<b class="mrespawn">⭐ respawn ${respawnSec}s</b>`
+            : `<b class="bad">down — no runs left</b>`}` +
         `<em>${'♥'.repeat(Math.max(0, master.revives) + (master.alive ? 1 : 0)) || '—'} runs</em></span></span>`
       : '';
     // soldiers remaining (sprint #3): your reserve via waves (engine cfpump now sends the
@@ -1445,9 +1456,9 @@ export function createBattle({ store, ui, send, ftue }) {
       const atkTroops = snap.units.filter((u) => u.s === 'A' && u.k !== 'M');
       const home = atkTroops.filter((u) => Math.hypot(u.x - field.spawn.x, u.y - field.spawn.y) < 6).length;
       const homePct = atkTroops.length === 0 ? 100 : Math.round((home / atkTroops.length) * 100);
-      tugBar = `<div class="bt-tug lose" title="Retreat progress — ${home}/${atkTroops.length} home">` +
+      tugBar = `<div class="bt-tug lose" title="Flee progress — ${home}/${atkTroops.length} soldiers home">` +
         `<span class="tug-atk" style="width:${homePct}%;background:linear-gradient(90deg,#c43f34,#ff8a5c);"></span>` +
-        `<span class="tug-num">🏳 falling back — ${homePct}% home</span></div>`;
+        `<span class="tug-num">🏳 fleeing — ${homePct}% home</span></div>`;
     } else if (totalHp > 0) {
       tugBar = `<div class="bt-tug${tugCls}" title="Total remaining HP — yours (${hpA}) vs enemy (${hpD})">` +
         `<span class="tug-atk" style="width:${attackerShare}%"></span>` +
@@ -1488,14 +1499,14 @@ export function createBattle({ store, ui, send, ftue }) {
           `<button data-st="DEFEND"${snap?.stance === 'DEFEND' ? ' class="on"' : ''} title="Hold a ring at your own spawn — engage what comes (D)">🛡 Defend</button>` +
           `<button data-st="FOLLOW"${snap?.stance === 'FOLLOW' ? ' class="on"' : ''} title="Soldiers escort your Master as a warband (F)">🎯 Follow</button>` +
           `<button data-st="CLEAR" title="Resume default — clears stance AND rally flag (X)">✋ Clear</button>` +
-          `<button class="bt-retreat${snap?.retreating ? ' on' : ''}" data-bt="retreat" title="RETREAT — break contact + fall back to the spawn corner. Troops spared, defender holds the field (R)">🏳 Retreat</button>` +
+          `<button class="bt-retreat${snap?.retreating ? ' on' : ''}" data-bt="retreat" title="FLEE — full withdrawal from the ENTIRE battle (not just this engagement). Soldiers drop packs & equipment to run (that's the +35% flee speed) and stream home. The defender holds the field. Two-press confirm because you can't undo it. (R)">🏳 Flee</button>` +
           `<label class="bt-strat" title="Standing order the sim honors when you're offline. FLEE_IF_LOSING auto-retreats once the fight goes bad. Your choice is saved as your default for future battles.">` +
             `<select data-strat>` +
               (() => {
                 const cur = snap?.strategy ?? defaultStrategy();
                 return `<option value="FIGHT_TO_DEATH"${cur === 'FIGHT_TO_DEATH' ? ' selected' : ''}>⚔ Fight to the death</option>` +
                   `<option value="HOLD"${cur === 'HOLD' ? ' selected' : ''}>🛡 Hold</option>` +
-                  `<option value="FLEE_IF_LOSING"${cur === 'FLEE_IF_LOSING' ? ' selected' : ''}>🏳 Flee if losing</option>`;
+                  `<option value="FLEE_IF_LOSING"${cur === 'FLEE_IF_LOSING' ? ' selected' : ''}>🏳 Flee if losing (drops gear)</option>`;
               })() +
             `</select>` +
           `</label>` +
@@ -1507,7 +1518,7 @@ export function createBattle({ store, ui, send, ftue }) {
       : stale
         ? `<span class="bad">⚠ Signal lost — awaiting the battle relay…</span>`
         : snap?.retreating
-          ? `<span class="bad">🏳 <b>Retreating</b> — falling back to spawn. Rally (right-click) to fight again.</span>`
+          ? `<span class="bad">🏳 <b>Fleeing the battle</b> — soldiers streaming home (equipment dropped for speed). Rally (right-click) to cancel.</span>`
           : steer
             ? `<span><b>Click</b>: move · <b>Click enemy</b>: focus · <b>Right-click</b>: rally · <b>Shift+RC</b>: waypoint · <b>A/D/F</b>: stance · <b>R</b>: retreat · <b>X</b>: clear · <b>Esc</b>: unsteer</span>`
             : canSteer
@@ -1536,12 +1547,14 @@ export function createBattle({ store, ui, send, ftue }) {
       }
     }
     else if (btn.dataset.bt === 'retreat') {
-      // RETREAT — but if we're clearly WINNING, the Master pushes back once with
-      // a "no — we can win this!" beat (owner 2026-07-12). Second press within
-      // 6s overrides and commits the retreat.
+      // FLEE — full withdrawal from the ENTIRE battle (not just this engagement).
+      // Always a two-press confirm because you can't undo it: the fight is lost,
+      // the defender holds the field, soldiers drop equipment for the sprint home.
+      // If the fight is going WELL, the Master's warning voice adds an objection
+      // beat ("we can win this!"); when clearly losing it's a plain "sure?" beat.
       const snap = cur?.snap;
       const master = snap?.master;
-      // Reuse the tug-of-war math: winning ⇒ attackerShare > 62% and no critical HP master.
+      const mName = master?.name ?? field?.masterName ?? 'Master';
       let winning = false;
       if (snap?.units) {
         let hpA = 0, hpD = 0;
@@ -1551,15 +1564,18 @@ export function createBattle({ store, ui, send, ftue }) {
         winning = total > 0 && hpA / total > 0.62 && (snap.mobs ?? 0) < (snap.mobsStart ?? 1);
       }
       const now = performance.now();
-      if (winning && (!retreatOverrideUntil || now > retreatOverrideUntil)) {
-        retreatOverrideUntil = now + 6000; // 6-second window to confirm
-        const mName = master?.name ?? field?.masterName ?? 'Master';
-        ui?.toast?.(`🎙 ${mName} objects`, `"No — we can win this! Are you sure?" (Press 🏳 Retreat again within 6s to confirm.)`, 'warn', null, 6000);
+      if (!retreatOverrideUntil || now > retreatOverrideUntil) {
+        retreatOverrideUntil = now + 6000;
+        const title = winning ? `🎙 ${esc(mName)} objects` : '🏳 FLEE the whole battle?';
+        const body = winning
+          ? `"No — we can win this!" Press 🏳 Flee again within 6s to overrule and pull out.`
+          : `Full withdrawal from the fight — the defender holds the field, and your soldiers drop packs/equipment to run (that's the flee-speed bonus). Not undoable. Press 🏳 Flee again within 6s to confirm.`;
+        ui?.toast?.(title, body, 'warn', null, 6000);
         return;
       }
       retreatOverrideUntil = 0;
       send({ t: 'battle_cmd', battleId: openId, cmd: { kind: 'retreat' } });
-      ui?.toast?.('🏳 Retreat', 'Break contact — fall back to the spawn line.', 'info');
+      ui?.toast?.('🏳 Fleeing', 'Break contact — sprinting for the spawn line. Equipment dropped in the run.', 'info');
     }
     else if (btn.dataset.bt === 'duel') {
       // Challenge the enemy commander to a hero duel (server derives the target
@@ -1615,7 +1631,17 @@ export function createBattle({ store, ui, send, ftue }) {
     } else {
       const [x, y] = toWorld(sx, sy);
       send({ t: 'battle_cmd', battleId: openId, cmd: { kind: 'move', x, y } });
-      orders.push({ x, y, t0: performance.now(), label: '➤ move order sent' });
+      // If the Master was actively fighting, tell the player the move IS obeyed
+      // (owner: "moving masters doesn't work if engaged" — the sim now honors
+      // any click > ~2× masterRange, and this toast confirms the break-off).
+      const master = cur?.snap?.units?.find((u) => u.k === 'M' && u.s === 'A');
+      const wasFighting = master && cur?.snap?.units?.some((u) => u.s === 'D' && Math.hypot(u.x - master.x, u.y - master.y) < 8);
+      if (wasFighting) {
+        const mName = cur?.snap?.master?.name ?? field?.masterName ?? 'Master';
+        orders.push({ x, y, t0: performance.now(), label: `🎙 ${mName}: Breaking off — moving!` });
+      } else {
+        orders.push({ x, y, t0: performance.now(), label: '➤ move order sent' });
+      }
     }
     if (coach?.beat === 1) coachAdvance(); // beat 2 advances on a REAL move/focus
   });
