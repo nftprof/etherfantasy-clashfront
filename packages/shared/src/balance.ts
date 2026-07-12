@@ -296,6 +296,24 @@ export interface Balance {
     masterSpeed: number;
     /** Per-class entity stats (hp per squad, damage per hit, cooldown ticks, range m, speed m/tick). */
     unitStats: Record<UnitClass, { hp: number; damage: number; cooldownTicks: number; range: number; speed: number }>;
+    /**
+     * ⚙ Command-mode steering (real STANCE effects + RETREAT + standing STRATEGY).
+     * See balance.json `wildBattle.command._note`.
+     */
+    command: {
+      /** DEFEND: hold within this many world units of the spawn corner. */
+      defendRadius: number;
+      /** FOLLOW: escort the Master within this many world units. */
+      followRadius: number;
+      /** Move-speed multiplier for units in a RETREAT (the fear sprint back home). */
+      retreatSpeedMult: number;
+      /** FLEE_IF_LOSING trips when wave stock fraction < this. */
+      stockPctFloor: number;
+      /** FLEE_IF_LOSING trips when fielded-entity fraction < this. */
+      alivePctFloor: number;
+      /** Battle ticks between two FLEE_IF_LOSING evaluations. */
+      fleeCheckEveryTicks: number;
+    };
   };
   /**
    * ⚙ COMMAND-vs-AUTO scaling keystone (docs/04 §3a). LIVE (30 Hz joinable/

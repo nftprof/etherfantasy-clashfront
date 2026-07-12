@@ -394,6 +394,15 @@
         "range": 20,
         "speed": 0.8
       }
+    },
+    "command": {
+      "_note": "⚙ Command-mode steering (owner 2026-07-12). Real STANCE effects: DEFEND holds a ring at your spawn (radius defendRadius); FOLLOW = escort the Master (radius followRadius); ALL_IN = hunt anywhere every tick (endgame sweep behavior all fight long). RETREAT speed multiplier (retreatSpeedMult) accelerates the disengage. Standing STRATEGY (offline will): FLEE_IF_LOSING auto-RETREATs once BOTH thresholds trip together — wave stock fraction < stockPctFloor AND fielded-entity fraction < alivePctFloor. Once retreating, the strategy latches this fight (never re-engages). fleeCheckEveryTicks throttles the auto-flee evaluation so a bad frame doesn't oscillate.",
+      "defendRadius": 42,
+      "followRadius": 22,
+      "retreatSpeedMult": 1.35,
+      "stockPctFloor": 0.30,
+      "alivePctFloor": 0.35,
+      "fleeCheckEveryTicks": 8
     }
   }
 }

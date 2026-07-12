@@ -357,3 +357,103 @@ test('PvP and NPC battles stay instant — only player-vs-wild runs live', () =>
   assert.equal(f.state.battles.size, 1, 'PvP resolved instantly as before');
   assert.equal([...f.state.battles.values()][0]!.resolutionMode, 'AUTO');
 });
+
+
+// ── Batch 1: real stances + RETREAT + standing STRATEGY (owner 2026-07-12) ────
+
+test('stance CLEAR removes stance + rally + focus (no-op if nothing was set)', () => {
+  const s = createWildBattle(setup(STANDARD, MID_GARRISON, 'stance-clear'), BALANCE);
+  applyWildBattleCommand(s, { kind: 'rally', x: 60, y: 60 });
+  applyWildBattleCommand(s, { kind: 'stance', stance: 'ALL_IN' });
+  applyWildBattleCommand(s, { kind: 'focus', targetId: s.towers[0]!.id });
+  assert.ok(s.rally !== undefined && s.stance === 'ALL_IN' && s.focusTgt !== undefined, 'setup');
+  applyWildBattleCommand(s, { kind: 'stance', stance: 'CLEAR' });
+  assert.equal(s.rally, undefined);
+  assert.equal(s.stance, undefined);
+  assert.equal(s.focusTgt, undefined);
+});
+
+test('rally with queue APPENDS a waypoint; plain rally replaces + clears the queue', () => {
+  const s = createWildBattle(setup(STANDARD, MID_GARRISON, 'rally-queue'), BALANCE);
+  applyWildBattleCommand(s, { kind: 'rally', x: 60, y: 60 });
+  applyWildBattleCommand(s, { kind: 'rally', x: 80, y: 80, queue: true });
+  applyWildBattleCommand(s, { kind: 'rally', x: 100, y: 100, queue: true });
+  assert.deepEqual(s.rally, { x: 60, y: 60 });
+  assert.equal(s.rallyQueue?.length, 2);
+  // plain rally clears the queue and replaces the active flag
+  applyWildBattleCommand(s, { kind: 'rally', x: 200, y: 200 });
+  assert.deepEqual(s.rally, { x: 200, y: 200 });
+  assert.equal(s.rallyQueue?.length, 0);
+});
+
+test('RETREAT command clears targets + sets the retreating flag; a rally cancels it', () => {
+  const s = createWildBattle(setup(STANDARD, MID_GARRISON, 'retreat-cmd'), BALANCE);
+  // Run the fight a bit so targets exist.
+  for (let i = 0; i < 60; i++) stepWildBattle(s, BALANCE);
+  const someTargeted = s.entities.some((e) => e.side === 'ATTACKER' && e.tgt !== undefined);
+  assert.ok(someTargeted, 'engagement started');
+  applyWildBattleCommand(s, { kind: 'retreat' });
+  assert.equal(s.retreating, true);
+  assert.equal(s.focusTgt, undefined);
+  for (const e of s.entities) if (e.side === 'ATTACKER' && e.kind !== 'MASTER') assert.equal(e.tgt, undefined, 'targets cleared');
+  // A rally order cancels a retreat (the commander wants to fight again).
+  applyWildBattleCommand(s, { kind: 'rally', x: 60, y: 60 });
+  assert.notEqual(s.retreating, true);
+});
+
+test('during RETREAT: no fresh waves spawn (attackers conserve on the way home)', () => {
+  const s = createWildBattle(setup(STANDARD, MID_GARRISON, 'retreat-waves'), BALANCE);
+  // Run past wave 2 so we know spawning is active.
+  for (let i = 0; i < 30; i++) stepWildBattle(s, BALANCE);
+  const stockBefore = s.stock.slice();
+  applyWildBattleCommand(s, { kind: 'retreat' });
+  // Now step through several wave intervals — stock must not decrement.
+  for (let i = 0; i < BALANCE.wildBattle.waveEveryTicks * 3; i++) stepWildBattle(s, BALANCE);
+  assert.deepEqual(s.stock, stockBefore, 'no waves spawn while retreating');
+});
+
+test('RETREAT ends the fight — DEFENDER holds the field, unspawned attackers survive', () => {
+  const s = createWildBattle(setup(STANDARD, MID_GARRISON, 'retreat-end'), BALANCE);
+  // Let a bit of the fight play out.
+  for (let i = 0; i < 40; i++) stepWildBattle(s, BALANCE);
+  applyWildBattleCommand(s, { kind: 'retreat' });
+  const end = runToEnd(s);
+  assert.equal(end.outcome, 'DEFENDER', 'retreat ⇒ defender holds');
+  // Attacker survivors > 0 (a controlled retreat spares troops that never engaged).
+  const survivors = wildBattleSurvivors(end);
+  const atkLeft = survivors.filter((r) => r.entry.side === 'ATTACKER').reduce((n, r) => n + r.survivors, 0);
+  assert.ok(atkLeft > 0, `retreat saves troops: ${atkLeft}`);
+});
+
+test('FLEE_IF_LOSING auto-triggers a RETREAT when the fight goes bad', () => {
+  // Tiny attacker, heavy garrison — a losing fight by construction.
+  const s = createWildBattle(setup([{ cls: 'INFANTRY', count: 20 }], [
+    { cls: 'INFANTRY', count: 200 }, { cls: 'ARCHER', count: 60 },
+  ], 'flee-if-losing'), BALANCE);
+  applyWildBattleCommand(s, { kind: 'strategy', strategy: 'FLEE_IF_LOSING' });
+  runToEnd(s);
+  assert.equal(s.retreating, true, 'FLEE_IF_LOSING must trip on a losing fight');
+  assert.equal(s.outcome, 'DEFENDER');
+});
+
+test('FIGHT_TO_DEATH never auto-flees — the loss condition remains attackerSpent', () => {
+  const s = createWildBattle(setup([{ cls: 'INFANTRY', count: 20 }], [
+    { cls: 'INFANTRY', count: 200 }, { cls: 'ARCHER', count: 60 },
+  ], 'ftd'), BALANCE);
+  applyWildBattleCommand(s, { kind: 'strategy', strategy: 'FIGHT_TO_DEATH' });
+  runToEnd(s);
+  assert.notEqual(s.retreating, true);
+  assert.equal(s.outcome, 'DEFENDER'); // still lost, but by attrition not by flight
+});
+
+test('DEFEND stance holds units near spawn (no lane push all the way to the heart)', () => {
+  const s = createWildBattle(setup(STANDARD, MID_GARRISON, 'defend-hold'), BALANCE);
+  applyWildBattleCommand(s, { kind: 'stance', stance: 'DEFEND' });
+  for (let i = 0; i < 200; i++) stepWildBattle(s, BALANCE);
+  const attackers = s.entities.filter((e) => e.side === 'ATTACKER' && e.kind !== 'MASTER');
+  if (attackers.length === 0) return; // battle ended early — trivially passes
+  const spawn = s.field.spawn;
+  const cap = BALANCE.wildBattle.command.defendRadius + 12; // ring + slack for combat drift
+  const outside = attackers.filter((e) => Math.hypot(e.x - spawn.x, e.y - spawn.y) > cap);
+  assert.ok(outside.length < attackers.length * 0.3, `DEFEND keeps most units near spawn (${outside.length}/${attackers.length})`);
+});

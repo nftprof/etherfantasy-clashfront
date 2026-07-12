@@ -108,7 +108,14 @@ export function createBattle({ store, ui, send, ftue }) {
       `border:1px solid #26313f;border-radius:6px;padding:3px 8px;color:#8ea1b5;` +
       `font:11px "Segoe UI",system-ui,sans-serif;pointer-events:none;}` +
       `.bt-duel{border-color:#7a3b2e!important;color:#ffceba!important;background:linear-gradient(180deg,#2a1712,#1c0f0b)!important;}` +
-      `.bt-duel:hover:not(:disabled){border-color:#ffd76a!important;color:#ffd76a!important;}`;
+      `.bt-duel:hover:not(:disabled){border-color:#ffd76a!important;color:#ffd76a!important;}` +
+      `.bt-retreat{border-color:#7a3b2e!important;color:#ffceba!important;background:linear-gradient(180deg,#241111,#180a0a)!important;}` +
+      `.bt-retreat.on{border-color:#ff8a7a!important;color:#ff8a7a!important;background:#2a1414!important;animation:btretreatpulse 1.6s ease-in-out infinite;}` +
+      `@keyframes btretreatpulse{50%{box-shadow:0 0 0 3px rgba(255,110,80,0.22);}}` +
+      `.bt-strat{display:inline-flex;align-items:center;margin-left:auto;}` +
+      `.bt-strat select{background:#141c26;border:1px solid #2a3644;border-radius:6px;color:#cdd7e2;` +
+      `font:12px "Segoe UI",system-ui,sans-serif;padding:3px 6px;cursor:pointer;}` +
+      `.bt-strat select:hover,.bt-strat select:focus{border-color:#4da3ff;outline:none;}`;
     document.head.appendChild(s);
   })();
 
@@ -1095,10 +1102,18 @@ export function createBattle({ store, ui, send, ftue }) {
       // deterministic biases. 🚩 Regroup = right-click rally (no button); ✋ also clears the rally.
       (canSteer && !ended && steer
         ? `<div class="bt-stances">` +
-          `<button data-st="ALL_IN"${snap?.stance === 'ALL_IN' ? ' class="on"' : ''} title="Everything converges on the enemy core">⚔ All-in</button>` +
-          `<button data-st="DEFEND"${snap?.stance === 'DEFEND' ? ' class="on"' : ''} title="Hold a ring at your own core — engage what comes">🛡 Defend</button>` +
-          `<button data-st="FOLLOW"${snap?.stance === 'FOLLOW' ? ' class="on"' : ''} title="Soldiers escort your Master as a warband">🎯 Follow Master</button>` +
-          `<button data-st="CLEAR" title="Resume default — clears stance AND rally flag">✋ Clear</button>` +
+          `<button data-st="ALL_IN"${snap?.stance === 'ALL_IN' ? ' class="on"' : ''} title="Everything converges on the enemy core (A)">⚔ All-in</button>` +
+          `<button data-st="DEFEND"${snap?.stance === 'DEFEND' ? ' class="on"' : ''} title="Hold a ring at your own spawn — engage what comes (D)">🛡 Defend</button>` +
+          `<button data-st="FOLLOW"${snap?.stance === 'FOLLOW' ? ' class="on"' : ''} title="Soldiers escort your Master as a warband (F)">🎯 Follow</button>` +
+          `<button data-st="CLEAR" title="Resume default — clears stance AND rally flag (X)">✋ Clear</button>` +
+          `<button class="bt-retreat${snap?.retreating ? ' on' : ''}" data-bt="retreat" title="RETREAT — break contact + fall back to the spawn corner. Troops spared, defender holds the field (R)">🏳 Retreat</button>` +
+          `<label class="bt-strat" title="Standing order the sim honors when you're offline. FLEE_IF_LOSING auto-retreats once the fight goes bad.">` +
+            `<select data-strat>` +
+              `<option value="FIGHT_TO_DEATH"${snap?.strategy === 'FIGHT_TO_DEATH' ? ' selected' : ''}>⚔ Fight to the death</option>` +
+              `<option value="HOLD"${(snap?.strategy ?? 'HOLD') === 'HOLD' ? ' selected' : ''}>🛡 Hold</option>` +
+              `<option value="FLEE_IF_LOSING"${snap?.strategy === 'FLEE_IF_LOSING' ? ' selected' : ''}>🏳 Flee if losing</option>` +
+            `</select>` +
+          `</label>` +
           `</div>`
         : '');
     legendEl.hidden = !legendOpen;
@@ -1124,6 +1139,11 @@ export function createBattle({ store, ui, send, ftue }) {
       btn.classList.add('on');                       // optimistic; snapshot echo confirms
       if (btn.dataset.st === 'CLEAR') { rallyPendingUntil = 0; rallyQueue = []; }
     }
+    else if (btn.dataset.bt === 'retreat') {
+      // RETREAT — break contact + fall back. Latches until the commander rallies.
+      send({ t: 'battle_cmd', battleId: openId, cmd: { kind: 'retreat' } });
+      ui?.toast?.('🏳 Retreat', 'Break contact — fall back to the spawn line.', 'info');
+    }
     else if (btn.dataset.bt === 'duel') {
       // Challenge the enemy commander to a hero duel (server derives the target
       // from this battle). The duel overlay opens over command mode on duel_open.
@@ -1138,6 +1158,13 @@ export function createBattle({ store, ui, send, ftue }) {
       renderHud();
       window.open(field.joinUrl, '_blank', 'noopener');
     }
+  });
+
+  // Standing STRATEGY dropdown — HOLD by default; FLEE_IF_LOSING auto-retreats.
+  hud.addEventListener('change', (e) => {
+    const sel = e.target?.closest?.('select[data-strat]');
+    if (!sel) return;
+    send({ t: 'battle_cmd', battleId: openId, cmd: { kind: 'strategy', strategy: sel.value } });
   });
 
   // ── steering input ─────────────────────────────────────────────────────────

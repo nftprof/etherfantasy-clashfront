@@ -1944,7 +1944,11 @@ export class Game {
       towersAlive: b.towers.filter((t) => t.hp > 0).length,
       towersStart: b.towersStart,
       ...(b.rally !== undefined ? { rally: b.rally } : {}),
+      ...((b.rallyQueue?.length ?? 0) > 0 ? { rallyQueue: b.rallyQueue } : {}),
       ...(b.focusTgt !== undefined ? { focus: b.focusTgt } : {}),
+      ...(b.stance !== undefined ? { stance: b.stance } : {}),
+      ...(b.strategy !== undefined ? { strategy: b.strategy } : {}),
+      ...(b.retreating === true ? { retreating: true } : {}),
     };
   }
 
@@ -1962,12 +1966,20 @@ export class Game {
     const c = cmd as Record<string, unknown> | undefined;
     const kind = c?.['kind'];
     let parsed: WildBattleCmd;
-    if ((kind === 'move' || kind === 'rally') && Number.isFinite(c?.['x']) && Number.isFinite(c?.['y'])) {
-      parsed = { kind, x: c!['x'] as number, y: c!['y'] as number };
+    if (kind === 'move' && Number.isFinite(c?.['x']) && Number.isFinite(c?.['y'])) {
+      parsed = { kind: 'move', x: c!['x'] as number, y: c!['y'] as number };
+    } else if (kind === 'rally' && Number.isFinite(c?.['x']) && Number.isFinite(c?.['y'])) {
+      parsed = { kind: 'rally', x: c!['x'] as number, y: c!['y'] as number, queue: c?.['queue'] === true || c?.['queue'] === 1 };
     } else if (kind === 'focus' && typeof c?.['targetId'] === 'string') {
       parsed = { kind: 'focus', targetId: c['targetId'] };
+    } else if (kind === 'stance' && (c?.['stance'] === 'ALL_IN' || c?.['stance'] === 'DEFEND' || c?.['stance'] === 'FOLLOW' || c?.['stance'] === 'CLEAR')) {
+      parsed = { kind: 'stance', stance: c['stance'] as 'ALL_IN' | 'DEFEND' | 'FOLLOW' | 'CLEAR' };
+    } else if (kind === 'retreat') {
+      parsed = { kind: 'retreat' };
+    } else if (kind === 'strategy' && (c?.['strategy'] === 'FIGHT_TO_DEATH' || c?.['strategy'] === 'HOLD' || c?.['strategy'] === 'FLEE_IF_LOSING')) {
+      parsed = { kind: 'strategy', strategy: c['strategy'] as 'FIGHT_TO_DEATH' | 'HOLD' | 'FLEE_IF_LOSING' };
     } else {
-      throw new ApiError(400, 'BAD_CMD', 'cmd must be {kind:move|rally,x,y} or {kind:focus,targetId}');
+      throw new ApiError(400, 'BAD_CMD', 'cmd must be one of move|rally|focus|stance|retreat|strategy');
     }
     applyWildBattleCommand(b, parsed);
   }

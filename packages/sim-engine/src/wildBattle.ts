@@ -124,7 +124,29 @@ export interface WildBattleState {
   };
   /** Player steering inputs (attacker owner only). */
   rally?: { x: number; y: number };
+  /** Multi-waypoint queue — shift+right-click appends; the ACTIVE `rally` is waypoint 0. */
+  rallyQueue?: { x: number; y: number }[];
   focusTgt?: string;
+  /**
+   * Real steering POSTURE (owner 2026-07-12): actually mutates the sim, not
+   * just a client light. ALL_IN = hunt anywhere (Endgame-sweep behavior all
+   * fight); DEFEND = hold a ring at your own spawn; FOLLOW = escort the Master;
+   * default = the base lane push toward the enemy heart.
+   */
+  stance?: 'ALL_IN' | 'DEFEND' | 'FOLLOW';
+  /**
+   * Standing STRATEGY (owner "flee if losing"): what your army does WITHOUT a
+   * live commander. FIGHT_TO_DEATH = never break contact; HOLD = defend at
+   * spawn but don't press; FLEE_IF_LOSING = auto-RETREAT once we're clearly
+   * losing (stock < ⚙ threshold AND alive % < ⚙ threshold). Default = HOLD.
+   */
+  strategy?: 'FIGHT_TO_DEATH' | 'HOLD' | 'FLEE_IF_LOSING';
+  /**
+   * RETREAT flag — while true every attacker breaks contact, drops targets,
+   * and runs to the map-edge spawn corner (no re-acquire). Set by an explicit
+   * retreat command OR by the FLEE_IF_LOSING strategy tripping its threshold.
+   */
+  retreating?: boolean;
   /** Monotonic entity id counter. */
   nextId: number;
   outcome?: WildBattleOutcome;
@@ -139,7 +161,14 @@ export interface WildBattleState {
 export type WildBattleCmd =
   | { kind: 'move'; x: number; y: number }
   | { kind: 'focus'; targetId: string }
-  | { kind: 'rally'; x: number; y: number };
+  /** `queue: true` APPENDS a waypoint; plain rally replaces the flag + clears the queue. */
+  | { kind: 'rally'; x: number; y: number; queue?: boolean }
+  /** Real steering posture — actually mutates the sim (see WildBattleState.stance). */
+  | { kind: 'stance'; stance: 'ALL_IN' | 'DEFEND' | 'FOLLOW' | 'CLEAR' }
+  /** All units break contact + run to the map-edge spawn corner (no re-acquire). */
+  | { kind: 'retreat' }
+  /** Standing order the sim honors while the commander is absent. */
+  | { kind: 'strategy'; strategy: 'FIGHT_TO_DEATH' | 'HOLD' | 'FLEE_IF_LOSING' };
 
 export interface WildBattleSetup {
   id: string;
@@ -414,16 +443,50 @@ export function applyWildBattleCommand(s: WildBattleState, cmd: WildBattleCmd): 
   switch (cmd.kind) {
     case 'move':
       if (s.master !== undefined) s.master.moveTo = { x: clamp(cmd.x), y: clamp(cmd.y) };
+      // A live move order also DISENGAGES the Master from any focused target.
       return;
-    case 'rally':
-      s.rally = { x: clamp(cmd.x), y: clamp(cmd.y) };
+    case 'rally': {
+      const pt = { x: clamp(cmd.x), y: clamp(cmd.y) };
+      if (cmd.queue === true && s.rally !== undefined) {
+        s.rallyQueue ??= [];
+        s.rallyQueue.push(pt);
+      } else {
+        s.rally = pt;
+        s.rallyQueue = []; // plain rally replaces flag + clears queue
+      }
+      // A rally order also cancels a retreat — the commander wants to fight.
+      s.retreating = false;
       return;
+    }
     case 'focus': {
       const tower = s.towers.find((t) => t.id === cmd.targetId && t.hp > 0);
       const mob = s.entities.find((e) => e.id === cmd.targetId && e.side === 'DEFENDER');
       if (tower !== undefined || mob !== undefined) s.focusTgt = cmd.targetId;
       return;
     }
+    case 'stance': {
+      if (cmd.stance === 'CLEAR') {
+        delete s.stance;
+        delete s.rally;
+        s.rallyQueue = [];
+        s.focusTgt = undefined;
+      } else {
+        s.stance = cmd.stance;
+      }
+      s.retreating = false;
+      return;
+    }
+    case 'retreat': {
+      // Every attacker breaks contact and runs to the spawn corner. Persists
+      // until a rally / stance / move order countermands it.
+      s.retreating = true;
+      s.focusTgt = undefined;
+      for (const e of s.entities) if (e.side === 'ATTACKER' && e.kind !== 'MASTER') e.tgt = undefined;
+      return;
+    }
+    case 'strategy':
+      s.strategy = cmd.strategy;
+      return;
   }
 }
 
@@ -499,8 +562,39 @@ export function stepWildBattle(s: WildBattleState, balance: Balance): void {
   const rng = createRng(`${s.seed}:t${s.bt}`);
   const f = s.field;
 
-  // 1 — waves from the map edge (the attacker IS the waves).
-  if (s.bt === 1 || s.bt % wb.waveEveryTicks === 0) spawnWave(s, wb, rng.fork('wave'));
+  // 0 — standing STRATEGY (owner "flee if losing"). FLEE_IF_LOSING trips a real
+  // RETREAT once BOTH the wave stock AND the fielded-entity fractions drop below
+  // their floors together — a bad frame alone can't cause an oscillation because
+  // the check is throttled to fleeCheckEveryTicks and the state latches.
+  const cmd = wb.command;
+  if (
+    s.strategy === 'FLEE_IF_LOSING' && s.retreating !== true &&
+    s.bt % Math.max(1, cmd.fleeCheckEveryTicks) === 0
+  ) {
+    let stock = 0;
+    let stockStart = 0;
+    let entities = 0;
+    let entitiesStart = 0;
+    for (let i = 0; i < s.roster.length; i++) {
+      if (s.roster[i]!.side !== 'ATTACKER') continue;
+      stock += s.stock[i] ?? 0;
+      stockStart += s.roster[i]!.entities;
+      const r = s.roster[i]!;
+      entities += Math.max(0, r.entities - r.dead);
+      entitiesStart += r.entities;
+    }
+    const stockPct = stockStart === 0 ? 1 : stock / stockStart;
+    const alivePct = entitiesStart === 0 ? 1 : entities / entitiesStart;
+    if (stockPct < cmd.stockPctFloor && alivePct < cmd.alivePctFloor) {
+      s.retreating = true;
+      s.focusTgt = undefined;
+      for (const e of s.entities) if (e.side === 'ATTACKER' && e.kind !== 'MASTER') e.tgt = undefined;
+    }
+  }
+
+  // 1 — waves from the map edge (the attacker IS the waves). Suppressed while
+  // retreating — no fresh troops fed into a losing fight; they conserve.
+  if ((s.bt === 1 || s.bt % wb.waveEveryTicks === 0) && s.retreating !== true) spawnWave(s, wb, rng.fork('wave'));
 
   // 2 — Master spawn/respawn (limited runs ⚙).
   const m = s.master;
@@ -541,6 +635,14 @@ export function stepWildBattle(s: WildBattleState, balance: Balance): void {
     }
 
     if (e.side === 'ATTACKER') {
+      // RETREAT: break contact and run to the spawn corner. No re-acquire, no
+      // attacks made in flight (targets are cleared each tick), speed-boosted.
+      if (s.retreating === true && e.kind !== 'MASTER') {
+        e.tgt = undefined;
+        const retreatSt: Stats = { ...st, speed: st.speed * cmd.retreatSpeedMult };
+        moveEntity(s, e, retreatSt, f.spawn, wb);
+        continue;
+      }
       // Focus-fire order dominates within a generous obedience radius.
       if (s.focusTgt !== undefined) {
         const p = posOf(s.focusTgt);
@@ -549,13 +651,43 @@ export function stepWildBattle(s: WildBattleState, balance: Balance): void {
       if (e.tgt === undefined) {
         e.tgt = nearestEnemyOf(s, e, wb.acquireRange, towersAlive);
       }
-      // Push the lane: rally point override, else the defender heart.
-      const goal =
-        e.kind === 'MASTER' && m?.moveTo !== undefined
-          ? m.moveTo
-          : (s.rally ?? f.heart);
-      if (e.kind === 'MASTER' && m?.moveTo !== undefined && Math.hypot(m.moveTo.x - e.x, m.moveTo.y - e.y) < 2.5) {
-        delete m.moveTo;
+      // Advance a waypoint queue: pop when the current rally is reached (within a
+      // squad-width) — so a shift+right-click march plays flag→flag automatically.
+      if (s.rally !== undefined && (s.rallyQueue?.length ?? 0) > 0) {
+        const near = s.entities
+          .filter((x) => x.side === 'ATTACKER' && x.kind !== 'MASTER')
+          .every((x) => Math.hypot(s.rally!.x - x.x, s.rally!.y - x.y) < 8);
+        if (near) s.rally = s.rallyQueue!.shift();
+      }
+      // STANCE + goal:
+      //   DEFEND — hold within `defendRadius` of the spawn corner; ignore lane.
+      //   FOLLOW — escort the Master (fall back to spawn if the Master is down).
+      //   ALL_IN — hunt anywhere every tick (sweep behavior all fight long).
+      //   default — push the lane: rally point (if set), else the defender heart.
+      let goal: { x: number; y: number };
+      if (e.kind === 'MASTER' && m?.moveTo !== undefined) {
+        goal = m.moveTo;
+        if (Math.hypot(m.moveTo.x - e.x, m.moveTo.y - e.y) < 2.5) delete m.moveTo;
+      } else if (s.stance === 'DEFEND' && e.kind !== 'MASTER') {
+        goal = f.spawn;
+        // A defender that drifts outside the guard ring turns back home; if a
+        // target is farther than the ring, drop it — hold, don't chase.
+        if (e.tgt !== undefined) {
+          const tp = posOf(e.tgt);
+          if (tp !== undefined && Math.hypot(tp.x - f.spawn.x, tp.y - f.spawn.y) > cmd.defendRadius) e.tgt = undefined;
+        }
+      } else if (s.stance === 'FOLLOW' && e.kind !== 'MASTER') {
+        const master = s.entities.find((x) => x.kind === 'MASTER');
+        goal = master !== undefined ? { x: master.x, y: master.y } : f.spawn;
+        // Escort ring: if we've drifted past followRadius from the Master, drop
+        // the current target and close on the Master before re-engaging.
+        if (master !== undefined && Math.hypot(master.x - e.x, master.y - e.y) > cmd.followRadius) e.tgt = undefined;
+      } else if (s.stance === 'ALL_IN' && e.kind !== 'MASTER') {
+        // Continuous hunt — no lane behavior, always look for the nearest enemy.
+        if (e.tgt === undefined) e.tgt = nearestEnemyOf(s, e, Infinity, towersAlive);
+        goal = s.rally ?? f.heart;
+      } else {
+        goal = s.rally ?? f.heart;
       }
       // Endgame sweep: at the goal with nothing near — hunt anything left anywhere.
       if (e.tgt === undefined && Math.hypot(goal.x - e.x, goal.y - e.y) < 10) {
@@ -660,6 +792,15 @@ export function stepWildBattle(s: WildBattleState, balance: Balance): void {
     s.outcome = 'DEFENDER';
   } else if (s.bt >= s.clockTicks) {
     s.outcome = 'TIMEOUT';
+  } else if (s.retreating === true) {
+    // Retreat ends the fight as soon as the attackers have all made it home
+    // (units within a squad-width of the spawn corner). Defender holds the
+    // ground; surviving attackers escape via the standard survivor accounting
+    // (unspawned stock + still-alive entities never counted as dead).
+    const stillOut = s.entities.some(
+      (e) => e.side === 'ATTACKER' && e.kind !== 'MASTER' && Math.hypot(e.x - f.spawn.x, e.y - f.spawn.y) > 4,
+    );
+    if (!stillOut) s.outcome = 'DEFENDER';
   }
 }
 
