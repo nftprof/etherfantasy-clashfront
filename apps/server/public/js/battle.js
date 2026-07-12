@@ -232,6 +232,8 @@ export function createBattle({ store, ui, send, ftue }) {
     flashes = [];
     damageFloats = [];
     killFeed = [];
+    advSeen.clear();
+    advNextAllowed = 0;
     orders = [];
     rallyPendingUntil = 0;
     rallyQueue = [];
@@ -278,6 +280,9 @@ export function createBattle({ store, ui, send, ftue }) {
       cur = { snap: msg, at: performance.now() };
       if (msg.outcome && !ended) endBanner(msg.outcome);
       renderHud();
+      // Battle advisor: quick in-fight Master remarks ("we're bleeding!",
+      // "the tower's cracking — press!"). Cooldown-throttled inside.
+      runAdvisor(msg);
       return;
     }
     if (msg.t === 'battle_end') {
@@ -637,6 +642,60 @@ export function createBattle({ store, ui, send, ftue }) {
       raf = requestAnimationFrame(frame);
     };
     raf = requestAnimationFrame(frame);
+  }
+
+  // ── Battle Advisor (owner 2026-07-12: "make it fun to watch") ─────────────
+  // A tiny in-fight coach that speaks in the Master's voice. Fires context-aware
+  // remarks off tick data with a global cooldown so it never spams. Each event
+  // kind has its own key + one-shot latch so a beat doesn't retrigger every tick.
+  const advSeen = new Set();
+  let advNextAllowed = 0;
+  function advSay(key, title, text, kind = 'info', ttl = 3400) {
+    if (advSeen.has(key)) return;
+    advSeen.add(key);
+    const now = performance.now();
+    if (now < advNextAllowed) return;
+    advNextAllowed = now + 2400; // ≥ 2.4s between advisor toasts (anti-spam)
+    ui?.toast?.(title, text, kind, null, ttl);
+  }
+  function runAdvisor(snap) {
+    if (!snap || !field || ended) return;
+    const mine = store.liveBattles?.get(openId)?.mine ?? false;
+    if (!mine) return; // only your own fights get the advisor
+    const master = snap.master;
+    const masterEntity = master?.alive ? snap.units?.find((u) => u.k === 'M' && u.s === 'A') : null;
+    const masterName = master?.name ?? 'Master';
+    const totalMobsStart = snap.mobsStart ?? 0;
+    const mobsFrac = totalMobsStart === 0 ? 0 : snap.mobs / totalMobsStart;
+    const towersFrac = snap.towersStart === 0 ? 0 : snap.towersAlive / snap.towersStart;
+    const waveFrac = snap.waves?.stockStart ? snap.waves.stock / snap.waves.stockStart : 0;
+    // ── first-blood: at least one enemy down
+    if (mobsFrac > 0 && mobsFrac < 1) advSay('first-blood', '⚔ First blood', `Your line strikes! Keep the pressure on.`, 'good');
+    // ── Master bloodied (< 30%)
+    if (masterEntity && masterEntity.hp / masterEntity.mh < 0.3) {
+      advSay('master-low', `⚠ ${masterName} is bleeding`, `Pull ${masterName} back — a life is worth the tempo.`, 'bad');
+    }
+    // ── Master down
+    if (master && master.alive === false && master.revives === 0) {
+      advSay('master-out', `💀 ${masterName} is out`, `No revives left — the soldiers fight on alone.`, 'bad', 5000);
+    } else if (master && master.alive === false) {
+      advSay('master-fallen', `☠ ${masterName} falls`, `Respawning soon — hold the line.`, 'bad');
+    }
+    // ── running out of soldiers
+    if (waveFrac > 0 && waveFrac < 0.25) {
+      advSay('waves-low', '🌊 Waves thinning', `Only ${snap.waves.stock} soldiers left in reserve — consider RETREAT (R).`, 'warn', 4200);
+    }
+    // ── flee-if-losing tripped
+    if (snap.retreating) {
+      advSay('retreating', '🏳 The line breaks', `Falling back — troops spared. Rally (right-click) to fight again.`, 'warn', 4200);
+    }
+    // ── victory in sight
+    if (mobsFrac > 0 && mobsFrac < 0.15) {
+      advSay('press-on', '⚔ Push!', `The wilds are broken — sweep the field.`, 'good');
+    }
+    if (towersFrac > 0 && towersFrac < 0.5) {
+      advSay('tower-cracking', '🗼 Tower cracking', `Focus fire (click a tower) to finish it.`, 'good');
+    }
   }
 
   /**
