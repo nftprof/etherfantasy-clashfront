@@ -57,9 +57,17 @@ const ROUTES = [
   // deep to claim the throne) and Empyrea are AT WAR (the War of the Sky Throne), so
   // no lane runs between them. You reach each only back through the gateway.
   { a: 'HUB', b: 'UW1', k: 'shaft' }, { a: 'UW1', b: 'UW2', k: 'gate' }, { a: 'UW2', b: 'UW3', k: 'gate' },
-  // the Diminishing Stair: the carnival's own door — a portal from Carnavale (Mythoria SW coast)
-  // to Blackmere (single file, souls only, no armies; docs/lore/WORLD-CHRONICLE.md 'The Way Down')
-  { a: 'ENT', b: 'UW2', k: 'portal' },
+  // the Diminishing Stair: the carnival's own door — a portal from CARNAVALE
+  // (Mythoria SW coast) to Blackmere. Single file, souls only, no armies —
+  // docs/lore/WORLD-CHRONICLE.md "The Way Down". The origin anchor pins the
+  // vertical line to Mythoria's SW coast (aOff) so the visual can't be
+  // misread as a Tianxia/sea route to a different underworld isle. Endpoint
+  // anchor (bOff) pulls it toward Blackmere's NW edge — so it visually
+  // terminates ON Blackmere, not ambiguously between Blackmere and Luxuria.
+  { a: 'ENT', b: 'UW2', k: 'portal',
+    aOff: [-190, 220],   // Mythoria SW coast — Carnavale
+    bOff: [175, 90],     // Blackmere upper edge
+    label: 'Carnavale → the Diminishing Stair' },
 ];
 const ROUTE_STYLE = { sea: '#5b8fd6', air: '#9ac2ff', shaft: '#c8926a', gate: '#c8624e', portal: '#a678d1' };
 const BIOME_COL = {
@@ -220,12 +228,18 @@ export function createWorld({ ui } = {}) {
     ctx.fillStyle = og;
     ctx.beginPath(); ctx.ellipse(oc.sx, oc.sy, 660 * sc, 660 * sc * TILT, 0, 0, 7); ctx.fill();
 
-    // route geometry (port anchors, projected at each side's depth)
+    // route geometry (port anchors, projected at each side's depth). For a
+    // portal a route may override the default CENTER anchor via aOff/bOff so the
+    // visual origin is unambiguous (e.g. the Diminishing Stair pins to Mythoria's
+    // SW coast — Carnavale — not the continent center, so it can't be misread
+    // as a sea route to some other underworld isle).
     const routes = ROUTES.map(r => {
       const A = byId.get(r.a), B = byId.get(r.b);
       const vertical = r.k === 'shaft' || r.k === 'gate' || r.k === 'portal';
-      const pa = vertical ? [A.off[0] + A.vb[0] / 2, A.off[1] + A.vb[1] / 2] : portAnchor(A, B);
-      const pb = vertical ? [B.off[0] + B.vb[0] / 2, B.off[1] + B.vb[1] / 2] : portAnchor(B, A);
+      const pa = r.aOff !== undefined ? r.aOff
+        : (vertical ? [A.off[0] + A.vb[0] / 2, A.off[1] + A.vb[1] / 2] : portAnchor(A, B));
+      const pb = r.bOff !== undefined ? r.bOff
+        : (vertical ? [B.off[0] + B.vb[0] / 2, B.off[1] + B.vb[1] / 2] : portAnchor(B, A));
       return { ...r, A, B,
         a1: projectPt(pa[0], pa[1], A.depth, W, H, sc, tierGap),
         b1: projectPt(pb[0], pb[1], B.depth, W, H, sc, tierGap) };
@@ -244,6 +258,19 @@ export function createWorld({ ui } = {}) {
         ctx.moveTo(r.a1.sx, r.a1.sy); ctx.lineTo(r.b1.sx, r.b1.sy);
       }
       ctx.stroke(); ctx.setLineDash([]); ctx.globalAlpha = 1;
+      // Named-portal label: drop a small carnival tent at the origin + a "Carnavale"
+      // caption so the Diminishing Stair can't be misread as a sea route.
+      if (r.k === 'portal' && r.label) {
+        ctx.globalAlpha = dim ? 0.55 : 0.95;
+        // ⛺ marker at origin
+        ctx.font = '13px ui-sans-serif,system-ui';
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText('⛺', r.a1.sx, r.a1.sy);
+        ctx.font = '11px ui-sans-serif,system-ui';
+        ctx.fillStyle = '#c9a6ff';
+        ctx.fillText(r.label, r.a1.sx, r.a1.sy + 14);
+        ctx.globalAlpha = 1;
+      }
     };
     for (const r of routes) if (r.k === 'sea') drawRoute(r);
 
