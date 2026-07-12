@@ -1164,6 +1164,29 @@ export function createBattle({ store, ui, send, ftue }) {
             ctx.stroke();
             ctx.setLineDash([]);
           }
+          // THREAT MARKER — count nearby enemies; if the Master is being ganged
+          // (3+ within acquireRange), draw a red arc + "!" so you can see the
+          // Master needs to disengage before dying.
+          let threats = 0;
+          for (const foe of units) {
+            if (foe.s !== 'D') continue;
+            if (Math.hypot(foe.x - u.x, foe.y - u.y) < 8) threats++;
+          }
+          if (threats >= 3) {
+            const p = 0.5 + 0.5 * Math.sin(now / 180);
+            ctx.strokeStyle = `rgba(255,80,60,${0.55 + 0.3 * p})`;
+            ctx.lineWidth = lw(1.6);
+            ctx.beginPath();
+            ctx.arc(u.x, u.y, 6.2, -Math.PI * 0.85, -Math.PI * 0.15);
+            ctx.stroke();
+            const [px3, py3] = toScr(u.x, u.y);
+            ctx.save(); ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            ctx.fillStyle = `rgba(255,120,90,${0.9})`;
+            ctx.font = '800 12px "Segoe UI",system-ui,sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(`⚠ ${threats}`, px3, py3 - 24);
+            ctx.restore();
+          }
           // Coach beat 2: spotlight ring around the Master marker
           if (coach?.beat === 1) {
             ctx.strokeStyle = `rgba(255,215,106,${0.55 + 0.4 * pulse})`;
