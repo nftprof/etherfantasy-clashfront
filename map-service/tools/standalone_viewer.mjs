@@ -38,6 +38,13 @@ const design = { ok: true, artifact };
 // reuse the real viewer verbatim; inline the design + null the render.json (flat-textured fallback —
 // identical to what the deployed designer shows for a parcel with no heightfield converter output).
 let html = readFileSync(path.join(ROOT, "map-service/maps/preview3d.html"), "utf8");
+// hardcode pid (so the file works with NO ?parcel= in the URL — it's baked in), inline the design,
+// and null the render.json fetch (flat-textured fallback — as the deployed designer shows without a
+// heightfield converter). The `if(!pid) missing` guard then never trips.
+html = html.replace(
+  /const q=new URLSearchParams\(location\.search\)[^\n]*\n/,
+  `const q=new URLSearchParams(location.search), pid=${JSON.stringify(pid)}, vv=null;\n`
+);
 html = html.replace(
   /let d; try\{ d=await fetch\(`\/internal\/v1\/designs\/\$\{pid\}[^\n]*\n/,
   `let d=${JSON.stringify(design)};\n`
