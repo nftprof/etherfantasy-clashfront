@@ -72,27 +72,20 @@ const ROUTES = [
   // ── DOWN — the industrial freight road + the two boss-gated tier drops ────────
   { a: 'HUB', b: 'UW1', k: 'shaft' }, { a: 'UW1', b: 'UW2', k: 'gate' },
   // UW2→UW3 = the Vault Gate. Behind it a mist-sea by SHIP; that water is
-  // Lava-Kraken water (see the co-located krakenDrag below). Presentation of
-  // the crossing is Hunt's; the line itself stays a boss-`gate` on the map.
-  { a: 'UW2', b: 'UW3', k: 'gate', label: 'the Vault Gate — mist-sea by ship' },
+  // LAVA-KRAKEN water (Q6 + §4b). The lava kraken is NOT its own zoneLinks edge
+  // per registry canon — it's the HAZARD on this crossing itself, so we tag the
+  // line (`hazard:'lava_kraken'`) rather than draw a separate drag route.
+  { a: 'UW2', b: 'UW3', k: 'gate', hazard: 'lava_kraken',
+    label: 'the Vault Gate — mist-sea by ship (🌋 Lava-Kraken water)' },
   // ── DOWN — the Diminishing Stair (Carnavale, one soul, no vehicle) ────────────
   { a: 'ENT', b: 'UW2', k: 'portal',
     aOff: [-190, 220],   // Mythoria SW coast — Carnavale
     bOff: [175, 90],     // Blackmere upper edge
     label: 'Carnavale → the Diminishing Stair' },
-  // ── KRAKEN DRAGS — the third door, TAKEN not chosen (§5b) ─────────────────────
-  // Regular Kraken: any surface sea → UW2. Origin anchored mid-ocean so it reads
-  // as "any open water can pull you down." INVOLUNTARY — never a route you plan.
-  { a: 'HUB', b: 'UW2', k: 'krakenDrag', kraken: 'sea',
-    aOff: [-60, -20],
-    bOff: [180, 60],
-    label: '🐙 the Kraken — sea drag → Blackmere' },
-  // Lava Kraken: the Vault-Gate mist-sea crossing → UW3. Co-located with the
-  // UW2↔UW3 line so it visually reads as "this water is what does it."
-  { a: 'UW2', b: 'UW3', k: 'krakenDrag', kraken: 'lava',
-    aOff: [175, 100],
-    bOff: [184, 103],
-    label: '🌋 the Lava Kraken — Vault-Gate drag → Luxuria' },
+  // ── KRAKEN DRAGS come from the REGISTRY (data/zone-registry.json zoneLinks) ─
+  // Server projects zoneLinks.locked into /api/world meta.zoneLinks; the client
+  // reads them at boot and appends the KRAKEN_DRAG entries here. Data source of
+  // truth — nothing about them is hand-coded from here.
 ];
 const ROUTE_STYLE = {
   sea: '#5b8fd6', air: '#9ac2ff', land: '#a58a4f', shaft: '#c8926a',
@@ -145,7 +138,50 @@ const CSS = `
 #world .wm-panel .fogtag{color:#7f8794;font-style:italic}
 `;
 
-export function createWorld({ ui } = {}) {
+/**
+ * Build the runtime route list = the hand-authored ROUTES + registry-driven
+ * SPECIAL LINKS projected via /api/world meta.zoneLinks (Agent D's source-of-
+ * truth for the not-plannable edges: kraken drags, secret entrances). Called
+ * lazily so we pick up the meta as soon as it lands on the store.
+ */
+function runtimeRoutes(store) {
+  const extra = [];
+  const zl = store?.meta?.zoneLinks;
+  if (!Array.isArray(zl)) return ROUTES;
+  for (const link of zl) {
+    if (!link || typeof link !== 'object') continue;
+    if (link.kind === 'KRAKEN_DRAG') {
+      // A KRAKEN_DRAG's `from` is not a continent id — it's a MEDIUM ("SEA" or
+      // "SKY"). Anchor the origin at a mid-medium point + endpoint at the
+      // Undertow (UW2 far east — hunt.undertow @[158,27.5]) so both variants
+      // clearly land in the same "beyond the story's reach" region.
+      const overSea = link.overSea === true;
+      const sky = link.from === 'SKY';
+      extra.push({
+        a: sky ? 'HS1' : 'HUB',   // origin ANCHOR continent (visually stable)
+        b: 'UW2',
+        k: 'krakenDrag',
+        kraken: sky ? 'sky' : 'sea',
+        overSea,
+        // Origin: mid-ocean (SEA) or over-sea between the surface & sky (SKY).
+        aOff: sky ? [420, 20] : [-60, -20],
+        // Endpoint: the Undertow (Blackmere far east; beyond the drawn shape).
+        // UW2 `off:[140,60]` + Undertow SVG [158,27.5] → world coords ≈ [298, 88].
+        bOff: [298, 88],
+        label: sky
+          ? '🐙 the Kraken — sky-over-sea fall → the Undertow'
+          : '🐙 the Kraken — sea drag → the Undertow',
+        // Registry provenance so a debug view / tooltip can trace the source.
+        registrySource: `zoneLinks:${link.from}→${link.to}`,
+      });
+    }
+    // SECRET_ENTRANCE is already drawn as the ENT→UW2 portal (with Carnavale
+    // anchors); we intentionally don't dupe it from registry data.
+  }
+  return [...ROUTES, ...extra];
+}
+
+export function createWorld({ ui, store } = {}) {
   const root = document.getElementById('world');
   if (!root) return { open() {}, close() {}, toggle() {} };
   const canvas = document.getElementById('world-canvas');
@@ -261,7 +297,7 @@ export function createWorld({ ui } = {}) {
     // visual origin is unambiguous (e.g. the Diminishing Stair pins to Mythoria's
     // SW coast — Carnavale — not the continent center, so it can't be misread
     // as a sea route to some other underworld isle).
-    const routes = ROUTES.map(r => {
+    const routes = runtimeRoutes(store).map(r => {
       const A = byId.get(r.a), B = byId.get(r.b);
       const vertical = r.k === 'shaft' || r.k === 'gate' || r.k === 'portal';
       const pa = r.aOff !== undefined ? r.aOff
@@ -338,6 +374,25 @@ export function createWorld({ ui } = {}) {
         ctx.font = '11px ui-sans-serif,system-ui';
         ctx.fillStyle = '#c9a6ff';
         ctx.fillText(r.label, r.a1.sx, r.a1.sy + 14);
+        ctx.globalAlpha = 1;
+      }
+      // Gate hazard badge: the Vault-Gate crossing carries lava-kraken water
+      // (Q6). Paint a molten glow midpoint + 🌋 marker on the gate line — the
+      // lava kraken lives ON this crossing, not as its own KRAKEN_DRAG edge.
+      if (r.k === 'gate' && r.hazard === 'lava_kraken') {
+        const mx = (r.a1.sx + r.b1.sx) / 2, my = (r.a1.sy + r.b1.sy) / 2;
+        ctx.globalAlpha = dim ? 0.55 : 0.95;
+        const glow = ctx.createRadialGradient(mx, my, 3, mx, my, 22);
+        glow.addColorStop(0, 'rgba(255,150,60,0.7)');
+        glow.addColorStop(1, 'rgba(255,150,60,0)');
+        ctx.fillStyle = glow; ctx.beginPath(); ctx.arc(mx, my, 22, 0, 7); ctx.fill();
+        ctx.font = '15px ui-sans-serif,system-ui';
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillStyle = '#fff';
+        ctx.fillText('🌋', mx, my);
+        ctx.font = '10px ui-sans-serif,system-ui';
+        ctx.fillStyle = '#f5b28a';
+        ctx.fillText('Lava-Kraken water', mx, my + 14);
         ctx.globalAlpha = 1;
       }
     };

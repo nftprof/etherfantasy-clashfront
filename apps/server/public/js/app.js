@@ -294,7 +294,9 @@ document.getElementById('btn-economy').addEventListener('click', (e) => {
   econ.toggle();
 });
 // 🌐 3D world map — continents on 3 tiers, fog of war, cross-continent (server) travel.
-const world = createWorld({ ui });
+// Pass `store` so world.js can read registry-driven special links (meta.zoneLinks
+// = kraken drags, secret entrances) from the /api/world payload the app already fetches.
+const world = createWorld({ ui, store });
 document.getElementById('btn-world').addEventListener('click', (e) => {
   e.preventDefault();
   const homeParcelId = [...store.territories.values()][0]?.parcelId

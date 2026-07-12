@@ -14,8 +14,8 @@
  * never touch the sim.
  */
 import { randomBytes } from 'node:crypto';
-import { mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
-import { dirname } from 'node:path';
+import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
 import {
   type Army,
   type Balance,
@@ -122,6 +122,34 @@ export class ApiError extends Error {
 }
 
 /** Translate sim-engine order-validation throws into 4xx ApiErrors. */
+/**
+ * Read the "special links" from data/zone-registry.json — the not-plannable
+ * edges Agent D locks: kraken drags, the Diminishing Stair, etc. Cached module-
+ * lifetime because the registry is a world-constitution file (changes rarely,
+ * server restarts on a change). Returns [] on any read/parse failure so an
+ * absent or broken file never blocks /api/world.
+ */
+let zoneLinksCache: unknown[] | undefined;
+function readZoneLinks(): unknown[] {
+  if (zoneLinksCache !== undefined) return zoneLinksCache;
+  const candidates = [
+    join(process.cwd(), 'data', 'zone-registry.json'),
+    join(process.cwd(), '..', '..', 'data', 'zone-registry.json'),
+    join(process.cwd(), '..', '..', '..', 'data', 'zone-registry.json'),
+  ];
+  for (const p of candidates) {
+    if (!existsSync(p)) continue;
+    try {
+      const raw = JSON.parse(readFileSync(p, 'utf8')) as Record<string, unknown>;
+      const zl = raw['zoneLinks'] as { locked?: unknown[] } | undefined;
+      zoneLinksCache = Array.isArray(zl?.locked) ? zl!.locked as unknown[] : [];
+      return zoneLinksCache;
+    } catch { /* fall through */ }
+  }
+  zoneLinksCache = [];
+  return zoneLinksCache;
+}
+
 function translateSimError(e: unknown): ApiError {
   const msg = e instanceof Error ? e.message : String(e);
   if (msg.includes('already governed')) return new ApiError(409, 'ALREADY_OWNED', msg);
@@ -2742,6 +2770,11 @@ export class Game {
           defendRadius: this.balance.wildBattle.command.defendRadius,
           followRadius: this.balance.wildBattle.command.followRadius,
         },
+        // World-map SPECIAL LINKS from the registry — the "not-plannable" edges
+        // (kraken drags, secret entrances) that the map view renders on top of
+        // the hand-authored surface graph. Data source: data/zone-registry.json
+        // zoneLinks.locked (Agent D). Empty when the registry is absent.
+        zoneLinks: readZoneLinks(),
       },
       parcels,
     };
