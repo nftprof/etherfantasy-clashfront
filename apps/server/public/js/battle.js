@@ -86,6 +86,34 @@ export function createBattle({ store, ui, send, ftue }) {
   compassEl.title = 'Command map matches the 3D hero view: East up, North right';
   compassEl.textContent = '🧭 E↑ N→';
   stage.appendChild(compassEl);
+  // ── Keyboard help overlay (press ?) ──────────────────────────────────────────
+  let helpOpen = false;
+  const helpEl = document.createElement('div');
+  helpEl.className = 'bt-help';
+  helpEl.hidden = true;
+  helpEl.innerHTML =
+    `<b>Command mode — shortcuts</b>` +
+    `<div class="hk-row"><kbd>Click</kbd> move Master · <kbd>Click enemy</kbd> focus fire</div>` +
+    `<div class="hk-row"><kbd>Right-click</kbd> rally · <kbd>Shift+RC</kbd> waypoint</div>` +
+    `<div class="hk-row"><kbd>A</kbd> All-in · <kbd>D</kbd> Defend · <kbd>F</kbd> Follow Master</div>` +
+    `<div class="hk-row"><kbd>R</kbd> Retreat · <kbd>X</kbd> Clear · <kbd>S</kbd> Steer · <kbd>Esc</kbd> unsteer</div>` +
+    `<div class="hk-row"><kbd>?</kbd> Toggle this help</div>` +
+    `<div class="hk-hint">Standing order (dropdown, right of stances) applies even when you're offline.</div>`;
+  stage.appendChild(helpEl);
+  (() => {
+    const s = document.createElement('style');
+    s.textContent =
+      `.bt-help{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:7;` +
+      `background:rgba(10,14,19,0.95);border:1px solid #26313f;border-radius:10px;padding:14px 18px;` +
+      `color:#eaf0f6;font:12.5px/1.55 "Segoe UI",system-ui,sans-serif;box-shadow:0 12px 30px rgba(0,0,0,0.6);max-width:340px;}` +
+      `.bt-help b{display:block;margin-bottom:8px;color:#ffd76a;font-size:13px;}` +
+      `.bt-help .hk-row{margin:3px 0;color:#cdd7e2;}` +
+      `.bt-help kbd{background:#1a232e;border:1px solid #2a3644;border-bottom-width:2px;border-radius:4px;padding:0 5px;` +
+      `font:11px "Consolas",monospace;color:#eaf0f6;margin:0 2px;}` +
+      `.bt-help .hk-hint{margin-top:10px;color:#7d8da0;font-size:11px;}`;
+    document.head.appendChild(s);
+  })();
+
   // ── Kill feed (owner "fun to watch") ─────────────────────────────────────────
   // A small top-right event log ("🗼 tower destroyed", "☠ wild down") that fades
   // recent beats. Sits with the compass; scoped CSS injected once with the rest.
@@ -118,6 +146,8 @@ export function createBattle({ store, ui, send, ftue }) {
       `.bt-retreat{border-color:#7a3b2e!important;color:#ffceba!important;background:linear-gradient(180deg,#241111,#180a0a)!important;}` +
       `.bt-retreat.on{border-color:#ff8a7a!important;color:#ff8a7a!important;background:#2a1414!important;animation:btretreatpulse 1.6s ease-in-out infinite;}` +
       `@keyframes btretreatpulse{50%{box-shadow:0 0 0 3px rgba(255,110,80,0.22);}}` +
+      `.bt-recall{border-color:#3a4c66!important;color:#a8c4e8!important;background:#131a24!important;}` +
+      `.bt-recall:hover{border-color:#ffd76a!important;color:#ffd76a!important;}` +
       `.bt-strat{display:inline-flex;align-items:center;margin-left:auto;}` +
       `.bt-strat select{background:#141c26;border:1px solid #2a3644;border-radius:6px;color:#cdd7e2;` +
       `font:12px "Segoe UI",system-ui,sans-serif;padding:3px 6px;cursor:pointer;}` +
@@ -232,6 +262,7 @@ export function createBattle({ store, ui, send, ftue }) {
   let flashes = [];       // death/hit effects {x, y, t0, kind}
   let damageFloats = [];  // {x, y, t0, dmg, side} — rising damage numbers over hits
   let killFeed = [];      // {t0, text} — small top-right event log ("tower destroyed", "3 wild down")
+  let retreatOverrideUntil = 0; // Master says "no, we can win!" — second press within window commits
   // Order acknowledgment (sprint #2): steer clicks get instant feedback, and the rally flag is
   // drawn HOLLOW while the order is still in flight (~1.5s command poll + apply) — the bridge
   // echoes the flag position immediately, which used to read as "done" before the engine heard it.
@@ -252,6 +283,7 @@ export function createBattle({ store, ui, send, ftue }) {
     flashes = [];
     damageFloats = [];
     killFeed = [];
+    retreatOverrideUntil = 0;
     advSeen.clear();
     advNextAllowed = 0;
     orders = [];
@@ -1085,6 +1117,18 @@ export function createBattle({ store, ui, send, ftue }) {
       const r = u.k === 'M' ? 2.9 : u.c === 'CAVALRY' ? 2.0 : 1.7;
       if (u.s === 'A') {
         if (u.k === 'M') {
+          // While STEERING, draw a subtle attack-range ring around the Master so
+          // the player can gauge where a click will actually engage from.
+          if (steer) {
+            const range = 4.2; // masterRange ≈ 3.5 + a small visual pad
+            ctx.strokeStyle = 'rgba(255,215,106,0.18)';
+            ctx.lineWidth = lw(0.9);
+            ctx.setLineDash([lw(1.5), lw(2)]);
+            ctx.beginPath();
+            ctx.arc(u.x, u.y, range, 0, 7);
+            ctx.stroke();
+            ctx.setLineDash([]);
+          }
           // Coach beat 2: spotlight ring around the Master marker
           if (coach?.beat === 1) {
             ctx.strokeStyle = `rgba(255,215,106,${0.55 + 0.4 * pulse})`;
@@ -1344,7 +1388,8 @@ export function createBattle({ store, ui, send, ftue }) {
           // commander to a best-of-3 card duel — champions settle it, troops are
           // spared. Opens the duel overlay OVER command mode when the server
           // replies with duel_open.
-          `<button class="bt-duel" data-bt="duel" title="Challenge the enemy commander to a HERO DUEL — champions settle it, troops are spared (best-of-3 cards; your Master's rating + any Named artifact decide it).">⚔ Duel</button>`
+          `<button class="bt-duel" data-bt="duel" title="Challenge the enemy commander to a HERO DUEL — champions settle it, troops are spared (best-of-3 cards; your Master's rating + any Named artifact decide it).">⚔ Duel</button>` +
+          `<button class="bt-recall" data-bt="recall" title="Send your Master back to the spawn corner (safe recall).">🏛 Recall</button>`
         : '') +
       `<button data-bt="legend" title="Map legend — what every mark on this map means">ⓘ</button>` +
       `<button data-bt="leave">✕ Leave</button></div>` +
@@ -1394,8 +1439,38 @@ export function createBattle({ store, ui, send, ftue }) {
       btn.classList.add('on');                       // optimistic; snapshot echo confirms
       if (btn.dataset.st === 'CLEAR') { rallyPendingUntil = 0; rallyQueue = []; }
     }
+    else if (btn.dataset.bt === 'recall') {
+      // Safe recall: move the Master to the spawn corner (no target reacquire
+      // en route because sim's marching gate handles it).
+      if (field?.spawn) {
+        send({ t: 'battle_cmd', battleId: openId, cmd: { kind: 'move', x: field.spawn.x, y: field.spawn.y } });
+        orders.push({ x: field.spawn.x, y: field.spawn.y, t0: performance.now(), label: '🏛 Master recall' });
+        ui?.toast?.('🏛 Recall', 'Master falls back to spawn.', 'info', null, 1400);
+      }
+    }
     else if (btn.dataset.bt === 'retreat') {
-      // RETREAT — break contact + fall back. Latches until the commander rallies.
+      // RETREAT — but if we're clearly WINNING, the Master pushes back once with
+      // a "no — we can win this!" beat (owner 2026-07-12). Second press within
+      // 6s overrides and commits the retreat.
+      const snap = cur?.snap;
+      const master = snap?.master;
+      // Reuse the tug-of-war math: winning ⇒ attackerShare > 62% and no critical HP master.
+      let winning = false;
+      if (snap?.units) {
+        let hpA = 0, hpD = 0;
+        for (const u of snap.units) { if (u.s === 'A') hpA += u.hp; else hpD += u.hp; }
+        if (snap.towers) for (const t of snap.towers) if (t.hp > 0) hpD += t.hp;
+        const total = hpA + hpD;
+        winning = total > 0 && hpA / total > 0.62 && (snap.mobs ?? 0) < (snap.mobsStart ?? 1);
+      }
+      const now = performance.now();
+      if (winning && (!retreatOverrideUntil || now > retreatOverrideUntil)) {
+        retreatOverrideUntil = now + 6000; // 6-second window to confirm
+        const mName = master?.name ?? field?.masterName ?? 'Master';
+        ui?.toast?.(`🎙 ${mName} objects`, `"No — we can win this! Are you sure?" (Press 🏳 Retreat again within 6s to confirm.)`, 'warn', null, 6000);
+        return;
+      }
+      retreatOverrideUntil = 0;
       send({ t: 'battle_cmd', battleId: openId, cmd: { kind: 'retreat' } });
       ui?.toast?.('🏳 Retreat', 'Break contact — fall back to the spawn line.', 'info');
     }
@@ -1494,9 +1569,13 @@ export function createBattle({ store, ui, send, ftue }) {
     else if (k === 'f') { stanceCmd('FOLLOW'); e.preventDefault(); }
     else if (k === 'x') { stanceCmd('CLEAR'); rallyPendingUntil = 0; rallyQueue = []; e.preventDefault(); }
     else if (k === 'r') {
-      send({ t: 'battle_cmd', battleId: openId, cmd: { kind: 'retreat' } });
-      ui?.toast?.('🏳 Retreat', 'Break contact — falling back.', 'info', null, 1800);
+      // Trigger the same "Master objects" path the retreat BUTTON uses.
+      const btn = hud.querySelector('.bt-retreat');
+      if (btn) btn.click(); else send({ t: 'battle_cmd', battleId: openId, cmd: { kind: 'retreat' } });
       e.preventDefault();
+    }
+    else if (k === '?' || (k === '/' && e.shiftKey)) {
+      helpOpen = !helpOpen; helpEl.hidden = !helpOpen; e.preventDefault();
     }
   });
 
