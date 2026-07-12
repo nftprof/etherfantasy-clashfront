@@ -503,3 +503,48 @@ test('marching gate — soldiers walk past nearby foes until they arrive at the 
   const marchingUntargeted = farOnes.filter((e) => e.tgt === undefined);
   assert.ok(marchingUntargeted.length > 0, `at least one far unit is untargeted (marching): ${marchingUntargeted.length}/${farOnes.length}`);
 });
+
+// ── Batch 3: pathing obstacle sanity (owner "check units can't walk thru rocks") ────
+
+test('no unit ever stands INSIDE a rock/tree/pond obstacle across a full fight', () => {
+  const s = createWildBattle(setup(STANDARD, MID_GARRISON, 'obstacle-audit'), BALANCE);
+  let violations = 0;
+  let worstOverlap = 0;
+  while (s.outcome === undefined && s.bt < 4000) {
+    stepWildBattle(s, BALANCE);
+    for (const e of s.entities) {
+      for (const o of s.field.obstacles) {
+        const d = Math.hypot(e.x - o.x, e.y - o.y);
+        if (d < o.r - 0.05) { // 0.05 slack for float
+          violations++;
+          worstOverlap = Math.max(worstOverlap, o.r - d);
+        }
+      }
+    }
+  }
+  assert.equal(violations, 0, `no unit inside an obstacle EVER (worst overlap: ${worstOverlap.toFixed(2)})`);
+});
+
+test('no unit ever leaves the parcel polygon (bounds obeyed)', () => {
+  const s = createWildBattle(setup(STANDARD, MID_GARRISON, 'bounds-audit'), BALANCE);
+  let out = 0;
+  while (s.outcome === undefined && s.bt < 4000) {
+    stepWildBattle(s, BALANCE);
+    for (const e of s.entities) {
+      if (!pointInPolyLocal(s.field.bounds, e.x, e.y)) out++;
+    }
+  }
+  assert.equal(out, 0, 'no unit leaves the parcel bounds');
+});
+
+// Local point-in-poly (mirror of the sim's internal helper; kept here so the
+// test doesn't reach into an unexported symbol).
+function pointInPolyLocal(poly: readonly [number, number][], x: number, y: number): boolean {
+  let inside = false;
+  for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+    const [xi, yi] = poly[i]!;
+    const [xj, yj] = poly[j]!;
+    if ((yi > y) !== (yj > y) && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) inside = !inside;
+  }
+  return inside;
+}
