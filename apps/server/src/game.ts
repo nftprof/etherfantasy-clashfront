@@ -49,6 +49,9 @@ import {
   type DemoWorldFile,
   type DuelRound,
   type DuelSide,
+  type BuildSpot,
+  buildStructure,
+  repairStructure,
   type EconomyState,
   engineCommandSlotCount,
   type EngineBattleState,
@@ -100,6 +103,9 @@ import {
   type ViewerContext,
   type WorldParcelView,
 } from './views';
+
+/** Placeable base-building module keys (docs/briefs/BASE-BUILDING-DEFENSE-LAYER.md). */
+const BUILD_KEYS: readonly string[] = ['TOWER', 'WALL', 'GATE', 'TRAP', 'GRANARY', 'PET_DEN'];
 
 // ── Errors ────────────────────────────────────────────────────────────────────
 
@@ -1077,6 +1083,108 @@ export class Game {
     };
   }
 
+  // ── BASE-BUILDING (docs/briefs/BASE-BUILDING-DEFENSE-LAYER.md, decision 7) ──
+
+  /** The map's buildSpot slots for a parcel (world-unit positions) — the placement grid + cap. */
+  private buildSpotsForParcel(parcelId: string): BuildSpot[] {
+    const bf = loadParcelBattlefield(parcelId) ?? loadStandbyBattlefield(1);
+    return (bf?.buildSpots ?? []).map((b) => ({ anchorId: b.anchorId, x: b.x, z: b.z }));
+  }
+
+  /** Structures serialized for a territory view (post-build echo). */
+  private structuresOf(territoryId: string): unknown[] {
+    return (this.state.territories.get(territoryId)?.structures ?? []).map((s) => ({ ...s }));
+  }
+
+  /**
+   * POST /api/build — place or UPGRADE a destructible defense module on a
+   * buildSpot of a parcel YOU govern. Body: { parcelId | territoryId, anchorId,
+   * key }. Charges the develop SINK cost ladder (decision 17); mutates
+   * Territory.structures with a tier + HP; the tier + HP ride the allocate
+   * context into the battle (the MOBA engine already consumes tiered towers).
+   */
+  build(
+    governorId: string,
+    ref: { parcelId?: unknown; territoryId?: unknown },
+    anchorId: unknown,
+    key: unknown,
+  ): { territory: TerritoryView; ctUnits: number; costCtUnits: number; tier: number; action: string; structures: unknown[] } {
+    const t = ref.territoryId !== undefined ? this.getTerritory(ref.territoryId) : this.getTerritoryByParcel(ref.parcelId);
+    if (t.governorId !== governorId) throw new ApiError(403, 'NOT_YOUR_TERRITORY', `${t.name} is not governed by you`);
+    if (typeof anchorId !== 'string' || anchorId === '') throw new ApiError(400, 'BAD_ANCHOR', 'anchorId (a buildSpot id) is required');
+    if (typeof key !== 'string' || !BUILD_KEYS.includes(key)) {
+      throw new ApiError(400, 'BAD_KEY', `key must be one of ${BUILD_KEYS.join(', ')}`);
+    }
+    const parcelId = this.parcelId(t.hexIds[0]!);
+    let out: ReturnType<typeof buildStructure>;
+    try {
+      out = buildStructure(this.state, t.id, { anchorId, key, buildSpots: this.buildSpotsForParcel(parcelId), arenaSize: 322, balance: this.balance });
+    } catch (e) {
+      throw translateSimError(e);
+    }
+    return {
+      territory: territoryView(this.state, t, this.parcelByHex, this.balance, this.viewerContext(governorId)),
+      ctUnits: this.state.ctBalances?.get(governorId) ?? 0,
+      costCtUnits: out.costCtUnits,
+      tier: out.tier,
+      action: out.action,
+      structures: this.structuresOf(t.id),
+    };
+  }
+
+  /** POST /api/repair — restore a siege-damaged module to full HP for CT (a SINK). */
+  repair(
+    governorId: string,
+    ref: { parcelId?: unknown; territoryId?: unknown },
+    anchorId: unknown,
+  ): { territory: TerritoryView; ctUnits: number; costCtUnits: number; structures: unknown[] } {
+    const t = ref.territoryId !== undefined ? this.getTerritory(ref.territoryId) : this.getTerritoryByParcel(ref.parcelId);
+    if (t.governorId !== governorId) throw new ApiError(403, 'NOT_YOUR_TERRITORY', `${t.name} is not governed by you`);
+    if (typeof anchorId !== 'string' || anchorId === '') throw new ApiError(400, 'BAD_ANCHOR', 'anchorId is required');
+    const parcelId = this.parcelId(t.hexIds[0]!);
+    let out: ReturnType<typeof repairStructure>;
+    try {
+      out = repairStructure(this.state, t.id, { anchorId, buildSpots: this.buildSpotsForParcel(parcelId), arenaSize: 322, balance: this.balance });
+    } catch (e) {
+      throw translateSimError(e);
+    }
+    return {
+      territory: territoryView(this.state, t, this.parcelByHex, this.balance, this.viewerContext(governorId)),
+      ctUnits: this.state.ctBalances?.get(governorId) ?? 0,
+      costCtUnits: out.costCtUnits,
+      structures: this.structuresOf(t.id),
+    };
+  }
+
+  /**
+   * WILD-garrison seeding (in lieu of a player): write N DEFENDER towers onto a
+   * WILD parcel's buildSpots so it is an attackable PvE target. Deterministic
+   * from the parcel's slot layout; idempotent (skips a parcel that already has
+   * structures). Shares the player build write path (allowSystem). Returns the
+   * number of towers seeded.
+   */
+  seedWildGarrison(territoryId: string): number {
+    const t = this.state.territories.get(territoryId);
+    if (t === undefined || t.governorKind !== 'SYSTEM') return 0;
+    if ((t.structures ?? []).length > 0) return 0; // already seeded
+    const parcelId = this.parcelId(t.hexIds[0]!);
+    const spots = this.buildSpotsForParcel(parcelId);
+    if (spots.length === 0) return 0;
+    const n = Math.min(this.balance.build.wild.towerCount, spots.length);
+    let seeded = 0;
+    for (let i = 0; i < n; i++) {
+      try {
+        buildStructure(this.state, t.id, { anchorId: spots[i]!.anchorId, key: 'TOWER', buildSpots: spots, arenaSize: 322, allowSystem: true, balance: this.balance });
+        // Seed to the configured base tier (level 1 already placed; upgrade to baseTier).
+        for (let tier = 1; tier < this.balance.build.wild.baseTier; tier++) {
+          buildStructure(this.state, t.id, { anchorId: spots[i]!.anchorId, key: 'TOWER', buildSpots: spots, arenaSize: 322, allowSystem: true, balance: this.balance });
+        }
+        seeded++;
+      } catch { /* slot conflict / cap — skip */ }
+    }
+    return seeded;
+  }
+
   /**
    * POST /api/enrich — convert wallet CT into the parcel's enrichment pool
    * (E3). Only on a parcel YOU govern. The amount goes through the flow
@@ -1940,6 +2048,9 @@ export class Game {
     b.mode = mode;
     const terrId = this.state.hexes.get(b.hexId)?.territoryId;
     const territory = terrId === undefined ? undefined : this.state.territories.get(terrId);
+    // WILD garrison: a battle on ungoverned land seeds towers (in lieu of a player)
+    // so a wild parcel is a real attackable PvE target (base-building brief §wild).
+    if (terrId !== undefined && territory?.governorKind === 'SYSTEM') this.seedWildGarrison(terrId);
     // FIXED standard MOBA arena (the client's real frame — OP 48, docs/04 §7b):
     // half-edge ±161 WORLD-UNITS (= client clampMap ±115 · MAPK 1.4). Dimensionless
     // world-units (~0.74 m/unit by the declared 14-acre parcel mapping), consumed
@@ -2011,6 +2122,7 @@ export class Game {
           side: 'DEFENDER',
           x: Math.round(((s.anchor?.[0] ?? 0.5) - 0.5) * S),
           z: Math.round(((s.anchor?.[1] ?? 0.85) - 0.5) * S),
+          tier: s.level,
           hp: s.hp,
           hpMax: s.maxHp,
         })),
@@ -2090,6 +2202,7 @@ export class Game {
           side: 'DEFENDER',
           x: Math.round(((s.anchor?.[0] ?? 0.5) - 0.5) * S),
           z: Math.round(((s.anchor?.[1] ?? 0.85) - 0.5) * S),
+          tier: s.level,
           hp: s.hp,
           hpMax: s.maxHp,
         })),
@@ -3046,6 +3159,16 @@ export class Game {
     if (typeof territoryId !== 'string') throw new ApiError(400, 'BAD_TERRITORY', 'territoryId must be a string');
     const t = this.state.territories.get(territoryId);
     if (t === undefined) throw new ApiError(404, 'UNKNOWN_TERRITORY', `no such territory ${territoryId}`);
+    return t;
+  }
+
+  /** Resolve a territory by its parcelId (the client-facing id) — for build/repair. */
+  private getTerritoryByParcel(parcelId: unknown): Territory {
+    if (typeof parcelId !== 'string') throw new ApiError(400, 'BAD_PARCEL', 'parcelId must be a string');
+    const hexId = this.hexByParcel.get(parcelId);
+    const terrId = hexId !== undefined ? this.state.hexes.get(hexId)?.territoryId : undefined;
+    const t = terrId !== undefined ? this.state.territories.get(terrId) : undefined;
+    if (t === undefined) throw new ApiError(404, 'UNKNOWN_TERRITORY', `no territory on parcel ${parcelId}`);
     return t;
   }
 

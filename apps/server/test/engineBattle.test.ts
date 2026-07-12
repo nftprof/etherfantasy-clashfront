@@ -301,7 +301,7 @@ test('engine e2e: collision → pending battle (hex locked) → allocate per sch
         ],
         structures: [
           // tower anchor [0.5, 0.625] ⇒ round(((0.5−0.5)·322, (0.625−0.5)·322)) = (0, 40)
-          { anchorId: 'anchor_0', kind: 'TOWER', side: 'DEFENDER', x: 0, z: 40, hp: 2000, hpMax: 2000 },
+          { anchorId: 'anchor_0', kind: 'TOWER', side: 'DEFENDER', x: 0, z: 40, tier: 1, hp: 2000, hpMax: 2000 },
         ],
         mobs: [],
       },

@@ -342,6 +342,26 @@ export interface Balance {
     flee: { baseOdds: number; caughtPenalty: number };
   };
   /**
+   * ⚙ BASE-BUILDING defense layer (docs/briefs/BASE-BUILDING-DEFENSE-LAYER.md,
+   * decision 7). Owners place/upgrade destructible defense modules onto the map's
+   * buildSpots; the CF engine seeds the same onto WILD parcels. See balance.json
+   * `build._note`.
+   */
+  build: {
+    /** Tier-1 CT cost (ct_units) per module key; ×costGrowthPerTier^tier for upgrades. */
+    baseCostCtUnitsByKey: Record<string, number>;
+    /** Geometric upgrade-cost growth per tier. */
+    costGrowthPerTier: number;
+    /** Max module tier (upgrade cap). */
+    maxTier: number;
+    /** Per-tier HP the module persists with (index 0 = tier 1). */
+    hpByTier: number[];
+    /** CT (per tier's build cost) to restore a damaged module to full HP. */
+    repairCostFractionOfBuild: number;
+    /** WILD-parcel garrison the CF engine seeds in lieu of a player. */
+    wild: { towerCount: number; mobCamps: number; baseTier: number };
+  };
+  /**
    * ⚙ Post-battle "Recent battles" review (docs/04 §7b). Battles resolve fast
    * (accelerated is the default), so the player reviews a fight AFTER it ends
    * from a bounded, fog-filtered ring. See balance.json `review._note`.
@@ -361,7 +381,7 @@ export interface Balance {
 const REQUIRED_SECTIONS: readonly (keyof Balance)[] = [
   'travel', 'development', 'tax', 'prosperity', 'food', 'population',
   'supply', 'morale', 'desertion', 'upkeep', 'units', 'pillageOccupy', 'draft', 'provisions', 'claims',
-  'intel', 'towns', 'wildRaids', 'developmentEffects', 'economy', 'training', 'wildBattle', 'battle', 'duel', 'review',
+  'intel', 'towns', 'wildRaids', 'developmentEffects', 'economy', 'training', 'wildBattle', 'battle', 'duel', 'build', 'review',
 ];
 
 function resolveBalancePath(): string {

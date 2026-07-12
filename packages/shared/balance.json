@@ -292,6 +292,15 @@
     "signatureProcChance": 0.16,
     "flee": { "baseOdds": 0.8, "caughtPenalty": 0.25 }
   },
+  "build": {
+    "_note": "⚙ BASE-BUILDING defense layer (docs/briefs/BASE-BUILDING-DEFENSE-LAYER.md, decision 7 / docs/04 §7b 2b). A parcel owner places/upgrades destructible defense MODULES (TOWER/WALL/GATE/TRAP/GRANARY/PET_DEN) onto the map's buildSpot slots; the CF engine seeds the SAME structures onto WILD parcels (in lieu of a player) so there is always something to attack. Cost = baseCostCtUnitsByKey[key] × costGrowthPerTier^(currentTier) — a SINK on the develop cost path (decision 17: ≥10% burns, redistributes around the parcel). maxTier caps upgrades; hpByTier is the per-tier HP the structure persists with (the MOBA engine honors explicit hp/hpMax, and re-derives tower combat stats from the tier). repairCostFractionOfBuild = CT (per tier's build cost) to restore a siege-damaged module to full HP. wild.{towerCount,mobCamps} = how many DEFENDER towers + mob camps the engine seeds on a WILD parcel's slots (deterministic from parcelId); wild.baseTier = the seeded tower tier (zone-strength scaling is a later refinement).",
+    "baseCostCtUnitsByKey": { "TOWER": 6000, "WALL": 4000, "GATE": 5000, "TRAP": 3000, "GRANARY": 5000, "PET_DEN": 5000 },
+    "costGrowthPerTier": 1.8,
+    "maxTier": 5,
+    "hpByTier": [1400, 2200, 3200, 4400, 6000],
+    "repairCostFractionOfBuild": 0.3,
+    "wild": { "towerCount": 2, "mobCamps": 3, "baseTier": 1 }
+  },
   "review": {
     "_note": "⚙ Post-battle 'Recent battles' review (docs/04 §7b). Battles resolve fast (accelerated is the default per §3a) so the player needs a way to review a fight AFTER it ends. ringCap = how many recently-resolved battles the server keeps per world for review (older age out, newest-first, fog-filtered per viewer); reviewTimerSec = seconds each battle shows during 'Review all' auto-advance; timelineKeyframes = compact synthesized strength-progression keyframes stored per accelerated battle (a few hundred bytes, NOT 30 Hz frames — an honest reconstruction, not fake live telemetry); revealDurationTicks = world ticks an AUTO outcome stays SEALED after collision before it may be revealed (sealed-reveal follow-up: the accelerated result is computed at collision but applied/shown only at startTick+revealDurationTicks, so AUTO battles cannot be previewed before normal battle time).",
     "ringCap": 12,

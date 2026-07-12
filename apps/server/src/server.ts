@@ -852,6 +852,12 @@ export class ClashServer {
         case '/api/develop':
           sendJson(res, 200, this.game.develop(session.governorId, body.territoryId, body.track));
           return;
+        case '/api/build':
+          sendJson(res, 200, this.game.build(session.governorId, { parcelId: body.parcelId, territoryId: body.territoryId }, body.anchorId, body.key));
+          return;
+        case '/api/repair':
+          sendJson(res, 200, this.game.repair(session.governorId, { parcelId: body.parcelId, territoryId: body.territoryId }, body.anchorId));
+          return;
         case '/api/enrich':
           sendJson(res, 200, this.game.enrich(session.governorId, body.territoryId, body.amountCtUnits, body.amountCt));
           return;
