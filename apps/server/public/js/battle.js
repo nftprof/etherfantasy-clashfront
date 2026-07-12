@@ -77,8 +77,15 @@ export function createBattle({ store, ui, send, ftue }) {
     `<div class="lg-row"><span class="lg-flag" style="background:${GOLD}"></span> Gold flag = rally point (right-click while steering)</div>` +
     `<div class="lg-row"><span class="lg-line lg-dash"></span> Dashed corridors = lanes the soldier waves march</div>` +
     `<div class="lg-row"><span class="lg-dot" style="background:rgba(240,200,80,0.9)"></span> ◆ Gold mine · ▲ wood grove (resources)</div>` +
+    `<div class="lg-row">🧭 Map faces the HERO view: <b>East is up, North is right</b> — same as in 3D</div>` +
     `<div class="lg-hint">Toggle with the ⓘ button.</div>`;
   stage.appendChild(legendEl);
+  // always-on compass chip — the command map is oriented to MATCH hero mode (east up, north right)
+  const compassEl = document.createElement('div');
+  compassEl.className = 'bt-compass';
+  compassEl.title = 'Command map matches the 3D hero view: East up, North right';
+  compassEl.textContent = '🧭 E↑ N→';
+  stage.appendChild(compassEl);
   (() => {
     const s = document.createElement('style');
     s.textContent =
@@ -96,7 +103,10 @@ export function createBattle({ store, ui, send, ftue }) {
       `.bt-stances button{background:#141c26;border:1px solid #2a3644;border-radius:6px;color:#cdd7e2;` +
       `font:12px "Segoe UI",system-ui,sans-serif;padding:4px 9px;cursor:pointer;}` +
       `.bt-stances button:hover{border-color:#4da3ff;}` +
-      `.bt-stances button.on{border-color:#ffd76a;color:#ffd76a;background:#1c1a12;}`;
+      `.bt-stances button.on{border-color:#ffd76a;color:#ffd76a;background:#1c1a12;}` +
+      `.bt-compass{position:absolute;left:12px;bottom:12px;z-index:6;background:rgba(10,14,19,0.85);` +
+      `border:1px solid #26313f;border-radius:6px;padding:3px 8px;color:#8ea1b5;` +
+      `font:11px "Segoe UI",system-ui,sans-serif;pointer-events:none;}`;
     document.head.appendChild(s);
   })();
 
@@ -301,8 +311,16 @@ export function createBattle({ store, ui, send, ftue }) {
   const scale = () => Math.min(w, h) * 0.92 / (field?.size ?? 240);
   const ox = () => (w - (field?.size ?? 240) * scale()) / 2;
   const oy = () => (h - (field?.size ?? 240) * scale()) / 2;
-  const toScr = (x, y) => [ox() + x * scale(), oy() + y * scale()];
-  const toWorld = (sx, sy) => [(sx - ox()) / scale(), (sy - oy()) / scale()];
+  // HERO-VIEW ORIENTATION (owner bug 2026-07-11: "3D bottom-right showed as command top-left").
+  // The 3D follow camera sits WEST of the hero looking EAST (index.html cTgt x-30), so the hero
+  // screen renders EAST=up / NORTH=right, while this view rendered north-up — the two screens
+  // disagreed by a rotation and positions read "flipped". Fix: orient the command view to MATCH
+  // hero mode. orient() maps viewer coords → hero-screen coords: [size-vy, size-vx]. It is an
+  // INVOLUTION (its own inverse), so applying it in toScr AND on incoming clicks keeps steering
+  // exact. Every draw goes through the oriented canvas transform or toScr; picks go through toScr.
+  const orient = (vx, vy) => { const S = field?.size ?? 240; return [S - vy, S - vx]; };
+  const toScr = (x, y) => { const [rx, ry] = orient(x, y); return [ox() + rx * scale(), oy() + ry * scale()]; };
+  const toWorld = (sx, sy) => orient((sx - ox()) / scale(), (sy - oy()) / scale());
 
   /** Ground stains inside the bounds — cheap painterly variation, per battle. */
   function makeBlotches(f) {
@@ -617,7 +635,11 @@ export function createBattle({ store, ui, send, ftue }) {
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.fillStyle = '#0a0e13';
     ctx.fillRect(0, 0, w, h);
-    ctx.setTransform(dpr * s, 0, 0, dpr * s, dpr * ox(), dpr * oy());
+    // oriented world transform (see orient()): viewer (vx,vy) → screen (ox + s·(S−vy), oy + s·(S−vx))
+    // — the whole scene (map, units, markers) renders in HERO-VIEW orientation. det<0 mirrors TEXT,
+    // so any world-space text must reset to the screen transform and place via toScr (order labels do).
+    const S0 = field?.size ?? 240;
+    ctx.setTransform(0, -dpr * s, -dpr * s, 0, dpr * (ox() + s * S0), dpr * (oy() + s * S0));
     const lw = (px) => px / s;
     const pulse = 0.5 + 0.5 * Math.sin(now / 300);
 
@@ -936,11 +958,15 @@ export function createBattle({ store, ui, send, ftue }) {
       ctx.arc(o.x, o.y, 2 + k * 10, 0, 7);
       ctx.stroke();
       if (k < 0.8) {
+        // text in SCREEN space (the oriented world transform mirrors glyphs) — place via toScr
+        const [px2, py2] = toScr(o.x, o.y);
+        ctx.save();
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
         ctx.fillStyle = `rgba(255,225,150,${0.9 * (1 - k / 0.8)})`;
-        ctx.font = `${lw(11)}px "Segoe UI", system-ui, sans-serif`;
+        ctx.font = '11px "Segoe UI", system-ui, sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText(o.label, o.x, o.y - lw(14) - k * lw(6));
-        ctx.textAlign = 'start';
+        ctx.fillText(o.label, px2, py2 - 14 - k * 6);
+        ctx.restore();
       }
     }
 
