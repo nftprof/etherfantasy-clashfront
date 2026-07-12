@@ -51,31 +51,29 @@ mark them as ports, not necessarily as inter-continent lanes. The prestige isles
 
 ## 3. AIRSHIP ways — the TIERED CLIMB to heaven (owner-LOCKED 2026-07-11; the FF-IV flying ships)
 
-**The sky is a tiered climb that MIRRORS the underworld's tiered descent.** Aeropolis (HS1) is the
-**GATE TO HEAVEN** — every surface airship lands there FIRST; you then ascend HS1 → HS2 → HS3, with
-**Empyrea (HS3) the PINNACLE** (reached last). There is **no surface→HS2/HS3 direct route** — the two
-upper isles are reached only *through* the gateway.
+**Aeropolis (HS1) is the GATE TO HEAVEN** — every surface airship lands there FIRST. From the gateway
+you **BRANCH to ONE of HS2 or HS3** (player's choice). The two upper isles are **AT WAR and have NO
+direct link** — you reach each only *through* the gateway and pick a side at the gate. There is **no
+surface→HS2/HS3 direct route.**
 
 | Airship way | From anchor | To anchor | Note |
 |---|---|---|---|
 | **Arcadia → Aeropolis (HS1)** | EDU airship dock ⚠ *owes an `EDU-PORT-SKY` POI* | HS1 Gateway Anchorage (`gateway_dock`; field unbuilt) | surface → the gateway |
 | **Porthaven → Aeropolis (HS1)** | `BUS-PORT-SKY` @[296,178] (Skyreach) | HS1 Gateway Anchorage | surface → the gateway |
-| **Aeropolis → Emberfall (HS1→HS2)** | HS1 | HS2 (field unbuilt) | ascend, tier 2 |
-| **Emberfall → Empyrea (HS2→HS3)** | HS2 | HS3 (field unbuilt) | ascend to the **pinnacle** |
+| **Aeropolis → Emberfall (HS1→HS2)** | HS1 | HS2 (field unbuilt) | branch A (the fallen-angel side) |
+| **Aeropolis → Empyrea (HS1→HS3)** | HS1 | HS3 (field unbuilt) | branch B (the pinnacle) |
 
-**The mirror (why it's built this way):** the underworld DESCENDS `(Shaft) HUB → UW1 → UW2 → UW3` with
-**Luxuria (UW3) the deepest**; the sky ASCENDS `surface → HS1 → HS2 → HS3` with **Empyrea (HS3) the
-highest**. Each tier carries intentional per-level rule variation (owner: *"intentional variation of
-UW rules, one level deeper than the other"* — e.g. the Diminution `charScale` deepens by level).
+**❌ NO `HS2 ↔ HS3` edge — the War of the Sky Throne severs it.** **Emberfall (HS2) = the FALLEN
+ANGELS** (Ember*fall* — the name is the tell), corrupted out of the underworld, returned to heaven to
+**claim the throne** — besieging **Empyrea (HS3)**, the rightful pinnacle. The war is a **status flag
+on the two isles** (`zoneLinks.skyWar`: belligerents HS2, HS3), **not a traversable route** — do NOT
+draw a HS2↔HS3 line. From the Aeropolis gate the player chooses their side of the war.
 
-**The War of the Sky Throne (owner lore 2026-07-11).** The `HS2 → HS3` link is a **contested war
-front**, not a calm ascent: **Emberfall (HS2) = the FALLEN ANGELS** (Ember*fall* — the name is the
-tell), corrupted out of the underworld (UW), returned to heaven to **claim the throne** — at war with
-**Empyrea (HS3)**, the rightful pinnacle. So the sky's top two tiers are a live conflict: Empyrea holds
-the summit; Emberfall assaults it from below with UW-tainted power. (Overworld: mark the HS2↔HS3 link
-as a war front / contested, once those fields are built. Belongs in `docs/lore/WORLD-CHRONICLE.md` —
-flagged to the lore session; it also deepens the sky/underworld mirror: the corruption that sank into
-the deep now rises to besiege the height.)
+**Mirror-with-variation of the underworld:** the underworld is a **LINEAR** descent
+`(Shaft) HUB → UW1 → UW2 → UW3` (Luxuria deepest, boss-gated); the sky **BRANCHES** at the gateway
+(HS1 → HS2 | HS3, war-split). Both are gated tiers, but the shapes differ on purpose (owner:
+*"intentional variation of UW rules"*) — and the corruption that sank into the deep now rises to
+besiege the height.
 
 Tianxia has an airship berth (`HUB-PORT-SKY` @[305,64], Yong'an Sky Dock) but **no route is defined
 from it** — do not draw one unless the owner adds it. The prestige isles' skydocks (`CGI-SKYDOCK`,
@@ -83,7 +81,7 @@ from it** — do not draw one unless the owner adds it. The prestige isles' skyd
 they sit in the surface bay).
 
 ⚠ **Fix the live map:** it routes surface→HS3 (or Aeropolis↔Arcadia loosely) — replace with the chain
-above: **surface → HS1 → HS2 → HS3**, gateway first, Empyrea last.
+above: **surface → HS1, then HS1 → (HS2 OR HS3)** — gateway first; NO HS2↔HS3 link (war-severed).
 
 ## 4. The SECRET Stair — Mythoria → Blackmere (DATA-CONFIRMED; NOT a public route)
 
