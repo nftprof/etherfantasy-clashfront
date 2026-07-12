@@ -65,7 +65,18 @@ Elegant and topology-safe. CF only requires that `UW2-GATE-UW3` @[148.5,76] conn
 `UW3-GATE-UW2` @[1.2,32] — **how** you traverse the pass is Hunt's presentation. So: **the Vault Gate
 is the door; behind it the crossing is your mist-sea voyage with the Kraken** — you sail to Luxuria's
 far shore inside the pass. Fits UW2's nature (flooded caverns / black lakes — water is everywhere).
-Keep your Kraken; CF's topology is untouched.
+CF's topology is untouched.
+
+**Two Krakens, by water (owner 2026-07-11):** a Kraken belongs to the sea, so give the guardian a
+biome variant —
+- **Lava Kraken** — the UW crossing into Luxuria: the Vault-Gate mist-sea runs into the magma light of
+  UW3 (this pass borders the Inferno Vault / Magma Throne), so the guardian is a **molten/obsidian
+  Kraken** rising from lava-lit black water. Fits the UW3 VOLCANIC palette (`magma:true` waters).
+- **(regular) Kraken** — the SURFACE sea lanes (§Q5, the SEA_PORT voyage legs): an ordinary
+  deep-water Kraken haunts the open ocean between coastal ports.
+
+Same creature archetype, two skins keyed to the water it lurks in — a clean reuse of your travel-
+encounter system, and it reinforces the sky/underworld mirror (blue seas above, lava seas below).
 
 ---
 **Data changes I made for these:** `HUB-SHAFT` gains `connects:["HUB","UW1"]` + warden (Q3);
