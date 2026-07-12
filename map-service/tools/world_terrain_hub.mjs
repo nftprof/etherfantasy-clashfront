@@ -659,8 +659,9 @@ function buildField() {
       // SINGULAR PLACE (depth-layer 2, data/singulars.json `the_shaft`): the existing Worldshaft
       // POI IS the singular — bound in place, never duplicated.
       { id: "HUB-SHAFT", kind: "UNDERWORLD_SHAFT", at: SHAFT.slice(), singularId: "the_shaft", name: "The Shaft of Tianxia",
+        connects: ["HUB", "UW1"], warden: "the Shaft-Guardian",
         legend: "The wound where the deep first broke through; the only road down.",
-        note: "the Worldshaft — the world's single surface→UW portal, inside the Dragonmaw caldera (atlas §2.1)" },
+        note: "the Worldshaft — the world's single surface→UW portal, inside the Dragonmaw caldera (atlas §2.1). The ARMY descent: Tianxia → Ironhold (UW1) → UW2 → UW3 (the industrial way, boss-gated). EF Hunt cycle-2+ civilians descend it WITH the freight (the Stair is Mythoria's one-soul route; the Shaft is Tianxia's freight route) — no separate Tianxia↔Blackmere portal needed." },
       { id: "HUB-GATE-S", kind: "GATE", at: [164, 229.5], connects: ["HUB", "EDU"], note: "south gate — receives the Arcadia Flow (→ Tianhe) + the Southern Tribute Road from Arcadia" },
       { id: "HUB-GATE-N", kind: "GATE", at: [170, 3], connects: ["HUB", "BUS"], note: "north gate — Tianhe + Imperial North Road exit toward the Porthaven deltas" },
       { id: "HUB-GATE-W", kind: "GATE", at: [3, 161], connects: ["HUB", "ENT"], note: "west gate — Xijiang + West Caravan Road exit toward Mythoria" },
