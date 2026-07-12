@@ -46,7 +46,9 @@ const PORT_BY_TIER = { surface: { name: 'Sea Port', icon: '⚓' }, sky: { name: 
 const ROUTES = [
   { a: 'ENT', b: 'BUS', k: 'sea' }, { a: 'BUS', b: 'HUB', k: 'sea' },
   { a: 'HUB', b: 'EDU', k: 'sea' }, { a: 'EDU', b: 'ENT', k: 'sea' },
-  { a: 'EDU', b: 'HS1', k: 'air' }, { a: 'HS1', b: 'HS2', k: 'air' }, { a: 'HS1', b: 'HS3', k: 'air' },
+  // Aeropolis = the Cloud Gateway; surface→sky airship lanes climb to it. Both the
+  // Singapore home coast (Porthaven) and Arcadia reach the Gateway (owner 2026-07-12).
+  { a: 'BUS', b: 'HS1', k: 'air' }, { a: 'EDU', b: 'HS1', k: 'air' }, { a: 'HS1', b: 'HS2', k: 'air' }, { a: 'HS1', b: 'HS3', k: 'air' },
   { a: 'HUB', b: 'UW1', k: 'shaft' }, { a: 'UW1', b: 'UW2', k: 'gate' }, { a: 'UW2', b: 'UW3', k: 'gate' },
   // the Diminishing Stair: the carnival's own door — a portal from Carnavale (Mythoria SW coast)
   // to Blackmere (single file, souls only, no armies; docs/lore/WORLD-CHRONICLE.md 'The Way Down')
