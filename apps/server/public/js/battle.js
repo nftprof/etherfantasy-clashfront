@@ -944,7 +944,8 @@ export function createBattle({ store, ui, send, ftue }) {
         ctx.arc(u.x, u.y, r * 0.4, 0, 7);
         ctx.fill();
       }
-      if (u.hp < u.mh) hpBar(u.x, u.y - r - 1.6, r * 2.4, u.hp / u.mh, lw);
+      // Master always shows an HP bar (star of the show); troops show one only when hurt.
+      if (u.k === 'M' || u.hp < u.mh) hpBar(u.x, u.y - r - 1.6, r * 2.4, u.hp / u.mh, lw);
       if (cur.snap.focus === u.id) focusMark(u.x, u.y, r + 2.2, now, lw);
     }
 
@@ -1054,9 +1055,15 @@ export function createBattle({ store, ui, send, ftue }) {
     const clockS = snap ? Math.round(snap.clockLeft / tickHz) : 0;
     const clock = `${Math.floor(clockS / 60)}:${String(clockS % 60).padStart(2, '0')}`;
     const master = snap?.master;
+    // Find the Master entity in the snapshot for its live HP (only present while alive).
+    const masterEntity = master?.alive ? snap?.units?.find((u) => u.k === 'M' && u.s === 'A') : null;
+    const masterHpPct = masterEntity ? Math.max(0, Math.round((masterEntity.hp / masterEntity.mh) * 100)) : 0;
+    const masterHpCls = masterHpPct > 60 ? '' : masterHpPct > 25 ? ' warn' : ' bad';
     const masterBit = master
-      ? `<span class="bt-stat" title="Your Master — limited runs">${avatarHtml({ name: master.name ?? field?.masterName ?? 'Master' }, 30)}` +
-        `<span>${master.alive ? `<b>${esc(master.name ?? 'Master')}</b>` : master.revives > 0 ? `respawn ${Math.ceil(master.respawnIn / tickHz)}s` : '<b class="bad">down</b>'}` +
+      ? `<span class="bt-stat" title="Your Master — HP + limited runs">${avatarHtml({ name: master.name ?? field?.masterName ?? 'Master' }, 30)}` +
+        `<span>${master.alive
+          ? `<b>${esc(master.name ?? 'Master')}</b><em class="mhp${masterHpCls}">${masterHpPct}% HP</em>`
+          : master.revives > 0 ? `respawn ${Math.ceil(master.respawnIn / tickHz)}s` : '<b class="bad">down</b>'}` +
         `<em>${'♥'.repeat(Math.max(0, master.revives) + (master.alive ? 1 : 0)) || '—'} runs</em></span></span>`
       : '';
     // soldiers remaining (sprint #3): your reserve via waves (engine cfpump now sends the
@@ -1121,11 +1128,13 @@ export function createBattle({ store, ui, send, ftue }) {
       ? `<span>The armies disperse — outcome lands on the war map…</span>`
       : stale
         ? `<span class="bad">⚠ Signal lost — awaiting the battle relay…</span>`
-        : steer
-          ? `<span><b>Click</b>: move Master · <b>click an enemy</b>: focus fire · <b>right-click</b>: rally · <b>shift+right-click</b>: queue waypoints</span>`
-          : canSteer
-            ? `<span>Watching. Press <b>🎮 Steer</b> to command your Master and waves.</span>`
-            : `<span>Watching a battle for ${esc(terr?.name ?? 'wild land')} — spectator only.</span>`;
+        : snap?.retreating
+          ? `<span class="bad">🏳 <b>Retreating</b> — falling back to spawn. Rally (right-click) to fight again.</span>`
+          : steer
+            ? `<span><b>Click</b>: move · <b>Click enemy</b>: focus · <b>Right-click</b>: rally · <b>Shift+RC</b>: waypoint · <b>A/D/F</b>: stance · <b>R</b>: retreat · <b>X</b>: clear · <b>Esc</b>: unsteer</span>`
+            : canSteer
+              ? `<span>Watching. Press <b>🎮 Steer</b> (or <b>S</b>) to command your Master and waves.</span>`
+              : `<span>Watching a battle for ${esc(terr?.name ?? 'wild land')} — spectator only.</span>`;
   }
 
   hud.addEventListener('click', (e) => {
@@ -1216,6 +1225,77 @@ export function createBattle({ store, ui, send, ftue }) {
     }
     if (coach?.beat === 2) coachAdvance(); // beat 3 advances on the rally order (or its 6 s timer)
   });
+
+  // ── Keyboard shortcuts (owner 2026-07-12: "better control") ────────────────
+  // A/D/F — stance ALL_IN / DEFEND / FOLLOW · X — CLEAR stance + rally + focus
+  // R — RETREAT · S — toggle Steer · H — toggle strategy dropdown open (visual)
+  // Esc — leave steering (but stay in the viewer). Ignored while typing in inputs.
+  window.addEventListener('keydown', (e) => {
+    if (!openId || root.hidden || ended) return;
+    if (e.target?.tagName === 'INPUT' || e.target?.tagName === 'TEXTAREA' || e.target?.tagName === 'SELECT') return;
+    const canCmd = (mine || !!field?.openCommands) && steer;
+    const k = e.key.toLowerCase();
+    if (k === 'escape') { if (steer) { steer = false; renderHud(); e.preventDefault(); } return; }
+    if (k === 's') { if (mine || !!field?.openCommands) { steer = !steer; renderHud(); e.preventDefault(); } return; }
+    if (!canCmd) return;
+    const stanceCmd = (st) => { send({ t: 'battle_cmd', battleId: openId, cmd: { kind: 'stance', stance: st } }); ui?.toast?.('⚔ Stance', `${st.replace('_',' ')} set`, 'info', null, 1400); };
+    if (k === 'a') { stanceCmd('ALL_IN'); e.preventDefault(); }
+    else if (k === 'd') { stanceCmd('DEFEND'); e.preventDefault(); }
+    else if (k === 'f') { stanceCmd('FOLLOW'); e.preventDefault(); }
+    else if (k === 'x') { stanceCmd('CLEAR'); rallyPendingUntil = 0; rallyQueue = []; e.preventDefault(); }
+    else if (k === 'r') {
+      send({ t: 'battle_cmd', battleId: openId, cmd: { kind: 'retreat' } });
+      ui?.toast?.('🏳 Retreat', 'Break contact — falling back.', 'info', null, 1800);
+      e.preventDefault();
+    }
+  });
+
+  // ── Hover tooltip: mouseover a unit shows class + HP% (readability) ────────
+  const tipEl = document.createElement('div');
+  tipEl.className = 'bt-tip';
+  tipEl.hidden = true;
+  stage.appendChild(tipEl);
+  (() => {
+    const s = document.createElement('style');
+    s.textContent = `.bt-tip{position:absolute;z-index:7;background:rgba(10,14,19,0.92);border:1px solid #26313f;` +
+      `border-radius:6px;padding:4px 8px;color:#eaf0f6;font:12px "Segoe UI",system-ui,sans-serif;pointer-events:none;` +
+      `box-shadow:0 4px 12px rgba(0,0,0,0.5);}` +
+      `.bt-tip b{color:#ffd76a;}` +
+      `.bt-stat em.mhp{color:#8fd39a;} .bt-stat em.mhp.warn{color:#e0b23c;} .bt-stat em.mhp.bad{color:#e0483c;}`;
+    document.head.appendChild(s);
+  })();
+  canvas.addEventListener('mousemove', (e) => {
+    if (!cur || !openId || root.hidden || ended) { tipEl.hidden = true; return; }
+    const rect = canvas.getBoundingClientRect();
+    const sx = e.clientX - rect.left, sy = e.clientY - rect.top;
+    let hit = null, hitD = 22;
+    for (const u of cur.snap.units ?? []) {
+      const [ex, ey] = toScr(u.x, u.y);
+      const d = Math.hypot(ex - sx, ey - sy);
+      if (d < hitD) { hitD = d; hit = { kind: 'u', u, ex, ey }; }
+    }
+    for (const t of cur.snap.towers ?? []) {
+      if (t.hp <= 0) continue;
+      const [ex, ey] = toScr(t.x, t.y);
+      const d = Math.hypot(ex - sx, ey - sy);
+      if (d < hitD) { hitD = d; hit = { kind: 't', t, ex, ey }; }
+    }
+    if (!hit) { tipEl.hidden = true; return; }
+    if (hit.kind === 'u') {
+      const u = hit.u;
+      const who = u.k === 'M' ? `⭐ Master` : u.k === 'm' ? `☠ ${esc(u.c || 'Wild')}` : `⚔ ${esc(u.c || 'Soldier')}`;
+      const hpPct = Math.round((u.hp / u.mh) * 100);
+      tipEl.innerHTML = `<b>${who}</b> · ${u.s === 'A' ? 'yours' : 'enemy'}<br>HP <b>${hpPct}%</b> (${u.hp}/${u.mh})`;
+    } else {
+      const t = hit.t;
+      const hpPct = Math.round((t.hp / t.mh) * 100);
+      tipEl.innerHTML = `<b>🗼 Tower</b><br>HP <b>${hpPct}%</b> (${t.hp}/${t.mh})`;
+    }
+    tipEl.style.left = `${sx + 14}px`;
+    tipEl.style.top = `${sy - 12}px`;
+    tipEl.hidden = false;
+  });
+  canvas.addEventListener('mouseleave', () => { tipEl.hidden = true; });
 
   // ── Recently-resolved review (docs/04 §7b) ─────────────────────────────────
   // Post-resolution result/replay. AUTO/accelerated battles never had live
