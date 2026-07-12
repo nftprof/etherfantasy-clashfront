@@ -2,8 +2,13 @@
 
 > Goal: a second account can OCCUPY a real parcel, pay CT/resources to build & tier up towers on
 > its buildSpots, and defend when the first account attacks — on real generated maps. Plus wild
-> parcels get a seeded garrison so there's always something to attack. Split by agent
-> (DEPTH-LAYERS-AGENT-SPLIT): **A = engine (done), C = build API + persistence + UI, D = wild seed.**
+> parcels get a seeded garrison so there's always something to attack.
+>
+> **Lane boundary (owner 2026-07-11):** the **Map session (D) only makes the MAP** — geometry,
+> the empty **buildSpot slots**, geography-baked castle POIs. **Everything that GOES INTO the
+> map is CF Overworld eco (C)** — one structure-writing owner, whether the writer is a PLAYER
+> (building on their owned parcel) or the CF game ENGINE (seeding a wild garrison *in lieu of a
+> player*). So: **A = engine (done), C = build API + persistence + UI + WILD SEEDING, D = map/slots only.**
 
 ## The structure layer — where it lives (answering the owner)
 
@@ -54,15 +59,22 @@ sends them in the allocate context, they appear and fight in the battle.
    buttons with CT cost, tier readout, HP. (The `develop`/`raze` UI is the pattern to copy.)
 4. **Repair** — CT to restore a damaged tower's hp (siege persistence; `develop` cost path again).
 
-## ▢ TODO — Agent D (map: wild parcel garrison seed) — their lane
+## ▢ TODO — Agent C (CF game engine: WILD garrison seeding) — the CF eco's job, NOT the map's
 
-Owner override (2026-07-11): **wild parcels should carry a garrison** (a few towers + mob camps) so
-they're attackable PvE targets — NOT bare. This is the SEED layer (§2, re-runnable):
-- Seed **N ⚙ `wild.towerCount` DEFENDER towers** on the wild parcel's buildSpots + **`wild.mobCamps`**
-  mob camps, scaled by zone strength (`WORLD-ZONE-DETAIL`). Deterministic from `parcelId`.
-- These ride the same `battlefield.structures`/`mobs` the engine already renders — zero engine change.
-- Interim: until D's seed ships, CF can inject a fixed wild garrison in `engineAllocateContext` for
-  `parcel.kind==='WILD'` (a stopgap so testing isn't blocked).
+Owner ruling (2026-07-11): **wild parcels should carry a garrison** (a few towers + mob camps) so
+they're attackable PvE targets — NOT bare. **This is CF game-engine seeding, in lieu of a player** —
+the SAME structure-writing path a player uses to build their base, but the CF eco fills a WILD
+parcel's slots since there's no owner to do it:
+- When a battle allocates on a `parcel.kind==='WILD'` parcel, CF seeds **N ⚙ `wild.towerCount`
+  DEFENDER towers** onto the parcel's buildSpots (from the map's slot layout — D's geometry) +
+  **`wild.mobCamps`** mob camps, scaled by zone strength (`WORLD-ZONE-DETAIL`). Deterministic from
+  `parcelId` (safe to compute lazily / cache in the wild territory's `structures`).
+- These ride the same `battlefield.structures`/`mobs` the engine already renders — **zero engine
+  change** (Agent A already consumes tiered towers + mobs).
+- **The Map session (D) does NOT seed wilds** — D only delivers the empty buildSpot slots + the
+  map's geography (castle POIs baked by world-field). CF decides what garrison occupies a wild.
+- Fast path for testing: this can be the same `POST /api/build` write, called by the CF engine for
+  a SYSTEM-owned wild territory, so player-build and wild-seed share one code path.
 
 ## Test loop this unlocks
 
