@@ -20,6 +20,7 @@ import * as reg from "./registry.js";
 import { translateDirective, llmEnabled } from "./llm.js";
 import { clampParams, budgetFor } from "./schema.js";
 import { verifyToken, loginPassword } from "../lobby/auth.js";
+import { worldParcel, l3Row } from "./worldfield.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const WORLD_URL = () => process.env.MAPS_WORLD_URL || "https://cf.etherfantasy.com/api/world";
@@ -34,6 +35,16 @@ const TOKEN = () => {
 
 let _world = { at: 0, byId: new Map() };
 async function parcelFacts(parcelId) {
+  // LOCAL FIRST (the fix): the hexagon-city l3 snapshot carries zone + bbox + svgPath, so the
+  // continuous-world field (rivers/roads/castles/ridges from data/world-terrain) windows into the
+  // parcel — the actual map. `worldParcel` builds the full generate-ready parcel (same path the
+  // committed cf-maps + the bake tool use). The public /api/world snapshot carries NO zone/bbox, so
+  // it can only give the raw outline (generic terrain) — it is the FALLBACK for parcels not in the
+  // local snapshot (e.g. a __warm__ probe or a not-yet-extracted zone).
+  if (parcelId !== "__warm__") {
+    const snap = l3Row(parcelId);
+    if (snap) return worldParcel(snap);
+  }
   if (Date.now() - _world.at > 600_000) {
     try {
       const d = await fetch(WORLD_URL(), { signal: AbortSignal.timeout(6000) }).then((r) => r.json());

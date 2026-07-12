@@ -374,3 +374,39 @@ export function worldParcel(snap, opts = {}) {
     parcel.worldField = featuresForParcel(field, { bbox: snap.bbox, polygonZone: zonePoly, sizeM: opts.sizeM || 322, parcelId: parcel.parcelId });
   return parcel;
 }
+
+// zoneCode (parcelId chars [1,3)) → zoneId, read once from the registry (hardcoded fallback so the
+// map-service never hard-depends on the registry file being reachable).
+const l3Dir = () => process.env.HEXAGON_L3_DIR || path.resolve(__dirname, "../../data/hexagon-city-source/l3");
+let _zoneByCode = null;
+function zoneByCode(code) {
+  if (!_zoneByCode) {
+    _zoneByCode = new Map([["00", "BUS"], ["01", "CGI"], ["02", "EDU"], ["03", "ENT"], ["04", "HS1"],
+      ["05", "HS2"], ["06", "HS3"], ["07", "HUB"], ["08", "KOL"], ["09", "UW1"], ["10", "UW2"], ["11", "UW3"]]);
+    try {
+      const reg = JSON.parse(fs.readFileSync(path.resolve(__dirname, "../../data/zone-registry.json"), "utf8"));
+      for (const z of reg.zones || []) if (z.zoneCode && z.zoneId) _zoneByCode.set(String(z.zoneCode), z.zoneId);
+    } catch { /* keep the fallback map */ }
+  }
+  return _zoneByCode.get(String(code)) || null;
+}
+
+// LOCAL lookup: a hexagon-city l3 snapshot ROW by parcelId (zone + bbox + svgPath — the world-field
+// source of truth). Cached per zone. Returns null if zone/file/row is missing (caller falls back to
+// the overworld polygon). This is what lets a running map-service window the continuous-world field
+// WITHOUT depending on /api/world (which carries no zone/bbox).
+const _l3rows = new Map();
+export function l3Row(parcelId) {
+  const id = String(parcelId);
+  const zone = zoneByCode(id.slice(1, 3));
+  if (!zone) return null;
+  if (!_l3rows.has(zone)) {
+    const m = new Map();
+    try {
+      const j = JSON.parse(fs.readFileSync(path.join(l3Dir(), `${zone}.json`), "utf8"));
+      for (const r of j.singles || []) m.set(String(r.parcelId), r);
+    } catch { /* no l3 for this zone → empty map */ }
+    _l3rows.set(zone, m);
+  }
+  return _l3rows.get(zone).get(id) || null;
+}
