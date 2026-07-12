@@ -843,6 +843,18 @@ export function createBattle({ store, ui, send, ftue }) {
       ctx.beginPath();
       ctx.arc(field.spawn.x, field.spawn.y, 6 + pulse * 1.5, 0, 7);
       ctx.stroke();
+      // DEFEND guard ring — while the DEFEND stance is set, show the perimeter
+      // your soldiers hold at (⚙ command.defendRadius; matches the sim's cap).
+      if (cur.snap.stance === 'DEFEND') {
+        const defR = store.meta?.command?.defendRadius ?? 42;
+        ctx.strokeStyle = `rgba(120,220,140,${0.45 + 0.25 * pulse})`;
+        ctx.lineWidth = lw(1.2);
+        ctx.setLineDash([lw(3), lw(3)]);
+        ctx.beginPath();
+        ctx.arc(field.spawn.x, field.spawn.y, defR, 0, 7);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
       ctx.fillStyle = 'rgba(224,72,60,0.25)';
       ctx.beginPath();
       ctx.arc(field.heart.x, field.heart.y, 5, 0, 7);
@@ -886,9 +898,23 @@ export function createBattle({ store, ui, send, ftue }) {
       ctx.closePath();
       if (pending) { ctx.stroke(); ctx.setLineDash([]); }
       else { ctx.fillStyle = GOLD; ctx.fill(); }
-      // queued waypoints (shift+right-click): smaller hollow pennants, numbered in screen space
-      for (let qi = 0; qi < rallyQueue.length; qi++) {
-        const q = rallyQueue[qi];
+      // Queued waypoints — server-authoritative snap.rallyQueue is preferred so a
+      // reload/cross-viewer sees the same march; the local rallyQueue is a fallback
+      // for the moment between click and the next snapshot arriving.
+      const wps = cur.snap.rallyQueue ?? rallyQueue;
+      // Path lines rally → wp1 → wp2 … so the flag→flag march reads at a glance.
+      if (wps.length > 0) {
+        ctx.strokeStyle = 'rgba(255,215,106,0.55)';
+        ctx.lineWidth = lw(1);
+        ctx.setLineDash([lw(2), lw(2.5)]);
+        ctx.beginPath();
+        ctx.moveTo(rally.x, rally.y);
+        for (const q of wps) ctx.lineTo(q.x, q.y);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+      for (let qi = 0; qi < wps.length; qi++) {
+        const q = wps[qi];
         ctx.strokeStyle = GOLD;
         ctx.lineWidth = lw(1.2);
         ctx.setLineDash([lw(1.5), lw(1.5)]);
@@ -901,6 +927,30 @@ export function createBattle({ store, ui, send, ftue }) {
         ctx.fillText(String(qi + 2), qx + 8, qy - 6);
         ctx.restore();
       }
+    }
+    // Retreat destination marker (owner "flee if losing" — see the fallback point).
+    // A dashed red X at the spawn corner while retreating, so the player can see
+    // where the army is streaming to.
+    if (cur.snap.retreating && field?.spawn) {
+      const sp = field.spawn;
+      ctx.strokeStyle = 'rgba(255,110,80,0.85)';
+      ctx.lineWidth = lw(1.6);
+      ctx.setLineDash([lw(2), lw(2)]);
+      const rr = 5.5;
+      ctx.beginPath();
+      ctx.arc(sp.x, sp.y, rr, 0, 7);
+      ctx.moveTo(sp.x - rr * 0.7, sp.y - rr * 0.7); ctx.lineTo(sp.x + rr * 0.7, sp.y + rr * 0.7);
+      ctx.moveTo(sp.x - rr * 0.7, sp.y + rr * 0.7); ctx.lineTo(sp.x + rr * 0.7, sp.y - rr * 0.7);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      // "RETREAT" label in screen space (world transform mirrors glyphs).
+      const [rpx, rpy] = toScr(sp.x, sp.y);
+      ctx.save(); ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.fillStyle = 'rgba(255,180,150,0.9)';
+      ctx.font = '700 11px "Segoe UI",system-ui,sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('🏳 fall back here', rpx, rpy + 20);
+      ctx.restore();
     }
 
     // towers: range ring + body + hp bar (rubble once dead)

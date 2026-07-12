@@ -2737,6 +2737,11 @@ export class Game {
         },
         // ⚙ Post-battle review (docs/04 §7b) — the client's "Review all" timer.
         review: { timerSec: this.balance.review.reviewTimerSec },
+        // ⚙ Command-mode dials the client visualizes (DEFEND guard-ring radius etc).
+        command: {
+          defendRadius: this.balance.wildBattle.command.defendRadius,
+          followRadius: this.balance.wildBattle.command.followRadius,
+        },
       },
       parcels,
     };
