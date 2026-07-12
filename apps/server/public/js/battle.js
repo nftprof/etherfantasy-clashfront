@@ -86,6 +86,12 @@ export function createBattle({ store, ui, send, ftue }) {
   compassEl.title = 'Command map matches the 3D hero view: East up, North right';
   compassEl.textContent = '🧭 E↑ N→';
   stage.appendChild(compassEl);
+  // ── Kill feed (owner "fun to watch") ─────────────────────────────────────────
+  // A small top-right event log ("🗼 tower destroyed", "☠ wild down") that fades
+  // recent beats. Sits with the compass; scoped CSS injected once with the rest.
+  const feedEl = document.createElement('div');
+  feedEl.className = 'bt-feed';
+  stage.appendChild(feedEl);
   (() => {
     const s = document.createElement('style');
     s.textContent =
@@ -115,7 +121,14 @@ export function createBattle({ store, ui, send, ftue }) {
       `.bt-strat{display:inline-flex;align-items:center;margin-left:auto;}` +
       `.bt-strat select{background:#141c26;border:1px solid #2a3644;border-radius:6px;color:#cdd7e2;` +
       `font:12px "Segoe UI",system-ui,sans-serif;padding:3px 6px;cursor:pointer;}` +
-      `.bt-strat select:hover,.bt-strat select:focus{border-color:#4da3ff;outline:none;}`;
+      `.bt-strat select:hover,.bt-strat select:focus{border-color:#4da3ff;outline:none;}` +
+      `.bt-feed{position:absolute;right:12px;top:100px;z-index:6;display:flex;flex-direction:column;gap:3px;` +
+      `pointer-events:none;max-width:220px;}` +
+      `.bt-feed .bf-line{background:rgba(10,14,19,0.82);border:1px solid #26313f;border-radius:5px;` +
+      `padding:2px 8px;color:#cdd7e2;font:11px "Segoe UI",system-ui,sans-serif;` +
+      `animation:btfeedin .28s ease-out;}` +
+      `.bt-feed .bf-line.old{opacity:.6;} .bt-feed .bf-line.fade{opacity:.28;}` +
+      `@keyframes btfeedin{from{opacity:0;transform:translateX(6px);}to{opacity:1;transform:translateX(0);}}`;
     document.head.appendChild(s);
   })();
 
@@ -197,6 +210,8 @@ export function createBattle({ store, ui, send, ftue }) {
   let raf = 0;
   let blotches = null;    // painterly ground stains (visual only, per battle)
   let flashes = [];       // death/hit effects {x, y, t0, kind}
+  let damageFloats = [];  // {x, y, t0, dmg, side} — rising damage numbers over hits
+  let killFeed = [];      // {t0, text} — small top-right event log ("tower destroyed", "3 wild down")
   // Order acknowledgment (sprint #2): steer clicks get instant feedback, and the rally flag is
   // drawn HOLLOW while the order is still in flight (~1.5s command poll + apply) — the bridge
   // echoes the flag position immediately, which used to read as "done" before the engine heard it.
@@ -215,6 +230,8 @@ export function createBattle({ store, ui, send, ftue }) {
     prev = cur = null;
     ended = null;
     flashes = [];
+    damageFloats = [];
+    killFeed = [];
     orders = [];
     rallyPendingUntil = 0;
     rallyQueue = [];
@@ -578,21 +595,36 @@ export function createBattle({ store, ui, send, ftue }) {
     void s;
   }
 
-  /** Compare consecutive snapshots: deaths → puffs, hp drops → hit sparks. */
+  /** Compare consecutive snapshots: deaths → puffs, hp drops → hit sparks + damage floats. */
   function spawnEffects(prevSnap, curSnap) {
     const now = performance.now();
     const curIds = new Map(curSnap.units.map((u) => [u.id, u]));
     for (const u of prevSnap.units) {
       const c = curIds.get(u.id);
-      if (!c) flashes.push({ x: u.x, y: u.y, t0: now, kind: u.s === 'A' ? 'dieA' : 'dieD' });
-      else if (c.hp < u.hp) flashes.push({ x: c.x, y: c.y, t0: now, kind: 'hit' });
+      if (!c) {
+        flashes.push({ x: u.x, y: u.y, t0: now, kind: u.s === 'A' ? 'dieA' : 'dieD' });
+        // KILL FEED: enemy unit died — attribute credit to "your side" collectively.
+        if (u.s === 'D') killFeed.push({ t0: now, text: `☠ ${u.k === 'm' ? 'wild' : (u.c || 'foe').toLowerCase()} down` });
+        else if (u.k === 'M') killFeed.push({ t0: now, text: `💀 your Master falls` });
+      } else if (c.hp < u.hp) {
+        flashes.push({ x: c.x, y: c.y, t0: now, kind: 'hit' });
+        // DAMAGE FLOAT — mirror the duel look (a rising red number where hp dropped).
+        damageFloats.push({ x: c.x, y: c.y, t0: now, dmg: u.hp - c.hp, side: c.s });
+      }
     }
     const curTw = new Map(curSnap.towers.map((t) => [t.id, t]));
     for (const t of prevSnap.towers) {
       const c = curTw.get(t.id);
-      if (c && c.hp <= 0 && t.hp > 0) flashes.push({ x: t.x, y: t.y, t0: now, kind: 'boom' });
+      if (c && c.hp <= 0 && t.hp > 0) {
+        flashes.push({ x: t.x, y: t.y, t0: now, kind: 'boom' });
+        killFeed.push({ t0: now, text: `🗼 tower destroyed` });
+      } else if (c && c.hp < t.hp) {
+        damageFloats.push({ x: c.x, y: c.y, t0: now, dmg: t.hp - c.hp, side: 'D' });
+      }
     }
     if (flashes.length > 120) flashes = flashes.slice(-120);
+    if (damageFloats.length > 80) damageFloats = damageFloats.slice(-80);
+    if (killFeed.length > 40) killFeed = killFeed.slice(-40);
   }
 
   // ── render loop ────────────────────────────────────────────────────────────
@@ -601,9 +633,37 @@ export function createBattle({ store, ui, send, ftue }) {
     const frame = (now) => {
       if (!openId) return;
       draw(now);
+      renderKillFeed(now);
       raf = requestAnimationFrame(frame);
     };
     raf = requestAnimationFrame(frame);
+  }
+
+  /**
+   * Kill feed: newest ≤ 5 lines within the last 8s. Ages: <2s fresh, 2–5s old,
+   * >5s fade. Batches identical texts inside a 900ms window into "☠ wild down ×3"
+   * so a wave death shows as one line, not five.
+   */
+  function renderKillFeed(now) {
+    if (!feedEl) return;
+    const cutoff = now - 8000;
+    while (killFeed.length && killFeed[0].t0 < cutoff) killFeed.shift();
+    if (killFeed.length === 0) { feedEl.innerHTML = ''; return; }
+    // Fold repeats within 900ms.
+    const folded = [];
+    for (let i = killFeed.length - 1; i >= 0; i--) {
+      const k = killFeed[i];
+      const head = folded[0];
+      if (head && head.text === k.text && head.t0 - k.t0 < 900) { head.n++; head.t0 = k.t0; continue; }
+      folded.unshift({ ...k, n: 1 });
+      if (folded.length >= 6) break;
+    }
+    feedEl.innerHTML = folded.reverse().map((f) => {
+      const age = now - f.t0;
+      const cls = age < 2000 ? '' : age < 5000 ? ' old' : ' fade';
+      const nTxt = f.n > 1 ? ` ×${f.n}` : '';
+      return `<div class="bf-line${cls}">${esc(f.text)}${nTxt}</div>`;
+    }).join('');
   }
 
   function lerpUnits(now) {
@@ -971,6 +1031,33 @@ export function createBattle({ store, ui, send, ftue }) {
         ctx.arc(f.x, f.y - k * 3, 1.6 * (1 - k * 0.5), 0, 7);
         ctx.fill();
       }
+    }
+
+    // Damage floats — rising red/blue numbers where a unit took HP (owner "fun to watch").
+    // Text lives in SCREEN space via toScr (world transform mirrors glyphs); short lifetime
+    // so a flurry doesn't clutter, and small tick-hits (< 3) are folded in as a shorthand "*".
+    for (let i = damageFloats.length - 1; i >= 0; i--) {
+      const d = damageFloats[i];
+      const k = (now - d.t0) / 900;
+      if (k >= 1) { damageFloats.splice(i, 1); continue; }
+      const [px2, py2] = toScr(d.x, d.y);
+      ctx.save();
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      const alpha = 0.95 * (1 - k);
+      // Yours vs enemy — colored so you can see who's bleeding at a glance.
+      ctx.fillStyle = d.side === 'A' ? `rgba(255,120,90,${alpha})` : `rgba(255,220,160,${alpha})`;
+      const big = d.dmg >= 15;
+      ctx.font = big
+        ? `800 ${14}px "Segoe UI", system-ui, sans-serif`
+        : `700 ${11}px "Segoe UI", system-ui, sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      const y = py2 - 8 - k * 22;
+      ctx.strokeStyle = `rgba(0,0,0,${0.4 * (1 - k)})`;
+      ctx.lineWidth = 2;
+      ctx.strokeText(`-${d.dmg}`, px2, y);
+      ctx.fillText(`-${d.dmg}`, px2, y);
+      ctx.restore();
     }
 
     // order acknowledgment (sprint #2): expanding gold ring + fading label at the click point —
