@@ -1421,12 +1421,24 @@ export function createBattle({ store, ui, send, ftue }) {
     const totalHp = hpA + hpD;
     const attackerShare = totalHp > 0 ? Math.round((hpA / totalHp) * 100) : 50;
     const tugCls = attackerShare > 60 ? ' win' : attackerShare < 40 ? ' lose' : '';
-    const tugBar = totalHp > 0
-      ? `<div class="bt-tug${tugCls}" title="Total remaining HP — yours (${hpA}) vs enemy (${hpD})">` +
+    // If we're retreating, replace the tug bar with a retreat progress bar
+    // (fraction of attacker soldiers already home = spawn corner).
+    let tugBar;
+    if (snap?.retreating && snap.units && field?.spawn) {
+      const atkTroops = snap.units.filter((u) => u.s === 'A' && u.k !== 'M');
+      const home = atkTroops.filter((u) => Math.hypot(u.x - field.spawn.x, u.y - field.spawn.y) < 6).length;
+      const homePct = atkTroops.length === 0 ? 100 : Math.round((home / atkTroops.length) * 100);
+      tugBar = `<div class="bt-tug lose" title="Retreat progress — ${home}/${atkTroops.length} home">` +
+        `<span class="tug-atk" style="width:${homePct}%;background:linear-gradient(90deg,#c43f34,#ff8a5c);"></span>` +
+        `<span class="tug-num">🏳 falling back — ${homePct}% home</span></div>`;
+    } else if (totalHp > 0) {
+      tugBar = `<div class="bt-tug${tugCls}" title="Total remaining HP — yours (${hpA}) vs enemy (${hpD})">` +
         `<span class="tug-atk" style="width:${attackerShare}%"></span>` +
         `<span class="tug-def" style="width:${100 - attackerShare}%"></span>` +
-        `<span class="tug-num">⚔ ${attackerShare}% · ${100 - attackerShare}% 🛡</span></div>`
-      : '';
+        `<span class="tug-num">⚔ ${attackerShare}% · ${100 - attackerShare}% 🛡</span></div>`;
+    } else {
+      tugBar = '';
+    }
     hud.innerHTML =
       `<div class="bt-title"><span class="bt-live${ended ? ' done' : stale ? ' stale' : ''}">●</span>` +
       title + `</div>` +
