@@ -43,33 +43,61 @@ const PORT_BY_TIER = { surface: { name: 'Sea Port', icon: '⚓' }, sky: { name: 
 // The travel network — WHERE the ports are and WHERE THEY GO (atlas: HS1 = the airship gateway;
 // the Underworld SHAFT sits at HUB's centre; UW descends boss-gated UW1→UW2→UW3).
 // Port anchors resolve to the coast vertex of A nearest B (so sea lanes leave from the right shore).
+// Route canon: HUNT-TRAVEL-SYSTEM.md §4b + HUNT-MAP-INTEGRATION-ANSWERS Q1-Q6.
+//   sea        — any SEA_PORT pair legal (featured lanes shown; the voyage dealer rolls)
+//   air        — surface → HS1 → HS2/HS3 (no HS2↔HS3, War of the Sky Throne)
+//   land       — the three starters river-gate into Tianxia (HUB) only, never each other
+//   shaft      — the SHAFT: HUB → UW1 (freight lands in Ironhold FIRST, not UW2; Q3)
+//   gate       — boss-gated tier drops UW1→UW2, UW2→UW3 (Vault-Gate = mist-sea; Q6)
+//   portal     — the Diminishing Stair: Carnavale (Mythoria SW) → Blackmere, one soul
+//   krakenDrag — §5b. INVOLUNTARY down-door, not a bookable route. Two skins:
+//                  · sea Kraken (blue seas) — any SEA_PORT lane → UW2
+//                  · lava Kraken (Vault-Gate mist-sea) → UW3
+//                Act IV content (post-return); first drag is AUTHORED, later drags
+//                are rare random cards. Drawn as WRITHING TENDRILS with a 🐙/🌋
+//                marker so it can never be misread as a lane you plan to take.
+// NB Q1: the Bastion of Dominus is in UW2 Blackmere (not UW3) — Isle of Dominus =
+// the Bastion's island in UW2's Mere of Dominus. Atlas was wrong; the field wins.
 const ROUTES = [
+  // ── SEA — featured lanes (Q5: any SEA_PORT pair is a legal voyage leg) ────────
   { a: 'ENT', b: 'BUS', k: 'sea' }, { a: 'BUS', b: 'HUB', k: 'sea' },
   { a: 'HUB', b: 'EDU', k: 'sea' }, { a: 'EDU', b: 'ENT', k: 'sea' },
-  // THE SKY (canon: registry zoneLinks + docs/maps/OVERWORLD-CONNECTIONS.md §3;
-  // owner ruling 2026-07-12). Aeropolis (HS1) is the GATE TO HEAVEN: every surface
-  // airship lands there first (Arcadia AND Porthaven → HS1) — nothing reaches the
-  // upper sky without passing the gateway. From the gateway you branch to EITHER
-  // upper isle: HS1 → HS2 (Emberfall) OR HS1 → HS3 (Empyrea).
+  // ── AIR — Aeropolis is the Gateway; then branch to HS2 OR HS3 (no HS2↔HS3) ────
   { a: 'BUS', b: 'HS1', k: 'air' }, { a: 'EDU', b: 'HS1', k: 'air' },
   { a: 'HS1', b: 'HS2', k: 'air' }, { a: 'HS1', b: 'HS3', k: 'air' },
-  // NB: HS2 and HS3 are NOT connected — Emberfall (the fallen angels, risen from the
-  // deep to claim the throne) and Empyrea are AT WAR (the War of the Sky Throne), so
-  // no lane runs between them. You reach each only back through the gateway.
-  { a: 'HUB', b: 'UW1', k: 'shaft' }, { a: 'UW1', b: 'UW2', k: 'gate' }, { a: 'UW2', b: 'UW3', k: 'gate' },
-  // the Diminishing Stair: the carnival's own door — a portal from CARNAVALE
-  // (Mythoria SW coast) to Blackmere. Single file, souls only, no armies —
-  // docs/lore/WORLD-CHRONICLE.md "The Way Down". The origin anchor pins the
-  // vertical line to Mythoria's SW coast (aOff) so the visual can't be
-  // misread as a Tianxia/sea route to a different underworld isle. Endpoint
-  // anchor (bOff) pulls it toward Blackmere's NW edge — so it visually
-  // terminates ON Blackmere, not ambiguously between Blackmere and Luxuria.
+  // ── LAND — starters river-gate into HUB only, never each other (§4b LAND) ─────
+  { a: 'ENT', b: 'HUB', k: 'land' },
+  { a: 'BUS', b: 'HUB', k: 'land' },
+  { a: 'EDU', b: 'HUB', k: 'land' },
+  // ── DOWN — the industrial freight road + the two boss-gated tier drops ────────
+  { a: 'HUB', b: 'UW1', k: 'shaft' }, { a: 'UW1', b: 'UW2', k: 'gate' },
+  // UW2→UW3 = the Vault Gate. Behind it a mist-sea by SHIP; that water is
+  // Lava-Kraken water (see the co-located krakenDrag below). Presentation of
+  // the crossing is Hunt's; the line itself stays a boss-`gate` on the map.
+  { a: 'UW2', b: 'UW3', k: 'gate', label: 'the Vault Gate — mist-sea by ship' },
+  // ── DOWN — the Diminishing Stair (Carnavale, one soul, no vehicle) ────────────
   { a: 'ENT', b: 'UW2', k: 'portal',
     aOff: [-190, 220],   // Mythoria SW coast — Carnavale
     bOff: [175, 90],     // Blackmere upper edge
     label: 'Carnavale → the Diminishing Stair' },
+  // ── KRAKEN DRAGS — the third door, TAKEN not chosen (§5b) ─────────────────────
+  // Regular Kraken: any surface sea → UW2. Origin anchored mid-ocean so it reads
+  // as "any open water can pull you down." INVOLUNTARY — never a route you plan.
+  { a: 'HUB', b: 'UW2', k: 'krakenDrag', kraken: 'sea',
+    aOff: [-60, -20],
+    bOff: [180, 60],
+    label: '🐙 the Kraken — sea drag → Blackmere' },
+  // Lava Kraken: the Vault-Gate mist-sea crossing → UW3. Co-located with the
+  // UW2↔UW3 line so it visually reads as "this water is what does it."
+  { a: 'UW2', b: 'UW3', k: 'krakenDrag', kraken: 'lava',
+    aOff: [175, 100],
+    bOff: [184, 103],
+    label: '🌋 the Lava Kraken — Vault-Gate drag → Luxuria' },
 ];
-const ROUTE_STYLE = { sea: '#5b8fd6', air: '#9ac2ff', shaft: '#c8926a', gate: '#c8624e', portal: '#a678d1' };
+const ROUTE_STYLE = {
+  sea: '#5b8fd6', air: '#9ac2ff', land: '#a58a4f', shaft: '#c8926a',
+  gate: '#c8624e', portal: '#a678d1', krakenDrag: '#7a2b6f',
+};
 const BIOME_COL = {
   TEMPERATE_GRASS: ['#6c9a52', '#42632f'], SWAMP: ['#5a6e46', '#37472b'],
   TEMPERATE_FOREST: ['#4f7a44', '#2f4c22'], VOLCANIC: ['#8a4838', '#54291d'], SNOW: ['#c6d2d6', '#7f929c'],
@@ -245,14 +273,56 @@ export function createWorld({ ui } = {}) {
         b1: projectPt(pb[0], pb[1], B.depth, W, H, sc, tierGap) };
     });
 
-    // routes UNDER the landmasses (sea lanes), verticals drawn with their tier
+    // routes UNDER the landmasses (sea lanes + KRAKEN drags), verticals drawn per-tier
     const drawRoute = (r) => {
       const dim = !(known(r.A) && known(r.B));
       ctx.globalAlpha = dim ? 0.35 : 0.8;
       ctx.strokeStyle = ROUTE_STYLE[r.k]; ctx.lineWidth = 1.6; ctx.setLineDash([6, 5]);
+      // KRAKEN DRAG — writhing sinuous line (four-cycle sine along the segment)
+      // + a 🐙 / 🌋 marker at midpoint. Intentionally UGLY — this is not a route
+      // you plan; it's a hazard drawn AS a hazard. Two skins by kraken="sea|lava".
+      if (r.k === 'krakenDrag') {
+        const lava = r.kraken === 'lava';
+        ctx.strokeStyle = lava ? '#c9531a' : '#7a2b6f';
+        ctx.lineWidth = 2.0;
+        ctx.setLineDash([]);
+        const dx = r.b1.sx - r.a1.sx, dy = r.b1.sy - r.a1.sy;
+        const len = Math.hypot(dx, dy) || 1;
+        const nx = -dy / len, ny = dx / len; // perpendicular unit
+        const amp = Math.min(14, len * 0.09);
+        const steps = 40;
+        ctx.beginPath();
+        for (let i = 0; i <= steps; i++) {
+          const t = i / steps;
+          // symmetric envelope so tendrils fade to zero at both anchors
+          const env = Math.sin(Math.PI * t);
+          const wave = Math.sin(t * Math.PI * 4) * amp * env;
+          const px = r.a1.sx + dx * t + nx * wave;
+          const py = r.a1.sy + dy * t + ny * wave;
+          if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+        }
+        ctx.stroke();
+        // midpoint kraken glyph
+        if (r.label) {
+          const mx = (r.a1.sx + r.b1.sx) / 2, my = (r.a1.sy + r.b1.sy) / 2;
+          ctx.globalAlpha = dim ? 0.55 : 1;
+          ctx.font = '17px ui-sans-serif,system-ui';
+          ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          ctx.fillText(lava ? '🌋' : '🐙', mx, my);
+          ctx.font = '10px ui-sans-serif,system-ui';
+          ctx.fillStyle = lava ? '#f5b28a' : '#d3a6d1';
+          ctx.fillText(r.label, mx, my + 16);
+        }
+        ctx.globalAlpha = 1;
+        return;
+      }
       ctx.beginPath();
       if (r.k === 'air') { // arced airship line
         const mx = (r.a1.sx + r.b1.sx) / 2, my = Math.min(r.a1.sy, r.b1.sy) - 26;
+        ctx.moveTo(r.a1.sx, r.a1.sy); ctx.quadraticCurveTo(mx, my, r.b1.sx, r.b1.sy);
+      } else if (r.k === 'land') { // slight arc so land routes DON'T overlap sea lanes
+        const mx = (r.a1.sx + r.b1.sx) / 2, my = (r.a1.sy + r.b1.sy) / 2 + 12;
+        ctx.setLineDash([3, 4]); ctx.lineWidth = 1.4;
         ctx.moveTo(r.a1.sx, r.a1.sy); ctx.quadraticCurveTo(mx, my, r.b1.sx, r.b1.sy);
       } else {
         ctx.moveTo(r.a1.sx, r.a1.sy); ctx.lineTo(r.b1.sx, r.b1.sy);
@@ -262,7 +332,6 @@ export function createWorld({ ui } = {}) {
       // caption so the Diminishing Stair can't be misread as a sea route.
       if (r.k === 'portal' && r.label) {
         ctx.globalAlpha = dim ? 0.55 : 0.95;
-        // ⛺ marker at origin
         ctx.font = '13px ui-sans-serif,system-ui';
         ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
         ctx.fillText('⛺', r.a1.sx, r.a1.sy);
@@ -272,7 +341,11 @@ export function createWorld({ ui } = {}) {
         ctx.globalAlpha = 1;
       }
     };
-    for (const r of routes) if (r.k === 'sea') drawRoute(r);
+    // Sea lanes + surface LAND river-gates draw UNDER the landmasses.
+    for (const r of routes) if (r.k === 'sea' || r.k === 'land') drawRoute(r);
+    // Sea KRAKEN drag also draws under the ocean plane — an involuntary hazard
+    // painted BEHIND the landmasses so it doesn't overpower the plannable routes.
+    for (const r of routes) if (r.k === 'krakenDrag' && r.kraken === 'sea') drawRoute(r);
 
     const items = CONTINENTS.map(c => ({ c, m: metas.get(c.id) }))
       .sort((a, b) => (a.c.depth - b.c.depth) || (a.m.depthKey - b.m.depthKey)); // deep→high, back→front
@@ -301,6 +374,9 @@ export function createWorld({ ui } = {}) {
       }
       // vertical routes leaving THIS continent (shaft/gates render with the stack)
       for (const r of routes) if ((r.k === 'shaft' || r.k === 'gate' || r.k === 'portal') && r.a === c.id) drawRoute(r);
+      // Lava-kraken drag rides with the UW2↔UW3 stack — draws AFTER the Vault
+      // Gate line so the tendrils sit ON that water.
+      for (const r of routes) if (r.k === 'krakenDrag' && r.kraken === 'lava' && r.a === c.id) drawRoute(r);
       for (const r of routes) if (r.k === 'air' && (r.a === c.id)) drawRoute(r);
 
       // ── labels: the NAME is ALWAYS shown (fog never hides identity) ──

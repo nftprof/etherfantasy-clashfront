@@ -110,15 +110,33 @@ line.
 
 ## How this shapes travel, right now
 
-Every leg on the map is one of five kinds of passage — and each has its own rules:
+Every leg on the map is one of **six kinds of passage** — five you plan, one you don't:
 
 | Passage | Where | Who / how |
 |---|---|---|
-| **⚓ Sea lane** | between the four surface continents | ships; a **cross-server voyage** (dock reserve + passage fee) |
-| **☁ Airship lane** | surface → Aeropolis, and Aeropolis → Emberfall / Empyrea | airships; the sky is gated behind the Aeropolis gateway |
-| **▼ The Shaft** | Tianxia → Ironhold | the army road down — the open descent |
-| **⛬ Boss-gate** | Ironhold → Blackmere → Luxuria | sealed; the warden must be broken to pass deeper |
+| **⚓ Sea lane** | any port pair | ships; a **cross-server voyage** (dock reserve + passage fee). **Regular Kraken water.** |
+| **☁ Airship lane** | surface → Aeropolis, then Aeropolis → Emberfall / Empyrea | airships; the sky is gated behind the Aeropolis gateway |
+| **⇄ Land road** | each starter continent → Tianxia (the HUB), never between starters | overland caravans; the great tolls; passes through the HUB |
+| **▼ The Shaft** | Tianxia → **Ironhold** first (then boss-gates deeper) | the **freight** road down — the industrial descent, boss-gated per tier |
+| **⛬ Boss-gate** | Ironhold → Blackmere → Luxuria (the **Vault Gate** onto a **mist-sea by ship**) | sealed; the warden must be broken to pass deeper |
 | **✦ The Stair (portal)** | Carnavale → Blackmere | single-file, **souls only, no armies** |
+| **🐙 The Kraken drag** *(taken)* | any sea → Blackmere (regular Kraken) · Vault-Gate mist-sea → Luxuria (**Lava Kraken**) | **involuntary** — this is not a route you plan. See below. |
+
+### 🐙 The third door — taken, not chosen
+
+The deep has three ways in. The first two are the ones you *choose*:
+
+- **Chosen** — the **Diminishing Stair** (Carnavale, one soul).
+- **Industrial** — the **Shaft** (Tianxia's freight platform, boss-gated).
+- **Taken** — the **Kraken**.
+
+The Kraken is not a monster you fight *to* somewhere; it's the deep **taking** you. The
+**regular Kraken** haunts the surface seas — go under in its fight and you wake in **Blackmere**,
+shipless. The **Lava Kraken** guards the **Vault-Gate mist-sea** into Luxuria — the same creature
+in molten skin. Two skins, one archetype. *"Blue seas above, lava seas below — the mirror again."*
+
+The drag is not a death; it counts nothing on the ladder. **It's a place.** Getting home is
+the problem — and the way home is expensive by design.
 
 Practical consequences today:
 
@@ -133,6 +151,9 @@ Practical consequences today:
    economy (a share burns — the net-sink).
 5. **The deeper you go, the stronger the world and the smaller you feel** — the frontier bands
    (×1 → ×5) and the Diminution both bite hardest at the bottom.
+6. **The sea is never safe.** The Kraken is not a route — it's a *hand* dealt on some crossings.
+   You cannot plan around it; you can only make it home when it happens. **The deep is not a
+   place you visit for free.**
 
 *The underworld is a ladder; the sky is a crossroads at war. Same idea — gated tiers you earn
 your way through — deliberately opposite shapes.*
