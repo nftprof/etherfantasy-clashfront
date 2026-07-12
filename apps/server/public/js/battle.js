@@ -122,6 +122,14 @@ export function createBattle({ store, ui, send, ftue }) {
       `.bt-strat select{background:#141c26;border:1px solid #2a3644;border-radius:6px;color:#cdd7e2;` +
       `font:12px "Segoe UI",system-ui,sans-serif;padding:3px 6px;cursor:pointer;}` +
       `.bt-strat select:hover,.bt-strat select:focus{border-color:#4da3ff;outline:none;}` +
+      `.bt-tug{display:flex;align-items:center;position:relative;height:14px;margin:6px 0 0;background:#0e141c;` +
+      `border:1px solid #26313f;border-radius:8px;overflow:hidden;}` +
+      `.bt-tug .tug-atk{background:linear-gradient(90deg,#2f77c4,#4da3ff);height:100%;transition:width .25s ease;}` +
+      `.bt-tug .tug-def{background:linear-gradient(270deg,#c43f34,#ff6a5c);height:100%;transition:width .25s ease;}` +
+      `.bt-tug .tug-num{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;` +
+      `font:11px "Segoe UI",system-ui,sans-serif;color:#eaf0f6;text-shadow:0 1px 2px rgba(0,0,0,0.7);pointer-events:none;}` +
+      `.bt-tug.win{box-shadow:inset 0 0 0 1px rgba(120,220,140,0.35);}` +
+      `.bt-tug.lose{box-shadow:inset 0 0 0 1px rgba(230,90,80,0.4);}` +
       `.bt-feed{position:absolute;right:12px;top:100px;z-index:6;display:flex;flex-direction:column;gap:3px;` +
       `pointer-events:none;max-width:220px;}` +
       `.bt-feed .bf-line{background:rgba(10,14,19,0.82);border:1px solid #26313f;border-radius:5px;` +
@@ -1279,12 +1287,29 @@ export function createBattle({ store, ui, send, ftue }) {
         (field.exhibition ? `<span class="bt-exh" title="Exhibition — display only, no ground changes hands">EXHIBITION</span>` : '')
       : `<b>⚔ ${mine ? 'Your assault on' : 'Assault on'} ${name}</b>` +
         (monster ? `<span class="bt-vs">vs ☠ ${esc(monster)}</span>` : '');
+    // TUG-OF-WAR strength: sum current HP each side, express as a share bar so
+    // the tide of battle reads at a glance (owner "fun to watch").
+    let hpA = 0, hpD = 0;
+    if (snap?.units) {
+      for (const u of snap.units) { if (u.s === 'A') hpA += u.hp; else hpD += u.hp; }
+    }
+    if (snap?.towers) for (const t of snap.towers) if (t.hp > 0) hpD += t.hp;
+    const totalHp = hpA + hpD;
+    const attackerShare = totalHp > 0 ? Math.round((hpA / totalHp) * 100) : 50;
+    const tugCls = attackerShare > 60 ? ' win' : attackerShare < 40 ? ' lose' : '';
+    const tugBar = totalHp > 0
+      ? `<div class="bt-tug${tugCls}" title="Total remaining HP — yours (${hpA}) vs enemy (${hpD})">` +
+        `<span class="tug-atk" style="width:${attackerShare}%"></span>` +
+        `<span class="tug-def" style="width:${100 - attackerShare}%"></span>` +
+        `<span class="tug-num">⚔ ${attackerShare}% · ${100 - attackerShare}% 🛡</span></div>`
+      : '';
     hud.innerHTML =
       `<div class="bt-title"><span class="bt-live${ended ? ' done' : stale ? ' stale' : ''}">●</span>` +
       title + `</div>` +
       `<div class="bt-stats">${masterBit}${waves}${foeRes}${mobs}${towers}` +
       `<span class="bt-stat" title="Battle clock — expiry means the attack guttered out">⏱ <b>${clock}</b></span>` +
       `<span class="bt-prog" title="Lair broken at 100%"><span style="width:${prog}%"></span></span></div>` +
+      tugBar +
       `<div class="bt-btns">` +
       (canSteer && !ended
         ? `<button class="bt-steer${steer ? ' on' : ''}" data-bt="steer">${steer ? '🎮 Steering' : '🎮 Steer'}</button>` +
