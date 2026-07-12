@@ -46,16 +46,16 @@ const PORT_BY_TIER = { surface: { name: 'Sea Port', icon: '⚓' }, sky: { name: 
 const ROUTES = [
   { a: 'ENT', b: 'BUS', k: 'sea' }, { a: 'BUS', b: 'HUB', k: 'sea' },
   { a: 'HUB', b: 'EDU', k: 'sea' }, { a: 'EDU', b: 'ENT', k: 'sea' },
-  // THE SKY = a tiered CLIMB, mirror of the underworld's descent (canon: registry
-  // zoneLinks + docs/maps/OVERWORLD-CONNECTIONS.md §3, locked 2026-07-12). Aeropolis
-  // (HS1) is the GATE TO HEAVEN: every surface airship lands there first (Arcadia AND
-  // Porthaven → HS1) — nothing reaches the upper sky without passing the gateway.
-  // Then HS1 → HS2 → HS3 (Empyrea highest, reached last); NO surface→HS2/HS3 shortcut.
+  // THE SKY (canon: registry zoneLinks + docs/maps/OVERWORLD-CONNECTIONS.md §3;
+  // owner ruling 2026-07-12). Aeropolis (HS1) is the GATE TO HEAVEN: every surface
+  // airship lands there first (Arcadia AND Porthaven → HS1) — nothing reaches the
+  // upper sky without passing the gateway. From the gateway you branch to EITHER
+  // upper isle: HS1 → HS2 (Emberfall) OR HS1 → HS3 (Empyrea).
   { a: 'BUS', b: 'HS1', k: 'air' }, { a: 'EDU', b: 'HS1', k: 'air' },
-  { a: 'HS1', b: 'HS2', k: 'air' },
-  // HS2 → HS3 = the WAR OF THE SKY THRONE: Emberfall (the fallen angels, corrupted out
-  // of the deep and risen to besiege the height) vs Empyrea. A contested war front.
-  { a: 'HS2', b: 'HS3', k: 'air', warFront: true },
+  { a: 'HS1', b: 'HS2', k: 'air' }, { a: 'HS1', b: 'HS3', k: 'air' },
+  // NB: HS2 and HS3 are NOT connected — Emberfall (the fallen angels, risen from the
+  // deep to claim the throne) and Empyrea are AT WAR (the War of the Sky Throne), so
+  // no lane runs between them. You reach each only back through the gateway.
   { a: 'HUB', b: 'UW1', k: 'shaft' }, { a: 'UW1', b: 'UW2', k: 'gate' }, { a: 'UW2', b: 'UW3', k: 'gate' },
   // the Diminishing Stair: the carnival's own door — a portal from Carnavale (Mythoria SW coast)
   // to Blackmere (single file, souls only, no armies; docs/lore/WORLD-CHRONICLE.md 'The Way Down')
@@ -235,12 +235,7 @@ export function createWorld({ ui } = {}) {
     const drawRoute = (r) => {
       const dim = !(known(r.A) && known(r.B));
       ctx.globalAlpha = dim ? 0.35 : 0.8;
-      // A contested WAR FRONT (e.g. HS2↔HS3, the War of the Sky Throne) burns crimson
-      // and heavier than a peaceful lane — a fought-over leg reads at a glance.
-      const war = r.warFront === true;
-      ctx.strokeStyle = war ? '#e8552f' : ROUTE_STYLE[r.k];
-      ctx.lineWidth = war ? 2.4 : 1.6;
-      ctx.setLineDash(war ? [3, 3] : [6, 5]);
+      ctx.strokeStyle = ROUTE_STYLE[r.k]; ctx.lineWidth = 1.6; ctx.setLineDash([6, 5]);
       ctx.beginPath();
       if (r.k === 'air') { // arced airship line
         const mx = (r.a1.sx + r.b1.sx) / 2, my = Math.min(r.a1.sy, r.b1.sy) - 26;
@@ -249,13 +244,6 @@ export function createWorld({ ui } = {}) {
         ctx.moveTo(r.a1.sx, r.a1.sy); ctx.lineTo(r.b1.sx, r.b1.sy);
       }
       ctx.stroke(); ctx.setLineDash([]); ctx.globalAlpha = 1;
-      // ⚔ marker at the midpoint of a war-front lane
-      if (war) {
-        const mx = (r.a1.sx + r.b1.sx) / 2, my = Math.min(r.a1.sy, r.b1.sy) - (r.k === 'air' ? 26 : 0);
-        ctx.globalAlpha = dim ? 0.5 : 1; ctx.fillStyle = '#ffd0b0';
-        ctx.font = '13px ui-sans-serif,system-ui'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-        ctx.fillText('⚔', mx, my); ctx.globalAlpha = 1;
-      }
     };
     for (const r of routes) if (r.k === 'sea') drawRoute(r);
 
