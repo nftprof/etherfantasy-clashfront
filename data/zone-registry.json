@@ -535,6 +535,26 @@
         "anchorPoi": "ENT-STAIR-DIMINISHING",
         "secret": true,
         "note": "the Diminishing Stair: upper mouth on Carnavale's carnival midway, lower mouth somewhere in Blackmere. SINGLE FILE — never an army. Mythoria's ONLY depth link; NOT a public dashed route — lore/discovery only."
+      },
+      {
+        "from": "SEA",
+        "to": "UW2",
+        "kind": "KRAKEN_DRAG",
+        "involuntary": true,
+        "trigger": "Act IV, ~3rd sea crossing (seeded window, 3rd-5th leg; scripted, not a random card)",
+        "landing": "hunt.undertow (UW2 far east — the drowned shelf)",
+        "escape": "hunt.sluice (one-way chute → Stair-foot side), then the toll home (§3)",
+        "note": "the Kraken drags an open-sea voyager DOWN to UW2, shipless, far from the exits. Escape is an authored episode (RUN the loop-5 landing → the one-way chute → near the Stair-foot), then a CT toll calibrated to cost MORE than the sea contracts that baited them (the Golden Rule as a lived event). HUNT-TRAVEL-SYSTEM §5b."
+      },
+      {
+        "from": "SKY",
+        "to": "UW2",
+        "kind": "KRAKEN_DRAG",
+        "involuntary": true,
+        "overSea": true,
+        "landing": "hunt.undertow",
+        "escape": "hunt.sluice",
+        "note": "airship OVER SEA: the long fall, then water — same drag as the sea route. NB airship over LAND = death (counts on the death ladder), NOT a drag — which is why the airship is frightening and the ship is not. HUNT-TRAVEL-SYSTEM §5b/§4."
       }
     ],
     "skyWar": {

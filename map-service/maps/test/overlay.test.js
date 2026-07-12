@@ -68,7 +68,7 @@ console.log("— loader merge (the committed hunt starter sets) —");
   ok(places.length === (ent.pois?.length || 0) + (ent.castles?.length || 0) + 5, "allPlaces = pois + castles + overlay");
   ok(places.filter((p) => p.layer === "field").length === (ent.pois?.length || 0) + (ent.castles?.length || 0), "allPlaces tags pois+castles layer 'field'");
   const uw2 = loadWorldField("UW2");
-  ok((uw2.overlayElements || []).length === 3, "UW2: 3 hunt elements merged");
+  ok((uw2.overlayElements || []).length === 5, "UW2: 5 hunt elements merged (stair camp, bowl shrine, banquet door, undertow, sluice)");
   const edu = loadWorldField("EDU");
   ok(edu.overlayElements === undefined, "EDU (no overlay files): field.overlayElements absent");
   ok(allPlaces(edu).every((p) => p.layer === "field"), "EDU allPlaces: only field-layer places");

@@ -11,14 +11,20 @@
     {
       "id": "UW2-HUNT-STAIRFOOT-CAMP",
       "kind": "CAMP",
-      "at": [16.9, 45.8],
+      "at": [
+        16.9,
+        45.8
+      ],
       "name": "The Stair-foot Camp",
       "note": "the arrival camp on the terrace at the Foot of the Diminishing Stair (UW2-STAIR-FOOT) — where the Cut is spoken and descenders first stand at Blackmere's scale"
     },
     {
       "id": "UW2-HUNT-BOWLKEEPER-SHRINE",
       "kind": "SHRINE",
-      "at": [17.4, 46.4],
+      "at": [
+        17.4,
+        46.4
+      ],
       "name": "The Bowl-Keeper's Alcove",
       "note": "a lamplit alcove off the Stair-foot terrace where the Homeward Bowl is kept — the way back up for those the deep releases",
       "loreRef": "docs/lore/WORLD-CHRONICLE.md — the Homeward Bowl"
@@ -26,10 +32,35 @@
     {
       "id": "UW2-HUNT-BANQUET-DOOR",
       "kind": "DUNGEON_DOOR",
-      "at": [71.3, 88.7],
+      "at": [
+        71.3,
+        88.7
+      ],
       "name": "The Drowned Banquet — First Hall",
       "note": "the door into the first of the five flooded halls of the Drowned Banquet (UW2-BANQUET, EPIC 1101096) — still set for a feast no one finished",
       "singularId": "drowned_banquet"
+    },
+    {
+      "id": "UW2-HUNT-UNDERTOW",
+      "kind": "DRAG_LANDING",
+      "at": [
+        158.0,
+        27.5
+      ],
+      "name": "The Undertow",
+      "note": "the drowned shelf in UW2's far east, beyond the story's reach — where the Kraken leaves its catch (HUNT-TRAVEL §5b). Act-IV drag landing; loop-5-tuned enemies (unwinnable → RUN). Later cycles: persists as endgame hunting ground.",
+      "loreRef": "HUNT-TRAVEL-SYSTEM §5b"
+    },
+    {
+      "id": "UW2-HUNT-SLUICE",
+      "kind": "ONE_WAY_CHUTE",
+      "at": [
+        149.0,
+        37.0
+      ],
+      "name": "The Sluice",
+      "note": "the one-way chute — dark tunnel mouth, wind moaning, slopes down; the ONLY way out of the Undertow. Slides you (no climbing back) toward the known exits near the Stair-foot. 'It's dark. It's windy. It slides down. Will you go down?' (the Cut's question again). HUNT-TRAVEL §5b.",
+      "loreRef": "HUNT-TRAVEL-SYSTEM §5b"
     }
   ]
 }
