@@ -26,17 +26,18 @@
       },
       "jp": {
         "city": "Tokyo / Japan",
-        "ip": "18.178.54.54",
+        "ip": "54.249.109.71",
         "status": "live",
         "startContinent": "EDU",
-        "note": "the current map"
+        "note": "box re-stood 2026-07-12 (bridge/SSH agent); server + runner + client /play live; owner playtests from Japan on next trip"
       },
       "us": {
         "city": "US West",
-        "ip": "54.151.57.111",
+        "ip": "52.8.156.169",
         "status": "live",
         "startContinent": "ENT",
-        "startSlice": "north"
+        "startSlice": "north",
+        "note": "box re-stood 2026-07-12 (bridge/SSH agent); server + runner + client /play live; owner low-latency test target from Vancouver"
       },
       "ca": {
         "city": "Montreal",
