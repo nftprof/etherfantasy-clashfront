@@ -113,6 +113,21 @@ export function handleRequest(req, res) {
   // gallery landing page (all-maps + my-land filter → click into /designer)
   if (p === "/" || p === "/gallery" || p === "/gallery/") return sendFile(res, "maps/gallery.html", "text/html");
 
+  // Nine-layer render assets (pristine mirrors of the MOBA repo — shared/ef_battlefield.js +
+  // floors/*.png). The 3D preview loads the module and the module fetches its biome floor texture
+  // from /floors/. Floors are content-stable game art → long cache.
+  if (p === "/ef_battlefield.js") return sendFile(res, "maps/ef_battlefield.js", "application/javascript");
+  {
+    const fl = /^\/floors\/([a-z0-9_]+\.png)$/.exec(p);
+    if (fl) {
+      return fs.readFile(path.join(__dirname, "floors", fl[1]), (e, buf) => {
+        if (e) { res.writeHead(404); return res.end(); }
+        res.writeHead(200, { "content-type": "image/png", "cache-control": "public,max-age=604800", "access-control-allow-origin": "*" });
+        res.end(buf);
+      });
+    }
+  }
+
   // list the bundled example maps (MOBA reverse-engineer + the CF biome references) for the gallery
   if (p === "/gallery/examples") {
     const list = [...EXAMPLES.values()].map((a) => ({

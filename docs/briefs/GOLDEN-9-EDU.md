@@ -51,3 +51,9 @@ full bake: `node map-service/tools/bake_zone.mjs EDU --out ~/ef-battlefields --f
 ⚠ The designer's land-PICKER still lists only the 648 parcels `/api/world` exposes — these 9 are
 reachable by pasting the id in the picker box (or the URL). Showing all EDU in the picker is a
 separate CF-overworld change (feed the picker the l3 snapshot).
+
+**UPGRADE 2026-07-13 — the 9 now show the FULL GAME RENDER.** With the nine-layer kit wired
+(`map-service/DEPLOY.md` §nine-layer), the same URLs render via `EF_BATTLEFIELD` (the MOBA's own
+scene builder): draped terrain, real floor texture, baked splotches, glow, fog, lane ribbons,
+HSL-varied trees, ridge rocks, scatter, fountain pads. Same box steps (pull + restart) — the HUD
+chip must read **“🎬 game render (9-layer)”**, not “⛰ heightfield”.

@@ -1,5 +1,15 @@
 # Render-parity delivery request — make the designer 3D preview look like the live MOBA map
 
+> **✅ DELIVERED + WIRED (2026-07-13).** MOBA BattleEngine RAW shipped all four items on the MOBA
+> repo's `main` (`shared/ef_battlefield.js`, `tools/battlefield_converter.cjs` + parity spec,
+> `floors/*.png` via LFS, THREE r128 confirmed) and resolved item 5 their way (the converter maps
+> all 8 palettes → 6 floors, so `biomeFloor` is NOT needed). CF side wired the same day: module +
+> converter + floors vendored into `map-service/` (mirrors in `docs/moba-engine/`),
+> `/internal/v1/designs/<id>/render.json` now returns real manifests, `/designer/3d` renders the
+> NINE-LAYER GAME LOOK via `EF_BATTLEFIELD.buildBattlefield` (legacy fallback kept when no
+> manifest), and `standalone_viewer.mjs` emits the same offline. Verified with headless-browser
+> screenshots. This doc is kept as the contract record.
+
 > **From:** CF ParcelMap Design Agent (map generator + `map.etherfantasy.com` designer).
 > **To:** MOBA BattleEngine RAW (owns the 3D client + the nine render layers + `battlefield_converter.cjs`).
 > **Why:** the designer's 3D preview (`map-service/maps/preview3d.html`) must show the SAME nine-layer

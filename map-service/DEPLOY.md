@@ -110,6 +110,19 @@ retire the maps ROUTE, not necessarily the whole process. The owner's intent ("r
 path/site") is satisfied the moment `~/ef-battlefields` has a single writer and the public map path
 is `map.etherfantasy.com → :8150` only.
 
+## Nine-layer game render in the designer (2026-07-13)
+
+The 3D preview (`/designer/3d?parcel=`) now renders **the game's own scene builder** —
+`maps/ef_battlefield.js` (`EF_BATTLEFIELD`, vendored verbatim from the MOBA repo's `shared/`) fed by
+the render manifest from `maps/battlefield_converter.cjs` (vendored from MOBA `tools/`; the registry
+auto-detects it → `render.json` returns real manifests now). Floor textures live in `floors/` and
+are served at `/floors/*.png`; the module itself at `/ef_battlefield.js`. No env, no config — after
+a `git pull` + `pm2 restart ef-map-service` the designer shows the FINAL nine-layer look for every
+parcel (manifests build lazily per designVersion and cache as `render.v{N}.json` next to the
+artifact; previously-cached designs light up on first hit, no bust needed). If the converter file is
+ever missing the preview falls back to the old flat render and says so in the HUD chip.
+Re-pull both vendored files whenever the MOBA repo upgrades them (they are pristine mirrors).
+
 ## Last mile — generated maps in live battles
 
 The maps loop closes in two steps CF already ships:

@@ -18,7 +18,7 @@
 <body>
 <div id="hud">loading battlefield…</div>
 <div id="north">⬆ N</div>
-<div id="hint"><button id="texBtn">🎨 grass</button>drag = orbit · wheel = zoom · right-drag = pan · game-style render (the in-engine render is hero mode)</div>
+<div id="hint"><button id="texBtn">🎨 grass</button>drag = orbit · wheel = zoom · right-drag = pan</div>
 <div id="err"></div>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
@@ -32,9 +32,15 @@ const a=d.artifact, T={OPEN:0,FOREST:1,ROCK:2,WATER:3,CLIFF:4,ROAD:5,OOB:6};
 const G=a.terrain.w, CELL=a.terrain.cellM, S=a.arena.sizeM, half=S/2;
 const cells=Uint8Array.from(atob(a.terrain.cells),c=>c.charCodeAt(0));
 const p=a.meta.params||{}, lava=p.palette==="volcanic";
-// engine-ready render manifest → heightfield (the biggest fidelity gap: a flat grid reads as
-// cardboard). Optional: if it 404s or the converter is off, everything falls back to flat ground.
+// engine-ready render manifest (battlefield_converter.cjs output). With it, the preview renders
+// THE GAME's nine layers via EF_BATTLEFIELD — the same scene builder the MOBA client runs, so what
+// the designer sees IS the final look. Without it (404/converter off) → legacy flat fallback.
 let man=null; try{ man=await fetch(`/internal/v1/designs/${pid}/render.json${vv!=null?`?v=${vv}`:""}`).then(r=>r.ok?r.json():null); }catch(e){}
+if(man&&(man.ok===false||!man.height))man=null;
+// load the game's scene builder (skipped if already inlined — the standalone offline viewer does that)
+function loadScript(src){return new Promise((ok,bad)=>{const s=document.createElement("script");s.src=src;s.onload=ok;s.onerror=bad;document.head.appendChild(s);});}
+let parity=false;
+if(man){ if(!window.EF_BATTLEFIELD){ try{ await loadScript("/ef_battlefield.js"); }catch(e){} } parity=!!window.EF_BATTLEFIELD; }
 let hgrid=null,hw=0,hh=0,hmin=0,hmax=0;
 if(man&&man.height){hgrid=Uint8Array.from(atob(man.height.data),c=>c.charCodeAt(0));hw=man.height.w;hh=man.height.h;hmin=man.height.hMin;hmax=man.height.hMax;}
 function hAt(x,z){ if(!hgrid)return 0;
@@ -44,74 +50,89 @@ function hAt(x,z){ if(!hgrid)return 0;
   const s=(cx,cz)=>hgrid[cz*hw+cx]/255;
   const v=s(x0,z0)*(1-tx)*(1-tz)+s(x1,z0)*tx*(1-tz)+s(x0,z1)*(1-tx)*tz+s(x1,z1)*tx*tz;
   return hmin+v*(hmax-hmin); }
-// displace a flat XZ plane geometry onto the heightfield (local z → world y after the -90° X rot)
+// displace a flat XZ plane geometry onto the heightfield (local z → world y after the -90° X rot).
+// ZS = the z-axis convention: EF_BATTLEFIELD renders manifest coords AS three.js coords (+z toward
+// default camera), the legacy path mirrors (+z north → three -z). Overlays must match the ground.
+const ZS=parity?1:-1;
 function drape(geo,yoff){ if(!hgrid)return geo; const pos=geo.attributes.position;
+  // -ly is correct in BOTH conventions: the -90° X rotation maps local +y → world -z, and the two
+  // conventions differ only in what world z MEANS — the vertex→height lookup stays hAt(lx,-ly).
   for(let i=0;i<pos.count;i++){const lx=pos.getX(i),ly=pos.getY(i);pos.setZ(i,hAt(lx,-ly)+(yoff||0));} geo.computeVertexNormals(); return geo; }
 // deterministic rng seeded from the artifact (same look for every viewer/load)
 let _s=((a.meta&&a.meta.seed)>>>0)||1;
 const rng=()=>{_s=(_s+0x6D2B79F5)>>>0;let t=_s;t=Math.imul(t^(t>>>15),t|1);t^=t+Math.imul(t^(t>>>7),t|61);return((t^(t>>>14))>>>0)/4294967296;};
 const R=(x,y)=>x+(y-x)*rng();
 
-// per-palette ground tint (grass texture is warm green; multiply toward the biome)
-const TINT={verdant:0xffffff,autumn:0xd9b978,volcanic:0x6a5a52,tundra:0xcdd6da,desert:0xd8c28a,swamp:0x8fa06a,ashen:0x9a938c,sakura:0xe6c8d6}[p.palette]||0xffffff;
+// per-palette ground tint (legacy fallback only — parity mode gets the real biome material set)
+const TINT={verdant:0xffffff,autumn:0xd9b978,volcanic:0x6a5a52,tundra:0xcdd6da,desert:0xd8c28a,swamp:0x8fa06a,sakura:0xe6c8d6}[p.palette]||0xffffff;
 
 const scene=new THREE.Scene();
-// vertical gradient sky (biome-aware) instead of a flat void — reads as an environment
-function skyTex(top,bot){const c=document.createElement('canvas');c.width=8;c.height=256;const g=c.getContext('2d');const grd=g.createLinearGradient(0,0,0,256);grd.addColorStop(0,top);grd.addColorStop(0.62,bot);grd.addColorStop(1,bot);g.fillStyle=grd;g.fillRect(0,0,8,256);return new THREE.CanvasTexture(c);}
-scene.background=skyTex(lava?'#4a1c0a':'#3a5578', lava?'#120806':'#0e1622');
-scene.fog=new THREE.Fog(lava?0x1a0f0c:0x111c2b, S*0.95, S*2.6);
-const cam=new THREE.PerspectiveCamera(45,innerWidth/innerHeight,1,S*6);
-cam.position.set(0,S*1.0,S*0.68); cam.lookAt(0,0,0);
+const cam=new THREE.PerspectiveCamera(parity?50:45,innerWidth/innerHeight,1,S*6);
+// north-up from either convention: sit the camera on the SOUTH side of the arena.
+// parity: frame off the manifest's suggested orbit radius (the game-ish view distance)
+const camR=parity?(man.camera&&man.camera.radius||S*0.62):S;
+cam.position.set(0,parity?camR*0.85:S*1.0,ZS*-(parity?camR*0.62:S*0.68)); cam.lookAt(0,0,0);
 const ren=new THREE.WebGLRenderer({antialias:true}); ren.setSize(innerWidth,innerHeight); ren.setPixelRatio(Math.min(devicePixelRatio,2));
 document.body.appendChild(ren.domElement);
 const ctl=new THREE.OrbitControls(cam,ren.domElement); ctl.maxPolarAngle=Math.PI*0.49; ctl.target.set(0,0,0);
-// GAME lighting (index.html): hemisphere sky/ground + warm sun
-scene.add(new THREE.HemisphereLight(lava?0xffb27a:0xbfd4ff, 0x223044, 0.9));
-const sun=new THREE.DirectionalLight(0xfff2dd,0.8); sun.position.set(S*0.25,S*0.42,S*0.17); scene.add(sun);
 const MAXA=ren.capabilities.getMaxAnisotropy();
-const world=(x,z)=>new THREE.Vector3(x,0,-z);           // artifact +z north → three -z
+const world=(x,z)=>new THREE.Vector3(x,0,ZS*z);
 const put=(mesh,x,z,y=0)=>{const w=world(x,z);mesh.position.set(w.x,y+hAt(x,z),w.z);scene.add(mesh);return mesh;};
 const lam=(c,o={})=>new THREE.MeshLambertMaterial(Object.assign({color:c},o));
 
-// ---- ground: the game's makeGrassTexture (index.html verbatim), biome-tinted, polygon-cut ----
-function makeGrassTexture(){const c=document.createElement('canvas');c.width=c.height=512;const x=c.getContext('2d');const Sz=512;
- x.fillStyle='#557f49';x.fillRect(0,0,Sz,Sz);
- const tile=(fn)=>{for(let oy=-Sz;oy<=Sz;oy+=Sz)for(let ox=-Sz;ox<=Sz;ox+=Sz){x.save();x.translate(ox,oy);fn();x.restore();}};
- const macro=['#6a9a58','#7aa861','#4f7a45'];
- for(let i=0;i<7;i++){const mc=macro[i%3],px=rng()*Sz,py=rng()*Sz,r=180+rng()*150;tile(()=>{const g=x.createRadialGradient(px,py,0,px,py,r);g.addColorStop(0,mc);g.addColorStop(1,'rgba(0,0,0,0)');x.globalAlpha=.10;x.fillStyle=g;x.beginPath();x.arc(px,py,r,0,7);x.fill();x.globalAlpha=1;});}
- const patches=[['#6f9d5a',38],['#618c4d',32],['#80ac63',24]];
- for(let i=0;i<38;i++){const cc=patches[(rng()*3)|0],px=rng()*Sz,py=rng()*Sz,r=cc[1]*(.6+rng()*.8);tile(()=>{const g=x.createRadialGradient(px,py,0,px,py,r);g.addColorStop(0,cc[0]);g.addColorStop(1,'rgba(0,0,0,0)');x.globalAlpha=.18;x.fillStyle=g;x.beginPath();x.arc(px,py,r,0,7);x.fill();x.globalAlpha=1;});}
- const blades=['#74a257','#5e8a49','#88b266','#52864a'];x.lineCap='round';
- for(let i=0;i<1150;i++){const bx=rng()*Sz,by=rng()*Sz,len=4+rng()*8,bend=(rng()-.5)*5,col=blades[(rng()*4)|0],al=.13+rng()*.18,lw=.6+rng()*.7;tile(()=>{x.strokeStyle=col;x.globalAlpha=al;x.lineWidth=lw;x.beginPath();x.moveTo(bx,by);x.quadraticCurveTo(bx+bend,by-len*.6,bx+bend*.4,by-len);x.stroke();});}
- x.globalAlpha=1;
- for(let i=0;i<2200;i++){x.fillStyle=rng()<.6?'rgba(255,255,255,.020)':'rgba(0,0,0,.020)';x.fillRect(rng()*Sz,rng()*Sz,1,1);}
- const t=new THREE.CanvasTexture(c);t.anisotropy=MAXA;return t;}
-const grassTex=makeGrassTexture(); grassTex.wrapS=grassTex.wrapT=THREE.RepeatWrapping; grassTex.repeat.set(12,12); grassTex.center.set(.5,.5); grassTex.rotation=.16;
-// polygon alpha mask (OOB → transparent = the parcel silhouette floats in the void)
-const mcv=document.createElement('canvas'); mcv.width=mcv.height=G; const m2=mcv.getContext('2d');
-for(let z=0;z<G;z++)for(let x=0;x<G;x++){m2.fillStyle=cells[z*G+x]===T.OOB?'#000':'#fff';m2.fillRect(x,G-1-z,1,1);}
-const mask=new THREE.CanvasTexture(mcv);
-const ground=new THREE.Mesh(drape(new THREE.PlaneGeometry(S,S,hgrid?hw-1:1,hgrid?hh-1:1)),new THREE.MeshLambertMaterial({map:grassTex,color:TINT,alphaMap:mask,transparent:true,alphaTest:.5}));
-ground.rotation.x=-Math.PI/2; scene.add(ground);
+let bf=null, ground=null, grassTex=null;
+if(parity){
+  // ============ THE GAME RENDER — EF_BATTLEFIELD, all nine layers, verbatim ============
+  bf=EF_BATTLEFIELD.buildBattlefield(scene,{manifest:man,THREE,floorsBase:"/floors/",addLights:true,addFog:true});
+}else{
+  // ============ legacy fallback (no manifest / converter off): approximate look ============
+  function skyTex(top,bot){const c=document.createElement('canvas');c.width=8;c.height=256;const g=c.getContext('2d');const grd=g.createLinearGradient(0,0,0,256);grd.addColorStop(0,top);grd.addColorStop(0.62,bot);grd.addColorStop(1,bot);g.fillStyle=grd;g.fillRect(0,0,8,256);return new THREE.CanvasTexture(c);}
+  scene.background=skyTex(lava?'#4a1c0a':'#3a5578', lava?'#120806':'#0e1622');
+  scene.fog=new THREE.Fog(lava?0x1a0f0c:0x111c2b, S*0.95, S*2.6);
+  scene.add(new THREE.HemisphereLight(lava?0xffb27a:0xbfd4ff, 0x223044, 0.9));
+  const sun=new THREE.DirectionalLight(0xfff2dd,0.8); sun.position.set(S*0.25,S*0.42,S*0.17); scene.add(sun);
+  // ground: the game's makeGrassTexture (index.html verbatim), biome-tinted, polygon-cut
+  function makeGrassTexture(){const c=document.createElement('canvas');c.width=c.height=512;const x=c.getContext('2d');const Sz=512;
+   x.fillStyle='#557f49';x.fillRect(0,0,Sz,Sz);
+   const tile=(fn)=>{for(let oy=-Sz;oy<=Sz;oy+=Sz)for(let ox=-Sz;ox<=Sz;ox+=Sz){x.save();x.translate(ox,oy);fn();x.restore();}};
+   const macro=['#6a9a58','#7aa861','#4f7a45'];
+   for(let i=0;i<7;i++){const mc=macro[i%3],px=rng()*Sz,py=rng()*Sz,r=180+rng()*150;tile(()=>{const g=x.createRadialGradient(px,py,0,px,py,r);g.addColorStop(0,mc);g.addColorStop(1,'rgba(0,0,0,0)');x.globalAlpha=.10;x.fillStyle=g;x.beginPath();x.arc(px,py,r,0,7);x.fill();x.globalAlpha=1;});}
+   const patches=[['#6f9d5a',38],['#618c4d',32],['#80ac63',24]];
+   for(let i=0;i<38;i++){const cc=patches[(rng()*3)|0],px=rng()*Sz,py=rng()*Sz,r=cc[1]*(.6+rng()*.8);tile(()=>{const g=x.createRadialGradient(px,py,0,px,py,r);g.addColorStop(0,cc[0]);g.addColorStop(1,'rgba(0,0,0,0)');x.globalAlpha=.18;x.fillStyle=g;x.beginPath();x.arc(px,py,r,0,7);x.fill();x.globalAlpha=1;});}
+   const blades=['#74a257','#5e8a49','#88b266','#52864a'];x.lineCap='round';
+   for(let i=0;i<1150;i++){const bx=rng()*Sz,by=rng()*Sz,len=4+rng()*8,bend=(rng()-.5)*5,col=blades[(rng()*4)|0],al=.13+rng()*.18,lw=.6+rng()*.7;tile(()=>{x.strokeStyle=col;x.globalAlpha=al;x.lineWidth=lw;x.beginPath();x.moveTo(bx,by);x.quadraticCurveTo(bx+bend,by-len*.6,bx+bend*.4,by-len);x.stroke();});}
+   x.globalAlpha=1;
+   for(let i=0;i<2200;i++){x.fillStyle=rng()<.6?'rgba(255,255,255,.020)':'rgba(0,0,0,.020)';x.fillRect(rng()*Sz,rng()*Sz,1,1);}
+   const t=new THREE.CanvasTexture(c);t.anisotropy=MAXA;return t;}
+  grassTex=makeGrassTexture(); grassTex.wrapS=grassTex.wrapT=THREE.RepeatWrapping; grassTex.repeat.set(12,12); grassTex.center.set(.5,.5); grassTex.rotation=.16;
+  // polygon alpha mask (OOB → transparent = the parcel silhouette floats in the void)
+  const mcv=document.createElement('canvas'); mcv.width=mcv.height=G; const m2=mcv.getContext('2d');
+  for(let z=0;z<G;z++)for(let x=0;x<G;x++){m2.fillStyle=cells[z*G+x]===T.OOB?'#000':'#fff';m2.fillRect(x,G-1-z,1,1);}
+  const mask=new THREE.CanvasTexture(mcv);
+  ground=new THREE.Mesh(drape(new THREE.PlaneGeometry(S,S,hgrid?hw-1:1,hgrid?hh-1:1)),new THREE.MeshLambertMaterial({map:grassTex,color:TINT,alphaMap:mask,transparent:true,alphaTest:.5}));
+  ground.rotation.x=-Math.PI/2; scene.add(ground);
+}
 
 // misty base plane below the parcel so the silhouette sits in a haze-sea, not a black void
-const haze=new THREE.Mesh(new THREE.PlaneGeometry(S*4.5,S*4.5),new THREE.MeshBasicMaterial({color:lava?0x2a120c:0x16243a,transparent:true,opacity:.92}));
+// (parity: match the module's fog colour so the horizon has no seam)
+const hazeCol=parity&&scene.fog?scene.fog.color.getHex():(lava?0x2a120c:0x16243a);
+const haze=new THREE.Mesh(new THREE.PlaneGeometry(S*4.5,S*4.5),new THREE.MeshBasicMaterial({color:hazeCol,transparent:true,opacity:.92}));
 haze.rotation.x=-Math.PI/2; haze.position.y=-3.5; scene.add(haze);
 
-// upscale + feather a G×G cell canvas so coastlines/roads read smooth instead of pixel-blocky
+// upscale + feather a G×G cell canvas so coastlines/roads read smooth instead of pixel-blocky.
+// Canvas rows follow the active z convention (legacy mirrors, parity doesn't).
 function soften(src,scale,blur){const o=document.createElement('canvas');o.width=o.height=src.width*scale;const g=o.getContext('2d');g.imageSmoothingEnabled=true;g.filter='blur('+blur+'px)';g.drawImage(src,0,0,o.width,o.height);g.filter='none';return o;}
-function cellCanvas(pred,style){const cc=document.createElement('canvas');cc.width=cc.height=G;const g2=cc.getContext('2d');let any=false;for(let z=0;z<G;z++)for(let x=0;x<G;x++)if(pred(cells[z*G+x])){g2.fillStyle=style;g2.fillRect(x,G-1-z,1,1);any=true;}return any?cc:null;}
-// tessellate FINER than the heightfield grid: props sample a smooth bilinear hAt(), so a plane at
-// grid resolution flat-shades BELOW the peaks and props float above it. 3× (capped) hugs hAt closely.
+function cellCanvas(pred,style){const cc=document.createElement('canvas');cc.width=cc.height=G;const g2=cc.getContext('2d');let any=false;for(let z=0;z<G;z++)for(let x=0;x<G;x++)if(pred(cells[z*G+x])){g2.fillStyle=style;g2.fillRect(x,ZS>0?z:G-1-z,1,1);any=true;}return any?cc:null;}
 const TESS=hgrid?Math.min(200,(hw-1)*3):1;
 function plane(tex,y,mat){tex.minFilter=tex.magFilter=THREE.LinearFilter;const m=new THREE.Mesh(drape(new THREE.PlaneGeometry(S,S,TESS,TESS),y),mat);m.material.map=tex;m.rotation.x=-Math.PI/2;if(!hgrid)m.position.y=y;scene.add(m);return m;}
-// road: dirt, softened edges
-{const cc=cellCanvas(c=>c===T.ROAD,'rgba(120,96,58,.9)');if(cc)plane(new THREE.CanvasTexture(soften(cc,4,3)),0.15,new THREE.MeshBasicMaterial({transparent:true,depthWrite:false}));}
-// water: softened coastline + glossy phong so the sun glints off it (lava = emissive glow)
+// road (legacy only — parity gets baked road cells + lane ribbons from the module)
+if(!parity){const cc=cellCanvas(c=>c===T.ROAD,'rgba(120,96,58,.9)');if(cc)plane(new THREE.CanvasTexture(soften(cc,4,3)),0.15,new THREE.MeshBasicMaterial({transparent:true,depthWrite:false}));}
+// water: softened coastline + glossy phong so the sun glints off it (lava = emissive glow).
+// Kept in BOTH modes — the module dips the heightfield but ships no water surface.
 {const cc=cellCanvas(c=>c===T.WATER, lava?'rgba(255,120,45,.96)':'rgba(64,116,172,.86)');
  if(cc){const wm=plane(new THREE.CanvasTexture(soften(cc,4,3.5)),0.28,new THREE.MeshPhongMaterial({transparent:true,depthWrite:false,shininess:lava?8:95,specular:lava?0x1a0a00:0x8fb8ee,emissive:lava?0xff5a1e:0x0a1a2e,emissiveIntensity:lava?.55:.12}));wm.renderOrder=1;}}
 
-// ---- props: the game's exact tree / rock / gold / wood / tower visuals ----
+// ---- props the module does NOT cover (or legacy renders everything) ----
 const treeLeaf=(h,l)=>new THREE.MeshLambertMaterial({color:new THREE.Color().setHSL(0.30+h,0.34+0.16*l,0.16+0.10*l),flatShading:true});
 const rockMat=new THREE.MeshLambertMaterial({color:0x6e6a63,flatShading:true});
 const stoneTex=(function(){const c=document.createElement('canvas');c.width=c.height=128;const x=c.getContext('2d');
@@ -122,15 +143,17 @@ const stoneTex=(function(){const c=document.createElement('canvas');c.width=c.he
  const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(2,3);t.anisotropy=MAXA;return t;})();
 
 for(const o of a.obstacles||[]){
-  if(o.kind==="TREE"){const s=o.r/2.9, tr=new THREE.Group();
+  if(o.kind==="TREE"){ if(parity)continue;              // module: layer 7 (+ manifest trees)
+    const s=o.r/2.9, tr=new THREE.Group();
     const leaf=treeLeaf(R(-0.03,0.04),rng());
     const lower=new THREE.Mesh(new THREE.ConeGeometry(3.0*s,6.5*s,7),leaf);lower.position.y=3.6*s;
     const upper=new THREE.Mesh(new THREE.ConeGeometry(2.0*s,5.5*s,7),leaf);upper.position.y=6.2*s;
     const trunk=new THREE.Mesh(new THREE.CylinderGeometry(0.5*s,0.7*s,3*s,5),lam(0x3a2a1c));trunk.position.y=1.5*s;
     tr.add(trunk,lower,upper);tr.rotation.y=rng()*6.28;put(tr,o.x,o.z);}
-  else if(o.kind==="ROCK"){const rk=new THREE.Mesh(new THREE.DodecahedronGeometry(o.r*0.85),rockMat);
-    rk.rotation.set(rng()*3,rng()*6,rng()*3);put(rk,o.x,o.z,-o.r*0.35);}  // SINK into ground (was +0.3r → floated)
-  else{ // landmark hero prop
+  else if(o.kind==="ROCK"){ if(parity)continue;         // module: layer 8
+    const rk=new THREE.Mesh(new THREE.DodecahedronGeometry(o.r*0.85),rockMat);
+    rk.rotation.set(rng()*3,rng()*6,rng()*3);put(rk,o.x,o.z,-o.r*0.35);}
+  else if(!parity){ // landmark hero prop (parity: converter folds landmarks into the manifest)
     const lm=new THREE.Mesh(new THREE.ConeGeometry(4,22,4),new THREE.MeshLambertMaterial({color:0xf2e6be,emissive:0x8a6d2a}));
     put(lm,o.x,o.z,11);}
 }
@@ -145,8 +168,14 @@ for(const r of a.resources||[]){
     mm.position.set((rng()-.5)*2.4,.6+rng()*.5,(rng()-.5)*2.4);grp.add(mm);}}
   put(grp,r.x,r.z);
 }
-// land-owned towers (stone) · wild camps · build pads
-for(const s of a.structures||[]){const tw=new THREE.Group();
+// structures: parity → module renders TOWERs (pedestal+shaft); keep WALL/GATE segments here.
+// legacy → everything as the stone tower.
+for(const s of a.structures||[]){
+  if(parity&&s.kind==="TOWER")continue;
+  if(s.kind==="WALL"||s.kind==="GATE"){
+    const seg=new THREE.Mesh(new THREE.BoxGeometry(CELL*3,s.kind==="GATE"?3.6:5,CELL*1.6),new THREE.MeshLambertMaterial({map:stoneTex}));
+    put(seg,s.x,s.z,s.kind==="GATE"?1.8:2.5);continue;}
+  const tw=new THREE.Group();
   tw.add(new THREE.Mesh(new THREE.CylinderGeometry(3,4,14,10),new THREE.MeshLambertMaterial({map:stoneTex})));
   const cap=new THREE.Mesh(new THREE.CylinderGeometry(4.4,4.4,2.4,10),new THREE.MeshLambertMaterial({map:stoneTex}));cap.position.y=8;tw.add(cap);
   put(tw,s.x,s.z,7);}
@@ -154,26 +183,35 @@ for(const mb of a.mobs||[]){const c=new THREE.Mesh(new THREE.TetrahedronGeometry
 for(const b of a.buildSpots||[]){const pad=new THREE.Mesh(new THREE.CylinderGeometry(b.size*0.6,b.size*0.6,0.4,12),lam(0x3a4152));put(pad,b.x,b.z,0.25);}
 // destructible HP-gates: a low breachable wall spanning the cells it opens, colored by kind
 const GATE={FOREST_WALL:0x6b4a2a,BOULDER_PILE:0x6e6a63,PORTCULLIS:0x8a7c4a,ICE_WALL:0x9fd0e6};
-for(const b of a.barriers||[]){const cells=b.opens||[[b.x,b.z]];const w=Math.max(4,Math.hypot(cells[cells.length-1][0]-cells[0][0],cells[cells.length-1][1]-cells[0][1])+CELL*2);
-  const horiz=Math.abs(cells[cells.length-1][0]-cells[0][0])>=Math.abs(cells[cells.length-1][1]-cells[0][1]);
+for(const b of a.barriers||[]){const bcells=b.opens||[[b.x,b.z]];const w=Math.max(4,Math.hypot(bcells[bcells.length-1][0]-bcells[0][0],bcells[bcells.length-1][1]-bcells[0][1])+CELL*2);
+  const horiz=Math.abs(bcells[bcells.length-1][0]-bcells[0][0])>=Math.abs(bcells[bcells.length-1][1]-bcells[0][1]);
   const wall=new THREE.Mesh(new THREE.BoxGeometry(horiz?w:CELL*1.4,3.2,horiz?CELL*1.4:w),new THREE.MeshLambertMaterial({color:GATE[b.kind]||0x7a6a4a,emissive:b.kind==="ICE_WALL"?0x224455:0x000000,flatShading:true}));put(wall,b.x,b.z,1.6);}
-// spawn rings + dotted lanes
+// spawn rings (both modes: side markers are design QA, the module's fountain pads are canBase only)
 for(const s of a.spawnZones||[]){if(s.side==="ANY")continue;
   const ring=new THREE.Mesh(new THREE.TorusGeometry(7,0.7,8,24),new THREE.MeshBasicMaterial({color:s.side==="ATTACKER"?0xe25a50:0x5a8ee2}));
   ring.rotation.x=Math.PI/2;put(ring,s.x,s.z,0.8);}
-for(const lane of a.lanes||[])for(let i=0;i<lane.length-1;i++){const [ax,az]=lane[i],[bx,bz]=lane[i+1];
+// dotted lanes (legacy only — parity gets the worn Catmull-Rom ribbons, layer 6)
+if(!parity)for(const lane of a.lanes||[])for(let i=0;i<lane.length-1;i++){const [ax,az]=lane[i],[bx,bz]=lane[i+1];
   const steps=Math.max(2,Math.round(Math.hypot(bx-ax,bz-az)/8));
   for(let s=0;s<=steps;s+=2){const dot=new THREE.Mesh(new THREE.CylinderGeometry(0.9,0.9,0.3,6),new THREE.MeshBasicMaterial({color:0xd2be8c}));put(dot,ax+(bx-ax)*s/steps,az+(bz-az)*s/steps,0.35);}}
 
-// grass ↔ raw-cells toggle (raw = exact generator terrain, for design QA)
-let raw=false;
+// raw-cells QA toggle: legacy swaps the ground texture; parity overlays a translucent cell plane
+let raw=false,rawMesh=null;
+document.getElementById("texBtn").textContent=parity?"🔍 cells":"🎨 grass";
 document.getElementById("texBtn").onclick=()=>{raw=!raw;
-  if(raw){const cc=document.createElement('canvas');cc.width=cc.height=G;const g2=cc.getContext('2d');
+  const mkRaw=()=>{const cc=document.createElement('canvas');cc.width=cc.height=G;const g2=cc.getContext('2d');
     const C=[[86,118,72],[38,72,40],[110,106,98],[52,86,120],[90,82,74],[150,132,96]];
-    for(let z=0;z<G;z++)for(let x=0;x<G;x++){const c=cells[z*G+x];if(c===T.OOB)continue;const q=C[Math.min(c,5)];g2.fillStyle=`rgb(${q[0]},${q[1]},${q[2]})`;g2.fillRect(x,G-1-z,1,1);}
-    const tx=new THREE.CanvasTexture(cc);tx.magFilter=THREE.NearestFilter;ground.material.map=tx;ground.material.color.set(0xffffff);}
-  else{ground.material.map=grassTex;ground.material.color.setHex(TINT);}
-  ground.material.needsUpdate=true;document.getElementById("texBtn").textContent=raw?"🎨 cells":"🎨 grass";};
+    for(let z=0;z<G;z++)for(let x=0;x<G;x++){const c=cells[z*G+x];if(c===T.OOB)continue;const q=C[Math.min(c,5)];g2.fillStyle=`rgb(${q[0]},${q[1]},${q[2]})`;g2.fillRect(x,ZS>0?z:G-1-z,1,1);}
+    const tx=new THREE.CanvasTexture(cc);tx.magFilter=THREE.NearestFilter;return tx;};
+  if(parity){
+    if(raw&&!rawMesh){rawMesh=plane(mkRaw(),0.6,new THREE.MeshBasicMaterial({transparent:true,opacity:.78,depthWrite:false}));rawMesh.renderOrder=2;}
+    else if(rawMesh){rawMesh.visible=raw;}
+    document.getElementById("texBtn").textContent=raw?"🔍 game":"🔍 cells";
+  }else{
+    if(raw){ground.material.map=mkRaw();ground.material.color.set(0xffffff);}
+    else{ground.material.map=grassTex;ground.material.color.setHex(TINT);}
+    ground.material.needsUpdate=true;document.getElementById("texBtn").textContent=raw?"🎨 cells":"🎨 grass";
+  }};
 
 // HUD
 const bud=d.budget||{},row=d.row||{};
@@ -181,11 +219,20 @@ document.getElementById("hud").innerHTML=`<b>${pid}</b> · v${a.meta?.designVers
  [p.archetype,p.palette,p.landmark!=="NONE"?p.landmark:null,(a.laneCount||1)+" lane(s)",
   (a.resources||[]).length+" nodes",(a.mobs||[]).length+" camps",(a.structures||[]).length+" towers",
   (a.barriers||[]).length?((a.barriers).length+" gates"):null,(a.meta?.modes||[]).join("/")||null,
-  hgrid?"⛰ heightfield":"▱ flat (no manifest)",man?.biome?.key?("🌿 "+man.biome.key):null,
+  parity?"🎬 game render (9-layer)":hgrid?"⛰ heightfield":"▱ flat (no manifest)",man?.biome?.key?("🌿 "+man.biome.key):null,
   bud.name?("🏦 "+bud.name):null].filter(Boolean).map(x=>`<span>${x}</span>`).join("")+`</div>`;
+document.querySelector("#hint").lastChild.textContent=parity
+ ?"drag = orbit · wheel = zoom · right-drag = pan · THE game render (EF_BATTLEFIELD — what hero mode shows)"
+ :"drag = orbit · wheel = zoom · right-drag = pan · fallback render (no manifest — run the converter for the game look)";
 
 addEventListener("resize",()=>{cam.aspect=innerWidth/innerHeight;cam.updateProjectionMatrix();ren.setSize(innerWidth,innerHeight);});
-(function loop(){requestAnimationFrame(loop);ctl.update();ren.render(scene,cam);})();
+// PREVIEW-ONLY camera-adaptive fog: the module's TUNED fog (175/310) is calibrated for the game's
+// close camera. At/below that distance the exact numbers apply; orbiting further out scales the
+// range proportionally so the designer can still see the whole map with the same relative haze.
+const fogBase=parity&&scene.fog?{near:scene.fog.near,far:scene.fog.far,dist:220}:null;
+(function loop(){requestAnimationFrame(loop);ctl.update();
+  if(fogBase){const k=Math.max(1,cam.position.distanceTo(ctl.target)/fogBase.dist);scene.fog.near=fogBase.near*k;scene.fog.far=fogBase.far*k;}
+  if(bf&&bf.update)bf.update(1/60);ren.render(scene,cam);})();
 })();
 </script>
 </body>
