@@ -757,6 +757,12 @@ function castleLayout(g, G, rng, { base, atkPt, poly, half, budgetLevel, bridge 
   return out;
 }
 
+// Generator version — BUMP whenever generation output meaningfully changes (palette rules, terrain
+// passes, water, structures…). Stamped into meta; registry.ensureDesign auto-reseeds stale SEED_V0
+// rows (pure seed maps, no owner work) so cached registries self-heal on next view — no manual bust.
+// v2 = zone-coherent biomeFamily palettes (2026-07-14).
+export const GEN_VERSION = 2;
+
 export function generate(parcel, params = null, designVersion = 0) {
   const { parcelId, biome = "", zone = "" } = parcel;
   const seed = seedFor(parcelId, biome, zone);
@@ -1040,7 +1046,7 @@ export function generate(parcel, params = null, designVersion = 0) {
     terrain: { cellM: CELL_M, w: G, h: G, cells: b64(g), walk: b64(walk) },
     obstacles: props,
     resources, buildSpots, spawnZones, lanes, routes, barriers, mobs, structures,
-    meta: { seed, designVersion, parcelId, biome, zone, params: p, repairs: v.repairs,
+    meta: { seed, designVersion, genVersion: GEN_VERSION, parcelId, biome, zone, params: p, repairs: v.repairs,
             budget: { level: budget.level, name: budget.name },
             ...(castle ? { castle: { id: castle.id, kind: castle.kind, name: castle.name } } : {}),
             ...(overlay.decor.length || overlay.dropped.length

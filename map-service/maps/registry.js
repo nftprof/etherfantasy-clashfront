@@ -6,7 +6,7 @@
 import fs from "fs";
 import path from "path";
 import { createRequire } from "module";
-import { generate, seedFor } from "./generate.js";
+import { generate, seedFor, GEN_VERSION } from "./generate.js";
 import { simulate } from "./simulate.js";
 import { renderThumb } from "./thumb.js";
 
@@ -100,7 +100,18 @@ function save(parcel, artifact, status, extra = {}) {
 // the lazy entry point: first request generates + persists v0; later calls read the saved artifact
 export function ensureDesign(parcel) {
   const row = getRow(parcel.parcelId);
-  if (row) return { row, artifact: readArtifact(parcel.parcelId) };
+  if (row) {
+    const artifact = readArtifact(parcel.parcelId);
+    // SELF-HEAL stale seeds: a SEED_V0 map is a pure function of seed+generator, carries no owner
+    // work — when the generator version moved (GEN_VERSION), regenerate as the next version so a
+    // cached registry picks up fixes (e.g. zone-coherent palettes) on first view. Owner-touched
+    // rows (AI_ITERATED / OWNER_FROZEN) are never reseeded. Old versions stay on disk (immutable).
+    if (row.status === "SEED_V0" && artifact && artifact.meta?.genVersion !== GEN_VERSION) {
+      const fresh = generate(parcel, null, (row.designVersion | 0) + 1);
+      return { row: save(parcel, fresh, "SEED_V0"), artifact: fresh };
+    }
+    return { row, artifact };
+  }
   const artifact = generate(parcel, null, 0);
   return { row: save(parcel, artifact, "SEED_V0"), artifact };
 }
