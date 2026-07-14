@@ -771,7 +771,9 @@ export function generate(parcel, params = null, designVersion = 0) {
   const palSeed = Array.isArray(parcel.bbox)
     ? fnv1a(`pal:${zone}:${Math.floor((parcel.bbox[0] + parcel.bbox[2]) / 12)}:${Math.floor((parcel.bbox[1] + parcel.bbox[3]) / 12)}`)
     : seed;
-  const bp = biomePalette(biome, palSeed);
+  // zone-family fallback: no declared per-parcel biome ⇒ the ZONE's biomeFamily bounds the roll
+  // (worldfield.zoneBiomeFamily; kept OUT of seedFor so layouts don't re-roll — palette only).
+  const bp = biomePalette(biome || parcel.biomeFamily || "", palSeed);
   if (bp && !(params && params.palette)) p.palette = bp;
   const sizeM = parcel.sizeM || 322;   // CANON (2026-07-08): fixed ±161 world-unit frame, every parcel/battle
   const G = Math.round(sizeM / CELL_M);

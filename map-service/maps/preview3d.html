@@ -127,10 +127,86 @@ const TESS=hgrid?Math.min(200,(hw-1)*3):1;
 function plane(tex,y,mat){tex.minFilter=tex.magFilter=THREE.LinearFilter;const m=new THREE.Mesh(drape(new THREE.PlaneGeometry(S,S,TESS,TESS),y),mat);m.material.map=tex;m.rotation.x=-Math.PI/2;if(!hgrid)m.position.y=y;scene.add(m);return m;}
 // road (legacy only — parity gets baked road cells + lane ribbons from the module)
 if(!parity){const cc=cellCanvas(c=>c===T.ROAD,'rgba(120,96,58,.9)');if(cc)plane(new THREE.CanvasTexture(soften(cc,4,3)),0.15,new THREE.MeshBasicMaterial({transparent:true,depthWrite:false}));}
-// water: softened coastline + glossy phong so the sun glints off it (lava = emissive glow).
-// Kept in BOTH modes — the module dips the heightfield but ships no water surface.
-{const cc=cellCanvas(c=>c===T.WATER, lava?'rgba(255,120,45,.96)':'rgba(64,116,172,.86)');
- if(cc){const wm=plane(new THREE.CanvasTexture(soften(cc,4,3.5)),0.28,new THREE.MeshPhongMaterial({transparent:true,depthWrite:false,shininess:lava?8:95,specular:lava?0x1a0a00:0x8fb8ee,emissive:lava?0xff5a1e:0x0a1a2e,emissiveIntensity:lava?.55:.12}));wm.renderOrder=1;}}
+
+// ---- WATER: flat waterline surface per basin (the module dips the heightfield; the surface must
+// NOT drape into the dip — real water sits level inside the basin). Per connected water body:
+// waterline = lowest shoreline bank − ε; depth-tinted vertex colours (shallow light → deep dark)
+// with a near-white foam bake at the bank line; animated scrolling bump + specular glints.
+// Modes from the manifest (biome.water): water | lava (emissive, slow) | ice (pale, glassy, still).
+const waterMats=[];
+(function buildWater(){
+  const isW=(i,j)=>i>=0&&j>=0&&i<G&&j<G&&cells[j*G+i]===T.WATER;
+  const seen=new Uint8Array(G*G);
+  // multi-source BFS: distance (in cells) from every water cell to the nearest shore
+  const dist=new Float32Array(G*G).fill(1e9); const bfs=[];
+  for(let j=0;j<G;j++)for(let i=0;i<G;i++)if(isW(i,j)){
+    if(isW(i-1,j)&&isW(i+1,j)&&isW(i,j-1)&&isW(i,j+1))continue;
+    dist[j*G+i]=0;bfs.push(i,j);}
+  for(let h=0;h<bfs.length;h+=2){const i=bfs[h],j=bfs[h+1],d=dist[j*G+i];
+    for(const[di,dj]of[[1,0],[-1,0],[0,1],[0,-1]]){const ni=i+di,nj=j+dj;
+      if(isW(ni,nj)&&dist[nj*G+ni]>d+1){dist[nj*G+ni]=d+1;bfs.push(ni,nj);}}}
+  const mode=(parity&&man.biome&&man.biome.water)||(lava?"lava":"water");
+  // tileable value-noise bump canvas (seeded — same ripples every load)
+  const bcv=document.createElement('canvas');bcv.width=bcv.height=256;const bg=bcv.getContext('2d');
+  const bi=bg.createImageData(256,256);let bs=(((a.meta&&a.meta.seed)>>>0)||7)^0x9e37;
+  const brnd=()=>{bs=(bs+0x6D2B79F5)>>>0;let t=bs;t=Math.imul(t^(t>>>15),t|1);t^=t+Math.imul(t^(t>>>7),t|61);return((t^(t>>>14))>>>0)/4294967296;};
+  const gsz=8,gv=[];for(let k=0;k<(gsz+1)*(gsz+1);k++)gv.push(brnd());
+  for(let y=0;y<256;y++)for(let x=0;x<256;x++){
+    const u=x/256*gsz,v=y/256*gsz,x0=u|0,y0=v|0,fx=u-x0,fy=v-y0,sx=fx*fx*(3-2*fx),sy=fy*fy*(3-2*fy);
+    const g00=gv[(y0%gsz)*(gsz+1)+(x0%gsz)],g10=gv[(y0%gsz)*(gsz+1)+((x0+1)%gsz)],g01=gv[((y0+1)%gsz)*(gsz+1)+(x0%gsz)],g11=gv[((y0+1)%gsz)*(gsz+1)+((x0+1)%gsz)];
+    const n=(g00*(1-sx)+g10*sx)*(1-sy)+(g01*(1-sx)+g11*sx)*sy, q=(y*256+x)*4, b=(n*255)|0;
+    bi.data[q]=b;bi.data[q+1]=b;bi.data[q+2]=b;bi.data[q+3]=255;}
+  bg.putImageData(bi,0,0);
+  const bumpTex=new THREE.CanvasTexture(bcv);bumpTex.wrapS=bumpTex.wrapT=THREE.RepeatWrapping;
+  const STYLE={
+    water:{color:0x2e6ea8,shallow:[0.62,0.80,0.92],deep:[0.10,0.26,0.44],op:0.9,shin:64,spec:0x5f83a8,em:0x06121e,emI:0.25,bump:0.38,speed:1},
+    lava:{color:0xd8491c,shallow:[1.0,0.62,0.25],deep:[0.42,0.06,0.02],op:0.97,shin:6,spec:0x1a0a00,em:0xff5a1e,emI:0.8,bump:1.2,speed:0.25},
+    ice:{color:0xbfdcea,shallow:[0.92,0.98,1.0],deep:[0.55,0.72,0.85],op:0.93,shin:170,spec:0xffffff,em:0x0a141c,emI:0.1,bump:0.15,speed:0}
+  }[mode]||{color:0x2e6ea8,shallow:[0.62,0.80,0.92],deep:[0.10,0.26,0.44],op:0.88,shin:110,spec:0x9fc8ee,em:0x06121e,emI:0.25,bump:0.55,speed:1};
+  // flood-fill components → one flat mesh each at its own waterline
+  for(let j0=0;j0<G;j0++)for(let i0=0;i0<G;i0++){
+    if(!isW(i0,j0)||seen[j0*G+i0])continue;
+    const comp=[];const st=[i0,j0];seen[j0*G+i0]=1;
+    while(st.length){const j=st.pop(),i=st.pop();comp.push(i,j);
+      for(const[di,dj]of[[1,0],[-1,0],[0,1],[0,-1]]){const ni=i+di,nj=j+dj;
+        if(isW(ni,nj)&&!seen[nj*G+ni]){seen[nj*G+ni]=1;st.push(ni,nj);}}}
+    // waterline: lowest adjacent BANK top (ground height at the shore cells just outside)
+    let bank=1e9;
+    for(let h=0;h<comp.length;h+=2){const i=comp[h],j=comp[h+1];
+      for(const[di,dj]of[[1,0],[-1,0],[0,1],[0,-1]]){const ni=i+di,nj=j+dj;
+        if(ni<0||nj<0||ni>=G||nj>=G)continue;const c=cells[nj*G+ni];
+        if(c!==T.WATER&&c!==T.OOB){const wx=-half+(ni+0.5)*CELL,wz=-half+(nj+0.5)*CELL;bank=Math.min(bank,hAt(wx,wz));}}}
+    if(bank>1e8)bank=hgrid?hmin+0.8:0.5;                       // landlocked/OOB-only body
+    const waterY=bank-0.18;
+    // flat geometry: one quad per cell, corner vertices shared, depth colour per corner
+    const vidx=new Map(),pos=[],col=[],uv=[],idx=[];
+    const dAt=(i,j)=>{let s=0,n=0;for(const[di,dj]of[[0,0],[-1,0],[0,-1],[-1,-1]]){const ni=i+di,nj=j+dj;
+      if(isW(ni,nj)){s+=Math.min(dist[nj*G+ni],5);n++;}}return n?s/n:0;};
+    const vtx=(i,j)=>{const k=j*(G+1)+i;let v=vidx.get(k);if(v!=null)return v;
+      v=pos.length/3;vidx.set(k,v);
+      const x=-half+i*CELL,z=-half+j*CELL;pos.push(x,waterY,ZS*z);
+      uv.push(i/16,j/16);
+      const d=dAt(i,j),t=Math.min(1,d/4);
+      let r=STYLE.shallow[0]+(STYLE.deep[0]-STYLE.shallow[0])*t,
+          g=STYLE.shallow[1]+(STYLE.deep[1]-STYLE.shallow[1])*t,
+          b=STYLE.shallow[2]+(STYLE.deep[2]-STYLE.shallow[2])*t;
+      if(d<0.5&&mode!=="lava"){const f=(1-d/0.5)*0.4;r+=(1.12-r)*f;g+=(1.12-g)*f;b+=(1.12-b)*f;} // subtle foam bake at the bank line (strong white blows out small/shallow bodies)
+      col.push(r,g,b);return v;};
+    for(let h=0;h<comp.length;h+=2){const i=comp[h],j=comp[h+1];
+      const a1=vtx(i,j),b1=vtx(i+1,j),c1=vtx(i,j+1),d1=vtx(i+1,j+1);
+      if(ZS>0)idx.push(a1,c1,b1,b1,c1,d1);else idx.push(a1,b1,c1,b1,d1,c1);} // winding flips with the mirror
+    const geo=new THREE.BufferGeometry();
+    geo.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));
+    geo.setAttribute('color',new THREE.Float32BufferAttribute(col,3));
+    geo.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));
+    geo.setIndex(idx);geo.computeVertexNormals();
+    const mat=new THREE.MeshPhongMaterial({color:STYLE.color,vertexColors:true,transparent:true,opacity:STYLE.op,
+      shininess:STYLE.shin,specular:STYLE.spec,emissive:STYLE.em,emissiveIntensity:STYLE.emI,
+      bumpMap:bumpTex,bumpScale:STYLE.bump,depthWrite:false});
+    const mesh=new THREE.Mesh(geo,mat);mesh.renderOrder=1;scene.add(mesh);
+    waterMats.push({mat,speed:STYLE.speed});
+  }
+})();
 
 // ---- props the module does NOT cover (or legacy renders everything) ----
 const treeLeaf=(h,l)=>new THREE.MeshLambertMaterial({color:new THREE.Color().setHSL(0.30+h,0.34+0.16*l,0.16+0.10*l),flatShading:true});
@@ -232,6 +308,7 @@ addEventListener("resize",()=>{cam.aspect=innerWidth/innerHeight;cam.updateProje
 const fogBase=parity&&scene.fog?{near:scene.fog.near,far:scene.fog.far,dist:220}:null;
 (function loop(){requestAnimationFrame(loop);ctl.update();
   if(fogBase){const k=Math.max(1,cam.position.distanceTo(ctl.target)/fogBase.dist);scene.fog.near=fogBase.near*k;scene.fog.far=fogBase.far*k;}
+  if(waterMats.length&&waterMats[0].speed){const t=waterMats[0].mat.bumpMap;t.offset.x+=0.00022*waterMats[0].speed;t.offset.y+=0.00013*waterMats[0].speed;} // shared bump texture — scroll once
   if(bf&&bf.update)bf.update(1/60);ren.render(scene,cam);})();
 })();
 </script>

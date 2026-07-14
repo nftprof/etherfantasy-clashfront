@@ -366,6 +366,11 @@ export function worldParcel(snap, opts = {}) {
   const zonePoly = snap.svgPath ? svgPathToPolygon(snap.svgPath) : null;
   const parcel = {
     parcelId: String(snap.parcelId), zone: snap.zone || "", bbox: snap.bbox,
+    // zone-level biome coherence: with no per-parcel biome, the ZONE's biomeFamily (registry) bounds
+    // the palette roll — an EDU (Arcadia, TEMPERATE_FOREST) parcel can never come up volcanic/desert.
+    // Deliberately NOT set as `biome` (that feeds seedFor and would re-roll every map's layout);
+    // generate() reads biomeFamily for the palette pick only.
+    biomeFamily: zoneBiomeFamily(snap.zone || "") || "",
     ...(zonePoly && zonePoly.length >= 3 ? { polygon: zonePoly.map(([x, y]) => [x, -y]) } : {}),
     ...opts,
   };
@@ -373,6 +378,22 @@ export function worldParcel(snap, opts = {}) {
   if (field && Array.isArray(snap.bbox))
     parcel.worldField = featuresForParcel(field, { bbox: snap.bbox, polygonZone: zonePoly, sizeM: opts.sizeM || 322, parcelId: parcel.parcelId });
   return parcel;
+}
+
+// zoneId → biomeFamily, read once from the registry (hardcoded fallback mirrors the registry so
+// palette coherence survives a missing file). Bounds the palette roll in generate().
+let _zoneBiome = null;
+export function zoneBiomeFamily(zoneId) {
+  if (!_zoneBiome) {
+    _zoneBiome = new Map([["CGI", "TEMPERATE_GRASS"], ["KOL", "TEMPERATE_GRASS"], ["HUB", "TEMPERATE_GRASS"],
+      ["ENT", "TEMPERATE_GRASS"], ["BUS", "SWAMP"], ["EDU", "TEMPERATE_FOREST"], ["HS1", "TEMPERATE_GRASS"],
+      ["HS2", "VOLCANIC"], ["HS3", "SNOW"], ["UW1", "SWAMP"], ["UW2", "VOLCANIC"], ["UW3", "VOLCANIC"]]);
+    try {
+      const reg = JSON.parse(fs.readFileSync(path.resolve(__dirname, "../../data/zone-registry.json"), "utf8"));
+      for (const z of reg.zones || []) if (z.zoneId && z.biomeFamily) _zoneBiome.set(String(z.zoneId), String(z.biomeFamily));
+    } catch { /* keep the fallback map */ }
+  }
+  return _zoneBiome.get(String(zoneId)) || null;
 }
 
 // zoneCode (parcelId chars [1,3)) → zoneId, read once from the registry (hardcoded fallback so the
