@@ -13,12 +13,17 @@ export const LANDMARKS = ["NONE", "STANDING_STONES", "RUINED_TOWER", "CRATER_LAK
 // A map is ONE artifact; the mode decides who spawns where and what the win-objective is. The
 // generator declares which modes a map SUPPORTS (meta.modes) after simulation; the overworld
 // picks the mode per match. Every fully-connected map supports DUEL + CLASH by construction.
+// The five battle modes (owner taxonomy 2026-07-14). CONTENT vs GEOMETRY: the map SEED guarantees
+// the geometry (per-edge entrances, clear path edge↔center↔edge, safe spawns); the DEFENDING
+// content of an occupied parcel (CC, placed towers/walls, pets on GUARD duty) is the occupant's
+// runtime overlay — seeded towers/mobs are only the wild/testing stand-in. So mode support is a
+// GEOMETRY verdict; content readiness is reported separately (simulate.js).
 export const MODES = {
-  DUEL:     { sides: 2, bases: "opposed",  objective: "raze_base",   note: "today's two-lane push: attacker S vs defender base N" },
-  SIEGE:    { sides: 2, bases: "asymm",    objective: "take_center", note: "Clash-of-Clans: one defender's guards/towers hold the center vs attacker from an edge" },
+  DUEL:     { sides: 2, bases: "opposed",  objective: "raze_base",   note: "the MOBA equivalent: BOTH sides have a CC (atk_S base vs def_base) — raze the enemy CC to win" },
+  SIEGE:    { sides: 2, bases: "asymm",    objective: "raze_base",   note: "occupation defense (CoC): defender's CC + placed towers/pets hold; attacker arrives at the approach edge — raze the CC / breach the hold" },
   CLASH:    { sides: 4, bases: "per_edge",  objective: "last_standing", note: "multi-sided melee: each army bases at its entry edge, all converge — any edge is a start" },
   DOMINION: { sides: 4, bases: "per_edge",  objective: "hold_center",  note: "king-of-the-hill: occupy/hold the central objective" },
-  GUARD:    { sides: 1, bases: "center",    objective: "survive",      note: "PvE defend: wild/pet monsters guard the center, waves attack from every edge" },
+  GUARD:    { sides: 1, bases: "none",      objective: "clear_all",    note: "no-CC PvE: wild monsters or another user's pets+towers only — KO every guard to complete (pets are never lost: KO + auto-return, canon decision 9)" },
 };
 export const MODE_IDS = Object.keys(MODES);
 

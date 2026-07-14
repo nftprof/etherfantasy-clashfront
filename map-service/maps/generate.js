@@ -760,10 +760,10 @@ function castleLayout(g, G, rng, { base, atkPt, poly, half, budgetLevel, bridge 
 // Generator version — BUMP whenever generation output meaningfully changes (palette rules, terrain
 // passes, water, structures…). Stamped into meta; registry.ensureDesign auto-reseeds stale SEED_V0
 // rows (pure seed maps, no owner work) so cached registries self-heal on next view — no manual bust.
-// v2 = zone-coherent biomeFamily palettes (2026-07-14). v3 = same, re-stamped: the box healed v2
-// WITHOUT its world data (dataRoot fix) and baked wrong palettes under genVersion 2 — bump forces
-// one more reseed now that the deploy ships the data.
-export const GEN_VERSION = 3;
+// v2 = zone-coherent biomeFamily palettes (2026-07-14). v3 = v2 re-stamped after the box dataRoot
+// fix. v4 = geometry-based mode support (SIEGE/GUARD from geometry; occupant content overlays at
+// battle time) — reseed so every SEED_V0 row re-stamps meta.modes.
+export const GEN_VERSION = 4;
 
 export function generate(parcel, params = null, designVersion = 0) {
   const { parcelId, biome = "", zone = "" } = parcel;

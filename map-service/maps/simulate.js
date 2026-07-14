@@ -131,12 +131,21 @@ export function simulate(art) {
   for (const b of (art.barriers || [])) for (const [x, z] of (b.opens || [])) { const ci = cellIx(x, z); if (routeCells.has(ci) || walk[ci] === 1) barriersOk = false; }
   add("barriers.optionalOnly", barriersOk, "hard", (art.barriers || []).length ? `${art.barriers.length} HP-gate(s) seal optional shortcuts only (main path clear)` : "no gates");
 
-  // ---- FAIR-START (clash): candidate per-edge bases are ~equidistant to the center ------------
+  // ---- FAIR-START (clash): a MUTUALLY-FAIR SUBSET of per-edge bases exists --------------------
+  // Not "all edges equidistant" — an elongated polygon can never satisfy that (observed spreads up
+  // to 119× on sliver arms), yet a CLASH only needs ≥2 fair starts; armies arriving on the other
+  // edges keep their geographic (dis)advantage, disclosed. Largest sorted run within FAIR_RATIO.
   const edgeBases = entries.filter((s) => s.canBase);
-  const dToCenter = edgeBases.map((s) => (s.cell >= 0 ? dc[s.cell] : -1)).filter((d) => d >= 0);
-  const fair = dToCenter.length >= 2 && (Math.max(...dToCenter) / Math.max(1, Math.min(...dToCenter))) <= FAIR_RATIO;
+  const withD = edgeBases.map((s) => ({ id: s.id, d: s.cell >= 0 ? dc[s.cell] : -1 })).filter((o) => o.d > 0).sort((a, b) => a.d - b.d);
+  let fairRun = [];
+  for (let i = 0; i < withD.length; i++) {
+    let j = i;
+    while (j + 1 < withD.length && withD[j + 1].d <= withD[i].d * FAIR_RATIO) j++;
+    if (j - i + 1 > fairRun.length) fairRun = withD.slice(i, j + 1);
+  }
+  const fair = fairRun.length >= 2;
   add("fair.startDistance", fair, "soft",
-    dToCenter.length >= 2 ? `edge→center spread ratio ${(Math.max(...dToCenter) / Math.max(1, Math.min(...dToCenter))).toFixed(2)} (fair ≤ ${FAIR_RATIO})` : "not enough usable edges for a fair multi-side start", "CLASH");
+    withD.length >= 2 ? `${fairRun.length}/${withD.length} edge starts mutually fair (spread ≤ ${FAIR_RATIO}×): ${fairRun.map((o) => o.id).join(",") || "none"}` : "fewer than 2 usable edge starts", "CLASH");
 
   // ---- SIEGE-BALANCE: guards sit between the edges and the center, but a route survives -------
   const guardsMid = hazards.filter((hz) => dist2(hz.x, hz.z, 0, 0) < (art.arena.sizeM * 0.35) ** 2).length;
@@ -145,17 +154,26 @@ export function simulate(art) {
     guardsMid ? `${guardsMid} guard(s) defend the interior; a reachable assault route remains` : "no interior defenders — plays as an open brawl, not a siege", "SIEGE");
 
   // ---- verdict + supported modes -------------------------------------------------------------
+  // GEOMETRY decides mode support (owner 2026-07-14: "most maps should support most modes").
+  // The DEFENDING content of SIEGE/GUARD (CC, placed towers/walls, pets on guard) is the
+  // OCCUPANT's runtime overlay — seeded mobs/towers are only the wild stand-in. So SIEGE/GUARD
+  // are supported when the geometry holds (defender base + center reachable — the FIRM rule
+  // already guarantees every edge reaches both); `contentReady` reports whether THIS artifact
+  // already carries interior defenders (a wild parcel battle is playable as-seeded) or the
+  // defense arrives with the occupant.
   const hard = checks.filter((c) => c.severity === "hard");
   const pass = hard.every((c) => c.ok);
-  const okId = (id) => checks.find((c) => c.id === id)?.ok;
+  const holdOk = centerCell >= 0 && base.cell >= 0 && dc[base.cell] >= 0;   // a defensible interior exists
   const modes = [];
   if (pass) {
-    modes.push("DUEL");                                     // any connected, laned map
+    modes.push("DUEL");                                     // any connected, laned map (2 CCs, raze)
     if (fair && clashSafe) modes.push("CLASH", "DOMINION"); // needs fair multi-edge starts, no kill-box bases
-    if (siegeOk) modes.push("SIEGE", "GUARD");              // needs interior defenders + a route
+    if (holdOk) modes.push("SIEGE", "GUARD");               // geometry: a reachable interior to defend/clear
   }
   const score = Math.round(100 * checks.filter((c) => c.ok).length / checks.length);
   return { pass, score, modes: modes.length ? modes : (pass ? ["DUEL"] : []), checks,
+    contentReady: { siegeGuards: siegeOk },                 // seeded interior defenders present (wild-playable now)
+    fairEdges: fairRun.map((o) => o.id),                    // the mutually-fair CLASH/DOMINION start edges
     summary: pass ? `approved · ${modes.join("/") || "DUEL"} · ${score}%` : `rejected · ${hard.filter((c) => !c.ok).map((c) => c.id).join(", ")}` };
 }
 
