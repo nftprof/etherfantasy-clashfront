@@ -21,6 +21,8 @@ import { fileURLToPath } from "node:url";
 import { mapsApi } from "./maps/api.js";
 import * as reg from "./maps/registry.js";
 import { toBattlefieldA1 } from "./maps/command_converter.js";
+import { dataRoot } from "./maps/worldfield.js";
+import { GEN_VERSION } from "./maps/generate.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // NB: :8140 is taken by cf-battle-api on the shared box; the map service uses :8150.
@@ -109,6 +111,14 @@ export function handleRequest(req, res) {
   const [p] = req.url.split("?");
 
   if (p === "/healthz" || p === "/health") { res.writeHead(200, { "content-type": "text/plain" }); return res.end("ok"); }
+
+  // build stamp — which code+data this box actually runs (deploy writes BUILD; repo checkouts say dev).
+  // The 3D preview shows it in the HUD so "is the fix live?" is answerable at a glance.
+  if (p === "/internal/v1/version") {
+    let build = "dev"; try { build = fs.readFileSync(path.join(__dirname, "BUILD"), "utf8").trim(); } catch {}
+    let dataOk = false; try { dataOk = fs.existsSync(path.join(dataRoot(), "hexagon-city-source/l3")); } catch {}
+    return jsonRes(res, 200, { ok: true, build, genVersion: GEN_VERSION, dataRoot: dataOk ? "present" : "MISSING" });
+  }
 
   // gallery landing page (all-maps + my-land filter → click into /designer)
   if (p === "/" || p === "/gallery" || p === "/gallery/") return sendFile(res, "maps/gallery.html", "text/html");

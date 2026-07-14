@@ -32,6 +32,17 @@ jobs:
           rsync -a --delete --exclude='.git' \
             "$GITHUB_WORKSPACE"/map-service/ "$HOME"/ef-map-service/
 
+      # worldfield's dataRoot() probes ~/ef-map-service/data on the box. WITHOUT these files the
+      # service silently falls back to /api/world and loses zone/bbox/palette coherence.
+      - name: Ship world data + build stamp
+        run: |
+          mkdir -p "$HOME/ef-map-service/data/hexagon-city-source"
+          rsync -a --delete "$GITHUB_WORKSPACE"/data/hexagon-city-source/l3/ "$HOME"/ef-map-service/data/hexagon-city-source/l3/
+          rsync -a --delete "$GITHUB_WORKSPACE"/data/world-terrain/  "$HOME"/ef-map-service/data/world-terrain/
+          rsync -a --delete "$GITHUB_WORKSPACE"/data/world-elements/ "$HOME"/ef-map-service/data/world-elements/
+          cp "$GITHUB_WORKSPACE"/data/zone-registry.json "$HOME"/ef-map-service/data/
+          git -C "$GITHUB_WORKSPACE" rev-parse --short HEAD > "$HOME"/ef-map-service/BUILD
+
       - name: (re)start ef-map-service on :8150 (health-gated on /healthz)
         run: |
           # single source of deploy truth = the checked-out script, pointed at the synced app dir.

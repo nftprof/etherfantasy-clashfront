@@ -290,13 +290,16 @@ document.getElementById("texBtn").onclick=()=>{raw=!raw;
   }};
 
 // HUD
+let ver=null; try{ ver=await fetch("/internal/v1/version").then(r=>r.ok?r.json():null); }catch(e){}
 const bud=d.budget||{},row=d.row||{};
 document.getElementById("hud").innerHTML=`<b>${pid}</b> · v${a.meta?.designVersion??row.designVersion??"?"} · ${row.status||""}<div class="chips">`+
  [p.archetype,p.palette,p.landmark!=="NONE"?p.landmark:null,(a.laneCount||1)+" lane(s)",
   (a.resources||[]).length+" nodes",(a.mobs||[]).length+" camps",(a.structures||[]).length+" towers",
   (a.barriers||[]).length?((a.barriers).length+" gates"):null,(a.meta?.modes||[]).join("/")||null,
   parity?"🎬 game render (9-layer)":hgrid?"⛰ heightfield":"▱ flat (no manifest)",man?.biome?.key?("🌿 "+man.biome.key):null,
-  bud.name?("🏦 "+bud.name):null].filter(Boolean).map(x=>`<span>${x}</span>`).join("")+`</div>`;
+  bud.name?("🏦 "+bud.name):null,
+  ver?("🏗 "+ver.build+" · g"+ver.genVersion+(ver.dataRoot==="MISSING"?" · ⚠ NO WORLD DATA":"")):null,
+  a.meta?.genVersion!=null?("map g"+a.meta.genVersion):null].filter(Boolean).map(x=>`<span>${x}</span>`).join("")+`</div>`;
 document.querySelector("#hint").lastChild.textContent=parity
  ?"drag = orbit · wheel = zoom · right-drag = pan · THE game render (EF_BATTLEFIELD — what hero mode shows)"
  :"drag = orbit · wheel = zoom · right-drag = pan · fallback render (no manifest — run the converter for the game look)";

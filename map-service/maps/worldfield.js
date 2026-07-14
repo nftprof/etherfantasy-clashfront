@@ -21,8 +21,20 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const r1 = (n) => Math.round(n * 10) / 10;
 
 // ---- field loading (cached; null when a zone has no authored field yet — stamp floor) ---------
-const fieldDir = () => process.env.WORLD_TERRAIN_DIR || path.resolve(__dirname, "../../data/world-terrain");
-const elementsDir = () => process.env.WORLD_ELEMENTS_DIR || path.resolve(__dirname, "../../data/world-elements");
+// data root: `../../data` in the repo layout (map-service/maps/ → repo/data); `../data` on the
+// deployed box (~/ef-map-service/data — map-deploy.yml ships l3/world-terrain/world-elements/
+// zone-registry alongside the app, since the rsync deliberately excludes the rest of the repo).
+// Without this probe the box silently fell back to /api/world (no zone/bbox/biomeFamily) and every
+// coherence feature degraded — the exact bug behind tundra-on-EDU surviving the palette fix.
+let _dataRoot = null;
+export function dataRoot() {
+  if (_dataRoot) return _dataRoot;
+  for (const c of [path.resolve(__dirname, "../../data"), path.resolve(__dirname, "../data")])
+    if (fs.existsSync(c)) return (_dataRoot = c);
+  return (_dataRoot = path.resolve(__dirname, "../../data"));
+}
+const fieldDir = () => process.env.WORLD_TERRAIN_DIR || path.join(dataRoot(), "world-terrain");
+const elementsDir = () => process.env.WORLD_ELEMENTS_DIR || path.join(dataRoot(), "world-elements");
 const _fields = new Map();
 
 // ---- WORLD-ELEMENTS OVERLAY (docs/briefs/WORLD-ELEMENTS-OVERLAY.md) ----------------------------
@@ -389,7 +401,7 @@ export function zoneBiomeFamily(zoneId) {
       ["ENT", "TEMPERATE_GRASS"], ["BUS", "SWAMP"], ["EDU", "TEMPERATE_FOREST"], ["HS1", "TEMPERATE_GRASS"],
       ["HS2", "VOLCANIC"], ["HS3", "SNOW"], ["UW1", "SWAMP"], ["UW2", "VOLCANIC"], ["UW3", "VOLCANIC"]]);
     try {
-      const reg = JSON.parse(fs.readFileSync(path.resolve(__dirname, "../../data/zone-registry.json"), "utf8"));
+      const reg = JSON.parse(fs.readFileSync(path.join(dataRoot(), "zone-registry.json"), "utf8"));
       for (const z of reg.zones || []) if (z.zoneId && z.biomeFamily) _zoneBiome.set(String(z.zoneId), String(z.biomeFamily));
     } catch { /* keep the fallback map */ }
   }
@@ -398,14 +410,14 @@ export function zoneBiomeFamily(zoneId) {
 
 // zoneCode (parcelId chars [1,3)) → zoneId, read once from the registry (hardcoded fallback so the
 // map-service never hard-depends on the registry file being reachable).
-const l3Dir = () => process.env.HEXAGON_L3_DIR || path.resolve(__dirname, "../../data/hexagon-city-source/l3");
+const l3Dir = () => process.env.HEXAGON_L3_DIR || path.join(dataRoot(), "hexagon-city-source/l3");
 let _zoneByCode = null;
 function zoneByCode(code) {
   if (!_zoneByCode) {
     _zoneByCode = new Map([["00", "BUS"], ["01", "CGI"], ["02", "EDU"], ["03", "ENT"], ["04", "HS1"],
       ["05", "HS2"], ["06", "HS3"], ["07", "HUB"], ["08", "KOL"], ["09", "UW1"], ["10", "UW2"], ["11", "UW3"]]);
     try {
-      const reg = JSON.parse(fs.readFileSync(path.resolve(__dirname, "../../data/zone-registry.json"), "utf8"));
+      const reg = JSON.parse(fs.readFileSync(path.join(dataRoot(), "zone-registry.json"), "utf8"));
       for (const z of reg.zones || []) if (z.zoneCode && z.zoneId) _zoneByCode.set(String(z.zoneCode), z.zoneId);
     } catch { /* keep the fallback map */ }
   }
