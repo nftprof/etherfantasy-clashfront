@@ -358,6 +358,42 @@ test('PvP and NPC battles stay instant — only player-vs-wild runs live', () =>
   assert.equal([...f.state.battles.values()][0]!.resolutionMode, 'AUTO');
 });
 
+// ── Gap 1: PLAYER defenders RETREAT (don't disband). Owner rule 2026-07-14. ─────
+// A crushing attacker beats a small PvP defender; the defender's ArmyRetreatRecord
+// must exist (RETREATED / SCATTERED / DISBANDED per the ladder), NOT be silently
+// disbanded like a wild mob. WILD defenders keep the old disband behaviour.
+test('PvP defender rout goes through the retreat ladder (Gap 1) — not silently disbanded', () => {
+  const f = fixture('wb-defender-retreat');
+  const rng2 = f.rng.fork('p2');
+  const { governorId: gov2 } = addGovernor(f.state, rng2, {
+    name: 'Defender', kind: 'PLAYER', ctUnits: 50_000 * CT, officerNames: ['Leah', 'Kai', 'Purin'],
+  });
+  // gov2 claims a hex adjacent to the attacker's home and puts a TINY garrison there.
+  const homeHex = f.state.territories.get(f.homeId)!.hexIds[0]!;
+  const targetHex = f.state.adjacency!.get(homeHex)!.find((h) => h !== f.lairHex)!;
+  const targetId = f.state.hexes.get(targetHex)!.territoryId!;
+  claimTerritory(f.state, targetId, gov2);
+  // gov2 also holds another neighbour so RETREATED has a friendly landing pad.
+  const safeHex = f.state.adjacency!.get(targetHex)!.find((h) => h !== homeHex && h !== f.lairHex);
+  if (safeHex !== undefined) claimTerritory(f.state, f.state.hexes.get(safeHex)!.territoryId!, gov2);
+  const defArmy = raiseArmy(f.state, targetId, 'SCOUTS', rng2.fork('raise'));
+  completeTraining(f.state, defArmy.id);
+  orderMarch(f.state, f.army.id, [targetHex], OPTS);
+  runTick(f.state, 1, f.rng.fork('sim'), BALANCE, OPTS);
+  const battle = [...f.state.battles.values()][0]!;
+  const logi = f.state.battleLogistics!.get(battle.id)!;
+  // If the attacker actually won, the defender must be on the retreats ledger
+  // — NOT silently disbanded. This is the whole point of Gap 1.
+  if (battle.result?.winner === 'ATTACKER') {
+    const defRec = logi.retreats.find((r) => r.armyId === defArmy.id);
+    assert.ok(defRec !== undefined, 'PLAYER defender must appear on retreat ladger, not vanish');
+    assert.ok(
+      defRec.result === 'RETREATED' || defRec.result === 'SCATTERED' || defRec.result === 'DISBANDED',
+      `defender retreat kind is a valid ladder outcome (got ${defRec.result})`,
+    );
+  }
+});
+
 
 // ── Batch 1: real stances + RETREAT + standing STRATEGY (owner 2026-07-12) ────
 

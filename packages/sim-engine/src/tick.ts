@@ -797,9 +797,19 @@ export function settleWildBattle(
       a.morale = Math.min(CONSTANTS.MORALE_MAX, a.morale + balance.morale.victoryDelta);
       if (troopCount(a) === 0) disbandArmy(state, a);
     }
-    // Wild defenders rout off the map — beaten mobs abandon the ground (MVP,
-    // same as the instant resolver's defender rout).
-    for (const d of defenders) disbandArmy(state, d);
+    // Defender rout: WILD mobs still abandon the ground (routed monsters don't
+    // withdraw to a friendly holding). PLAYER defenders now RETREAT through the
+    // same §7c.5 ladder the attacker uses (adjacent friendly → adjacent neutral
+    // → scatter) — owner rule 2026-07-14: "either side should be able to flee."
+    // (Gap 1 of docs/maps/BATTLE-SCENARIO-MATRIX.md §4.)
+    for (const d of defenders) {
+      d.morale = Math.max(CONSTANTS.MORALE_MIN, d.morale + balance.morale.defeatDelta);
+      if (state.governorKinds?.get(d.ownerGovernorId) === 'SYSTEM') {
+        disbandArmy(state, d);
+      } else {
+        retreats.push(retreatArmy(state, d, casualties, preTroops.get(d.id) ?? troopCount(d), tick, balance));
+      }
+    }
   } else if (winner === 'DEFENDER') {
     for (const d of defenders) {
       d.morale = Math.min(CONSTANTS.MORALE_MAX, d.morale + balance.morale.victoryDelta);
@@ -1070,9 +1080,18 @@ function resolveFieldBattle(
       if (troopCount(a) === 0) disbandArmy(state, a);
     }
     if (winner === 'ATTACKER') {
-      // Losing DEFENDERS rout off the map — MVP simplification (defender
-      // retreat pathing is post-MVP, docs/03).
-      for (const a of loseSide) disbandArmy(state, a);
+      // Defender rout (Gap 1, owner 2026-07-14): WILD mobs abandon the ground
+      // (routed monsters don't withdraw to a friendly holding), PLAYER
+      // defenders retreat via the same §7c.5 ladder attackers use — either
+      // side should be able to flee.
+      for (const a of loseSide) {
+        a.morale = Math.max(CONSTANTS.MORALE_MIN, a.morale + balance.morale.defeatDelta);
+        if (state.governorKinds?.get(a.ownerGovernorId) === 'SYSTEM') {
+          disbandArmy(state, a);
+        } else {
+          retreats.push(retreatArmy(state, a, casualties, preTroops.get(a.id)!, tick, balance));
+        }
+      }
     } else {
       // Failed invaders retreat with the §7c.5 ladder (replaces the Day-1
       // "losers scatter to DISBANDED" placeholder for attackers).
@@ -1310,8 +1329,17 @@ function applyEngineOutcome(
       a.morale = Math.min(CONSTANTS.MORALE_MAX, a.morale + balance.morale.victoryDelta);
       if (troopCount(a) === 0) disbandArmy(state, a);
     }
-    // Losing defenders rout off the map (same MVP rule as the instant resolver).
-    for (const d of defenders) disbandArmy(state, d);
+    // Defender rout: WILD mobs abandon the ground; PLAYER defenders retreat
+    // via the same §7c.5 ladder attackers use (Gap 1 — owner rule 2026-07-14,
+    // "either side should be able to flee"). Mirrors the instant-resolver path.
+    for (const d of defenders) {
+      d.morale = Math.max(CONSTANTS.MORALE_MIN, d.morale + balance.morale.defeatDelta);
+      if (state.governorKinds?.get(d.ownerGovernorId) === 'SYSTEM') {
+        disbandArmy(state, d);
+      } else {
+        retreats.push(retreatArmy(state, d, casualties, preTroops.get(d.id) ?? troopCount(d), tick, balance));
+      }
+    }
   } else if (winner === 'DEFENDER') {
     for (const d of defenders) {
       d.morale = Math.min(CONSTANTS.MORALE_MAX, d.morale + balance.morale.victoryDelta);
