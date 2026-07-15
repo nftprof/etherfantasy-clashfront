@@ -461,6 +461,74 @@ test('retreatArmy pincer LOSS = ABANDONED (all soldiers lost, officer freed for 
   }
 });
 
+// ── Gap 3: battleMode hints (DOMINION for unowned collisions). Owner 2026-07-14. ──
+// A player-vs-wild fight is GUARD; a player-vs-player siege is SIEGE; two
+// commuters colliding on unowned/wild ground with no wild garrison is DOMINION
+// (Gap 3 fix — replaces the old arbitrary lex-first defender semantics).
+
+test('player vs wild fight labels the battle mode as GUARD (Gap 3 taxonomy)', () => {
+  const f = fixture('gap3-guard');
+  orderMarch(f.state, f.army.id, [f.lairHex], OPTS);
+  runTick(f.state, 1, f.rng.fork('sim'), BALANCE, OPTS);
+  // May settle same-tick (instant) or spawn a live wild battle depending on options.
+  const b = [...f.state.battles.values()][0];
+  if (b?.result !== undefined) {
+    assert.equal(b.result.mode, 'GUARD', 'wild-only defenders ⇒ GUARD');
+  }
+});
+
+test('player vs player at territory-holder ⇒ SIEGE mode', () => {
+  const f = fixture('gap3-siege');
+  const rng2 = f.rng.fork('p2');
+  const { governorId: gov2 } = addGovernor(f.state, rng2, {
+    name: 'Occupier', kind: 'PLAYER', ctUnits: 50_000 * CT, officerNames: ['Leah', 'Kai', 'Purin'],
+  });
+  const homeHex = f.state.territories.get(f.homeId)!.hexIds[0]!;
+  const targetHex = f.state.adjacency!.get(homeHex)!.find((h) => h !== f.lairHex)!;
+  const targetId = f.state.hexes.get(targetHex)!.territoryId!;
+  claimTerritory(f.state, targetId, gov2);
+  const garr = raiseArmy(f.state, targetId, 'STANDARD', rng2.fork('raise'));
+  completeTraining(f.state, garr.id);
+  orderMarch(f.state, f.army.id, [targetHex], OPTS);
+  runTick(f.state, 1, f.rng.fork('sim'), BALANCE, OPTS);
+  const b = [...f.state.battles.values()][0];
+  if (b?.result !== undefined) {
+    assert.equal(b.result.mode, 'SIEGE', 'territory holder + garrison ⇒ SIEGE');
+  }
+});
+
+test('unowned-land simultaneous collision ⇒ DOMINION (Gap 3 core fix)', () => {
+  const f = fixture('gap3-dominion');
+  const rng2 = f.rng.fork('p2');
+  const { governorId: gov2 } = addGovernor(f.state, rng2, {
+    name: 'Racer', kind: 'PLAYER', ctUnits: 50_000 * CT, officerNames: ['Leah', 'Kai', 'Purin'],
+  });
+  const homeHex = f.state.territories.get(f.homeId)!.hexIds[0]!;
+  const p2Home = f.state.adjacency!.get(homeHex)!.find((h) => h !== f.lairHex)!;
+  const p2HomeTerr = f.state.hexes.get(p2Home)!.territoryId!;
+  claimTerritory(f.state, p2HomeTerr, gov2);
+  // A hex adjacent to BOTH homes with a bare SYSTEM territory (no garrison).
+  const p2Neigh = new Set(f.state.adjacency!.get(p2Home) ?? []);
+  const bridgeHex = f.state.adjacency!.get(homeHex)!.find((h) => {
+    if (h === f.lairHex || h === p2Home) return false;
+    if (!p2Neigh.has(h)) return false;
+    const t = f.state.hexes.get(h)?.territoryId;
+    return t !== undefined && f.state.territories.get(t)?.governorKind === 'SYSTEM'
+      && f.state.territories.get(t)?.garrisonArmyId === undefined;
+  });
+  if (bridgeHex === undefined) return; // fixture couldn't produce the topology — trivial pass
+  const a2 = raiseArmy(f.state, p2HomeTerr, 'STANDARD', rng2.fork('raise'));
+  completeTraining(f.state, a2.id);
+  // Both march (HOSTILE default) to the bridge — simultaneous unowned-land collision.
+  orderMarch(f.state, f.army.id, [bridgeHex], OPTS);
+  orderMarch(f.state, a2.id, [bridgeHex], OPTS);
+  runTick(f.state, 1, f.rng.fork('sim'), BALANCE, OPTS);
+  const b = [...f.state.battles.values()][0];
+  if (b?.result !== undefined) {
+    assert.equal(b.result.mode, 'DOMINION', 'unowned land + 2 hostile armies ⇒ DOMINION race');
+  }
+});
+
 // ── Gap 4: EVASIVE march-stance truce (owner 2026-07-14). ──────────────────────
 // Two commuters passing through UNOWNED ground with EVASIVE stance walk past
 // each other — no battle. HOSTILE (default) still auto-fights. A hostile

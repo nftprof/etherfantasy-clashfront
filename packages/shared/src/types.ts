@@ -8,6 +8,7 @@
  */
 import type {
   ArmyState,
+  BattleMode,
   BattleState,
   BattleType,
   ContractType,
@@ -272,6 +273,20 @@ export interface BattleResult {
   lootCt?: number;
   territoryOutcome?: 'HELD' | 'OCCUPIED' | 'PILLAGED';
   resolvedTick: number;
+  /**
+   * Battle mode hint per the mode taxonomy (docs/maps/GAME-MODES-SEEDING-REVIEW.md).
+   * Set at battle creation time from the collision context:
+   *   GUARD    — SYSTEM/wild defenders only
+   *   SIEGE    — hostile territory owner is defender with garrison
+   *   DOMINION — unowned land + 2+ hostile armies (Gap 3: replaces the old
+   *              lex-first arbitrary-defender behaviour with an honest label
+   *              "we both raced for this land, whoever wins claims it")
+   *   DUEL     — 2 armies with territorial stake (default fallback)
+   *   CLASH    — 3+ armies without territorial stake
+   * The sim math itself is currently symmetric enough that mode doesn't change
+   * the resolution — it's a report/UX signal (map view, "recent battles" panel).
+   */
+  mode?: BattleMode;
 }
 
 // ── Diplomacy & contracts ────────────────────────────────────────────────────

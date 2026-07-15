@@ -881,7 +881,7 @@ export function settleWildBattle(
     scheduledStartTick: b.startedTick,
     participants: [],
     warScore,
-    result: { winner, casualties, resolvedTick: tick },
+    result: { winner, casualties, resolvedTick: tick, mode: battleModeOf(state, b.hexId, attackers, defenders) },
   };
   state.battles.set(battleId, battle);
   state.battleLogistics ??= new Map();
@@ -1131,7 +1131,7 @@ function resolveFieldBattle(
     scheduledStartTick: tick,
     participants: [],
     warScore,
-    result: { winner, casualties, resolvedTick: tick },
+    result: { winner, casualties, resolvedTick: tick, mode: battleModeOf(state, hexId, attackers, defenders) },
   };
   state.battles.set(battle.id, battle);
   state.battleLogistics ??= new Map();
@@ -1411,7 +1411,7 @@ function applyEngineOutcome(
     ...(b.matchId !== undefined ? { efMobaMatchId: b.matchId } : {}),
     participants: [],
     warScore,
-    result: { winner, casualties, resolvedTick: tick },
+    result: { winner, casualties, resolvedTick: tick, mode: battleModeOf(state, b.hexId, attackers, defenders) },
   };
   state.battles.set(b.id, battle);
   state.battleLogistics ??= new Map();
@@ -1445,6 +1445,41 @@ function drainProvisions(side: Army[], key: 'food' | 'gold' | 'wood', amount: nu
 }
 
 /** Remove an army from play, releasing garrison slot + monster display name + training queue. */
+/**
+ * Determine the BattleMode hint for a collision (docs/maps/GAME-MODES-SEEDING-
+ * REVIEW.md taxonomy). SEMANTIC ONLY — the sim math is symmetric enough that
+ * mode doesn't change resolution; the mode tells the map view and the recent-
+ * battles panel what the fight was actually about. Gap 3 fix: unowned land +
+ * multiple hostile armies = DOMINION, not the old arbitrary lex-first defender.
+ */
+function battleModeOf(
+  state: WorldState,
+  hexId: string,
+  attackers: readonly Army[],
+  defenders: readonly Army[],
+): 'DUEL' | 'SIEGE' | 'GUARD' | 'CLASH' | 'DOMINION' {
+  const terr = territoryAt(state, hexId);
+  const totalArmies = attackers.length + defenders.length;
+  // All defenders SYSTEM (wild mobs / no defenders at all) → GUARD.
+  if (defenders.length > 0 && defenders.every((d) => state.governorKinds?.get(d.ownerGovernorId) === 'SYSTEM')) {
+    return 'GUARD';
+  }
+  // Player-owned territory with a defender ⇒ SIEGE.
+  if (terr !== undefined && terr.governorKind !== 'SYSTEM' && defenders.some((d) => d.ownerGovernorId === terr.governorId)) {
+    return 'SIEGE';
+  }
+  // Unowned/SYSTEM land + no wild defenders + 2+ hostile armies ⇒ DOMINION.
+  // (Gap 3, owner 2026-07-14: "no occupier ⇒ intent-driven DOMINION.")
+  const noPlayerOwner = terr === undefined || terr.governorKind === 'SYSTEM';
+  const noWildDefenders = defenders.every((d) => state.governorKinds?.get(d.ownerGovernorId) !== 'SYSTEM');
+  const allHostile = [...attackers, ...defenders].every((a) => a.stance !== 'EVASIVE');
+  if (noPlayerOwner && noWildDefenders && totalArmies >= 2 && allHostile) return 'DOMINION';
+  // 3+ armies (or 2 without stakes) meeting engagement ⇒ CLASH.
+  if (totalArmies >= 3) return 'CLASH';
+  // Fallback: two-army fight with at least one side having a stake ⇒ DUEL.
+  return 'DUEL';
+}
+
 function disbandArmy(state: WorldState, a: Army): void {
   a.state = 'DISBANDED';
   delete a.path;

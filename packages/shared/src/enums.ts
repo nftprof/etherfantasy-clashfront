@@ -20,6 +20,21 @@ export type ArmyState = 'GARRISON' | 'MARCHING' | 'ENGAGED' | 'RETREATING' | 'DI
  * opponent — the flag only unlocks pass-through TRUCE between two commuters.
  */
 export type MarchStance = 'HOSTILE' | 'EVASIVE';
+
+/**
+ * Battle mode taxonomy (docs/maps/GAME-MODES-SEEDING-REVIEW.md, Agent D 2026-07-14).
+ * Semantic hint attached to a BattleInstance for the client/reports — the sim's
+ * math is currently symmetric enough that mode doesn't change the resolution,
+ * but the mode tells the map view which layout/objective to render and the
+ * player what they're actually fighting for:
+ *   DUEL     — 2-CC MOBA equivalent, raze to win
+ *   SIEGE    — occupation defense, attacker enters via approach-edge
+ *   GUARD    — no CC either side (wild mobs / pets-only), kill-all-to-complete
+ *   CLASH    — 3+ armies (or 2 without stakes), last standing on per-edge starts
+ *   DOMINION — hold the center = take an unclaimed parcel (Gap 3: the fix for
+ *              "simultaneous arrival on unowned land was arbitrary lex-first")
+ */
+export type BattleMode = 'DUEL' | 'SIEGE' | 'GUARD' | 'CLASH' | 'DOMINION';
 export type UnitClass = 'INFANTRY' | 'ARCHER' | 'CAVALRY' | 'SPEAR' | 'SIEGE' | 'MARINE' | 'SHIP';
 export type PostVictoryAction = 'PILLAGE' | 'OCCUPY';
 export type DiplomacyStance = 'WAR' | 'HOSTILE' | 'NEUTRAL' | 'TRUCE' | 'ALLIED' | 'VASSAL_OF' | 'SUZERAIN_OF';
