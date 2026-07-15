@@ -586,9 +586,14 @@ function phaseBattleSpawning(
   for (const b of state.wildBattles?.values() ?? []) hexesInBattle.add(b.hexId);
   for (const b of state.engineBattles?.values() ?? []) hexesInBattle.add(b.hexId);
   for (const hexId of [...byHex.keys()].sort()) {
-    // A parcel with a RUNNING battle is locked — latecomers wait at its edge
-    // (join windows are post-MVP); the hex resolves normally once it settles.
-    if (hexesInBattle.has(hexId)) continue;
+    // A parcel with a RUNNING battle is locked — but a march that ARRIVED this
+    // tick is offered to reinforce it (Scenario H upgrade, owner 2026-07-14,
+    // docs/briefs/REINFORCEMENT-LANE-QUEUE.md). Sim-side bookkeeping only —
+    // actual soldier drain into the live match is the match-server's job.
+    if (hexesInBattle.has(hexId)) {
+      offerReinforcements(state, hexId, byHex.get(hexId)!, tick);
+      continue;
+    }
     const armies = byHex.get(hexId)!;
     const owners = [...new Set(armies.map((a) => a.ownerGovernorId))].sort();
     if (owners.length < 2) continue;
@@ -622,6 +627,125 @@ function phaseBattleSpawning(
     }
     resolveFieldBattle(state, hexId, attackers, defenders, tick, rng.fork(hexId), balance, options);
   }
+}
+
+// ── Reinforcement queue (Scenario H, REINFORCEMENT-LANE-QUEUE.md) ──────────
+
+/**
+ * Find the running battle (wild OR engine) on `hexId`, plus its sides.
+ * Returns undefined if the hex isn't locked (defensive; the caller only calls
+ * us for locked hexes).
+ */
+function runningBattleAt(
+  state: WorldState,
+  hexId: string,
+): { battleId: string; attackerGov: string; defenderGov: string } | undefined {
+  for (const b of state.wildBattles?.values() ?? []) {
+    if (b.hexId === hexId) {
+      return { battleId: b.id, attackerGov: b.attackerGovernorId, defenderGov: b.defenderGovernorId };
+    }
+  }
+  for (const b of state.engineBattles?.values() ?? []) {
+    if (b.hexId === hexId) {
+      return { battleId: b.id, attackerGov: b.attackerGovernorId, defenderGov: b.defenderGovernorId };
+    }
+  }
+  return undefined;
+}
+
+/**
+ * True when `armyId` already sits in ANY reinforcement queue (an army may only
+ * be offered to one battle at a time — its next march re-arms the offer).
+ */
+export function armyQueuedForReinforcement(state: WorldState, armyId: string): string | undefined {
+  for (const [battleId, entries] of state.reinforcementQueue ?? []) {
+    if (entries.some((e) => e.armyId === armyId)) return battleId;
+  }
+  return undefined;
+}
+
+/**
+ * Called once per world tick, per locked hex that has ANY armies standing on
+ * it. New arrivals (armies whose governor matches an existing participant AND
+ * that aren't already queued) are appended to that battle's reinforcement
+ * queue. Deterministic — armies are considered in lex-id order.
+ *
+ * A queued army stays put (its state was set to GARRISON when it halted) and
+ * its units are UNTOUCHED — the queue is a promise of supply, not an
+ * absorption. WITHDRAW (server API) removes the entry; battle resolution
+ * (settleReinforcementQueue) drops the whole battle's queue.
+ */
+function offerReinforcements(state: WorldState, hexId: string, armies: Army[], tick: number): void {
+  const battle = runningBattleAt(state, hexId);
+  if (battle === undefined) return; // defensive; caller guarantees locked
+  const queue = state.reinforcementQueue?.get(battle.battleId) ?? [];
+  const alreadyQueuedArmies = new Set(queue.map((e) => e.armyId));
+  const originalAttackerArmyIds = collectSideArmyIds(state, battle.battleId, 'ATTACKER');
+  const originalDefenderArmyIds = collectSideArmyIds(state, battle.battleId, 'DEFENDER');
+  const isOriginal = new Set([...originalAttackerArmyIds, ...originalDefenderArmyIds]);
+
+  for (const a of [...armies].sort((x, y) => x.id.localeCompare(y.id))) {
+    if (alreadyQueuedArmies.has(a.id)) continue;
+    if (isOriginal.has(a.id)) continue; // one of the original combatants — already in the fight
+    // Only same-side reinforcement in this MVP slice — an army whose governor
+    // matches one of the two sides. A third-party hostile army arriving at a
+    // locked hex would need diplomacy + a new-battle spawn (post-MVP); it just
+    // parks silently for now (existing behaviour, no queue entry).
+    let side: 'ATTACKER' | 'DEFENDER' | undefined;
+    if (a.ownerGovernorId === battle.attackerGov) side = 'ATTACKER';
+    else if (a.ownerGovernorId === battle.defenderGov) side = 'DEFENDER';
+    if (side === undefined) continue;
+
+    state.reinforcementQueue ??= new Map();
+    if (!state.reinforcementQueue.has(battle.battleId)) state.reinforcementQueue.set(battle.battleId, []);
+    state.reinforcementQueue.get(battle.battleId)!.push({
+      armyId: a.id,
+      governorId: a.ownerGovernorId,
+      edgeFromHexId: a.cameFromHexId ?? a.hexId,
+      side,
+      hasHero: a.heroId !== undefined,
+      queuedTick: tick,
+    });
+    alreadyQueuedArmies.add(a.id);
+  }
+}
+
+/** All army ids currently on `battleId`'s side (helper for `offerReinforcements`). */
+function collectSideArmyIds(state: WorldState, battleId: string, side: 'ATTACKER' | 'DEFENDER'): string[] {
+  for (const b of state.wildBattles?.values() ?? []) {
+    if (b.id === battleId) return side === 'ATTACKER' ? [...b.attackerArmyIds] : [...b.defenderArmyIds];
+  }
+  for (const b of state.engineBattles?.values() ?? []) {
+    if (b.id === battleId) return side === 'ATTACKER' ? [...b.attackerArmyIds] : [...b.defenderArmyIds];
+  }
+  return [];
+}
+
+/**
+ * Drop the reinforcement queue for `battleId` — called when the battle
+ * settles. The queued armies stay put in whatever state their last movement
+ * left them (GARRISON on the parcel); the server surfaces the settlement so
+ * the player can retarget them. Idempotent.
+ */
+export function clearReinforcementQueue(state: WorldState, battleId: string): void {
+  state.reinforcementQueue?.delete(battleId);
+}
+
+/**
+ * WITHDRAW a single army from a reinforcement queue (server API — mirrors the
+ * command-queue cancellability, decision 16c). Returns true if an entry was
+ * removed. Does NOT touch the army's state (that's the server's job — usually
+ * ordering a new march away from the locked hex).
+ */
+export function withdrawReinforcement(state: WorldState, battleId: string, armyId: string): boolean {
+  const q = state.reinforcementQueue?.get(battleId);
+  if (q === undefined) return false;
+  const before = q.length;
+  const filtered = q.filter((e) => e.armyId !== armyId);
+  if (filtered.length === before) return false;
+  if (filtered.length === 0) state.reinforcementQueue!.delete(battleId);
+  else state.reinforcementQueue!.set(battleId, filtered);
+  return true;
 }
 
 // ── LIVE wild battles (docs/04 §7b wild row — waves vs towers+mobs) ─────────
@@ -766,6 +890,7 @@ export function settleWildBattle(
   if (b === undefined || b.outcome === undefined) return;
   const opts = resolveOptions(options);
   state.wildBattles!.delete(battleId);
+  clearReinforcementQueue(state, battleId);
 
   const attackers = b.attackerArmyIds
     .map((id) => state.armies.get(id))
@@ -1242,11 +1367,13 @@ function settleEngineBattles(
     const b = state.engineBattles.get(battleId)!;
     if (b.outcome !== undefined) {
       state.engineBattles.delete(battleId);
+      clearReinforcementQueue(state, battleId);
       applyEngineOutcome(state, b, tick, balance, options);
     } else if (b.status === 'FALLBACK') {
       // Never brick a battle: the instant WarScore resolver settles the
       // still-standing armies (same rng fork path as the co-location scan).
       state.engineBattles.delete(battleId);
+      clearReinforcementQueue(state, battleId);
       const live = (ids: readonly string[]): Army[] =>
         ids
           .map((id) => state.armies.get(id))

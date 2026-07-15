@@ -72,6 +72,8 @@ import {
   raiseCost,
   type RaiseCostBreakdown,
   razeTerritory,
+  type ReinforcementQueueEntry,
+  withdrawReinforcement,
   resolvePostVictory,
   runTick,
   type SettlementRecord,
@@ -357,6 +359,28 @@ export type GameEvent =
     }
   | {
       /**
+       * Scenario H reinforcement offer (docs/briefs/REINFORCEMENT-LANE-QUEUE.md,
+       * owner 2026-07-14). A march ARRIVED at a locked hex whose battle is on
+       * its side; the army is queued at the arrival EDGE (lane). Private to
+       * `governorId`. The client turns this into a "join here (queue) or
+       * approach from another edge" prompt; POST /api/reinforcement/withdraw
+       * to cancel and re-march.
+       */
+      type: 'reinforcement_offered';
+      tick: number;
+      battleId: string;
+      parcelId: string;
+      armyId: string;
+      governorId: string;
+      side: 'ATTACKER' | 'DEFENDER';
+      edgeFromParcelId: string;
+      /** True when the army carries a Master (heroes join immediately, don't count vs the 16-soldier lane cap). */
+      hasHero: boolean;
+      /** Queue depth on this side AFTER this entry (1 = you're the first in line). */
+      queueDepth: number;
+    }
+  | {
+      /**
        * A HERO-vs-HERO card duel settled (docs/briefs/HERO-DUEL-SPEC.md, decision 14).
        * Champions settle it; troops are spared. The loser Master is KO'd. Visible
        * to both governors (challenger + target) and ACCURATE-intel bystanders of
@@ -549,6 +573,8 @@ interface SerializedWorldState {
   wildBattles?: [string, WildBattleState][];
   /** PENDING ENGINE BATTLES (ALLOCATE-CALLBACK-SCHEMA) — plain JSON. Optional for older saves. */
   engineBattles?: [string, EngineBattleState][];
+  /** Reinforcement queue (Scenario H, REINFORCEMENT-LANE-QUEUE.md). Optional for older saves. */
+  reinforcementQueue?: [string, ReinforcementQueueEntry[]][];
   /** Feature Set 3 (circular economy). All optional for pre-FS3 saves. */
   economy?: EconomyState;
   enrichmentPools?: [string, number][];
@@ -1454,6 +1480,29 @@ export class Game {
     };
   }
 
+  /**
+   * Withdraw an army from a reinforcement queue (Scenario H,
+   * REINFORCEMENT-LANE-QUEUE.md §"CF Overworld eco"). Only the queued army's
+   * governor may withdraw. Sim-side bookkeeping only — the caller still needs
+   * to march the army away from the locked hex (otherwise it'll be re-offered
+   * next tick).
+   */
+  withdrawReinforcement(
+    governorId: string,
+    battleId: unknown,
+    armyId: unknown,
+  ): { withdrawn: boolean; queueDepth: number } {
+    if (typeof battleId !== 'string') throw new ApiError(400, 'BAD_BATTLE', 'battleId must be a string');
+    if (typeof armyId !== 'string') throw new ApiError(400, 'BAD_ARMY', 'armyId must be a string');
+    const a = this.state.armies.get(armyId);
+    if (a === undefined || a.state === 'DISBANDED') throw new ApiError(404, 'NO_SUCH_ARMY', `no such army ${armyId}`);
+    if (a.ownerGovernorId !== governorId) throw new ApiError(403, 'NOT_YOUR_ARMY', 'army is not yours to withdraw');
+    const removed = withdrawReinforcement(this.state, battleId, armyId);
+    if (!removed) throw new ApiError(404, 'NOT_QUEUED', `army ${armyId} was not queued for ${battleId}`);
+    const queueDepth = this.state.reinforcementQueue?.get(battleId)?.length ?? 0;
+    return { withdrawn: true, queueDepth };
+  }
+
   // ── Tick ──────────────────────────────────────────────────────────────────
 
   /** Advance the world one tick; returns events + changed-subset deltas for the WS broadcast. */
@@ -1470,6 +1519,11 @@ export class Game {
     const preMustering = new Set(this.state.trainingQueues?.keys() ?? []);
     const preWild = new Set(this.state.wildBattles?.keys() ?? []);
     const preEngine = new Set(this.state.engineBattles?.keys() ?? []);
+    // REINFORCEMENT queue: capture the pre-tick shape so new entries surface as events.
+    const preQueue = new Map<string, Set<string>>();
+    for (const [battleId, entries] of this.state.reinforcementQueue ?? []) {
+      preQueue.set(battleId, new Set(entries.map((e) => e.armyId)));
+    }
     // Review ring (docs/04 §7b): capture the pre-settlement troop counts (start
     // strengths for the timeline) + the engine reason/live-flag that the settled
     // BattleInstance does not preserve — battles about to settle read them below.
@@ -1638,6 +1692,37 @@ export class Game {
     }
     for (const id of [...this.announcedJoinables]) {
       if (this.state.engineBattles?.has(id) !== true) this.announcedJoinables.delete(id); // settled
+    }
+
+    // Reinforcement offers (Scenario H, REINFORCEMENT-LANE-QUEUE.md): the sim
+    // appended entries to state.reinforcementQueue during BATTLE SPAWNING;
+    // surface each brand-new entry to its governor once.
+    for (const [battleId, entries] of this.state.reinforcementQueue ?? []) {
+      const seen = preQueue.get(battleId) ?? new Set<string>();
+      const bHexId = this.state.wildBattles?.get(battleId)?.hexId
+        ?? this.state.engineBattles?.get(battleId)?.hexId;
+      if (bHexId === undefined) continue; // battle settled the same tick — offer moot
+      const parcelId = this.parcelId(bHexId);
+      // Compute per-side depth AFTER each new arrival (arrival order = lex-army order per sim).
+      const perSideCount: Record<'ATTACKER' | 'DEFENDER', number> = { ATTACKER: 0, DEFENDER: 0 };
+      for (const e of entries) {
+        perSideCount[e.side] += 1;
+        if (seen.has(e.armyId)) continue;
+        const a = this.state.armies.get(e.armyId);
+        if (a === undefined || a.state === 'DISBANDED') continue;
+        events.push({
+          type: 'reinforcement_offered',
+          tick,
+          battleId,
+          parcelId,
+          armyId: e.armyId,
+          governorId: e.governorId,
+          side: e.side,
+          edgeFromParcelId: this.parcelId(e.edgeFromHexId),
+          hasHero: e.hasHero,
+          queueDepth: perSideCount[e.side],
+        });
+      }
     }
 
     // Newly pending PILLAGE/OCCUPY choices — battle victories get choice_pending,
@@ -3151,6 +3236,10 @@ export class Game {
       // Hero-mode join grants are strictly private (§3b visibility rule) —
       // an ACCURATE-intel bystander must never receive another player's joinUrl.
       if (e.type === 'battle_joinable') return rec['governorId'] === viewerGovernorId;
+      // Reinforcement offer is strictly private to the reinforcing governor
+      // (REINFORCEMENT-LANE-QUEUE.md §"CF Overworld eco"): only the player
+      // whose army arrived sees the prompt.
+      if (e.type === 'reinforcement_offered') return rec['governorId'] === viewerGovernorId;
       if (involved) return true;
       if (e.type === 'player_joined') return true;
       // Ownership changes are PUBLIC intel (F1: ownership is never fogged) —
@@ -3299,6 +3388,7 @@ function serializeWorldState(state: WorldState): SerializedWorldState {
     econCarry: [...(state.econCarry ?? new Map<string, number>()).entries()],
     wildBattles: [...(state.wildBattles ?? new Map<string, WildBattleState>()).entries()],
     engineBattles: [...(state.engineBattles ?? new Map<string, EngineBattleState>()).entries()],
+    reinforcementQueue: [...(state.reinforcementQueue ?? new Map<string, ReinforcementQueueEntry[]>()).entries()],
     economy: ensureEconomy(state),
     enrichmentPools: [...(state.enrichmentPools ?? new Map<string, number>()).entries()],
     enrichCarry: [...(state.enrichCarry ?? new Map<string, number>()).entries()],
@@ -3338,6 +3428,7 @@ function deserializeWorldState(s: SerializedWorldState): WorldState {
     econCarry: new Map(s.econCarry ?? []),
     wildBattles: new Map(s.wildBattles ?? []),
     engineBattles: new Map(s.engineBattles ?? []),
+    reinforcementQueue: new Map(s.reinforcementQueue ?? []),
     ...(s.economy !== undefined ? { economy: s.economy } : {}),
     enrichmentPools: new Map(s.enrichmentPools ?? []),
     enrichCarry: new Map(s.enrichCarry ?? []),

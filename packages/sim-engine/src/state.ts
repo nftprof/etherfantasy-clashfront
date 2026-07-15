@@ -195,6 +195,14 @@ export interface WorldState {
    * next tick settles it deterministically. Plain-JSON, snapshot-safe.
    */
   engineBattles?: Map<string, EngineBattleState>;
+  /**
+   * Reinforcement queue at locked hexes (Scenario H,
+   * docs/briefs/REINFORCEMENT-LANE-QUEUE.md): battleId → queued armies. Filled
+   * by BATTLE SPAWNING when an army arrives on a hex whose battle is already
+   * running; drained when the battle resolves (all entries dropped) or when a
+   * governor withdraws its army (server API). Plain-JSON, snapshot-safe.
+   */
+  reinforcementQueue?: Map<string, ReinforcementQueueEntry[]>;
 }
 
 /**
@@ -227,6 +235,32 @@ export interface WildRaidRecord {
   homeHexId: string;
   targetHexId: string;
   spawnedTick: number;
+}
+
+/**
+ * One army queued to reinforce a running battle at a locked hex
+ * (docs/briefs/REINFORCEMENT-LANE-QUEUE.md, owner 2026-07-14). Scenario H of
+ * BATTLE-SCENARIO-MATRIX.md §4: a march arrives at a hex whose battle is
+ * already running; the army is offered to reinforce (queued), never silently
+ * absorbed. The client turns the queue entry into a "join or approach from
+ * another edge" prompt.
+ *
+ * The sim owns bookkeeping ONLY — actual soldier drain into the live match is
+ * the match-server's job (per §"What each side owns" in the brief). The sim
+ * knows the queue exists (for events + UX + engagement lock) but does NOT
+ * mutate army.units while queued — those soldiers stand at the edge until they
+ * commit (post-MVP, or engine handshake) or WITHDRAW.
+ */
+export interface ReinforcementQueueEntry {
+  armyId: string;
+  governorId: string;
+  /** The hex the army came from — becomes the arrival EDGE identity for the lane. */
+  edgeFromHexId: string;
+  /** Which running-battle side the reinforcement joins. */
+  side: 'ATTACKER' | 'DEFENDER';
+  /** True when the army carries a Master (heroes join immediately, don't count vs soldierCapLive). */
+  hasHero: boolean;
+  queuedTick: number;
 }
 
 /**

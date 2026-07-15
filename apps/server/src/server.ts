@@ -901,6 +901,9 @@ export class ClashServer {
         case '/api/choice':
           sendJson(res, 200, this.game.choice(session.governorId, body.battleId, body.action, body.overseerId));
           return;
+        case '/api/reinforcement/withdraw':
+          sendJson(res, 200, this.game.withdrawReinforcement(session.governorId, body.battleId, body.armyId));
+          return;
         case '/api/exhibition':
           sendJson(res, 200, this.startExhibition(session.governorId, session.name, body.parcelId, body.joinUrl));
           return;

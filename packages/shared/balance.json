@@ -403,6 +403,11 @@
       "stockPctFloor": 0.30,
       "alivePctFloor": 0.35,
       "fleeCheckEveryTicks": 8
+    },
+    "lane": {
+      "_note": "⚙ Reinforcement lane QUEUE (owner 2026-07-14, docs/briefs/REINFORCEMENT-LANE-QUEUE.md). A second (or Nth) army arriving at a locked hex is offered to reinforce that battle: a Master joins immediately; soldiers append to the arrival-edge's spawn queue. soldierCapLive = MOBA standard concurrent lane soldiers (never exceeded — extras extend duration not density); armySupplyMin = approx sustained-push minutes one queued army adds. A queued army may WITHDRAW before its soldiers commit (mirrors the command-queue cancellability, decision 16c).",
+      "soldierCapLive": 16,
+      "armySupplyMin": 25
     }
   }
 }

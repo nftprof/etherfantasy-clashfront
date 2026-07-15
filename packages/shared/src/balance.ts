@@ -314,6 +314,21 @@ export interface Balance {
       /** Battle ticks between two FLEE_IF_LOSING evaluations. */
       fleeCheckEveryTicks: number;
     };
+    /**
+     * ⚙ Reinforcement lane QUEUE (docs/briefs/REINFORCEMENT-LANE-QUEUE.md,
+     * owner 2026-07-14). A second (or Nth) army arriving at a locked hex is
+     * offered to reinforce that battle: a Master joins immediately (never
+     * counts against the cap); soldiers append to the arrival-edge's spawn
+     * queue. Concurrent lane soldiers never exceed soldierCapLive; queue
+     * extends DURATION not DENSITY (armySupplyMin per queued army = the
+     * approximate wave-supply the lane gains).
+     */
+    lane: {
+      /** Concurrent live soldiers per lane the engine will spawn (16 = current MOBA standard). */
+      soldierCapLive: number;
+      /** Approx sustained-push minutes one full queued army adds to a lane. */
+      armySupplyMin: number;
+    };
   };
   /**
    * ⚙ COMMAND-vs-AUTO scaling keystone (docs/04 §3a). LIVE (30 Hz joinable/

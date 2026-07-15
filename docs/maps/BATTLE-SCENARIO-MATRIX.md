@@ -17,7 +17,7 @@
 | E | **Lone Master holds land, army walks on** | decision 14: OVERWHELM / DUEL(hero) / FLEE by standing order | **hero DUEL** (tiny-arena M2+; v1 auto-duel animation) | any map (`DUEL` universal) | KO via live Masters API; land taken on OVERWHELM/lost duel |
 | F | **PvP field collision — army marches into a hex where a hostile army stands** (interception mid-path or at destination) | halt + battle same tick; defender = territory holder if present, else lexicographic-first (MVP truce quirk) | **DUEL** (2 armies) / **CLASH** (3+) | both CC anchors (`atk_S`/`def_base`) for DUEL; per-edge `canBase` starts (+`sim.fairEdges`) for CLASH | loser retreats/routs (see G) |
 | G | **Aftermath — where survivors go** | TIE → attacker retreats. Decisive: losing ATTACKER retreats **adjacent friendly → adjacent neutral w/o hostiles → scatter** (extra casualties, possible disband). Losing DEFENDER **routs = DISBANDED (MVP)** | — | **the map's edge entries are also the EXITS** — the flee edge chosen on the battle map maps 1:1 to which adjacent parcel the survivors land on | see gap 2 — owner rule not fully implemented |
-| H | **Latecomer arrives at a parcel with a RUNNING battle** | hex LOCKED; latecomer waits at the edge until it settles | — | decision 11 says Masters arriving mid-battle enter at the matching edge as reinforcements + new lane — **post-MVP join windows**, not built yet | — |
+| H | **Latecomer arrives at a parcel with a RUNNING battle** | hex LOCKED; a same-side arrival is now **QUEUED at the arrival edge** (`reinforcement_offered` event) — DONE 2026-07-15, `docs/briefs/REINFORCEMENT-LANE-QUEUE.md`. Sim-side bookkeeping only; live soldier drain into the match = the match-server's job | — | decision 11 says Masters arriving mid-battle enter at the matching edge as reinforcements + new lane — join-window/soldier-drain hookup still pending on the netcode side | — |
 | I | **Two players arrive/commute across an UNOCCUPIED parcel at the same tick** | forced battle — one side arbitrarily becomes "defender" (lexicographic!), everyone else attacks | see gap 3 — should be **intent-driven** | per-edge entries + center objective already support both outcomes | — |
 
 **"Can two armies sit on the same land?"** — Confirmed, exactly as the owner states: co-location
@@ -68,8 +68,12 @@ main path. The 40-parcel sample: DUEL/SIEGE/GUARD 40/40, CLASH/DOMINION 39/40.
    two commuters currently must fight). Proposed: `stance: HOSTILE | EVASIVE` on the march; two
    EVASIVE armies co-crossing don't spawn a battle (ZoC/ambush checks are already a listed TODO in
    tick.ts — this folds into that work).
-5. **Mid-battle reinforcement** (H) is canon (decision 11) but post-MVP — latecomers wait today.
-   Already tracked; noted for completeness.
+5. ~~**Mid-battle reinforcement** (H) is canon (decision 11) but post-MVP — latecomers wait today.~~
+   **DONE 2026-07-15 (CF sim side)** — arrivals at a locked hex are appended to a per-battle
+   reinforcement queue and surfaced as `reinforcement_offered` events (private to the reinforcing
+   governor); `POST /api/reinforcement/withdraw` cancels. Queue drops on battle resolution.
+   Match-server live soldier drain into the running match still pending (netcode side).
+   ⚙ `wildBattle.lane.soldierCapLive` (16) and `armySupplyMin` (25) — `docs/briefs/REINFORCEMENT-LANE-QUEUE.md`.
 
 ## 5. Map TYPES × modes — the comprehensive plan (owner ask 2026-07-14)
 

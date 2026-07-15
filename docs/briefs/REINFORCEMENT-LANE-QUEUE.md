@@ -40,9 +40,15 @@
 
 - **Map side (CF ParcelMap, DONE):** per-edge entries on every parcel + clear edge→center paths —
   nothing new needed; `spawnZones[]` in the A1/manifest already name every mount.
-- **CF Overworld eco (sim):** march arrival at a locked hex → reinforcement offer instead of
-  wait-at-edge (upgrades scenario H of `docs/maps/BATTLE-SCENARIO-MATRIX.md`); queue bookkeeping
-  per (battle, edge); ⚙ knobs: `lane.soldierCapLive` (16), `lane.armySupplyMin` (25).
+- **CF Overworld eco (sim) — DONE 2026-07-15.** March arrival at a locked hex now offers
+  reinforcement instead of silent wait (scenario H upgraded, `docs/maps/BATTLE-SCENARIO-MATRIX.md`):
+  same-side arrivals are appended to `state.reinforcementQueue.get(battleId)` (per-battle, per-edge
+  bookkeeping), a `reinforcement_offered` event is emitted (PRIVATE to the reinforcing governor —
+  matches `battle_joinable` visibility), and `POST /api/reinforcement/withdraw {battleId, armyId}`
+  cancels the entry. Queue survives snapshot round-trip; battle settlement drops the whole queue;
+  `orderMarch` on a queued army auto-withdraws it. Sim-side bookkeeping ONLY — the actual soldier
+  drain into a live match is the match-server's job (below). ⚙ knobs added:
+  `wildBattle.lane.soldierCapLive` (16), `wildBattle.lane.armySupplyMin` (25).
 - **EF Moba (netcode):** allocate/reinforce API — decision 11's D1b reinforce call gains
   `{edge, queue:true|newLane}`; addSeat for the hero unchanged.
 - **MOBA BattleEngine RAW (client):** the lane-occupied prompt + queue meter on the lane HUD

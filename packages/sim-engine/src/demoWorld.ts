@@ -291,6 +291,7 @@ export function loadDemoWorld(file: DemoWorldFile, rng: Rng, options: LoadDemoWo
     devInvestedCt: new Map(),
     wildBattles: new Map(),
     engineBattles: new Map(),
+    reinforcementQueue: new Map(),
   };
 
   // Genesis CT is a marked faucet (E5): the seeded territory/town treasuries
@@ -731,6 +732,16 @@ export function orderMarch(
   // Gap 2 pincer flag survives a battle, but a NEW march clears it — the army
   // is moving on with intent, no longer trapped from a previous fight.
   delete a.retreatPincered;
+  // Reinforcement queue entries drop when the army marches away — it withdrew
+  // itself by moving (REINFORCEMENT-LANE-QUEUE.md §"WITHDRAW", decision 16c).
+  for (const battleId of [...(state.reinforcementQueue?.keys() ?? [])]) {
+    const q = state.reinforcementQueue!.get(battleId)!;
+    const filtered = q.filter((e) => e.armyId !== armyId);
+    if (filtered.length !== q.length) {
+      if (filtered.length === 0) state.reinforcementQueue!.delete(battleId);
+      else state.reinforcementQueue!.set(battleId, filtered);
+    }
+  }
   a.version += 1;
 }
 

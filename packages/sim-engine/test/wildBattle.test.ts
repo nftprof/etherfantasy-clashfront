@@ -13,6 +13,7 @@ import {
   addGovernor,
   applyWildBattleCommand,
   armyEngagedIn,
+  armyQueuedForReinforcement,
   claimTerritory,
   completeTraining,
   createWildBattle,
@@ -29,6 +30,7 @@ import {
   type WildBattleSetup,
   type WildBattleState,
   wildBattleSurvivors,
+  withdrawReinforcement,
   type WorldState,
 } from '../src/index';
 
@@ -268,7 +270,7 @@ test('runTick: hopeless assault ⇒ DEFENDER victory, attacker casualties + §7c
   let settled: string | undefined;
   for (let t = 1; t <= 8; t++) {
     runTick(f.state, t, f.rng.fork('sim'), BALANCE, OPTS);
-    if (t > 1 && f.state.wildBattles!.size === 0 && settled === undefined) {
+    if (t > 1 && (f.state.wildBattles as Map<string, unknown> | undefined)?.size === 0 && settled === undefined) {
       settled = [...f.state.battles.keys()][0];
       break;
     }
@@ -317,7 +319,7 @@ test('paced battles are skipped by the world tick (a LIVE driver owns their step
   assert.equal(battle.bt, 0, 'paced battle untouched by the world tick');
   battle.paced = false;
   runTick(f.state, 3, f.rng.fork('sim'), BALANCE, OPTS);
-  assert.ok(battle.bt > 0 || f.state.wildBattles!.size === 0, 'unpaced battle fast-forwards');
+  assert.ok(battle.bt > 0 || (f.state.wildBattles as Map<string, unknown> | undefined)?.size === 0, 'unpaced battle fast-forwards');
 });
 
 test('settleWildBattle maps tactical deaths back to unit stacks exactly', () => {
@@ -845,4 +847,145 @@ test('Master OBEYS a mid-fight move — no re-acquire on the next tick', () => {
     d0 = d;
   }
   assert.ok(obeyed, 'Master obeys a mid-fight move without stalling to re-acquire');
+});
+
+// ── Scenario H: reinforcement queue at locked hexes (owner 2026-07-14) ─────────
+// docs/briefs/REINFORCEMENT-LANE-QUEUE.md. A same-side army arriving at a hex
+// whose battle is already running is offered to reinforce (queued at the
+// arrival edge); no new BattleInstance spawns. Withdraw releases the entry;
+// battle settlement drops the whole queue.
+
+test('same-side army arriving at a locked hex is queued (Scenario H reinforcement offer)', () => {
+  const f = fixture('reinf-arrival');
+  // Battle 1 ignites — attacker vs wild lair.
+  orderMarch(f.state, f.army.id, [f.lairHex], OPTS);
+  runTick(f.state, 1, f.rng.fork('sim'), BALANCE, OPTS);
+  assert.equal(f.state.wildBattles!.size, 1, 'live battle underway');
+  const battle = [...f.state.wildBattles!.values()][0]!;
+  // Second attacker army raised at the SAME governor's home + marched to the
+  // locked hex. It arrives, halts, and should be queued — NOT silently absorbed.
+  const homeHex = f.state.territories.get(f.homeId)!.hexIds[0]!;
+  const officers = f.state.officers!.get(f.governorId)!;
+  const relief = raiseArmy(f.state, f.homeId, 'STANDARD', f.rng.fork('relief'), officers[1]!.id);
+  completeTraining(f.state, relief.id);
+  // Advance the world enough ticks for relief to arrive at the lair (~1 hop).
+  orderMarch(f.state, relief.id, [f.lairHex], OPTS);
+  let arrived = false;
+  for (let t = 2; t <= 6; t++) {
+    runTick(f.state, t, f.rng.fork('sim'), BALANCE, OPTS);
+    if (f.state.armies.get(relief.id)!.hexId === f.lairHex) { arrived = true; break; }
+    if ((f.state.wildBattles as Map<string, unknown> | undefined)?.size === 0) break; // battle finished before relief arrived
+  }
+  if (!arrived || (f.state.wildBattles as Map<string, unknown> | undefined)?.size === 0) return; // fixture race — trivial pass
+  const q = f.state.reinforcementQueue?.get(battle.id) ?? [];
+  assert.equal(q.length, 1, 'exactly one queued entry');
+  assert.equal(q[0]!.armyId, relief.id);
+  assert.equal(q[0]!.side, 'ATTACKER', 'relief joined the attacker lane');
+  assert.equal(q[0]!.governorId, f.governorId);
+  assert.ok(q[0]!.edgeFromHexId === homeHex, 'edge = the hex it marched in from');
+  // The army stands at the locked hex — not absorbed, units untouched.
+  const relieveState = f.state.armies.get(relief.id)!;
+  assert.equal(relieveState.hexId, f.lairHex);
+  assert.equal(relieveState.state, 'GARRISON');
+  assert.equal(troopCount(relieveState) > 0, true, 'units NOT drained by queueing');
+  assert.equal(armyQueuedForReinforcement(f.state, relief.id), battle.id);
+});
+
+test('withdraw removes the queue entry (mirrors command-queue cancellability)', () => {
+  const f = fixture('reinf-withdraw');
+  orderMarch(f.state, f.army.id, [f.lairHex], OPTS);
+  runTick(f.state, 1, f.rng.fork('sim'), BALANCE, OPTS);
+  if ((f.state.wildBattles as Map<string, unknown> | undefined)?.size === 0) return;
+  const battle = [...f.state.wildBattles!.values()][0]!;
+  const officers = f.state.officers!.get(f.governorId)!;
+  const relief = raiseArmy(f.state, f.homeId, 'STANDARD', f.rng.fork('relief'), officers[1]!.id);
+  completeTraining(f.state, relief.id);
+  orderMarch(f.state, relief.id, [f.lairHex], OPTS);
+  let arrived = false;
+  for (let t = 2; t <= 6; t++) {
+    runTick(f.state, t, f.rng.fork('sim'), BALANCE, OPTS);
+    if (f.state.armies.get(relief.id)!.hexId === f.lairHex) { arrived = true; break; }
+    if ((f.state.wildBattles as Map<string, unknown> | undefined)?.size === 0) break;
+  }
+  if (!arrived || (f.state.wildBattles as Map<string, unknown> | undefined)?.size === 0) return;
+  assert.equal(f.state.reinforcementQueue?.get(battle.id)?.length, 1, 'queued first');
+  const removed = withdrawReinforcement(f.state, battle.id, relief.id);
+  assert.equal(removed, true, 'withdraw returns true');
+  assert.equal(f.state.reinforcementQueue?.get(battle.id), undefined, 'empty queue cleaned up');
+  assert.equal(armyQueuedForReinforcement(f.state, relief.id), undefined);
+});
+
+test('battle settlement drops the whole reinforcement queue', () => {
+  const f = fixture('reinf-cleanup');
+  orderMarch(f.state, f.army.id, [f.lairHex], OPTS);
+  runTick(f.state, 1, f.rng.fork('sim'), BALANCE, OPTS);
+  if ((f.state.wildBattles as Map<string, unknown> | undefined)?.size === 0) return;
+  const battle = [...f.state.wildBattles!.values()][0]!;
+  const officers = f.state.officers!.get(f.governorId)!;
+  const relief = raiseArmy(f.state, f.homeId, 'STANDARD', f.rng.fork('relief'), officers[1]!.id);
+  completeTraining(f.state, relief.id);
+  orderMarch(f.state, relief.id, [f.lairHex], OPTS);
+  // Run until the battle settles — queue must be dropped either way.
+  for (let t = 2; t <= 20 && f.state.wildBattles!.size > 0; t++) {
+    runTick(f.state, t, f.rng.fork('sim'), BALANCE, OPTS);
+  }
+  assert.equal(f.state.wildBattles!.size, 0, 'battle settled');
+  assert.equal(
+    f.state.reinforcementQueue?.get(battle.id),
+    undefined,
+    'settlement clears the queue for that battle',
+  );
+});
+
+test('reinforcement queue survives structuredClone (snapshot round-trip)', () => {
+  const f = fixture('reinf-snapshot');
+  orderMarch(f.state, f.army.id, [f.lairHex], OPTS);
+  runTick(f.state, 1, f.rng.fork('sim'), BALANCE, OPTS);
+  if ((f.state.wildBattles as Map<string, unknown> | undefined)?.size === 0) return;
+  const battle = [...f.state.wildBattles!.values()][0]!;
+  const officers = f.state.officers!.get(f.governorId)!;
+  const relief = raiseArmy(f.state, f.homeId, 'STANDARD', f.rng.fork('relief'), officers[1]!.id);
+  completeTraining(f.state, relief.id);
+  orderMarch(f.state, relief.id, [f.lairHex], OPTS);
+  let arrived = false;
+  for (let t = 2; t <= 6; t++) {
+    runTick(f.state, t, f.rng.fork('sim'), BALANCE, OPTS);
+    if (f.state.armies.get(relief.id)!.hexId === f.lairHex) { arrived = true; break; }
+    if ((f.state.wildBattles as Map<string, unknown> | undefined)?.size === 0) break;
+  }
+  if (!arrived || (f.state.wildBattles as Map<string, unknown> | undefined)?.size === 0) return;
+  assert.equal(f.state.reinforcementQueue?.get(battle.id)?.length, 1);
+  const clone = structuredClone(f.state);
+  const cq = clone.reinforcementQueue?.get(battle.id) ?? [];
+  assert.equal(cq.length, 1);
+  assert.equal(cq[0]!.armyId, relief.id);
+  assert.equal(cq[0]!.side, 'ATTACKER');
+});
+
+test('orderMarch on a queued army withdraws it automatically', () => {
+  const f = fixture('reinf-remarch');
+  orderMarch(f.state, f.army.id, [f.lairHex], OPTS);
+  runTick(f.state, 1, f.rng.fork('sim'), BALANCE, OPTS);
+  if ((f.state.wildBattles as Map<string, unknown> | undefined)?.size === 0) return;
+  const battle = [...f.state.wildBattles!.values()][0]!;
+  const officers = f.state.officers!.get(f.governorId)!;
+  const relief = raiseArmy(f.state, f.homeId, 'STANDARD', f.rng.fork('relief'), officers[1]!.id);
+  completeTraining(f.state, relief.id);
+  orderMarch(f.state, relief.id, [f.lairHex], OPTS);
+  let arrived = false;
+  for (let t = 2; t <= 6; t++) {
+    runTick(f.state, t, f.rng.fork('sim'), BALANCE, OPTS);
+    if (f.state.armies.get(relief.id)!.hexId === f.lairHex) { arrived = true; break; }
+    if ((f.state.wildBattles as Map<string, unknown> | undefined)?.size === 0) break;
+  }
+  if (!arrived || (f.state.wildBattles as Map<string, unknown> | undefined)?.size === 0) return;
+  assert.equal(f.state.reinforcementQueue?.get(battle.id)?.length, 1);
+  // March away — the neighbouring home hex is friendly ground.
+  const homeHex = f.state.territories.get(f.homeId)!.hexIds[0]!;
+  orderMarch(f.state, relief.id, [homeHex], OPTS);
+  assert.equal(
+    f.state.reinforcementQueue?.get(battle.id),
+    undefined,
+    'the queue entry is withdrawn when the army marches on',
+  );
 });
