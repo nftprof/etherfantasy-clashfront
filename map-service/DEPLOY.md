@@ -110,6 +110,18 @@ retire the maps ROUTE, not necessarily the whole process. The owner's intent ("r
 path/site") is satisfied the moment `~/ef-battlefields` has a single writer and the public map path
 is `map.etherfantasy.com → :8150` only.
 
+## 🔒 RENDERER FREEZE (2026-07-14, until the MOBA session signals switchover)
+
+`maps/ef_battlefield.js` is being unified into ONE shared module owned by the MOBA session
+(provisional name `ef_battlefield_renderer.js`; plan: MOBA repo
+`HANDOFF/SHARED-BATTLEFIELD-RENDERER-SPLIT.md`). **Do NOT edit the vendored file** — edits will be
+overwritten; pending renderer fixes go to the MOBA session to land in the canonical copy (the water
+layer-10 request `docs/briefs/WATER-RENDER-SPEC.md` is already routed that way). At switchover:
+re-vendor the published artifact, update the `/ef_battlefield.js` route + preview3d/standalone
+script names if renamed, keep the one-file rollback. CF designer consumes the RAW artifact (the
+standalone offline viewer embeds the module into file:// HTML — a domain-locked build cannot run
+there); `map.etherfantasy.com` + `localhost` must be in the raw artifact's allowed envs regardless.
+
 ## Nine-layer game render in the designer (2026-07-13)
 
 The 3D preview (`/designer/3d?parcel=`) now renders **the game's own scene builder** —
