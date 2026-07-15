@@ -72,7 +72,18 @@ export interface WalkInOutcome {
 }
 
 /** How a failed/tied attacker army left the field (docs/04 §7c.5). */
-export type RetreatResult = 'RETREATED' | 'SCATTERED' | 'DISBANDED';
+/**
+ * Outcome of an ArmyRetreatRecord (docs/04 §7c.5 + Gap 2 pincer 2026-07-14):
+ *   RETREATED  — army fell back to a safe adjacent hex (or came-from)
+ *   SCATTERED  — nowhere safe, crippled remnant stands on the battle hex
+ *   DISBANDED  — remnant below the scatter-disband threshold, army destroyed
+ *   ABANDONED  — the PINCER outcome: army was previously retreated INTO a
+ *                hostile came-from, that pincer battle was lost/fled; ALL
+ *                soldiers lost, army fully disbanded, but the officer/Master
+ *                returns to the undeployed pool (the officer→army link
+ *                auto-frees on DISBANDED — game.ts:906). The escape hatch.
+ */
+export type RetreatResult = 'RETREATED' | 'SCATTERED' | 'DISBANDED' | 'ABANDONED';
 
 export interface ArmyRetreatRecord {
   armyId: string;

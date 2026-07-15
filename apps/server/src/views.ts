@@ -145,7 +145,7 @@ export interface BattleView {
   retreats?: {
     armyId: string;
     governorId: string;
-    result: 'RETREATED' | 'SCATTERED' | 'DISBANDED';
+    result: 'RETREATED' | 'SCATTERED' | 'DISBANDED' | 'ABANDONED';
     toParcelId?: string;
   }[];
   /** Endurance/structure terms — participants/ACCURATE only. */

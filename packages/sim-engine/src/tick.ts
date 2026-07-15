@@ -311,6 +311,11 @@ function phaseMovement(
       haltArmy(a);
       continue;
     }
+    // Gap 2: record the hex we JUST left so retreatArmy can send us back the
+    // way we came. Set on every step of the march (so a retreating army lands
+    // its came-from correctly regardless of how many hops it made). Cleared
+    // on a new orderMarch (see demoWorld.ts).
+    a.cameFromHexId = a.hexId;
     a.hexId = next;
     a.path = path.slice(1);
     // March rations (docs/04 §7c.1): each adjacency step burns carried food.
@@ -803,6 +808,8 @@ export function settleWildBattle(
   if (winner === 'ATTACKER') {
     for (const a of attackers) {
       a.morale = Math.min(CONSTANTS.MORALE_MAX, a.morale + balance.morale.victoryDelta);
+      // Broke through a PINCER — clear the flag (Gap 2, owner 2026-07-14).
+      delete a.retreatPincered;
       if (troopCount(a) === 0) disbandArmy(state, a);
     }
     // Defender rout: WILD mobs still abandon the ground (routed monsters don't
@@ -821,6 +828,7 @@ export function settleWildBattle(
   } else if (winner === 'DEFENDER') {
     for (const d of defenders) {
       d.morale = Math.min(CONSTANTS.MORALE_MAX, d.morale + balance.morale.victoryDelta);
+      delete d.retreatPincered; // survived the fight — flag no longer relevant
       d.version += 1;
     }
     for (const a of attackers) {
@@ -1084,6 +1092,7 @@ function resolveFieldBattle(
 
     for (const a of winSide) {
       a.morale = Math.min(CONSTANTS.MORALE_MAX, a.morale + balance.morale.victoryDelta);
+      delete a.retreatPincered; // survived — clear any pincer flag
       // Winners that wiped a stack down to zero men disband too (mutual destruction).
       if (troopCount(a) === 0) disbandArmy(state, a);
     }
@@ -1335,6 +1344,7 @@ function applyEngineOutcome(
   if (winner === 'ATTACKER') {
     for (const a of attackers) {
       a.morale = Math.min(CONSTANTS.MORALE_MAX, a.morale + balance.morale.victoryDelta);
+      delete a.retreatPincered; // broke through
       if (troopCount(a) === 0) disbandArmy(state, a);
     }
     // Defender rout: WILD mobs abandon the ground; PLAYER defenders retreat
@@ -1351,6 +1361,7 @@ function applyEngineOutcome(
   } else if (winner === 'DEFENDER') {
     for (const d of defenders) {
       d.morale = Math.min(CONSTANTS.MORALE_MAX, d.morale + balance.morale.victoryDelta);
+      delete d.retreatPincered;
       d.version += 1;
       if (troopCount(d) === 0) disbandArmy(state, d);
     }
@@ -1446,14 +1457,18 @@ function disbandArmy(state: WorldState, a: Army): void {
 }
 
 /**
- * Retreat resolution for a failed/tied attacker (docs/04 §7c.5), deterministic
- * (neighbors are stored sorted):
- *   1. adjacent friendly parcel without hostile presence → RETREATED there;
- *   2. else adjacent SYSTEM/unassigned parcel without hostile garrison → RETREATED;
- *   3. else SCATTERED: SCATTER_CASUALTY_PCT extra losses (recorded in the battle
- *      casualties), morale collapses to ⚙ scatterMoraleFloor, the crippled army
- *      stays on the field — or DISBANDED when fewer than ⚙ scatterDisbandRemainingPct
- *      of its pre-battle troops remain.
+ * Retreat resolution for a failed/tied army (docs/04 §7c.5 + Gap 2 pincer 2026-07-14).
+ * Priority (deterministic; neighbors are stored sorted):
+ *   0. PINCER already fired (a.retreatPincered) → ABANDONED (army lost, officer
+ *      returns to the undeployed pool). The pincer's escape hatch.
+ *   1. Came-from hex (owner rule 2026-07-14: "retreat back the way you came").
+ *      Placed there regardless of hostiles — a hostile came-from is the PINCER:
+ *      army retreats INTO the trap, marked retreatPincered, next battle can't
+ *      cascade again. Safe came-from = clean RETREATED.
+ *   2. Adjacent friendly parcel without hostile presence → RETREATED there.
+ *   3. Adjacent SYSTEM/unassigned parcel without hostile garrison → RETREATED.
+ *   4. SCATTERED: SCATTER_CASUALTY_PCT extra losses, morale collapse; DISBANDED
+ *      when fewer than ⚙ scatterDisbandRemainingPct of pre-battle troops remain.
  */
 function retreatArmy(
   state: WorldState,
@@ -1467,15 +1482,38 @@ function retreatArmy(
     disbandArmy(state, a);
     return { armyId: a.id, result: 'DISBANDED' };
   }
+  // 0. PINCER lost: abandonment — all soldiers count as casualties, army fully
+  // DISBANDED, but the officer/Master link auto-frees (game.ts:906 treats a
+  // DISBANDED army's leader as free for redeployment). Owner rule 2026-07-14:
+  // "or u can still flee. but u will abandon all ur soldiers and return as
+  // undeploy state."
+  if (a.retreatPincered === true) {
+    let abandoned = 0;
+    for (const stack of a.units) { abandoned += stack.count; stack.count = 0; }
+    casualties[a.id] = (casualties[a.id] ?? 0) + abandoned;
+    disbandArmy(state, a);
+    return { armyId: a.id, result: 'ABANDONED' };
+  }
   const neighbors = state.adjacency?.get(a.hexId) ?? [];
   let target: string | undefined;
-  for (const n of neighbors) {
-    const t = territoryAt(state, n);
-    if (t !== undefined && t.governorId === a.ownerGovernorId && hostileArmiesAt(state, n, a.ownerGovernorId).length === 0) {
-      target = n;
-      break;
+  let cameFromHostile = false;
+  // 1. Came-from first (regardless of hostiles — the pincer path).
+  const cameFrom = a.cameFromHexId;
+  if (cameFrom !== undefined && cameFrom !== a.hexId && neighbors.includes(cameFrom)) {
+    target = cameFrom;
+    cameFromHostile = hostileArmiesAt(state, cameFrom, a.ownerGovernorId).length > 0;
+  }
+  // 2. Adjacent friendly without hostiles.
+  if (target === undefined) {
+    for (const n of neighbors) {
+      const t = territoryAt(state, n);
+      if (t !== undefined && t.governorId === a.ownerGovernorId && hostileArmiesAt(state, n, a.ownerGovernorId).length === 0) {
+        target = n;
+        break;
+      }
     }
   }
+  // 3. Adjacent SYSTEM/unassigned without hostiles.
   if (target === undefined) {
     for (const n of neighbors) {
       const t = territoryAt(state, n);
@@ -1494,6 +1532,13 @@ function retreatArmy(
     delete a.path;
     delete a.arrivalTick;
     a.morale = Math.max(CONSTANTS.MORALE_MIN, a.morale - balance.morale.retreatMoraleLoss);
+    // Mark the pincer on the way IN — the next battle on this hex can't cascade
+    // again (§7c.5 already exhausted); its loss triggers the abandonment above.
+    if (cameFromHostile) a.retreatPincered = true;
+    else delete a.retreatPincered;
+    // Update came-from bookkeeping so an army that retreats then marches again
+    // uses the retreat destination as its NEW starting point.
+    a.cameFromHexId = a.hexId; // will be overwritten on the next march step
     const t = territoryAt(state, target);
     if (t !== undefined) {
       t.lastTroddenTick = tick;

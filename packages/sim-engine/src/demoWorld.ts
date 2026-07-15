@@ -728,6 +728,9 @@ export function orderMarch(
   // land). HOSTILE = the default and back-compat behaviour.
   if (stance === 'EVASIVE') a.stance = 'EVASIVE';
   else delete a.stance;
+  // Gap 2 pincer flag survives a battle, but a NEW march clears it — the army
+  // is moving on with intent, no longer trapped from a previous fight.
+  delete a.retreatPincered;
   a.version += 1;
 }
 

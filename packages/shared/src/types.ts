@@ -204,6 +204,21 @@ export interface Army {
    * collision tick.
    */
   stance?: MarchStance;
+  /**
+   * Gap 2 (owner 2026-07-14): the last hex this army stood on BEFORE its
+   * current one. Set on arrival at a new hex; cleared on a new march. Used by
+   * retreatArmy as the first-choice retreat direction ("retreat back the way
+   * you came"). Persists through a battle so the retreat cascade can find it.
+   */
+  cameFromHexId?: string;
+  /**
+   * Gap 2 pincer (owner 2026-07-14): retreatArmy set this when it retreated
+   * INTO a hostile-occupied came-from hex. The subsequent battle can no longer
+   * cascade-retreat — losing it (or fleeing) ABANDONS the army: all soldiers
+   * lost, Master returns to the undeployed officer pool. Cleared when the
+   * army breaks through (wins) or when the army departs on a new march.
+   */
+  retreatPincered?: boolean;
   version: number;
 }
 
