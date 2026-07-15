@@ -1337,6 +1337,7 @@ export class Game {
     armyId: unknown,
     toTerritoryId: unknown,
     command: unknown = false,
+    stance: unknown = 'HOSTILE',
   ): { army: ArmyView; etaTick: number; command: boolean; commandAtCapacity: boolean } {
     if (typeof armyId !== 'string') throw new ApiError(400, 'BAD_ARMY', 'armyId must be a string');
     const a = this.state.armies.get(armyId);
@@ -1357,8 +1358,12 @@ export class Game {
     const wantCommand = command === true;
     const commandAtCapacity =
       wantCommand && engineCommandSlotCount(this.state, governorId) >= this.balance.battle.commandSlotsPerPlayer;
+    // Gap 4 — march STANCE. EVASIVE = "passing through", no battle with another
+    // EVASIVE commuter on unowned ground. HOSTILE = the default and back-compat
+    // behaviour (any hostile co-location fights). Unknown value ⇒ HOSTILE.
+    const wantStance: 'HOSTILE' | 'EVASIVE' = stance === 'EVASIVE' ? 'EVASIVE' : 'HOSTILE';
     try {
-      orderMarch(this.state, a.id, path, this.tickOptions, wantCommand);
+      orderMarch(this.state, a.id, path, this.tickOptions, wantCommand, wantStance);
     } catch (e) {
       throw translateSimError(e);
     }

@@ -358,6 +358,71 @@ test('PvP and NPC battles stay instant — only player-vs-wild runs live', () =>
   assert.equal([...f.state.battles.values()][0]!.resolutionMode, 'AUTO');
 });
 
+// ── Gap 4: EVASIVE march-stance truce (owner 2026-07-14). ──────────────────────
+// Two commuters passing through UNOWNED ground with EVASIVE stance walk past
+// each other — no battle. HOSTILE (default) still auto-fights. A hostile
+// TERRITORY OWNER present cancels the truce even when both marchers are EVASIVE.
+
+test('two EVASIVE armies co-crossing UNOWNED ground do not spawn a battle (Gap 4)', () => {
+  const f = fixture('gap4-truce');
+  const rng2 = f.rng.fork('p2');
+  const { governorId: gov2 } = addGovernor(f.state, rng2, {
+    name: 'Traveler', kind: 'PLAYER', ctUnits: 50_000 * CT, officerNames: ['Leah', 'Kai', 'Purin'],
+  });
+  // gov2 gets a home two hops away, raises + moves toward a shared UNOWNED hex.
+  const p1Home = f.state.territories.get(f.homeId)!.hexIds[0]!;
+  // Any unowned neighbour of gov2's future home that ALSO neighbours p1Home.
+  const p2Home = f.state.adjacency!.get(p1Home)!.find((h) => h !== f.lairHex)!;
+  const p2HomeTerr = f.state.hexes.get(p2Home)!.territoryId!;
+  claimTerritory(f.state, p2HomeTerr, gov2);
+  const p2Neigh = new Set(f.state.adjacency!.get(p2Home) ?? []);
+  const bridgeHex = f.state.adjacency!.get(p1Home)!.find((h) => {
+    if (h === f.lairHex || h === p2Home) return false;
+    if (!p2Neigh.has(h)) return false; // must be reachable in one hop from BOTH
+    const t = f.state.hexes.get(h)?.territoryId;
+    return t !== undefined && f.state.territories.get(t)?.governorKind === 'SYSTEM'
+      && f.state.territories.get(t)?.garrisonArmyId === undefined;
+  });
+  if (bridgeHex === undefined) return; // fixture didn't produce a good candidate — trivial pass
+  // Both raise + march to bridgeHex, both EVASIVE.
+  const a1 = f.army;
+  const a2 = raiseArmy(f.state, p2HomeTerr, 'STANDARD', rng2.fork('raise'));
+  completeTraining(f.state, a2.id);
+  orderMarch(f.state, a1.id, [bridgeHex], OPTS, false, 'EVASIVE');
+  orderMarch(f.state, a2.id, [bridgeHex], OPTS, false, 'EVASIVE');
+  const battlesBefore = f.state.battles.size;
+  runTick(f.state, 1, f.rng.fork('sim'), BALANCE, OPTS);
+  assert.equal(f.state.battles.size, battlesBefore, 'no battle spawned — EVASIVE truce holds');
+  assert.equal(f.state.wildBattles?.size ?? 0, 0, 'no live wild battle either');
+});
+
+test('HOSTILE (default) march still fights an EVASIVE opponent (truce needs BOTH sides)', () => {
+  const f = fixture('gap4-onlyone');
+  const rng2 = f.rng.fork('p2');
+  const { governorId: gov2 } = addGovernor(f.state, rng2, {
+    name: 'Aggressor', kind: 'PLAYER', ctUnits: 50_000 * CT, officerNames: ['Leah', 'Kai', 'Purin'],
+  });
+  const p1Home = f.state.territories.get(f.homeId)!.hexIds[0]!;
+  const p2Home = f.state.adjacency!.get(p1Home)!.find((h) => h !== f.lairHex)!;
+  const p2HomeTerr = f.state.hexes.get(p2Home)!.territoryId!;
+  claimTerritory(f.state, p2HomeTerr, gov2);
+  const p2Neigh = new Set(f.state.adjacency!.get(p2Home) ?? []);
+  const bridgeHex = f.state.adjacency!.get(p1Home)!.find((h) => {
+    if (h === f.lairHex || h === p2Home) return false;
+    if (!p2Neigh.has(h)) return false; // must be reachable in one hop from BOTH
+    const t = f.state.hexes.get(h)?.territoryId;
+    return t !== undefined && f.state.territories.get(t)?.governorKind === 'SYSTEM'
+      && f.state.territories.get(t)?.garrisonArmyId === undefined;
+  });
+  if (bridgeHex === undefined) return;
+  const a2 = raiseArmy(f.state, p2HomeTerr, 'STANDARD', rng2.fork('raise'));
+  completeTraining(f.state, a2.id);
+  orderMarch(f.state, f.army.id, [bridgeHex], OPTS, false, 'EVASIVE');
+  orderMarch(f.state, a2.id, [bridgeHex], OPTS); // HOSTILE by default
+  runTick(f.state, 1, f.rng.fork('sim'), BALANCE, OPTS);
+  assert.equal(f.state.battles.size, 1, 'HOSTILE cancels the truce — battle happens');
+});
+
 // ── Gap 1: PLAYER defenders RETREAT (don't disband). Owner rule 2026-07-14. ─────
 // A crushing attacker beats a small PvP defender; the defender's ArmyRetreatRecord
 // must exist (RETREATED / SCATTERED / DISBANDED per the ladder), NOT be silently

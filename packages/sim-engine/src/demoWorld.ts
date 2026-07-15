@@ -684,6 +684,7 @@ export function orderMarch(
   path: readonly string[],
   options?: TickOptions,
   commandIntent = false,
+  stance: 'HOSTILE' | 'EVASIVE' = 'HOSTILE',
 ): void {
   const a = state.armies.get(armyId);
   if (a === undefined || a.state === 'DISBANDED') throw new Error(`orderMarch: no such army ${armyId}`);
@@ -722,6 +723,11 @@ export function orderMarch(
   // COMMAND intent rides on the army until a collision consumes it (docs/04 §3a).
   if (commandIntent) a.commandIntent = true;
   else delete a.commandIntent;
+  // March STANCE (Gap 4, docs/maps/BATTLE-SCENARIO-MATRIX §4). EVASIVE = "just
+  // passing through" (skip battleSpawning between two EVASIVE armies on unowned
+  // land). HOSTILE = the default and back-compat behaviour.
+  if (stance === 'EVASIVE') a.stance = 'EVASIVE';
+  else delete a.stance;
   a.version += 1;
 }
 

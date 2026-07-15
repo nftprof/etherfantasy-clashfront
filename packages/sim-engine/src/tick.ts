@@ -591,6 +591,14 @@ function phaseBattleSpawning(
     // lexicographically-first owner. Everyone else attacks (temporary MVP truce
     // between multiple foreign owners — no diplomacy yet).
     const terr = territoryAt(state, hexId);
+    // Gap 4 — EVASIVE truce (owner 2026-07-14, BATTLE-SCENARIO-MATRIX §4). Two
+    // (or more) commuters passing through UNOWNED / no-garrison ground, ALL
+    // with stance EVASIVE, don't spawn a battle — they walk past each other.
+    // Any HOSTILE participant, or a hostile territory owner present in the
+    // fight, cancels the truce and battle proceeds as normal.
+    const hasOwner = terr !== undefined && terr.governorKind !== 'SYSTEM';
+    const anyHostile = armies.some((a) => a.stance !== 'EVASIVE');
+    if (!hasOwner && !anyHostile) continue;
     const defenderGov = terr !== undefined && owners.includes(terr.governorId)
       ? terr.governorId
       : owners[0]!;

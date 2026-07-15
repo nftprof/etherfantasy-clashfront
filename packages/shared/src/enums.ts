@@ -10,6 +10,16 @@ export type BattleType = 'FIELD' | 'SIEGE' | 'NAVAL';
 export type ResolutionMode = 'AUTO' | 'LIVE' | 'ACCELERATED';
 export type BattleState = 'SCHEDULED' | 'LOBBY' | 'RUNNING' | 'RESOLVED' | 'CANCELLED';
 export type ArmyState = 'GARRISON' | 'MARCHING' | 'ENGAGED' | 'RETREATING' | 'DISBANDED';
+
+/**
+ * Intent of a march (Gap 4, docs/maps/BATTLE-SCENARIO-MATRIX.md §4). HOSTILE
+ * = "march to fight" — the default and pre-2026-07-14 behaviour (any hostile
+ * co-location spawns a battle). EVASIVE = "just passing through" — two EVASIVE
+ * armies co-crossing an UNOWNED hex don't spawn a battle. An EVASIVE army
+ * still fights when it meets a hostile OWNER's garrison / wilds / a HOSTILE
+ * opponent — the flag only unlocks pass-through TRUCE between two commuters.
+ */
+export type MarchStance = 'HOSTILE' | 'EVASIVE';
 export type UnitClass = 'INFANTRY' | 'ARCHER' | 'CAVALRY' | 'SPEAR' | 'SIEGE' | 'MARINE' | 'SHIP';
 export type PostVictoryAction = 'PILLAGE' | 'OCCUPY';
 export type DiplomacyStance = 'WAR' | 'HOSTILE' | 'NEUTRAL' | 'TRUCE' | 'ALLIED' | 'VASSAL_OF' | 'SUZERAIN_OF';

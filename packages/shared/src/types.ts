@@ -15,6 +15,7 @@ import type {
   DiplomacyStance,
   GovernorKind,
   HexTerrain,
+  MarchStance,
   PostVictoryAction,
   ResolutionMode,
   UnitClass,
@@ -195,6 +196,14 @@ export interface Army {
    * instead of accelerated. Best-effort: cap/pool pressure downgrades to AUTO.
    */
   commandIntent?: boolean;
+  /**
+   * March-intent (Gap 4, owner 2026-07-14): HOSTILE (default, absent = HOSTILE
+   * for back-compat) = "march to fight" — any hostile co-location spawns a
+   * battle. EVASIVE = "just passing through" — two EVASIVE armies co-crossing
+   * an UNOWNED hex don't spawn a battle. Set by orderMarch; consumed at the
+   * collision tick.
+   */
+  stance?: MarchStance;
   version: number;
 }
 
