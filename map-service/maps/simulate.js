@@ -96,7 +96,10 @@ export function simulate(art) {
   // Structures/mobs are DEFENDER-side. The defender base sitting among its OWN towers is fine;
   // the hard concern is the ATTACKER's assault spawn dropping under those towers. Reinforcement
   // entries (side ANY) only become "enemy-adjacent" in CLASH (an army bases there) → soft check.
-  const hazards = [...(art.structures || []), ...(art.mobs || [])];
+  // ENEMY hazards only: a two-sided map (e.g. the MOBA arena) carries ATTACKER-side structures —
+  // the attacker's own core/towers around its spawn are not a kill-box. Unsided structures stay
+  // hazards (generated maps' towers/castle rings are defender content).
+  const hazards = [...(art.structures || []).filter((st) => st.side !== "ATTACKER"), ...(art.mobs || [])];
   const clearOf = (s) => { let m = Infinity; for (const hz of hazards) { const d = Math.sqrt(dist2(s.x, s.z, hz.x, hz.z)); if (d < m) m = d; } return m; };
   const atkEntries = entries.filter((s) => s.side === "ATTACKER");
   let minSafe = Infinity, worst = null;
