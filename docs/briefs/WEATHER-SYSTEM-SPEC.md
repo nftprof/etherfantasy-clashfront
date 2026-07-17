@@ -46,10 +46,10 @@ intel (CF sim), and the render fog distance (module) from ONE value — "clouds:
 
 ## 3. Who builds what
 
-- **CF ParcelMap (me):** the ZONE WEATHER FIELD data + `weatherAt` reference implementation —
-  seeded noise drifting with per-zone prevailing wind (UW zones: no weather except HS/UW-specific
-  sets — UW2 mists, UW3 ashfall as FOG/SNOW reskins; sky zones: wind-dominant). Plus the overworld
-  cloud LAYER for the world map UI (clouds visibly cover regions — players SEE the front coming).
+- **CF ParcelMap: NOTHING now (owner 2026-07-17 — weather is not map design).** Map artifacts/
+  manifests stay weather-agnostic, guaranteed (§5). Only if the drifting field later wants authored
+  per-zone flavor (UW2 mists, UW3 ashfall, sky-zone wind dominance, prevailing-wind vectors) does a
+  small `_meta.weather` block land in the zone fields — on request, not scheduled.
 - **CF Overworld eco:** tick the field, apply overworld effects (march cost, intel, interception),
   put `weather` into the allocate context + start payload (the seam exists), `weatherOverride`
   admin/event API ("triggered").
