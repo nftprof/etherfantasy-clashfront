@@ -3,6 +3,12 @@
 > **Owners:** CF Overworld eco (STATE + owner overrides), MOBA BattleEngine RAW
 > (visuals), EF Moba match-server + CF sim (gameplay). Cross-team split ratified
 > in `docs/coord/MOBA-CF-COORD.md` #COORD-003 (2026-07-15).
+> **Companion doc:** `docs/briefs/WEATHER-SYSTEM-SPEC.md` (owner 2026-07-17,
+> renderer-agent-authored) — the architecture spec (three-layer flow, state
+> vocabulary, render/gameplay hooks per state, v1→v2 rollout). **THIS doc = the
+> CF-side sim implementation** (per-continent probability cards, deterministic
+> `weatherAt()` scaffolding, weather × pet-element type-advantage matrix). Read
+> both together; they compose without conflict.
 > **Prereqs:** decision 14 (Masters are ELEMENT-FREE, elements live on pets),
 > decision 22 (per-continent geography), `data/zone-cultures.json` (12 zones),
 > `data/zone-registry.json` (continent metadata).

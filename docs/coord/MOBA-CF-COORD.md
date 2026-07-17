@@ -129,7 +129,11 @@ advantage". Weather × pet element ≈ ±15% damage swing; terrain overrides (la
 parcel, frozen parcel, forest parcel) stack.
 
 **Impl:**
-- `docs/briefs/WEATHER-CONTINENT-PLAN.md` (this cycle)
+- `docs/briefs/WEATHER-SYSTEM-SPEC.md` (owner 2026-07-17, renderer agent) —
+  the architecture spec (3-layer flow, states vocab, render/gameplay hooks)
+- `docs/briefs/WEATHER-CONTINENT-PLAN.md` (CF side, this cycle) — companion
+  to the spec above: per-continent probability cards, `weatherAt()` sim
+  function, type-advantage matrix. Both docs compose; read together.
 - `data/continent-weather.json` — 12 continent probability cards v0.1 (this cycle)
 - `packages/sim-engine/src/weather.ts` — `weatherAt()` Phase-0 scaffolding (this cycle)
 - Allocate-context field extension — **PENDING** (bundle with COORD-002 impl)
