@@ -747,23 +747,41 @@ function castleLayout(g, G, rng, { base, atkPt, poly, half, budgetLevel, bridge 
     if (gi >= 0) { taken.add(gi); ring[gi].tower = true; }
   }
   const out = [];
+  const gateInfo = [];
   let wallN = 0, gateN = 0, towerN = 0;
   for (let i = 0; i < n; i++) {
     if (!ring[i].ok) continue;
-    if (gates.includes(i)) out.push({ anchorId: `castle_gate_${gateN++}`, kind: "GATE", side: "DEFENDER", x: ring[i].x, z: ring[i].z, hpMax: 700 + budgetLevel * 150 });
+    if (gates.includes(i)) {
+      const id = `castle_gate_${gateN++}`;
+      gateInfo.push({ at: [ring[i].x, ring[i].z], structureId: id });
+      out.push({ anchorId: id, kind: "GATE", side: "DEFENDER", x: ring[i].x, z: ring[i].z, hpMax: 700 + budgetLevel * 150 });
+    }
     else if (ring[i].tower) out.push({ anchorId: `castle_tower_${towerN++}`, kind: "TOWER", side: "DEFENDER", x: ring[i].x, z: ring[i].z, hpMax: 1600 + budgetLevel * 250 });
     else out.push({ anchorId: `castle_wall_${wallN++}`, kind: "WALL", side: "DEFENDER", x: ring[i].x, z: ring[i].z, hpMax: 900 + budgetLevel * 150 });
   }
-  return out;
+  // CASTLE-ARCHITECTURE-SPEC §5: the geometry block the shared renderer extrudes CONTINUOUS
+  // crenellated curtain walls from (the structures above stay the HP/collision truth — every ring
+  // vertex maps onto a structure anchor).
+  const geom = { pts: ring.filter((p) => p.ok).map((p) => [p.x, p.z]), gates: gateInfo, keepAt: [r1(cx), r1(cz)] };
+  return { structures: out, geom };
 }
+
+// tier ladder + per-tier build numbers (CASTLE-ARCHITECTURE-SPEC §3: walls climb, keeps crown)
+const CASTLE_TIERS = {
+  PALACE: { wallH: 11, keepTiers: 3, keepH: 30, moundRaise: 6 },
+  CASTLE: { wallH: 9, keepTiers: 2, keepH: 22, moundRaise: 4 },
+  KEEP: { wallH: 7, keepTiers: 2, keepH: 16, moundRaise: 3 },
+};
+// §2 style keys: PALACES carry their zone's named identity; everything else = generic fieldstone
+const PALACE_STYLES = { UW2: "drowned_bastion", ENT: "carnavale", EDU: "collegiate", HUB: "vermilion", BUS: "hanseatic" };
 
 // Generator version — BUMP whenever generation output meaningfully changes (palette rules, terrain
 // passes, water, structures…). Stamped into meta; registry.ensureDesign auto-reseeds stale SEED_V0
 // rows (pure seed maps, no owner work) so cached registries self-heal on next view — no manual bust.
 // v2 = zone-coherent biomeFamily palettes (2026-07-14). v3 = v2 re-stamped after the box dataRoot
 // fix. v4 = geometry-based mode support (SIEGE/GUARD from geometry; occupant content overlays at
-// battle time) — reseed so every SEED_V0 row re-stamps meta.modes.
-export const GEN_VERSION = 4;
+// battle time). v5 = castleGeom block (rings/keep/mound/styleKey — CASTLE-ARCHITECTURE-SPEC §5).
+export const GEN_VERSION = 5;
 
 export function generate(parcel, params = null, designVersion = 0) {
   const { parcelId, biome = "", zone = "" } = parcel;
@@ -928,9 +946,10 @@ export function generate(parcel, params = null, designVersion = 0) {
   }
   // 3c) CASTLE LAYOUT: grow the WALL/GATE/TOWER ring around the relocated defender base (the
   //     castle IS the defended base). Runs after the carve so the courtyard/gates stay open.
-  const castleStructures = castle
+  const castleParts = castle
     ? castleLayout(g, G, rng, { base, atkPt: atk, poly, half, budgetLevel: budget.level, bridge })
-    : [];
+    : null;
+  const castleStructures = castleParts ? castleParts.structures : [];
   sealDisconnectedPockets(g, G);
 
   // resource nodes: exactly p.resourceNodes (budget-capped). Explicit resourceAt placements
@@ -1051,6 +1070,21 @@ export function generate(parcel, params = null, designVersion = 0) {
     meta: { seed, designVersion, genVersion: GEN_VERSION, parcelId, biome, zone, params: p, repairs: v.repairs,
             budget: { level: budget.level, name: budget.name },
             ...(castle ? { castle: { id: castle.id, kind: castle.kind, name: castle.name } } : {}),
+            ...(castleParts ? (() => {
+              // CASTLE-ARCHITECTURE-SPEC §5 — the geometry the shared renderer builds real
+              // fortresses from: continuous wall ring(s), the keep, the ELEVATION mound (owner
+              // 2026-07-17: "even with extra elevation, up a hill for the most epic"), style key.
+              const tier = CASTLE_TIERS[castle.kind] ? castle.kind : "KEEP";
+              const T2 = CASTLE_TIERS[tier];
+              const styleKey = tier === "PALACE" ? (PALACE_STYLES[zone] || "fieldstone") : "fieldstone";
+              return { castleGeom: {
+                tier, styleKey,
+                rings: [{ pts: castleParts.geom.pts, h: T2.wallH, gates: castleParts.geom.gates }],
+                keep: { at: castleParts.geom.keepAt, tiers: T2.keepTiers, h: T2.keepH },
+                mound: { steps: [{ ring: 0, raise: T2.moundRaise }] },
+                moat: styleKey === "drowned_bastion",
+              } };
+            })() : {}),
             ...(overlay.decor.length || overlay.dropped.length
               ? { overlay: { placed: overlay.decor.length, ...(overlay.dropped.length ? { dropped: overlay.dropped } : {}) } }
               : {}) },
