@@ -158,8 +158,13 @@ const waterMats=[];
     bi.data[q]=b;bi.data[q+1]=b;bi.data[q+2]=b;bi.data[q+3]=255;}
   bg.putImageData(bi,0,0);
   const bumpTex=new THREE.CanvasTexture(bcv);bumpTex.wrapS=bumpTex.wrapT=THREE.RepeatWrapping;
+  // wetland/swamp biomes get murky green-brown water (a bright shallow tint reads as ICE on the
+  // big marsh bodies — owner feedback, Bastion estate)
+  const wetl=parity&&man.biome&&man.biome.key==="wetland";
   const STYLE={
-    water:{color:0x2e6ea8,shallow:[0.62,0.80,0.92],deep:[0.10,0.26,0.44],op:0.9,shin:64,spec:0x5f83a8,em:0x06121e,emI:0.25,bump:0.38,speed:1},
+    water:wetl
+      ?{color:0x3d5a3c,shallow:[0.46,0.55,0.40],deep:[0.10,0.17,0.10],op:0.92,shin:36,spec:0x46543e,em:0x0a120a,emI:0.22,bump:0.5,speed:0.5}
+      :{color:0x2e6ea8,shallow:[0.55,0.72,0.85],deep:[0.10,0.26,0.44],op:0.9,shin:64,spec:0x5f83a8,em:0x06121e,emI:0.25,bump:0.38,speed:1},
     lava:{color:0xd8491c,shallow:[1.0,0.62,0.25],deep:[0.42,0.06,0.02],op:0.97,shin:6,spec:0x1a0a00,em:0xff5a1e,emI:0.8,bump:1.2,speed:0.25},
     ice:{color:0xbfdcea,shallow:[0.92,0.98,1.0],deep:[0.55,0.72,0.85],op:0.93,shin:170,spec:0xffffff,em:0x0a141c,emI:0.1,bump:0.15,speed:0}
   }[mode]||{color:0x2e6ea8,shallow:[0.62,0.80,0.92],deep:[0.10,0.26,0.44],op:0.88,shin:110,spec:0x9fc8ee,em:0x06121e,emI:0.25,bump:0.55,speed:1};
