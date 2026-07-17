@@ -1579,32 +1579,68 @@ function drainProvisions(side: Army[], key: 'food' | 'gold' | 'wood', amount: nu
  * battles panel what the fight was actually about. Gap 3 fix: unowned land +
  * multiple hostile armies = DOMINION, not the old arbitrary lex-first defender.
  */
+/**
+ * The universal fallback taxonomy — every parcel supports these three by
+ * construction (BATTLEFIELD-SCHEMA.md playability gate invariant 6).
+ * CLASH/DOMINION are capability flags in `meta.modes` (COORD-001); when the
+ * ideal-pick isn't supported, `intersectMode()` falls back through this list.
+ */
+const UNIVERSAL_MODES: readonly ('DUEL' | 'SIEGE' | 'GUARD' | 'CLASH' | 'DOMINION')[] = [
+  'DUEL', 'SIEGE', 'GUARD',
+];
+
+/**
+ * Reconcile the sim's ideal mode pick with the parcel's `meta.modes[]`
+ * capability list (COORD-001 ratified 2026-07-15). When `supported` is
+ * undefined, the parcel supports everything (back-compat: standalone/legacy
+ * maps that predate meta.modes). Fallbacks:
+ *   CLASH   → DUEL   (3+ armies on non-fair-edge geometry — extras route to
+ *                     Scenario H reinforcement queue, already shipped)
+ *   DOMINION → DUEL  (no viable center objective — resolve as 2-side fight)
+ * DUEL/SIEGE/GUARD are universal per the playability gate, so their fallback
+ * never triggers (kept as identity for safety).
+ */
+export function intersectMode(
+  ideal: 'DUEL' | 'SIEGE' | 'GUARD' | 'CLASH' | 'DOMINION',
+  supported?: readonly ('DUEL' | 'SIEGE' | 'GUARD' | 'CLASH' | 'DOMINION')[],
+): 'DUEL' | 'SIEGE' | 'GUARD' | 'CLASH' | 'DOMINION' {
+  if (supported === undefined || supported.includes(ideal)) return ideal;
+  if (ideal === 'CLASH' || ideal === 'DOMINION') return 'DUEL';
+  return ideal; // universal — kept as identity
+}
+
 function battleModeOf(
   state: WorldState,
   hexId: string,
   attackers: readonly Army[],
   defenders: readonly Army[],
+  supportedModes?: readonly ('DUEL' | 'SIEGE' | 'GUARD' | 'CLASH' | 'DOMINION')[],
 ): 'DUEL' | 'SIEGE' | 'GUARD' | 'CLASH' | 'DOMINION' {
   const terr = territoryAt(state, hexId);
   const totalArmies = attackers.length + defenders.length;
   // All defenders SYSTEM (wild mobs / no defenders at all) → GUARD.
   if (defenders.length > 0 && defenders.every((d) => state.governorKinds?.get(d.ownerGovernorId) === 'SYSTEM')) {
-    return 'GUARD';
+    return intersectMode('GUARD', supportedModes);
   }
   // Player-owned territory with a defender ⇒ SIEGE.
   if (terr !== undefined && terr.governorKind !== 'SYSTEM' && defenders.some((d) => d.ownerGovernorId === terr.governorId)) {
-    return 'SIEGE';
+    return intersectMode('SIEGE', supportedModes);
   }
   // Unowned/SYSTEM land + no wild defenders + 2+ hostile armies ⇒ DOMINION.
   // (Gap 3, owner 2026-07-14: "no occupier ⇒ intent-driven DOMINION.")
   const noPlayerOwner = terr === undefined || terr.governorKind === 'SYSTEM';
   const noWildDefenders = defenders.every((d) => state.governorKinds?.get(d.ownerGovernorId) !== 'SYSTEM');
   const allHostile = [...attackers, ...defenders].every((a) => a.stance !== 'EVASIVE');
-  if (noPlayerOwner && noWildDefenders && totalArmies >= 2 && allHostile) return 'DOMINION';
+  if (noPlayerOwner && noWildDefenders && totalArmies >= 2 && allHostile) return intersectMode('DOMINION', supportedModes);
   // 3+ armies (or 2 without stakes) meeting engagement ⇒ CLASH.
-  if (totalArmies >= 3) return 'CLASH';
+  if (totalArmies >= 3) return intersectMode('CLASH', supportedModes);
   // Fallback: two-army fight with at least one side having a stake ⇒ DUEL.
-  return 'DUEL';
+  return intersectMode('DUEL', supportedModes);
+}
+
+/** Universal-mode list (COORD-001) — exported for callers that need the base set. */
+export function universalBattleModes(): readonly ('DUEL' | 'SIEGE' | 'GUARD' | 'CLASH' | 'DOMINION')[] {
+  return UNIVERSAL_MODES;
 }
 
 function disbandArmy(state: WorldState, a: Army): void {

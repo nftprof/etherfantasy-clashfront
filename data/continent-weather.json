@@ -1,0 +1,151 @@
+{
+  "_note": "Continent weather profiles v0.1 (owner-tunable). Consumed by packages/sim-engine/src/weather.ts weatherAt(seed, continentId, day). Rolls per continent per day; probabilities sum ≤ 1.0, residual = baseline. Zone keys match data/zone-cultures.json / data/zone-registry.json (12 continents). Vocabulary aligned with MOBA renderer WEATHER-SYSTEM-SPEC.md: clear · overcast · rain · storm · fog · wind · snow · heatwave. See docs/briefs/WEATHER-CONTINENT-PLAN.md for the full spec including type-advantage matrix.",
+  "_version": 1,
+  "_updatedAt": "2026-07-15",
+  "visibility": {
+    "clear": 1.0,
+    "overcast": 0.85,
+    "rain": 0.7,
+    "storm": 0.55,
+    "fog": 0.45,
+    "wind": 0.9,
+    "snow": 0.6,
+    "heatwave": 0.9
+  },
+  "continents": {
+    "HUB": {
+      "name": "Tianxia",
+      "baseline": "clear",
+      "chances": {
+        "rain": 0.25,
+        "storm": 0.10,
+        "snow": 0.15,
+        "fog": 0.10,
+        "wind": 0.05,
+        "heatwave": 0.05
+      }
+    },
+    "ENT": {
+      "name": "Mythoria",
+      "baseline": "clear",
+      "chances": {
+        "rain": 0.30,
+        "storm": 0.10,
+        "fog": 0.15,
+        "wind": 0.10,
+        "heatwave": 0.05
+      }
+    },
+    "BUS": {
+      "name": "Athlantia",
+      "baseline": "clear",
+      "chances": {
+        "rain": 0.20,
+        "storm": 0.05,
+        "fog": 0.10,
+        "wind": 0.10,
+        "heatwave": 0.15
+      }
+    },
+    "EDU": {
+      "name": "Education",
+      "baseline": "clear",
+      "chances": {
+        "rain": 0.25,
+        "storm": 0.10,
+        "snow": 0.10,
+        "fog": 0.15,
+        "wind": 0.10,
+        "heatwave": 0.05
+      }
+    },
+    "HS1": {
+      "name": "High Sky — Sky Meadow",
+      "baseline": "clear",
+      "chances": {
+        "rain": 0.15,
+        "storm": 0.10,
+        "snow": 0.20,
+        "fog": 0.15,
+        "wind": 0.30
+      }
+    },
+    "HS2": {
+      "name": "High Sky — Storm Reach",
+      "baseline": "overcast",
+      "chances": {
+        "rain": 0.25,
+        "storm": 0.40,
+        "snow": 0.10,
+        "fog": 0.15,
+        "wind": 0.30
+      }
+    },
+    "HS3": {
+      "name": "High Sky — Bright Halls",
+      "baseline": "clear",
+      "chances": {
+        "rain": 0.10,
+        "storm": 0.05,
+        "snow": 0.15,
+        "fog": 0.05,
+        "wind": 0.25,
+        "heatwave": 0.05
+      }
+    },
+    "UW1": {
+      "name": "Underworld — Mist Sea",
+      "baseline": "fog",
+      "chances": {
+        "rain": 0.15,
+        "storm": 0.05,
+        "fog": 0.55,
+        "wind": 0.05
+      }
+    },
+    "UW2": {
+      "name": "Underworld — Ash Desert",
+      "baseline": "overcast",
+      "chances": {
+        "storm": 0.15,
+        "fog": 0.25,
+        "wind": 0.20,
+        "heatwave": 0.25
+      }
+    },
+    "UW3": {
+      "name": "Underworld — Diminished Realm",
+      "baseline": "overcast",
+      "chances": {
+        "rain": 0.20,
+        "storm": 0.30,
+        "fog": 0.25,
+        "wind": 0.15,
+        "heatwave": 0.05
+      }
+    },
+    "CGI": {
+      "name": "CGI Experimental",
+      "baseline": "clear",
+      "chances": {
+        "rain": 0.20,
+        "storm": 0.10,
+        "snow": 0.15,
+        "fog": 0.15,
+        "wind": 0.15,
+        "heatwave": 0.05
+      }
+    },
+    "KOL": {
+      "name": "KOL Prestige Island",
+      "baseline": "clear",
+      "chances": {
+        "rain": 0.15,
+        "storm": 0.05,
+        "fog": 0.05,
+        "wind": 0.10,
+        "heatwave": 0.20
+      }
+    }
+  }
+}

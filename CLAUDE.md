@@ -371,6 +371,7 @@ and cross-repo reports are delivered into subfolders here:
 
 - `docs/` — the design bible (canon)
 - `docs/briefs/` — mission briefs for satellite work-stream sessions (maps, battle engine, …)
+- `docs/coord/MOBA-CF-COORD.md` — **cross-team running Q&A log** (CF ⇄ ParcelMap ⇄ MOBA network ⇄ MOBA renderer). Before answering a cross-team Q, `git pull` and skim this doc; append new open Qs here rather than DMing the owner. Prime directive for coord: canon still lives in `docs/README.md` + `docs/08` + `docs/briefs/*` — this doc RELAYS answers, never invents them.
 - `docs/reports/` — discovery/extraction reports delivered by those sessions
 - `data/` — permanent extracted assets (e.g. `parcels.json` — the hexagone-city parcel snapshot)
 - `packages/` — the monorepo code (shared canon, sim-engine, …)

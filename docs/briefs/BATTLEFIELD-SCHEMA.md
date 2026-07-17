@@ -47,7 +47,23 @@ coordinate space — the battlefield frame is world-units at ≈0.74 m/unit, not
     "biome": "TEMPERATE_FOREST",    // palette + prop set selector
     "sizeClass": "SINGLE",          // SINGLE … EPIC (docs/04 §7b ladder)
     "sizeM": 322,                   // world-UNIT edge (fixed ±161 frame), NOT metres; ~0.74 m/unit
-    "laneCount": 1                  // 1 default; 3 for estates. A PARAMETER, not a gate.
+    "laneCount": 1,                 // 1 default; 3 for estates. A PARAMETER, not a gate.
+
+    // Mode CAPABILITY flags (owner 2026-07-15, ParcelMap feedback point 2). Universal modes
+    // (DUEL/SIEGE/GUARD) are always supported — no need to list them. CLASH/DOMINION are
+    // OPTIONAL: geometry that can't produce fair per-edge starts (elongated slivers, ~2.5% of
+    // real parcels) omits them here rather than being rejected. CF's battleModeOf() intersects
+    // its ideal-mode pick with this list and falls back through the taxonomy
+    // (CLASH→DUEL, DOMINION→DUEL) when the parcel doesn't support the ideal. 3+ armies on a
+    // non-CLASH parcel resolve as DUEL + Scenario H reinforcement queue for the extras.
+    "modes": ["DUEL", "SIEGE", "GUARD", "CLASH", "DOMINION"],
+
+    // Weather source of truth (owner 2026-07-15, WEATHER-CONTINENT-PLAN.md). CF derives the
+    // battle's weather from this continent's probability card at allocate time via
+    // weatherAt(seed, continentId, tick). Present on every generated map so the renderer +
+    // match-server + CF sim all read the same state. Empty = "no continent context" (used only
+    // by isolated stand-in maps; production maps ALWAYS set it).
+    "continentId": "ENT"
   },
 
   "arena": {
@@ -73,9 +89,35 @@ coordinate space — the battlefield frame is world-units at ≈0.74 m/unit, not
     { "id": "wood_01", "kind": "WOOD_GROVE", "x": -70,"z": -40, "richness": 2 }
   ],
 
-  // Anchor points occupiers may build defense modules on (docs/04 §7b.2b). side omitted = neutral.
+  // Anchor points occupiers may build defense modules on (docs/04 §7b.2b), AND spots the
+  // in-battle RTS layer spends gold on to erect towers/gates/walls mid-fight (owner Q1
+  // 2026-07-15 — CF wants in-battle build/collect; the CT↔Gold round-trip needs deterministic
+  // slot positions on every generated map). REQUIRED — never empty on a generated map.
+  //
+  // Fields (owner 2026-07-15, ParcelMap feedback + coord doc COORD-001):
+  //   id           stable slug (bs_ne_1); anchorId emitted alongside during migration
+  //   x, z         world-units in the ±161 frame (y = height and unused here)
+  //   type         'WALL' | 'TOWER' | 'GATE' | 'ANY' (ANY = player picks at build time)
+  //   side         'DEFENDER' | 'ATTACKER' | 'NEUTRAL' (defender ring vs mid-field vs contested)
+  //   size         build-footprint radius (world-units) — sim reach check + scatter keep-outs
+  //                consume it; per-type defaults ⚙ WALL 3 / TOWER 4 / GATE 5 / ANY 4
+  //   bakedInto?   structure anchorId when the fortification ladder already consumed this slot
+  //                (EPIC=PALACE, GIANT=CASTLE, LARGE=KEEP → their WALL/GATE/TOWER structures
+  //                emit as buildSpots with bakedInto: <structure anchorId>, so CF knows the
+  //                slot is spent and doesn't offer it to the "auto-upgrade defense" flow)
+  //   tierUnlock?  0..5 unlock priority — CF reads first N spots where N = 4 + 2·tier (cap 16);
+  //                if omitted, CF falls back to stable array ordering (defender-ring first,
+  //                midfield mid, forward-field last is the ParcelMap-recommended order)
+  //
+  // Counts per sizeClass (max, seeded at mass-gen; CF reveals per investment tier):
+  //   SMALL/open single: 6      (4 base + 2 tier)
+  //   MEDIUM manor:      10     (4 base + 6 tier)
+  //   LARGE KEEP:        14     (4 baked ring + 4 base + 6 tier)
+  //   GIANT CASTLE:      16     (6 baked ring + 4 base + 6 tier)
+  //   EPIC PALACE:       per-component (same formula on each POI parcel of the estate board)
   "buildSpots": [
-    { "anchorId": "spot_01", "x": 20, "z": 60, "size": "M", "side": "DEFENDER" }
+    { "id": "bs_def_1", "anchorId": "bs_def_1", "x": 20, "z": 60, "type": "TOWER", "side": "DEFENDER", "size": 4, "tierUnlock": 0 },
+    { "id": "bs_mid_1", "anchorId": "bs_mid_1", "x":  0, "z":  0, "type": "ANY",   "side": "NEUTRAL",  "size": 4, "tierUnlock": 3 }
   ],
 
   // Where each side's units enter. edge = compass hint (matches overworld approach direction).
@@ -114,6 +156,16 @@ that could disagree with the geometry.
 
 ## Validation invariants the generator MUST guarantee (playability gate)
 
+**Aligned 2026-07-15 (ParcelMap feedback point 2, coord doc COORD-001):** the gate is HARD
+invariants + universal-mode support. CLASH/DOMINION were formerly rejection criteria; sliver
+geometry (~2.5% of real parcels) can't produce fair per-edge starts and re-rolling a
+deterministic seed never fixes it (same seed ⇒ same shape). Those modes are now capability
+flags in `meta.modes` — the map SHIPS with them omitted rather than being rejected, and the
+CF sim reads `meta.modes` before offering the mode. At 292k parcels this saves ~7,000 from a
+permanent stuck-in-the-floodgate outcome.
+
+**HARD invariants (all must pass — reject if any fails):**
+
 1. **Every `spawnZone` edge has a corridor** of min width ⚙ `W` (≈ 8 m) reaching the base area —
    no spawn can be walled off (reinforcements enter at ANY edge, `docs/04` §7b).
 2. **Every lane is pathable end-to-end** on the walkability rule above.
@@ -121,6 +173,17 @@ that could disagree with the geometry.
    obstacle or outside `bounds`.
 4. **Base area clear radius** ⚙ around each `CORE`/main structure.
 5. **Deterministic**: same `seed` + params ⇒ byte-identical object (no Date.now/Math.random).
+6. **DUEL / SIEGE / GUARD supported** on every generated map (universal, geometry-agnostic).
+7. **`buildSpots` populated** per the sizeClass count table above (never `[]` on production maps).
+
+**Capability flags (recorded in `meta.modes`, NOT gates):**
+
+- **CLASH** supported iff ≥ 2 mutually-fair edge starts exist (`sim.fairEdges` check).
+- **DOMINION** supported iff a viable center objective slot exists on walkable ground.
+
+CF sim consequence: `battleModeOf()` intersects its ideal pick with `meta.modes` and falls
+back through the taxonomy (CLASH→DUEL, DOMINION→DUEL) on non-supporting parcels; excess
+armies queue via Scenario H reinforcement (`REINFORCEMENT-LANE-QUEUE.md`, already shipped).
 
 Fail any invariant ⇒ the generator repairs (carve corridor / move node) and re-validates before
 emitting. A map that ships MUST pass all five — that's what lets owner-prompted maps be safe.
