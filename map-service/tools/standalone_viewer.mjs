@@ -46,7 +46,7 @@ try {
   manifest = convert(artifact, { parcelId: pid, designVersion: artifact.meta?.designVersion ?? 0 });
   // the module's header comment shows usage with literal </script> tags — escape them or they
   // terminate the inline <script> block early when the source is embedded in the page
-  moduleSrc = readFileSync(path.join(ROOT, "map-service/maps/ef_battlefield.js"), "utf8").replace(/<\/script/gi, "<\\/script");
+  moduleSrc = readFileSync(path.join(ROOT, "map-service/maps/ef_battlefield_renderer.js"), "utf8").replace(/<\/script/gi, "<\\/script");
   const floorPng = path.join(ROOT, `map-service/floors/${manifest.biome.floor}.png`);
   if (existsSync(floorPng)) {
     const b64 = readFileSync(floorPng).toString("base64");

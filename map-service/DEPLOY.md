@@ -110,7 +110,7 @@ retire the maps ROUTE, not necessarily the whole process. The owner's intent ("r
 path/site") is satisfied the moment `~/ef-battlefields` has a single writer and the public map path
 is `map.etherfantasy.com → :8150` only.
 
-## 🔒 RENDERER FREEZE (2026-07-14, until the MOBA session signals switchover)
+## ✅ RENDERER SWITCHOVER DONE (2026-07-17) — the UNIFIED shared module
 
 `maps/ef_battlefield.js` is being unified into ONE shared module owned by the MOBA session
 (provisional name `ef_battlefield_renderer.js`; plan: MOBA repo

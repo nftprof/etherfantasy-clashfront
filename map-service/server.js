@@ -123,10 +123,13 @@ export function handleRequest(req, res) {
   // gallery landing page (all-maps + my-land filter → click into /designer)
   if (p === "/" || p === "/gallery" || p === "/gallery/") return sendFile(res, "maps/gallery.html", "text/html");
 
-  // Nine-layer render assets (pristine mirrors of the MOBA repo — shared/ef_battlefield.js +
-  // floors/*.png). The 3D preview loads the module and the module fetches its biome floor texture
-  // from /floors/. Floors are content-stable game art → long cache.
-  if (p === "/ef_battlefield.js") return sendFile(res, "maps/ef_battlefield.js", "application/javascript");
+  // Nine-layer render assets (pristine mirrors of the MOBA repo — the UNIFIED shared renderer
+  // shared/ef_battlefield_renderer.js + floors/*.png). The 3D preview loads the module and the
+  // module fetches its biome floor texture from /floors/. Floors = content-stable art → long cache.
+  // /ef_battlefield.js = the pre-unification module (served from the .bak) — ?legacyRenderer=1
+  // rollback path per the switchover protocol; remove after soak.
+  if (p === "/ef_battlefield_renderer.js") return sendFile(res, "maps/ef_battlefield_renderer.js", "application/javascript");
+  if (p === "/ef_battlefield.js") return sendFile(res, "maps/ef_battlefield.js.bak", "application/javascript");
   {
     const fl = /^\/floors\/([a-z0-9_]+\.png)$/.exec(p);
     if (fl) {

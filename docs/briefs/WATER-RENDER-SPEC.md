@@ -40,6 +40,18 @@ bathtub. Blurred-canvas footprints also leave milky white shoreline fringes. Own
 `transparent: true, depthWrite: false, vertexColors: true, renderOrder: 1`. Determinism: the bump
 noise and any jitter draw from the parcel seed — same water every load, all clients.
 
+## V4 addendum (2026-07-17) — the multi-elevation marsh case
+
+Found on regenerated `60202790016`: ONE connected water component sprawling across different
+elevations. A single flat waterline per body (this recipe) leaves the higher ground inside the
+component exposed as pale dipped floor; a terrain-following sheen glares. **The correct fix needs
+the PRE-dip ground height** — per-cell fill level `waterSurfaceY = preDipGround − ε`, which only the
+converter knows at dip time. Recommendation for the module V4: the converter emits a per-cell water
+SURFACE height (u8 grid alongside `masks.water`, same encoding as `height`), and the renderer builds
+the water mesh from it directly — flat within each basin, stepped across elevation, no derivation
+client-side. Also carry the biome styles (incl. the wetland murk row above) and skip-foam-on-tiny-
+bodies from the CF preview iterations.
+
 ## Integration notes
 
 - Everything you need is already in the manifest: `masks.water`, the height grid, `biome.water`.
