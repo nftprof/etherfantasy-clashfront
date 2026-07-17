@@ -72,32 +72,52 @@ continent card everywhere within that continent.
 means it's raining across all Mythoria battles that day. Sub-region and
 per-parcel micro-climates are v0.2+.
 
-## Type advantage matrix (weather × pet element)
+## Type advantage matrix (weather × element)
 
-Elements live on **pets/units** (decision 14 — Masters element-free). Base ±15%
-damage swing; terrain overrides (below) stack multiplicatively. Element list
-follows `data/PETS_ROSTER.csv` categories.
+**Canonical battle rule lives in `docs/briefs/WEATHER-COMBAT-SPEC.md`** (owner
+2026-07-17, MOBA-locked): base swing ±15%, terrain overrides stack, **combined
+weather+terrain clamped to ±35%** (anti-snowball guard), and the affinity
+multiplies damage SEPARATELY from the existing 1.5×/0.7× type chart. This table
+is the CF-side reference — the MOBA client/server sims are the enforcement,
+and both must mirror the same numbers (PARITY-SCRUB flagged).
+
+**Element vocabulary reconciled to `mon_lineage.json`** (MOBA-canon, 2026-07-17):
+WATER→**Water**, ELECTRIC→**Lightning**, GROUND→**Earth**, DARK→**Phantom**,
+PSYCHIC→**Telepath**, GRASS→**Leaf**, WIND→**Flyer**, LIGHT→**Mystic**. Fire /
+Ice / Dragon keep their names. **Weather-NEUTRAL** (no swing either way):
+Combat, Insect, Iron, Rock, Toxin, Neutral. **Masters stay element-free**
+(decision 14) — never eligible for the affinity multiplier regardless.
 
 | Weather | Boosts (+15% dmg) | Weakens (−15% dmg) | Notes |
 |---|---|---|---|
 | **clear** | — | — | baseline |
-| **overcast** | — | FIRE −5% | mild sun-block |
-| **rain** | WATER, ELECTRIC | FIRE, GROUND | fire-based traps + structures **won't ignite** |
-| **storm** | ELECTRIC ×1.2 | FLYING, FIRE | thunder strike chance ⚙ on tallest exposed unit |
-| **fog** | DARK, PSYCHIC | LIGHT, FLYING | intel sight-radius × 0.45 (line-of-sight) |
-| **wind** | FLYING, WIND | siege lobs (arc weapons) | tower arrows lose accuracy ⚙ |
-| **snow** | ICE | FIRE, DRAGON | movement +25% moveCost; fire-traps disabled |
-| **heatwave** | FIRE, DRAGON | ICE, WATER | food upkeep ×1.15 during battle |
+| **overcast** | — | Fire −5% | mild sun-block |
+| **rain** | Water, Lightning | Fire, Earth | fire-based traps + structures **won't ignite** |
+| **storm** | Lightning (×1.2) | Flyer, Fire | thunder strike chance ⚙ on tallest exposed unit |
+| **fog** | Phantom, Telepath | Mystic, Flyer | intel sight-radius × 0.45 (line-of-sight) |
+| **wind** | Flyer | siege lobs (arc weapons) | tower arrows lose accuracy ⚙ |
+| **snow** | Ice | Fire, Dragon | movement +25% moveCost; fire-traps disabled |
+| **heatwave** | Fire, Dragon | Ice, Water | food upkeep ×1.15 during battle |
 
-**Terrain overrides** (always-on, per-parcel, stack with weather):
+**Terrain overrides** (always-on, per-parcel, stack with weather, capped at
+combined ±35%):
 
 | Terrain | Effect |
 |---|---|
-| **Lava parcel** | FIRE +20% permanent, ICE/WATER/GRASS −20%, ambient tick damage to ICE units |
-| **Frozen parcel** | ICE +15%, FIRE −15%, movement +15% moveCost baseline |
-| **Forest parcel** | GRASS +10%, FIRE −10% (amplifies rain's fire debuff) |
-| **Water parcel** | WATER +15%, ELECTRIC ×1.15 (chain-shock chance), FIRE −15% |
-| **Underworld parcels** (UW1–3) | DARK +10%, LIGHT −10% ambient (the deep favors shadow) |
+| **Lava parcel** | Fire +20% permanent, Ice/Water/Leaf −20%, ambient tick damage to Ice units |
+| **Frozen parcel** | Ice +15%, Fire −15%, movement +15% moveCost baseline |
+| **Forest parcel** | Leaf +10%, Fire −10% (amplifies rain's fire debuff) |
+| **Water parcel** | Water +15%, Lightning ×1.15 (chain-shock chance), Fire −15% |
+| **Underworld parcels** (UW1–3) | Phantom +10%, Mystic −10% ambient (the deep favors shadow) |
+
+**Scope open Q (owner call — MOBA agent flagged 2026-07-17):** current MOBA
+gives heroes + line-soldiers + pets an element. Applying the affinity swing to
+all typed units is simpler + more consistent, but broader than "elements live
+on PET selection" (decision 14). My recommendation: **pets first (MVP), extend
+to typed line-soldiers next**; heroes/Masters stay element-free per canon (no
+affinity swing) — MOBA client gates by unit kind. If owner instead rules "apply
+to all typed units", decision 14's canon needs a footnote and CF's `Officer`
+schema needs an optional `element` field.
 
 ## Sim consumers — three cheap sites
 

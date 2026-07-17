@@ -141,9 +141,53 @@ parcel, frozen parcel, forest parcel) stack.
 
 ---
 
+### COORD-004 — Weather × element combat rule locked (2026-07-17)
+
+**Opened by:** MOBA BattleEngine RAW (I own battle). **Status:** DONE (spec locked, build in-flight both sides).
+
+**Question:** CF sent the weather × element type-advantage matrix (±15% swing).
+How does it stack with existing 1.5×/0.7× type chart, is there a cap, and does
+the vocabulary match `mon_lineage.json`?
+
+**Answer (MOBA-locked, adopted CF's matrix):**
+
+- Base swing **±15%** (CF's number — "the day matters", not a hard counter)
+- Terrain overrides **stack** (lava +20% Fire, frozen +15% Ice, forest +10% Leaf, …)
+- **Combined weather + terrain clamped to ±35%** (anti-snowball, addresses OP concern)
+- Multiplies **SEPARATELY** from the existing 1.5×/0.7× type-chart multiplier
+- Presentation dual-track: **obvious** (weather visuals + match-start banner
+  "☔ Rainy — 💧 Water +15% · 🔥 Fire −15%" + HUD affinity chip) + **subtle**
+  (per-hit VFX flourishes on the existing advantage ring when element is empowered)
+- Element vocabulary reconciled to `mon_lineage.json` (MOBA canon):
+  `WATER→Water · ELECTRIC→Lightning · GROUND→Earth · DARK→Phantom ·
+   PSYCHIC→Telepath · GRASS→Leaf · WIND→Flyer · LIGHT→Mystic`.
+  Fire / Ice / Dragon keep names. Combat / Insect / Iron / Rock / Toxin /
+  Neutral are **weather-neutral** (no swing either way).
+- **Masters stay element-free** (decision 14, unchanged) — never eligible for
+  the affinity multiplier regardless of what other typed units get.
+
+**Impl:**
+- `docs/briefs/WEATHER-COMBAT-SPEC.md` (MOBA-authored, 2026-07-17) — canonical
+  battle rule; both client + server sims mirror the same table (PARITY-SCRUB).
+- Renderer weather V6 shipped 2026-07-17 (heatwave selectable on `/staging/bfmod.html`).
+- `docs/briefs/WEATHER-CONTINENT-PLAN.md` §"Type advantage" — realigned to
+  the reconciled vocabulary + ±35% cap + separate multiplier note.
+
+**Open sub-Q for owner (flagged 2026-07-17, MOBA agent):**
+> Apply affinity to **all typed units** (heroes + soldiers + pets — simplest,
+> most consistent) or **pets/mons only** (preserves decision 14 that elements
+> live on pet selection)?
+
+**CF-side recommendation:** pets first for MVP, extend to typed line-soldiers
+next, Masters/heroes stay element-free (decision 14 canon). If owner instead
+rules "all typed units", decision 14 needs a footnote and CF's `Officer` schema
+gains an optional `element` field. Awaiting owner call.
+
+---
+
 ## OPEN
 
-*(none right now — this doc's job is to keep it that way)*
+**COORD-004-sub — Affinity scope (2026-07-17):** heroes/soldiers/pets vs pets-only. Awaiting owner call. CF recommendation: pets-first, extend to soldiers next, Masters never.
 
 ---
 
