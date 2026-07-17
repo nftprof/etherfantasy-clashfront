@@ -1,0 +1,80 @@
+export const title = 'NFTs — what they do in the game';
+export const description = 'Land, Masters, Pets — three NFT layers, three chains, three real gameplay levers.';
+export const body = `
+<div class="page-head">
+  <div class="wrap-narrow">
+    <div class="eyebrow">NFTs</div>
+    <h1>Three layers of ownership</h1>
+    <p class="lede">NFTs aren't a checkbox in Clash Front. They're what you fight for, who you fight with, and who fights for you. Three layers, three chains, three real gameplay levers.</p>
+  </div>
+</div>
+
+<section class="slab"><div class="wrap">
+  <h2>Land — the parcels you play on</h2>
+  <p>The hexagon-city land NFTs are the world itself. Owning land in Clash Front is owning ground on the map:</p>
+  <ul>
+    <li><strong>L3 singles</strong> — a single parcel (~14 acres, ±161 battlefield frame). Polygon-tier. The building blocks.</li>
+    <li><strong>L2 estates</strong> — larger holdings (~7 hexes minimum, up to ~200 for PALACE-tier EPIC estates). Ethereum-tier. Fight as whole boards, not individual parcels.</li>
+  </ul>
+  <p>Land is <strong>permanent geography</strong>. Never regenerated, never remixed. Same parcels you own on <a href="https://map.hexagon.city">map.hexagon.city</a> are the ones you defend in CF.</p>
+  <div class="rule"><strong>Landlord tax:</strong> a landowner takes a 30% share of the CT flows that pass through their land. Occupiers spend, the land clips its cut, the landowner receives — even if the occupier isn't the owner. Enrichment (below) is how landlords make their land <em>worth</em> occupying.</div>
+</div></section>
+
+<section class="slab"><div class="wrap">
+  <h2>Masters — your commanders</h2>
+  <p>Ether Fantasy character NFTs. In CF, a Master is a real gameplay entity:</p>
+  <ul>
+    <li>You <strong>own</strong> her (permanent) or <strong>rent</strong> her (short-term, expires)</li>
+    <li>She <strong>oversees a territory</strong> — required while you hold the land</li>
+    <li>She <strong>leads an army</strong> — her fame feeds WarScore</li>
+    <li>You play <strong>as her</strong> when a battle goes live — she IS your champion in the 3D engine</li>
+    <li>Great deeds inscribed at their sites in the World Chronicle — permanently, in her name and yours</li>
+  </ul>
+  <p>52 rentable + 3 heroes = 55 usable Masters at launch. See the <a href="/masters.html">Masters page</a>.</p>
+</div></section>
+
+<section class="slab"><div class="wrap">
+  <h2>Pets — DNA blueprints</h2>
+  <p>Every pet NFT is <strong>the spawn-right for its species, not any single pet instance</strong>. Owning the NFT means you can summon that species on-demand, anywhere on the map, at a premium.</p>
+  <div class="rule">
+    <strong>The blueprint model:</strong> pet NFTs are formed from DNA. The NFT is the DNA record — the species template. Species headcount matters (mythic species have ~2 blueprints in existence, so only ~2 players can ever summon that species at will). Individual pet <em>bodies</em> — populace, workers, line soldiers, spawns — are uncapped commodity, drafted freely by the land they live on.
+  </div>
+  <p><strong>Why the premium?</strong> Any biome will draft its <em>native</em> pet species for free (or cheap) — a volcanic parcel drafts Fire pets, a rain forest drafts Leaf, and so on. Non-native summons cost more, because you're using your NFT blueprint to bring a species into a land that doesn't belong. That's the whole strategic point:</p>
+  <ul>
+    <li>Attacking a Fire-typed defender on volcanic ground? Own a Water/Ice blueprint. Summon a counter.</li>
+    <li>Defending in fog for weeks? Own a Phantom or Telepath blueprint. Native draft plus weather boost.</li>
+    <li>Storm season on HS2 favors Lightning? Own the blueprint, thin the enemy line.</li>
+  </ul>
+  <p><strong>DNA fragments</strong> drop from great battles and enriched-land yields. Enough fragments craft a new pet NFT of that species — the world grows its own blueprint pool over time.</p>
+</div></section>
+
+<section class="slab"><div class="wrap">
+  <h2>Chain split — three chains, three purposes</h2>
+  <div class="tbl-scroll"><table class="tbl">
+    <thead><tr><th>Chain</th><th>Assets</th><th>Why</th></tr></thead>
+    <tbody>
+      <tr><td>Ethereum L2</td><td>Estates (L2 land NFTs)</td><td>High-value long-hold assets. Sale liquidity, prestige.</td></tr>
+      <tr><td>Polygon L3</td><td>Singles (L3 land parcels)</td><td>Volume tier — 292k+ parcels. Cheap gas for frequent transfers.</td></tr>
+      <tr><td>Pentagon Chain</td><td>Characters (Masters), MOBA escrow, the CT token itself</td><td>Native to the ecosystem. On-chain per-user CT accounting, escrow, burn accounting.</td></tr>
+    </tbody>
+  </table></div>
+</div></section>
+
+<section class="slab"><div class="wrap">
+  <h2>How ownership shows up in-game</h2>
+  <p>Sign in with your Pentagon Games account. CF verifies with the identity API server-side and binds your PG identity to your CF governor. From there:</p>
+  <ul>
+    <li>Your <strong>land</strong> shows on the world map with your color and empire name</li>
+    <li>Your <strong>Masters</strong> pool is live-synced from the Masters API (owned + rented, KO status, revive timers)</li>
+    <li>Your <strong>pet blueprints</strong> unlock the summon panel for those species anywhere</li>
+    <li>Your CT balance tracks all in-game economy, on-chain, per-user</li>
+  </ul>
+  <p>If the API is temporarily down, CF falls back to a demo roster — you always have officers to play with, but real ownership is what shows up when the API is live.</p>
+</div></section>
+
+<section class="slab"><div class="wrap">
+  <h2>Named artifacts (Singulars)</h2>
+  <p>Beyond the base rosters, there are <strong>36 named one-of-one items</strong> — the world's Singulars. Legendary weapons, rites, potions. Each has a specific location and a story. Some are permanent (bind to first-finder in the World Chronicle), some are consumables tied to the Descent rites — the Midway Potion, the Last Fortune, the Blood Scimitar, the Homeward Bowl.</p>
+  <p class="dim">Full Singulars list: <code>data/singulars.json</code>. World Chronicle inscription system on the roadmap.</p>
+</div></section>
+`;

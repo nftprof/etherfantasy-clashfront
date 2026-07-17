@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Masters · Clash Front</title>
+  <meta name="description" content="52 rentable Masters + 3 heroes. Character NFTs that lead armies on the overworld and fight as champions in-battle.">
+  <link rel="stylesheet" href="/assets/site.css">
+</head>
+<body>
+<!-- BEGIN header -->
+<div class="dev-ribbon">
+  <div class="wrap">
+    <strong>PRE-ALPHA</strong>
+    <span>MVP demo live · World simulation in build · Public playtest TBA</span>
+  </div>
+</div>
+<header class="site">
+  <div class="wrap">
+    <a href="/" class="brand">Clash Front <span>· Ether Fantasy</span></a>
+    <button class="nav-toggle" aria-label="Toggle navigation">☰</button>
+    <nav class="primary">
+      <a href="/">Home</a>
+      <a href="/world.html">World</a>
+      <a href="/battles.html">Battles</a>
+      <a href="/masters.html">Masters</a>
+      <a href="/pets.html">Pets</a>
+      <a href="/army.html">Army</a>
+      <a href="/nft.html">NFTs</a>
+      <a href="/weather.html">Weather</a>
+      <a href="/servers.html">Servers</a>
+      <a href="/roadmap.html">Roadmap</a>
+      <a href="/getting-started.html">Start</a>
+    </nav>
+  </div>
+</header>
+<!-- END header -->
+<main>
+
+<div class="page-head">
+  <div class="wrap-narrow">
+    <div class="eyebrow">The champions</div>
+    <h1>Fifty-five commanders — and every one is somebody's</h1>
+    <p class="lede">Masters are the Ether Fantasy character NFTs — 52 you can rent, 3 heroes. They lead your armies on the overworld map, and when a battle goes live you play as one of them inside the 3D engine.</p>
+  </div>
+</div>
+
+<section class="slab"><div class="wrap">
+  <h2>What a Master IS</h2>
+  <p>A Master = one character NFT (owned or rented) mirrored from the live Ether Fantasy Masters API. In CF, a Master:</p>
+  <ul>
+    <li><strong>Oversees a territory</strong> — one Master per parcel; required while a player owns the land.</li>
+    <li><strong>Leads an army</strong> — the "leading officer" on a marching army. Their fame contributes to WarScore (capped at 20% hero impact).</li>
+    <li><strong>Is your champion in battle</strong> — when a battle goes live, you enter as your Master via the normal champion draft.</li>
+    <li><strong>Can be KO'd</strong> — via the live Masters API. KO'd Masters enter a revive cycle; standing orders persist.</li>
+  </ul>
+  <div class="rule"><strong>One hero per user.</strong> Multiple Masters can fight on one battle map; a player embodies exactly one at a time. Switching heroes requires returning to command mode. So the MOBA client can forever assume "one player, one hero."</div>
+</div></section>
+
+<section class="slab"><div class="wrap">
+  <h2>Masters are element-free</h2>
+  <p>Masters carry no elemental type — no fire hero, no water hero. Element play lives in your <strong>pet/soldier selection</strong> (a UnitClass stack IS a pet species). Masters benefit from their squads' element buffs indirectly, never directly.</p>
+  <p>Result: hero picks stay about skill, style, and matchup — not counter-picking a weather day. Element strategy is the composition question, decided when you build your army.</p>
+</div></section>
+
+<section class="slab"><div class="wrap">
+  <h2>Owned vs rented</h2>
+  <div class="split">
+    <div>
+      <h3>Owned</h3>
+      <p>You bought the NFT. Full control, full lifetime, no expiry. Your name against their portrait forever. Great deeds inscribed at the sites where they earned them.</p>
+    </div>
+    <div>
+      <h3>Rented</h3>
+      <p>Short-term rental via the Masters API. Costs less, expires at rental end. Reconciles on login: still-owned Masters keep their assignments; expired Masters stay until they finish their current army before being released.</p>
+    </div>
+  </div>
+</div></section>
+
+<section class="slab"><div class="wrap">
+  <h2>Hero-vs-hero duels</h2>
+  <p>Sometimes armies aren't needed. Two Masters standing alone on the same land can settle it 1-on-1 — champions decide, troops are spared.</p>
+  <ul>
+    <li><strong>v1 (now):</strong> Uncharted Waters-style card best-of-3 auto-duel using real Master stats + HP + named artifact spells. Animated head-shot fight.</li>
+    <li><strong>v2+ (upcoming):</strong> tiny-arena live 1v1 on the 3D engine.</li>
+  </ul>
+  <p>Loser is KO'd (live Masters API), winner takes the ground. Public result — the World Chronicle records it.</p>
+</div></section>
+
+<section class="slab"><div class="wrap">
+  <h2>Master's Sickness — the RTS mode</h2>
+  <p>In some game modes, Masters enter the fight <strong>weakened</strong> — 50% or even 80% reduced stats. It's not a bug; it's a mode. When your hero is throttled, you have to win by economy: gather materials, build towers, out-produce the enemy, out-formation them.</p>
+  <p>This flips the MOBA/RTS balance: instead of hero-carry, it's macro-carry. Owner call per-Master via <code>battleStyle: HERO_HEAVY / BALANCED / MACRO</code> + per-battle <code>heroDebuff: 0..1</code>.</p>
+  <p class="dim">Spec: <a href="/battles.html">battles page</a> — the RTS layer is the same for MOBA-PvP and CF battles.</p>
+</div></section>
+
+<section class="slab"><div class="wrap">
+  <h2>A few from the roster</h2>
+  <p class="dim">Full list via the Masters API. A sample from the 47 base Masters + 3 heroes we've built demo art for:</p>
+  <div class="portraits">
+    <div class="portrait"><img src="/assets/img/irene.png" alt="Irene"><div class="name">Irene</div></div>
+    <div class="portrait"><img src="/assets/img/kai.png" alt="Kai"><div class="name">Kai</div></div>
+    <div class="portrait"><img src="/assets/img/leah.png" alt="Leah"><div class="name">Leah</div></div>
+    <div class="portrait"><img src="/assets/img/master1.jpg" alt="Master"><div class="name">Master</div></div>
+    <div class="portrait"><img src="/assets/img/master2.jpg" alt="Master"><div class="name">Master</div></div>
+    <div class="portrait"><img src="/assets/img/master3.jpg" alt="Master"><div class="name">Master</div></div>
+  </div>
+  <p class="dim">Portraits shown are demo head-shots for the card duel v1.</p>
+</div></section>
+
+<section class="slab"><div class="wrap">
+  <h2>Standing orders (offline-proof)</h2>
+  <p>You're not always online. Set your Master's default behavior once, and the sim honors it while you're away:</p>
+  <ul>
+    <li><strong>DUEL</strong> — challenge any lone Master who walks on your land</li>
+    <li><strong>FLEE</strong> — attempt escape; caught only if rating fails the roll</li>
+    <li><strong>STAND</strong> — accept OVERWHELM if outnumbered (lose a few soldiers; your Master KO'd)</li>
+  </ul>
+</div></section>
+
+</main>
+<!-- BEGIN footer -->
+<footer class="site">
+  <div class="wrap">
+    <span class="foot-brand">Clash Front</span>
+    <span>· A grand-strategy war layer on the hexagone-city land map</span>
+    <span style="margin-left:auto;">
+      <a href="https://etherfantasy.com">etherfantasy.com</a>
+      · <a href="/roadmap.html">Roadmap</a>
+      · <a href="/getting-started.html">Get started</a>
+    </span>
+  </div>
+</footer>
+<script src="/assets/site.js"></script>
+<!-- END footer -->
+</body>
+</html>

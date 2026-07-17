@@ -1,0 +1,55 @@
+export const title = 'The world remembers';
+export const description = 'Great battles auto-name themselves. Monuments appear. First deeds are inscribed at their sites in your name — forever.';
+export const body = `
+<div class="page-head">
+  <div class="wrap-narrow">
+    <div class="eyebrow">The World Remembers</div>
+    <h1>Your fights are the world's history</h1>
+    <p class="lede">A big enough battle isn't just a stat — the world names it after the ground it happened on, archives it to a public feed, and drops a monument at the site. First deeds are inscribed there in your name, permanently.</p>
+  </div>
+</div>
+
+<section class="slab"><div class="wrap">
+  <h2>Auto-named battles</h2>
+  <p>Battles above a casualty threshold ⚙ pick their own name from the parcel they happened on: "The Second Siege of Rustbriar," "The Fog-Line at Long Reach," "Choco's Retreat," "Broken Watch." Naming is deterministic — same casualty count + same parcel + same seed = same name every time, so a replay reads the same as the live account.</p>
+</div></section>
+
+<section class="slab"><div class="wrap">
+  <h2>The World Chronicle</h2>
+  <p>A public, always-on feed of the named battles. Anyone can read it. Filter by continent, by governor, by Master, by outcome. It's the game's history book — and because it's fed by real battles that actually happened, it's real.</p>
+  <p>Chronicle entries carry the participant list, casualty counts, winning + losing Masters, and (with fog restrictions) the winning strategy summary. Great victories highlight; ties + defeats appear too — every named battle counts.</p>
+</div></section>
+
+<section class="slab"><div class="wrap">
+  <h2>Monuments on the map</h2>
+  <p>Named-battle sites drop a <strong>monument POI</strong> at the parcel — visible on the overworld forever. Graveyards seed <strong>Phantom pets</strong> over time — the dead don't leave. Battlefields where a boss fell mark their kill point. Sanctuaries where a hero saved a rout are visible from adjacent parcels.</p>
+  <p>Monuments don't fade. They accumulate. Old wars stay visible to new players — the ground carries its history.</p>
+</div></section>
+
+<section class="slab"><div class="wrap">
+  <h2>First deeds — inscribed in your name</h2>
+  <p>Some events happen ONCE in the world's lifetime. When they happen, they inscribe at the site — in the player's name — permanently.</p>
+  <ul>
+    <li><strong>First through each gate</strong> — the great gates of the world (Hell Shaft, Vault-Gate, Sky Throne approach, Diminishing Stair)</li>
+    <li><strong>First through each port</strong> — Porthaven, Aeropolis, HS1 landing</li>
+    <li><strong>First boss-kill</strong> — every wild boss's slayer is inscribed at the fall site</li>
+    <li><strong>First town-founder</strong> — the first player to establish an owned town at a valid site</li>
+    <li><strong>First EPIC holder</strong> — the first player to own an EPIC-tier estate on each continent</li>
+    <li><strong>First to complete the Descent rites</strong> — Midway Potion → Last Fortune → Diminishing Stair → Blood Scimitar → Homeward Bowl</li>
+  </ul>
+  <p>These aren't stats on a leaderboard. They're inscriptions IN the world, at the site of the deed, forever. Every player who visits will see the name.</p>
+</div></section>
+
+<section class="slab"><div class="wrap">
+  <h2>Named artifacts — Singulars</h2>
+  <p>36 one-of-one items exist in the world's data. Legendary weapons, rites, potions — each in a specific place with a specific story. Some are permanent (bind to first-finder in the Chronicle). Some are consumables tied to the Descent rites.</p>
+  <div class="rule">
+    The Midway Potion. The Last Fortune. The Blood Scimitar. The Homeward Bowl. Named weapons bound to art from the MOBA hero-gear catalog. Each Singular is somewhere. Each will only be found once.
+  </div>
+</div></section>
+
+<section class="slab"><div class="wrap">
+  <h2>Status</h2>
+  <p>The spec is written and locked (<code>docs/briefs/WORLD-REMEMBERS-AND-TOWNS.md</code>). The data is present (<code>data/singulars.json</code>). Implementation is on the deck — see the <a href="/roadmap.html">roadmap</a>.</p>
+</div></section>
+`;

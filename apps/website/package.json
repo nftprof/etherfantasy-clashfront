@@ -1,0 +1,10 @@
+{
+  "name": "@clashfront/website",
+  "private": true,
+  "version": "0.0.1",
+  "type": "module",
+  "description": "Clash Front public site. Static HTML — build with `node build.mjs` after editing pages/*.js.",
+  "scripts": {
+    "build": "node build.mjs"
+  }
+}

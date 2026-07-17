@@ -1,0 +1,109 @@
+export const title = 'Battles';
+export const description = 'Five battle modes, attacker vs defender playbook, command view vs hero mode, retreat and FLEE, mid-battle reinforcement.';
+export const body = `
+<div class="page-head">
+  <div class="wrap-narrow">
+    <div class="eyebrow">Battles</div>
+    <h1>One engine, five modes, two ways to play</h1>
+    <p class="lede">Every battle in Clash Front runs on the same 3D engine the MOBA uses. Command mode is the default — watch and order. Hero mode drops you inside the fight as your Master. You pick when to spend your live-battle slot.</p>
+  </div>
+</div>
+
+<section class="slab"><div class="wrap">
+  <h2>The five battle modes</h2>
+  <div class="grid">
+    <div class="card"><h3>DUEL</h3><p>Two armies collide on open ground, at least one with a real stake. The MOBA-equivalent 2-CC fight. Balanced defender behavior; both sides push middle.</p></div>
+    <div class="card"><h3>SIEGE</h3><p>Attacker vs an occupied fortification. LARGE+ estates ship with pre-baked walls, gates, towers. Defender holds inside walls; sortie only when the gate breaks.</p></div>
+    <div class="card"><h3>GUARD</h3><p>No CC on either side — wild monsters or pets-only homesteads. Kill-all-to-complete. Camp mobs leash to nearest tower, don't chase far from their anchor.</p></div>
+    <div class="card"><h3>CLASH</h3><p>3+ armies (or two with no clear stake). Last standing wins. Starts on per-edge fair spawns. Available only on parcels whose geometry supports fair edges.</p></div>
+    <div class="card"><h3>DOMINION</h3><p>Simultaneous arrival on unowned land. Hold the center = take the parcel. The natural resolution when neither side "owns" the ground yet.</p></div>
+  </div>
+  <p class="dim">Not every parcel supports every mode. CLASH and DOMINION are capability flags on the map's geometry (~97.5% of real parcels support them; slivers fall back to DUEL). See the <a href="/maps.html">maps</a> and <a href="/roadmap.html">roadmap</a> pages.</p>
+</div></section>
+
+<section class="slab"><div class="wrap">
+  <h2>Attacker vs defender — what happens</h2>
+  <div class="tbl-scroll"><table class="tbl">
+    <thead><tr><th>Mode</th><th>Defender default</th><th>Player override</th><th>Fortification baked?</th></tr></thead>
+    <tbody>
+      <tr><td>DUEL</td><td>BALANCED — half-guard CORE, half-push midlane</td><td>HOLD / SORTIE / AGGRESSIVE per Master</td><td>None</td></tr>
+      <tr><td>SIEGE</td><td>HOLD — stay inside walls, use towers, sortie only if gate breaks</td><td>AGGRESSIVE counter-sortie / SORTIE at low tower HP</td><td>KEEP / CASTLE / PALACE ring by estate size</td></tr>
+      <tr><td>GUARD</td><td>HOLD near anchor — mobs leash</td><td>N/A (system-driven)</td><td>Wild — occupier modules on pets-only</td></tr>
+      <tr><td>CLASH</td><td>AGGRESSIVE — everyone attacks, no CC to defend</td><td>HOLD as a gambit (bait rivals)</td><td>None</td></tr>
+      <tr><td>DOMINION</td><td>CONTEST CENTER — all units gravitate to the objective</td><td>HOLD center / SORTIE to deny approach</td><td>None</td></tr>
+    </tbody>
+  </table></div>
+</div></section>
+
+<section class="slab"><div class="wrap">
+  <h2>Command view or hero view</h2>
+  <div class="split">
+    <div>
+      <h3>Command mode (default)</h3>
+      <p>Top-down overlay. Watch the fight in real time, drag stances, set standing orders, recall your Master, call FLEE. No 3D skill required; costs no live-battle slot.</p>
+      <ul>
+        <li><strong>Stances:</strong> HOLD · SORTIE · AGGRESSIVE · DEFEND · FOLLOW · ALL-IN</li>
+        <li><strong>Standing STRATEGY:</strong> FLEE_IF_LOSING auto-retreats when stock + fielded units both drop below floors</li>
+        <li><strong>Master recall:</strong> pull your hero back to the CORE if things go sideways</li>
+        <li>Keyboard shortcuts + help overlay (<code>?</code>)</li>
+        <li>Kill feed, damage floats, wave countdown, HP bars over units</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Hero mode</h3>
+      <p>Full 3D MOBA. Embody your Master via the champion draft. Skills, item shop, lane pressure — everything the MOBA has. One player, one hero at a time (multiple players allowed on either side).</p>
+      <ul>
+        <li>Seamless switching mid-battle: enter Hero via ⚡ doorway on the parcel card</li>
+        <li>Multiple Masters per side — command channel + real 3D concurrent</li>
+        <li>Arriving mid-battle from a march = mid-battle reinforcement + a NEW LANE from the arrival edge</li>
+        <li>Late-seat join window is bounded (⚙ 120 s); after that, the seat closes</li>
+      </ul>
+    </div>
+  </div>
+</div></section>
+
+<section class="slab"><div class="wrap">
+  <h2>The command queue — live is a scarce resource</h2>
+  <p>Live 30 Hz battles need real server capacity. So live is <strong>opt-in at march time</strong>, not automatic:</p>
+  <ul>
+    <li><strong>MARCH</strong> (default) = auto-resolve, playback-only. Fast, headless, always-on.</li>
+    <li><strong>MARCH &amp; COMMAND</strong> = live, steerable, hero-mode enabled. Costs a slot AND a fee.</li>
+    <li>Fee ladder rises with queue depth: <strong>1 · 3 · 5 · 10 · 20 CT</strong>. Max 5 concurrent per player. Fee burns (CT sink).</li>
+    <li>Non-overlap enforced: your queued commands can't schedule to run at the same time as each other.</li>
+    <li>Cancellable before start → fee refunded, march continues auto.</li>
+    <li>Pre-commitment is absolute: a battle that starts with no committed command resolves accelerated + playback-only. "⚔ Too late to take command now."</li>
+  </ul>
+  <div class="rule"><strong>Why:</strong> without this, a single big empire could saturate the live 30 Hz pool. The queue keeps live battles scarce, valuable, and worth the cost.</div>
+</div></section>
+
+<section class="slab"><div class="wrap">
+  <h2>Retreat, FLEE, and the pincer</h2>
+  <p>Two different words. They mean two different things.</p>
+  <ul>
+    <li><strong>Retreat from current engagement</strong> — a positional order inside a battle. Units back off toward their spawn corner. Master respawns are unaffected.</li>
+    <li><strong>FLEE (full-battle withdrawal)</strong> — you're done. Two-press confirm. Soldiers drop packs/equipment for the run (+35% speed). The army marches off the battle parcel back to a safe adjacent hex.</li>
+  </ul>
+  <p>Retreat direction: <strong>came-from first</strong>. The hex you marched in from is the primary retreat destination. If it's friendly / neutral, safe passage. If it's now hostile-occupied while you were fighting — you're <strong>PINCERED</strong>.</p>
+  <div class="rule"><strong>Pincer:</strong> your came-from is enemy-held. A new battle spawns automatically. If you win, you occupy the pincer hex and continue. If you lose or FLEE again, your soldiers are ABANDONED — army disbands entirely, but your Master returns to the undeployed pool.</div>
+  <p>Loser defenders don't evaporate either — they retreat through the same ladder as attackers (owner rule 2026-07-14, "either side should be able to flee").</p>
+</div></section>
+
+<section class="slab"><div class="wrap">
+  <h2>Mid-battle reinforcement (Scenario H)</h2>
+  <p>Your ally is fighting on Parcel X. You march an army there. What happens when you arrive?</p>
+  <p>The hex is <strong>locked</strong> — the battle is running. Your army halts at the edge and is <strong>queued to reinforce</strong> the lane matching the edge you arrived through:</p>
+  <ul>
+    <li><strong>Masters</strong> join immediately (don't count against the 16-soldier lane cap; new lane from the arrival edge).</li>
+    <li><strong>Soldiers</strong> queue: concurrent lane soldiers never exceed the cap; extra armies EXTEND the push instead of stacking density.</li>
+    <li>Same-edge reinforcement = queue behind the existing lane. Approach from a different edge = open a NEW lane pathing to enemy CORE.</li>
+    <li>Withdrawable before your soldiers commit (POST /api/reinforcement/withdraw). March away = auto-withdraw.</li>
+  </ul>
+  <p>Arrival direction becomes a real strategic choice, not just "you missed the fight."</p>
+</div></section>
+
+<section class="slab"><div class="wrap">
+  <h2>Hero-vs-hero duels</h2>
+  <p>Two Masters standing alone on the same land can settle it 1-on-1 — no armies wasted. v1 is a card-based auto-duel with your Master's real stats + HP + spells and an animated head-shot fight. v2+ (upcoming) is a tiny-arena live 1v1 on the engine.</p>
+  <p>Loser Master is KO'd via the live Masters API and enters the revive cycle. Result is public — a great-deed style beat that shows up in the World Chronicle.</p>
+</div></section>
+`;

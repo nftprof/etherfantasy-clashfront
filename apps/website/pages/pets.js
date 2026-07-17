@@ -1,0 +1,82 @@
+export const title = 'Pets & elements';
+export const description = 'Pets are your soldiers. Elements matter. NFT owners can summon any species anywhere — at a premium.';
+export const body = `
+<div class="page-head">
+  <div class="wrap-narrow">
+    <div class="eyebrow">Pets</div>
+    <h1>Pets are your soldiers</h1>
+    <p class="lede">In Clash Front, a soldier stack IS a pet species deployment. Your line troops carry the element of the pet they are. Weather, terrain, and biome all matter. Own the NFT, summon anywhere — at a premium.</p>
+  </div>
+</div>
+
+<section class="slab"><div class="wrap">
+  <h2>The canon rule</h2>
+  <div class="rule">
+    <strong>Pet = soldier.</strong> There is no separate "pet layer" hovering next to your infantry — the infantry <em>is</em> pet species. A stack of INFANTRY is a stack of a specific pet-species infantry. The stack inherits the species' element. Weather affinity swings the whole stack.
+  </div>
+  <p>Owner ruling 2026-07-17. Masters/heroes remain element-free (they benefit indirectly through their squads).</p>
+</div></section>
+
+<section class="slab"><div class="wrap">
+  <h2>Two roles: workers and soldiers</h2>
+  <div class="split">
+    <div>
+      <h3>Workers (GATHER)</h3>
+      <p>Assign pets to a territory as workers. They boost yield — food production, gold trickle, wood extraction — proportional to the species' affinity for the land type. Pets don't die from being workers; a raider that beats down your workers just puts them in KO recovery. They walk home.</p>
+    </div>
+    <div>
+      <h3>Soldiers (GUARD / FIGHT)</h3>
+      <p>Assigned to guard or drafted into an army. Guards fight raiders on their own; drafted stacks join marching armies. Same species, different role. NFT pets are <strong>passive homesteads</strong>: they farm yield, never defend, and a walk-on take-over returns them home unharmed.</p>
+    </div>
+  </div>
+</div></section>
+
+<section class="slab"><div class="wrap">
+  <h2>Drafting by land type — and the NFT summon</h2>
+  <p>The species you can draft on a given parcel is normally tied to that <strong>land's biome</strong>. Volcanic land drafts Fire; ice-shelf drafts Ice; forest drafts Leaf; underworld drafts Phantom; and so on. The land dictates the roster.</p>
+  <div class="rule">
+    <strong>NFT owners break the rule.</strong> If you own the NFT for a pet species, you can <strong>summon that species anywhere</strong>, on ANY land — at a premium (higher CT cost vs the free biome-native draft). This is the mythic-blueprint model: the NFT is the spawn-RIGHT for its class, not any single pet instance.
+  </div>
+  <p><strong>Example:</strong> you're attacking a volcanic UW3 parcel. The defender's biome-native draft is Fire and Dragon pets — advantageous on that ground. You own the Water/Ice NFT. You summon a stack of Ice pets on the attack. Ice vs Fire = huge type advantage; weather says heatwave gives Fire +15% and Ice −15%, but terrain flips: volcanic gives Fire +20% and Ice −20%. You paid the summon premium and still won the composition war — because you had the blueprint for the counter.</p>
+</div></section>
+
+<section class="slab"><div class="wrap">
+  <h2>Elements</h2>
+  <p>Element vocabulary (MOBA-canon, reconciled 2026-07-17):</p>
+  <div class="tbl-scroll"><table class="tbl">
+    <thead><tr><th>Element</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td>Fire · Ice · Dragon</td><td>Classic three. Fire is heatwave/volcanic; Ice is snow/frozen; Dragon is heatwave-boosted.</td></tr>
+      <tr><td>Water</td><td>Rain boost, storm neutral, heatwave weakened.</td></tr>
+      <tr><td>Lightning</td><td>Storm ×1.2 (biggest single swing). Storms are its native day.</td></tr>
+      <tr><td>Earth</td><td>Rain weakens (mud drag), otherwise stable.</td></tr>
+      <tr><td>Leaf</td><td>Forest terrain +10%. Fire weakens Leaf.</td></tr>
+      <tr><td>Flyer</td><td>Wind boost, storm weakens (thunder strike risk).</td></tr>
+      <tr><td>Phantom</td><td>Fog boost. Underworld ambient +10%. Mystic weakens it.</td></tr>
+      <tr><td>Telepath</td><td>Fog boost. Cerebral casters, weather-sensitive.</td></tr>
+      <tr><td>Mystic</td><td>Fog weakens (line-of-sight rituals). Underworld ambient −10%.</td></tr>
+      <tr><td>Combat · Insect · Iron · Rock · Toxin · Neutral</td><td>Weather-NEUTRAL — no swing either way. Reliable in bad weather.</td></tr>
+    </tbody>
+  </table></div>
+  <p>Full weather × element matrix and terrain overrides on the <a href="/weather.html">weather page</a>.</p>
+</div></section>
+
+<section class="slab"><div class="wrap">
+  <h2>Populace, draft cap, DNA</h2>
+  <p>The bigger your territory's populace, the bigger the draft — more soldiers per raise, cheaper per soldier. Populace grows with <strong>enrichment</strong>: the landowner spends CT to enrich the parcel, prosperity climbs, more people move in, and every pet species linked to that biome gets population migration rolls ("a general arrives" flavor).</p>
+  <p><strong>DNA fragments</strong> drop from great battles + enriched-land yields. Enough fragments craft a new pet NFT of that species. This is how the world grows its blueprint pool over time.</p>
+  <p class="dim">Enrichment mechanics and populace-driven drafting are canon and specified — implementation is on the roadmap. See <a href="/roadmap.html">roadmap</a>.</p>
+</div></section>
+
+<section class="slab"><div class="wrap">
+  <h2>The rules of the pet layer, plain</h2>
+  <ul>
+    <li>Pet = soldier stack. Element is the species'.</li>
+    <li>Pets in NFT form are BLUEPRINTS = spawn rights. Not bodies.</li>
+    <li>NFT holders can summon anywhere at a premium.</li>
+    <li>Pet bodies (populace, workers, line, spawns) are uncapped commodity — the NFT count is what's limited.</li>
+    <li>Pets never die permanently. Beaten pets KO and walk home to recover.</li>
+    <li>Draft cost scales down with parcel populace + enrichment.</li>
+  </ul>
+</div></section>
+`;

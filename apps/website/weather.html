@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Weather & type advantage · Clash Front</title>
+  <meta name="description" content="Per-continent weather rolls, deterministic per world seed. Weather × element = combat swing.">
+  <link rel="stylesheet" href="/assets/site.css">
+</head>
+<body>
+<!-- BEGIN header -->
+<div class="dev-ribbon">
+  <div class="wrap">
+    <strong>PRE-ALPHA</strong>
+    <span>MVP demo live · World simulation in build · Public playtest TBA</span>
+  </div>
+</div>
+<header class="site">
+  <div class="wrap">
+    <a href="/" class="brand">Clash Front <span>· Ether Fantasy</span></a>
+    <button class="nav-toggle" aria-label="Toggle navigation">☰</button>
+    <nav class="primary">
+      <a href="/">Home</a>
+      <a href="/world.html">World</a>
+      <a href="/battles.html">Battles</a>
+      <a href="/masters.html">Masters</a>
+      <a href="/pets.html">Pets</a>
+      <a href="/army.html">Army</a>
+      <a href="/nft.html">NFTs</a>
+      <a href="/weather.html">Weather</a>
+      <a href="/servers.html">Servers</a>
+      <a href="/roadmap.html">Roadmap</a>
+      <a href="/getting-started.html">Start</a>
+    </nav>
+  </div>
+</header>
+<!-- END header -->
+<main>
+
+<div class="page-head">
+  <div class="wrap-narrow">
+    <div class="eyebrow">Weather</div>
+    <h1>Some days favor fire. Some days drown it.</h1>
+    <p class="lede">Weather is a real gameplay layer, not decoration. Rolled per continent per day from the world seed — every player sees the same sky over the same land on the same day. Water pets get +15% in the rain. Fire pets take -15%. Terrain stacks on top. The day matters.</p>
+  </div>
+</div>
+
+<section class="slab"><div class="wrap">
+  <h2>Eight weather states</h2>
+  <div class="tbl-scroll"><table class="tbl">
+    <thead><tr><th>State</th><th>Visibility</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td>clear</td><td>1.0</td><td>Baseline. Full sight radius. No effects.</td></tr>
+      <tr><td>overcast</td><td>0.85</td><td>Fire mildly weakened. Sun-block flavor.</td></tr>
+      <tr><td>rain</td><td>0.70</td><td>Fire won't ignite (traps/structures don't light). Mud drag on Earth pets.</td></tr>
+      <tr><td>storm</td><td>0.55</td><td>Rain + wind + lightning. Thunder-strike risk on tallest exposed unit.</td></tr>
+      <tr><td>fog</td><td>0.45</td><td>Sight radius cut heavily. Ambush odds spike. Scouting goes dark.</td></tr>
+      <tr><td>wind</td><td>0.90</td><td>Projectile drift. Arc weapons lose accuracy. Airship speed shifts by heading.</td></tr>
+      <tr><td>snow</td><td>0.60</td><td>+25% movement cost. Fire damped. Water freezes (ice terrain).</td></tr>
+      <tr><td>heatwave</td><td>0.90</td><td>Amber sky. Fire empowered. Food upkeep ×1.15 during battle.</td></tr>
+    </tbody>
+  </table></div>
+</div></section>
+
+<section class="slab"><div class="wrap">
+  <h2>Type advantage matrix</h2>
+  <p>Base swing ±15% damage. Terrain overrides stack. <strong>Combined weather + terrain is clamped to ±35%</strong> — nothing snowballs. This multiplier is <strong>separate</strong> from the existing 1.5×/0.7× type-chart, applied on top.</p>
+  <div class="tbl-scroll"><table class="tbl">
+    <thead><tr><th>Weather</th><th>Boosts +15%</th><th>Weakens −15%</th></tr></thead>
+    <tbody>
+      <tr><td>clear</td><td>—</td><td>—</td></tr>
+      <tr><td>overcast</td><td>—</td><td>Fire −5%</td></tr>
+      <tr><td>rain</td><td>Water, Lightning</td><td>Fire, Earth</td></tr>
+      <tr><td>storm</td><td>Lightning ×1.2</td><td>Flyer, Fire</td></tr>
+      <tr><td>fog</td><td>Phantom, Telepath</td><td>Mystic, Flyer</td></tr>
+      <tr><td>wind</td><td>Flyer</td><td>siege lobs (arc weapons)</td></tr>
+      <tr><td>snow</td><td>Ice</td><td>Fire, Dragon</td></tr>
+      <tr><td>heatwave</td><td>Fire, Dragon</td><td>Ice, Water</td></tr>
+    </tbody>
+  </table></div>
+  <h3>Terrain overrides (always-on, stack with weather, capped combined ±35%)</h3>
+  <div class="tbl-scroll"><table class="tbl">
+    <thead><tr><th>Terrain</th><th>Effect</th></tr></thead>
+    <tbody>
+      <tr><td>Lava parcel</td><td>Fire +20%, Ice/Water/Leaf −20%, ambient tick damage to Ice units</td></tr>
+      <tr><td>Frozen parcel</td><td>Ice +15%, Fire −15%, +15% movement cost baseline</td></tr>
+      <tr><td>Forest parcel</td><td>Leaf +10%, Fire −10% (amplifies rain's fire debuff)</td></tr>
+      <tr><td>Water parcel</td><td>Water +15%, Lightning ×1.15 (chain-shock chance), Fire −15%</td></tr>
+      <tr><td>Underworld (UW1–3)</td><td>Phantom +10%, Mystic −10% ambient — the deep favors shadow</td></tr>
+    </tbody>
+  </table></div>
+  <p class="dim"><strong>Weather-neutral elements</strong> (no swing either way, reliable in bad weather): Combat, Insect, Iron, Rock, Toxin, Neutral. <strong>Masters/heroes are element-free</strong> — never eligible for the multiplier (they gain from their pet squads).</p>
+</div></section>
+
+<section class="slab"><div class="wrap">
+  <h2>Per-continent probability cards</h2>
+  <p>Every continent rolls its own weather each day. Rolls are deterministic — same world seed + same continent + same day = same weather, forever, for every player. There's no per-parcel micro-climate yet (v0.2+).</p>
+  <div class="tbl-scroll"><table class="tbl">
+    <thead><tr><th>Continent</th><th>Baseline</th><th>Signature</th></tr></thead>
+    <tbody>
+      <tr><td>HUB (Tianxia)</td><td>clear</td><td>Temperate capital. Balanced across states.</td></tr>
+      <tr><td>ENT (Mythoria)</td><td>clear</td><td>Coastal — 30% rain, occasional storm, no snow.</td></tr>
+      <tr><td>BUS (Athlantia)</td><td>clear</td><td>Mediterranean — 15% heatwave, dry summers.</td></tr>
+      <tr><td>EDU</td><td>clear</td><td>Temperate starter zone — balanced.</td></tr>
+      <tr><td>HS1 (Sky Meadow)</td><td>clear</td><td>Wind-dominant (30%), some snow, some storm.</td></tr>
+      <tr><td>HS2 (Storm Reach)</td><td>overcast</td><td>Storm 40%. Perpetual overcast. Live lightning.</td></tr>
+      <tr><td>HS3 (Bright Halls)</td><td>clear</td><td>Fair sanctum. Wind + occasional snow.</td></tr>
+      <tr><td>UW1 (Mist Sea)</td><td>fog</td><td>Fog 55% baseline. Sight is a resource.</td></tr>
+      <tr><td>UW2 (Ash Desert)</td><td>overcast</td><td>Ash-storms 15%, heatwave 25%. Dry and mean.</td></tr>
+      <tr><td>UW3 (Diminished Realm)</td><td>overcast</td><td>Storm 30% (constant lightning), fog 25%, character 1/6 scale.</td></tr>
+      <tr><td>CGI</td><td>clear</td><td>Experimental zone — balanced default.</td></tr>
+      <tr><td>KOL</td><td>clear</td><td>Prestige island — 20% heatwave (sunny by design).</td></tr>
+    </tbody>
+  </table></div>
+  <p class="dim">Full spec: <code>data/continent-weather.json</code>. Owner-tunable dials.</p>
+</div></section>
+
+<section class="slab"><div class="wrap">
+  <h2>Owner overrides — "triggered"</h2>
+  <p>Some battles deserve their own sky. Owner (or an event system) can override a continent's weather for a duration — storms for scripted sieges, heatwaves for festivals, thick fog for a mystery event. Overrides beat the seeded roll while active. Persisted in state; visible to every player.</p>
+</div></section>
+
+<section class="slab"><div class="wrap">
+  <h2>Visual + subtle presentation</h2>
+  <p>Two channels of feedback so the day is obvious without being loud:</p>
+  <ul>
+    <li><strong>Obvious:</strong> weather visuals (rain/snow/wind/lightning/heatwave-tint) + a match-start banner "☔ Rainy — 💧 Water +15% · 🔥 Fire −15%" + a HUD affinity chip you can glance at.</li>
+    <li><strong>Subtle:</strong> per-hit VFX flourishes on the existing type-advantage ring — water attacks splash harder in rain, fire flares in heatwave, ice frosts on snow days. Only when that element is empowered.</li>
+  </ul>
+</div></section>
+
+</main>
+<!-- BEGIN footer -->
+<footer class="site">
+  <div class="wrap">
+    <span class="foot-brand">Clash Front</span>
+    <span>· A grand-strategy war layer on the hexagone-city land map</span>
+    <span style="margin-left:auto;">
+      <a href="https://etherfantasy.com">etherfantasy.com</a>
+      · <a href="/roadmap.html">Roadmap</a>
+      · <a href="/getting-started.html">Get started</a>
+    </span>
+  </div>
+</footer>
+<script src="/assets/site.js"></script>
+<!-- END footer -->
+</body>
+</html>

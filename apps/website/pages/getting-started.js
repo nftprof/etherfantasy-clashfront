@@ -1,0 +1,64 @@
+export const title = 'Get started';
+export const description = 'Sign in, get a starter parcel, raise your first army, march.';
+export const body = `
+<div class="page-head">
+  <div class="wrap-narrow">
+    <div class="eyebrow">Get started</div>
+    <h1>The first hour</h1>
+    <p class="lede">Clash Front is pre-alpha. Public sign-ups aren't open yet — the roadmap page is honest about what needs to ship first. Here's how the first hour is designed to feel when it opens, and how to try the demo now.</p>
+  </div>
+</div>
+
+<section class="slab"><div class="wrap">
+  <h2>Try the demo (now)</h2>
+  <p>The MVP demo runs at <strong>clashfront.etherfantasy.com</strong>. Name-only login for exploring, or Pentagon Games sign-in to bind to your real wallet and pull your real Masters.</p>
+  <ol>
+    <li><strong>Sign in</strong> — either dev name-login OR the Pentagon Games embedded form (verified server-side)</li>
+    <li><strong>Get demo territory</strong> — one starter parcel + demo Masters + starter CT</li>
+    <li><strong>Raise an army</strong> — pay CT, wait for muster to finish (soldiers materialize per tick)</li>
+    <li><strong>March</strong> — click a target parcel, watch the ETA count down. HOSTILE by default. EVASIVE if you just want to pass through</li>
+    <li><strong>Fight</strong> — collision auto-resolves accelerated (headless), OR you elected "MARCH & COMMAND" and it goes live 30 Hz for you to steer / drop into hero mode</li>
+    <li><strong>Choose your fate</strong> — post-victory: PILLAGE (loot + move on) or OCCUPY (take the land, assign an overseer)</li>
+  </ol>
+</div></section>
+
+<section class="slab"><div class="wrap">
+  <h2>The first hour (opens later)</h2>
+  <ol>
+    <li>Sign in with Pentagon Games — CF pulls your real Masters + land</li>
+    <li>Pick your starter zone — EDU is designed for new players; the Golden 9 tutorial parcels teach the basics</li>
+    <li>Claim a starter parcel + assign your first Master as overseer</li>
+    <li>Raise a small army (~0.02 CT per line soldier at v2 rescale — a batch of 100 = 2 CT)</li>
+    <li>Scout your neighbors — fog-of-war intel shows what's around you</li>
+    <li>Take a wild parcel — attack a nearby wild lair, learn command mode against forgiving mobs</li>
+    <li>Fight your first PvP battle when someone knocks on your border</li>
+    <li>Enrich your land, watch prosperity climb, get better drafts</li>
+  </ol>
+</div></section>
+
+<section class="slab"><div class="wrap">
+  <h2>What you need to know before you fight your first battle</h2>
+  <ul>
+    <li><strong>MARCH is auto</strong> by default. <strong>MARCH &amp; COMMAND</strong> costs a live-battle slot + a CT fee (1 · 3 · 5 · 10 · 20 CT ladder).</li>
+    <li><strong>Retreat</strong> = positional inside a battle. <strong>FLEE</strong> = full withdrawal (two-press confirm, soldiers drop packs for +35% speed).</li>
+    <li>The battle map's flee edge = the parcel you came from. If it's occupied by then, you're <strong>pincered</strong>.</li>
+    <li>Element matters. Weather matters. Terrain matters. Bring the right pets for the ground and the day.</li>
+    <li>Rented Masters can be KO'd and still cost you their rental. Manage the pool.</li>
+    <li>Your Master is one hero at a time. Multiple Masters can fight on one map but you embody exactly one.</li>
+  </ul>
+</div></section>
+
+<section class="slab"><div class="wrap">
+  <h2>Where to read more</h2>
+  <ul>
+    <li><a href="/battles.html">Battles</a> — the 5 modes, command view, hero mode, reinforcement queue, retreat/pincer</li>
+    <li><a href="/masters.html">Masters</a> — how the 55 champions work</li>
+    <li><a href="/pets.html">Pets</a> — elements, drafting, NFT summon at a premium</li>
+    <li><a href="/army.html">Army & fortification</a> — raising, provisions, defense modules</li>
+    <li><a href="/weather.html">Weather</a> — the day-matters system</li>
+    <li><a href="/nft.html">NFTs</a> — what land / Master / pet NFTs actually do in-game</li>
+    <li><a href="/roadmap.html">Roadmap</a> — what's live, what's coming</li>
+    <li><a href="https://etherfantasy.com/world">etherfantasy.com/world</a> — deep world lore</li>
+  </ul>
+</div></section>
+`;

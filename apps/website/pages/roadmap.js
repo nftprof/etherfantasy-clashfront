@@ -1,0 +1,181 @@
+export const title = 'Roadmap';
+export const description = 'What is live, what is building, what is coming later. Honest development status for Clash Front.';
+export const body = `
+<div class="page-head">
+  <div class="wrap-narrow">
+    <div class="eyebrow">Roadmap</div>
+    <h1>Where the build actually is</h1>
+    <p class="lede">Clash Front is pre-alpha. This page tells you what runs today, what's under active build, and what's on the deck for later — no hype, no vaporware.</p>
+  </div>
+</div>
+
+<section class="slab"><div class="wrap">
+  <h2>Live now</h2>
+  <div class="grid">
+    <div class="card status-done">
+      <span class="tag-chip ok">Live</span>
+      <h3>Deterministic tick engine</h3>
+      <p>Full canonical phase order (production / consumption / movement / supply / morale / rebellion / battle-spawning / AI). Seeded RNG — no Math.random anywhere. Replay-stable.</p>
+    </div>
+    <div class="card status-done">
+      <span class="tag-chip ok">Live</span>
+      <h3>March + battle spawning</h3>
+      <p>Parcel-graph movement, HOSTILE + EVASIVE stances, hostile co-location = battle. Owned foreign land is a blockade. Owner rulings resolved via 4 gap patches.</p>
+    </div>
+    <div class="card status-done">
+      <span class="tag-chip ok">Live</span>
+      <h3>Live 3D battles + hero mode</h3>
+      <p>MOBA engine wired as the battle kernel. Accelerated headless auto-resolve OR live 30 Hz steerable. Hero-mode ⚡ doorway, command channel, replay ring.</p>
+    </div>
+    <div class="card status-done">
+      <span class="tag-chip ok">Live</span>
+      <h3>Command mode UX</h3>
+      <p>Stances, FLEE with two-press confirm, standing STRATEGY (FLEE_IF_LOSING), Master recall, keyboard shortcuts, help overlay, HP bars, damage floats, kill feed, wave countdown, advisor toasts, respawn indicators.</p>
+    </div>
+    <div class="card status-done">
+      <span class="tag-chip ok">Live</span>
+      <h3>Fog of war (F1)</h3>
+      <p>Intel memory per governor, ACCURATE / FUZZY / UNKNOWN grades, cluster sight radius, scout sight, decay-to-fuzzy.</p>
+    </div>
+    <div class="card status-done">
+      <span class="tag-chip ok">Live</span>
+      <h3>Bloodless walk-ins (F2) + wild raids (F3)</h3>
+      <p>Undefended town/settlement walk-ins pop PILLAGE/OCCUPY prompts. Wild raider armies split off lairs, march at players, auto-pillage on arrival.</p>
+    </div>
+    <div class="card status-done">
+      <span class="tag-chip ok">Live</span>
+      <h3>Economy skeleton (FS3)</h3>
+      <p>Food production, enrichment pools + payout carry, ECON trickle, dev-track investment + raze salvage, wallet ledger, purchase cap.</p>
+    </div>
+    <div class="card status-done">
+      <span class="tag-chip ok">Live</span>
+      <h3>PG identity + Masters gate</h3>
+      <p>Pentagon Games account login (embedded form → server-side verify). Live sync with Ether Fantasy Masters API — you command only Masters your wallet owns or rents.</p>
+    </div>
+    <div class="card status-done">
+      <span class="tag-chip ok">Live</span>
+      <h3>Recent battles review</h3>
+      <p>Bounded ring of settled battles per player (fog-filtered). Scrubbable replay panel for accelerated OR live battles. Auto-advance mode.</p>
+    </div>
+    <div class="card status-done">
+      <span class="tag-chip ok">Live</span>
+      <h3>Retreat ladder + pincer + reinforcement queue</h3>
+      <p>Came-from first, order → adjacent → scatter. Pincered armies fight or abandon. Same-side arrivals at locked hexes queue as reinforcement offers with withdraw API.</p>
+    </div>
+    <div class="card status-done">
+      <span class="tag-chip ok">Live</span>
+      <h3>Hero-vs-hero card duel (v1)</h3>
+      <p>Card best-of-3 auto-duel using real Master stats + HP + named-artifact spells. Head-shot portraits. Public result surfaced to eligible viewers.</p>
+    </div>
+    <div class="card status-done">
+      <span class="tag-chip ok">Live</span>
+      <h3>World map + travel routes</h3>
+      <p>12 continents rendered, sky/underworld travel routes (airships, Shaft, Diminishing Stair, Vault-Gate). Kraken drag lanes visible.</p>
+    </div>
+  </div>
+</div></section>
+
+<section class="slab"><div class="wrap">
+  <h2>Building now</h2>
+  <div class="grid">
+    <div class="card status-build">
+      <span class="tag-chip gold">Building</span>
+      <h3>Mass map generation (292k parcels)</h3>
+      <p>Battlefield JSON schema locked, buildSpots spec aligned, playability gate updated (HARD invariants + universal-mode support, CLASH/DOMINION as capability flags). Full 292k mass-gen unlocking next.</p>
+    </div>
+    <div class="card status-build">
+      <span class="tag-chip gold">Building</span>
+      <h3>Weather × combat</h3>
+      <p>Continent probability cards live in code + deterministic weatherAt() function. Renderer visuals shipped (rain/snow/wind/storm/heatwave). Combat multiplier + per-hit VFX flourishes in flight (MOBA + CF sims mirror the table).</p>
+    </div>
+    <div class="card status-build">
+      <span class="tag-chip gold">Building</span>
+      <h3>CT ↔ Gold bridge</h3>
+      <p>In-battle Gold cost = plunder rate, formal spec. So 100g spent on an in-battle tower recovers ~100g on victory. Round-trip must math out across battle boundary.</p>
+    </div>
+    <div class="card status-build">
+      <span class="tag-chip gold">Building</span>
+      <h3>In-battle RTS layer</h3>
+      <p>Build/gather/train mid-fight. Gold mines seeded per parcel. Elite units hire-able in-match. Attacker/defender both spend Gold at valid buildSpots during the match. Master's Sickness modes.</p>
+    </div>
+    <div class="card status-build">
+      <span class="tag-chip gold">Building</span>
+      <h3>PvE loot pack + boss emit</h3>
+      <p>Wild pack + bosses in CF battles (already spawn on wild land). Match-server emits loot/kills/finds in the result callback → CF settles post-victory.</p>
+    </div>
+    <div class="card status-build">
+      <span class="tag-chip gold">Building</span>
+      <h3>Deterministic map-floor cutover</h3>
+      <p>Server-authoritative floor + biome + weather in the match start payload. Fixes the "two players on different-colored floors" bug. Same seed → same floor for every viewer, every replay.</p>
+    </div>
+  </div>
+</div></section>
+
+<section class="slab"><div class="wrap">
+  <h2>Coming later — the full economy loop</h2>
+  <p class="dim">Specified in the design bible, not implemented yet. Owner-locked, on the deck.</p>
+  <div class="grid">
+    <div class="card status-later">
+      <span class="tag-chip">Coming</span>
+      <h3>Crafting</h3>
+      <p>Craft weapons + armor from mined + gathered resources. Named-artifact upgrades. Elite unit outfitting.</p>
+    </div>
+    <div class="card status-later">
+      <span class="tag-chip">Coming</span>
+      <h3>Farming (food production)</h3>
+      <p>Territory food production per AGRI development level. Populace consumption. Granary caps. Starvation cascade.</p>
+    </div>
+    <div class="card status-later">
+      <span class="tag-chip">Coming</span>
+      <h3>Tax cycle → gold</h3>
+      <p>Periodic tax draws from populace to landowner treasury. Prosperity + morale respond. Ledger entries (double-entry).</p>
+    </div>
+    <div class="card status-later">
+      <span class="tag-chip">Coming</span>
+      <h3>Populace mechanics</h3>
+      <p>Population per land, growth from prosperity, decline from starvation. Rebellion risk model. Enough populace unlocks bigger draft batches + cheaper per-soldier costs.</p>
+    </div>
+    <div class="card status-later">
+      <span class="tag-chip">Coming</span>
+      <h3>Enrichment → populace</h3>
+      <p>Landowner spends CT on enrichment; enrichment pool pays out yield over time. Prosperity nudges up. Populace grows. Draft cap and speed climb. This is the CT-sink incentive for landowners to make their land <em>worth</em> occupying.</p>
+    </div>
+    <div class="card status-later">
+      <span class="tag-chip">Coming</span>
+      <h3>Named artifacts + Singulars in play</h3>
+      <p>36 named one-of-one items exist in the data. Full pickup / bind / inscription mechanics land with the World Chronicle system.</p>
+    </div>
+    <div class="card status-later">
+      <span class="tag-chip">Coming</span>
+      <h3>The World Remembers</h3>
+      <p>Great battles auto-name themselves + archive to public Chronicle. Monument POIs seed Phantom pets. First-deed inscriptions at their sites in player's name.</p>
+    </div>
+    <div class="card status-later">
+      <span class="tag-chip">Coming</span>
+      <h3>Owner-designed towns</h3>
+      <p>Player-ownable port-like special locations. Markets, inns, treasure-hunt CT gamble. No-war windows override battle rules.</p>
+    </div>
+    <div class="card status-later">
+      <span class="tag-chip">Coming</span>
+      <h3>Estate campaign layer</h3>
+      <p>LARGE/GIANT/EPIC estates fight as one board with per-POI live 3D battles feeding back. Fortification ladder pre-baked; POI hero-parcels count 3/5/8 per size.</p>
+    </div>
+    <div class="card status-later">
+      <span class="tag-chip">Coming</span>
+      <h3>Diplomacy</h3>
+      <p>Guild + alliance layers. WAR / HOSTILE / NEUTRAL / TRUCE / ALLIED / VASSAL_OF / SUZERAIN_OF stances. Contract types (mercenary, bounty, escort, trade lease).</p>
+    </div>
+    <div class="card status-later">
+      <span class="tag-chip">Coming</span>
+      <h3>Public playtest</h3>
+      <p>Open sign-up. Requires: mass-map gen shipped, CT↔Gold round-trip verified, weather combat live, in-battle RTS integrated. No date until those land.</p>
+    </div>
+  </div>
+</div></section>
+
+<section class="slab"><div class="wrap">
+  <h2>Design decisions live in the repo</h2>
+  <p>Every major design call is in the CLAUDE.md decision log at the top of the repo — currently 26 owner-locked decisions covering economy, chains, Masters/heroes/pets, estate battles, the Diminution, world chronicle, and more.</p>
+  <p>Open questions and cross-team alignment sit in <code>docs/coord/MOBA-CF-COORD.md</code>. Deep design in <code>docs/README.md</code> + <code>docs/08-data-models.md</code>.</p>
+</div></section>
+`;

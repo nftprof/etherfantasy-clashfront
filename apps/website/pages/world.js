@@ -1,0 +1,73 @@
+export const title = 'World & continents';
+export const description = 'The overworld: 12 continents, 292,766 real parcels, sky and underworld realms, permanent geography, one shared world.';
+export const body = `
+<div class="page-head">
+  <div class="wrap-narrow">
+    <div class="eyebrow">The world</div>
+    <h1>One world, twelve continents, forever</h1>
+    <p class="lede">The overworld is the actual hexagon-city land map — the same geometry, the same parcels, permanent. No procedural regeneration, no seasonal reset. There is one world, and everyone is in it.</p>
+  </div>
+</div>
+
+<section class="slab"><div class="wrap">
+  <h2>The map is real land</h2>
+  <p>Clash Front is played on the <strong>292,766-parcel</strong> hexagon-city map — the same L2/L3 NFT land the marketplace sells. Every parcel is somebody's, or somebody's target. Geometry is fixed and permanent: what you buy is what you fight over.</p>
+  <ul>
+    <li><strong>L2 estates</strong> — larger holdings (~7+ parcels, up to ~200 for PALACE estates). Ethereum-tier.</li>
+    <li><strong>L3 singles</strong> — single-parcel land (~14 acres each, ±161 world-unit battlefield frame). Polygon-tier.</li>
+    <li><strong>Estates fight as boards</strong> — a LARGE/GIANT/EPIC estate is one battle across the entire estate map. Master-level POI parcels inside can open live 3D matches whose results feed back into the board fight.</li>
+  </ul>
+</div></section>
+
+<section class="slab"><div class="wrap">
+  <h2>The twelve continents</h2>
+  <p class="dim">Each continent has its own culture, weather, wildlife, festivals, and combat flavor. Not skins — real gameplay differences. Zone keys match the code (data/zone-cultures.json, data/zone-registry.json).</p>
+  <div class="tbl-scroll"><table class="tbl">
+    <thead><tr><th>Zone</th><th>Name</th><th>Tier</th><th>Signature</th></tr></thead>
+    <tbody>
+      <tr><td>HUB</td><td>Tianxia</td><td>Surface capital</td><td>All roads lead here. Concentric ring-walls, gate-arches. The destination.</td></tr>
+      <tr><td>ENT</td><td>Mythoria (SW)</td><td>Surface — carnival coast</td><td>Boardwalks, lantern-piers, Maskfall festival. Home of the Diminishing Stair.</td></tr>
+      <tr><td>BUS</td><td>Athlantia</td><td>Surface — commerce</td><td>Mediterranean harbours, trade lanes, port-city guilds.</td></tr>
+      <tr><td>EDU</td><td>Education continent</td><td>Surface — starter</td><td>The Golden 9 tutorial parcels live here. Where new players learn.</td></tr>
+      <tr><td>HS1</td><td>High Sky — Sky Meadow</td><td>Sky realm</td><td>Calm heights, wind-dominant weather, airship gateways.</td></tr>
+      <tr><td>HS2</td><td>High Sky — Storm Reach</td><td>Sky realm</td><td>Perpetual overcast, lightning strikes, war-severed from HS3.</td></tr>
+      <tr><td>HS3</td><td>High Sky — Bright Halls</td><td>Sky realm</td><td>Fair-weather high sanctum. War of the Sky Throne severed the HS2 link.</td></tr>
+      <tr><td>UW1</td><td>Underworld — Mist Sea</td><td>Depth 1</td><td>The shallow sea. Fog is the default, monster ports, the boss-gates.</td></tr>
+      <tr><td>UW2</td><td>Underworld — Ash Desert</td><td>Depth 2</td><td>Ashfall + ash-storms + heatwaves. First real diminution (character 1/1.5 scale).</td></tr>
+      <tr><td>UW3</td><td>Underworld — Diminished Realm</td><td>Depth 3</td><td>The lightning-vaulted deep. Character 1/6 scale — the world reads six times bigger.</td></tr>
+      <tr><td>CGI</td><td>CGI Experimental</td><td>Special</td><td>Experimental zone. Reserved for future content.</td></tr>
+      <tr><td>KOL</td><td>KOL Prestige Island</td><td>Special</td><td>Influencer-exclusive island; glamour, fame, fortune.</td></tr>
+    </tbody>
+  </table></div>
+  <p class="dim">Deep lore for each zone (proverbs, clans, dishes, festivals, architecture) lives at <a href="https://etherfantasy.com/world">etherfantasy.com/world</a>.</p>
+</div></section>
+
+<section class="slab"><div class="wrap">
+  <h2>Sky and depth</h2>
+  <p>The world has three tiers: <strong>surface</strong>, <strong>sky</strong>, and <strong>underworld</strong>. Movement between them is a real thing that costs real time.</p>
+  <ul>
+    <li><strong>Surface ⇄ Sky</strong> — via airship at designated ports (Porthaven, Aeropolis). HS1 is the gateway; HS1 branches to HS2 OR HS3, but not HS2 ⇄ HS3 (the War of the Sky Throne severed that route).</li>
+    <li><strong>Surface ⇄ UW1</strong> — the Shaft, and Kraken drags (SEA and SKY-over-SEA both have a chance to drag you into UW2 involuntarily).</li>
+    <li><strong>UW1 → UW2</strong> — the Diminishing Stair at Carnavale (Mythoria SW). Character scale drops. The world reads bigger.</li>
+    <li><strong>UW2 → UW3</strong> — the Vault-Gate crossing. Lava Kraken hazard on the crossing itself; character drops to 1/6 scale (kinematic 1/2.5 — full 1/6 speed would be unplayable).</li>
+  </ul>
+  <div class="rule"><strong>The Diminution.</strong> The deep diminishes CHARACTERS, not the world. Same ±161 battlefield frame — the difference is your character is smaller and the camera lower, so the world <em>reads</em> huge. UW3 is 1/6 on purpose (the number is 6). Combat stats and geometry are unchanged; perception is the whole point.</div>
+</div></section>
+
+<section class="slab"><div class="wrap">
+  <h2>Movement rules</h2>
+  <ul>
+    <li>Marches move parcel-by-parcel across the real adjacency graph. Each step costs real time.</li>
+    <li><strong>Owned foreign land is a blockade.</strong> You cannot walk through another governor's territory — you can attack it as a march destination, but never as a transit hop.</li>
+    <li>March STANCE: <strong>HOSTILE</strong> (default, "march to fight") or <strong>EVASIVE</strong> ("just passing through"). Two EVASIVE marches co-crossing unowned ground don't spawn a battle.</li>
+    <li>You may only carry as much food, gold, wood as your provisions bar holds. Long marches starve without a supply line. Starving armies desert.</li>
+    <li>Movement cost is modified by weather (rain +10%, snow +25%, storm +15%) and terrain (frozen +15%, road −N%).</li>
+  </ul>
+</div></section>
+
+<section class="slab"><div class="wrap">
+  <h2>The world remembers</h2>
+  <p>Battles above a casualty threshold auto-name themselves after the parcel they happened on and archive to a public <strong>World Chronicle</strong>. Monuments appear on the site of great battles — graveyards seed Phantom pets over time. First deeds are inscribed at the location <em>in the player's name</em>: first through each gate, first through each port, first to slay a boss, first town-founder, first EPIC holder.</p>
+  <p><a href="/roadmap.html">World Remembers spec is written; systems are next in the build queue.</a></p>
+</div></section>
+`;

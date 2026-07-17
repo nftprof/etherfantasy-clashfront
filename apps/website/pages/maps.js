@@ -1,0 +1,75 @@
+export const title = 'Maps & designer';
+export const description = 'Parcel geometry, the battlefield JSON contract, the map designer, defense placement.';
+export const body = `
+<div class="page-head">
+  <div class="wrap-narrow">
+    <div class="eyebrow">Maps & designer</div>
+    <h1>The land is designed once, permanent forever</h1>
+    <p class="lede">Every parcel is a real place on the shared world map. Its shape is fixed. Its battlefield is a designed, deterministic map — either AI-auto-generated or hand-shaped by the landowner.</p>
+  </div>
+</div>
+
+<section class="slab"><div class="wrap">
+  <h2>Two coordinate systems, no confusion</h2>
+  <ul>
+    <li><strong>The overworld</strong> — the hexagon-city map. Real acres, permanent geometry. Never regenerated.</li>
+    <li><strong>The battlefield</strong> — a per-parcel arena you fight IN. Fixed frame: ±161 world-units per side (~14 acres, ~0.74 m/unit). Same size on every battle. Estate boards fight as a series of these.</li>
+  </ul>
+  <p>Estate size scales the <em>count</em> of soldiers, structures, and components — not the arena. The MOBA engine is always fighting on one ±161 frame.</p>
+</div></section>
+
+<section class="slab"><div class="wrap">
+  <h2>Battlefield JSON — the contract</h2>
+  <p>One object, three consumers: the map generator emits it, the MOBA match-server plays on it, CF's command view renders it as the minimap. Everyone reads the same source.</p>
+  <div class="tbl-scroll"><table class="tbl">
+    <thead><tr><th>Field</th><th>What it is</th></tr></thead>
+    <tbody>
+      <tr><td><code>bounds</code></td><td>the parcel's polygon, centered, in world-units</td></tr>
+      <tr><td><code>meta.modes[]</code></td><td>which battle modes this geometry supports (DUEL/SIEGE/GUARD always; CLASH/DOMINION when fair edges exist)</td></tr>
+      <tr><td><code>meta.continentId</code></td><td>which of the 12 continents — drives weather lookup</td></tr>
+      <tr><td><code>obstacles[]</code></td><td>trees, rocks, water, cliffs — pathing blockers</td></tr>
+      <tr><td><code>resources[]</code></td><td>gold mines + wood groves — mined during battle</td></tr>
+      <tr><td><code>buildSpots[]</code></td><td>designated positions defenders (and the in-battle RTS layer) place walls, towers, gates</td></tr>
+      <tr><td><code>spawnZones[]</code></td><td>edge entries — armies enter here, matched to the direction they marched in from</td></tr>
+      <tr><td><code>lanes[]</code></td><td>corridor waypoints spawn → enemy base</td></tr>
+      <tr><td><code>structures[]</code></td><td>baked fortification (walls/gates/towers pre-placed on LARGE+ estates)</td></tr>
+    </tbody>
+  </table></div>
+  <p class="dim">Coordinates use <code>{x, z}</code> (y = height, never used for position). Blue/ATTACKER = SW, red/DEFENDER = NE. Cores at ±114.8, spawns at ±131.6 — the frame is fixed forever.</p>
+</div></section>
+
+<section class="slab"><div class="wrap">
+  <h2>Map designer — three modes</h2>
+  <ol>
+    <li><strong>AI auto-design (default)</strong> — the generator ships every parcel with a designed map. AI iterates over time (design version bumps). No player action needed. Server-side saved.</li>
+    <li><strong>Landowner freeze + edit</strong> — the owner freezes the AI and hand-designs the parcel (WC2-editor style). Terrain, resource placement, obstacles.</li>
+    <li><strong>Occupier structures (destructible)</strong> — occupiers can only ADD structures on the seeded buildSpots. Attackers who break them pillage salvage materials.</li>
+  </ol>
+  <p><strong>Thumbnails</strong> — each designed parcel's top-down PNG textures the overworld map. What you see on the world view IS the actual battlefield.</p>
+</div></section>
+
+<section class="slab"><div class="wrap">
+  <h2>Mode capability flags</h2>
+  <p>Not every parcel supports every mode. A sliver-shaped parcel physically can't produce two mutually-fair edge starts — CLASH would be geometrically unfair. Rather than reject those parcels, the generator marks them with a <code>meta.modes[]</code> capability list:</p>
+  <ul>
+    <li><strong>DUEL / SIEGE / GUARD</strong> — universal. Every parcel supports them.</li>
+    <li><strong>CLASH</strong> — supported iff ≥ 2 fair edge starts exist.</li>
+    <li><strong>DOMINION</strong> — supported iff a viable center objective slot exists on walkable ground.</li>
+  </ul>
+  <p>When a battle situation would ideally be CLASH but the parcel doesn't support it, CF's sim falls back to DUEL and routes extra armies via the <a href="/battles.html">reinforcement queue</a>. Nothing breaks; the arriving armies wait their turn.</p>
+  <div class="rule"><strong>Why:</strong> at 292,766 parcels, about 2.5% have geometry that can't fake fair edges. Rejecting them = losing ~7,000 parcels forever. Capability flags let every parcel ship + play.</div>
+</div></section>
+
+<section class="slab"><div class="wrap">
+  <h2>Playability gate — what a generated map MUST have</h2>
+  <ol>
+    <li>Every spawn edge has a corridor reaching the base area</li>
+    <li>Every lane is pathable end-to-end</li>
+    <li>All buildSpots / resources / structures / mobs sit on walkable ground</li>
+    <li>Base area clear radius around each CORE</li>
+    <li>Deterministic — same seed + params = byte-identical map</li>
+    <li>DUEL / SIEGE / GUARD supported (universal)</li>
+    <li>buildSpots populated per size class (never empty on production maps)</li>
+  </ol>
+</div></section>
+`;

@@ -1,0 +1,61 @@
+export const title = 'Servers & travel';
+export const description = 'One world, regional shards, kraken drags, airships, and how you move between servers.';
+export const body = `
+<div class="page-head">
+  <div class="wrap-narrow">
+    <div class="eyebrow">Servers & travel</div>
+    <h1>One world, real distances, real servers</h1>
+    <p class="lede">There's exactly one world. It runs on regional servers for latency — your zone lives on the server nearest to it, and when your march crosses into another zone your presence hands off between shards. Nothing you own duplicates.</p>
+  </div>
+</div>
+
+<section class="slab"><div class="wrap">
+  <h2>One world — not sharded realms</h2>
+  <p>Clash Front is not "US server, EU server, Asia server, all with their own copy of the world." Every zone lives on exactly one regional server for latency locality, but there is only ONE game world. Your land, your Masters, your CT — none of it duplicates across regions. When you march from a zone hosted in Montreal into a zone hosted in Singapore, the sim hands your army off across the shards. Same world, closer server.</p>
+  <div class="rule"><strong>Launch:</strong> Montreal + Singapore. Two enabled continents. The rest visible on the map as "beyond the frontier" until their server tier lights up.</div>
+</div></section>
+
+<section class="slab"><div class="wrap">
+  <h2>Travel — surface, sky, depth</h2>
+  <p>The world has three tiers. Moving between them is <em>the</em> travel activity.</p>
+  <div class="tbl-scroll"><table class="tbl">
+    <thead><tr><th>Path</th><th>How</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td>Surface ⇄ Surface</td><td>Overworld march, parcel-by-parcel</td><td>Owned foreign land is a blockade — cannot transit through</td></tr>
+      <tr><td>Surface ⇄ Sky (HS1)</td><td>Airship from Porthaven / Aeropolis</td><td>HS1 is the gateway — branches to HS2 OR HS3</td></tr>
+      <tr><td>Sky (HS1) → HS2</td><td>Airship</td><td>Storm Reach — perpetual overcast, lightning</td></tr>
+      <tr><td>Sky (HS1) → HS3</td><td>Airship</td><td>Bright Halls — the sanctum</td></tr>
+      <tr><td>HS2 ⇄ HS3</td><td>SEVERED</td><td>War of the Sky Throne — no direct route. Route via HS1.</td></tr>
+      <tr><td>Surface → UW1</td><td>The Shaft (main descent)</td><td>Shallow underworld — mist sea, monster ports</td></tr>
+      <tr><td>SEA / SKY-over-SEA → UW2</td><td>KRAKEN DRAG (involuntary)</td><td>Random chance — you're pulled in against your will. The Kraken decides.</td></tr>
+      <tr><td>UW1 → UW2</td><td>The Diminishing Stair — Carnavale (Mythoria SW)</td><td>Character scale drops here. The world reads bigger.</td></tr>
+      <tr><td>UW2 → UW3</td><td>The Vault-Gate</td><td>Lava Kraken hazard on the crossing itself. Character drops to 1/6 scale (kinematic ~1/2.5).</td></tr>
+    </tbody>
+  </table></div>
+</div></section>
+
+<section class="slab"><div class="wrap">
+  <h2>Travel cost — time, food, morale</h2>
+  <ul>
+    <li>Every march step costs <strong>real time</strong> (parcel travel time × terrain moveCost × weather modifier).</li>
+    <li>Every step burns <strong>march rations</strong> — food carried on the army.</li>
+    <li>Unsupplied stretches drain <strong>supply</strong> → morale bleed → desertion at low morale.</li>
+    <li>Airship travel costs CT + time. Trade lines and ports are strategic assets.</li>
+  </ul>
+</div></section>
+
+<section class="slab"><div class="wrap">
+  <h2>Cross-shard handoff — what "moving server" actually means</h2>
+  <p>When your march crosses from a zone on server A into a zone on server B, the game hands your army off between the shards. The transition is invisible to you — same world, same session, just now running on the nearer server. Battles run on the zone's regional server (latency locality); your commands go where your fight is.</p>
+</div></section>
+
+<section class="slab"><div class="wrap">
+  <h2>The Kraken</h2>
+  <div class="spoiler">
+    Sail long enough on the surface sea, or fly long enough over it, and the Kraken will drag you. Not "might" — will. It's not a random punishment; it's a route. Being kraken-dragged deposits you into UW2, ash-desert country. Your ship or airship is not lost; you are relocated. Then you have to make your way back.
+  </div>
+  <div class="spoiler">
+    The Vault-Gate has its own kraken — the Lava Kraken — a hazard on the UW2 → UW3 crossing itself. The gate's ambient molten glow is not decoration.
+  </div>
+</div></section>
+`;
