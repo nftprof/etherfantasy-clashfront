@@ -173,21 +173,27 @@ the vocabulary match `mon_lineage.json`?
 - `docs/briefs/WEATHER-CONTINENT-PLAN.md` §"Type advantage" — realigned to
   the reconciled vocabulary + ±35% cap + separate multiplier note.
 
-**Open sub-Q for owner (flagged 2026-07-17, MOBA agent):**
-> Apply affinity to **all typed units** (heroes + soldiers + pets — simplest,
-> most consistent) or **pets/mons only** (preserves decision 14 that elements
-> live on pet selection)?
+**Sub-Q resolved (owner ruling 2026-07-17):**
+> "Pet and soldiers, actually pet IS soldiers so yes both. Keep hero out for
+> now — hero already has pet buffs. Pet = soldiers are the same."
 
-**CF-side recommendation:** pets first for MVP, extend to typed line-soldiers
-next, Masters/heroes stay element-free (decision 14 canon). If owner instead
-rules "all typed units", decision 14 needs a footnote and CF's `Officer` schema
-gains an optional `element` field. Awaiting owner call.
+**Ruling:** affinity applies to **pets AND line-soldiers (they're the same
+layer — a unit stack IS a pet species deployment)**. **Heroes/Masters do NOT
+receive direct weather affinity** (they benefit indirectly through their pet
+squads' buffs). Preserves decision 14 canon: elements live on pet selection,
+which now formally = the soldier stack itself.
+
+**Canon clarification (worth noting in future docs):** in CF, `UnitClass`
+stacks (INFANTRY / ARCHER / CAVALRY / SPEAR / SIEGE / MARINE / SHIP) each
+carry a pet-element type (per unit's underlying pet species) — a line
+soldier isn't "elementless infantry with a pet on the side," the soldier
+STACK IS the pet species. Weather affinity swings the whole stack.
 
 ---
 
 ## OPEN
 
-**COORD-004-sub — Affinity scope (2026-07-17):** heroes/soldiers/pets vs pets-only. Awaiting owner call. CF recommendation: pets-first, extend to soldiers next, Masters never.
+*(none right now — this doc's job is to keep it that way)*
 
 ---
 

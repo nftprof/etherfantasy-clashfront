@@ -110,14 +110,15 @@ combined ±35%):
 | **Water parcel** | Water +15%, Lightning ×1.15 (chain-shock chance), Fire −15% |
 | **Underworld parcels** (UW1–3) | Phantom +10%, Mystic −10% ambient (the deep favors shadow) |
 
-**Scope open Q (owner call — MOBA agent flagged 2026-07-17):** current MOBA
-gives heroes + line-soldiers + pets an element. Applying the affinity swing to
-all typed units is simpler + more consistent, but broader than "elements live
-on PET selection" (decision 14). My recommendation: **pets first (MVP), extend
-to typed line-soldiers next**; heroes/Masters stay element-free per canon (no
-affinity swing) — MOBA client gates by unit kind. If owner instead rules "apply
-to all typed units", decision 14's canon needs a footnote and CF's `Officer`
-schema needs an optional `element` field.
+**Scope (owner ruling 2026-07-17, coord doc COORD-004-sub):** affinity applies
+to **pets AND line-soldiers** — with the canon clarification that in CF, **pet
+= soldier**. A `UnitClass` stack (INFANTRY / ARCHER / CAVALRY / SPEAR / SIEGE /
+MARINE / SHIP) IS a pet species deployment, not "elementless infantry with a
+pet on the side"; the stack carries the underlying species' element and the
+weather swing hits the whole stack. **Heroes/Masters do NOT receive direct
+weather affinity** — they benefit indirectly through their pet-squad buffs.
+Preserves decision 14 verbatim: elements still live on pet selection, which
+now formally = the soldier stack itself.
 
 ## Sim consumers — three cheap sites
 
