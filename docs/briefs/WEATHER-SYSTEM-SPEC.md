@@ -1,5 +1,14 @@
 # Weather system — continent weather → battle effects (owner directive 2026-07-17)
 
+> **⚠ v1 LOCK (COORD-007, owner 2026-07-17 — read `docs/coord/MOBA-CF-COORD.md` first):** for CF
+> battles, weather is **IMMUTABLE for the whole battle** and every weather/terrain/aura/morale term
+> folds into the ONE `effectiveStrength` number CF sends at allocate — **no mid-battle weather math
+> anywhere**. The §2 "gameplay hooks" column below describes terms that fold in PRE-battle (and
+> settlement post-processing), never live effects. Weather VISUALS may rotate for atmosphere (MOBA
+> single-player may change weather in-game — visual only, zero stat impact); the drifting-front
+> overworld field + mid-battle effects are post-MVP. This spec's §1 architecture is unchanged —
+> `weatherAt` at the COLLISION TICK is what folds into the number.
+
 > Owner: "confirm how the weather system will work. For now it can be random, but incorporate a
 > weather system that can be TRIGGERED — clouds over an entire continent, raining days (fire
 > strategy won't set), wind, snow. Critical: these affect what people can SEE."
