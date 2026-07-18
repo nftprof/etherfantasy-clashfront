@@ -25,6 +25,7 @@ export const HEADER = ({ page = '' } = {}) => `<!-- BEGIN header -->
       <a href="/servers.html">Servers</a>
       <a href="/roadmap.html">Roadmap</a>
       <a href="/getting-started.html">Start</a>
+      <a href="/play" class="play-cta">⚔ Play</a>
     </nav>
   </div>
 </header>

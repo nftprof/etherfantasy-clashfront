@@ -397,3 +397,13 @@ footer.site .foot-brand { font-family: var(--serif); letter-spacing: 2px; color:
   nav.primary a { padding: 10px 12px; border-bottom: 1px solid var(--line); border-radius: 0; }
   nav.primary a:last-child { border-bottom: 0; }
 }
+
+/* Nav play CTA — the door into the game (login → map) */
+nav.primary a.play-cta {
+  color: #241a06;
+  background: linear-gradient(180deg, #e2b84e, #c39428);
+  border: 1px solid #a67617;
+  font-weight: 700;
+  margin-left: 6px;
+}
+nav.primary a.play-cta:hover { color: #16120b; background: linear-gradient(180deg, #eac35e, #cb9d30); }

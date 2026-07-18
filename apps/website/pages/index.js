@@ -12,7 +12,8 @@ export const body = `
       and full 3D battles. You'll bleed real CT if you lose, and take the loser's land if you win.
     </p>
     <div class="cta">
-      <a href="/getting-started.html" class="btn primary">Get started</a>
+      <a href="/play" class="btn primary">⚔ Enter the map</a>
+      <a href="/getting-started.html" class="btn">Get started</a>
       <a href="/battles.html" class="btn">How battles work</a>
       <a href="/roadmap.html" class="btn">Roadmap</a>
     </div>
