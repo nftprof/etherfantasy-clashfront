@@ -3,7 +3,7 @@
 // both the source (pages/*.js) and the generated .html files so the deploy
 // agent has zero-tooling static output.
 import { writeFileSync, readdirSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { dirname, join } from 'node:path';
 import { wrapHtml } from './_shared.js';
 
@@ -12,7 +12,7 @@ const PAGES = join(HERE, 'pages');
 const files = readdirSync(PAGES).filter((f) => f.endsWith('.js'));
 
 for (const f of files) {
-  const mod = await import(join(PAGES, f));
+  const mod = await import(pathToFileURL(join(PAGES, f)).href); // file:// — required on Windows
   const out = wrapHtml({
     title: mod.title,
     description: mod.description,

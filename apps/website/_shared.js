@@ -11,7 +11,7 @@ export const HEADER = ({ page = '' } = {}) => `<!-- BEGIN header -->
 </div>
 <header class="site">
   <div class="wrap">
-    <a href="/" class="brand">Clash Front <span>· Ether Fantasy</span></a>
+    <a href="/" class="brand"><img src="/assets/img/ef-icon-256.png" alt="EtherFantasy">Clash Front <span>· Ether Fantasy</span></a>
     <button class="nav-toggle" aria-label="Toggle navigation">☰</button>
     <nav class="primary">
       <a href="/">Home</a>
@@ -34,11 +34,12 @@ export const FOOTER = () => `<!-- BEGIN footer -->
 <footer class="site">
   <div class="wrap">
     <span class="foot-brand">Clash Front</span>
-    <span>· A grand-strategy war layer on the hexagone-city land map</span>
+    <span>· The dominion war game of the EtherFantasy realm — the Masters own the world</span>
     <span style="margin-left:auto;">
       <a href="https://etherfantasy.com">etherfantasy.com</a>
+      · <a href="https://etherfantasy.com/world">The World</a>
+      · <a href="https://pets.etherfantasy.com/populace/">The Populace</a>
       · <a href="/roadmap.html">Roadmap</a>
-      · <a href="/getting-started.html">Get started</a>
     </span>
   </div>
 </footer>
