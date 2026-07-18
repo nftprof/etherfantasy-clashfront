@@ -88,7 +88,7 @@ export const body = `
       <div class="card status-build">
         <span class="tag-chip gold">Building</span>
         <h3>Weather + type advantage</h3>
-        <p>12-continent probability cards live in code. Renderer visuals shipped. Combat multiplier and per-hit VFX in flight.</p>
+        <p>12-continent probability cards live in code. Renderer visuals shipped. v1 combat contract locks weather at battle start — no mid-fight drift, one number per side.</p>
       </div>
       <div class="card status-build">
         <span class="tag-chip gold">Building</span>
@@ -97,8 +97,8 @@ export const body = `
       </div>
       <div class="card status-later">
         <span class="tag-chip">Coming</span>
-        <h3>Crafting & farming</h3>
-        <p>Resource extraction, weapon/armor crafting, food farming, tax cycles, populace mechanics, land enrichment loop.</p>
+        <h3>Crafting &amp; farming</h3>
+        <p>Worker pets on parcels: MINE / FARM / CRAFT / GUARD roles. Weapon/armor crafting from mined materials. Food farming per land, tax cycles, populace mechanics, land enrichment loop.</p>
       </div>
       <div class="card status-later">
         <span class="tag-chip">Coming</span>

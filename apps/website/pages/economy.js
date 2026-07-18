@@ -25,14 +25,16 @@ export const body = `
 </div></section>
 
 <section class="slab"><div class="wrap">
-  <h2>Gold — the in-battle layer</h2>
-  <p>Gold is mined from resource nodes on the battlefield during a fight. Every battle map ships with GOLD_MINE nodes (position + richness — richer nodes on more-enriched land). Whoever holds a mine's approach line collects its output over the match. Gold is spent inside the fight on:</p>
+  <h2>Gold + materials — the overworld resource layer</h2>
+  <p>Extraction happens on the <strong>CF overworld map</strong>, not on the battlefield. Assign worker pets to your parcels — they mine, farm, and craft over time based on the land's biome and enrichment level. What they produce sits in the parcel's stockpile until you ship it, spend it, or lose it.</p>
   <ul>
-    <li>Building towers, walls, gates at seeded <a href="/maps.html">buildSpots</a></li>
-    <li>Hiring elite units (via <a href="/pets.html">pet NFT summons</a> if you own the blueprint)</li>
-    <li>Erecting a temporary command center (attacker CC — costs gold + wood, gives scoring bonus)</li>
+    <li><strong>MINE workers</strong> → Gold + Wood + Iron + Stone + rare metals to the territory stockpile</li>
+    <li><strong>FARM workers</strong> → Food to the territory's food stock</li>
+    <li><strong>CRAFT workers</strong> at a Workshop → equipped arms + fortification upgrades from stockpile materials</li>
+    <li><strong>GUARD workers</strong> → defensive contribution when the parcel comes under attack</li>
   </ul>
-  <div class="rule"><strong>Round-trip rule:</strong> the CT ↔ Gold conversion is <em>fixed</em>. Spend 100 Gold building an in-battle tower — if you win and plunder, the tower's salvage value is ~100 Gold, which converts back to CT at the same rate. The economy is designed so battle spending stays consistent with overworld spending. No hidden markup either way.</div>
+  <p>Species matters — Fire pets mine volcanic ground better; Leaf pets farm forest better; Iron pets mine anywhere at a bonus. NFT-blueprint owners can summon any species onto any parcel, paying an ongoing summon-premium in CT for the privilege.</p>
+  <div class="rule"><strong>In-battle economy stays minimal.</strong> Attackers carry <em>provisions</em> — food, gold, wood — into the fight from their home stockpile. Battle-food burns upfront. Carried gold + wood erect an attacker command center (temporary scoring bonus, spent win or lose). No mid-battle mining. No mid-battle build. The battle map is a fight — the economy lives on the CF overworld map where the workers work.</div>
 </div></section>
 
 <section class="slab"><div class="wrap">

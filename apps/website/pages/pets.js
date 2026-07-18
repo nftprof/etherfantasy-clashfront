@@ -21,8 +21,15 @@ export const body = `
   <h2>Two roles: workers and soldiers</h2>
   <div class="split">
     <div>
-      <h3>Workers (GATHER)</h3>
-      <p>Assign pets to a territory as workers. They boost yield — food production, gold trickle, wood extraction — proportional to the species' affinity for the land type. Pets don't die from being workers; a raider that beats down your workers just puts them in KO recovery. They walk home.</p>
+      <h3>Workers — four roles</h3>
+      <p>Assign pets to a territory + pick a role:</p>
+      <ul>
+        <li><strong>MINE</strong> — gold, wood, iron, stone, rare metals into the parcel's stockpile</li>
+        <li><strong>FARM</strong> — food into the parcel's foodStock</li>
+        <li><strong>CRAFT</strong> — at a Workshop, converts stockpile materials to equipped arms + fortification upgrades</li>
+        <li><strong>GUARD</strong> — defensive contribution when raided</li>
+      </ul>
+      <p>Yield scales with species affinity for the biome. Pets don't die from being workers; a raider that beats down your workers just puts them in KO recovery. They walk home.</p>
     </div>
     <div>
       <h3>Soldiers (GUARD / FIGHT)</h3>

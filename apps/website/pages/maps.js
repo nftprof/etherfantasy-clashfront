@@ -28,8 +28,7 @@ export const body = `
       <tr><td><code>meta.modes[]</code></td><td>which battle modes this geometry supports (DUEL/SIEGE/GUARD always; CLASH/DOMINION when fair edges exist)</td></tr>
       <tr><td><code>meta.continentId</code></td><td>which of the 12 continents — drives weather lookup</td></tr>
       <tr><td><code>obstacles[]</code></td><td>trees, rocks, water, cliffs — pathing blockers</td></tr>
-      <tr><td><code>resources[]</code></td><td>gold mines + wood groves — mined during battle</td></tr>
-      <tr><td><code>buildSpots[]</code></td><td>designated positions defenders (and the in-battle RTS layer) place walls, towers, gates</td></tr>
+      <tr><td><code>buildSpots[]</code></td><td>designated positions where defenders place their walls, towers, gates (pre-battle, from the CF main-map defense screen — no mid-battle building)</td></tr>
       <tr><td><code>spawnZones[]</code></td><td>edge entries — armies enter here, matched to the direction they marched in from</td></tr>
       <tr><td><code>lanes[]</code></td><td>corridor waypoints spawn → enemy base</td></tr>
       <tr><td><code>structures[]</code></td><td>baked fortification (walls/gates/towers pre-placed on LARGE+ estates)</td></tr>

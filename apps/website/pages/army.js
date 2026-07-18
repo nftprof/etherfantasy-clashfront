@@ -44,8 +44,8 @@ export const body = `
       <p>Mined from map resource nodes during a fight. Spent in-battle building towers, walls, gates, hiring elite units. Round-trips out at end of battle: your final Gold survivors become plunder (translated back to CT at the fixed rate).</p>
     </div>
   </div>
-  <p><strong>Food / Wood</strong> — carried on your army as provisions. Food is burned on march-steps and consumed in battle-food up front. Wood + gold together can erect a temporary in-battle command center that gives your side a scoring bonus (spent win or lose).</p>
-  <p class="dim">The formal CT ↔ Gold bridge spec is pending — round-trip prices in matches must equal round-trip prices out (spend 100g on a tower → recover ~100g on plunder).</p>
+  <p><strong>Food / Wood / Gold</strong> — carried on your army as <strong>provisions</strong>, sourced from your home territory's stockpile at raise time (see the <a href="/economy.html">economy</a> page). Food is burned on march-steps and consumed in battle-food up front. Wood + gold together can erect a temporary in-battle command center — a scoring bonus for the attacker, spent win or lose. Nothing else is spent inside the fight.</p>
+  <p class="dim">All resource extraction (mining, farming, crafting) happens on the CF overworld map via worker pets on your parcels — NOT during battles. The battlefield is a fight, not a base-building screen.</p>
 </div></section>
 
 <section class="slab"><div class="wrap">

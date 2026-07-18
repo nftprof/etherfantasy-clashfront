@@ -90,13 +90,13 @@ export const body = `
     </div>
     <div class="card status-build">
       <span class="tag-chip gold">Building</span>
-      <h3>CT ↔ Gold bridge</h3>
-      <p>In-battle Gold cost = plunder rate, formal spec. So 100g spent on an in-battle tower recovers ~100g on victory. Round-trip must math out across battle boundary.</p>
+      <h3>v1 battle contract — one number, immutable</h3>
+      <p>CF sends a single pre-baked <strong>effective strength</strong> per side at battle start. Weather × terrain × hero artifact aura × morale × food × fame × enrichment all fold in. Locked for the fight — no mid-battle drift. Long-battle food drain handled by CF post-processing at settlement. MOBA integration cost: one context field.</p>
     </div>
     <div class="card status-build">
       <span class="tag-chip gold">Building</span>
-      <h3>In-battle RTS layer</h3>
-      <p>Build/gather/train mid-fight. Gold mines seeded per parcel. Elite units hire-able in-match. Attacker/defender both spend Gold at valid buildSpots during the match. Master's Sickness modes.</p>
+      <h3>v1 duel capture / release / KO</h3>
+      <p>Winner of a hero duel picks: RELEASE (default, loser walks to their governor's undeployed pool) or KNOCK OUT (K.O. animation + Masters API KO endpoint + owner has to revive). No captive state, no ransom — MVP simplicity locked.</p>
     </div>
     <div class="card status-build">
       <span class="tag-chip gold">Building</span>

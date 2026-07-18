@@ -116,6 +116,13 @@
 </div></section>
 
 <section class="slab"><div class="wrap">
+  <h2>Weather is locked at battle start (v1)</h2>
+  <p>The weather at the moment a battle begins sets the affinity swing for the whole fight. If clouds part or a storm sweeps in during the match, that's atmosphere — the combat math stays fixed.</p>
+  <p>Why: the entire battle folds into a single <a href="/battles.html">effective strength number</a> per side, computed once and locked. It keeps the fight predictable, replays deterministic, and the pre-battle preview a real forecast — not a wild guess.</p>
+  <p class="dim">Post-MVP, mid-battle weather rotation may return as a gameplay lever — but only opt-in, and only with a clean data pipe so both clients + the headless sim agree on the roll. The v1 lock keeps things simple.</p>
+</div></section>
+
+<section class="slab"><div class="wrap">
   <h2>Owner overrides — "triggered"</h2>
   <p>Some battles deserve their own sky. Owner (or an event system) can override a continent's weather for a duration — storms for scripted sieges, heatwaves for festivals, thick fog for a mystery event. Overrides beat the seeded roll while active. Persisted in state; visible to every player.</p>
 </div></section>

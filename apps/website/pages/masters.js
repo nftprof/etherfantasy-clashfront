@@ -45,10 +45,22 @@ export const body = `
   <h2>Hero-vs-hero duels</h2>
   <p>Sometimes armies aren't needed. Two Masters standing alone on the same land can settle it 1-on-1 — champions decide, troops are spared.</p>
   <ul>
-    <li><strong>v1 (now):</strong> Uncharted Waters-style card best-of-3 auto-duel using real Master stats + HP + named artifact spells. Animated head-shot fight.</li>
+    <li><strong>v1 (now):</strong> a card fight (AGGRESSIVE > TRICK > DEFENSIVE > AGGRESSIVE), best-of-3 exchanges, decided by your Master's real rating + HP + equipped artifact spellflares. Animated head-shot fight with real portraits. Turn-based over WebSocket — snappy round transitions, no networking overhead.</li>
     <li><strong>v2+ (upcoming):</strong> tiny-arena live 1v1 on the 3D engine.</li>
   </ul>
-  <p>Loser is KO'd (live Masters API), winner takes the ground. Public result — the World Chronicle records it.</p>
+  <p><strong>When you win, you choose:</strong></p>
+  <ul>
+    <li><strong>RELEASE (default)</strong> — the loser's Master walks back to their governor's undeployed pool. They can redeploy immediately. Merciful. Fires automatically if you don't pick within 10 seconds.</li>
+    <li><strong>KNOCK OUT</strong> — animated K.O. (eyes shut, head slumps, screen dims) → Master enters KO state via the live Masters API. Their owner has to revive them before using them again. Brutal.</li>
+  </ul>
+  <p>Winner takes the ground. Result is public — the World Chronicle records it as a great-deed style beat.</p>
+</div></section>
+
+<section class="slab"><div class="wrap">
+  <h2>Signature artifacts — the elemental aura</h2>
+  <p>Masters are element-free themselves (decision 14). But their <strong>equipped signature artifact</strong> grants an <strong>elemental aura</strong> to matching-element soldiers in the army they lead.</p>
+  <p>Example: your Master equips a Flame Scimitar (Fire artifact). Every Fire-species soldier stack in her army fights at +10% while she's alive. Other elements get nothing. Her own combat contribution stays element-free.</p>
+  <p class="dim">Aura stacks with weather × terrain into the same ±35% combined cap — one budget, three sources. Named/legendary artifacts (Singulars) may bump aura higher; mundane weapon artifacts stay at the +10% baseline. Aura is the way Masters shape element strategy without violating "elements live on pet selection."</p>
 </div></section>
 
 <section class="slab"><div class="wrap">

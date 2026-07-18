@@ -103,7 +103,19 @@ export const body = `
 
 <section class="slab"><div class="wrap">
   <h2>Hero-vs-hero duels</h2>
-  <p>Two Masters standing alone on the same land can settle it 1-on-1 — no armies wasted. v1 is a card-based auto-duel with your Master's real stats + HP + spells and an animated head-shot fight. v2+ (upcoming) is a tiny-arena live 1v1 on the engine.</p>
-  <p>Loser Master is KO'd via the live Masters API and enters the revive cycle. Result is public — a great-deed style beat that shows up in the World Chronicle.</p>
+  <p>Two Masters standing alone on the same land can settle it 1-on-1 — no armies wasted. v1 is a card-based fight: paper-rock-scissors at its core (AGGRESSIVE > TRICK > DEFENSIVE > AGGRESSIVE), decided by your Master's real rating + HP + equipped artifact spells, with animated head-shots and blows and K.O.s. Turn-based, not networked — clean and quick.</p>
+  <p><strong>When you win, you decide what happens next.</strong> The loser's Master defaults to <strong>RELEASE</strong> — they walk back to their governor's undeployed pool, ready to redeploy. Or you can choose <strong>KNOCK OUT</strong>: their eyes flutter shut, head slumps, screen dims — Master goes to KO state (via the live Masters API), and their owner has to revive them before using them again. Merciful or brutal — your call.</p>
+  <p>v2+ (upcoming) opens live 1v1 on the 3D engine — a tiny arena, no army — that's when Masters go head-to-head in real time.</p>
+</div></section>
+
+<section class="slab"><div class="wrap">
+  <h2>The v1 combat contract — one number, immutable</h2>
+  <p>Under the hood, every battle in Clash Front settles against a single <strong>effective strength</strong> number per side. That number folds in everything that matters — troop composition × class base × weather × terrain × hero artifact aura × morale × food × fame × enrichment × prosperity. Computed once at battle start. Locked for the whole fight.</p>
+  <ul>
+    <li><strong>Weather stays fixed per battle.</strong> The sky at kickoff decides the affinity swing for the whole fight. Visuals may still drift (a storm moves through, clouds part) but the combat math is baked in.</li>
+    <li><strong>No mid-battle drift.</strong> Long fights don't get periodic recomputation — but if a battle runs long and drains carried food, the settlement math applies the drain to casualties. You'll see it in the after-battle report, not on a bar mid-fight.</li>
+    <li><strong>Hero duels never fire during army battles.</strong> They resolve outside the fight, and their impact — a KO'd Master, a morale shock to their nearby troops — lands on the NEXT battle's effective strength calc.</li>
+  </ul>
+  <p class="dim">The math is intentionally simple so the game reads clearly. Weather visuals, the match-start banner ("☔ Rainy — 💧 Water +15% · 🔥 Fire −15%"), and the HUD affinity chip carry the entire visible feedback layer.</p>
 </div></section>
 `;
