@@ -191,6 +191,159 @@ STACK IS the pet species. Weather affinity swings the whole stack.
 
 ---
 
+### COORD-007 — Battle strength + weather IMMUTABLE per battle (v1 lock, 2026-07-17)
+
+**Opened by:** CF Overworld eco (simplification round). **Status:** DONE — lock. All teams build against this.
+
+**Owner ruling:** "v1 — entire battle strength don't change lets lock it in.. then
+we can probably lock in the entire battle for same weather effects instead of
+changing throughout for CF."
+
+**The v1 contract — the ONE-NUMBER, ONE-WEATHER rule:**
+
+1. **CF sends ONE `effectiveStrength` number per side** in the allocate context.
+   Every combat term folds into it BEFORE allocate:
+   - troop composition × classBase
+   - weather × element affinity (per-species, ±15% base)
+   - terrain × element affinity (stacks with weather, ±35% combined cap)
+   - **hero elemental aura from equipped signature artifact (+10% per artifact
+     max, folds into the same ±35% cap)** — Masters stay element-free personally
+     (decision 14 preserved), their equipped artifact grants an aura to
+     matching-element soldiers
+   - morale multiplier (`× morale / 100`)
+   - endurance from carried food (attacker's food vs battle-food need)
+   - hero fame contribution (capped at HERO_IMPACT_MAX = 20%)
+   - enrichment × prosperity bonus
+
+2. **The number is IMMUTABLE for the whole battle.** No mid-battle CF updates,
+   no periodic recomputation, no strength drift for MOBA to render. Match plays
+   at the number CF sent at allocate time. Weather visuals may rotate during
+   the match for atmosphere (renderer's existing `weatherT` timer), but
+   **weather-derived combat math is baked in at battle start** — the rotation
+   is pure flavor, not gameplay.
+
+3. **Long-battle food drain, morale drift, weather-swing-shift** — all handled
+   by CF POST-PROCESSING at settlement. MOBA reports casualties + duration; CF
+   applies endurance / morale drift based on the actual battle duration when
+   settling. Survivors carry the resulting morale into the NEXT battle.
+
+4. **Hero-vs-hero duels fire OUTSIDE army battles**, never during. Duel morale
+   shocks apply to the loser's other armies AFTER the duel; the NEXT army
+   battle sees the reduced morale in its `effectiveStrength` calc. No
+   mid-battle interference with MOBA sims (see COORD-008).
+
+**What each side owes:**
+
+- **CF Overworld eco (me):** implement the folded-in strength calc, send it in
+  the allocate context, post-process casualties at settlement with real duration.
+  Nothing more.
+- **EF Moba (netcode):** carry `effectiveStrength` in the allocate context
+  (one new field). Nothing else changes.
+- **MOBA BattleEngine RAW (renderer):** consume `effectiveStrength` as the
+  static combat-scale number. Weather visuals may still rotate for atmosphere
+  — but their `weatherT` timer stops driving math, becomes flavor-only.
+- **CF ParcelMap:** unaffected.
+
+**Deferred (post-MVP, opt-in):**
+- Periodic `strengthUpdate` events during long LIVE battles (BATTLE-CONDITION-
+  MODIFIER.md, MOBA-authored)
+- Starving-pets visual state
+- Hero-condition mid-battle rotation
+
+Nothing above is required for MVP. Weather visuals + banner + HUD chip carry
+the ENTIRE visible feedback surface. MOBA integration cost = one new context
+field + a one-line change to weatherT (visual-only).
+
+**Impl:**
+- `docs/briefs/BATTLE-STRENGTH-V1.md` — **PENDING** (bundle with the CF-side
+  math spec + the "how the terms fold" reference)
+- `docs/briefs/ALLOCATE-CALLBACK-SCHEMA.md` — **PENDING** (add
+  `sides[i].effectiveStrength: number` to the allocate context)
+- `apps/server/src/game.ts engineAllocateContext` — compute + send the field
+  (in-flight)
+- MOBA renderer weatherT flag — one-line change to skip math-side effects
+
+---
+
+### COORD-008 — Hero duels are CF-only, turn-based, no networking involvement (2026-07-17)
+
+**Opened by:** CF Overworld eco (relaying "MOBA/Networking weren't aware duels
+existed" — user question). **Status:** DONE — informational lock.
+
+**Question (from EF Moba + MOBA BattleEngine RAW):** "We weren't aware there's
+a paper-scissor-hand duel system between Masters — where does it live, does it
+need networking, does it need our engine?"
+
+**Answer:** Hero-vs-hero card duels are a **CF-only, turn-based** encounter
+type. They ride on CF's own WebSocket connection (the same one used for
+command mode). **They do NOT touch the MOBA match server, do NOT allocate a
+match, do NOT use the 30 Hz networking stack. Zero build required on the MOBA
+or Networking side.**
+
+**Why turn-based, not 30 Hz:**
+- Round = one card exchange (~5–15s user-input window)
+- Between rounds, both clients block waiting for the other's pick
+- No positional state, no ballistics, no continuous simulation
+- Best-of-3 (⚙ `maxExchanges`), typical total match ~30–60 s wall-clock
+- Deterministic seeded resolver; both clients see identical outcomes
+
+**Wire format (already implemented in `apps/server/src/server.ts`):**
+
+```
+Client → Server: duel_challenge   { targetGovernorId }
+Server → Client: duel_open        { duelId, sides, stats }
+Server → Both:   duel_round_prompt { duelId, round, deadline }
+Client → Server: duel_pick        { duelId, round, card: AGG|TRICK|DEF }
+Server → Both:   duel_round       { duelId, round, exchange, ... }
+                  (repeats up to maxExchanges)
+Server → Both:   duel_end         { duelId, winner, winnerName, koPending }
+Client → Server: duel_decide      { duelId, action: RELEASE | KO }  ← v1 addition
+```
+
+Could theoretically be pure REST polling — slightly worse UX (no push on
+opponent's pick) but functionally equivalent. WS is the current choice for
+snappy round transitions; not a hard requirement.
+
+**Where the code lives (all CF-only):**
+
+| Layer | File |
+|---|---|
+| Canon spec | `docs/briefs/HERO-DUEL-SPEC.md` |
+| Element ruling | `docs/maps/MASTERS-ELEMENT-FREE-RULING.md` |
+| Sim resolver | `packages/sim-engine/src/duel.ts` (249 lines) |
+| Sim tests | `packages/sim-engine/test/duel.test.ts` |
+| Server orchestration | `apps/server/src/game.ts` (`RecentDuelRecord`, `duelRatingOf`, `duelSideOf`, `duelNpcSide`) |
+| Server WS API | `apps/server/src/server.ts` (message handlers above) |
+| Client overlay | `apps/server/public/js/duel.js` (345 lines — animated HP fight, real Master portraits) |
+| Balance dials | `packages/shared/balance.json` under `duel.*` |
+
+**v1 capture-outcome ruling (owner 2026-07-17):**
+
+Loser Master defaults to **EXILE immediately** (redeployable now). Winner sees
+a two-button prompt after the K.O. animation:
+- **☑ RELEASE** (default, auto-fires on 10 s inactivity) → EXILE, no KO
+- **⚔ KNOCK OUT** → animated visual (eyes flutter shut, head slumps, screen
+  dims to grey) → Masters API KO endpoint → revive cycle
+
+**No captive state. No ransom. No AI diplomacy defaults. No terrain flavor.**
+All the mid-complexity was owner-cut. If the winner is offline / never picks,
+RELEASE fires automatically. Simplification round locked v1 shape at ~60 lines
+of new code (5 in `duel.ts`, ~15 in `game.ts`, ~10 in `server.ts`, ~30 in
+`duel.js`, 0 in balance.json).
+
+**When live 1v1 on the 3D engine (M2+) lands** — that's when MOBA and
+Networking come in (allocate a mini-arena match, hero-vs-hero on the same
+engine that plays army battles). Not now, not v1.
+
+**Impl:**
+- Live in production (branch `claude/clash-front-overworld-mkcyia`) as of the
+  6-commit build:
+  `e883088 → 42bfc2c → e24feaa → 2a66d55 → 3e0be33 → 0178be3 → 1c7c779`
+- v1 capture outcome (RELEASE default + KO option) — **PENDING** (small CF-only
+  patch, no coord needed)
+
+---
+
 ## OPEN
 
 *(none right now — this doc's job is to keep it that way)*
