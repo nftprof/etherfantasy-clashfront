@@ -11,19 +11,29 @@ export const body = `
 
 <section class="slab"><div class="wrap">
   <h2>Unit classes</h2>
-  <p>Seven line classes cover the whole roster. Each stack is a pet species (see <a href="/pets.html">pets</a>) — the class is the fighting role, the species is the element.</p>
+  <p>Seven line classes cover the whole roster. Each stack is a pet species (see <a href="/pets.html">pets</a>) — class = the fighting role and mechanics; element = flavor + type-advantage modifier.</p>
   <div class="tbl-scroll"><table class="tbl">
-    <thead><tr><th>Class</th><th>Role</th><th>Notes</th></tr></thead>
+    <thead><tr><th>Class</th><th>Role</th><th>Mechanics</th></tr></thead>
     <tbody>
-      <tr><td>INFANTRY</td><td>Line hold</td><td>Standard front rank. Cheap, dependable.</td></tr>
-      <tr><td>ARCHER</td><td>Ranged</td><td>Weather-sensitive (wind arc loses accuracy). Screens for infantry.</td></tr>
-      <tr><td>CAVALRY</td><td>Skirmish + flank</td><td>Speed premium. Hits routing enemies hardest.</td></tr>
-      <tr><td>SPEAR</td><td>Anti-cavalry</td><td>Cheap counter to CAVALRY. Holds a line better than INFANTRY vs mounted.</td></tr>
-      <tr><td>SIEGE</td><td>Structure damage</td><td>Slow. The way past walls and towers. Weak in the open.</td></tr>
-      <tr><td>MARINE</td><td>Naval landing</td><td>Coastal and river warfare.</td></tr>
-      <tr><td>SHIP</td><td>Naval line</td><td>Sea battles. Ports and harbors are the theatre.</td></tr>
+      <tr><td><strong>Footman</strong></td><td>Line tank / frontline</td><td>Melee (10 u), 100 HP, 10 dmg. Jack-of-all-trades. Sample pets: Blockid, Mizumi.</td></tr>
+      <tr><td><strong>Archer</strong></td><td>Ranged damage</td><td>40 u range, 60 HP, 12 dmg. Fires past frontline. Elemental projectile flavor. Sample pets: Dynamouse (fire ball), Diloom (poison spit), Eekape (dark), Endorr (seed), Omnom (water, flyer), Cryptise (phantom, flyer).</td></tr>
+      <tr><td><strong>Spear</strong></td><td>Anti-cavalry / long melee</td><td>Extended melee (18 u), 90 HP, 8 dmg. <strong>BRACE:</strong> vs charging cavalry, halts charge + 2× damage. Sample pets: Quillster, Cesstoid, Mintol, Palytid.</td></tr>
+      <tr><td><strong>Cavalry</strong></td><td>Fast flanker</td><td>Melee (12 u), 80 HP, 15 dmg. Move 8 u/s (2× footman). <strong>CHARGE:</strong> after 3s straight-line, next hit = 25 AoE. Countered by spear brace. <strong>Any 4-legged ground pet is cavalry-eligible.</strong> Sample pets: Chulember, Kyberra, Felistar, Swifty, Fuenago.</td></tr>
+      <tr><td><strong>Siege — Form 1 (mobile)</strong></td><td>Mid-range artillery</td><td>50 u range, 120 HP, 15 dmg splash. Slow move. Can transform (3s) → Form 2. Sample pets: Baulder, Dredrock, Thermolophus.</td></tr>
+      <tr><td><strong>Siege — Form 2 (deployed)</strong></td><td>Long-range stationary artillery</td><td>150 u range (half-screen max), 0 move, 45 dmg splash (25 u radius). Min range 35 u — can't hit close. Cannot target flyers. Transform 3s vulnerable.</td></tr>
+      <tr><td><strong>Marine</strong> *(v4)*</td><td>Naval landing</td><td>Coastal + river warfare. Water-dwelling species. Sample pets: Nageel, Pudde, Vermillios, Krakowee.</td></tr>
+      <tr><td><strong>Ship</strong> *(v4)*</td><td>Naval line</td><td>Sea battles at ports + harbors.</td></tr>
     </tbody>
   </table></div>
+  <h3>The Flyer tag</h3>
+  <p>Flying pets carry a <strong>FLYER TAG</strong> on top of their class. Special rules:</p>
+  <ul>
+    <li><strong>Basic melee attacks miss flyers</strong> — a swung sword or claw simply doesn't reach.</li>
+    <li><strong>Special / skill attacks CAN hit flyers</strong> — a hero's AoE, a ranged skill, an arcing artillery shell.</li>
+    <li>Baseline HP is <strong>lower</strong> (~70-80% of ground-equivalent stats) — glass cannons.</li>
+    <li><strong>Siege Form 2 cannot target flyers</strong> — needs dedicated anti-air (v4 spec).</li>
+    <li>Cavalry CHARGE is <strong>ground-only</strong> — flying "cavalry-like" units are not cavalry; air-to-ground dive attacks are a separate mechanic (v4).</li>
+  </ul>
 </div></section>
 
 <section class="slab"><div class="wrap">

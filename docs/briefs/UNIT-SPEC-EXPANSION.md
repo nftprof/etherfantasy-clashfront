@@ -122,34 +122,135 @@ Untrained tip: put spears in the FRONT LINE for anti-cavalry duty
 Trained counterplay: send cavalry AROUND the spears at the archer line
 ```
 
-## Pet species → unit class mapping
+## Pet species → unit class mapping (LOCKED 2026-07-17, owner rulings)
 
-Every unit class has a natural species pool. This is the CF main-map "who can I draft here" logic — biome-native drafts pull from the appropriate species set. NFT-blueprint owners can summon ANY species anywhere at a premium (existing rule).
+**Anatomy heuristic (owner ruling):** class eligibility follows anatomy —
+if a species has the right body form, it can serve the class. Not name-based,
+not element-based — physical form is the gate.
 
-| Class | Best-fit species types | Reasoning | Example creatures |
+| Class | Anatomy rule | Element sub-variants add flavor + type-advantage; mechanics uniform |
+|---|---|---|
+| Footman | Legs + can strike melee | Any element |
+| Archer | Ranged projectile (any flavor: fire ball, poison spit, seed, ice, phantom) | Element = projectile flavor |
+| Spear | Long weapon / spike / stinger / icicle | Element = spear-type flavor |
+| Cavalry | **4-legged, ground** | Element = mount flavor |
+| Siege | Heavy artillery form (rock cannon, heat cannon) | Element = projectile type |
+| Marine (later) | Water-dwelling, swims | Water element by definition |
+| Ship (later) | Sea-titan / vessel form | Water/naval |
+
+**Flyer tag (owner ruling):** Flying species are FLYER-tagged. They have their
+OWN attack mechanics (basic melee cannot hit them; special/skill attacks can;
+lower baseline HP). **Air-to-ground is a SEPARATE mechanism from cavalry
+CHARGE** — flying "cavalry" is not the same as ground cavalry; it's a
+distinct future spec (v4). Do NOT conflate.
+
+### Locked species roster (v3 target — all 3D-rigged unless flagged)
+
+#### FOOTMAN — melee frontline (ground, melee)
+
+| Pet | Element | 3D | Notes |
 |---|---|---|---|
-| **Footman** | Combat, Iron, Rock, Neutral, sturdy mammals | Durable frontline, no special role | Bear-warrior, Iron-golem, Boar-line, Ape-fighter |
-| **Archer** | Flyer, Leaf, Water (fisher), Mystic | Precision + range + agility | Kestrel, Deer-archer, Owl-archer, Otter-marksman |
-| **Spear** | Insect (mantis-arm/wasp-sting), Fire (horn/lance), Toxin (venom-tip), Ice (icicle-spear) | Natural pointy protrusions or formation-fighters | Mantis-guard, Rhino-charger, Bee-lancer, Ice-spinelord |
-| **Cavalry** | Fast warm-blooded, Flyer (aerial cavalry), Dragon (dragoon) | Speed defines the class | Cheetah-rider, Wolf-rider, Griffin, Fire-drake, Pegasus |
-| **Siege** | Rock, Iron, Dragon (heavy breather), Ancient/Mythic | Heavy frame with destructive power; Form 2 = fixed emplacement | Rock-golem, Iron-titan, Ancient-dragon (Form 2 breathes from anchored stance) |
-| **Marine** *(later)* | Water, amphibious | Coastal + naval landing | Otter-warrior, Turtle-marine, Crab-warrior |
-| **Ship** *(later)* | Ship species, sea-titans | Naval line | Whale-ship, Sea-serpent, Naval-drake |
+| **Blockid** | Rock/Neutral | ✅ | Tank melee, confirmed |
+| **Mizumi** | Water | ✅ | Has legs — water footman |
+| *(gap — need more footman candidates)* | | | |
 
-### Biome-native draft options
+#### ARCHER — ranged, one uniform class, elemental projectile flavor
+
+| Pet | Element | Projectile | 3D | Notes |
+|---|---|---|---|---|
+| **Dynamouse** | Fire | fire ball | ✅ | |
+| **Diloom** | Toxin | poison spit | ✅ | |
+| **Eekape** | Dark | dark range | ✅ | |
+| **Endorr** | Leaf | seed range | ✅ | |
+| **Omnom** | Water | water range | ✅ | + FLYER TAG |
+| **Cryptise** | Phantom | phantom range | ✅ | + FLYER TAG |
+| **Kyari** | Fire | fire range | ⚠ COSMETIC — needs rigging |
+
+#### SPEAR — spike / venom / long stab, formation fighter
+
+| Pet | Element | 3D | Notes |
+|---|---|---|---|
+| **Quillster** | Neutral | ✅ | Natural quills |
+| **Cesstoid** | Toxin | ✅ | Stinger |
+| **Mintol** | Ice | ✅ | Ice spear |
+| **Palytid** | Toxin | ✅ | Poison spear |
+| **Pricktile** | Toxin? | ⚠ COSMETIC + FLYER | Needs rigging |
+
+#### CAVALRY — ground, 4-legged, fast melee, CHARGE mechanic
+
+| Pet | Element | 3D | Notes |
+|---|---|---|---|
+| **Chulember** | Fire | ✅ | 4-leg, fire mount |
+| **Kyberra** | ? | ✅ | 4-leg, confirmed |
+| **Felistar** | ? | ✅ | Feline, confirmed |
+| **Swifty** | ? | ✅ | Speed-name, confirmed |
+| **Fuenago** | Fire? | ✅ | 4-leg, confirmed |
+
+**Rule (locked):** any 4-legged ground pet is cavalry-eligible. Elements
+provide flavor + type-advantage, not different mechanics.
+
+#### SIEGE — heavy artillery (rock cannon / heat cannon)
+
+| Pet | Element | 3D | Notes |
+|---|---|---|---|
+| **Baulder** | Rock | ✅ | Grey rock thrower |
+| **Dredrock** | Rock | ✅ | Grey rock thrower |
+| **Thermolophus** | Fire | ✅ | Heat-cannon dinosaur |
+| Tekagon / Aphroxid / Aromerita | various | ✗ no 3D | Design placeholders |
+
+#### MARINE / SHIP *(v4 later spec)*
+
+| Pet | Element | 3D | Notes |
+|---|---|---|---|
+| **Nageel** | Water | ✅ | Confirmed marine |
+| **Pudde** | Water | ✅ | Confirmed marine |
+| **Vermillios** | Water | ✅ | Fish — marine, not siege |
+| **Krakowee** | Water | ✅ | Confirmed marine |
+| **Mizumi** | Water | ✅ | Dual with footman |
+
+## Biome-native draft options (which classes recruit from each biome)
 
 | Biome | Native class options |
 |---|---|
 | Plains / steppe | Footman, Cavalry, Archer |
 | Forest | Archer, Spear, Footman |
 | Mountain | Footman, Siege, Spear |
-| Volcanic (UW2) | Cavalry (fire-drake), Siege (rock/dragon) |
-| Frozen | Spear (icicle), Footman (ice-bear) |
+| Volcanic (UW2) | Cavalry (fire), Siege (rock/heat) |
+| Frozen | Spear (icicle), Footman |
 | Coast / river | Archer (water), Marine |
 | Underworld (UW1-3) | Phantom-archer, Wraith-spear |
-| Sky (HS1-3) | Flyer-archer, Aerial cavalry |
+| Sky (HS1-3) | Flyer-tagged units (any class) |
 
-NFT summon premium (see NPC trade / summon table): +50% cost for non-native summon; unlocks any class on any land.
+NFT summon premium: +50% cost for non-native summon; unlocks any species
+anywhere. The blueprint IS the campaign gear + cross-biome key.
+
+## FLYER TAG — the separate mechanic (locked)
+
+Flyer-tagged pets follow rules distinct from ground units:
+
+```
+FLYER TAG:
+- Basic melee attacks CANNOT hit them ("swing misses")
+- Special / skill attacks CAN hit them (AoE, ranged skills, artillery arcs)
+- Baseline HP is LOWER (~70-80% of ground-equivalent stats)
+- Siege Form 2 CANNOT target flyers (spec'd already)
+- Anti-air specialty units — v4 spec (post-MVP)
+
+Example: Kai (Master) — sword swing (basic attack) misses flyers.
+         His AoE skill or ranged skill hits flyers.
+
+CAVALRY CHARGE is a ground-only mechanic.
+Flying "cavalry-like" units (Windora, etc) are NOT cavalry — they're
+FLYER-tagged units of some other class. Air-to-ground dive attacks are
+a SEPARATE mechanism (v4 spec — do not conflate).
+```
+
+**Flyer species (from roster, tagged FLYER):** Berrball, Keradon, Vivorin,
+Windora, Vibe, Omnom, Silvyx, Dracobra, Gremin, Inkami, Cryptise, Tebeno,
+Clothom, Zedakazm, Roichirp, Batflare, Juphant, Eriegle, Deefyn, Nova,
+Cobrus, Pricktile. Class assignment TBD per anatomy — flyer species that
+carry a projectile → flyer-tagged ARCHER; flyer species that are heavy →
+flyer-tagged SIEGE (rare); etc.
 
 ## Master's artifact aura interaction
 
