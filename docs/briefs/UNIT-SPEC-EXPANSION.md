@@ -148,11 +148,25 @@ distinct future spec (v4). Do NOT conflate.
 
 #### FOOTMAN — melee frontline (ground, melee)
 
-| Pet | Element | 3D | Notes |
-|---|---|---|---|
-| **Blockid** | Rock/Neutral | ✅ | Tank melee, confirmed |
-| **Mizumi** | Water | ✅ | Has legs — water footman |
-| *(gap — need more footman candidates)* | | | |
+**Rule (owner ruling):** footman is the base melee class — any pet with legs and melee capability can serve. Locked candidates (all 3D-rigged):
+
+| Pet | Element | Notes |
+|---|---|---|
+| **Blockid** | Rock/Neutral | Tank melee |
+| **Mizumi** | Water | Water footman |
+| **Spoulder** | — | Base melee |
+| **Cesstoid** | Toxin | Also spear-eligible — base melee if drafted as footman |
+| **Mirrie** | — | Base melee |
+| **Lollipunch** | — | Punch attacker |
+| **Berrball** | — | ⚠ Also FLYER — confirm: flyer-tagged footman OR grounded footman only? |
+| **Tygloo** | — | Base melee |
+| **Redhandit** | — | Base melee |
+| **Sonectid** | — | Base melee |
+| **Matara** | — | Base melee |
+| **Malakele** | — | Base melee |
+| **Ekopi** | — | Base melee |
+| **Krubble** | Water | Water footman |
+| **Krakowee** | Water | Water-dual (also marine candidate) |
 
 #### ARCHER — ranged, one uniform class, elemental projectile flavor
 
@@ -185,6 +199,7 @@ distinct future spec (v4). Do NOT conflate.
 | **Felistar** | ? | ✅ | Feline, confirmed |
 | **Swifty** | ? | ✅ | Speed-name, confirmed |
 | **Fuenago** | Fire? | ✅ | 4-leg, confirmed |
+| **Flaraton** | Fire? | ✅ | 4-leg, confirmed |
 
 **Rule (locked):** any 4-legged ground pet is cavalry-eligible. Elements
 provide flavor + type-advantage, not different mechanics.
@@ -223,6 +238,63 @@ provide flavor + type-advantage, not different mechanics.
 
 NFT summon premium: +50% cost for non-native summon; unlocks any species
 anywhere. The blueprint IS the campaign gear + cross-biome key.
+
+## Line vs Elite — the EVOLUTION rule (LOCKED 2026-07-17)
+
+**Owner ruling:** whether a pet can serve as an ELITE unit depends on whether
+that species can EVOLVE (has a Form 2). Pets with only Form 1 are line units
+only — they cannot be upgraded to elites, regardless of what stockpile
+resources you have.
+
+### The two tiers
+
+| Tier | Requires | Cost | Source |
+|---|---|---|---|
+| **Line unit** | Any Form 1 pet species | Cheap: 2-5g + populace draft | Populace-drafted (biome-native) or NFT-summoned |
+| **Elite unit** | Pet species with **Form 2 (evolved)** | Expensive: 10-40g + crafted arm + fur ± iron/wood | Workshop crafting + evolved-form pet |
+
+### Elite hiring flow (revised)
+
+```
+STEP 1: You need a pet species with an EVOLVED FORM (Form 2)
+        Sources:
+          - NFT blueprint of evolved species (rare, expensive)
+          - Wild-spawn evolution (T3+ enrichment attracts evolved wild pets)
+          - Fragment crafting into evolved NFT (DNA fragments from bosses)
+
+STEP 2: Craft the arm at your Workshop
+        Consumes iron / wood / fur / rare-metal from stockpile
+
+STEP 3: Hire the elite at your parcel
+        Gold + consumed arm + evolved-form species → elite unit
+
+If you only have Form 1 pets → line only, no elite path
+```
+
+### Strategic implications
+
+- **Evolved pet NFT blueprints become high-value** — they're the elite-army gates
+- **Wild-spawn evolution ties to enrichment tier** — T3+ parcels attract evolved wild pets, giving landowners a natural elite pipeline
+- **Bosses drop Form-2 DNA fragments** — killing boss lairs (which spawn on high-tier enriched land per COORD prior) feeds the elite-crafting economy
+- **Explains why base-form NFTs are cheap but elite-form NFTs are premium** — form 2 is the elite gate
+- **Rare/mythic pets shine** — if a mythic species has Form 3+ (multi-stage evolution), those tiers unlock even more premium unit variants
+
+### Data needed (open to owner)
+
+I don't have form-2 data in `data/PETS_ROSTER.csv` — the CSV only tracks
+name/model/status/battle-ready/flying/animation-clips. Need a separate
+mapping of `species → evolutionForms` for each roster entry so CF can
+implement the elite gate.
+
+**Recommendation:** add columns to the roster CSV (or a new sidecar file
+`data/PET_EVOLUTIONS.json`) tracking:
+```
+{
+  "Baulder":  { "forms": ["Baulder", "Baulder-Boulder"], "evolveAt": 25 },
+  "Blockid":  { "forms": ["Blockid"] },  // no evolution
+  ...
+}
+```
 
 ## FLYER TAG — the separate mechanic (locked)
 
