@@ -103,6 +103,16 @@ export const body = `
       <h3>Everyone sees the same map</h3>
       <p>Fixing a bug where two players in the same battle sometimes saw different floor colors. The server hands down the seed; every viewer's client reads the same numbers.</p>
     </div>
+    <div class="card status-build">
+      <span class="tag-chip gold">Building</span>
+      <h3>Unit expansion — Spear, Cavalry, Siege</h3>
+      <p>Beyond footman + archer: Spear (anti-cavalry with BRACE), Cavalry (4-leg CHARGE), Siege (StarCraft-style two-form transform — mobile mid-range or stationary long-range artillery). Plus the Flyer tag (immunity to basic melee).</p>
+    </div>
+    <div class="card status-build">
+      <span class="tag-chip gold">Building</span>
+      <h3>Mythic reinforcements</h3>
+      <p>Own a Mythic pet NFT? Once every 10 battles, that pet appears as a special ally. ~2× hero stats, no skills, tanky presence. Announced with a per-side banner: "The Gods have answered" / "The sky darkens." KO drops boss-tier loot.</p>
+    </div>
   </div>
 </div></section>
 

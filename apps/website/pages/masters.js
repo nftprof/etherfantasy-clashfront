@@ -57,6 +57,18 @@ export const body = `
 </div></section>
 
 <section class="slab"><div class="wrap">
+  <h2>Mythic reinforcement — the pet-companion parallel</h2>
+  <p>Masters aren't the only legendary help. If you own a <strong>Mythic pet NFT</strong>, that pet may appear as a special reinforcement in one of your battles — <strong>once every 10 battles, guaranteed</strong> (not random — planable). It arrives at your spawn zone with a shaft-of-light effect and a banner:</p>
+  <ul>
+    <li>Your side sees: <strong>"⭐ The Gods have answered — {Name} arrives!"</strong></li>
+    <li>The enemy sees: <strong>"⚠ The sky darkens — something is powering the enemy. Be prudent."</strong></li>
+  </ul>
+  <p>Mythic reinforcements are <strong>roughly 2× a hero's stats</strong> — big HP tank + hard-hitting damage — but they have <strong>no skills</strong>. They behave like a very durable line soldier under default AI. No player micro needed. Own multiple Mythic NFTs? Each has its own independent 10-battle cooldown.</p>
+  <div class="rule"><strong>Bonus loot on KO.</strong> If the enemy kills your mythic, a boss-style loot drop appears at the KO location — first player to grab it wins the rewards (rare-metal, gold, chance at Singular tokens). The Chronicle records the kill permanently: "{killer name} felled the Mythic {mythic name} at {battle name}."</p>
+  <p class="dim">5 mythic species are 3D-ready today: Zedakazm (dragon-phantom flyer), Quadrossal (telepath), Vernirox (earth-rock tank), Mytier and Vaudequin (fire cannons). Full spec on the <a href="/army.html">Army page</a>.</p>
+</div></section>
+
+<section class="slab"><div class="wrap">
   <h2>Signature artifacts — the elemental aura</h2>
   <p>Masters are element-free themselves (decision 14). But their <strong>equipped signature artifact</strong> grants an <strong>elemental aura</strong> to matching-element soldiers in the army they lead.</p>
   <p>Example: your Master equips a Flame Scimitar (Fire artifact). Every Fire-species soldier stack in her army fights at +10% while she's alive. Other elements get nothing. Her own combat contribution stays element-free.</p>

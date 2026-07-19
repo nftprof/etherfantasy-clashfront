@@ -30,8 +30,11 @@ export const body = `
   <ul>
     <li><strong>Line units</strong> — any Form 1 pet species. Cheap. Populace-drafted from the biome-native pool, or NFT-summoned. Base of every army.</li>
     <li><strong>Elite units</strong> — <strong>only pet species that have a Form 2 (evolved form).</strong> Requires: gold + crafted arm from your Workshop + fur (campaign gear). Pets with only Form 1 are line-only, forever — no shortcut.</li>
+    <li><strong>Mythic pets</strong> — neither line nor elite. See below.</li>
   </ul>
   <p>This is why evolved-pet NFT blueprints are premium. It's why <a href="/economy.html#reference-tables">wild-spawn evolution</a> becomes a real strategic reason to enrich frontier land. It's why boss-lair DNA-fragment drops matter. Elites are gated by evolution, not just by wallet.</p>
+  <h3>Mythic reinforcements — the surprise ally</h3>
+  <p>If you own a <strong>Mythic-rarity pet NFT</strong>, that pet may appear as a special reinforcement in your battles — deterministically once every 10 battles. Behaves like a very tanky line soldier under AI (no skills, no micro), roughly 2× hero stats, cannot be recalled. Announcement banners fire on spawn — your side sees "The Gods have answered", the enemy sees "The sky darkens." KO'd mythics drop boss-style bonus loot. See <a href="/masters.html">Masters page</a> for the full mechanic.</p>
   <h3>The Flyer tag</h3>
   <p>Flying pets carry a <strong>FLYER TAG</strong> on top of their class. Special rules:</p>
   <ul>

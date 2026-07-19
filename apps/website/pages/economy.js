@@ -85,8 +85,8 @@ export const body = `
     <strong>Initial values. Subject to balancing changes without notice.</strong> Use these as a reference guide for how the economy is scoped — real in-game prices may drift as the numbers get tuned during playtest. The ratios below hold across every mode (CF overworld, AR mode, and any other Ether Fantasy layer).
   </div>
 
-  <h3>Base currency + NPC trade ratios</h3>
-  <p><strong>Fixed conversion:</strong> <code>1 CT = 100 Gold</code> everywhere. No arbitrage, no exchange games. NPCs sell TO you at the buy price; they buy FROM you at 50% of that (standard vendor markup).</p>
+  <h3>Base currency + NPC trade ratios (baseline reference)</h3>
+  <p><strong>Fixed conversion:</strong> <code>1 CT = 100 Gold</code> everywhere. No arbitrage, no exchange games. The ratios below are the <strong>reference baseline</strong>. Actual prices at each parcel drift dynamically based on local supply and demand — see the "Dynamic marketplace" section below for how AMM pricing works.</p>
   <div class="tbl-scroll"><table class="tbl">
     <thead><tr><th>Item</th><th>NPC sells to you</th><th>NPC buys from you</th><th>Notes</th></tr></thead>
     <tbody>
@@ -197,5 +197,89 @@ export const body = `
   <div class="rule" style="margin-top: 32px;">
     <strong>Reminder — these numbers will change.</strong> Everything on this page is v0.1 initial calibration for playtest. The RATIOS between items (2/3/5/10/50 gold, 50% vendor markup, 1 CT = 100 g) are the durable design contract — the actual gold/CT values may shift as we tune. Bookmark this page; check back after major balance patches.
   </div>
+</div></section>
+
+<section class="slab"><div class="wrap">
+  <h2>The dynamic marketplace — AMM per parcel</h2>
+  <p>Prices don't sit still. Every parcel is its own <strong>local market</strong> with a real supply/demand curve. The system runs a constant-product AMM pool (like Uniswap) for each resource pair — buy iron, price of iron ticks up; sell iron, price ticks down. Real economics, real trade routes, real arbitrage opportunities.</p>
+  <h3>Market depth scales with parcel size × enrichment</h3>
+  <p>Small unenriched parcels have <strong>thin liquidity</strong> — a modest trade can swing the price 20%. Big enriched estates have <strong>deep pools</strong> — whales can trade 10,000 gold without moving the market. This is why enrichment tier matters for trading centers.</p>
+  <h3>Enrichment reduces the fee spread</h3>
+  <p>On top of AMM slippage, each trade pays a fee. Tier 0 land takes 25% each way (50% total spread — brokers eat well). Tier 5 land takes 5% each way (10% total spread — near-perfect market). Better commerce infrastructure = tighter margins.</p>
+  <div class="tbl-scroll"><table class="tbl">
+    <thead><tr><th>Enrichment tier</th><th>Buy fee</th><th>Sell fee</th><th>Total spread</th></tr></thead>
+    <tbody>
+      <tr><td>T0 (base land)</td><td>+25%</td><td>−25%</td><td>50%</td></tr>
+      <tr><td>T1 (trader's tent)</td><td>+20%</td><td>−20%</td><td>40%</td></tr>
+      <tr><td>T2 (market stalls)</td><td>+15%</td><td>−15%</td><td>30%</td></tr>
+      <tr><td>T3 (merchant guild)</td><td>+10%</td><td>−10%</td><td>20%</td></tr>
+      <tr><td>T4 (proper marketplace)</td><td>+7.5%</td><td>−7.5%</td><td>15%</td></tr>
+      <tr><td>T5 (trade hub)</td><td>+5%</td><td>−5%</td><td>10%</td></tr>
+    </tbody>
+  </table></div>
+  <h3>Emergent trade routes</h3>
+  <p>Iron-rich land (mountainous, volcanic) will sit with a supply overhang — its local iron price drops toward baseline. Iron-poor land (coastal, plains) will show shortage — its price climbs above baseline. Players who occupy parcels on <em>both</em> ends can arbitrage the difference. Empire logistics becomes a real activity.</p>
+  <p>The system runs an <strong>invisible balancer</strong> (100 K gold/hour globally, 100 trades/hour cap) that fixes only <em>egregious</em> gaps (≥30% price difference). It won't touch 10–25% gaps — those belong to the players.</p>
+  <p class="dim">v2 (later) adds real player caravans — physical goods movement, takes real time, raidable by bandits or hostile players. v1 is the invisible-balancer.</p>
+</div></section>
+
+<section class="slab"><div class="wrap">
+  <h2>Enrichment tiers — where your CT actually goes</h2>
+  <p>Enrichment is the landowner's investment loop. All spending happens through the <strong>parcel map designer</strong> — one CT sink for everything, whether it changes the visual map or not. Nine tracks, five tiers (T0 → T5). At max tier, the land visibly becomes a city-state.</p>
+  <div class="tbl-scroll"><table class="tbl">
+    <thead><tr><th>Track</th><th>What T0→T5 unlocks</th><th>Visible on map?</th></tr></thead>
+    <tbody>
+      <tr><td>Populace + Fertility</td><td>Max pop 100→350, birth rate scales</td><td>No</td></tr>
+      <tr><td>Apothecary / Herbs</td><td>Starvation recovery, garrison morale regen, pet healing</td><td>No</td></tr>
+      <tr><td>Resource nodes</td><td>2 → 8 nodes, +25% richness per tier, rare-metal chance climbs</td><td>Yes — more mines visible</td></tr>
+      <tr><td>Wild spawn quality</td><td>Elite mob chance, BOSS lairs, evolved wild pets, DNA drops</td><td>Yes — elite camps render</td></tr>
+      <tr><td>Defense capacity</td><td>4 → 16 buildSpots, fortification ring grows</td><td>Yes — castle ring</td></tr>
+      <tr><td>Workshop tier</td><td>None → shed → proper → advanced → grand → master (crafts named artifacts)</td><td>Yes — building grows</td></tr>
+      <tr><td>Market efficiency</td><td>50% spread → 10%, AMM depth 25× deeper</td><td>Yes — market pavilion</td></tr>
+      <tr><td>Weather resistance</td><td>Bad-weather penalties softer, good-weather amps stronger</td><td>No</td></tr>
+      <tr><td>Fur yield</td><td>+50% shed rate at T5, rare-color fur chance climbs</td><td>No</td></tr>
+    </tbody>
+  </table></div>
+  <h3>Investment ladder by land size</h3>
+  <p>Bigger land, bigger investment, disproportionately bigger payoff.</p>
+  <div class="tbl-scroll"><table class="tbl">
+    <thead><tr><th>Size</th><th>T5 max</th><th>Dollar equivalent</th></tr></thead>
+    <tbody>
+      <tr><td>SINGLE parcel</td><td>12,000 CT</td><td>~$120</td></tr>
+      <tr><td>MEDIUM manor</td><td>30,000 CT</td><td>~$300</td></tr>
+      <tr><td>LARGE (KEEP)</td><td>100,000 CT</td><td>~$1,000</td></tr>
+      <tr><td>GIANT (CASTLE)</td><td>500,000 CT</td><td>~$5,000</td></tr>
+      <tr><td><strong>EPIC (PALACE)</strong></td><td><strong>2,000,000 CT</strong></td><td>~$20,000</td></tr>
+    </tbody>
+  </table></div>
+  <p>An EPIC PALACE at T5 has ~11× the populace, ~10× the node count, ~1,000× the market depth, and hosts BOSS lairs constantly (rare-mon farming heaven). It's the biggest prize on the map — the reason warlords fight for enriched estates.</p>
+  <div class="rule">
+    <strong>Conquest inherits the pool.</strong> All that CT goes with the land. If you lose your EPIC PALACE, the new owner walks in with 2 million CT of infrastructure ready to go. That's the ambition loop — enrich to attract wealth and danger; win or lose everything.
+  </div>
+</div></section>
+
+<section class="slab"><div class="wrap">
+  <h2>Materials → arms → elites (the crafting chain)</h2>
+  <p>Elite units don't come from a "hire elite" button — they come from a production chain that starts with your workers and ends at your workshop.</p>
+  <ol>
+    <li><strong>Worker pets MINE materials</strong> (iron, wood, fur, rare-metal, stone) into the parcel's stockpile.</li>
+    <li><strong>CRAFT worker pets at your Workshop build ARMS</strong> from stockpile materials. Each arm is a specific unit's equipment (elite footman arm, elite archer arm, etc.).</li>
+    <li><strong>Hire elite = pay gold + consume 1 arm + present an evolved-form (Form 2+) pet species.</strong> No arm, no elite. No evolved pet species, no elite. No shortcut.</li>
+  </ol>
+  <p>Arms are STORABLE + TRADEABLE — you can craft in peacetime, stockpile, sell arms at the AMM to another player who has the evolved pet but no workshop. Real production economy.</p>
+</div></section>
+
+<section class="slab"><div class="wrap">
+  <h2>Wipe — what happens when you lose everything</h2>
+  <p>There's no time-based wipe in Clash Front. The rule is simple: <strong>zero territories = you're wiped.</strong> Whether that happens because enemies took your last castle, or because you stopped playing long enough for your parcels to overgrow to WILD, the result is the same.</p>
+  <ul>
+    <li>All armies disband (no orphan starving soldiers on the map)</li>
+    <li>All Masters go to EXILE state (still yours, no assignments)</li>
+    <li>All pet deployments cleared (pets walk home)</li>
+    <li>Territory stockpiles + food revert to zero (WILD takes it)</li>
+    <li><strong>CT balance stays. NFT ownership stays.</strong> Money is money; blueprints are blueprints.</li>
+  </ul>
+  <p>Coming back? You still own your CT, your Masters, and your pet NFT blueprints. You can walk onto any WILD parcel to claim it, buy fresh land from the marketplace, or conquer your way back. The world doesn't remember you owned it — but it also doesn't hold your absence against you.</p>
+  <p class="dim">This is the real-world rule: abandon too long and it's gone. Prevents dead data from inactive players, keeps the map alive for active ones.</p>
 </div></section>
 `;
