@@ -344,6 +344,51 @@ engine that plays army battles). Not now, not v1.
 
 ---
 
+### COORD-009 — MOBA v3 unit expansion + mythic reinforcement (2026-07-17)
+
+**Opened by:** CF Overworld eco. **Status:** SPEC LOCKED — MOBA v3 build ask.
+
+**Full spec:** `docs/briefs/MOBA-V3-BUILD-SPEC.md` — 10 sections, complete.
+
+**Summary:**
+
+- **New units** (line-drafted per zone; Form 2+ pets can be crafted into elites):
+  - Spear (anti-cavalry, BRACE mechanic)
+  - Cavalry (4-leg ground, CHARGE mechanic)
+  - Siege — two-form transform (Form 1 mobile mid-range / Form 2 stationary
+    long-range 150 u splash — the StarCraft-tank fantasy)
+- **Tank sub-role** locked: Rock/Iron/Earth (Stone domain) species = footman-tank
+- **Flyer tag** — new axis: immune to basic melee, only special/skill attacks hit,
+  lower HP baseline. **Flyers are LINE-ONLY** (owner ruling — no elite path)
+- **Line vs Elite gate**: elites require Form 2+ pet species with a 3D model
+  (data source: `docs/populace-pet-spec/pets-aptitudes.csv`, column `form`)
+- **Mythic reinforcement** (NEW): NFT-gated special spawn, 1 per 10 battles,
+  ~2× hero stats (HP 1000/DMG 80 v0.1), no skills, boss-style loot drop on KO.
+  Announcement banners fire per-viewer (owner sees "The Gods have answered",
+  opponent sees "The sky darkens").
+- Pet species roster per class locked (§6 of the brief) — all 112 3D-ready
+  battle-ready species classified.
+
+**MOBA implementation phases:** v3.1 (visual models) → v3.2 (charge + brace) →
+v3.3 (siege transform) → v3.4 (flyer tag) → v3.5 (mythic reinforcement).
+
+**CF integration cost = ZERO for combat math** (COORD-007 one-number contract
+holds). Only additions: `mythicSpawn: { species, side }` optional field in
+allocate context when triggered.
+
+**Data-source rule (locked in this thread):** class assignment via ANATOMY
+heuristic (owner ruling). War-duty text in aptitudes.csv is FLAVOR for
+tooltips, not class assignment. Rock/Iron/Earth = tank, 4-leg = cavalry-
+eligible, Water = marine, Flying = flyer tag.
+
+**Open items to owner** (in the brief §9):
+- Fire species Cavalry-vs-Siege split (8-pet Fire pool)
+- Mythic stat tuning (HP 1000/DMG 80 vs 800/100)
+
+Both are ⚙ dials; MOBA proceeds with v0.1 defaults.
+
+---
+
 ## OPEN
 
 *(none right now — this doc's job is to keep it that way)*
