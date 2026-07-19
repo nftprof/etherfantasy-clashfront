@@ -46,6 +46,7 @@ export const body = `
   </div>
   <p><strong>Food / Wood / Gold</strong> — carried on your army as <strong>provisions</strong>, sourced from your home territory's stockpile at raise time (see the <a href="/economy.html">economy</a> page). Food is burned on march-steps and consumed in battle-food up front. Wood + gold together can erect a temporary in-battle command center — a scoring bonus for the attacker, spent win or lose. Nothing else is spent inside the fight.</p>
   <p class="dim">All resource extraction (mining, farming, crafting) happens on the CF overworld map via worker pets on your parcels — NOT during battles. The battlefield is a fight, not a base-building screen.</p>
+  <p style="margin-top:14px;"><strong>Full hiring costs table</strong> (line + elite units, gold / wood / fur / iron requirements) → <a href="/economy.html#reference-tables">Reference tables on the economy page</a>.</p>
 </div></section>
 
 <section class="slab"><div class="wrap">

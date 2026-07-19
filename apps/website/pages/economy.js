@@ -78,4 +78,124 @@ export const body = `
     <li><strong>Enrichment reveals</strong> — the full "invest CT → gain populace + draft cap + cheaper soldiers" loop live</li>
   </ul>
 </div></section>
+
+<section class="slab" id="reference-tables"><div class="wrap">
+  <h2>Reference tables — the price book</h2>
+  <div class="rule">
+    <strong>Initial values. Subject to balancing changes without notice.</strong> Use these as a reference guide for how the economy is scoped — real in-game prices may drift as the numbers get tuned during playtest. The ratios below hold across every mode (CF overworld, AR mode, and any other Ether Fantasy layer).
+  </div>
+
+  <h3>Base currency + NPC trade ratios</h3>
+  <p><strong>Fixed conversion:</strong> <code>1 CT = 100 Gold</code> everywhere. No arbitrage, no exchange games. NPCs sell TO you at the buy price; they buy FROM you at 50% of that (standard vendor markup).</p>
+  <div class="tbl-scroll"><table class="tbl">
+    <thead><tr><th>Item</th><th>NPC sells to you</th><th>NPC buys from you</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td>Food (apple)</td><td>2 g</td><td>1 g</td><td>Baseline consumable</td></tr>
+      <tr><td>Wood</td><td>2 g</td><td>1 g</td><td>Baseline material</td></tr>
+      <tr><td>Stone</td><td>3 g</td><td>1 g</td><td>Fortification material</td></tr>
+      <tr><td>Cloth</td><td>5 g</td><td>2 g</td><td>Semi-common (v0.2 material)</td></tr>
+      <tr><td>Iron</td><td>5 g</td><td>3 g</td><td>Weapon / armor crafting</td></tr>
+      <tr><td>Fur</td><td>10 g</td><td>5 g</td><td>Semi-rare, renewable from pets</td></tr>
+      <tr><td>Rare metal</td><td>50 g</td><td>25 g</td><td>Legendary + named-artifact crafting</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Hiring costs — CF main-map, outside 3D combat</h3>
+  <p>Line units draft cheap from populace. Elites cost more AND require <strong>fur</strong> for their campaign gear (cloaks, insulated harnesses — needed for overworld deployment). Archers need wood in both games (bow shafts). Siege units don't need fur — the crew rides inside the machine.</p>
+  <div class="tbl-scroll"><table class="tbl">
+    <thead><tr><th>Unit</th><th>Gold</th><th>Wood</th><th>Fur</th><th>Iron</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td>Line footman</td><td>2 g</td><td>—</td><td>—</td><td>—</td><td>Populace-drafted, cheapest</td></tr>
+      <tr><td>Line archer</td><td>3 g</td><td>1</td><td>—</td><td>—</td><td>Bow needs wood (matches 3D game)</td></tr>
+      <tr><td>Line spear</td><td>3 g</td><td>1</td><td>—</td><td>—</td><td>Spear shaft</td></tr>
+      <tr><td>Line cavalry</td><td>5 g</td><td>—</td><td>—</td><td>—</td><td>Horses from populace</td></tr>
+      <tr><td>Line siege</td><td>15 g</td><td>5</td><td>—</td><td>2</td><td>Complex build</td></tr>
+      <tr><td><strong>Elite footman</strong></td><td>10 g</td><td>—</td><td><strong>1</strong></td><td>—</td><td>Cloak + fur trim for CF deployment</td></tr>
+      <tr><td><strong>Elite archer</strong></td><td>15 g</td><td>3</td><td><strong>1</strong></td><td>—</td><td>Composite bow + insulated cloak</td></tr>
+      <tr><td><strong>Elite spear</strong></td><td>15 g</td><td>3</td><td><strong>1</strong></td><td>—</td><td>Better tempered</td></tr>
+      <tr><td><strong>Elite cavalry</strong></td><td>30 g</td><td>—</td><td><strong>2</strong></td><td>1</td><td>Better armor</td></tr>
+      <tr><td><strong>Elite siege</strong></td><td>40 g</td><td>8</td><td>—</td><td>5</td><td>Reinforced — crew rides inside</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Pet NFT direct summon — outside battle, on your parcel</h3>
+  <p>If you own the NFT blueprint for a species, you can summon it directly onto any parcel you control — bypassing the biome-native draft. Cost includes a base gold + wood + fur (campaign gear); non-native summons pay a premium; rare mythic blueprints need a heavier ceremony (rare metal, iron for the harness).</p>
+  <div class="tbl-scroll"><table class="tbl">
+    <thead><tr><th>Summon</th><th>Gold</th><th>Wood</th><th>Fur</th><th>Iron</th><th>Rare metal</th></tr></thead>
+    <tbody>
+      <tr><td>Native species on native biome</td><td>20 g</td><td>2</td><td>2</td><td>—</td><td>—</td></tr>
+      <tr><td>Non-native summon (biome mismatch)</td><td>30 g</td><td>2</td><td>3</td><td>—</td><td>—</td></tr>
+      <tr><td>Rare species (mythic blueprint)</td><td>100 g</td><td>10</td><td>10</td><td>2</td><td>1</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Fur yield by species type</h3>
+  <p>Every worker pet passively yields fur per game-day into the parcel's stockpile. Fur is renewable — pets are never lost to being sheared (the Palworld model, canon).</p>
+  <div class="tbl-scroll"><table class="tbl">
+    <thead><tr><th>Species type</th><th>Fur / day per worker pet</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td>Warm-blooded</td><td>0.5 fur/day</td><td>Fire, Ice, Dragon, Flyer, mammalian, ursine, felid — full pelts</td></tr>
+      <tr><td>Leaf</td><td>0.2 fur/day</td><td>Mossy, plant-hybrid — sheds slower</td></tr>
+      <tr><td>Underworld / Phantom</td><td>0.1 fur/day</td><td>Ghostly wisps — minimal but present</td></tr>
+      <tr><td>Cold-blooded / synthetic</td><td>0 fur/day</td><td>Iron, Rock, Insect, Toxin, Ships — no fur to shed</td></tr>
+    </tbody>
+  </table></div>
+  <p class="dim">A player with 30 warm-blooded worker pets = 15 fur/day = 450 fur/month, enough for ~30 elite footman hires or ~150 pet summons per month. Cold-blooded rosters need to trade at NPC vendors (10 g/fur, 50% markup) to hire elites.</p>
+
+  <h3>Worker pet role outputs (per pet per day, before enrichment / affinity)</h3>
+  <div class="tbl-scroll"><table class="tbl">
+    <thead><tr><th>Role</th><th>Base output</th><th>Species affinity bonus</th></tr></thead>
+    <tbody>
+      <tr><td>MINE</td><td>2 gold + 1 wood + trace iron/stone</td><td>+25% on matching biome (Fire on volcanic, Iron on any)</td></tr>
+      <tr><td>FARM</td><td>3 food</td><td>+25% on matching biome (Leaf on forest)</td></tr>
+      <tr><td>CRAFT (at Workshop)</td><td>1 crafted arm (converts stockpile mats)</td><td>+15% for species-appropriate crafting</td></tr>
+      <tr><td>GUARD</td><td>defensive contribution scaling with fame + strength</td><td>+25% for Combat / Toxin (fighters)</td></tr>
+      <tr><td>HOMESTEAD (NFT-only, passive)</td><td>Yield share, no active fight</td><td>N/A — canon rule (never defends)</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Enrichment payoff</h3>
+  <div class="tbl-scroll"><table class="tbl">
+    <thead><tr><th>Landowner invests CT</th><th>Pool grows</th><th>Payout</th></tr></thead>
+    <tbody>
+      <tr><td>Enrichment CT into a parcel's pool</td><td>Attached to land, conquest inherits</td><td>Pool pays out ~⚙12% per game-year to CURRENT governor (spread across daily ticks with integer carry)</td></tr>
+    </tbody>
+  </table></div>
+  <ul>
+    <li><strong>Landlord tax</strong> — 30% share of CT flows through your land (income to your wallet even if you're not occupying)</li>
+    <li><strong>Prosperity nudge</strong> — enriched pools raise prosperity, which raises populace, which raises draft cap and lowers per-soldier cost</li>
+    <li><strong>Pet migration rolls</strong> — enriched land triggers "a general arrives" pet-species migration events</li>
+    <li><strong>DNA fragment drops</strong> — enriched-land yields drop pet-DNA fragments — enough fragments craft a new pet NFT blueprint</li>
+  </ul>
+
+  <h3>Consumption / upkeep (the ongoing sink)</h3>
+  <div class="tbl-scroll"><table class="tbl">
+    <thead><tr><th>Consumer</th><th>Rate</th><th>Consumes from</th></tr></thead>
+    <tbody>
+      <tr><td>Populace (civilian pop)</td><td>0.5 food / pop / day</td><td>Territory foodStock</td></tr>
+      <tr><td>Garrison army</td><td>0.5 food / troop / day</td><td>Territory foodStock (friendly land) or army provisions</td></tr>
+      <tr><td>Marching army</td><td>1.0 food / troop / step</td><td>Army provisions</td></tr>
+      <tr><td>Battle-food (upfront)</td><td>Scaled by troops × battleFoodNeed</td><td>Army provisions (spent win or lose)</td></tr>
+      <tr><td>Pet upkeep (owned, native biome)</td><td>~0.01 CT / pet / day</td><td>Territory treasury</td></tr>
+      <tr><td>Pet upkeep (non-native summon)</td><td>~0.05 CT / pet / day</td><td>Territory treasury</td></tr>
+    </tbody>
+  </table></div>
+  <p class="dim"><strong>Net-sink target:</strong> for a well-run parcel (workers assigned, workshop online, overseer alive), food/gold produced ≈ 1.05 × consumption. Slight ongoing surplus for active management. Neglect grinds you down over weeks — the world doesn't inflate CT/food/materials indefinitely.</p>
+
+  <h3>Command-battle queue fees</h3>
+  <div class="tbl-scroll"><table class="tbl">
+    <thead><tr><th>Concurrent battles committed</th><th>Fee</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td>1st</td><td>1 CT</td><td rowspan="5">Burns (CT sink). Cancellable before start → refund. Max 5 concurrent per player.</td></tr>
+      <tr><td>2nd</td><td>3 CT</td></tr>
+      <tr><td>3rd</td><td>5 CT</td></tr>
+      <tr><td>4th</td><td>10 CT</td></tr>
+      <tr><td>5th</td><td>20 CT</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="rule" style="margin-top: 32px;">
+    <strong>Reminder — these numbers will change.</strong> Everything on this page is v0.1 initial calibration for playtest. The RATIOS between items (2/3/5/10/50 gold, 50% vendor markup, 1 CT = 100 g) are the durable design contract — the actual gold/CT values may shift as we tune. Bookmark this page; check back after major balance patches.
+  </div>
+</div></section>
 `;

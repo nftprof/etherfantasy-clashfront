@@ -76,6 +76,12 @@ export const body = `
 </div></section>
 
 <section class="slab"><div class="wrap">
+  <h2>Fur — what pets give you passively</h2>
+  <p>Every worker pet passively yields <strong>fur</strong> per game-day into the parcel's stockpile. Fur is the campaign-gear material — the cloaks, insulated harnesses, and outdoor kit needed to hire elites or summon pets outside the 3D map. Warm-blooded species (Fire, Ice, Dragon, Flyer, mammalian) shed the most; cold-blooded / synthetic species (Iron, Rock, Insect, Toxin, Ships) shed nothing.</p>
+  <p>Fur is <strong>renewable</strong> — pets are never lost from being sheared (canon: Palworld model). Species-by-species yield rates + summon costs live in the <a href="/economy.html#reference-tables">reference tables</a>.</p>
+</div></section>
+
+<section class="slab"><div class="wrap">
   <h2>The rules of the pet layer, plain</h2>
   <ul>
     <li>Pet = soldier stack. Element is the species'.</li>
@@ -84,6 +90,7 @@ export const body = `
     <li>Pet bodies (populace, workers, line, spawns) are uncapped commodity — the NFT count is what's limited.</li>
     <li>Pets never die permanently. Beaten pets KO and walk home to recover.</li>
     <li>Draft cost scales down with parcel populace + enrichment.</li>
+    <li>Every worker pet passively sheds fur — the campaign-gear material for hiring elites.</li>
   </ul>
 </div></section>
 `;
