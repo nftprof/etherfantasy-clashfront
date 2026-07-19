@@ -4,12 +4,14 @@ export const body = `
 <section class="hero">
   <div class="wrap">
     <h1>Hold the land.<br><em>Or lose it.</em></h1>
-    <p class="tag">A grand-strategy war layer on the Ether Fantasy land map — 292,766 real parcels, persistent zones, live battles, one world.</p>
+    <p class="tag">Next-generation grand strategy: an <strong>AI-woven persistent world</strong> on the Ether Fantasy land map — 292,766 real parcels, live battles, deep lore. One world.</p>
     <p class="pitch">
       Every parcel is somebody's ground. March your army from your home hex, cross a border, and fight for it —
       LIVE on the same battle engine the MOBA runs on, or headless if nobody wants to steer.
       Weather rolls over continents. Wild bosses hunt the frontier. Masters lead your soldiers into duels
       and full 3D battles. You'll bleed real CT if you lose, and take the loser's land if you win.
+      And the ground itself is no procedural noise — every battlefield is drawn by the world-engine with
+      geography, history and lore in mind, and it renders richer with every pass.
     </p>
     <div class="cta">
       <a href="/play" class="btn primary">⚔ Enter the map</a>
@@ -90,6 +92,28 @@ export const body = `
         <p>Land NFTs = the parcels you play on (Ethereum L2, Polygon L3). Master NFTs = the champions you lead. Pet NFTs = summon-rights: own the DNA, summon that species anywhere (at a premium). More on <a href="/nft.html">the NFT page</a>.</p>
       </div>
     </div>
+  </div>
+</section>
+
+<section class="slab">
+  <div class="wrap">
+    <h2>The horizon</h2>
+    <p class="dim">Not a promise for tomorrow — the direction this world is openly being built toward.</p>
+    <div class="grid">
+      <div class="card pillar">
+        <h3>A world that writes itself</h3>
+        <p>Every battlefield is drawn by the world-engine — not random noise, but ground composed with geography, history and lore in mind. And the engine is learning: each generation pass renders the world in richer detail than the last. The world improves as it grows.</p>
+      </div>
+      <div class="card pillar">
+        <h3>One world, many doors</h3>
+        <p>Clash Front is the war table of a larger realm. The same land runs beneath its companion titles — the hunt is coming to the low-lit corners of this very map — and what happens on one board will echo on the others. Grand strategy, deep-lore storytelling, adventure: different doors, one world.</p>
+      </div>
+      <div class="card pillar">
+        <h3>The world beneath your world</h3>
+        <p>The continents quietly answer to the real one — every region is mapped to a real place and a real server, and the fantasy geography is drawn after studying the real geography and its history. Porthaven answers to Singapore. Remember that, the first time a castle appears somewhere familiar.</p>
+      </div>
+    </div>
+    <div class="spoiler"><strong>The Etheric Convergence.</strong> One day a Mythic will wake — and it will wake everywhere at once: on the war map, in the hunt, and in the air above a real city street where its fortress stands. Three windows. One creature. One world, colliding with yours. Everything above is being built to carry that day.</div>
   </div>
 </section>
 

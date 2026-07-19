@@ -165,6 +165,11 @@ export const body = `
       <h3>Public playtest</h3>
       <p>The world is live at demo scale today. Public open-world playtest opens once the mass map generation ships and the economy loop runs end-to-end. No date until those land.</p>
     </div>
+    <div class="card status-later">
+      <span class="tag-chip">Coming</span>
+      <h3>The Etheric Convergence</h3>
+      <p>The far horizon, named: world events where a Mythic wakes across every window at once — the war map, the hunt, and mapped real-world places. The continents already answer to real cities; the rest is being built toward this.</p>
+    </div>
   </div>
 </div></section>
 `;
