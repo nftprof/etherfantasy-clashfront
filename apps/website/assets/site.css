@@ -407,3 +407,16 @@ nav.primary a.play-cta {
   margin-left: 6px;
 }
 nav.primary a.play-cta:hover { color: #16120b; background: linear-gradient(180deg, #eac35e, #cb9d30); }
+
+/* "From the war table" — live-build screenshot gallery */
+.gallery { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin: 22px 0 6px; }
+figure.shot {
+  margin: 0; background: var(--panel); border: 1px solid var(--line);
+  border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow);
+}
+figure.shot.feature { grid-column: 1 / -1; }
+.shot a { border-bottom: 0; display: block; }
+.shot img { width: 100%; height: auto; display: block; }
+.shot figcaption { padding: 12px 16px 14px; font-size: 13.5px; color: var(--ink-dim); line-height: 1.5; }
+.shot figcaption strong { color: var(--ink-bright); }
+@media (max-width: 780px) { .gallery { grid-template-columns: 1fr; } }

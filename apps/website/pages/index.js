@@ -50,6 +50,27 @@ export const body = `
 
 <section class="slab">
   <div class="wrap">
+    <h2>From the war table</h2>
+    <p class="dim">Straight from the live build — the world as it runs today.</p>
+    <div class="gallery">
+      <figure class="shot feature">
+        <a href="/play"><img src="/assets/img/shots/overworld.jpg" alt="The Clash Front overworld — a live continent of hex parcels" loading="lazy"></a>
+        <figcaption><strong>The overworld, live.</strong> A real continent of hex parcels — treasury, officers, armies and war reports on one command rail. Click through to take your banner.</figcaption>
+      </figure>
+      <figure class="shot">
+        <a href="https://map.etherfantasy.com/designer/3d?parcel=1"><img src="/assets/img/shots/battlefield-3d.jpg" alt="A generated battlefield in the 3D game render" loading="lazy"></a>
+        <figcaption><strong>Every parcel is a battlefield.</strong> Generated terrain in the game render — lanes, camps, and ground your armies actually fight over.</figcaption>
+      </figure>
+      <figure class="shot">
+        <a href="https://map.etherfantasy.com/"><img src="/assets/img/shots/land-maps.jpg" alt="The Land Maps designer studio" loading="lazy"></a>
+        <figcaption><strong>Design your own ground.</strong> The <a href="https://map.etherfantasy.com/">Land Maps studio</a> — every designed battlefield viewable in 2D command view and 3D; landowners can redesign their parcels.</figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<section class="slab">
+  <div class="wrap">
     <h2>What you do here</h2>
     <div class="split">
       <div>

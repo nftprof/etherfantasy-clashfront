@@ -71,4 +71,13 @@ export const body = `
     <li>buildSpots populated per size class (never empty on production maps)</li>
   </ol>
 </div></section>
+
+<section class="slab"><div class="wrap">
+  <h2>The Land Maps studio — see it, design it</h2>
+  <p>All of the above is live and browsable at <a href="https://map.etherfantasy.com/">map.etherfantasy.com</a> —
+  every designed battlefield viewable in <strong>2D command view</strong> and <strong>3D game render</strong>,
+  with reference maps for each biome. Landowners can sign in and redesign the parcels they own; everyone
+  else can explore the gallery.</p>
+  <p><a class="btn primary" href="https://map.etherfantasy.com/">Open the Land Maps studio →</a></p>
+</div></section>
 `;
