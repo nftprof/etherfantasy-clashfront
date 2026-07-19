@@ -72,7 +72,9 @@ console.log("— auth + prompt + freeze —");
 
 console.log("— edit gate: view public, design needs identity + ownership —");
 {
-  const { editDecision } = await import("../api.js");
+  const { editDecision, isAdminUser } = await import("../api.js");
+  ok(isAdminUser("nftprof") && isAdminUser("NFTProf"), "nftprof is admin (case-insensitive)");
+  ok(!isAdminUser("rando") && !isAdminUser(""), "non-admin users are not admin");
   ok(editDecision({ admin: true }).ok, "admin key edits");
   ok(editDecision({ username: "nftprof" }).ok, "signed-in user edits while ownership unknown (testing phase)");
   ok(editDecision({ username: "NFTProf", owner: "nftprof" }).ok, "owner edits own land (case-insensitive)");
@@ -121,8 +123,17 @@ console.log("— owner resolution debug (acceptance tool for the CF feed) —");
 
 console.log("— land picker —");
 {
-  const d = await j("/internal/v1/parcels");
-  ok(d.ok && Array.isArray(d.parcels) && d.parcels.length === 0, "parcels endpoint degrades to empty list when world unreachable");
+  // parcels come from the LOCAL l3 snapshot now (searchable + paged), defaulting to zone EDU.
+  const d = await j("/internal/v1/parcels?zone=EDU&pageSize=5");
+  ok(d.ok && Array.isArray(d.parcels) && typeof d.total === "number", "parcels endpoint returns the zone's l3 roster (paged)");
+  ok(d.zone === "EDU" && d.parcels.length <= 5, "respects zone + pageSize");
+  ok(d.parcels.every((p) => p.parcelId && typeof p.minted === "boolean"), "each parcel tagged with id + minted state");
+  // an unknown zone degrades to an empty list, never throws.
+  const e = await j("/internal/v1/parcels?zone=ZZZ");
+  ok(e.ok && Array.isArray(e.parcels) && e.parcels.length === 0, "unknown zone → empty list (graceful)");
+  // the continents index
+  const z = await j("/internal/v1/zones");
+  ok(z.ok && Array.isArray(z.zones) && z.zones.some((x) => x.zoneId === "EDU"), "zones index lists continents with counts");
 }
 
 console.log("— designer page —");

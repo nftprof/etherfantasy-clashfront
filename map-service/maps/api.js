@@ -20,7 +20,7 @@ import * as reg from "./registry.js";
 import { translateDirective, llmEnabled } from "./llm.js";
 import { clampParams, budgetFor } from "./schema.js";
 import { verifyToken, loginPassword } from "../lobby/auth.js";
-import { worldParcel, l3Row } from "./worldfield.js";
+import { worldParcel, l3Row, l3Zone, zoneList } from "./worldfield.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const WORLD_URL = () => process.env.MAPS_WORLD_URL || "https://cf.etherfantasy.com/api/world";
@@ -64,16 +64,21 @@ const readBody = (req) => new Promise((ok) => { let b = ""; req.on("data", (d) =
 // Identity: admin `x-maps-key` (ops), or a PG access token (the same one the lobby stores in
 // localStorage `ef_pg_token` — same origin) verified to the canonical username via lobby/auth.
 const _who = new Map(); // token -> { u, at } (60s cache so POST bursts don't hammer the PG API)
+// ADMIN PG accounts (owner 2026-07-18: "admin is nftprof — can view any land"). A PG login whose
+// canonical username is in this set is treated as admin: sees every parcel (owned/unminted alike)
+// and may design any land. Env override MAPS_ADMIN_USERS = comma list; default just nftprof.
+const ADMIN_USERS = new Set((process.env.MAPS_ADMIN_USERS || "nftprof").split(",").map((s) => s.trim().toLowerCase()).filter(Boolean));
+export const isAdminUser = (u) => !!u && ADMIN_USERS.has(String(u).toLowerCase());
 async function identify(req) {
   if (TOKEN() && req.headers["x-maps-key"] === TOKEN()) return { admin: true, username: "__admin__" };
   const m = /^Bearer\s+(.+)$/.exec(req.headers.authorization || "");
   if (!m) return null;
   const tok = m[1], c = _who.get(tok);
-  if (c && Date.now() - c.at < 60_000) return c.u ? { username: c.u } : null;
+  if (c && Date.now() - c.at < 60_000) return c.u ? { username: c.u, admin: isAdminUser(c.u) } : null;
   const v = await verifyToken(tok).catch(() => null);
   if (_who.size > 500) _who.clear();
   _who.set(tok, { u: v && v.ok ? v.username : null, at: Date.now() });
-  return v && v.ok ? { username: v.username } : null;
+  return v && v.ok ? { username: v.username, admin: isAdminUser(v.username) } : null;
 }
 // Ownership: pluggable feed (MAPS_OWNERS_URL → {owners:{parcelId:username}} or [{parcelId,owner}]),
 // cached 5 min. The public world snapshot has no owner data yet — until the CF overworld exposes
@@ -120,8 +125,12 @@ export function mapsApi(req, res) {
     });
     return true;
   }
-  if (p === "/internal/v1/parcels") {                       // land picker: world parcels ⊕ design status
-    parcelsList().then((parcels) => J(res, 200, { ok: true, parcels })).catch((e) => J(res, 500, { ok: false, error: e.message }));
+  if (p === "/internal/v1/zones") {                         // world → CONTINENT zoom: the 12 zones + counts + bbox
+    try { J(res, 200, { ok: true, zones: zoneList() }); } catch (e) { J(res, 500, { ok: false, error: e.message }); }
+    return true;
+  }
+  if (p === "/internal/v1/parcels") {                       // zone → PARCEL zoom: search + paged, owner-tagged
+    parcelsList(req).then((r) => J(res, 200, { ok: true, ...r })).catch((e) => J(res, 500, { ok: false, error: e.message }));
     return true;
   }
   if (p === "/internal/v1/whoami") {                        // designer sign-in state (Bearer = lobby's ef_pg_token)
@@ -163,18 +172,48 @@ export function mapsApi(req, res) {
   return true;
 }
 
-// world parcels (id + map position) merged with registry design status — feeds the designer's
-// clickable land map. Ownership filtering arrives later via the CF overworld proxy (it owns
-// governor/territory data); this endpoint is deliberately facts-only.
-async function parcelsList() {
-  await parcelFacts("__warm__");                              // ensure the world cache is fresh
+// zone → parcel picker: the FULL l3 roster of a continent (all ~13k parcels), searchable + paged,
+// each tagged with design status + NFT owner + minted/mine/admin flags. Rendered like the CF main
+// map (real parcel polygons via svgPath), with the caller's own land highlighted.
+//   ?zone=EDU  (required for the grid; default EDU)  ?q=<id substring>  ?page=0  ?pageSize=400
+//   ?mine=1  → only the signed-in user's owned parcels (any zone)     ?designed=1 → only designed
+// Owner rules (owner 2026-07-18): every parcel links to its NFT owner (land-owners feed) or reads
+// UNMINTED when absent; a normal user sees ownership + may design only their own (edit gate stays
+// the authority); ADMIN (nftprof) sees + may design ALL. Facts-only endpoint — the edit gate on
+// POST is the real enforcement.
+async function parcelsList(req) {
+  const u = new URL(req.url, "http://x");
+  const id = await identify(req);
+  const admin = !!(id && id.admin), me = id && id.username ? String(id.username).toLowerCase() : null;
+  const zone = String(u.searchParams.get("zone") || "EDU").toUpperCase();
+  const q = String(u.searchParams.get("q") || "").trim().toLowerCase();
+  const page = Math.max(0, parseInt(u.searchParams.get("page") || "0", 10) || 0);
+  const pageSize = Math.min(2000, Math.max(1, parseInt(u.searchParams.get("pageSize") || "400", 10) || 400));
+  const mineOnly = u.searchParams.get("mine") === "1";
+  const designedOnly = u.searchParams.get("designed") === "1";
+  // light=1 → the MAP FILL: EVERY parcel of the continent (minimal fields, no svgPath/paging) so the
+  // picker draws the whole continent like the CF main map. Heavy (default) → the paged, polygon-
+  // detailed slice for the list + a selected parcel's outline.
+  const light = u.searchParams.get("light") === "1";
+  await ownerOf("__warm__");                                  // refresh the owner feed once
   const rows = new Map(reg.list().map((r) => [String(r.parcelId), r]));
-  const out = [];
-  for (const [id, p] of _world.byId) {
-    const c = p.center || [0, 0], r = rows.get(id);
-    out.push({ parcelId: id, x: c[0], y: c[1], ...(r ? { status: r.status, v: r.designVersion, archetype: r.archetype, palette: r.palette, approved: r.approved !== false, modes: r.sim?.modes || null, score: r.sim?.score ?? null } : {}) });
-  }
-  return out;
+  const source = mineOnly && me ? zoneList().flatMap((z) => l3Zone(z.zoneId)) : l3Zone(zone);
+  const owned = (pid) => _owners.map.get(String(pid));       // undefined ⇒ unminted
+  let list = source;
+  if (q) list = list.filter((s) => String(s.parcelId).toLowerCase().includes(q));
+  if (designedOnly) list = list.filter((s) => rows.has(String(s.parcelId)));
+  if (mineOnly && me) list = list.filter((s) => owned(s.parcelId) === me);
+  const total = list.length;
+  const slice = light ? list : list.slice(page * pageSize, page * pageSize + pageSize);
+  const parcels = slice.map((s) => {
+    const pid = String(s.parcelId), c = s.center || (s.bbox ? [(s.bbox[0] + s.bbox[2]) / 2, (s.bbox[1] + s.bbox[3]) / 2] : [0, 0]);
+    const r = rows.get(pid), owner = owned(pid), mine = !!(me && owner === me);
+    if (light) return { parcelId: pid, x: c[0], y: c[1], mine, minted: owner !== undefined, status: r ? r.status : undefined };
+    return { parcelId: pid, x: c[0], y: c[1], bbox: s.bbox, svgPath: s.svgPath, sizeClass: s.sizeClass,
+      owner: owner ?? null, minted: owner !== undefined, mine,
+      ...(r ? { status: r.status, v: r.designVersion, archetype: r.archetype, palette: r.palette, approved: r.approved !== false, modes: r.sim?.modes || null } : {}) };
+  });
+  return { zone, page, pageSize, total, admin, me, ownersKnown: !!ownersUrl(), light, parcels };
 }
 
 async function handle(req, res, p) {

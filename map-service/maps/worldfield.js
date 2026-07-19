@@ -429,10 +429,8 @@ function zoneByCode(code) {
 // the overworld polygon). This is what lets a running map-service window the continuous-world field
 // WITHOUT depending on /api/world (which carries no zone/bbox).
 const _l3rows = new Map();
-export function l3Row(parcelId) {
-  const id = String(parcelId);
-  const zone = zoneByCode(id.slice(1, 3));
-  if (!zone) return null;
+function l3Map(zone) {
+  if (!zone) return new Map();
   if (!_l3rows.has(zone)) {
     const m = new Map();
     try {
@@ -441,5 +439,35 @@ export function l3Row(parcelId) {
     } catch { /* no l3 for this zone → empty map */ }
     _l3rows.set(zone, m);
   }
-  return _l3rows.get(zone).get(id) || null;
+  return _l3rows.get(zone);
+}
+export function l3Row(parcelId) {
+  const id = String(parcelId);
+  const zone = zoneByCode(id.slice(1, 3));
+  if (!zone) return null;
+  return l3Map(zone).get(id) || null;
+}
+
+// the full parcel roster of a zone (the designer's world→zone→parcel picker source of truth —
+// all ~13k parcels per continent, not the 648 /api/world exposes). Cached per zone.
+export function l3Zone(zone) { return [...l3Map(String(zone).toUpperCase()).values()]; }
+
+// the 12 continents with their aggregate bbox + parcel count (world/continent zoom level).
+// Reads the registry for names/biome; derives geometry from the l3 parcels so the picker can
+// frame each continent without a separate coordinate source. Cached.
+let _zoneList = null;
+export function zoneList() {
+  if (_zoneList) return _zoneList;
+  let reg = { zones: [] };
+  try { reg = JSON.parse(fs.readFileSync(path.join(dataRoot(), "zone-registry.json"), "utf8")); } catch {}
+  const out = [];
+  for (const z of reg.zones || []) {
+    const rows = l3Zone(z.zoneId);
+    let bb = null;
+    for (const r of rows) { const c = r.center || (r.bbox && [(r.bbox[0] + r.bbox[2]) / 2, (r.bbox[1] + r.bbox[3]) / 2]); if (!c) continue;
+      if (!bb) bb = [c[0], c[1], c[0], c[1]]; else { bb[0] = Math.min(bb[0], c[0]); bb[1] = Math.min(bb[1], c[1]); bb[2] = Math.max(bb[2], c[0]); bb[3] = Math.max(bb[3], c[1]); } }
+    out.push({ zoneId: z.zoneId, zoneCode: z.zoneCode, name: z.name || z.zoneId, biomeFamily: z.biomeFamily || "", count: rows.length, bbox: bb });
+  }
+  _zoneList = out.filter((z) => z.count > 0);
+  return _zoneList;
 }
