@@ -288,9 +288,22 @@ for(const b of a.barriers||[]){const bcells=b.opens||[[b.x,b.z]];const w=Math.ma
   const horiz=Math.abs(bcells[bcells.length-1][0]-bcells[0][0])>=Math.abs(bcells[bcells.length-1][1]-bcells[0][1]);
   const wall=new THREE.Mesh(new THREE.BoxGeometry(horiz?w:CELL*1.4,3.2,horiz?CELL*1.4:w),new THREE.MeshLambertMaterial({color:GATE[b.kind]||0x7a6a4a,emissive:b.kind==="ICE_WALL"?0x224455:0x000000,flatShading:true}));put(wall,b.x,b.z,1.6);}
 // spawn rings (both modes: side markers are design QA, the module's fountain pads are canBase only)
+// FLOATING BEACONS (owner 2026-07-18: a legend marker must be a ring/pillar that rides ABOVE the
+// ground and bobs, so land elevation never hides it). Per spawn: a faint anchor pillar (depth-
+// tested, reads as grounded) + a bright ring that hovers ~13u up, bobs, and renders ON TOP
+// (depthTest off) so it's visible through any hill. beaconBob() animates them in the loop.
+const beacons=[];
 for(const s of a.spawnZones||[]){if(s.side==="ANY")continue;
-  const ring=new THREE.Mesh(new THREE.TorusGeometry(7,0.7,8,24),new THREE.MeshBasicMaterial({color:s.side==="ATTACKER"?0xe25a50:0x5a8ee2}));
-  ring.rotation.x=Math.PI/2;put(ring,s.x,s.z,0.8);}
+  const col=s.side==="ATTACKER"?0xe25a50:(s.side==="OBJECTIVE"?0xffd34d:0x5a8ee2);
+  const grp=new THREE.Group();
+  const pil=new THREE.Mesh(new THREE.CylinderGeometry(0.45,0.45,15,7),new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:.26,depthWrite:false}));
+  pil.position.y=7.5;grp.add(pil);
+  const ring=new THREE.Mesh(new THREE.TorusGeometry(6.5,0.7,8,28),new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:.96,depthWrite:false,depthTest:false}));
+  ring.rotation.x=Math.PI/2;ring.position.y=13;ring.renderOrder=6;grp.add(ring);
+  const bob=new THREE.Mesh(new THREE.SphereGeometry(0.8,10,8),new THREE.MeshBasicMaterial({color:col,depthTest:false}));bob.renderOrder=6;bob.position.y=13;grp.add(bob);
+  put(grp,s.x,s.z,0);
+  beacons.push({ring,bob,base:13,ph:(s.x+s.z)});}
+function beaconBob(t){for(const b of beacons){const y=b.base+Math.sin(t*1.8+b.ph)*1.4;b.ring.position.y=y;b.bob.position.y=y;b.ring.rotation.z=t*0.6;}}
 // dotted lanes (legacy only — parity gets the worn Catmull-Rom ribbons, layer 6)
 if(!parity)for(const lane of a.lanes||[])for(let i=0;i<lane.length-1;i++){const [ax,az]=lane[i],[bx,bz]=lane[i+1];
   const steps=Math.max(2,Math.round(Math.hypot(bx-ax,bz-az)/8));
@@ -334,7 +347,8 @@ addEventListener("resize",()=>{cam.aspect=innerWidth/innerHeight;cam.updateProje
 // close camera. At/below that distance the exact numbers apply; orbiting further out scales the
 // range proportionally so the designer can still see the whole map with the same relative haze.
 const fogBase=parity&&scene.fog?{near:scene.fog.near,far:scene.fog.far,dist:220}:null;
-(function loop(){requestAnimationFrame(loop);ctl.update();
+let _clock=0;
+(function loop(){requestAnimationFrame(loop);ctl.update();_clock+=1/60;beaconBob(_clock);
   if(fogBase){const k=Math.max(1,cam.position.distanceTo(ctl.target)/fogBase.dist);scene.fog.near=fogBase.near*k;scene.fog.far=fogBase.far*k;}
   if(waterMats.length&&waterMats[0].speed){const t=waterMats[0].mat.bumpMap;t.offset.x+=0.00022*waterMats[0].speed;t.offset.y+=0.00013*waterMats[0].speed;} // shared bump texture — scroll once
   if(bf&&bf.update)bf.update(1/60);ren.render(scene,cam);})();

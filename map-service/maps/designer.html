@@ -108,7 +108,16 @@
         </div>
         <span class="sel" id="selChip" hidden></span>
       </div>
-      <canvas id="landmap" width="1920" height="720"></canvas>
+      <div style="position:relative">
+        <canvas id="landmap" width="1920" height="720"></canvas>
+        <div style="position:absolute;right:10px;top:10px;display:flex;flex-direction:column;gap:4px;align-items:stretch">
+          <button class="ghost" id="zin" title="zoom in" style="padding:4px 10px">＋</button>
+          <button class="ghost" id="zout" title="zoom out" style="padding:4px 10px">－</button>
+          <button class="ghost" id="zreset" title="fit continent" style="padding:4px 8px;font-size:11px">fit</button>
+          <span class="stat" id="zLbl" style="text-align:center">100%</span>
+        </div>
+      </div>
+      <div class="hint">scroll to zoom · drag to pan · click a parcel to select</div>
       <div class="legend">
         <span><i style="background:#4d5a68"></i>undesigned</span>
         <span><i style="background:#5fe9d0"></i>seed design</span>
@@ -311,10 +320,17 @@ async function loadZones(){try{const d=await fetch("/internal/v1/zones").then(r=
   showZoneView();}catch(e){$("mapStat").textContent="· world unavailable";}}
 
 /* render parcels as their real polygons (svgPath) when zoomed enough, else dots — CF-main-map feel */
-function fitView(){let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;for(const p of parcels){const b=p.bbox||[p.x,p.y,p.x,p.y];x0=Math.min(x0,b[0]);x1=Math.max(x1,b[2]);y0=Math.min(y0,b[1]);y1=Math.max(y1,b[3]);}
+// zoom/pan is a pure SCREEN-space transform on top of the fit view — no re-fetch, stays lightweight.
+let zoom=1,panX=0,panY=0;
+function fitView(reset){let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;for(const p of allParcels.length?allParcels:parcels){const b=p.bbox||[p.x,p.y,p.x,p.y];x0=Math.min(x0,b[0]);x1=Math.max(x1,b[2]);y0=Math.min(y0,b[1]);y1=Math.max(y1,b[3]);}
   const pad=24,W=cv.width,H=cv.height,s=Math.min((W-2*pad)/((x1-x0)||1),(H-2*pad)/((y1-y0)||1));
-  view={s,ox:pad+(W-2*pad-s*(x1-x0))/2-s*x0,oy:pad+(H-2*pad-s*(y1-y0))/2-s*y0,x0,x1,y0,y1};}
-const PX=(x,y)=>[x*view.s+view.ox, cv.height-(y*view.s+view.oy)];
+  view={s,ox:pad+(W-2*pad-s*(x1-x0))/2-s*x0,oy:pad+(H-2*pad-s*(y1-y0))/2-s*y0,x0,x1,y0,y1};
+  if(reset!==false){zoom=1;panX=0;panY=0;}}
+const BASE=(x,y)=>[x*view.s+view.ox, cv.height-(y*view.s+view.oy)];       // fit-space
+const PX=(x,y)=>{const b=BASE(x,y);return[b[0]*zoom+panX, b[1]*zoom+panY];}; // screen-space (zoom+pan)
+function setZoom(nz,cxp,cyp){nz=Math.max(1,Math.min(60,nz));const mx=cxp??cv.width/2,my=cyp??cv.height/2;
+  panX=mx-(mx-panX)*(nz/zoom);panY=my-(my-panY)*(nz/zoom);zoom=nz;drawMap();updZoomUI();}
+function updZoomUI(){const z=$("zLbl");if(z)z.textContent=Math.round(zoom*100)+"%";}
 // cache parsed svg polygons (M/m/L/l/h/v/z subset — the l3 paths are simple relative outlines)
 const polyCache=new Map();
 function poly(p){if(polyCache.has(p.parcelId))return polyCache.get(p.parcelId);let pts=null;
@@ -330,25 +346,36 @@ function parsePath(d){const t=d.match(/[a-zA-Z]|-?\d*\.?\d+(?:e-?\d+)?/g);let i=
     else{num();}}
   return pts.length>2?pts:null;}
 function drawMap(){if(!view)return;cx.clearRect(0,0,cv.width,cv.height);
-  const usePoly=parcels.length<=600; // polygons when the page is small enough to be crisp
-  for(const p of parcels){const isSel=p.parcelId===selId,isHov=p.parcelId===hoverId;
-    const col=STATUS_COL[p.status]||STATUS_COL[undefined];const pts=usePoly?poly(p):null;
-    if(pts){cx.beginPath();for(let k=0;k<pts.length;k++){const[X,Y]=PX(pts[k][0],pts[k][1]);k?cx.lineTo(X,Y):cx.moveTo(X,Y);}cx.closePath();
+  const usePoly=parcels.length<=600&&parcels[0]&&parcels[0].svgPath; // polygons only when svgPath is present + set is small
+  const r=zoom>=6?3.4:(zoom>=3?2.9:2.4);          // dots grow a little as you zoom in
+  for(const p of parcels){const[X,Y]=PX(p.x,p.y);
+    if(X<-20||X>cv.width+20||Y<-20||Y>cv.height+20)continue;   // cull off-screen (cheap when zoomed)
+    const isSel=p.parcelId===selId,isHov=p.parcelId===hoverId;const col=STATUS_COL[p.status]||STATUS_COL[undefined];const pts=usePoly?poly(p):null;
+    if(pts){cx.beginPath();for(let k=0;k<pts.length;k++){const[PXX,PYY]=PX(pts[k][0],pts[k][1]);k?cx.lineTo(PXX,PYY):cx.moveTo(PXX,PYY);}cx.closePath();
       cx.fillStyle=col;cx.globalAlpha=p.status?0.85:0.5;cx.fill();cx.globalAlpha=1;
       if(p.mine){cx.lineWidth=2.2;cx.strokeStyle="#fff";cx.stroke();}
       if(isSel){cx.lineWidth=2.6;cx.strokeStyle="#ffd34d";cx.stroke();}else if(isHov){cx.lineWidth=1.6;cx.strokeStyle="#d8bbff";cx.stroke();}}
-    else{const[X,Y]=PX(p.x,p.y);cx.beginPath();cx.arc(X,Y,isSel?7:(isHov?6:2.4),0,7);cx.fillStyle=col;cx.fill();
+    else{cx.beginPath();cx.arc(X,Y,isSel?7:(isHov?6:r),0,7);cx.fillStyle=col;cx.fill();
       if(p.mine){cx.lineWidth=2;cx.strokeStyle="#fff";cx.stroke();}
       if(isSel){cx.lineWidth=2.4;cx.strokeStyle="#ffd34d";cx.stroke();}}}}
 function nearest(ev){const r=cv.getBoundingClientRect(),mx=(ev.clientX-r.left)*cv.width/r.width,my=(ev.clientY-r.top)*cv.height/r.height;
   let best=null,bd=16*16;for(const p of parcels){const[X,Y]=PX(p.x,p.y);const d=(X-mx)*(X-mx)+(Y-my)*(Y-my);if(d<bd){bd=d;best=p;}}return best;}
-cv.addEventListener("mousemove",(ev)=>{const p=nearest(ev);hoverId=p?.parcelId||null;drawMap();
+cv.addEventListener("mousemove",(ev)=>{if(window.__panning)return; const p=nearest(ev);hoverId=p?.parcelId||null;drawMap();
   const tip=$("maptip");if(p){tip.style.display="block";tip.style.left=(ev.clientX+14)+"px";tip.style.top=(ev.clientY+10)+"px";
     const own=p.minted?(p.mine?"you":(p.owner||"owned")):"unminted";
     tip.innerHTML="<b>"+p.parcelId+"</b> · "+own+(p.status?(" · "+p.status+(p.modes?(" · "+p.modes.join("/")):"")):" · undesigned");}
   else tip.style.display="none";});
 cv.addEventListener("mouseleave",()=>{hoverId=null;$("maptip").style.display="none";drawMap();});
-cv.addEventListener("click",(ev)=>{const p=nearest(ev);if(p)selectParcel(p.parcelId);});
+// wheel = zoom toward the cursor; drag = pan; a click that didn't drag = select.
+const toCanvas=(ev)=>{const r=cv.getBoundingClientRect();return[(ev.clientX-r.left)*cv.width/r.width,(ev.clientY-r.top)*cv.height/r.height];};
+cv.addEventListener("wheel",(ev)=>{ev.preventDefault();const[mx,my]=toCanvas(ev);setZoom(zoom*(ev.deltaY<0?1.2:1/1.2),mx,my);},{passive:false});
+let drag=null;
+cv.addEventListener("mousedown",(ev)=>{const[mx,my]=toCanvas(ev);drag={mx,my,px:panX,py:panY,moved:0};});
+window.addEventListener("mouseup",(ev)=>{if(!drag)return;if(drag.moved<25){const p=nearest(ev);if(p)selectParcel(p.parcelId);}drag=null;});
+cv.addEventListener("mousemove",(ev)=>{if(drag){window.__panning=true;const[mx,my]=toCanvas(ev);panX=drag.px+(mx-drag.mx);panY=drag.py+(my-drag.my);drag.moved+=Math.abs(mx-drag.mx)+Math.abs(my-drag.my);drawMap();}});
+window.addEventListener("mouseup",()=>{setTimeout(()=>{window.__panning=false;},0);});
+$("zin").onclick=()=>setZoom(zoom*1.4);$("zout").onclick=()=>setZoom(zoom/1.4);
+$("zreset").onclick=()=>{fitView();drawMap();updZoomUI();};
 
 // the WHOLE continent is fetched once (light: id/pos/status/mine — draws like the CF main map);
 // search + filters run client-side over that set; the pager pages the FILTERED list (for stepping
@@ -359,12 +386,13 @@ async function loadParcels(){showParcelView();$("mapStat").textContent="· loadi
   try{const d=await fetch(url,{headers:pgTok?{authorization:"Bearer "+pgTok}:{}}).then(r=>r.json());
     allParcels=d.parcels||[];admin=!!d.admin;me=d.me||me;ownersKnown=!!d.ownersKnown;
     $("ownHint").innerHTML=admin?"👑 <b>Admin</b> — you can view and design any land.":(me?(ownersKnown?"Your parcels are ringed in white — you can design the land you own.":"Owner data not loaded yet — any signed-in account may design during testing."):"👁 Viewing is open. Sign in (below) to design your land.");
+    if(allParcels.length)fitView();updZoomUI();       // fit + reset zoom ONCE per continent
     applyFilter();setCrumb();}catch(e){$("mapStat").textContent="· unavailable";$("err").textContent=e.message;}}
 function applyFilter(){page=0;
   parcels=q?allParcels.filter(p=>p.parcelId.toLowerCase().includes(q)):allParcels;
   total=parcels.length;
   $("mapStat").textContent="· "+total.toLocaleString()+(q?" matches":" parcels")+(admin?" · admin":"");
-  if(allParcels.length){fitView();drawMap();}renderPager();}
+  drawMap();renderPager();}                            // search keeps your current zoom/pan
 function renderPager(){const el=$("pager");el.innerHTML="";if(!q||total<=1)return; // pager only steps through search matches
   const pages=Math.max(1,Math.ceil(total/pageSize));const idx=Math.min(page,pages-1);
   const mk=(t,fn,dis)=>{const b=document.createElement("button");b.className="ghost";b.textContent=t;b.disabled=dis;b.onclick=fn;return b;};
