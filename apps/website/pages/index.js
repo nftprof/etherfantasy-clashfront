@@ -1,17 +1,21 @@
 export const title = 'Home';
-export const description = 'Clash Front — a grand-strategy war layer on the Ether Fantasy land map. Hold parcels, march armies, fight real battles.';
+export const description = 'Clash Front — the etheric grand-strategy world of Ether Fantasy. Shape the land, raise your banner, or turn the tide at the front.';
 export const body = `
 <section class="hero">
   <div class="wrap">
-    <h1>Hold the land.<br><em>Or lose it.</em></h1>
-    <p class="tag">Next-generation grand strategy: an <strong>AI-woven persistent world</strong> on the Ether Fantasy land map — 292,766 real parcels, live battles, deep lore. One world.</p>
+    <h1>Enter as a hero.<br><em>Ascend as a god.</em></h1>
+    <p class="tag">An <strong>etheric world</strong>, woven anew and richer with every dawn — next-generation grand strategy in the EtherFantasy realm. One world, persistent, alive while you sleep.</p>
     <p class="pitch">
-      Every parcel is somebody's ground. March your army from your home hex, cross a border, and fight for it —
-      LIVE on the same battle engine the MOBA runs on, or headless if nobody wants to steer.
-      Weather rolls over continents. Wild bosses hunt the frontier. Masters lead your soldiers into duels
-      and full 3D battles. You'll bleed real CT if you lose, and take the loser's land if you win.
-      And the ground itself is no procedural noise — every battlefield is drawn by the world-engine with
-      geography, history and lore in mind, and it renders richer with every pass.
+      Three destinies await. <strong>Lead the charge</strong> — take the field as your Master in living
+      3D battle, and turn the tide where the line is breaking.
+      <strong>Raise your banner</strong> — transcend the hero's road: gather armies, take borders, and
+      govern what you conquer as warlord of a growing dominion.
+      Or <strong>claim the land itself</strong> — own your ground and shape it as its quiet god: raise its
+      hills, cut its rivers, seed its wilds, and let the world-engine dream your design into being.
+      The stakes are as real as the world: weather turns campaigns, wild things hunt the frontier,
+      and every battle is written into the land's memory.
+      Lose, and you bleed true treasure. Win, and the ground itself changes hands.
+      <em>Hold the land — or lose it.</em>
     </p>
     <div class="cta">
       <a href="/play" class="btn primary">⚔ Enter the map</a>
