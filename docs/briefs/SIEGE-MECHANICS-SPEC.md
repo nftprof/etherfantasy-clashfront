@@ -1,0 +1,93 @@
+# SIEGE MECHANICS — spec + test map (owner-directed 2026-07-21)
+
+> Owner: "check if current elevation already gives range advantage … build the map for us to test
+> properly … then give the spec along to MOBA game engine to build test. u have limitations that
+> inside wall u can't hit in and out of it — only to the wall and wall back down. flyer can go
+> over. also whether some units can crawl walls can be possible mechanism."
+
+**Audience:** EF Moba (Network + Obfuse deploy) — authoritative-sim rules; MOBA BattleEngine RAW —
+client presentation. CF ParcelMap delivers the map + data contract (this doc). CF Overworld canon
+owns balance numbers once tested.
+
+## §0 Engine audit finding (2026-07-21) — elevation does NOT exist today
+
+Read directly from the authoritative sim (`server/sim/`, main @ af1a5a7):
+- Units live in **x/z only** — there is no `y` anywhere in sim state (`step.js` `clampPt`, spawns,
+  flash, recall are all `{x,z}`).
+- `combat.js`: in-range test is flat 2D `dist(u,tgt) > u.range`; damage = `dmg × typeMult`. **No
+  elevation term, no LOS test, no terrain/obstacle awareness in the authoritative path at all**
+  (consistent with BATTLE-ENGINE-DISCOVERY: "no terrain/obstacles in the authoritative sim").
+- Any height seen in the 3D client is cosmetic; it never changes combat.
+
+⇒ Everything below is green-field sim work. The rules are simple by design — cell/zone lookups,
+no 3D math needed (the sim can stay 2D + a per-cell `tier`/`wall` layer).
+
+## §1 LOCKED rules (owner 2026-07-21)
+
+- **R1 — WALLS BLOCK ENGAGEMENT ACROSS.** A ground unit inside cannot hit out; a ground unit
+  outside cannot hit in. Legal engagements: ground → wall-top, wall-top → ground (both sides),
+  wall-top ↔ wall-top, and melee vs the WALL/GATE structure itself. Implementation sketch: attacks
+  whose segment crosses a WALL cell are illegal unless attacker or target stands ON the wall ring.
+- **R2 — FLYERS GO OVER.** Movement flag `fly`: ignores WALL/WATER/ROCK blocking for pathing (R1
+  still governs whether they can be shot: a flyer is always in open LOS — hit-able from both sides,
+  and it can hit down on both sides).
+- **R3 — DOOR BREACH (already in the data).** Gates are `castle_gate_*` structures with HP
+  (~1100+). Destroying the gate opens the passage cell(s). The sim must honor structure-blocked
+  cells; the client must render damage/breach states.
+- **R4 — WALL-WALK + STAIRS.** The parapet ring is walkable ONLY via access points (stair flights
+  beside gates, towers). Data: `_siegeTest.elevationTiers.tier2.WALL_WALK` ring; stairs are at the
+  gate flanks (kit renders them since 2026-07-21).
+- **R5 — DRAWBRIDGE (defender toggle).** Moat crossings carry a bridge state: DOWN = ROAD
+  (crossable), UP = WATER (blocked). Defender-owned toggle with a cooldown (⚙). v1: the bridge
+  itself is indestructible — attackers breach the GATE or go around/over; bridge HP is a v2 option.
+- **R6 — HEIGHT ADVANTAGE (proposed numbers — TEST TO TUNE, then CF canon locks).** Elevation
+  tiers: 0 ground · 1 mound/ridge-top · 2 wall-walk. Per tier of advantage (attacker tier −
+  target tier, clamped ±2): ranged damage ±12%, ranged range ±10%. Melee unaffected by tiers
+  (R1/R4 already gate melee access). Applies to EVERYONE including besiegers on outside high
+  ground — position is the advantage, not the role.
+- **R7 — WALL-CRAWLERS (optional mechanism, owner-flagged).** Unit trait `climb`: may traverse
+  WALL cells at crawl speed (⚙ ~0.35×) and fight from the wall-top when on it. Counterplay:
+  crawlers are exposed (always LOS-visible) while climbing. Build behind a flag; test last.
+
+## §2 Data contract — what the map already gives the engine
+
+Battlefield A1 (`data/moba-maps/siege-test.json`, BATTLEFIELD-SCHEMA-conformant) plus a
+`_siegeTest` block:
+- `elevationTiers`: tier-1 zones (castle MOUND disc, RIDGE_TOP band) + tier-2 WALL_WALK ring —
+  machine-readable zones so the sim needs only point-in-zone lookups.
+- `wallRing` (pts + height + gate points), `gates` (id/at/hp), `drawbridge.at`.
+- `stations[]` T1–T8 (below) with coordinates — drive the headless test straight off the file.
+- The raw artifact (`siege-test.artifact.json`) carries `meta.castleGeom` for renderers, and the
+  registry grid encodes WALL/GATE/WATER/ROCK/ROAD per cell.
+Every generated castle parcel emits the same shapes — nothing here is test-map-only except
+`_siegeTest` itself.
+
+## §3 The test map — SIEGE-TEST-1
+
+Built by `map-service/tools/make_siege_test.mjs` (deterministic; regenerate any time). Layout:
+CASTLE (kind=CASTLE, full ring, 2 gates, stairs, mound) at [52,52] NE · MOAT arc across the S/W
+approach · approach ROAD SW spawn → gate, crossing the moat (= causeway/drawbridge site,
+~[-41,-34]) · outside HIGH-GROUND ridge band east of the wall ([126,-10]→[100,118], w22) ·
+attacker spawn SW, defender = castle. Sim-gate: pass, score 100, all 5 modes. Known v2 polish: the
+corridor-carve fragments the moat arc in places; the causeway station itself is intact.
+
+### Test matrix (stations in `_siegeTest.stations`)
+| # | Station | Expect |
+|---|---|---|
+| T1 | ground↔ground across wall | both directions BLOCKED (R1) |
+| T2 | ground↔wall-top | both directions allowed (R1) |
+| T3 | gate breach | gate HP → 0 opens passage; units path through (R3) |
+| T4 | stairs | courtyard→parapet only via stair/tower cells (R4) |
+| T5 | drawbridge | DOWN crossable, UP blocked; toggle honors cooldown (R5) |
+| T6 | flyer | crosses wall + moat freely; shootable from both sides (R2) |
+| T7 | ridge advantage | ridge-top archer vs courtyard archer: wins range + damage trade (R6) |
+| T8 | crawler (optional) | scales wall at crawl speed, exposed while climbing (R7) |
+
+## §4 Handoff
+
+- **EF Moba (server sim):** implement R1–R6 (R7 flagged) in the authoritative sim; headless-run
+  SIEGE-TEST-1 and assert the matrix. Wall/tier data comes from the map file — no hardcoding.
+- **MOBA BattleEngine RAW (client):** breach states on gates (R3), drawbridge up/down visual,
+  flyer/crawler reads, tier-bonus feedback (hit numbers already exist).
+- **CF:** after the matrix passes, owner tunes R6 numbers → CF locks them into canon
+  (`docs/08` + balance ⚙) and the rules apply to every castle parcel automatically (same shapes).

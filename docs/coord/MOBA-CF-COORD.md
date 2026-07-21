@@ -422,3 +422,14 @@ OWNER QUESTIONS for MOBA BattleEngine RAW (proposals in CASTLE-RENDER-BRIEF §6,
 sign-off): (a) wall-walk unit pathing (stairs = access points), (b) defender-toggled drawbridge on
 moat castles, (c) door-breach = existing castle_gate_N HP (confirm client shows breach states),
 (d) HEIGHT ADVANTAGE combat rule — elevation bonus for ranged/wall units. None locked yet.
+
+**2026-07-21 (3) — SIEGE MECHANICS: spec + test map DELIVERED (owner-locked rules).** Engine audit
+answered the owner's Q: the authoritative sim is FLAT 2D (x/z only, `dist` range check, no LOS/
+terrain) — elevation gives NO advantage today; all siege rules are green-field. Owner LOCKED: walls
+block ground↔ground engagement across (only onto/from the wall-top), flyers overfly, gate-HP breach
+= the door, stairs gate the parapet, defender drawbridge; height advantage ±12% dmg/±10% range per
+tier PROPOSED (test→tune→canon). Deliverables: `docs/briefs/SIEGE-MECHANICS-SPEC.md` (rules R1–R7 +
+data contract + T1–T8 matrix), `data/moba-maps/siege-test.json` (A1 + `_siegeTest` zones/stations,
+sim score 100) + `.artifact.json`, builder `map-service/tools/make_siege_test.mjs`. → EF Moba:
+implement R1–R6 in sim, headless-assert the matrix off the file. → BattleEngine RAW: breach/
+drawbridge/tier visuals. CF locks R6 numbers after testing.
