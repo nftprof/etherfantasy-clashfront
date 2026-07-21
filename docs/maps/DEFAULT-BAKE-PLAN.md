@@ -1,5 +1,13 @@
 # Default-Design Bake — making a continent a COMPLETE game map
 
+> **STATUS 2026-07-21: EDU BAKED ON THE BOX ✅** — run 29807148123 (map-bake.yml, ref deploy/map @
+> c2971a2): 13,661/13,661 parcels, 0 fails, 29 min, 13,606 approved (99.6%), 6 forts (incl. the
+> off-parcel-fixed Grand Academy PALACE), service restarted health-gated. Registry lives ONLY on the
+> box (`~/ef-battlefields`) per the owner's "maps are server-state, never git" ruling; map-bake.yml
+> is just the remote-control. **BUS (Porthaven) is next** — dispatch map-bake with zones=BUS after
+> the owner's EDU playthrough (expect ~5× EDU: ~2.5 h at the observed O(n) index-write curve; the
+> per-save whole-index rewrite is the known hot spot if we ever need it faster).
+
 **Owner ask (2026-07-21):** "plan out the default for every single map on EDU so we have a complete
 game map" + "also do it for porthaven (singapore)". Target continents: **EDU (Arcadia)** and
 **BUS (Porthaven)**. NB: in the zone registry **EDU _is_ Arcadia** — I read "Acadian (japan)" as the
