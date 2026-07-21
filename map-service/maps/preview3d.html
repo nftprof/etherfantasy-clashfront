@@ -355,19 +355,47 @@ if(CG)(function(){
             qx=p[0]+(q[0]-p[0])*t1,qz=p[1]+(q[1]-p[1])*t1;
       const L2=L*(t1-t0);if(L2<0.8){run+=L;continue;}
       const mx=(px+qx)/2,mz=(pz+qz)/2;
-      const body=putC(new THREE.Mesh(new THREE.BoxGeometry(L2+1.2,H,3),wallM),mx,mz,H/2);body.rotation.y=ang;
-      const bat=putC(new THREE.Mesh(new THREE.BoxGeometry(L2+1.2,H*0.22,3.9),wallM),mx,mz,H*0.11);bat.rotation.y=ang; // sloped footing read
-      for(let m=1.4;m<L2-0.8;m+=2.2){                                 // merlons: the crenellation rhythm
-        const t=m/L2,mxx=px+(qx-px)*t,mzz=pz+(qz-pz)*t;
-        const mer=putC(new THREE.Mesh(new THREE.BoxGeometry(1.15,1.2,3.15),wallM),mxx,mzz,H+0.6);mer.rotation.y=ang;}
+      // WALK-WIDE wall (owner 2026-07-21: "is the wall wide enough… blocking on the wall the wrong
+      // side, it's now looking like ladder"): thicker curtain (4.2u ≈ 3m walk) and the merlons sit
+      // on the OUTER edge only — the inner top stays open as the wall-walk, with a low inner curb.
+      const WT=4.2;
+      const body=putC(new THREE.Mesh(new THREE.BoxGeometry(L2+1.2,H,WT),wallM),mx,mz,H/2);body.rotation.y=ang;
+      const bat=putC(new THREE.Mesh(new THREE.BoxGeometry(L2+1.2,H*0.22,WT+1.1),wallM),mx,mz,H*0.11);bat.rotation.y=ang; // sloped footing read
+      { // outward normal for this segment (away from the ring centroid) → merlons + curb offsets
+        const dxa=(qx-px)/(Math.hypot(qx-px,qz-pz)||1),dza=(qz-pz)/(Math.hypot(qx-px,qz-pz)||1);
+        let nx2=-dza,nz2=dxa;
+        if(nx2*(mx-cx)+nz2*(mz-cz)<0){nx2=-nx2;nz2=-nz2;}
+        const mOff=WT/2-0.6;                                          // merlon band: outer edge
+        for(let m=1.4;m<L2-0.8;m+=2.2){
+          const t=m/L2,mxx=px+(qx-px)*t+nx2*mOff,mzz=pz+(qz-pz)*t+nz2*mOff;
+          const mer=putC(new THREE.Mesh(new THREE.BoxGeometry(1.15,1.2,1.1),wallM),mxx,mzz,H+0.6);mer.rotation.y=ang;}
+        const curb=putC(new THREE.Mesh(new THREE.BoxGeometry(L2+1.0,0.4,0.5),wallM),               // low inner curb
+          mx-nx2*(WT/2-0.3),mz-nz2*(WT/2-0.3),H+0.2);curb.rotation.y=ang;
+      }
       // ---- drum towers punctuate every ~26u of curtain run (§3a) ----
+      // TWO-PART TOWER (owner 2026-07-21: "u can walk in between through the tower… build the wall
+      // first, that u can walk on with guard rails, then build the hut with opening on top"): the
+      // WALL-WALK RUNS THROUGH every tower. Part 1 = solid base drum up to walk level (H). Part 2 =
+      // the turret HUT floating above an open walk-through band: two jamb walls on the inner/outer
+      // faces carry it, the two along-wall faces stay OPEN as doorways for the walk.
       const before=Math.floor(run/26);run+=L;
       if(Math.floor(run/26)>before&&!nearGate(p[0],p[1],9)){
-        const tw=new THREE.Group();
-        tw.add(new THREE.Mesh(new THREE.CylinderGeometry(4.5,5.2,H+5,10),wallM));
-        const crown=new THREE.Mesh(new THREE.CylinderGeometry(5.4,5.4,1.8,10),wallM);crown.position.y=(H+5)/2+0.9;tw.add(crown);
-        const roof=new THREE.Mesh(new THREE.ConeGeometry(5.0,5.5,10),roofM);roof.position.y=(H+5)/2+4.4;tw.add(roof);
-        putC(tw,p[0],p[1],(H+5)/2);}
+        const dxa2=(qx-px),dza2=(qz-pz),dl2=Math.hypot(dxa2,dza2)||1;
+        let tnx=-dza2/dl2,tnz=dxa2/dl2;                       // across-wall normal at this tower
+        if(tnx*(p[0]-cx)+tnz*(p[1]-cz)<0){tnx=-tnx;tnz=-tnz;}
+        const twAng=Math.atan2(-ZS*dza2,dxa2);
+        const base=new THREE.Group();                          // PART 1: base drum → walk level
+        base.add(new THREE.Mesh(new THREE.CylinderGeometry(4.7,5.4,H,10),wallM));
+        putC(base,p[0],p[1],H/2);
+        const OPEN=3.1;                                        // doorway band height above the walk
+        for(const sj of [1,-1]){                               // jambs on the inner+outer faces only
+          const j=putC(new THREE.Mesh(new THREE.BoxGeometry(7.6,OPEN,1.3),wallM),
+            p[0]+tnx*sj*3.4,p[1]+tnz*sj*3.4,H+OPEN/2);j.rotation.y=twAng;}
+        const hut=new THREE.Group();                           // PART 2: the turret hut above
+        hut.add(new THREE.Mesh(new THREE.CylinderGeometry(4.5,4.9,3.6,10),wallM));
+        const crown=new THREE.Mesh(new THREE.CylinderGeometry(5.4,5.4,1.6,10),wallM);crown.position.y=2.4;hut.add(crown);
+        const roof=new THREE.Mesh(new THREE.ConeGeometry(5.0,5.5,10),roofM);roof.position.y=5.7;hut.add(roof);
+        putC(hut,p[0],p[1],H+OPEN+1.8);}
     }
     // ---- gatehouses: twin towers + recessed arch + portcullis glow (§3a) ----
     for(const g of ring.gates||[]){
@@ -386,14 +414,24 @@ if(CG)(function(){
       const arch=putC(new THREE.Mesh(new THREE.BoxGeometry(off*2-4,H*0.55,3.4),wallM),gx,gz,H*0.85);arch.rotation.y=ang;
       const port=putC(new THREE.Mesh(new THREE.BoxGeometry(off*2-8.5,H*0.34,0.5),
         new THREE.MeshLambertMaterial({color:0x181a1f,emissive:0x2a2416,flatShading:true})),gx,gz,H*0.68);port.rotation.y=ang;
-      // STAIRS to the wall-walk (owner 2026-07-21): a stepped flight climbing the inside face
-      // beside each gatehouse — courtyard → parapet. Inward = toward the ring centroid.
+      // STAIRS to the wall-walk (owner 2026-07-21 ×2: "not sure how u walk up… faces wrong side").
+      // Real-castle read: the flight HUGS the inside face and runs PARALLEL to the wall — you
+      // climb alongside the curtain, away from the gate, and the top tread lands ON the parapet
+      // (a landing slab bridges tread → wall body). Treads face the direction of travel.
       const inx=cx-gx,inz=cz-gz,inL=Math.hypot(inx,inz)||1,ux=inx/inL,uz=inz/inL;
-      const STEPS=6;
-      for(let st=0;st<STEPS;st++){const fr=(st+1)/STEPS;
-        const sx=gx+ux*(4.5+st*1.5)+(-(uz))*6.5,sz=gz+uz*(4.5+st*1.5)+(ux)*6.5;   // beside the passage
-        const step=putC(new THREE.Mesh(new THREE.BoxGeometry(3.4,H*fr,1.6),wallM),sx,sz,H*fr/2);
-        step.rotation.y=Math.atan2(-ZS*uz,ux)+Math.PI/2;}
+      const wx2=-uz,wz2=ux;                                   // along-wall unit (travel direction)
+      const angW=Math.atan2(-ZS*wz2,wx2);                     // world yaw of the travel direction
+      const STEPS=7,TREAD=1.8,SW=3.2,INSET=3.6;               // tread depth, stair width, hug offset
+      for(const side of [1,-1]){                              // one flight each side of the gate
+        for(let st=0;st<STEPS;st++){const fr=(st+1)/STEPS;
+          const along=side*(12.4+st*TREAD);
+          const sx=gx+wx2*along+ux*INSET, sz=gz+wz2*along+uz*INSET;
+          const step=putC(new THREE.Mesh(new THREE.BoxGeometry(TREAD+0.12,H*fr,SW),wallM),sx,sz,H*fr/2);
+          step.rotation.y=angW;}
+        const la=side*(12.4+STEPS*TREAD+0.6);                  // landing: top tread → wall body
+        const land=putC(new THREE.Mesh(new THREE.BoxGeometry(3.2,0.9,SW+2.2),wallM),
+          gx+wx2*la+ux*(INSET-1.1), gz+wz2*la+uz*(INSET-1.1), H-0.45);
+        land.rotation.y=angW;}
     }
   }
   // ---- the KEEP: tiers climb, corner turrets, roof + banner — the silhouette (§1 rule 3) ----

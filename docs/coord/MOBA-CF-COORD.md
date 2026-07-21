@@ -433,3 +433,10 @@ data contract + T1–T8 matrix), `data/moba-maps/siege-test.json` (A1 + `_siegeT
 sim score 100) + `.artifact.json`, builder `map-service/tools/make_siege_test.mjs`. → EF Moba:
 implement R1–R6 in sim, headless-assert the matrix off the file. → BattleEngine RAW: breach/
 drawbridge/tier visuals. CF locks R6 numbers after testing.
+
+**2026-07-21 (4) — castle kit round 3 (owner review feedback, all shipped):** wall = WALK-WIDE
+(4.2u ≈ 3.1 m top), merlons moved to the OUTER edge only (guard rail; inner low curb) — no more
+ladder read; TOWERS are TWO-PART (solid base to walk level + turret hut floated above an open
+doorway band) so the wall-walk passes THROUGH every tower — mirror this in the real client kit;
+stairs = wall-hugging parallel flights, treads facing travel, landing onto the parapet, moved clear
+of the gatehouse drums. Data contract unchanged (visual kit only).
