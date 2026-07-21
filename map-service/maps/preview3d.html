@@ -448,13 +448,20 @@ if(CG)(function(){
                   sz=par.p2[1]+par.dz2*al+nz3*(2.1+SW/2);
             const step=putC(new THREE.Mesh(new THREE.BoxGeometry(TREAD+0.12,H*fr,SW),wallM),sx,sz,H*fr/2);
             step.rotation.y=aW;}                               // box x-axis = travel = along the wall
-        }else for(let st=0;st<STEPS;st++){                     // PERPENDICULAR fallback
-          const fr=(st+1)/STEPS,
-                dOut=2.1+0.6+(STEPS-1-st)*TREAD;               // distance out from the wall centerline
-          const bxp=gx+wdx*side*ALONG, bzp=gz+wdz*side*ALONG;
-          const sx=bxp+ux*dOut, sz=bzp+uz*dOut;
-          const step=putC(new THREE.Mesh(new THREE.BoxGeometry(SW,H*fr,TREAD+0.12),wallM),sx,sz,H*fr/2);
-          step.rotation.y=ang;}                                // box z-axis = across-wall = travel
+        }else{                                                 // PERPENDICULAR fallback (small rings)
+          // Ring-size rule (owner 2026-07-21): the flight may stretch WIDER THAN THE RADIUS but
+          // must stay UNDER THE DIAMETER — on tiny rings compress the treads (steeper flight) so
+          // the run fits inside the courtyard instead of hitting the far wall.
+          const maxRun=Math.max(3.5,rAvg*1.7-2.7);             // < diameter, with margin
+          const tread2=Math.min(TREAD,maxRun/STEPS);
+          for(let st=0;st<STEPS;st++){
+            const fr=(st+1)/STEPS,
+                  dOut=2.1+0.6+(STEPS-1-st)*tread2;            // distance out from the wall centerline
+            const bxp=gx+wdx*side*ALONG, bzp=gz+wdz*side*ALONG;
+            const sx=bxp+ux*dOut, sz=bzp+uz*dOut;
+            const step=putC(new THREE.Mesh(new THREE.BoxGeometry(SW,H*fr,tread2+0.12),wallM),sx,sz,H*fr/2);
+            step.rotation.y=ang;}                              // box z-axis = across-wall = travel
+        }
       }
     }
   }
