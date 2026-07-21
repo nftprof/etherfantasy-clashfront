@@ -116,6 +116,34 @@ export function ensureDesign(parcel) {
   return { row: save(parcel, artifact, "SEED_V0"), artifact };
 }
 
+// Adopt a PRE-BUILT artifact into the registry (e.g. the committed SIEGE-TEST-1 siege map, seeded
+// at server boot so the live 3D/command viewers can serve it). Rows adopt as OWNER_FROZEN — a
+// hand-authored map must never be self-heal reseeded (parcelFacts cannot rebuild its injected
+// worldField; a reseed would silently replace the siege arena with a default square). Idempotent:
+// an existing row at >= the artifact's version wins.
+export function adoptArtifact(parcelId, artifact) {
+  const id = String(parcelId), v = artifact?.meta?.designVersion ?? 0;
+  const prior = getRow(id);
+  if (prior && prior.designVersion >= v) return prior;
+  fs.mkdirSync(pDir(id), { recursive: true });
+  fs.writeFileSync(artPath(id, v), JSON.stringify(artifact));
+  const idx = loadIdx();
+  const row = (idx[id] = {
+    parcelId: id, designVersion: v, status: "OWNER_FROZEN",
+    seed: artifact.meta?.seed ?? 0, biome: "", zone: artifact.meta?.zone || "",
+    sizeClass: artifact.arena?.sizeM, laneCount: artifact.laneCount,
+    archetype: artifact.meta?.params?.archetype, palette: artifact.meta?.params?.palette,
+    lastGeneratedAt: 0, thumbnailPath: null, adopted: true,
+    sim: artifact.meta?.sim || null, approved: artifact.meta?.sim?.pass !== false,
+  });
+  try {
+    fs.writeFileSync(path.join(pDir(id), `thumb.v${v}.png`), renderThumb(artifact));
+    row.thumbnailPath = path.join(id, `thumb.v${v}.png`);
+  } catch (e) { console.error("[maps] adopt thumb:", e.message); }
+  saveIdx();
+  return row;
+}
+
 // landowner CT re-investment (driven by the overworld economy; admin-set during testing).
 // Raises the parcel's content budget — takes effect on the NEXT regenerate (next battle loads it).
 export function setInvest(parcelId, level) {

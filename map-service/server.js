@@ -152,6 +152,26 @@ export const createMapServer = () => http.createServer(handleRequest);
 const entry = process.env["pm_exec_path"] || process.argv[1] || "";
 const isMain = import.meta.url === `file://${entry}`;
 if (isMain) {
+  // Seed the committed SIEGE-TEST-1 siege map into the registry at boot (owner review + the MOBA
+  // siege-mechanics test — docs/briefs/SIEGE-MECHANICS-SPEC.md). Idempotent; adopt = OWNER_FROZEN
+  // so the self-heal reseeder never replaces the hand-authored arena. Candidates cover the box
+  // layout (map-service/data, shipped by the map-service rsync) and the repo layout.
+  try {
+    if (!reg.getRow("SIEGE-TEST-1")) {
+      for (const p of [
+        path.join(__dirname, "data/siege-test.artifact.json"),
+        path.join(dataRoot(), "siege-test.artifact.json"),
+        path.join(dataRoot(), "moba-maps/siege-test.artifact.json"),
+      ]) {
+        try {
+          const art = JSON.parse(fs.readFileSync(p, "utf8"));
+          reg.adoptArtifact("SIEGE-TEST-1", art);
+          console.log(`[map-service] seeded SIEGE-TEST-1 from ${p}`);
+          break;
+        } catch { /* next candidate */ }
+      }
+    }
+  } catch (e) { console.warn("[map-service] siege-test seed skipped:", e && e.message); }
   const srv = createMapServer();
   srv.on("error", (e) => {
     // fail LOUDLY on a port clash so a misconfigured port never silently 404s behind nginx
