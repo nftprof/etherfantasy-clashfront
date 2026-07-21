@@ -414,24 +414,25 @@ if(CG)(function(){
       const arch=putC(new THREE.Mesh(new THREE.BoxGeometry(off*2-4,H*0.55,3.4),wallM),gx,gz,H*0.85);arch.rotation.y=ang;
       const port=putC(new THREE.Mesh(new THREE.BoxGeometry(off*2-8.5,H*0.34,0.5),
         new THREE.MeshLambertMaterial({color:0x181a1f,emissive:0x2a2416,flatShading:true})),gx,gz,H*0.68);port.rotation.y=ang;
-      // STAIRS to the wall-walk (owner 2026-07-21 ×2: "not sure how u walk up… faces wrong side").
-      // Real-castle read: the flight HUGS the inside face and runs PARALLEL to the wall — you
-      // climb alongside the curtain, away from the gate, and the top tread lands ON the parapet
-      // (a landing slab bridges tread → wall body). Treads face the direction of travel.
-      const inx=cx-gx,inz=cz-gz,inL=Math.hypot(inx,inz)||1,ux=inx/inL,uz=inz/inL;
-      const wx2=-uz,wz2=ux;                                   // along-wall unit (travel direction)
-      const angW=Math.atan2(-ZS*wz2,wx2);                     // world yaw of the travel direction
-      const STEPS=7,TREAD=1.8,SW=3.2,INSET=3.6;               // tread depth, stair width, hug offset
+      // STAIRS to the wall-walk (owner 2026-07-21 ×3: "all stairs should be PERPENDICULAR to the
+      // inner wall face to walk up"). The flight comes straight OUT of the wall into the courtyard
+      // at 90°: base tread farthest from the wall at ground level, each tread closer AND higher,
+      // top tread flush against the inner face at parapet height. Direction comes from the gate's
+      // LOCAL wall tangent (bx,bz — already looked up for the gatehouse), not the ring centroid,
+      // so a bend in the ring can never skew the flight across the wall line.
+      const bL=Math.hypot(bx,bz)||1,wdx=bx/bL,wdz=bz/bL;      // local along-wall unit
+      let ux=-wdz,uz=wdx;                                     // inner normal (toward the courtyard)
+      if(ux*(cx-gx)+uz*(cz-gz)<0){ux=-ux;uz=-uz;}
+      const STEPS=7,TREAD=1.6,SW=3.4,ALONG=13.5;              // flight sits clear of the gatehouse
       for(const side of [1,-1]){                              // one flight each side of the gate
-        for(let st=0;st<STEPS;st++){const fr=(st+1)/STEPS;
-          const along=side*(12.4+st*TREAD);
-          const sx=gx+wx2*along+ux*INSET, sz=gz+wz2*along+uz*INSET;
-          const step=putC(new THREE.Mesh(new THREE.BoxGeometry(TREAD+0.12,H*fr,SW),wallM),sx,sz,H*fr/2);
-          step.rotation.y=angW;}
-        const la=side*(12.4+STEPS*TREAD+0.6);                  // landing: top tread → wall body
-        const land=putC(new THREE.Mesh(new THREE.BoxGeometry(3.2,0.9,SW+2.2),wallM),
-          gx+wx2*la+ux*(INSET-1.1), gz+wz2*la+uz*(INSET-1.1), H-0.45);
-        land.rotation.y=angW;}
+        const bxp=gx+wdx*side*ALONG, bzp=gz+wdz*side*ALONG;   // flight anchor on the inner face
+        for(let st=0;st<STEPS;st++){
+          const fr=(st+1)/STEPS,                              // height fraction (1 = parapet)
+                dOut=2.1+0.6+(STEPS-1-st)*TREAD;              // distance out from the wall centerline
+          const sx=bxp+ux*dOut, sz=bzp+uz*dOut;
+          const step=putC(new THREE.Mesh(new THREE.BoxGeometry(SW,H*fr,TREAD+0.12),wallM),sx,sz,H*fr/2);
+          step.rotation.y=ang;}                               // box z-axis = across-wall = travel
+      }
     }
   }
   // ---- the KEEP: tiers climb, corner turrets, roof + banner — the silhouette (§1 rule 3) ----
