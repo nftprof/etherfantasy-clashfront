@@ -25,6 +25,7 @@ const MAX_TIME = 2 ** 48 - 1;
 export type IdPrefix =
   | 'player'
   | 'hero'
+  | 'pet'      // docs/08 §ids: pet_… (worker/battle pet bodies)
   | 'terr'
   | 'army'
   | 'battle'

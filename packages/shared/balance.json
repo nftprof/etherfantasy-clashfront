@@ -259,6 +259,23 @@
     "lootWindowTicks": 1440,
     "journalYieldBatchTicks": 20
   },
+  "workers": {
+    "_note": "⚙ Worker pets + stockpile (WORLD-BUILD-OUT-PLAN wave 1, owner 2026-07-17). Per-worker per-DAY outputs (integer carry per tick like food). MINE fills the territory stockpile (gold goes to ctTreasury as ct_units); FARM adds foodStock; CRAFT converts stockpile → arms at a workshop (MILITARY ≥ workshopMinMil); GUARD adds raid defense. affinityBonus multiplies output when species element matches the biome (Fire on volcanic etc). Fur sheds per species class: WARM 0.5/day, LEAF 0.2, PHANTOM 0.1, NONE 0 (aptitudes.csv species classes).",
+    "mineGoldPerDay": 200,
+    "mineWoodPerDay": 1,
+    "mineIronPerDay": 1,
+    "mineStonePerDay": 1,
+    "mineRareMetalPerDay": 0.05,
+    "farmFoodPerDay": 3,
+    "craftArmsPerDay": 1,
+    "workshopMinMil": 2,
+    "affinityBonus": 0.25,
+    "furWarmPerDay": 0.5,
+    "furLeafPerDay": 0.2,
+    "furPhantomPerDay": 0.1,
+    "maxWorkersPerTerritory": 20,
+    "guardStrength": 15
+  },
   "training": {
     "_note": "Training takes time ⚙ (Feature Set 3 E2 — the anti-whale wall). Raising an army pays the FULL cost up-front (through the splitter) but spawns a MUSTERING shell: soldiers materialize at baseRatePerTick × (1 + MIL_level × milRateBonus) per tick (TRAINING sub-phase of PRODUCTION). One active queue per territory. A mustering army cannot march; if attacked it fights with the troops trained so far × musterPenalty. baseRatePerTick 25 ⇒ a STANDARD army (200 soldiers) completes in 8 demo ticks (≈40 s at the 5 s demo tick).",
     "baseRatePerTick": 25,

@@ -292,6 +292,9 @@ export function loadDemoWorld(file: DemoWorldFile, rng: Rng, options: LoadDemoWo
     wildBattles: new Map(),
     engineBattles: new Map(),
     reinforcementQueue: new Map(),
+    stockpiles: new Map(),
+    workerPets: new Map(),
+    stockpileCarry: new Map(),
   };
 
   // Genesis CT is a marked faucet (E5): the seeded territory/town treasuries

@@ -74,6 +74,13 @@ import {
   razeTerritory,
   type ReinforcementQueueEntry,
   withdrawReinforcement,
+  assignWorkerPet,
+  recallWorkerPet,
+  type Stockpile,
+  stockpileOf,
+  type WorkerPet,
+  type WorkerRole,
+  workersAt,
   resolvePostVictory,
   runTick,
   type SettlementRecord,
@@ -575,6 +582,10 @@ interface SerializedWorldState {
   engineBattles?: [string, EngineBattleState][];
   /** Reinforcement queue (Scenario H, REINFORCEMENT-LANE-QUEUE.md). Optional for older saves. */
   reinforcementQueue?: [string, ReinforcementQueueEntry[]][];
+  /** Wave 1 (WORLD-BUILD-OUT-PLAN): territory stockpiles + worker pets + production carries. Optional for older saves. */
+  stockpiles?: [string, Stockpile][];
+  workerPets?: [string, WorkerPet][];
+  stockpileCarry?: [string, Partial<Record<string, number>>][];
   /** Feature Set 3 (circular economy). All optional for pre-FS3 saves. */
   economy?: EconomyState;
   enrichmentPools?: [string, number][];
@@ -1487,6 +1498,57 @@ export class Game {
    * to march the army away from the locked hex (otherwise it'll be re-offered
    * next tick).
    */
+  /**
+   * Wave 1 — assign a worker pet to a governed territory (MINE/FARM/CRAFT/
+   * GUARD). Species/element/furClass come from the client's roster pick; the
+   * sim only validates governance + the ⚙ per-territory worker cap.
+   */
+  assignWorker(
+    governorId: string,
+    territoryId: unknown,
+    species: unknown,
+    element: unknown,
+    furClass: unknown,
+    role: unknown,
+  ): { pet: WorkerPet; workers: number } {
+    if (typeof territoryId !== 'string') throw new ApiError(400, 'BAD_TERRITORY', 'territoryId must be a string');
+    if (typeof species !== 'string' || species.length === 0) throw new ApiError(400, 'BAD_SPECIES', 'species must be a string');
+    const el = typeof element === 'string' && element.length > 0 ? element : 'Neutral';
+    const fc = typeof furClass === 'string' && ['WARM', 'LEAF', 'PHANTOM', 'NONE'].includes(furClass) ? furClass : 'NONE';
+    if (role !== 'MINE' && role !== 'FARM' && role !== 'CRAFT' && role !== 'GUARD') {
+      throw new ApiError(400, 'BAD_ROLE', "role must be MINE | FARM | CRAFT | GUARD");
+    }
+    try {
+      const pet = assignWorkerPet(
+        this.state, governorId, territoryId, species, el, fc, role as WorkerRole,
+        this.baseRng.fork(`worker/${this.orderSeq++}`), this.balance,
+      );
+      return { pet, workers: workersAt(this.state, territoryId).length };
+    } catch (e) {
+      throw translateSimError(e);
+    }
+  }
+
+  /** Wave 1 — recall a worker pet (walks home; never lost). */
+  recallWorker(governorId: string, petId: unknown): { recalled: boolean } {
+    if (typeof petId !== 'string') throw new ApiError(400, 'BAD_PET', 'petId must be a string');
+    try {
+      recallWorkerPet(this.state, governorId, petId);
+      return { recalled: true };
+    } catch (e) {
+      throw translateSimError(e);
+    }
+  }
+
+  /** Wave 1 — a governed territory's stockpile + worker roster. */
+  territoryStock(governorId: string, territoryId: unknown): { stockpile: Stockpile; workers: WorkerPet[] } {
+    if (typeof territoryId !== 'string') throw new ApiError(400, 'BAD_TERRITORY', 'territoryId must be a string');
+    const terr = this.state.territories.get(territoryId);
+    if (terr === undefined) throw new ApiError(404, 'NO_SUCH_TERRITORY', `no such territory ${territoryId}`);
+    if (terr.governorId !== governorId) throw new ApiError(403, 'NOT_YOUR_TERRITORY', 'not your territory');
+    return { stockpile: stockpileOf(this.state, territoryId), workers: workersAt(this.state, territoryId) };
+  }
+
   withdrawReinforcement(
     governorId: string,
     battleId: unknown,
@@ -3389,6 +3451,9 @@ function serializeWorldState(state: WorldState): SerializedWorldState {
     wildBattles: [...(state.wildBattles ?? new Map<string, WildBattleState>()).entries()],
     engineBattles: [...(state.engineBattles ?? new Map<string, EngineBattleState>()).entries()],
     reinforcementQueue: [...(state.reinforcementQueue ?? new Map<string, ReinforcementQueueEntry[]>()).entries()],
+    stockpiles: [...(state.stockpiles ?? new Map<string, Stockpile>()).entries()],
+    workerPets: [...(state.workerPets ?? new Map<string, WorkerPet>()).entries()],
+    stockpileCarry: [...(state.stockpileCarry ?? new Map<string, Partial<Record<string, number>>>()).entries()],
     economy: ensureEconomy(state),
     enrichmentPools: [...(state.enrichmentPools ?? new Map<string, number>()).entries()],
     enrichCarry: [...(state.enrichCarry ?? new Map<string, number>()).entries()],
@@ -3429,6 +3494,9 @@ function deserializeWorldState(s: SerializedWorldState): WorldState {
     wildBattles: new Map(s.wildBattles ?? []),
     engineBattles: new Map(s.engineBattles ?? []),
     reinforcementQueue: new Map(s.reinforcementQueue ?? []),
+    stockpiles: new Map(s.stockpiles ?? []),
+    workerPets: new Map(s.workerPets ?? []),
+    stockpileCarry: new Map(s.stockpileCarry ?? []),
     ...(s.economy !== undefined ? { economy: s.economy } : {}),
     enrichmentPools: new Map(s.enrichmentPools ?? []),
     enrichCarry: new Map(s.enrichCarry ?? []),

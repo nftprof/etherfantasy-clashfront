@@ -904,6 +904,15 @@ export class ClashServer {
         case '/api/reinforcement/withdraw':
           sendJson(res, 200, this.game.withdrawReinforcement(session.governorId, body.battleId, body.armyId));
           return;
+        case '/api/worker/assign':
+          sendJson(res, 200, this.game.assignWorker(session.governorId, body.territoryId, body.species, body.element, body.furClass, body.role));
+          return;
+        case '/api/worker/recall':
+          sendJson(res, 200, this.game.recallWorker(session.governorId, body.petId));
+          return;
+        case '/api/territory/stock':
+          sendJson(res, 200, this.game.territoryStock(session.governorId, body.territoryId));
+          return;
         case '/api/exhibition':
           sendJson(res, 200, this.startExhibition(session.governorId, session.name, body.parcelId, body.joinUrl));
           return;

@@ -235,6 +235,35 @@ export interface Balance {
     /** Per-governor yield REWARDs flush into the settlement journal every N ticks. */
     journalYieldBatchTicks: number;
   };
+  /**
+   * ⚙ Worker pets + stockpile production (WORLD-BUILD-OUT-PLAN wave 1,
+   * owner 2026-07-17). Per-worker per-day outputs, biome affinity bonus,
+   * fur shedding by species class, worker caps.
+   */
+  workers: {
+    /** MINE output per worker per day: gold (ct_units), wood, plus biome-weighted extras. */
+    mineGoldPerDay: number;
+    mineWoodPerDay: number;
+    /** Chance-weighted iron/stone/rareMetal units per MINE worker per day (biome multiplies). */
+    mineIronPerDay: number;
+    mineStonePerDay: number;
+    mineRareMetalPerDay: number;
+    /** FARM output: food per worker per day. */
+    farmFoodPerDay: number;
+    /** CRAFT: arms produced per worker per day at a workshop (⚙ MILITARY level ≥ workshopMinMil). */
+    craftArmsPerDay: number;
+    workshopMinMil: number;
+    /** Species-affinity production multiplier on a matching biome. */
+    affinityBonus: number;
+    /** Fur shed per worker per day, by species fur class. */
+    furWarmPerDay: number;
+    furLeafPerDay: number;
+    furPhantomPerDay: number;
+    /** Max worker pets per territory (scales with enrichment later). */
+    maxWorkersPerTerritory: number;
+    /** GUARD role: strength contribution per guard pet when the parcel is raided. */
+    guardStrength: number;
+  };
   /** Training queues ⚙ — Feature Set 3 E2 (docs/briefs/FEATURESET-3-ECONOMY.md). */
   training: {
     /** Soldiers materialized per tick at MIL level 0. */

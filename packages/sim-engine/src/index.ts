@@ -15,3 +15,4 @@ export * from './engineBattle';
 export * from './duel';
 export * from './build';
 export * from './weather';
+export * from './workers';

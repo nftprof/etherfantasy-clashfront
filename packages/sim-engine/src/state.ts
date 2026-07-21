@@ -203,6 +203,13 @@ export interface WorldState {
    * governor withdraws its army (server API). Plain-JSON, snapshot-safe.
    */
   reinforcementQueue?: Map<string, ReinforcementQueueEntry[]>;
+  // ── Wave 1: resource foundation (WORLD-BUILD-OUT-PLAN, owner 2026-07-17) ──
+  /** territoryId → material stockpile (map-based; CT is account-based). */
+  stockpiles?: Map<string, Stockpile>;
+  /** workerPetId → worker pet deployment (MINE/FARM/CRAFT/GUARD on a parcel). */
+  workerPets?: Map<string, WorkerPet>;
+  /** territoryId → fractional production carries per resource (integer, /TICKS_PER_DAY units). */
+  stockpileCarry?: Map<string, Partial<Record<string, number>>>;
 }
 
 /**
@@ -261,6 +268,52 @@ export interface ReinforcementQueueEntry {
   /** True when the army carries a Master (heroes join immediately, don't count vs soldierCapLive). */
   hasHero: boolean;
   queuedTick: number;
+}
+
+/**
+ * Territory stockpile — the map-based material store (WORLD-BUILD-OUT-PLAN
+ * wave 1, owner 2026-07-17). Materials are MAP-based (mined where they sit);
+ * CT is ACCOUNT-based. Fed by MINE worker pets; consumed by CRAFT (arms),
+ * fortification upgrades, and caravan cargo loading. Engine container field
+ * (canonical docs/08 Territory untouched — same pattern as enrichmentPools).
+ */
+export interface Stockpile {
+  wood: number;
+  iron: number;
+  stone: number;
+  rareMetal: number;
+  fur: number;
+  /** Crafted arms by unit class (elite hire consumes 1). */
+  arms: Partial<Record<string, number>>;
+}
+
+export function emptyStockpile(): Stockpile {
+  return { wood: 0, iron: 0, stone: 0, rareMetal: 0, fur: 0, arms: {} };
+}
+
+/**
+ * A worker pet deployed on a parcel (wave 1). Pets are commodity BODIES
+ * (uncapped — the NFT blueprint is what's scarce, decision 18). Each worker
+ * has a species (element + fur class from pets-aptitudes) and a role.
+ *   MINE  → stockpile materials (biome-weighted)
+ *   FARM  → territory foodStock
+ *   CRAFT → converts stockpile materials into arms (needs workshop ⚙)
+ *   GUARD → defensive contribution when the parcel is raided
+ * All roles shed fur per species furClass (warm 0.5/day, leaf 0.2, phantom
+ * 0.1, none 0).
+ */
+export type WorkerRole = 'MINE' | 'FARM' | 'CRAFT' | 'GUARD';
+
+export interface WorkerPet {
+  id: string;                  // pet_…
+  ownerGovernorId: string;
+  species: string;             // roster name (e.g. 'Chulember')
+  element: string;             // t1 from pets-aptitudes (e.g. 'Fire')
+  /** Fur shedding class: WARM | LEAF | PHANTOM | NONE. */
+  furClass: string;
+  assignedTerritoryId: string;
+  role: WorkerRole;
+  assignedTick: number;
 }
 
 /**
