@@ -913,6 +913,12 @@ export class ClashServer {
         case '/api/territory/stock':
           sendJson(res, 200, this.game.territoryStock(session.governorId, body.territoryId));
           return;
+        case '/api/market/trade':
+          sendJson(res, 200, this.game.marketTrade(session.governorId, body.territoryId, body.resource, body.side, body.units));
+          return;
+        case '/api/market/info':
+          sendJson(res, 200, this.game.marketInfo(body.territoryId));
+          return;
         case '/api/exhibition':
           sendJson(res, 200, this.startExhibition(session.governorId, session.name, body.parcelId, body.joinUrl));
           return;

@@ -210,6 +210,12 @@ export interface WorldState {
   workerPets?: Map<string, WorkerPet>;
   /** territoryId → fractional production carries per resource (integer, /TICKS_PER_DAY units). */
   stockpileCarry?: Map<string, Partial<Record<string, number>>>;
+  /**
+   * Wave 2: per-parcel AMM markets — territoryId → resource → constant-product
+   * pool (market.ts). Seeded lazily on first trade; depth scales with
+   * enrichment tier. Plain JSON, snapshot-safe.
+   */
+  markets?: Map<string, Partial<Record<string, { resource: number; gold: number }>>>;
 }
 
 /**

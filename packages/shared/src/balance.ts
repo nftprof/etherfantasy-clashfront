@@ -264,6 +264,36 @@ export interface Balance {
     /** GUARD role: strength contribution per guard pet when the parcel is raided. */
     guardStrength: number;
   };
+  /**
+   * ⚙ AMM local markets (WORLD-BUILD-OUT-PLAN wave 2, owner 2026-07-17).
+   * Constant-product pools per (parcel, resource); fees tighten with
+   * enrichment tier; system balancer fixes only egregious gaps.
+   */
+  market: {
+    /** Baseline gold price per unit (the "if perfectly balanced" NPC-TRADE-RATIOS reference). */
+    priceFood: number;
+    priceWood: number;
+    priceStone: number;
+    priceIron: number;
+    priceFur: number;
+    priceRareMetal: number;
+    /** Units of resource seeded into a fresh T0 pool (gold side = units × baseline). */
+    seedUnits: number;
+    /** Extra depth multiplier per enrichment tier (T5 pool = seedUnits × (1 + 5×this)). */
+    depthPerTier: number;
+    /** Cumulative enrichment-pool ct_units to reach T1..T5 (SINGLE-parcel ladder). */
+    tierThresholdsCt: number[];
+    /** Per-side fee fraction by tier (index 0 = T0). Fees burn. */
+    feeByTier: number[];
+    /** Balancer: min relative gap (hi/lo − 1) before it intervenes. */
+    balancerMinGapPct: number;
+    /** Balancer: max gold spent per game-day across all trades. */
+    balancerMaxGoldPerDay: number;
+    /** Balancer: max trades per game-day. */
+    balancerMaxTradesPerDay: number;
+    /** Balancer: units moved per trade lot. */
+    balancerLotUnits: number;
+  };
   /** Training queues ⚙ — Feature Set 3 E2 (docs/briefs/FEATURESET-3-ECONOMY.md). */
   training: {
     /** Soldiers materialized per tick at MIL level 0. */

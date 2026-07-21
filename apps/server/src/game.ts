@@ -81,6 +81,15 @@ import {
   type WorkerPet,
   type WorkerRole,
   workersAt,
+  MARKET_RESOURCES,
+  type MarketResource,
+  marketBuy,
+  marketSell,
+  poolOf,
+  spotPrice,
+  enrichmentTier,
+  marketFee,
+  type TradeResult,
   resolvePostVictory,
   runTick,
   type SettlementRecord,
@@ -586,6 +595,8 @@ interface SerializedWorldState {
   stockpiles?: [string, Stockpile][];
   workerPets?: [string, WorkerPet][];
   stockpileCarry?: [string, Partial<Record<string, number>>][];
+  /** Wave 2: per-parcel AMM pools. Optional for older saves. */
+  markets?: [string, Partial<Record<string, { resource: number; gold: number }>>][];
   /** Feature Set 3 (circular economy). All optional for pre-FS3 saves. */
   economy?: EconomyState;
   enrichmentPools?: [string, number][];
@@ -1538,6 +1549,49 @@ export class Game {
     } catch (e) {
       throw translateSimError(e);
     }
+  }
+
+  /** Wave 2 — trade at a parcel's AMM market (BUY from pool / SELL from stockpile). */
+  marketTrade(
+    governorId: string,
+    territoryId: unknown,
+    resource: unknown,
+    side: unknown,
+    units: unknown,
+  ): TradeResult & { ctUnits: number } {
+    if (typeof territoryId !== 'string') throw new ApiError(400, 'BAD_TERRITORY', 'territoryId must be a string');
+    if (typeof resource !== 'string' || !(MARKET_RESOURCES as readonly string[]).includes(resource)) {
+      throw new ApiError(400, 'BAD_RESOURCE', `resource must be one of ${MARKET_RESOURCES.join(', ')}`);
+    }
+    if (side !== 'BUY' && side !== 'SELL') throw new ApiError(400, 'BAD_SIDE', "side must be 'BUY' or 'SELL'");
+    if (typeof units !== 'number' || !Number.isInteger(units) || units <= 0) {
+      throw new ApiError(400, 'BAD_UNITS', 'units must be a positive integer');
+    }
+    try {
+      const r = side === 'BUY'
+        ? marketBuy(this.state, governorId, territoryId, resource as MarketResource, units, this.balance)
+        : marketSell(this.state, governorId, territoryId, resource as MarketResource, units, this.balance);
+      return { ...r, ctUnits: this.state.ctBalances?.get(governorId) ?? 0 };
+    } catch (e) {
+      throw translateSimError(e);
+    }
+  }
+
+  /** Wave 2 — a parcel's market card: spot prices, tier, fee, pool depths. */
+  marketInfo(territoryId: unknown): {
+    tier: number;
+    feePct: number;
+    prices: Record<string, { spot: number; poolResource: number; poolGold: number }>;
+  } {
+    if (typeof territoryId !== 'string') throw new ApiError(400, 'BAD_TERRITORY', 'territoryId must be a string');
+    if (!this.state.territories.has(territoryId)) throw new ApiError(404, 'NO_SUCH_TERRITORY', `no such territory ${territoryId}`);
+    const tier = enrichmentTier(this.state, territoryId, this.balance);
+    const prices: Record<string, { spot: number; poolResource: number; poolGold: number }> = {};
+    for (const r of MARKET_RESOURCES) {
+      const pool = poolOf(this.state, territoryId, r, this.balance);
+      prices[r] = { spot: Math.round(spotPrice(pool) * 100) / 100, poolResource: pool.resource, poolGold: pool.gold };
+    }
+    return { tier, feePct: marketFee(tier, this.balance), prices };
   }
 
   /** Wave 1 — a governed territory's stockpile + worker roster. */
@@ -3454,6 +3508,7 @@ function serializeWorldState(state: WorldState): SerializedWorldState {
     stockpiles: [...(state.stockpiles ?? new Map<string, Stockpile>()).entries()],
     workerPets: [...(state.workerPets ?? new Map<string, WorkerPet>()).entries()],
     stockpileCarry: [...(state.stockpileCarry ?? new Map<string, Partial<Record<string, number>>>()).entries()],
+    markets: [...(state.markets ?? new Map<string, Partial<Record<string, { resource: number; gold: number }>>>()).entries()],
     economy: ensureEconomy(state),
     enrichmentPools: [...(state.enrichmentPools ?? new Map<string, number>()).entries()],
     enrichCarry: [...(state.enrichCarry ?? new Map<string, number>()).entries()],
@@ -3497,6 +3552,7 @@ function deserializeWorldState(s: SerializedWorldState): WorldState {
     stockpiles: new Map(s.stockpiles ?? []),
     workerPets: new Map(s.workerPets ?? []),
     stockpileCarry: new Map(s.stockpileCarry ?? []),
+    markets: new Map(s.markets ?? []),
     ...(s.economy !== undefined ? { economy: s.economy } : {}),
     enrichmentPools: new Map(s.enrichmentPools ?? []),
     enrichCarry: new Map(s.enrichCarry ?? []),

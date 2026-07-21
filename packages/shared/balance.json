@@ -276,6 +276,23 @@
     "maxWorkersPerTerritory": 20,
     "guardStrength": 15
   },
+  "market": {
+    "_note": "⚙ AMM local markets (WORLD-BUILD-OUT-PLAN wave 2, owner 2026-07-17). Every parcel = its own constant-product pool per resource (x·y=k, Uniswap-style): buy raises price, sell lowers it — real supply/demand. Baseline prices = the NPC-TRADE-RATIOS reference (food/wood 2, stone 3, iron 5, fur 10, rareMetal 50 gold). Fees per side by enrichment tier (T0 25% → T5 5%) — fees BURN (net-sink). Pool depth scales with tier. System balancer = invisible capped NPC arbitrageur: only intervenes on gaps ≥ balancerMinGapPct (30%), bounded per game-day, leaving normal 10-25% regional gaps to player traders (the owner's 'blanket cover' rule).",
+    "priceFood": 2,
+    "priceWood": 2,
+    "priceStone": 3,
+    "priceIron": 5,
+    "priceFur": 10,
+    "priceRareMetal": 50,
+    "seedUnits": 100,
+    "depthPerTier": 4.8,
+    "tierThresholdsCt": [50000, 200000, 500000, 850000, 1200000],
+    "feeByTier": [0.25, 0.2, 0.15, 0.1, 0.075, 0.05],
+    "balancerMinGapPct": 0.3,
+    "balancerMaxGoldPerDay": 10000,
+    "balancerMaxTradesPerDay": 100,
+    "balancerLotUnits": 10
+  },
   "training": {
     "_note": "Training takes time ⚙ (Feature Set 3 E2 — the anti-whale wall). Raising an army pays the FULL cost up-front (through the splitter) but spawns a MUSTERING shell: soldiers materialize at baseRatePerTick × (1 + MIL_level × milRateBonus) per tick (TRAINING sub-phase of PRODUCTION). One active queue per territory. A mustering army cannot march; if attacked it fights with the troops trained so far × musterPenalty. baseRatePerTick 25 ⇒ a STANDARD army (200 soldiers) completes in 8 demo ticks (≈40 s at the 5 s demo tick).",
     "baseRatePerTick": 25,

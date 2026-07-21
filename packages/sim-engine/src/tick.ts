@@ -41,6 +41,7 @@ import { updateIntelMemory } from './intel';
 import { battleFoodNeed, enduranceMultiplier, marchFoodPerStep, troopCount } from './logistics';
 import { type ArmyRetreatRecord, type BattleLogisticsRecord, sortedIds, type WorldState } from './state';
 import { createWildBattle, stepWildBattle, type WildBattleState, wildBattleSurvivors } from './wildBattle';
+import { runMarketBalancer } from './market';
 import { runWorkerProduction } from './workers';
 
 // ── Tick options (demo-tunable knobs; server config overrides these) ──────────
@@ -228,6 +229,9 @@ function phaseProduction(state: WorldState, tick: number, _rng: Rng, balance: Ba
   }
   // Wave 1 (WORLD-BUILD-OUT-PLAN): worker pets produce into stockpiles.
   runWorkerProduction(state, balance);
+  // Wave 2: the market balancer arbitrages egregious cross-parcel price gaps
+  // once per game-day (capped; leaves normal gaps to player traders).
+  if (tick % TICKS_PER_DAY === 0) runMarketBalancer(state, balance);
   runTraining(state, balance);
   if (balance.economy.journalYieldBatchTicks > 0 && tick % balance.economy.journalYieldBatchTicks === 0) {
     flushYieldJournal(state, tick);
