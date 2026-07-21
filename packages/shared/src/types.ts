@@ -220,6 +220,20 @@ export interface Army {
    * army breaks through (wins) or when the army departs on a new march.
    */
   retreatPincered?: boolean;
+  /**
+   * Wave 3 (TRANSPORT-DELIVERY-LAYER, owner 2026-07-17): 'CARAVAN' = a
+   * civilian transport unit — zero combat value (auto-surrenders unescorted),
+   * carries `cargo`, pays pass fees / bribes to transit occupied land
+   * (military armies can never transit foreign land; caravans CAN, for a
+   * price). Absent = 'MILITARY' (back-compat).
+   */
+  kind?: 'MILITARY' | 'CARAVAN';
+  /** Caravan cargo hold (kind:'CARAVAN' only). Wave 3 engine-container field. */
+  cargo?: Partial<Record<string, number>>;
+  /** Caravan max cargo units (⚙ transport.cargoCapBase). */
+  cargoCapMax?: number;
+  /** Caravan auto-pays pass fees/bribes from carried gold without halting. */
+  autoPayTolls?: boolean;
   version: number;
 }
 

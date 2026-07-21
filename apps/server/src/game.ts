@@ -90,6 +90,11 @@ import {
   enrichmentTier,
   marketFee,
   type TradeResult,
+  acceptDeliveryOrder,
+  cancelDeliveryOrder,
+  type DeliveryOrder,
+  postDeliveryOrder,
+  raiseCaravan,
   resolvePostVictory,
   runTick,
   type SettlementRecord,
@@ -597,6 +602,8 @@ interface SerializedWorldState {
   stockpileCarry?: [string, Partial<Record<string, number>>][];
   /** Wave 2: per-parcel AMM pools. Optional for older saves. */
   markets?: [string, Partial<Record<string, { resource: number; gold: number }>>][];
+  /** Wave 3: delivery order board. Optional for older saves. */
+  deliveryOrders?: [string, DeliveryOrder][];
   /** Feature Set 3 (circular economy). All optional for pre-FS3 saves. */
   economy?: EconomyState;
   enrichmentPools?: [string, number][];
@@ -1592,6 +1599,105 @@ export class Game {
       prices[r] = { spot: Math.round(spotPrice(pool) * 100) / 100, poolResource: pool.resource, poolGold: pool.gold };
     }
     return { tier, feePct: marketFee(tier, this.balance), prices };
+  }
+
+  /** Wave 3 — raise a caravan (cargo from the territory stockpile + provision food). */
+  caravanRaise(
+    governorId: string,
+    territoryId: unknown,
+    cargo: unknown,
+    provisionFood: unknown,
+  ): { caravanId: string; cargo: Partial<Record<string, number>> } {
+    if (typeof territoryId !== 'string') throw new ApiError(400, 'BAD_TERRITORY', 'territoryId must be a string');
+    if (typeof cargo !== 'object' || cargo === null) throw new ApiError(400, 'BAD_CARGO', 'cargo must be an object');
+    const food = typeof provisionFood === 'number' && provisionFood >= 0 ? Math.floor(provisionFood) : 0;
+    try {
+      const c = raiseCaravan(
+        this.state, governorId, territoryId, cargo as Partial<Record<string, number>>, food,
+        this.baseRng.fork(`caravan/${this.orderSeq++}`), this.balance,
+      );
+      return { caravanId: c.id, cargo: c.cargo ?? {} };
+    } catch (e) {
+      throw translateSimError(e);
+    }
+  }
+
+  /**
+   * Wave 3 — march a caravan. Caravans use RAW pathing (no blockade) —
+   * transit through occupied land is legal for a price (pass fees / bribes
+   * paid per hop in phaseMovement).
+   */
+  caravanMarch(governorId: string, caravanId: unknown, toParcelId: unknown): { etaTicks: number; hops: number } {
+    if (typeof caravanId !== 'string') throw new ApiError(400, 'BAD_CARAVAN', 'caravanId must be a string');
+    if (typeof toParcelId !== 'string') throw new ApiError(400, 'BAD_PARCEL', 'toParcelId must be a string');
+    const c = this.state.armies.get(caravanId);
+    if (c === undefined || c.state === 'DISBANDED') throw new ApiError(404, 'NO_SUCH_CARAVAN', `no such caravan ${caravanId}`);
+    if (c.ownerGovernorId !== governorId) throw new ApiError(403, 'NOT_YOUR_CARAVAN', 'not your caravan');
+    if (c.kind !== 'CARAVAN') throw new ApiError(400, 'NOT_A_CARAVAN', 'army is not a caravan — use /api/march');
+    const toHexId = this.hexByParcel.get(toParcelId);
+    if (toHexId === undefined) throw new ApiError(404, 'NO_SUCH_PARCEL', `no such parcel ${toParcelId}`);
+    const path = findPath(this.state, c.hexId, toHexId); // RAW — no governor blockade
+    if (path === undefined || path.length === 0) throw new ApiError(409, 'NO_ROUTE', 'no route to destination');
+    try {
+      orderMarch(this.state, caravanId, path, this.tickOptions);
+    } catch (e) {
+      throw translateSimError(e);
+    }
+    return { etaTicks: path.length, hops: path.length };
+  }
+
+  /** Wave 3 — post a delivery order (reward escrows; posting fee burns). */
+  deliveryPost(
+    governorId: string,
+    destinationTerritoryId: unknown,
+    wants: unknown,
+    rewardCt: unknown,
+    deadlineTicksFromNow: unknown,
+  ): DeliveryOrder {
+    if (typeof destinationTerritoryId !== 'string') throw new ApiError(400, 'BAD_TERRITORY', 'destinationTerritoryId must be a string');
+    if (typeof wants !== 'object' || wants === null) throw new ApiError(400, 'BAD_WANTS', 'wants must be an object');
+    if (typeof rewardCt !== 'number' || !Number.isInteger(rewardCt) || rewardCt <= 0) {
+      throw new ApiError(400, 'BAD_REWARD', 'rewardCt must be a positive integer');
+    }
+    const dl = typeof deadlineTicksFromNow === 'number' && deadlineTicksFromNow > 0 ? Math.floor(deadlineTicksFromNow) : 0;
+    if (dl <= 0) throw new ApiError(400, 'BAD_DEADLINE', 'deadlineTicksFromNow must be positive');
+    try {
+      return postDeliveryOrder(
+        this.state, governorId, destinationTerritoryId, wants as Partial<Record<string, number>>,
+        rewardCt, this.state.world.tick + dl,
+        this.baseRng.fork(`order/${this.orderSeq++}`), this.balance,
+      );
+    } catch (e) {
+      throw translateSimError(e);
+    }
+  }
+
+  /** Wave 3 — accept / cancel a delivery order. */
+  deliveryAccept(governorId: string, orderId: unknown): DeliveryOrder {
+    if (typeof orderId !== 'string') throw new ApiError(400, 'BAD_ORDER', 'orderId must be a string');
+    try {
+      return acceptDeliveryOrder(this.state, governorId, orderId);
+    } catch (e) {
+      throw translateSimError(e);
+    }
+  }
+
+  deliveryCancel(governorId: string, orderId: unknown): { cancelled: boolean } {
+    if (typeof orderId !== 'string') throw new ApiError(400, 'BAD_ORDER', 'orderId must be a string');
+    try {
+      cancelDeliveryOrder(this.state, governorId, orderId);
+      return { cancelled: true };
+    } catch (e) {
+      throw translateSimError(e);
+    }
+  }
+
+  /** Wave 3 — browse the order board (OPEN + your own in any state). */
+  deliveryBoard(governorId: string): { orders: DeliveryOrder[] } {
+    const orders = [...(this.state.deliveryOrders?.values() ?? [])]
+      .filter((o) => o.state === 'OPEN' || o.requesterGovernorId === governorId || o.acceptedByGovernorId === governorId)
+      .sort((a, b) => a.id.localeCompare(b.id));
+    return { orders };
   }
 
   /** Wave 1 — a governed territory's stockpile + worker roster. */
@@ -3509,6 +3615,7 @@ function serializeWorldState(state: WorldState): SerializedWorldState {
     workerPets: [...(state.workerPets ?? new Map<string, WorkerPet>()).entries()],
     stockpileCarry: [...(state.stockpileCarry ?? new Map<string, Partial<Record<string, number>>>()).entries()],
     markets: [...(state.markets ?? new Map<string, Partial<Record<string, { resource: number; gold: number }>>>()).entries()],
+    deliveryOrders: [...(state.deliveryOrders ?? new Map<string, DeliveryOrder>()).entries()],
     economy: ensureEconomy(state),
     enrichmentPools: [...(state.enrichmentPools ?? new Map<string, number>()).entries()],
     enrichCarry: [...(state.enrichCarry ?? new Map<string, number>()).entries()],
@@ -3553,6 +3660,7 @@ function deserializeWorldState(s: SerializedWorldState): WorldState {
     workerPets: new Map(s.workerPets ?? []),
     stockpileCarry: new Map(s.stockpileCarry ?? []),
     markets: new Map(s.markets ?? []),
+    deliveryOrders: new Map(s.deliveryOrders ?? []),
     ...(s.economy !== undefined ? { economy: s.economy } : {}),
     enrichmentPools: new Map(s.enrichmentPools ?? []),
     enrichCarry: new Map(s.enrichCarry ?? []),

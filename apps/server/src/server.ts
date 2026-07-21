@@ -919,6 +919,24 @@ export class ClashServer {
         case '/api/market/info':
           sendJson(res, 200, this.game.marketInfo(body.territoryId));
           return;
+        case '/api/caravan/raise':
+          sendJson(res, 200, this.game.caravanRaise(session.governorId, body.territoryId, body.cargo, body.provisionFood));
+          return;
+        case '/api/caravan/march':
+          sendJson(res, 200, this.game.caravanMarch(session.governorId, body.caravanId, body.toParcelId));
+          return;
+        case '/api/delivery/post':
+          sendJson(res, 200, this.game.deliveryPost(session.governorId, body.destinationTerritoryId, body.wants, body.rewardCt, body.deadlineTicksFromNow));
+          return;
+        case '/api/delivery/accept':
+          sendJson(res, 200, this.game.deliveryAccept(session.governorId, body.orderId));
+          return;
+        case '/api/delivery/cancel':
+          sendJson(res, 200, this.game.deliveryCancel(session.governorId, body.orderId));
+          return;
+        case '/api/delivery/board':
+          sendJson(res, 200, this.game.deliveryBoard(session.governorId));
+          return;
         case '/api/exhibition':
           sendJson(res, 200, this.startExhibition(session.governorId, session.name, body.parcelId, body.joinUrl));
           return;

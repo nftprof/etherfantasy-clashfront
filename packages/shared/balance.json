@@ -293,6 +293,19 @@
     "balancerMaxTradesPerDay": 100,
     "balancerLotUnits": 10
   },
+  "transport": {
+    "_note": "⚙ Transport & delivery (wave 3, TRANSPORT-DELIVERY-LAYER.md — 'our own uber eats and rides'). Caravans = civilian armies (zero combat, auto-surrender unescorted) that CAN transit foreign land for a price: warlord land = pass fee in carried gold (per cargo unit, capped) to the occupier treasury; garrisoned wild land = food bribe (pure sink). Delivery orders escrow the reward at posting; platform + posting fees BURN (net-sink); late delivery decays the reward back to the requester per grace window; OPEN orders refund + expire past hardExpiryTicks. Raiders loot caravanLootPct of cargo on surrender.",
+    "cargoCapBase": 500,
+    "passFeePerCargoUnit": 0.5,
+    "passFeeCapGold": 200,
+    "bribeFoodPct": 0.05,
+    "caravanLootPct": 1.0,
+    "postingFeeCt": 10,
+    "platformFeePct": 0.1,
+    "latePenaltyPctPerWindow": 0.25,
+    "graceWindowTicks": 40,
+    "hardExpiryTicks": 200
+  },
   "training": {
     "_note": "Training takes time ⚙ (Feature Set 3 E2 — the anti-whale wall). Raising an army pays the FULL cost up-front (through the splitter) but spawns a MUSTERING shell: soldiers materialize at baseRatePerTick × (1 + MIL_level × milRateBonus) per tick (TRAINING sub-phase of PRODUCTION). One active queue per territory. A mustering army cannot march; if attacked it fights with the troops trained so far × musterPenalty. baseRatePerTick 25 ⇒ a STANDARD army (200 soldiers) completes in 8 demo ticks (≈40 s at the 5 s demo tick).",
     "baseRatePerTick": 25,

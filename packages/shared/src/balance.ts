@@ -294,6 +294,30 @@ export interface Balance {
     /** Balancer: units moved per trade lot. */
     balancerLotUnits: number;
   };
+  /**
+   * ⚙ Transport & delivery (WORLD-BUILD-OUT-PLAN wave 3,
+   * docs/briefs/TRANSPORT-DELIVERY-LAYER.md). Caravans, delivery orders,
+   * transit tolls, raiding.
+   */
+  transport: {
+    /** Max cargo units (goods + provision food) per caravan. */
+    cargoCapBase: number;
+    /** Warlord pass fee: gold per cargo unit carried (⚙ capped). */
+    passFeePerCargoUnit: number;
+    passFeeCapGold: number;
+    /** Wild bribe: fraction of the caravan's provision food demanded per garrisoned wild hop. */
+    bribeFoodPct: number;
+    /** Fraction of cargo a raider loots on caravan surrender. */
+    caravanLootPct: number;
+    /** Delivery board: posting fee (burns) + platform fee on payout (burns). */
+    postingFeeCt: number;
+    platformFeePct: number;
+    /** Late decay: reward fraction returned to requester per grace window past deadline. */
+    latePenaltyPctPerWindow: number;
+    graceWindowTicks: number;
+    /** OPEN orders refund + expire this many ticks past the deadline. */
+    hardExpiryTicks: number;
+  };
   /** Training queues ⚙ — Feature Set 3 E2 (docs/briefs/FEATURESET-3-ECONOMY.md). */
   training: {
     /** Soldiers materialized per tick at MIL level 0. */

@@ -216,6 +216,12 @@ export interface WorldState {
    * enrichment tier. Plain JSON, snapshot-safe.
    */
   markets?: Map<string, Partial<Record<string, { resource: number; gold: number }>>>;
+  /**
+   * Wave 3: delivery order board (TRANSPORT-DELIVERY-LAYER) — orderId →
+   * contract. Escrowed rewards, deadlines + penalties, courier acceptance.
+   * Plain JSON, snapshot-safe. Type lives in transport.ts.
+   */
+  deliveryOrders?: Map<string, import('./transport').DeliveryOrder>;
 }
 
 /**

@@ -42,6 +42,7 @@ import { battleFoodNeed, enduranceMultiplier, marchFoodPerStep, troopCount } fro
 import { type ArmyRetreatRecord, type BattleLogisticsRecord, sortedIds, type WorldState } from './state';
 import { createWildBattle, stepWildBattle, type WildBattleState, wildBattleSurvivors } from './wildBattle';
 import { runMarketBalancer } from './market';
+import { payTransitToll, raidCaravans, settleDeliveries } from './transport';
 import { runWorkerProduction } from './workers';
 
 // ── Tick options (demo-tunable knobs; server config overrides these) ──────────
@@ -318,6 +319,13 @@ function phaseMovement(
       haltArmy(a);
       continue;
     }
+    // Wave 3 (TRANSPORT-DELIVERY-LAYER): caravans pay transit tolls BEFORE
+    // entering occupied ground — pass fee (warlords) or bribe (wilds). Can't
+    // pay ⇒ halt at the border (owner re-routes or funds it).
+    if (a.kind === 'CARAVAN' && !payTransitToll(state, a, next, balance)) {
+      haltArmy(a);
+      continue;
+    }
     // Gap 2: record the hex we JUST left so retreatArmy can send us back the
     // way we came. Set on every step of the march (so a retreating army lands
     // its came-from correctly regardless of how many hops it made). Cleared
@@ -331,10 +339,13 @@ function phaseMovement(
     const terr = territoryAt(state, next);
     if (terr !== undefined) terr.lastTroddenTick = tick;
 
-    const hostile = hostileArmiesAt(state, next, a.ownerGovernorId).length > 0;
+    // Caravans commute — hostile presence never halts them mid-path (raiding
+    // is handled separately in raidCaravans); they also never walk-in/garrison.
+    const hostile = a.kind !== 'CARAVAN' && hostileArmiesAt(state, next, a.ownerGovernorId).length > 0;
     if (a.path.length === 0 || hostile) {
       const atDestination = a.path.length === 0;
       haltArmy(a);
+      if (a.kind === 'CARAVAN') continue;
       if (!hostile && atDestination && terr !== undefined) {
         if (terr.governorId === a.ownerGovernorId) {
           // Attach as garrison when arriving on a friendly, garrison-less territory.
@@ -582,11 +593,17 @@ function phaseBattleSpawning(
   // one that waited past ⚙ commandQueueTimeoutTicks falls back to accelerated.
   promoteQueuedEngineBattles(state, tick, balance, options.liveBattles);
 
+  // 1e — Wave 3 (TRANSPORT-DELIVERY-LAYER): caravans on hostile hexes
+  // auto-surrender (civilians don't fight); fulfilled deliveries settle.
+  raidCaravans(state, balance);
+  settleDeliveries(state, tick, balance);
+
   // 2 — detect hostile co-location, hex by hex (deterministic order).
+  // Caravans are EXCLUDED — they never spawn battles (they surrender above).
   const byHex = new Map<string, Army[]>();
   for (const id of sortedIds(state.armies)) {
     const a = state.armies.get(id)!;
-    if (a.state === 'DISBANDED') continue;
+    if (a.state === 'DISBANDED' || a.kind === 'CARAVAN') continue;
     (byHex.get(a.hexId) ?? byHex.set(a.hexId, []).get(a.hexId)!).push(a);
   }
   const hexesInBattle = new Set<string>();
