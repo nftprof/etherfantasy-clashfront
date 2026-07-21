@@ -307,25 +307,58 @@ if(CG)(function(){
   const rAvg=ring0.pts.length?ring0.pts.reduce((s,p)=>s+Math.hypot(p[0]-cx,p[1]-cz),0)/ring0.pts.length:20;
   const raise=(CG.mound&&CG.mound.steps&&CG.mound.steps[0]?CG.mound.steps[0].raise:0)||0;
   const baseY=hAt(cx,cz);
+  // earthwork texture (owner 2026-07-21: "the area immediately around it needs texture") — banded
+  // packed-earth canvas for the mound flanks + a flagstone courtyard inside the ward + seeded
+  // scatter (rocks/turf) on the skirt so the fortress footprint blends into the terrain.
+  const earthTex=(function(){const c=document.createElement('canvas');c.width=c.height=128;const g2=c.getContext('2d');
+    g2.fillStyle='#6d6250';g2.fillRect(0,0,128,128);
+    for(let b=0;b<8;b++){g2.fillStyle=`rgba(${90+b*4},${80+b*3},${60+b*2},0.35)`;g2.fillRect(0,b*16,128,7);}
+    for(let i2=0;i2<420;i2++){g2.fillStyle=(rng()<.5?'rgba(40,32,20,':'rgba(190,175,140,')+(rng()*.22).toFixed(2)+')';
+      g2.fillRect(rng()*128,rng()*128,1+rng()*2,1+rng()*2);}
+    const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(5,2);t.anisotropy=MAXA;return t;})();
   if(raise>0){const md=new THREE.Mesh(new THREE.CylinderGeometry(rAvg*1.06,rAvg*1.45,raise+2,26),
-    new THREE.MeshLambertMaterial({color:0x6b6353,flatShading:true}));
+    new THREE.MeshLambertMaterial({map:earthTex,flatShading:true}));
     const w0=world(cx,cz);md.position.set(w0.x,baseY+(raise+2)/2-1,w0.z);scene.add(md);}
+  { // flagstone courtyard paving inside the ward (visible texture where the keep stands)
+    const court=new THREE.Mesh(new THREE.CircleGeometry(rAvg*0.88,30),
+      new THREE.MeshLambertMaterial({map:stoneTex,color:0xb9b0a0}));
+    court.rotation.x=-Math.PI/2;const w1=world(cx,cz);court.position.set(w1.x,baseY+raise+0.12,w1.z);scene.add(court);
+    for(let s3=0;s3<16;s3++){const a3=s3/16*Math.PI*2+rng(),rr=rAvg*(1.12+rng()*0.3);   // skirt scatter
+      const sx=cx+Math.cos(a3)*rr,sz=cz+Math.sin(a3)*rr;
+      const pr=rng()<0.45?new THREE.Mesh(new THREE.DodecahedronGeometry(0.9+rng()*1.4,0),rockMat)
+                         :new THREE.Mesh(new THREE.ConeGeometry(1.1+rng(),1.4+rng(),6),treeLeaf(rng()*0.05,rng()));
+      put(pr,sx,sz,0.5);}
+  }
   const yTop=baseY+raise;                                  // everything castle sits on the mound
   const putC=(mesh,x,z,y)=>{const w=world(x,z);mesh.position.set(w.x,yTop+y,w.z);scene.add(mesh);return mesh;};
   const gatePts=(ring0.gates||[]).map(g=>g.at);
   const nearGate=(x,z,d)=>gatePts.some(g=>Math.hypot(g[0]-x,g[1]-z)<d);
   // ---- curtain walls ring by ring: batter + body + wall-walk crenellations (§3a) ----
+  const gd=(x,z)=>gatePts.length?Math.min(...gatePts.map(g=>Math.hypot(g[0]-x,g[1]-z))):1e9;
+  const GATE_R=5.5;                                  // half-width of the open passage at each gate
   for(const ring of CG.rings||[]){
     const pts=ring.pts||[],H=ring.h||9;let run=0;
     for(let i=0;i<pts.length;i++){
       const p=pts[i],q=pts[(i+1)%pts.length];
       const dxw=q[0]-p[0],dzw=ZS*(q[1]-p[1]),L=Math.hypot(dxw,dzw);if(L<0.5)continue;
-      const mx=(p[0]+q[0])/2,mz=(p[1]+q[1])/2,ang=Math.atan2(-dzw,dxw);
-      if(nearGate(mx,mz,7)){run+=L;continue;}                        // gatehouse owns the gap
-      const body=putC(new THREE.Mesh(new THREE.BoxGeometry(L+1.2,H,3),wallM),mx,mz,H/2);body.rotation.y=ang;
-      const bat=putC(new THREE.Mesh(new THREE.BoxGeometry(L+1.2,H*0.22,3.9),wallM),mx,mz,H*0.11);bat.rotation.y=ang; // sloped footing read
-      for(let m=1.4;m<L-0.8;m+=2.2){                                  // merlons: the crenellation rhythm
-        const t=m/L,mxx=p[0]+(q[0]-p[0])*t,mzz=p[1]+(q[1]-p[1])*t;
+      const ang=Math.atan2(-dzw,dxw);
+      // THE ENTRANCE (owner 2026-07-21 "there is no entrance — how do you enter?"): gates sit ON
+      // ring vertices, so the old midpoint-distance skip never fired and the ring rendered sealed.
+      // Clip each segment short of any gate point instead — a real ~11u opening the road passes
+      // through, framed by the gatehouse. Both ends near a gate ⇒ the segment IS the opening.
+      const dp=gd(p[0],p[1]),dq=gd(q[0],q[1]);
+      if(dp<GATE_R&&dq<GATE_R){run+=L;continue;}
+      let t0=0,t1=1;
+      if(dp<GATE_R)t0=Math.min(0.92,(GATE_R-dp)/Math.max(0.001,dq-dp));
+      if(dq<GATE_R)t1=Math.max(0.08,1-(GATE_R-dq)/Math.max(0.001,dp-dq));
+      const px=p[0]+(q[0]-p[0])*t0,pz=p[1]+(q[1]-p[1])*t0,
+            qx=p[0]+(q[0]-p[0])*t1,qz=p[1]+(q[1]-p[1])*t1;
+      const L2=L*(t1-t0);if(L2<0.8){run+=L;continue;}
+      const mx=(px+qx)/2,mz=(pz+qz)/2;
+      const body=putC(new THREE.Mesh(new THREE.BoxGeometry(L2+1.2,H,3),wallM),mx,mz,H/2);body.rotation.y=ang;
+      const bat=putC(new THREE.Mesh(new THREE.BoxGeometry(L2+1.2,H*0.22,3.9),wallM),mx,mz,H*0.11);bat.rotation.y=ang; // sloped footing read
+      for(let m=1.4;m<L2-0.8;m+=2.2){                                 // merlons: the crenellation rhythm
+        const t=m/L2,mxx=px+(qx-px)*t,mzz=pz+(qz-pz)*t;
         const mer=putC(new THREE.Mesh(new THREE.BoxGeometry(1.15,1.2,3.15),wallM),mxx,mzz,H+0.6);mer.rotation.y=ang;}
       // ---- drum towers punctuate every ~26u of curtain run (§3a) ----
       const before=Math.floor(run/26);run+=L;
@@ -347,9 +380,20 @@ if(CG)(function(){
         tw.add(new THREE.Mesh(new THREE.CylinderGeometry(3.4,4.0,H*1.55,9),wallM));
         const roof=new THREE.Mesh(new THREE.ConeGeometry(3.9,4.4,9),roofM);roof.position.y=H*0.78+2.2;tw.add(roof);
         putC(tw,gx+s2*ox,gz+s2*oz,H*0.78);}
-      const arch=putC(new THREE.Mesh(new THREE.BoxGeometry(off*2-4,H*1.1,3.4),wallM),gx,gz,H*1.1/2+H*0.35);arch.rotation.y=ang;
-      const port=putC(new THREE.Mesh(new THREE.BoxGeometry(off*2-7,H*0.62,0.8),
-        new THREE.MeshLambertMaterial({color:0x181a1f,emissive:0x2a2416,flatShading:true})),gx,gz,H*0.31);port.rotation.y=ang;
+      // OPEN passage: a lintel spans ABOVE head height and the portcullis grate hangs half-raised
+      // in the upper half — the road walks straight through (the DOOR itself = the castle_gate_N
+      // structure's HP: attackers batter it down; visuals stay open-arch so the entrance READS).
+      const arch=putC(new THREE.Mesh(new THREE.BoxGeometry(off*2-4,H*0.55,3.4),wallM),gx,gz,H*0.85);arch.rotation.y=ang;
+      const port=putC(new THREE.Mesh(new THREE.BoxGeometry(off*2-8.5,H*0.34,0.5),
+        new THREE.MeshLambertMaterial({color:0x181a1f,emissive:0x2a2416,flatShading:true})),gx,gz,H*0.68);port.rotation.y=ang;
+      // STAIRS to the wall-walk (owner 2026-07-21): a stepped flight climbing the inside face
+      // beside each gatehouse — courtyard → parapet. Inward = toward the ring centroid.
+      const inx=cx-gx,inz=cz-gz,inL=Math.hypot(inx,inz)||1,ux=inx/inL,uz=inz/inL;
+      const STEPS=6;
+      for(let st=0;st<STEPS;st++){const fr=(st+1)/STEPS;
+        const sx=gx+ux*(4.5+st*1.5)+(-(uz))*6.5,sz=gz+uz*(4.5+st*1.5)+(ux)*6.5;   // beside the passage
+        const step=putC(new THREE.Mesh(new THREE.BoxGeometry(3.4,H*fr,1.6),wallM),sx,sz,H*fr/2);
+        step.rotation.y=Math.atan2(-ZS*uz,ux)+Math.PI/2;}
     }
   }
   // ---- the KEEP: tiers climb, corner turrets, roof + banner — the silhouette (§1 rule 3) ----

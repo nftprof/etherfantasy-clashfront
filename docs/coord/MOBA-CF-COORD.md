@@ -414,3 +414,11 @@ change into your converter copy). CF's 3D preview ships the working reference ki
 banner → moat. Full spec: `docs/briefs/CASTLE-RENDER-BRIEF.md` (+ CASTLE-ARCHITECTURE-SPEC §3/§5).
 View: map.etherfantasy.com/designer/3d?parcel=60203670103 (Westgate, EDU). ⚠ open data bug ours:
 EDU's Grand Academy PALACE point lands on no parcel — fix incoming.
+
+**2026-07-21 (2) — castle entrance + siege-mechanics Qs (owner).** Kit fixes live: sealed-ring bug
+(gates sit ON ring vertices; midpoint skip never fired) → walls now CLIP to a real ~11u opening,
+open-arch gatehouse w/ half-raised portcullis, courtyard→parapet STAIRS, textured mound/courtyard.
+OWNER QUESTIONS for MOBA BattleEngine RAW (proposals in CASTLE-RENDER-BRIEF §6, need engine + canon
+sign-off): (a) wall-walk unit pathing (stairs = access points), (b) defender-toggled drawbridge on
+moat castles, (c) door-breach = existing castle_gate_N HP (confirm client shows breach states),
+(d) HEIGHT ADVANTAGE combat rule — elevation bonus for ranged/wall units. None locked yet.
