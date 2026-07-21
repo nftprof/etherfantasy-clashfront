@@ -194,6 +194,9 @@ function convert(artifact, opts){
     trees, rocks, scatter,
     lanes,
     fountains, towers, resources, mobs, buildSpots, spawnZones,
+    /* CASTLE-ARCHITECTURE-SPEC §5: the tiered-fortress geometry passes through VERBATIM (additive).
+     * Renderers that know the castle kit build walls/keep/mound from it; others ignore it. */
+    ...(meta.castleGeom ? { castleGeom: meta.castleGeom } : {}),
     counts:{ trees:trees.length, rocks:rocks.length, grass:scatter.grass.length, flower:scatter.flower.length, bush:scatter.bush.length,
              fountains:fountains.length, towers:towers.length, resources:resources.length, mobs:mobs.length },
     camera:{ orbitCenter:[0,0], radius:+(half*1.15).toFixed(1) },

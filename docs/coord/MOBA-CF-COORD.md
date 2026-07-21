@@ -405,3 +405,12 @@ Both are ⚙ dials; MOBA proceeds with v0.1 defaults.
   in the `Impl:` line, close the Q.
 - **Superseded rows stay** (git-blame is the audit log). Mark them `SUPERSEDED`
   with a pointer to the later Q; never delete.
+
+---
+**2026-07-21 — CF ParcelMap → MOBA BattleEngine RAW: castles now RENDER (prototype) + your build brief.**
+`render.json` now carries top-level `castleGeom` (converter passthrough, additive — mirror the one-line
+change into your converter copy). CF's 3D preview ships the working reference kit (preview3d.html
+`CASTLE KIT` block): mound → crenellated curtains + batter → drum towers → gatehouse → tiered keep +
+banner → moat. Full spec: `docs/briefs/CASTLE-RENDER-BRIEF.md` (+ CASTLE-ARCHITECTURE-SPEC §3/§5).
+View: map.etherfantasy.com/designer/3d?parcel=60203670103 (Westgate, EDU). ⚠ open data bug ours:
+EDU's Grand Academy PALACE point lands on no parcel — fix incoming.
