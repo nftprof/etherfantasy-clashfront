@@ -1,0 +1,54 @@
+name: Bake zone defaults (server registry)
+
+# Runs the default-design bake ON THE BOX (the cf runner lives there) into the LIVE registry
+# ~/ef-battlefields — the baked maps are server-state only, never committed to git (owner
+# 2026-07-21: "map should be directly placed on the server… a living adjustment directly on
+# server"). This workflow is only the remote-control button: sandbox sessions have no SSH, the
+# runner is the one hand we have on the box. Idempotent + resumable (bake-zone.mjs skips
+# already-seeded parcels at the current GEN_VERSION), so re-dispatching only fills gaps.
+#
+# NB the service is STOPPED for the bake window (~11 min for EDU): registry.js keeps index.json
+# in memory and rewrites it whole on any design write — a concurrent lazy write from the live
+# service would clobber freshly-baked rows. Stop → bake → start is the race-free order; the
+# restart also makes the service reload the now-complete index.
+
+on:
+  workflow_dispatch:
+    inputs:
+      zones:
+        description: "Zones to bake (space-separated, e.g. 'EDU' or 'EDU BUS')"
+        required: true
+        default: "EDU"
+      limit:
+        description: "Optional per-zone parcel cap (validation runs); empty = all"
+        required: false
+        default: ""
+
+concurrency:
+  group: map-bake
+  cancel-in-progress: false
+
+jobs:
+  bake:
+    runs-on: [self-hosted, cf]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Stop ef-map-service (single-writer rule for ~/ef-battlefields)
+        run: pm2 stop ef-map-service || true
+
+      - name: Bake into the live registry
+        run: |
+          cd "$GITHUB_WORKSPACE/map-service"
+          LIMIT="${{ inputs.limit }}"
+          MAPS_DIR="$HOME/ef-battlefields" node scripts/bake-zone.mjs ${{ inputs.zones }} ${LIMIT:+--limit=$LIMIT} --every=1000
+
+      - name: Restart ef-map-service (health-gated)
+        if: always()
+        run: |
+          pm2 restart ef-map-service || pm2 start "$HOME/ef-map-service/server.js" --name ef-map-service
+          sleep 2
+          for i in $(seq 1 10); do
+            curl -sf http://127.0.0.1:8150/healthz && exit 0; sleep 2
+          done
+          echo "map-service failed health check after bake" >&2; exit 1
