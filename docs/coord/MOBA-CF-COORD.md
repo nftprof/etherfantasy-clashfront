@@ -440,3 +440,10 @@ ladder read; TOWERS are TWO-PART (solid base to walk level + turret hut floated 
 doorway band) so the wall-walk passes THROUGH every tower — mirror this in the real client kit;
 stairs = wall-hugging parallel flights, treads facing travel, landing onto the parapet, moved clear
 of the gatehouse drums. Data contract unchanged (visual kit only).
+
+**2026-07-21 (5) — FINAL stair rule (owner-locked, for the real client castle kit):** flights to
+the wall-walk follow a size ladder: (a) walls with a STRAIGHT stretch ≥ one flight length →
+PARALLEL flight hugging the inner face (never across a bend, never overlapping the wall body);
+(b) smaller rings → PERPENDICULAR flight straight out into the courtyard, which may stretch wider
+than the ring RADIUS but must stay under the DIAMETER — compress treads (steeper) on tiny rings.
+Top tread always lands flush at parapet height. Reference impl: preview3d.html castle kit @6d06f80.
