@@ -95,7 +95,10 @@ if(parity){
   // V3+ renders CORE/GATE/TOWER placeholders itself from opts.structures (artifact shape) — hand
   // it everything except WALL segments (no wall vocabulary yet; castle walls stay our overlay
   // until CASTLE-ARCHITECTURE-SPEC lands in the module). V1 (legacy .bak) ignores the extra opts.
-  bf=EF_BATTLEFIELD.buildBattlefield(scene,{manifest:man,THREE,floorsBase:"/floors/",addLights:true,addFog:true,
+  // fountains stripped (owner 2026-07-21: the module's flat spawn pads clip into sloped terrain —
+  // "can u make them floating above as well") — every spawn/entry marker is a FLOATING BEACON now
+  // (the block below), so the module draws no ground pads at all.
+  bf=EF_BATTLEFIELD.buildBattlefield(scene,{manifest:{...man,fountains:[]},THREE,floorsBase:"/floors/",addLights:true,addFog:true,
     structures:(a.structures||[]).filter(s=>s.kind!=="WALL"&&!isCastleAnchor(s))});
 }else{
   // ============ legacy fallback (no manifest / converter off): approximate look ============
@@ -496,12 +499,15 @@ for(const b of a.barriers||[]){const bcells=b.opens||[[b.x,b.z]];const w=Math.ma
 // tested, reads as grounded) + a bright ring that hovers ~13u up, bobs, and renders ON TOP
 // (depthTest off) so it's visible through any hill. beaconBob() animates them in the loop.
 const beacons=[];
-for(const s of a.spawnZones||[]){if(s.side==="ANY")continue;
-  const col=s.side==="ATTACKER"?0xe25a50:(s.side==="OBJECTIVE"?0xffd34d:0x5a8ee2);
+for(const s of a.spawnZones||[]){
+  // ANY = an EDGE ENTRY: where an attacking army walks in AND where marching reinforcements
+  // arrive (decision 11 — arrival edge matches approach direction). Teal, smaller — a doorway
+  // marker, not a base. Floating like every other beacon (owner 2026-07-21).
+  const col=s.side==="ATTACKER"?0xe25a50:(s.side==="OBJECTIVE"?0xffd34d:(s.side==="ANY"?0x58d6c9:0x5a8ee2));
   const grp=new THREE.Group();
   const pil=new THREE.Mesh(new THREE.CylinderGeometry(0.45,0.45,15,7),new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:.26,depthWrite:false}));
   pil.position.y=7.5;grp.add(pil);
-  const ring=new THREE.Mesh(new THREE.TorusGeometry(6.5,0.7,8,28),new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:.96,depthWrite:false,depthTest:false}));
+  const ring=new THREE.Mesh(new THREE.TorusGeometry(s.side==="ANY"?4.2:6.5,0.7,8,28),new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:.96,depthWrite:false,depthTest:false}));
   ring.rotation.x=Math.PI/2;ring.position.y=13;ring.renderOrder=6;grp.add(ring);
   const bob=new THREE.Mesh(new THREE.SphereGeometry(0.8,10,8),new THREE.MeshBasicMaterial({color:col,depthTest:false}));bob.renderOrder=6;bob.position.y=13;grp.add(bob);
   put(grp,s.x,s.z,0);
