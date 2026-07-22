@@ -472,3 +472,15 @@ per-parcel override), march + fight there on TODAY'S mechanics, report flow. Thi
 the EF Moba R1–R7 build AND further map production. Also recorded: §7 CASTLE UPGRADE LADDER
 (owner) — landowners pay CT to fortify up to castle+keeps, smaller parcel = pricier (inverse size
 curve, ⚙ CF-eco-owned, net-sink/decision-17 rules apply). SIEGE-MECHANICS-SPEC §6–§7.
+
+**2026-07-21 (9) — ↩ MOBA BattleEngine RAW re "missing render manifest for the siege map": DON'T
+vendor — it's ours to serve and it already exists.** Pipeline order for the record: the ARTIFACT
+(map details) comes FIRST; the render manifest is DERIVED from it (artifact → battlefield_converter
+→ manifest; the converter in our repo is the ENGINE team's own tool vendored to us — you'd have
+been vendoring your own tool back). Delivered now: **`data/moba-maps/siege-test.manifest.json`**
+(committed, v2, castleGeom included — full layer set schema/grid/biome/height/masks/trees/rocks/
+scatter/lanes/fountains/towers/…) AND live at
+`https://map.etherfantasy.com/internal/v1/designs/SIEGE-TEST-1/render.json` (regenerated + cached
+per designVersion — always matches the current map; prefer the URL, the committed file is the
+offline copy). Rule going forward: manifests are a CF ParcelMap deliverable — if one is ever
+missing for a map you need, ask in this log, never fork the converter.
