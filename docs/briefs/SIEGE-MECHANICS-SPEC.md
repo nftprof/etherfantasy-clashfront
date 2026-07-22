@@ -91,3 +91,23 @@ corridor-carve fragments the moat arc in places; the causeway station itself is 
   flyer/crawler reads, tier-bonus feedback (hit numbers already exist).
 - **CF:** after the matrix passes, owner tunes R6 numbers → CF locks them into canon
   (`docs/08` + balance ⚙) and the rules apply to every castle parcel automatically (same shapes).
+
+## §5 In-battle building: free-form leaning (owner 2026-07-21, PENDING final lock)
+
+Today's data model is FIXED positions: generator-placed defense TOWER anchors (lane-approach
+positions, wall-clearance rule) + designated `buildSpots[]` pads (the MOBA build-locations model).
+**Owner leaning: FREE-FORM — build anywhere during gameplay.** Recorded as the working direction,
+with the guardrails free-form requires (otherwise walls-of-towers break every map invariant):
+
+- **The placement check IS the map validator.** A placement is legal iff the post-placement grid
+  still passes the walkability invariants (every entry still reaches every core/objective — the
+  exact `validateAndRepair` rule the generator already enforces). CF ParcelMap ships this as a
+  `canPlace(kind, x, z, grid)` rule module the sim calls server-side per placement. No pathing
+  grief: you can never build yourself unreachable or seal a lane completely.
+- **Exclusion zones:** the wall band + gate aprons (the new tower-clearance rule), spawn/entry
+  discs, water/rock/OOB cells, and a min structure-to-structure spacing (⚙).
+- **buildSpots[] stay as PREPARED pads, not the only option** — candidate perk: building on a
+  prepared pad is cheaper/faster (⚙); free-form placement costs full price. Keeps the designed
+  layer meaningful without restricting freedom.
+- Engine implication for EF Moba: dynamic obstacle insertion at 30 Hz (units path around a
+  just-built structure) — flagged in the handoff.
