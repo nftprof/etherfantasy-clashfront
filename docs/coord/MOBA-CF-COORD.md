@@ -447,3 +447,10 @@ PARALLEL flight hugging the inner face (never across a bend, never overlapping t
 (b) smaller rings → PERPENDICULAR flight straight out into the courtyard, which may stretch wider
 than the ring RADIUS but must stay under the DIAMETER — compress treads (steeper) on tiny rings.
 Top tread always lands flush at parapet height. Reference impl: preview3d.html castle kit @6d06f80.
+
+**2026-07-21 (6) — IN-BATTLE BUILDING LOCKED (owner): FREE-FORM.** Players build new CCs/towers
+ANYWHERE; only rule = footprint must not overlap existing structures, trees, resource nodes, or
+blocked landscape (ROCK/WATER/CLIFF/OOB) — clear walkable ground only. buildSpots[] demoted to
+optional prepared-pad perk. EF Moba build items: dynamic obstacles at 30 Hz + PATHLESS→ATTACK-THE-
+BLOCKER unit behavior (what makes free-form safe: structures are destructible, sealing is siege,
+never soft-lock) + cheap server-side overlap cell test. SIEGE-MECHANICS-SPEC §5 is the contract.

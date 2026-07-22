@@ -92,22 +92,28 @@ corridor-carve fragments the moat arc in places; the causeway station itself is 
 - **CF:** after the matrix passes, owner tunes R6 numbers → CF locks them into canon
   (`docs/08` + balance ⚙) and the rules apply to every castle parcel automatically (same shapes).
 
-## §5 In-battle building: free-form leaning (owner 2026-07-21, PENDING final lock)
+## §5 In-battle building — FREE-FORM, LOCKED (owner 2026-07-21)
 
-Today's data model is FIXED positions: generator-placed defense TOWER anchors (lane-approach
-positions, wall-clearance rule) + designated `buildSpots[]` pads (the MOBA build-locations model).
-**Owner leaning: FREE-FORM — build anywhere during gameplay.** Recorded as the working direction,
-with the guardrails free-form requires (otherwise walls-of-towers break every map invariant):
+**Players may build new command centers and towers ANYWHERE on the map** during gameplay. A
+placement is legal iff its footprint does NOT overlap:
+1. any existing structure (incl. castle walls/gates/towers — the wall-clearance band counts),
+2. trees / forest cells,
+3. resource nodes,
+4. blocked landscape tiles (ROCK / WATER / CLIFF / OOB).
 
-- **The placement check IS the map validator.** A placement is legal iff the post-placement grid
-  still passes the walkability invariants (every entry still reaches every core/objective — the
-  exact `validateAndRepair` rule the generator already enforces). CF ParcelMap ships this as a
-  `canPlace(kind, x, z, grid)` rule module the sim calls server-side per placement. No pathing
-  grief: you can never build yourself unreachable or seal a lane completely.
-- **Exclusion zones:** the wall band + gate aprons (the new tower-clearance rule), spawn/entry
-  discs, water/rock/OOB cells, and a min structure-to-structure spacing (⚙).
-- **buildSpots[] stay as PREPARED pads, not the only option** — candidate perk: building on a
-  prepared pad is cheaper/faster (⚙); free-form placement costs full price. Keeps the designed
-  layer meaningful without restricting freedom.
-- Engine implication for EF Moba: dynamic obstacle insertion at 30 Hz (units path around a
-  just-built structure) — flagged in the handoff.
+I.e. the footprint must sit on clear walkable ground (OPEN / ROAD). That is the WHOLE rule — no
+designated-spot restriction. `buildSpots[]` stay in the data as PREPARED PADS only (candidate perk:
+cheaper/faster builds on a pad, ⚙ — optional, not gating).
+
+Why lane-sealing is acceptable: every structure has HP. A tower-wall across a lane is a legitimate
+fortification, not a soft-lock — attackers path-fail into it and BATTER IT DOWN (CoC model). The
+map can never become permanently unreachable.
+
+Engine implications (EF Moba): (a) dynamic obstacle insertion at 30 Hz — units path around fresh
+buildings; (b) **pathless → attack the blocker**: when no route to the target exists, units target
+the nearest blocking structure on the intended path (this is what makes free-form safe); (c) the
+overlap check is a cheap server-side cell test against the artifact grid + live structure list.
+
+(Supersedes the earlier "walkability-invariant placement validator" proposal — destructibility +
+pathless-attack makes the reachability guarantee unnecessary. EVOLVES canon decision 9's
+"placeable modules at battlefield anchors" → anchors optional, free placement canonical.)
