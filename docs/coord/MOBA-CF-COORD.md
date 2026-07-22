@@ -464,3 +464,11 @@ in/out wall blocking, STRICTLY-ABOVE-tier rule for over-wall fire (ridge tier1 <
 nobody shoots into the courtyard today; T7 re-scoped to vs-wall-walk), stairs/wall-walk movement
 semantics (§3b: courtyard-side stairs, single-file, continuous parapet ring through towers + over
 gate arches). Reply per checklist item 1–13: ACK / ACK-with-change / CANNOT.
+
+**2026-07-21 (8) — 🎯 TASK → CF Overworld eco (main Dev): mount SIEGE-TEST-1 for a LIVE CF battle
+(owner gate).** Before any more castle maps are produced: serve `data/moba-maps/siege-test.json`
+as the battlefield of one designated test parcel (loader already prefers data/moba-maps; needs a
+per-parcel override), march + fight there on TODAY'S mechanics, report flow. This playtest gates
+the EF Moba R1–R7 build AND further map production. Also recorded: §7 CASTLE UPGRADE LADDER
+(owner) — landowners pay CT to fortify up to castle+keeps, smaller parcel = pricier (inverse size
+curve, ⚙ CF-eco-owned, net-sink/decision-17 rules apply). SIEGE-MECHANICS-SPEC §6–§7.

@@ -121,3 +121,27 @@ overlap check is a cheap server-side cell test against the artifact grid + live 
 (Supersedes the earlier "walkability-invariant placement validator" proposal — destructibility +
 pathless-attack makes the reachability guarantee unnecessary. EVOLVES canon decision 9's
 "placeable modules at battlefield anchors" → anchors optional, free placement canonical.)
+
+## §6 GATE: live CF battle on SIEGE-TEST-1 BEFORE mass production (owner 2026-07-21)
+
+**No further castle-map production until a real CF battle has been played on this exact map.**
+Wiring task → **CF Overworld eco (main Dev)**: mount `data/moba-maps/siege-test.json` as the
+battlefield for a designated test parcel (the battlefield loader `apps/server/src/battlefield.ts`
+already prefers real maps in `data/moba-maps/`; add a per-parcel override so one hex serves the
+siege map), march armies there, fight it with TODAY'S mechanics (no new rules needed for the
+smoke test), and report flow/pacing/anything broken. Result of that playtest gates both (a) the
+R1–R7 mechanics build (EF Moba) and (b) baking more castle maps (CF ParcelMap).
+
+## §7 CASTLE UPGRADE LADDER — pay CT to fortify YOUR land (owner 2026-07-21, recorded)
+
+Future system, recorded now so the build rules above are designed for it:
+- Any landowner may **UPGRADE their own parcel's fortification** up the ladder toward the top
+  tier (**castle + keeps**) by paying CT. This extends decision 22's baked ladder (EPIC=PALACE /
+  GIANT=CASTLE / LARGE=KEEP / MEDIUM=manor / SMALL=nothing) — big estates get their tier baked
+  free; smaller land BUYS its way up.
+- **Inverse size pricing: the SMALLER the parcel, the MORE the upgrades cost** (⚙ curve TBD —
+  a SINGLE paying to the castle tier = "lots of CT", many increments). Net-sink doctrine +
+  decision 17 apply: burn floor on every upgrade payment; pricing owned by CF Overworld eco.
+- Upgrade output = the same castleGeom/wall/gate/stairs data the generator bakes (indestructible
+  walls per CASTLE-STRUCTURE-ACK §2) — one data shape, whether baked by estate size or bought.
+- Sequencing: LOCKED after the §6 playtest proves the castle battle loop; then pricing + UI.
