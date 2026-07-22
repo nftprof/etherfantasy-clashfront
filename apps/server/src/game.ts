@@ -52,9 +52,11 @@ import {
   type BuildSpot,
   buildStructure,
   repairStructure,
+  type ChronicleEntry,
   type EconomyState,
   engineCommandSlotCount,
   type EngineBattleState,
+  grantMythicNft,
   type EngineOutcome,
   type EngineSideResult,
   enrichTerritory,
@@ -635,6 +637,11 @@ interface SerializedWorldState {
   /** Wave 4.3: prosperity movement carries + pillage scars. Optional for older saves. */
   prosperityCarry?: [string, number][];
   pillageScars?: [string, number][];
+  /** Wave 4.4: mythic NFT registry + cadence counters + World Chronicle. Optional for older saves. */
+  mythicNfts?: [string, string[]][];
+  mythicCounters?: [string, Record<string, number>][];
+  chronicle?: ChronicleEntry[];
+  mythicFirstSlain?: Record<string, string>;
   /** Feature Set 3 (circular economy). All optional for pre-FS3 saves. */
   economy?: EconomyState;
   enrichmentPools?: [string, number][];
@@ -1723,6 +1730,27 @@ export class Game {
     }
   }
 
+  /**
+   * Wave 4.4 — grant a mythic-species NFT to a governor (the ownership
+   * registry seam; the Pentagon Chain / pet-NFT API wires in here later —
+   * until then it's a dev/admin grant, like the demo Masters roster).
+   */
+  mythicGrant(governorId: string, species: string): void {
+    if (!this.governors.has(governorId)) {
+      throw new ApiError(404, 'NO_GOVERNOR', `no governor ${governorId}`);
+    }
+    if (typeof species !== 'string' || species.trim() === '') {
+      throw new ApiError(400, 'BAD_SPECIES', 'species (string) is required');
+    }
+    grantMythicNft(this.state, governorId, species.trim(), this.balance);
+  }
+
+  /** Wave 4.4 — the public World Chronicle feed (newest first, bounded). */
+  chronicleFeed(limit = 50): { entries: ChronicleEntry[] } {
+    const all = this.state.chronicle ?? [];
+    return { entries: all.slice(-Math.max(1, limit)).reverse() };
+  }
+
   /** Wave 3 — browse the order board (OPEN + your own in any state). */
   deliveryBoard(governorId: string): { orders: DeliveryOrder[] } {
     const orders = [...(this.state.deliveryOrders?.values() ?? [])]
@@ -2504,6 +2532,16 @@ export class Game {
       // (the deterministic-floor cutover). Renderer: setWeather(context.weather.state);
       // weatherT rotation becomes flavor-only.
       weather: this.battleWeather(),
+      // Wave 4.4 (MOBA-V3-BUILD-SPEC §5 / COORD-009): mythic reinforcements CF
+      // decided for this battle (NFT ownership + 10-battle cadence). Absent when
+      // none triggered. `mythicSpawn` (singular) = the spec's minimal contract;
+      // `mythicSpawns` carries the whale case (multiple independent NFTs).
+      ...(b.mythicSpawns !== undefined && b.mythicSpawns.length > 0
+        ? {
+            mythicSpawn: { species: b.mythicSpawns[0]!.species, side: b.mythicSpawns[0]!.side },
+            mythicSpawns: b.mythicSpawns.map((m) => ({ species: m.species, side: m.side })),
+          }
+        : {}),
       // CENTER-ORIGIN coords (LOCKED — BATTLEFIELD-SCHEMA.md / TELEMETRY-RELAY): (0,0) = arena
       // center, x east, z NORTH (+); world-UNITS post-MAPK, consumed AS-IS (never re-scaled).
       // Attacker/blue enters south (−z), defender/red holds north (+z). Known-good client
@@ -2693,12 +2731,29 @@ export class Game {
         structures.push({ anchorId: s['anchorId'], hp: s['hp'], destroyed: s['destroyed'] === true });
       }
     }
+    // Wave 4.4 (MOBA-V3-BUILD-SPEC §5e): optional mythic-KO reports — validated
+    // shallowly, inscribed in the World Chronicle at settlement next tick.
+    const mythicKos: EngineOutcome['mythicKos'] = [];
+    if (Array.isArray(payload['mythicKos'])) {
+      for (const raw of payload['mythicKos'] as unknown[]) {
+        const k = raw as Record<string, unknown> | undefined;
+        if (typeof k?.['species'] !== 'string' || k['species'] === '') continue;
+        mythicKos.push({
+          species: k['species'],
+          ...(typeof k['killerName'] === 'string' && k['killerName'] !== ''
+            ? { killerName: k['killerName'] }
+            : {}),
+          ...(k['side'] === 'ATTACKER' || k['side'] === 'DEFENDER' ? { side: k['side'] } : {}),
+        });
+      }
+    }
     const matchId = typeof payload['matchId'] === 'string' ? payload['matchId'] : b.matchId;
     b.outcome = {
       winner,
       reason: typeof outcome?.['reason'] === 'string' ? outcome['reason'] : 'UNKNOWN',
       sides: { ATTACKER: sideOf('ATTACKER'), DEFENDER: sideOf('DEFENDER') },
       ...(structures.length > 0 ? { structures } : {}),
+      ...(mythicKos.length > 0 ? { mythicKos } : {}),
       ...(matchId !== undefined ? { matchId } : {}),
     };
     if (matchId !== undefined) b.matchId = matchId;
@@ -3671,6 +3726,10 @@ function serializeWorldState(state: WorldState): SerializedWorldState {
     deliveryOrders: [...(state.deliveryOrders ?? new Map<string, DeliveryOrder>()).entries()],
     prosperityCarry: [...(state.prosperityCarry ?? new Map<string, number>()).entries()],
     pillageScars: [...(state.pillageScars ?? new Map<string, number>()).entries()],
+    mythicNfts: [...(state.mythicNfts ?? new Map<string, string[]>()).entries()],
+    mythicCounters: [...(state.mythicCounters ?? new Map<string, Record<string, number>>()).entries()],
+    chronicle: state.chronicle ?? [],
+    mythicFirstSlain: state.mythicFirstSlain ?? {},
     economy: ensureEconomy(state),
     enrichmentPools: [...(state.enrichmentPools ?? new Map<string, number>()).entries()],
     enrichCarry: [...(state.enrichCarry ?? new Map<string, number>()).entries()],
@@ -3718,6 +3777,10 @@ function deserializeWorldState(s: SerializedWorldState): WorldState {
     deliveryOrders: new Map(s.deliveryOrders ?? []),
     prosperityCarry: new Map(s.prosperityCarry ?? []),
     pillageScars: new Map(s.pillageScars ?? []),
+    mythicNfts: new Map(s.mythicNfts ?? []),
+    mythicCounters: new Map(s.mythicCounters ?? []),
+    chronicle: s.chronicle ?? [],
+    mythicFirstSlain: s.mythicFirstSlain ?? {},
     ...(s.economy !== undefined ? { economy: s.economy } : {}),
     enrichmentPools: new Map(s.enrichmentPools ?? []),
     enrichCarry: new Map(s.enrichCarry ?? []),

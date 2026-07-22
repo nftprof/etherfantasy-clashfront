@@ -15,6 +15,7 @@ export * from './engineBattle';
 export * from './duel';
 export * from './build';
 export * from './weather';
+export * from './mythics';
 export * from './prosperity';
 export * from './workers';
 export * from './market';

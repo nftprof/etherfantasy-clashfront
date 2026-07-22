@@ -299,6 +299,10 @@ export function loadDemoWorld(file: DemoWorldFile, rng: Rng, options: LoadDemoWo
     deliveryOrders: new Map(),
     prosperityCarry: new Map(),
     pillageScars: new Map(),
+    mythicNfts: new Map(),
+    mythicCounters: new Map(),
+    chronicle: [],
+    mythicFirstSlain: {},
   };
 
   // Genesis CT is a marked faucet (E5): the seeded territory/town treasuries

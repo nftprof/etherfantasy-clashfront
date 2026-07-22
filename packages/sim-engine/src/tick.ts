@@ -42,6 +42,7 @@ import { battleFoodNeed, enduranceMultiplier, marchFoodPerStep, troopCount } fro
 import { type ArmyRetreatRecord, type BattleLogisticsRecord, sortedIds, type WorldState } from './state';
 import { createWildBattle, stepWildBattle, type WildBattleState, wildBattleSurvivors } from './wildBattle';
 import { runMarketBalancer } from './market';
+import { recordMythicKo } from './mythics';
 import { runPopulation, runProsperity, runTaxCycle, setPillageScar } from './prosperity';
 import { payTransitToll, raidCaravans, settleDeliveries } from './transport';
 import { runWorkerProduction } from './workers';
@@ -1561,6 +1562,15 @@ function applyEngineOutcome(
       if (st === undefined) continue;
       st.hp = s.destroyed ? 0 : Math.max(0, Math.min(st.maxHp, Math.floor(s.hp)));
       territory.version += 1;
+    }
+  }
+
+  // Wave 4.4 (MOBA-V3-BUILD-SPEC §5e): mythic KOs reported by the callback are
+  // inscribed in the World Chronicle (first-ever slayer gets the emphasis).
+  if (outcome.mythicKos !== undefined) {
+    const label = territory?.name ?? b.hexId;
+    for (const ko of outcome.mythicKos) {
+      recordMythicKo(state, tick, b.id, label, ko);
     }
   }
 

@@ -441,6 +441,17 @@ export interface Balance {
     joinWindowSec: number;
   };
   /**
+   * ⚙ Wave 4.4 (MOBA-V3-BUILD-SPEC §5): CF-side mythic-reinforcement cadence.
+   * CF decides who spawns what (NFT ownership + this counter); the MOBA
+   * renders + runs the mythic. Stats are MOBA dials, not duplicated here.
+   */
+  mythic: {
+    /** Deterministic guaranteed spawn per N engine battles the NFT owner fights (per species). */
+    spawnEveryBattles: number;
+    /** A freshly granted NFT spawns on its very first battle (memorable mint moment). */
+    startReady: boolean;
+  };
+  /**
    * ⚙ HERO-vs-HERO card duel (docs/briefs/HERO-DUEL-SPEC.md, decision 14). v1 is a
    * CARD best-of-3 (AGGRESSIVE>TRICK>DEFENSIVE>AGGRESSIVE) where Master RATING
    * dominates via per-round INITIATIVE and Named artifacts are the wildcard. It

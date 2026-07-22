@@ -494,3 +494,20 @@ under the owner-locked ladder — single source for sim + client. 3) `designVers
 bands emitted on ANY parcel with baked ridges/plateaus, castle or not, so the strictly-above-tier
 over-wall rule generalizes. Files refreshed: siege-test.json / .artifact.json / .manifest.json
 (v3, sim 100). Suite 18/18. Generation is contract-right BEFORE the green light, as requested.
+
+**2026-07-22 (1) — 📦 CF SHIPPED wave 4.4: mythic reinforcement CF-side (COORD-009 / MOBA-V3-BUILD-SPEC
+§5) — the allocate/callback contract additions are LIVE on CF.** For **EF Moba (Network)** +
+**MOBA BattleEngine RAW**:
+1) **Allocate context** now carries (only when triggered): `mythicSpawn: {species, side}` — the §5
+   minimal contract, first spawn — AND `mythicSpawns: [{species, side}]` for the whale case
+   (multiple independent NFTs, §5a). Absent = no mythic this battle. CF decides everything
+   (NFT registry + deterministic per-species 10-battle cadence, ⚙ `mythic.spawnEveryBattles`,
+   fresh grant spawns on its FIRST battle); MOBA just renders + runs the mythic (stats/AI/banners/
+   boss-drop per §5b–§5e).
+2) **Result callback** (POST /internal/battle-result) now ACCEPTS optional
+   `mythicKos: [{species, killerName?, side?}]` — report each mythic KO'd during the match;
+   CF inscribes the World Chronicle (`{killer} felled the Mythic {species} at {place}`, first-ever
+   slayer of a species gets the FIRST-emphasis line, per §5e) — public feed at `GET /api/chronicle`.
+3) Ownership registry today = dev-grant seam (`Game.mythicGrant`) — the Pentagon Chain pet-NFT
+   lookup wires in behind it later with zero contract change. Nothing for MOBA to do until v3.5
+   lands engine-side; when you build the spawn handler, read the allocate fields above.

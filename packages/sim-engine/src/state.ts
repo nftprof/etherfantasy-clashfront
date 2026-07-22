@@ -235,6 +235,15 @@ export interface WorldState {
    * Engine container field — canonical docs/08 Territory untouched.
    */
   pillageScars?: Map<string, number>;
+  // ── Wave 4.4: mythic reinforcement (MOBA-V3-BUILD-SPEC §5) ────────────────
+  /** governorId → owned mythic-species NFTs (sorted; the spawn-right registry, decision 18). */
+  mythicNfts?: Map<string, string[]>;
+  /** governorId → species → battles since the last spawn (⚙ spawnEveryBattles triggers). */
+  mythicCounters?: Map<string, Record<string, number>>;
+  /** The public World Chronicle feed (decision 19 seed) — append-only. Type in mythics.ts. */
+  chronicle?: import('./mythics').ChronicleEntry[];
+  /** species → display name of the first player ever to slay that mythic. */
+  mythicFirstSlain?: Record<string, string>;
 }
 
 /**

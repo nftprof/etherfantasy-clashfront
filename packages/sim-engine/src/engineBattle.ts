@@ -22,6 +22,7 @@
  */
 import { newId, type Balance, type Rng } from '@clashfront/shared';
 import type { Army } from '@clashfront/shared';
+import { rollMythicSpawns } from './mythics';
 import type { WorldState } from './state';
 
 /** Callback outcome winner — the schema's enum ('TIE' maps to the sim's 'DRAW'). */
@@ -46,6 +47,8 @@ export interface EngineOutcome {
   sides: { ATTACKER: EngineSideResult; DEFENDER: EngineSideResult };
   /** Structure damage per anchor (`anchor_<i>` = index into the territory's structures array). */
   structures?: { anchorId: string; hp: number; destroyed: boolean }[];
+  /** Wave 4.4 (MOBA-V3-BUILD-SPEC §5e): mythics KO'd during the match — CF inscribes the Chronicle. */
+  mythicKos?: import('./mythics').MythicKoReport[];
   matchId?: string;
 }
 
@@ -106,6 +109,12 @@ export interface EngineBattleState {
   queuedTick?: number;
   /** Live-mode join grants (server-boundary; PRIVATE per governor — see EngineBattleJoin). */
   joins?: EngineBattleJoin[];
+  /**
+   * Wave 4.4 (MOBA-V3-BUILD-SPEC §5): mythic reinforcements triggered for this
+   * battle — decided deterministically at creation (NFT ownership + the
+   * 10-battle cadence, mythics.ts) and shipped in the allocate context.
+   */
+  mythicSpawns?: import('./mythics').MythicSpawn[];
   /** Set by the verified result callback; the next tick settles it. */
   outcome?: EngineOutcome;
 }
@@ -211,6 +220,10 @@ export function createEngineBattle(
     ...(status === 'QUEUED' ? { queuedTick: tick } : { mode }),
     ...(holders.length > 0 ? { commandGovernorIds: holders } : {}),
   };
+  // Wave 4.4: deterministic mythic-reinforcement roll (NFT owners on either
+  // side advance their per-species cadence; triggered spawns ride the record
+  // into the allocate context).
+  rollMythicSpawns(state, battle, balance);
   state.engineBattles ??= new Map();
   state.engineBattles.set(battle.id, battle);
   return battle;

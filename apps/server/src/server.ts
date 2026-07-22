@@ -818,6 +818,12 @@ export class ClashServer {
       sendJson(res, 200, { owners: this.game.landOwners() });
       return;
     }
+    if (path === '/api/chronicle' && method === 'GET') {
+      // Wave 4.4: the public World Chronicle feed (decision 19 seed) — mythic
+      // KOs today; battles/deeds/monuments join in wave 5. Public read.
+      sendJson(res, 200, this.game.chronicleFeed());
+      return;
+    }
     if (path === '/api/economy' && method === 'GET') {
       // Public telemetry, cached 10 s (skipped when tickMs is null — tests drive ticks by hand).
       const now = Date.now();

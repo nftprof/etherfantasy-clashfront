@@ -332,6 +332,11 @@
     "commandQueueTimeoutTicks": 20,
     "joinWindowSec": 90
   },
+  "mythic": {
+    "_note": "⚙ Wave 4.4 (MOBA-V3-BUILD-SPEC §5): CF-side mythic-reinforcement cadence. spawnEveryBattles = deterministic guaranteed spawn per N engine battles the NFT owner participates in (per owned species, independent counters). startReady = a freshly granted NFT spawns on its very first battle (memorable mint moment). Stats (HP 1000 / DMG 80) are MOBA-side dials — not duplicated here.",
+    "spawnEveryBattles": 10,
+    "startReady": true
+  },
   "duel": {
     "_note": "⚙ HERO-vs-HERO DUEL (docs/briefs/HERO-DUEL-SPEC.md, decision 14). v2 (owner 2026-07-12): an actual HP FIGHT, not best-of-3 pips. Each Master has STATS from its effective rating (artifact-adjusted): atk = atkBase + eff·atkPerRating; maxHp = hpBase + eff·hpPerRating. They trade blows across up to maxExchanges; the faster (higher-atk) Master strikes first so a KO can pre-empt the counter. A stance CARD each exchange (AGGRESSIVE>TRICK>DEFENSIVE>AGGRESSIVE) swings damage: aggressiveAtk/Def raise output but expose; defensiveAtk/Def turtle; the RPS clash winner gets clashWinAtk, the loser clashLoseAtk. critChance/critMult = a crit blow; signatureProcChance/spellMult = an equipped Named artifact flaring as a SPELL (the wildcard); damageVariance = ± per-blow roll. Ends on KO (or, at maxExchanges, higher HP%). ELEMENT-FREE. It AUTO-RESOLVES (offline handled); an ONLINE player picks a stance each exchange within pickWindowSec, else NPC. artifactRatingBonus = effective-rating multiplier per equipped artifact. flee.baseOdds/caughtPenalty = the FLEE standing-order roll. Deterministic (seeded, replay-safe).",
     "atkBase": 45,
