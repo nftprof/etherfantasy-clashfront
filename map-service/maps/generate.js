@@ -781,7 +781,8 @@ const PALACE_STYLES = { UW2: "drowned_bastion", ENT: "carnavale", EDU: "collegia
 // v2 = zone-coherent biomeFamily palettes (2026-07-14). v3 = v2 re-stamped after the box dataRoot
 // fix. v4 = geometry-based mode support (SIEGE/GUARD from geometry; occupant content overlays at
 // battle time). v5 = castleGeom block (rings/keep/mound/styleKey — CASTLE-ARCHITECTURE-SPEC §5).
-export const GEN_VERSION = 5;
+// v6 = tower↔wall clearance on castle parcels (free towers pushed off the ring band + gate aprons).
+export const GEN_VERSION = 6;
 
 export function generate(parcel, params = null, designVersion = 0) {
   const { parcelId, biome = "", zone = "" } = parcel;
@@ -1030,6 +1031,50 @@ export function generate(parcel, params = null, designVersion = 0) {
       x: r1(a.x), z: r1(a.z), hpMax: 1600 + budget.level * 250 });
   }
   snapOpen(structures, v.eroded, G);
+  // MIN TOWER↔WALL CLEARANCE (owner 2026-07-21: "a tower is stuck in the wall — set minimal
+  // distance of tower to wall based on size of wall so it doesn't conflict with stairs and wall;
+  // mid-castle is fine"). Free defense towers keep ≥ ~2× the wall thickness off the ring
+  // centerline (the stairs also live in that band) and stay out of the gate-stair aprons.
+  // Relocation is RADIAL from the courtyard center: inside → inward, outside → outward.
+  if (castleParts) {
+    const ringPts = castleParts.geom.pts, gates = castleParts.geom.gates || [];
+    const WALL_T = 4.2, MIND = WALL_T * 2.1, GATE_APRON = 16;
+    const rAvg2 = ringPts.reduce((s2, q) => s2 + Math.hypot(q[0] - base.x, q[1] - base.z), 0) / (ringPts.length || 1);
+    const distRing = (x, z) => {
+      let d = Infinity;
+      for (let i = 0; i < ringPts.length; i++) {
+        const A = ringPts[i], B = ringPts[(i + 1) % ringPts.length];
+        const abx = B[0] - A[0], abz = B[1] - A[1], L2 = abx * abx + abz * abz || 1;
+        const tt = Math.max(0, Math.min(1, ((x - A[0]) * abx + (z - A[1]) * abz) / L2));
+        d = Math.min(d, Math.hypot(x - (A[0] + abx * tt), z - (A[1] + abz * tt)));
+      }
+      return d;
+    };
+    // iterative: the ring wobbles, so one radial hop can still graze a bulging segment —
+    // step until BOTH the ring band and every gate apron are clear (or the iteration cap).
+    for (const s of structures) {
+      for (let it = 0; it < 10; it++) {
+        let moved = false;
+        const d = distRing(s.x, s.z);
+        const dx = s.x - base.x, dz = s.z - base.z, dd = Math.hypot(dx, dz) || 1;
+        const inside = dd < rAvg2;
+        if (d < MIND) {
+          const step = (MIND - d) + 0.6, dir = inside ? -1 : 1;
+          if (inside && dd - step < 6) break;              // courtyard core reached — good enough
+          s.x = r1(s.x + dir * (dx / dd) * step); s.z = r1(s.z + dir * (dz / dd) * step);
+          moved = true;
+        } else if (inside) for (const gq of gates) {
+          const ga = gq.at || gq, gd = Math.hypot(s.x - ga[0], s.z - ga[1]);
+          if (gd < GATE_APRON) {
+            const vx = (s.x - ga[0]) / (gd || 1), vz = (s.z - ga[1]) / (gd || 1);
+            s.x = r1(s.x + vx * (GATE_APRON - gd + 0.5)); s.z = r1(s.z + vz * (GATE_APRON - gd + 0.5));
+            moved = true; break;
+          }
+        }
+        if (!moved) break;
+      }
+    }
+  }
   // castle anchors join AFTER snapOpen — they already stand on the cleared wall-walk band and
   // snapping would bend the ring out of shape.
   structures.push(...castleStructures);

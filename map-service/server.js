@@ -157,19 +157,19 @@ if (isMain) {
   // so the self-heal reseeder never replaces the hand-authored arena. Candidates cover the box
   // layout (map-service/data, shipped by the map-service rsync) and the repo layout.
   try {
-    if (!reg.getRow("SIEGE-TEST-1")) {
-      for (const p of [
-        path.join(__dirname, "data/siege-test.artifact.json"),
-        path.join(dataRoot(), "siege-test.artifact.json"),
-        path.join(dataRoot(), "moba-maps/siege-test.artifact.json"),
-      ]) {
-        try {
-          const art = JSON.parse(fs.readFileSync(p, "utf8"));
-          reg.adoptArtifact("SIEGE-TEST-1", art);
-          console.log(`[map-service] seeded SIEGE-TEST-1 from ${p}`);
-          break;
-        } catch { /* next candidate */ }
-      }
+    // adoptArtifact is version-idempotent (same/older version = no-op, newer = replace), so we
+    // always offer the committed artifact — a rebuilt siege map supersedes the box copy at boot.
+    for (const p of [
+      path.join(__dirname, "data/siege-test.artifact.json"),
+      path.join(dataRoot(), "siege-test.artifact.json"),
+      path.join(dataRoot(), "moba-maps/siege-test.artifact.json"),
+    ]) {
+      try {
+        const art = JSON.parse(fs.readFileSync(p, "utf8"));
+        const row = reg.adoptArtifact("SIEGE-TEST-1", art);
+        console.log(`[map-service] siege-test seed: v${row.designVersion} (offered v${art?.meta?.designVersion ?? 0}) from ${p}`);
+        break;
+      } catch { /* next candidate */ }
     }
   } catch (e) { console.warn("[map-service] siege-test seed skipped:", e && e.message); }
   const srv = createMapServer();

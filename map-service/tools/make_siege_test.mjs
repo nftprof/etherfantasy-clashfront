@@ -21,8 +21,9 @@ const repo = path.resolve(__dirname, "../..");
 
 const regDirArg = process.argv.find((a) => a.startsWith("--registry="));
 process.env.MAPS_DIR = regDirArg ? regDirArg.split("=")[1] : path.join(repo, ".siege-test-registry");
-const { ensureDesign, _resetForTest } = await import("../maps/registry.js");
+const { ensureDesign, regenerate, _resetForTest } = await import("../maps/registry.js");
 const { toBattlefieldA1 } = await import("../maps/command_converter.js");
+const { GEN_VERSION } = await import("../maps/generate.js");
 _resetForTest(process.env.MAPS_DIR);
 
 // ---- the authored siege field (ARENA frame, ±161, +z north; widths in world units) ------------
@@ -43,7 +44,12 @@ const parcel = {
   sizeM: 322, investLevel: 3, worldField,
 };
 
-const { row, artifact } = ensureDesign(parcel);
+// designVersion tracks GEN_VERSION-5 so a generator bump supersedes the box's adopted copy
+// (adoptArtifact is idempotent by version: same/older = keep, newer = replace).
+let built = ensureDesign(parcel);                       // v0 baseline
+const targetV = Math.max(0, GEN_VERSION - 5);
+for (let v = 1; v <= targetV; v++) built = regenerate(parcel, null, { byOwner: true });
+const { row, artifact } = built;
 const cg = artifact.meta?.castleGeom;
 if (!cg) { console.error("FATAL: no castleGeom emitted — castle didn't build"); process.exit(1); }
 
