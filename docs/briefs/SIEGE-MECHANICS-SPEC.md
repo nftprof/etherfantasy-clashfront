@@ -97,11 +97,14 @@ corridor-carve fragments the moat arc in places; the causeway station itself is 
 **Players may build new command centers and towers ANYWHERE on the map** during gameplay. A
 placement is legal iff its footprint does NOT overlap:
 1. any existing structure (incl. castle walls/gates/towers — the wall-clearance band counts),
-2. trees / forest cells,
-3. resource nodes,
+2. trees / forest cells — **while standing**: harvested/cleared forest frees the ground,
+3. resource nodes — **while undepleted** (owner 2026-07-21: building on a resource spot is
+   possible AFTER it's depleted — mainly tree and gold; a mined-out node's cells become buildable),
 4. blocked landscape tiles (ROCK / WATER / CLIFF / OOB).
 
-I.e. the footprint must sit on clear walkable ground (OPEN / ROAD). That is the WHOLE rule — no
+I.e. the footprint must sit on ground that is clear NOW (OPEN / ROAD — including ground reclaimed
+by chopping trees or mining out a node). Depletion frees land; that is deliberate economy-to-
+territory conversion (clear the forest → build the fort). That is the WHOLE rule — no
 designated-spot restriction. `buildSpots[]` stay in the data as PREPARED PADS only (candidate perk:
 cheaper/faster builds on a pad, ⚙ — optional, not gating).
 

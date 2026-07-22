@@ -454,3 +454,5 @@ blocked landscape (ROCK/WATER/CLIFF/OOB) — clear walkable ground only. buildSp
 optional prepared-pad perk. EF Moba build items: dynamic obstacles at 30 Hz + PATHLESS→ATTACK-THE-
 BLOCKER unit behavior (what makes free-form safe: structures are destructible, sealing is siege,
 never soft-lock) + cheap server-side overlap cell test. SIEGE-MECHANICS-SPEC §5 is the contract.
+  ↳ amendment (owner, same day): depleted resource spots BECOME buildable — chopped trees + mined-
+  out gold free their cells (live grid must flip FOREST/node cells → OPEN on depletion).
