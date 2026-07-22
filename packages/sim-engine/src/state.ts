@@ -222,6 +222,19 @@ export interface WorldState {
    * Plain JSON, snapshot-safe. Type lives in transport.ts.
    */
   deliveryOrders?: Map<string, import('./transport').DeliveryOrder>;
+  // ── Wave 4.3: prosperity/tax heartbeat (docs/02 §3–§5) ────────────────────
+  /**
+   * territoryId → signed fractional prosperity-movement carry (integer,
+   * /TICKS_PER_DAY units; positive while growing toward target, negative while
+   * decaying — reset on direction change). Same pattern as foodCarry.
+   */
+  prosperityCarry?: Map<string, number>;
+  /**
+   * territoryId → pillage scar 0..100 (docs/02 §3 peaceScore = 1 − scar/100).
+   * Set to 100 on pillage; decays ⚙ pillageScarDecayPerHour (~2 days to heal).
+   * Engine container field — canonical docs/08 Territory untouched.
+   */
+  pillageScars?: Map<string, number>;
 }
 
 /**

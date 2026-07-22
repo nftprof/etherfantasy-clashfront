@@ -45,7 +45,7 @@ import { sortedIds, type WorldState } from './state';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
-export type SettlementKind = 'SPEND' | 'REWARD' | 'BURN' | 'DEPOSIT' | 'WITHDRAW';
+export type SettlementKind = 'SPEND' | 'REWARD' | 'BURN' | 'DEPOSIT' | 'WITHDRAW' | 'TAX';
 
 /** Where a REWARD/BURN drew from — drives exact journal replay (E5). */
 export type FlowSource = 'territory_treasury' | 'enrichment_pool' | 'mint';
@@ -82,6 +82,13 @@ export interface SettlementRecord {
   source?: FlowSource;
   /** DEPOSIT only. */
   destination?: DepositDestination;
+  /**
+   * TAX only (wave 4.3, docs/02 §5): exact integer split of the draw —
+   * `governor` landed in the territory treasury, `landlord` in the landlord's
+   * wallet. governor + landlord === amountCtUnits. The draw's source is ALWAYS
+   * the system:treasury account (redistribution, never a mint — net-sink).
+   */
+  taxSplit?: { governor: number; landlord: number };
 }
 
 /** One credited LOOT flow (heatmap telemetry, pruned to ⚙ lootWindowTicks). */
@@ -234,6 +241,52 @@ export function burnCT(
     addFlow(eco, `mint:${reason}`, amountCtUnits);
   }
   appendJournal(eco, { tick: state.world.tick, kind: 'BURN', governorId, amountCtUnits, reason, source });
+}
+
+/**
+ * Wave 4.3 — one territory's tax draw (docs/02 §5): gross tax is drawn from
+ * the system:treasury account (`treasuryTotal` — the CT that spend splits
+ * routed to the house) and split landlord/governor. REDISTRIBUTION ONLY: the
+ * draw is capped at what the treasury actually holds (net-sink doctrine — the
+ * populace can only hand back CT the house collected; an empty treasury pays
+ * no tax). The governor share lands in `territory.ctTreasury` (where the ECON
+ * trickle already pays it onward); the landlord share is paid ONLY when the
+ * LandNFT has a claimed owner with a wallet — a system-owned parcel's nominal
+ * landlord share simply never leaves the treasury.
+ *
+ * Returns the exact integer amounts applied (drawn = governor + landlord).
+ */
+export function taxFromSystemTreasury(
+  state: WorldState,
+  territory: Territory,
+  grossWantedCtUnits: number,
+  landlordSplit: number,
+  landlordId?: string,
+): { drawn: number; governorShare: number; landlordShare: number } {
+  const eco = ensureEconomy(state);
+  const gross = Math.min(Math.max(0, Math.floor(grossWantedCtUnits)), eco.treasuryTotal);
+  if (gross <= 0) return { drawn: 0, governorShare: 0, landlordShare: 0 };
+  const landlordNominal = Math.floor(gross * landlordSplit);
+  const landlordPayable =
+    landlordId !== undefined && state.ctBalances?.has(landlordId) === true ? landlordNominal : 0;
+  const governorShare = gross - landlordNominal;
+  const drawn = governorShare + landlordPayable;
+  if (drawn <= 0) return { drawn: 0, governorShare: 0, landlordShare: 0 };
+  eco.treasuryTotal -= drawn;
+  territory.ctTreasury += governorShare;
+  if (landlordPayable > 0) {
+    state.ctBalances!.set(landlordId!, state.ctBalances!.get(landlordId!)! + landlordPayable);
+  }
+  addFlow(eco, 'tax', drawn);
+  appendJournal(eco, {
+    tick: state.world.tick,
+    kind: 'TAX',
+    governorId: territory.governorId,
+    amountCtUnits: drawn,
+    reason: `tax:${territory.id}`,
+    taxSplit: { governor: governorShare, landlord: landlordPayable },
+  });
+  return { drawn, governorShare, landlordShare: landlordPayable };
 }
 
 /**
@@ -571,6 +624,14 @@ export function replayJournal(
       case 'WITHDRAW':
         c.wallets -= r.amountCtUnits;
         break;
+      case 'TAX': {
+        const t = r.taxSplit;
+        if (t === undefined) throw new Error(`replayJournal: TAX ${r.seq} without taxSplit`);
+        c.treasuryTotal -= r.amountCtUnits;
+        c.territoryTreasuries += t.governor;
+        c.wallets += t.landlord;
+        break;
+      }
     }
   }
   for (const p of pendingYield) applyReward(p.amountCtUnits, p.source);

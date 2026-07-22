@@ -75,7 +75,10 @@
     "popCapBonusPerAgriLevel": 0.25,
     "growthRatePerDay": 0.02,
     "migrationPctPerDay": 0.005,
-    "migrationProsperityThreshold": 30
+    "migrationProsperityThreshold": 30,
+    "starvationDeathPctPerDay": 0.01,
+    "starvationMoraleLossPerDay": 5,
+    "moraleRecoveryPerDay": 2
   },
   "supply": {
     "rangeHexes": 10,

@@ -68,6 +68,12 @@ export interface Balance {
     growthRatePerDay: number;
     migrationPctPerDay: number;
     migrationProsperityThreshold: number;
+    /** Starvation deaths per day while foodStock == 0 (docs/02 §4, ⚙1%). */
+    starvationDeathPctPerDay: number;
+    /** Civil morale bleed per starving day (docs/02 §4, ⚙5). */
+    starvationMoraleLossPerDay: number;
+    /** Civil morale recovery per fed day (⚙ — so famine isn't a permanent scar). */
+    moraleRecoveryPerDay: number;
   };
   supply: {
     rangeHexes: number;

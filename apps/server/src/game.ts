@@ -632,6 +632,9 @@ interface SerializedWorldState {
   markets?: [string, Partial<Record<string, { resource: number; gold: number }>>][];
   /** Wave 3: delivery order board. Optional for older saves. */
   deliveryOrders?: [string, DeliveryOrder][];
+  /** Wave 4.3: prosperity movement carries + pillage scars. Optional for older saves. */
+  prosperityCarry?: [string, number][];
+  pillageScars?: [string, number][];
   /** Feature Set 3 (circular economy). All optional for pre-FS3 saves. */
   economy?: EconomyState;
   enrichmentPools?: [string, number][];
@@ -3666,6 +3669,8 @@ function serializeWorldState(state: WorldState): SerializedWorldState {
     stockpileCarry: [...(state.stockpileCarry ?? new Map<string, Partial<Record<string, number>>>()).entries()],
     markets: [...(state.markets ?? new Map<string, Partial<Record<string, { resource: number; gold: number }>>>()).entries()],
     deliveryOrders: [...(state.deliveryOrders ?? new Map<string, DeliveryOrder>()).entries()],
+    prosperityCarry: [...(state.prosperityCarry ?? new Map<string, number>()).entries()],
+    pillageScars: [...(state.pillageScars ?? new Map<string, number>()).entries()],
     economy: ensureEconomy(state),
     enrichmentPools: [...(state.enrichmentPools ?? new Map<string, number>()).entries()],
     enrichCarry: [...(state.enrichCarry ?? new Map<string, number>()).entries()],
@@ -3711,6 +3716,8 @@ function deserializeWorldState(s: SerializedWorldState): WorldState {
     stockpileCarry: new Map(s.stockpileCarry ?? []),
     markets: new Map(s.markets ?? []),
     deliveryOrders: new Map(s.deliveryOrders ?? []),
+    prosperityCarry: new Map(s.prosperityCarry ?? []),
+    pillageScars: new Map(s.pillageScars ?? []),
     ...(s.economy !== undefined ? { economy: s.economy } : {}),
     enrichmentPools: new Map(s.enrichmentPools ?? []),
     enrichCarry: new Map(s.enrichCarry ?? []),

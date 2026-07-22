@@ -42,6 +42,7 @@ import { battleFoodNeed, enduranceMultiplier, marchFoodPerStep, troopCount } fro
 import { type ArmyRetreatRecord, type BattleLogisticsRecord, sortedIds, type WorldState } from './state';
 import { createWildBattle, stepWildBattle, type WildBattleState, wildBattleSurvivors } from './wildBattle';
 import { runMarketBalancer } from './market';
+import { runPopulation, runProsperity, runTaxCycle, setPillageScar } from './prosperity';
 import { payTransitToll, raidCaravans, settleDeliveries } from './transport';
 import { runWorkerProduction } from './workers';
 
@@ -227,6 +228,14 @@ function phaseProduction(state: WorldState, tick: number, _rng: Rng, balance: Ba
         t.prosperity = Math.min(CONSTANTS.PROSPERITY_MAX, t.prosperity + 1);
       }
     }
+  }
+  // Wave 4.3 (docs/02 §3–§5): prosperity moves toward its target every tick
+  // (pillage-scar healing included); population steps once per day; the tax
+  // cycle draws system:treasury → territories (redistribution, capped — no mint).
+  runProsperity(state, tick, balance);
+  if (tick % TICKS_PER_DAY === 0) runPopulation(state, balance);
+  if (balance.tax.cycleTicks > 0 && tick % balance.tax.cycleTicks === 0) {
+    runTaxCycle(state, balance);
   }
   // Wave 1 (WORLD-BUILD-OUT-PLAN): worker pets produce into stockpiles.
   runWorkerProduction(state, balance);
@@ -1944,6 +1953,8 @@ function pillageTerritory(state: WorldState, territory: Territory, gov: string, 
     CONSTANTS.PROSPERITY_MIN,
     Math.floor(territory.prosperity * (1 - CONSTANTS.PILLAGE_INFRA_LOSS)),
   );
+  // Wave 4.3: the scar drags peaceScore to 0 (docs/02 §3) and heals over ~2 days ⚙.
+  setPillageScar(state, territory.id);
   territory.version += 1;
   return lootTreasury + lootScavenge + lootPool;
 }
