@@ -95,6 +95,9 @@ import {
   type DeliveryOrder,
   postDeliveryOrder,
   raiseCaravan,
+  weatherAt,
+  type WeatherProfile,
+  type WeatherState,
   resolvePostVictory,
   runTick,
   type SettlementRecord,
@@ -171,6 +174,31 @@ function readZoneLinks(): unknown[] {
   }
   zoneLinksCache = [];
   return zoneLinksCache;
+}
+
+/**
+ * Read the continent weather cards from data/continent-weather.json
+ * (WEATHER-CONTINENT-PLAN.md Phase 1). Cached module-lifetime; {} on any
+ * read failure so a missing file degrades to CLEAR weather, never an error.
+ */
+let weatherProfilesCache: Record<string, WeatherProfile> | undefined;
+function readWeatherProfiles(): Record<string, WeatherProfile> {
+  if (weatherProfilesCache !== undefined) return weatherProfilesCache;
+  const candidates = [
+    join(process.cwd(), 'data', 'continent-weather.json'),
+    join(process.cwd(), '..', '..', 'data', 'continent-weather.json'),
+    join(process.cwd(), '..', '..', '..', 'data', 'continent-weather.json'),
+  ];
+  for (const p of candidates) {
+    if (!existsSync(p)) continue;
+    try {
+      const raw = JSON.parse(readFileSync(p, 'utf8')) as { continents?: Record<string, WeatherProfile> };
+      weatherProfilesCache = raw.continents ?? {};
+      return weatherProfilesCache;
+    } catch { /* fall through */ }
+  }
+  weatherProfilesCache = {};
+  return weatherProfilesCache;
 }
 
 function translateSimError(e: unknown): ApiError {
@@ -2389,6 +2417,18 @@ export class Game {
    * method simply HONORS `b.mode`, with the `liveBattles` kill switch as a final
    * clamp (CF_LIVE_BATTLES=0 forces accelerated even if the sim marked it live).
    */
+  /**
+   * The battle's weather (Weather Phase 1, WEATHER-CONTINENT-PLAN.md §Phase 1
+   * + COORD-007: weather LOCKED at battle start, immutable for the fight).
+   * Deterministic from (world.seed, zone, day) — every viewer + the headless
+   * sim agree. This is the field that lets the renderer retire its
+   * Math.random() floor/weather rolls (the deterministic-floor cutover).
+   */
+  battleWeather(): WeatherState {
+    const zone = String(this.config.worldFile.meta.zone);
+    return weatherAt(readWeatherProfiles(), this.state.world.seed, zone, this.state.world.tick);
+  }
+
   engineAllocateContext(
     battleId: string,
     callbackUrl: string,
@@ -2455,6 +2495,12 @@ export class Game {
         zone: String(this.config.worldFile.meta.zone),
         kind: territory === undefined || territory.governorKind === 'SYSTEM' ? 'WILD' : 'PLAYER',
       },
+      // Weather Phase 1 (WEATHER-CONTINENT-PLAN §Phase 1, COORD-007): LOCKED at
+      // battle start, immutable for the fight. Deterministic from (world.seed,
+      // zone, day) — replaces the renderer's Math.random() weather/floor rolls
+      // (the deterministic-floor cutover). Renderer: setWeather(context.weather.state);
+      // weatherT rotation becomes flavor-only.
+      weather: this.battleWeather(),
       // CENTER-ORIGIN coords (LOCKED — BATTLEFIELD-SCHEMA.md / TELEMETRY-RELAY): (0,0) = arena
       // center, x east, z NORTH (+); world-UNITS post-MAPK, consumed AS-IS (never re-scaled).
       // Attacker/blue enters south (−z), defender/red holds north (+z). Known-good client
@@ -3087,6 +3133,10 @@ export class Game {
         // the hand-authored surface graph. Data source: data/zone-registry.json
         // zoneLinks.locked (Agent D). Empty when the registry is absent.
         zoneLinks: readZoneLinks(),
+        // Today's weather for this zone (Weather Phase 1) — deterministic per
+        // (world.seed, zone, day); the overworld client shows the sky chip.
+        // Battles LOCK the weather at their start tick (COORD-007).
+        weather: this.battleWeather(),
       },
       parcels,
     };

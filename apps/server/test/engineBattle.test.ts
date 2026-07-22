@@ -289,6 +289,8 @@ test('engine e2e: collision → pending battle (hex locked) → allocate per sch
       rates: { tickHz: 30, commandSnapshotHz: 3 },
       joinWindowSec: 90, // LIVE-only staging window for hero-mode ⚡ late-seating (⚙ battle.joinWindowSec)
       parcel: { parcelId, zone: String(WORLD_FILE.meta.zone), kind: 'PLAYER' },
+      // Weather Phase 1 (COORD-007): deterministic per (seed, zone, day), LOCKED for the fight.
+      weather: game.battleWeather(),
       battlefield: {
         // FIXED ±161 standard arena (sizeM 322), (0,0)=center, +z north; world-UNITS
         // (~0.74 m/unit) consumed AS-IS (no ×MAPK). spawns ±131.6, cores would sit ±114.8.
