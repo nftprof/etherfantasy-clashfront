@@ -526,14 +526,80 @@ function phaseMorale(state: WorldState, _tick: number, _rng: Rng, balance: Balan
 }
 
 /**
- * Phase 6 — REBELLION (docs/01 §7, §6.6).
- * Rebellion-risk checks per territory; spawn rebel armies.
+ * Phase 6 — REBELLION (docs/01 §7, §6.6) — the land + the people push back.
  *
- * TODO(01 §7): risk = f(civil morale, food ≤ REBELLION_FOOD_THRESHOLD, occupation,
- *   tax pressure); rng-gated rebel army spawn (rng.fork(territoryId) per entity).
+ * LIVE (wave 4.2, WORLD-BUILD-OUT-PLAN + owner rulings 2026-07-17):
+ *   a. OVERGROWTH drift (docs/01 §11): an owned parcel untouched (untrodden,
+ *      no overseer activity) past REWILD_GRACE_DAYS gains REWILD_RATE_PER_DAY
+ *      overgrowth points/day (integer carry via tick modulo). At 100 the land
+ *      REVERTS TO WILD: SYSTEM takes over; buildings + development + pools
+ *      STAY with the land (owner ruling: "buildings stay — the ground
+ *      remembers construction"). This is the PASSIVE path to a wipe.
+ *   b. GOVERNOR WIPE (owner ruling: wipe is a NATURAL CONDITION, not a timer):
+ *      a PLAYER/NPC governor with ZERO territories is wiped — standing armies
+ *      disband (no orphan soldiers invariant), officer assignments clear
+ *      (Masters → the undeployed pool = EXILE), worker pets walk home,
+ *      caravans disband. MARCHING armies get natural grace: they keep
+ *      marching this tick; if they OCCUPY something on arrival the governor
+ *      is back in play, else the next tick's check catches them. CT balance
+ *      and NFT ownership are NEVER touched (money is money).
+ *
+ * TODO(01 §7): morale/tax-driven rebel army spawns (the original intent) —
+ *   folds in beside these once the tax cycle lands.
  */
-function phaseRebellion(_state: WorldState, _tick: number, _rng: Rng, _balance: Balance): void {
-  // Stub — no rebellions until 01 §7 risk model lands.
+function phaseRebellion(state: WorldState, tick: number, _rng: Rng, _balance: Balance): void {
+  // a — overgrowth drift + WILD reversion.
+  const graceTicks = CONSTANTS.REWILD_GRACE_DAYS * TICKS_PER_DAY;
+  const wildGov = [...(state.governorKinds?.entries() ?? [])].find(([, k]) => k === 'SYSTEM')?.[0];
+  for (const id of sortedIds(state.territories)) {
+    const t = state.territories.get(id)!;
+    if (t.governorKind === 'SYSTEM') continue;                    // wild land doesn't rewild
+    if (tick - t.lastTroddenTick <= graceTicks) continue;         // recently tended
+    // Integer accrual: REWILD_RATE_PER_DAY points/day ⇒ spread over the day's ticks.
+    const perDay = CONSTANTS.REWILD_RATE_PER_DAY;
+    const ticksPerPoint = Math.max(1, Math.floor(TICKS_PER_DAY / perDay));
+    if (tick % ticksPerPoint !== 0) continue;
+    t.overgrowth = Math.min(100, t.overgrowth + 1);
+    if (t.overgrowth >= 100 && wildGov !== undefined) {
+      // WILD reversion: ownership drifts away; architecture stays.
+      t.governorId = wildGov;
+      t.governorKind = 'SYSTEM';
+      delete t.overseerId;
+      t.overgrowth = 100;
+      t.version += 1;
+    }
+  }
+
+  // b — governor wipe: zero territories ⇒ cleanup (armies/officers/workers).
+  const holdings = new Map<string, number>();
+  for (const t of state.territories.values()) {
+    holdings.set(t.governorId, (holdings.get(t.governorId) ?? 0) + 1);
+  }
+  for (const [gov, kind] of state.governorKinds ?? []) {
+    if (kind === 'SYSTEM') continue;
+    if ((holdings.get(gov) ?? 0) > 0) continue;
+    // Does this governor have anything on the map at all? (cheap early-out)
+    let hasPresence = false;
+    for (const a of state.armies.values()) {
+      if (a.ownerGovernorId === gov && a.state !== 'DISBANDED') { hasPresence = true; break; }
+    }
+    if (!hasPresence && ![...(state.workerPets?.values() ?? [])].some((w) => w.ownerGovernorId === gov)) continue;
+    // Wipe: standing (non-marching) armies disband; marching armies get their
+    // natural grace (arrival may re-establish a territory via walk-in OCCUPY).
+    for (const id of sortedIds(state.armies)) {
+      const a = state.armies.get(id)!;
+      if (a.ownerGovernorId !== gov || a.state === 'DISBANDED' || a.state === 'MARCHING') continue;
+      if (armyEngagedIn(state, a.id) !== undefined || armyInEngineBattle(state, a.id) !== undefined) continue;
+      disbandArmy(state, a); // officer auto-frees (leading = derived from army state)
+    }
+    // Officer assignments clear — Masters land in the undeployed pool (EXILE).
+    for (const o of state.officers?.get(gov) ?? []) delete o.assignedTerritoryId;
+    // Worker pets walk home (never lost).
+    for (const [pid, w] of state.workerPets ?? []) {
+      if (w.ownerGovernorId === gov) state.workerPets!.delete(pid);
+    }
+    // CT balance + NFT ownership untouched — money is money, blueprints are blueprints.
+  }
 }
 
 /**
