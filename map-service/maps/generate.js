@@ -781,8 +781,9 @@ const PALACE_STYLES = { UW2: "drowned_bastion", ENT: "carnavale", EDU: "collegia
 // v2 = zone-coherent biomeFamily palettes (2026-07-14). v3 = v2 re-stamped after the box dataRoot
 // fix. v4 = geometry-based mode support (SIEGE/GUARD from geometry; occupant content overlays at
 // battle time). v5 = castleGeom block (rings/keep/mound/styleKey — CASTLE-ARCHITECTURE-SPEC §5).
-// v6 = tower↔wall clearance on castle parcels (free towers pushed off the ring band + gate aprons).
-export const GEN_VERSION = 6;
+// v6 = tower↔wall clearance on castle parcels. v7 = wall-conflicting towers relocate OUTWARD only
+// (courtyard = keep/CC + player builds; baked defaults = field pickets).
+export const GEN_VERSION = 7;
 
 export function generate(parcel, params = null, designVersion = 0) {
   const { parcelId, biome = "", zone = "" } = parcel;
@@ -1050,21 +1051,22 @@ export function generate(parcel, params = null, designVersion = 0) {
       }
       return d;
     };
-    // iterative: the ring wobbles, so one radial hop can still graze a bulging segment —
-    // step until BOTH the ring band and every gate apron are clear (or the iteration cap).
+    // iterative: the ring wobbles, so one radial hop can still graze a bulging segment.
+    // Wall-conflicting towers relocate OUTWARD ONLY (owner 2026-07-21: the courtyard belongs to
+    // the keep/CC + the player's own free-form builds; baked defaults become field pickets
+    // covering the approaches — never garrison towers dropped beside the CC).
     for (const s of structures) {
-      for (let it = 0; it < 10; it++) {
+      for (let it = 0; it < 12; it++) {
         let moved = false;
         const d = distRing(s.x, s.z);
         const dx = s.x - base.x, dz = s.z - base.z, dd = Math.hypot(dx, dz) || 1;
         const inside = dd < rAvg2;
-        if (d < MIND) {
-          const step = (MIND - d) + 0.6, dir = inside ? -1 : 1;
-          if (inside && dd - step < 6) break;              // courtyard core reached — good enough
-          s.x = r1(s.x + dir * (dx / dd) * step); s.z = r1(s.z + dir * (dz / dd) * step);
+        if (d < MIND || (inside && d < MIND + 2)) {        // in the band (or courtyard-side of it)
+          const step = (MIND - d) + (inside ? rAvg2 - dd + MIND : 0) + 0.6;
+          s.x = r1(s.x + (dx / dd) * step); s.z = r1(s.z + (dz / dd) * step);   // always OUTWARD
           moved = true;
-        } else if (inside) for (const gq of gates) {
-          const ga = gq.at || gq, gd = Math.hypot(s.x - ga[0], s.z - ga[1]);
+        } else if (inside) for (const gq of gates) {       // pre-existing deep-courtyard towers:
+          const ga = gq.at || gq, gd = Math.hypot(s.x - ga[0], s.z - ga[1]);    // keep stairs clear
           if (gd < GATE_APRON) {
             const vx = (s.x - ga[0]) / (gd || 1), vz = (s.z - ga[1]) / (gd || 1);
             s.x = r1(s.x + vx * (GATE_APRON - gd + 0.5)); s.z = r1(s.z + vz * (GATE_APRON - gd + 0.5));

@@ -105,8 +105,9 @@ placement is legal iff its footprint does NOT overlap:
 I.e. the footprint must sit on ground that is clear NOW (OPEN / ROAD — including ground reclaimed
 by chopping trees or mining out a node). Depletion frees land; that is deliberate economy-to-
 territory conversion (clear the forest → build the fort). That is the WHOLE rule — no
-designated-spot restriction. `buildSpots[]` stay in the data as PREPARED PADS only (candidate perk:
-cheaper/faster builds on a pad, ⚙ — optional, not gating).
+designated-spot restriction. `buildSpots[]` stay in the data as **PREPARED PADS — LOCKED perk
+(owner 2026-07-21): building on a pad is CHEAPER and FASTER; free-form anywhere else costs full
+price and takes longer to build** (⚙ cost/time multipliers for balance). Pads never gate placement.
 
 Why lane-sealing is acceptable: every structure has HP. A tower-wall across a lane is a legitimate
 fortification, not a soft-lock — attackers path-fail into it and BATTER IT DOWN (CoC model). The
