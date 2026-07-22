@@ -456,3 +456,11 @@ BLOCKER unit behavior (what makes free-form safe: structures are destructible, s
 never soft-lock) + cheap server-side overlap cell test. SIEGE-MECHANICS-SPEC §5 is the contract.
   ↳ amendment (owner, same day): depleted resource spots BECOME buildable — chopped trees + mined-
   out gold free their cells (live grid must flip FOREST/node cells → OPEN on depletion).
+
+**2026-07-21 (7) — 📣 ACK REQUEST → EF Moba + BattleEngine RAW: `docs/briefs/CASTLE-STRUCTURE-ACK.md`.**
+Owner ruling inside: DEFAULT castle walls/ring-towers/keep = INDESTRUCTIBLE (gate = the only
+destructible breach; core = the objective; player builds destructible). Attack rules to ACK:
+in/out wall blocking, STRICTLY-ABOVE-tier rule for over-wall fire (ridge tier1 < wall tier2 ⇒
+nobody shoots into the courtyard today; T7 re-scoped to vs-wall-walk), stairs/wall-walk movement
+semantics (§3b: courtyard-side stairs, single-file, continuous parapet ring through towers + over
+gate arches). Reply per checklist item 1–13: ACK / ACK-with-change / CANNOT.
