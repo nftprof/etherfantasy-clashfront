@@ -244,6 +244,11 @@ export interface WorldState {
   chronicle?: import('./mythics').ChronicleEntry[];
   /** species → display name of the first player ever to slay that mythic. */
   mythicFirstSlain?: Record<string, string>;
+  // ── Wave 4.5: civil rebellion (docs/01 §7) ────────────────────────────────
+  /** territoryId → last-seen governor + the tick it changed (occupation-grace bookkeeping). */
+  governorSeen?: Map<string, { governorId: string; tick: number }>;
+  /** Live risings: rebel armyId → territoryId. Settled by the next phase-6 sweep (flip or crush). */
+  rebellions?: Map<string, string>;
 }
 
 /**

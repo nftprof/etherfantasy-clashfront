@@ -42,7 +42,8 @@ import { battleFoodNeed, enduranceMultiplier, marchFoodPerStep, troopCount } fro
 import { type ArmyRetreatRecord, type BattleLogisticsRecord, sortedIds, type WorldState } from './state';
 import { createWildBattle, stepWildBattle, type WildBattleState, wildBattleSurvivors } from './wildBattle';
 import { runMarketBalancer } from './market';
-import { recordMythicKo } from './mythics';
+import { chronicleAppend, recordMythicKo } from './mythics';
+import { hash32 } from './weather';
 import { runPopulation, runProsperity, runTaxCycle, setPillageScar } from './prosperity';
 import { payTransitToll, raidCaravans, settleDeliveries } from './transport';
 import { runWorkerProduction } from './workers';
@@ -557,7 +558,7 @@ function phaseMorale(state: WorldState, _tick: number, _rng: Rng, balance: Balan
  * TODO(01 §7): morale/tax-driven rebel army spawns (the original intent) —
  *   folds in beside these once the tax cycle lands.
  */
-function phaseRebellion(state: WorldState, tick: number, _rng: Rng, _balance: Balance): void {
+function phaseRebellion(state: WorldState, tick: number, rng: Rng, balance: Balance): void {
   // a — overgrowth drift + WILD reversion.
   const graceTicks = CONSTANTS.REWILD_GRACE_DAYS * TICKS_PER_DAY;
   const wildGov = [...(state.governorKinds?.entries() ?? [])].find(([, k]) => k === 'SYSTEM')?.[0];
@@ -609,6 +610,153 @@ function phaseRebellion(state: WorldState, tick: number, _rng: Rng, _balance: Ba
       if (w.ownerGovernorId === gov) state.workerPets!.delete(pid);
     }
     // CT balance + NFT ownership untouched — money is money, blueprints are blueprints.
+  }
+
+  // c — civil rebellion (docs/01 §7, wave 4.5).
+  const reb = balance.rebellion;
+  const hexLocked = (hexId: string): boolean => {
+    for (const b of state.wildBattles?.values() ?? []) if (b.hexId === hexId) return true;
+    for (const b of state.engineBattles?.values() ?? []) if (b.hexId === hexId) return true;
+    return false;
+  };
+
+  // c1 — settle live risings (the battle phase fought them last tick).
+  state.rebellions ??= new Map();
+  for (const armyId of sortedIds(state.rebellions)) {
+    const terrId = state.rebellions.get(armyId)!;
+    const t = state.territories.get(terrId);
+    const rebels = state.armies.get(armyId);
+    if (t === undefined) {
+      state.rebellions.delete(armyId);
+      continue;
+    }
+    if (rebels === undefined || rebels.state === 'DISBANDED' || troopCount(rebels) === 0) {
+      // CRUSHED — the resentment lingers (civil morale capped, docs/01 §7).
+      state.rebellions.delete(armyId);
+      t.morale = Math.min(t.morale, reb.crushedMoraleCeiling);
+      t.version += 1;
+      chronicleAppend(state, {
+        tick,
+        kind: 'REBELLION_CRUSHED',
+        text: `The rising at ${t.name} was crushed — but the resentment lingers.`,
+      });
+      continue;
+    }
+    if (hexLocked(rebels.hexId)) continue; // a battle still rages — wait for the dust
+    if (!t.hexIds.includes(rebels.hexId)) {
+      // DRIVEN OFF: the field battle routed the rebels off the land (retreat
+      // path). The rising is broken — same lingering resentment as a crushing.
+      state.rebellions.delete(armyId);
+      t.morale = Math.min(t.morale, reb.crushedMoraleCeiling);
+      t.version += 1;
+      chronicleAppend(state, {
+        tick,
+        kind: 'REBELLION_CRUSHED',
+        text: `The rising at ${t.name} was driven off — but the resentment lingers.`,
+      });
+      continue;
+    }
+    const opposed = [...state.armies.values()].some(
+      (a) =>
+        a.hexId === rebels.hexId &&
+        a.state !== 'DISBANDED' &&
+        a.id !== armyId &&
+        a.kind !== 'CARAVAN' &&
+        state.governorKinds?.get(a.ownerGovernorId) !== 'SYSTEM',
+    );
+    if (opposed) continue; // the garrison still stands — battle spawning fights them
+    state.rebellions.delete(armyId);
+    if (t.governorKind !== 'SYSTEM' && wildGov !== undefined) {
+      // VICTORY: the land falls to its own people. The Land NFT stays with its
+      // owner (ownership ≠ control, invariant 3) — it just earns nothing now.
+      t.governorId = wildGov;
+      t.governorKind = 'SYSTEM';
+      delete t.overseerId;
+      t.garrisonArmyId = rebels.id;
+      rebels.state = 'GARRISON';
+      rebels.version += 1;
+      t.version += 1;
+      chronicleAppend(state, {
+        tick,
+        kind: 'REBELLION_VICTORY',
+        text: `${t.name} has fallen to its own people — the land answers to no lord.`,
+      });
+    }
+  }
+
+  // c2 — occupation-grace bookkeeping: record governor changes whoever caused
+  // them (conquest, walk-in, reversion) — self-maintaining, no hooks needed.
+  state.governorSeen ??= new Map();
+  for (const id of sortedIds(state.territories)) {
+    const t = state.territories.get(id)!;
+    const seen = state.governorSeen.get(id);
+    if (seen === undefined) {
+      // Genesis/legacy-save territories start OUT of the occupation grace.
+      state.governorSeen.set(id, { governorId: t.governorId, tick: tick - reb.occupationGraceTicks - 1 });
+    } else if (seen.governorId !== t.governorId) {
+      state.governorSeen.set(id, { governorId: t.governorId, tick });
+    }
+  }
+
+  // c3 — risk rolls (deterministic hash — order-insensitive, no rng draws
+  // unless a rising actually triggers).
+  if (wildGov !== undefined && reb.riskScale > 0) {
+    const inRising = new Set(state.rebellions.values());
+    for (const id of sortedIds(state.territories)) {
+      const t = state.territories.get(id)!;
+      if (t.governorKind === 'SYSTEM') continue; // the wilds don't rebel
+      if (t.population <= 0) continue; // nobody left to rise
+      if (inRising.has(id)) continue; // one rising at a time
+      const hexId = t.hexIds[0]!;
+      if (hexLocked(hexId)) continue;
+      let risk = 0;
+      if (t.foodStock <= CONSTANTS.REBELLION_FOOD_THRESHOLD) risk += reb.riskFood;
+      const changed = state.governorSeen.get(id)!;
+      if (tick - changed.tick <= reb.occupationGraceTicks) risk += reb.riskOccupation;
+      if (t.prosperity < reb.prosperityLowBand) risk += reb.riskPoverty;
+      if (risk === 0) continue;
+      risk *= 1 - t.morale / 100;
+      if (risk <= 0) continue;
+      const roll = hash32(`${state.world.id}:rebellion:${id}:${tick}`) / 0x1_0000_0000;
+      if (roll >= risk / reb.riskScale) continue;
+      // The people rise: a slice of the populace takes up arms as a SYSTEM
+      // army on the seat hex; battle spawning fights the garrison THIS tick,
+      // the c1 sweep settles flip-or-crush next tick.
+      const rebelCount = Math.min(
+        t.population,
+        Math.max(reb.rebelMin, Math.floor(t.population * reb.rebelPctOfPop)),
+      );
+      t.population -= rebelCount;
+      const seizedFood = Math.min(
+        t.foodStock,
+        rebelCount * balance.provisions.defaultFoodPerSoldier,
+      );
+      t.foodStock -= seizedFood;
+      t.version += 1;
+      const army: Army = {
+        id: newId('army', { time: tick, random: () => rng.next() }),
+        worldId: state.world.id,
+        ownerGovernorId: wildGov,
+        state: 'MARCHING', // standing start — no path; battle spawning picks it up
+        hexId,
+        units: [{ unitClass: 'INFANTRY', count: rebelCount, veterancy: 0, hp: 100 }],
+        provisions: { food: seizedFood, gold: 0, wood: 0 },
+        supply: CONSTANTS.SUPPLY_MAX_DEFAULT,
+        supplyMax: CONSTANTS.SUPPLY_MAX_DEFAULT,
+        morale: 60,
+        supplyTrainIds: [],
+        version: 1,
+      };
+      state.armies.set(army.id, army);
+      state.monsterNames ??= new Map();
+      state.monsterNames.set(army.id, 'Rebel Militia');
+      state.rebellions.set(army.id, id);
+      chronicleAppend(state, {
+        tick,
+        kind: 'REBELLION',
+        text: `The people of ${t.name} rise in rebellion!`,
+      });
+    }
   }
 }
 

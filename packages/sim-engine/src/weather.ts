@@ -79,7 +79,8 @@ export interface WeatherState {
  * number and we need a stable float in [0,1) that depends on ONLY the inputs
  * (not on any RNG side-state).
  */
-function hash32(s: string): number {
+/** FNV-1a 32-bit — shared deterministic hash for order-insensitive sim rolls. */
+export function hash32(s: string): number {
   let h = 0x811c9dc5;
   for (let i = 0; i < s.length; i++) {
     h ^= s.charCodeAt(i);

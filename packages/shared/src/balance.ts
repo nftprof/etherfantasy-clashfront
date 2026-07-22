@@ -441,6 +441,23 @@ export interface Balance {
     joinWindowSec: number;
   };
   /**
+   * ⚙ Wave 4.5 — civil rebellion (docs/01 §7). Risk points accumulate per
+   * tick from hunger/occupation/poverty, scaled by (1 − morale/100); the
+   * trigger is a deterministic hash roll at risk/riskScale. See balance.json
+   * `rebellion._note` for the full model.
+   */
+  rebellion: {
+    riskFood: number;
+    riskOccupation: number;
+    riskPoverty: number;
+    prosperityLowBand: number;
+    occupationGraceTicks: number;
+    riskScale: number;
+    rebelPctOfPop: number;
+    rebelMin: number;
+    crushedMoraleCeiling: number;
+  };
+  /**
    * ⚙ Wave 4.4 (MOBA-V3-BUILD-SPEC §5): CF-side mythic-reinforcement cadence.
    * CF decides who spawns what (NFT ownership + this counter); the MOBA
    * renders + runs the mythic. Stats are MOBA dials, not duplicated here.

@@ -332,6 +332,18 @@
     "commandQueueTimeoutTicks": 20,
     "joinWindowSec": 90
   },
+  "rebellion": {
+    "_note": "⚙ docs/01 §7 civil rebellion (wave 4.5). Risk points/tick: starving +riskFood, governor changed within occupationGraceTicks +riskOccupation, prosperity below prosperityLowBand +riskPoverty; total scaled by (1 − civilMorale/100) — content people don't rise. Trigger chance per tick = risk/riskScale (deterministic hash roll): riskScale 100000 ⇒ a fully-miserable territory (~68 pts) risks ≈1 rising/day. Rebels = rebelPctOfPop of the populace (min rebelMin) rising as a SYSTEM army; the battle-spawning phase fights them THE SAME tick; an unopposed or victorious rising flips the land to the wilds — the Land NFT stays with its owner (ownership ≠ control, invariant 3). Crushed ⇒ civil morale capped at crushedMoraleCeiling (the resentment lingers).",
+    "riskFood": 40,
+    "riskOccupation": 20,
+    "riskPoverty": 15,
+    "prosperityLowBand": 25,
+    "occupationGraceTicks": 1440,
+    "riskScale": 100000,
+    "rebelPctOfPop": 0.05,
+    "rebelMin": 20,
+    "crushedMoraleCeiling": 30
+  },
   "mythic": {
     "_note": "⚙ Wave 4.4 (MOBA-V3-BUILD-SPEC §5): CF-side mythic-reinforcement cadence. spawnEveryBattles = deterministic guaranteed spawn per N engine battles the NFT owner participates in (per owned species, independent counters). startReady = a freshly granted NFT spawns on its very first battle (memorable mint moment). Stats (HP 1000 / DMG 80) are MOBA-side dials — not duplicated here.",
     "spawnEveryBattles": 10,
