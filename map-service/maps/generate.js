@@ -766,6 +766,59 @@ function castleLayout(g, G, rng, { base, atkPt, poly, half, budgetLevel, bridge 
   return { structures: out, geom };
 }
 
+// STAIR ACCESS POINTS AS DATA (MOBA contract fix 2, 2026-07-21): the sim needs the legal
+// ground↔parapet transition points and the visual kit must not derive placement independently —
+// this is the ONE source both consume. Mirrors the owner-locked size ladder: PARALLEL hugging a
+// straight wall stretch at least one flight long, else PERPENDICULAR into the courtyard (run may
+// pass the ring radius, never the diameter — treads compress on tiny rings). foot = ground entry,
+// top = parapet landing (flush at wall-walk height).
+function computeStairs(pts, gates, base) {
+  const STEPS = 7, TREAD = 1.6, ALONG = 13.5, FLIGHT = STEPS * TREAD + 0.6;
+  const cx = base.x, cz = base.z, out = [];
+  const rAvg = pts.reduce((s, q) => s + Math.hypot(q[0] - cx, q[1] - cz), 0) / (pts.length || 1);
+  for (let gi = 0; gi < gates.length; gi++) {
+    const ga = gates[gi].at || gates[gi], gx = ga[0], gzp = ga[1];
+    let bx = 1, bz = 0, bd = Infinity;                 // local wall tangent at this gate
+    for (let i = 0; i < pts.length; i++) {
+      const A = pts[i], B = pts[(i + 1) % pts.length];
+      const d2 = Math.hypot((A[0] + B[0]) / 2 - gx, (A[1] + B[1]) / 2 - gzp);
+      if (d2 < bd) { bd = d2; bx = B[0] - A[0]; bz = B[1] - A[1]; }
+    }
+    const bL = Math.hypot(bx, bz) || 1, wdx = bx / bL, wdz = bz / bL;
+    let ux = -wdz, uz = wdx;                          // inner normal (toward the courtyard)
+    if (ux * (cx - gx) + uz * (cz - gzp) < 0) { ux = -ux; uz = -uz; }
+    for (const side of [1, -1]) {
+      let par = null;                                  // parallel-fit scan (same rule as the kit)
+      for (let i = 0; i < pts.length && !par; i++) {
+        const A = pts[i], B = pts[(i + 1) % pts.length];
+        const sdx = B[0] - A[0], sdz = B[1] - A[1], sL = Math.hypot(sdx, sdz);
+        if (sL < FLIGHT) continue;
+        const dx2 = sdx / sL, dz2 = sdz / sL;
+        if (Math.abs(dx2 * wdx + dz2 * wdz) < 0.92) continue;
+        const t0 = (gx - A[0]) * dx2 + (gzp - A[1]) * dz2;
+        const dirS = Math.sign(dx2 * wdx + dz2 * wdz) * side;
+        const a0 = t0 + dirS * ALONG, a1 = t0 + dirS * (ALONG + FLIGHT);
+        if (Math.min(a0, a1) >= 1.2 && Math.max(a0, a1) <= sL - 1.2) par = { A, dx2, dz2, a0, a1 };
+      }
+      if (par) {
+        let nx = -par.dz2, nz = par.dx2;
+        if (nx * (cx - gx) + nz * (cz - gzp) < 0) { nx = -nx; nz = -nz; }
+        const off = 2.1 + 1.7;
+        out.push({ gate: gi, side, mode: "PARALLEL",
+          foot: [r1(par.A[0] + par.dx2 * par.a0 + nx * off), r1(par.A[1] + par.dz2 * par.a0 + nz * off)],
+          top: [r1(par.A[0] + par.dx2 * par.a1 + nx * off), r1(par.A[1] + par.dz2 * par.a1 + nz * off)] });
+      } else {
+        const maxRun = Math.max(3.5, rAvg * 1.7 - 2.7), tread2 = Math.min(TREAD, maxRun / STEPS);
+        const bxp = gx + wdx * side * ALONG, bzp2 = gzp + wdz * side * ALONG;
+        out.push({ gate: gi, side, mode: "PERPENDICULAR",
+          foot: [r1(bxp + ux * (2.7 + (STEPS - 1) * tread2)), r1(bzp2 + uz * (2.7 + (STEPS - 1) * tread2))],
+          top: [r1(bxp + ux * 2.7), r1(bzp2 + uz * 2.7)] });
+      }
+    }
+  }
+  return out;
+}
+
 // tier ladder + per-tier build numbers (CASTLE-ARCHITECTURE-SPEC §3: walls climb, keeps crown)
 const CASTLE_TIERS = {
   PALACE: { wallH: 11, keepTiers: 3, keepH: 30, moundRaise: 6 },
@@ -782,10 +835,15 @@ const PALACE_STYLES = { UW2: "drowned_bastion", ENT: "carnavale", EDU: "collegia
 // fix. v4 = geometry-based mode support (SIEGE/GUARD from geometry; occupant content overlays at
 // battle time). v5 = castleGeom block (rings/keep/mound/styleKey — CASTLE-ARCHITECTURE-SPEC §5).
 // v6 = tower↔wall clearance on castle parcels. v7 = wall-conflicting towers relocate OUTWARD only
-// (courtyard = keep/CC + player builds; baked defaults = field pickets).
-export const GEN_VERSION = 7;
+// (courtyard = keep/CC + player builds; baked defaults = field pickets). v8 = standard top-level
+// `siege` block (tiers on ALL high ground, wallRing/gates/stairs-as-data/drawbridge on fortresses)
+// + designVersion made mandatory — MOBA contract fixes 1–4, 2026-07-21.
+export const GEN_VERSION = 8;
 
 export function generate(parcel, params = null, designVersion = 0) {
+  // designVersion is MANDATORY in every artifact (MOBA contract fix 3: it pins caches, replays,
+  // and the live render.json at 10K scale — never null/undefined downstream).
+  designVersion = Number.isInteger(designVersion) ? designVersion : 0;
   const { parcelId, biome = "", zone = "" } = parcel;
   const seed = seedFor(parcelId, biome, zone);
   const budget = budgetFor(parcel.investLevel ?? 0);   // investment tier = hard content budget
@@ -1106,6 +1164,36 @@ export function generate(parcel, params = null, designVersion = 0) {
   const walk = new Uint8Array(G * G);
   for (let i = 0; i < g.length; i++) walk[i] = isBlocked(g, i) ? 0 : 1;
 
+  // ---- SIEGE BLOCK (standard contract — MOBA contract fix 1/2/4, 2026-07-21; the shapes that
+  // lived under the test map's `_siegeTest` are now a first-class field). Emitted on EVERY parcel
+  // with siege-relevant geometry: fortress parcels get the full block (tiers/wallRing/gates/
+  // stairs/drawbridge); ANY parcel with baked high ground still gets elevationTiers, so the
+  // strictly-above-tier over-wall rule works wherever ridges exist — castle or not.
+  const siege = (() => {
+    const tier1 = [];
+    if (wf) for (const rr of wf.ridges || [])
+      if (rr.pts && rr.pts.length >= 2)
+        tier1.push({ kind: "RIDGE_TOP", poly: rr.pts.map((q) => [r1(q[0]), r1(q[1])]), w: r1(rr.width || 8) });
+    if (!castleParts && !tier1.length) return null;
+    const out = { elevationTiers: { tier1, tier2: [] } };
+    if (castleParts) {
+      const gpts = castleParts.geom.pts, gz2 = castleParts.geom.gates || [];
+      const T2s = CASTLE_TIERS[castle && CASTLE_TIERS[castle.kind] ? castle.kind : "KEEP"];
+      tier1.push({ kind: "MOUND", at: [r1(base.x), r1(base.z)], r: 34 });
+      out.elevationTiers.tier2.push({ kind: "WALL_WALK", ring: gpts });
+      out.wallRing = { pts: gpts, h: T2s.wallH, gates: gz2.map((g2) => g2.at || g2) };
+      out.gates = structures.filter((s2) => /^castle_gate_/.test(s2.anchorId))
+        .map((s2) => ({ id: s2.anchorId, at: [s2.x, s2.z], hp: s2.hpMax }));
+      out.stairs = computeStairs(gpts, gz2, base);
+      if (bridge.reg.length) {          // nearest world-road bridge = the drawbridge/causeway site
+        let bb = bridge.reg[0], bd = Infinity;
+        for (const c of bridge.reg) { const d2 = Math.hypot(c[0] - base.x, c[1] - base.z); if (d2 < bd) { bd = d2; bb = c; } }
+        out.drawbridge = { at: [r1(bb[0]), r1(bb[1])] };
+      }
+    }
+    return out;
+  })();
+
   return {
     arena: poly
       ? { shape: "polygon", sizeM, bounds: poly }
@@ -1114,6 +1202,7 @@ export function generate(parcel, params = null, designVersion = 0) {
     terrain: { cellM: CELL_M, w: G, h: G, cells: b64(g), walk: b64(walk) },
     obstacles: props,
     resources, buildSpots, spawnZones, lanes, routes, barriers, mobs, structures,
+    ...(siege ? { siege } : {}),
     meta: { seed, designVersion, genVersion: GEN_VERSION, parcelId, biome, zone, params: p, repairs: v.repairs,
             budget: { level: budget.level, name: budget.name },
             ...(castle ? { castle: { id: castle.id, kind: castle.kind, name: castle.name } } : {}),

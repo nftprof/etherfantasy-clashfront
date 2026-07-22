@@ -49,18 +49,23 @@ no 3D math needed (the sim can stay 2D + a per-cell `tier`/`wall` layer).
   WALL cells at crawl speed (⚙ ~0.35×) and fight from the wall-top when on it. Counterplay:
   crawlers are exposed (always LOS-visible) while climbing. Build behind a flag; test last.
 
-## §2 Data contract — what the map already gives the engine
+## §2 Data contract — the STANDARD `siege` block (GEN_VERSION 8, MOBA contract fixes 1–4)
 
-Battlefield A1 (`data/moba-maps/siege-test.json`, BATTLEFIELD-SCHEMA-conformant) plus a
-`_siegeTest` block:
-- `elevationTiers`: tier-1 zones (castle MOUND disc, RIDGE_TOP band) + tier-2 WALL_WALK ring —
-  machine-readable zones so the sim needs only point-in-zone lookups.
-- `wallRing` (pts + height + gate points), `gates` (id/at/hp), `drawbridge.at`.
-- `stations[]` T1–T8 (below) with coordinates — drive the headless test straight off the file.
-- The raw artifact (`siege-test.artifact.json`) carries `meta.castleGeom` for renderers, and the
-  registry grid encodes WALL/GATE/WATER/ROCK/ROAD per cell.
-Every generated castle parcel emits the same shapes — nothing here is test-map-only except
-`_siegeTest` itself.
+Every parcel with siege-relevant geometry carries a **top-level `siege` block** in the artifact,
+the Battlefield A1, AND the render manifest (same object, verbatim passthrough):
+- `siege.elevationTiers`: tier-1 zones (MOUND disc, RIDGE_TOP bands) + tier-2 `WALL_WALK` ring.
+  **Emitted on ANY parcel with baked high ground, castle or not** (fix 4) — the strictly-above-
+  tier over-wall rule works wherever ridges/plateaus exist, automatically.
+- `siege.wallRing` (pts + height + gate points) · `siege.gates` (id/at/hp) ·
+  `siege.drawbridge.at` (derived from the REAL road-over-water bridge cells).
+- **`siege.stairs[]` — stair access points AS DATA** (fix 2): per gate, per side —
+  `{gate, side, mode: PARALLEL|PERPENDICULAR, foot:[x,z], top:[x,z]}` — computed by the generator
+  under the owner-locked size ladder; sim and client both consume THIS, neither derives placement.
+- `meta.designVersion` is **mandatory** in every artifact/A1/manifest (fix 3) — never null.
+- `_siegeTest` on the test map is now ONLY `{spec, stations[]}` (T1–T8 coordinates) — genuinely
+  test-only. All structural data lives in `siege`.
+The raw artifact also carries `meta.castleGeom` for renderers; the grid encodes
+WALL/GATE/WATER/ROCK/ROAD per cell.
 
 ## §3 The test map — SIEGE-TEST-1
 

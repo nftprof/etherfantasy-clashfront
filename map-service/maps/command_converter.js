@@ -741,6 +741,9 @@ export function toBattlefieldA1(artifact) {
 
   const bf = {
     v: 1,
+    // standard siege block passthrough (MOBA contract fix 1, 2026-07-21): elevation tiers /
+    // wallRing / gates / stairs / drawbridge ride the A1 verbatim on every parcel that has them.
+    ...(a.siege ? { siege: a.siege } : {}),
     meta: {
       parcelId: a.meta?.parcelId ?? "UNKNOWN",
       seed: String(a.meta?.seed ?? ""),

@@ -62,6 +62,12 @@ export function readManifest(parcelId, version = null) {
   let m;
   try { m = convert(art, { parcelId: String(parcelId), designVersion: v }); }
   catch (e) { console.error("[maps] convert:", e.message); return { error: "convert_failed", detail: e.message }; }
+  // contract hardening (MOBA fixes 1+3): the manifest always carries designVersion + the siege
+  // block — attached HERE so the engine-team's vendored converter stays untouched.
+  if (m && !m.error) {
+    if (m.designVersion == null) m.designVersion = v;
+    if (art.siege && !m.siege) m.siege = art.siege;
+  }
   try { fs.writeFileSync(mp, JSON.stringify(m)); } catch (e) { console.error("[maps] manifest write:", e.message); }
   return m;
 }

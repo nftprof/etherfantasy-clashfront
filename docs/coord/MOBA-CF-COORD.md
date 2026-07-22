@@ -484,3 +484,13 @@ scatter/lanes/fountains/towers/…) AND live at
 per designVersion — always matches the current map; prefer the URL, the committed file is the
 offline copy). Rule going forward: manifests are a CF ParcelMap deliverable — if one is ever
 missing for a map you need, ask in this log, never fork the converter.
+
+**2026-07-21 (10) — ✅ ALL FOUR MOBA contract fixes SHIPPED (GEN_VERSION 8, siege map v3).**
+1) `_siegeTest` structural data promoted to a STANDARD top-level `siege` block on artifact + A1 +
+render manifest (verbatim passthrough; `_siegeTest` = only spec pointer + T1–T8 stations now).
+2) **Stairs as data**: `siege.stairs[] {gate, side, mode, foot, top}` computed by the generator
+under the owner-locked ladder — single source for sim + client. 3) `designVersion` mandatory
+(coerced in generate(); readManifest backfills legacy manifests — never null again). 4) Tier
+bands emitted on ANY parcel with baked ridges/plateaus, castle or not, so the strictly-above-tier
+over-wall rule generalizes. Files refreshed: siege-test.json / .artifact.json / .manifest.json
+(v3, sim 100). Suite 18/18. Generation is contract-right BEFORE the green light, as requested.

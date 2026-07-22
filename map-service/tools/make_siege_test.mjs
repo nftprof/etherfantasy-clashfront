@@ -65,21 +65,11 @@ const bridgeAt = (() => {           // where the road polyline crosses the moat 
   }
   return best;
 })();
+if (!a1.siege) { console.error("FATAL: artifact carries no standard `siege` block (GEN_VERSION >= 8 required)"); process.exit(1); }
+// structural siege data now rides the STANDARD `siege` block (artifact → A1 passthrough, MOBA
+// contract fix 1). _siegeTest keeps ONLY what is test-map-specific: the spec pointer + stations.
 a1._siegeTest = {
   spec: "docs/briefs/SIEGE-MECHANICS-SPEC.md",
-  elevationTiers: {                                  // machine-readable tier zones for the engine
-    comment: "tier 0 = ground; ranged bonus/penalty per tier delta (spec §3). Zones are discs/rings in map coords.",
-    tier1: [
-      { kind: "MOUND", at: cg.keep?.at || CASTLE_AT, r: 34, note: "castle earthwork courtyard" },
-      { kind: "RIDGE_TOP", poly: worldField.ridges[0].pts, w: worldField.ridges[0].width, note: "outside high ground — attacker elevation station" },
-    ],
-    tier2: [
-      { kind: "WALL_WALK", ring: cg.rings?.[0]?.pts || [], note: "parapet — reachable ONLY via stairs/towers (spec R4)" },
-    ],
-  },
-  wallRing: { pts: cg.rings?.[0]?.pts || [], h: cg.rings?.[0]?.h, gates: (cg.rings?.[0]?.gates || []).map((g) => g.at || g) },
-  gates: gates.map((g) => ({ id: g.anchorId, at: [g.x, g.z], hp: g.hpMax, note: "destructible DOOR (spec R3): breach opens the passage" })),
-  drawbridge: { at: bridgeAt, note: "moat causeway (spec R5): defender toggle UP(water)/DOWN(road); v1 bridge indestructible, breach the gate instead" },
   stations: [
     { id: "T1", test: "ground↔ground fire ACROSS the wall must be blocked (R1)", at: [CASTLE_AT[0] - 40, CASTLE_AT[1]] },
     { id: "T2", test: "ground → wall-top engagement allowed both directions (R1)", at: cg.rings?.[0]?.pts?.[0] || CASTLE_AT },
@@ -87,7 +77,7 @@ a1._siegeTest = {
     { id: "T4", test: "stairs: courtyard→parapet pathing only via stair/tower cells (R4)", at: CASTLE_AT },
     { id: "T5", test: "drawbridge toggle: DOWN=cross, UP=blocked water (R5)", at: bridgeAt },
     { id: "T6", test: "FLYER crosses wall + moat freely (R2)", at: [CASTLE_AT[0] - 60, CASTLE_AT[1] - 60] },
-    { id: "T7", test: "ridge-top ranged unit outranges/outdamages courtyard defender (R6 tiers)", at: [116, 40] },
+    { id: "T7", test: "ridge-top (tier1) archer vs WALL-WALK (tier2) defender: uphill penalty applies; NO fire into the courtyard (R6 + R-ELEV-OVER)", at: [116, 40] },
     { id: "T8", test: "CLIMBER unit scales wall cell at crawl speed (R7, optional)", at: cg.rings?.[0]?.pts?.[4] || CASTLE_AT },
   ],
 };
@@ -96,6 +86,15 @@ const outDir = path.join(repo, "data/moba-maps");
 fs.mkdirSync(outDir, { recursive: true });
 fs.writeFileSync(path.join(outDir, "siege-test.json"), JSON.stringify(a1));
 fs.writeFileSync(path.join(outDir, "siege-test.artifact.json"), JSON.stringify(artifact));
+// render manifest too (same converter the registry uses; siege + designVersion attached the same way)
+try {
+  const { createRequire } = await import("node:module");
+  const conv = createRequire(import.meta.url)("../maps/battlefield_converter.cjs").convert;
+  const man = conv(artifact, { parcelId: parcel.parcelId, designVersion: artifact.meta.designVersion });
+  if (man.designVersion == null) man.designVersion = artifact.meta.designVersion;
+  if (artifact.siege && !man.siege) man.siege = artifact.siege;
+  fs.writeFileSync(path.join(outDir, "siege-test.manifest.json"), JSON.stringify(man));
+} catch (e) { console.error("[siege-test] manifest skipped:", e.message); }
 console.log(`[siege-test] built: sim=${row.sim?.pass} score=${row.sim?.score} modes=${(row.sim?.modes || []).join(",")}`);
 console.log(`[siege-test] castle tier=${cg.tier} wallPts=${cg.rings?.[0]?.pts?.length} gates=${gates.length} bridge@${bridgeAt}`);
 console.log(`[siege-test] wrote data/moba-maps/siege-test.json + siege-test.artifact.json (registry: ${process.env.MAPS_DIR})`);
