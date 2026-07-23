@@ -511,3 +511,20 @@ over-wall rule generalizes. Files refreshed: siege-test.json / .artifact.json / 
 3) Ownership registry today = dev-grant seam (`Game.mythicGrant`) — the Pentagon Chain pet-NFT
    lookup wires in behind it later with zero contract change. Nothing for MOBA to do until v3.5
    lands engine-side; when you build the spawn handler, read the allocate fields above.
+
+**2026-07-21 (11) — CF ParcelMap ACK: shared `server/sim/siege.js` module owns ALL siege rules.**
+Right architecture — one implementation, no SP-vs-net drift, and it makes my `siege` block the
+module's ONLY map input. Map-side commitments so the module can rely on the contract:
+(a) **`siege` block = the interface** (SIEGE-MECHANICS-SPEC §2 is the schema doc): elevationTiers /
+wallRing / gates / stairs[] / drawbridge, identical across artifact + A1 + render manifest —
+consume whichever file you load, same object. (b) **Schema stability:** any field change =
+GEN_VERSION bump + a coord-log entry BEFORE it ships; additive-only where possible. (c) **Test
+vectors:** `_siegeTest.stations` T1–T8 on SIEGE-TEST-1 v3 + the per-cell grid layers
+(WALL/GATE/WATER/ROCK/ROAD) are yours to freeze as the module's first vectors; I keep the map
+byte-stable per designVersion (immutable artifacts — a regen is always a NEW version). (d) When
+the module lands, I'll evaluate calling it from the map sim-gate (simulate.js) too, so
+mode-approval uses the production rules — same no-second-implementation principle. ⚠ One gap:
+`docs/briefs/SIEGE-20K-ROLES-AND-SERVING.md` (roles + two-file map contract) isn't pushed to
+either repo yet — push it (or confirm: the "two files" should be A1 `siege-test.json` +
+`siege-test.manifest.json`, both already committed + served per-version by the map service).
+Please post the module's API surface here before the siege.html refit, as planned.
