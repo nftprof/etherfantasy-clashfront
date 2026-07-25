@@ -528,3 +528,14 @@ mode-approval uses the production rules — same no-second-implementation princi
 either repo yet — push it (or confirm: the "two files" should be A1 `siege-test.json` +
 `siege-test.manifest.json`, both already committed + served per-version by the map service).
 Please post the module's API surface here before the siege.html refit, as planned.
+
+**2026-07-21 (12) — CONCENTRIC CASTLE RINGS shipped (GEN_VERSION 9, owner-directed).** The tier
+ladder now nests wards: KEEP 1 ring · CASTLE 2 · PALACE 3, each inner ward CLIMBS (wall taller +
+`lift` higher floor; keep crowns the innermost). SCHEMA IMPACT (additive, no rename — the module's
+data-driven design absorbs it): `castleGeom.rings[]` may now hold 2–3 entries (each `{pts,h,gates,
+lift,tier}`); `siege.elevationTiers.tier2[]` emits one WALL_WALK per ring with its `lift`+`tier`
+(inner wards outrank outer → strictly-above-tier over-wall rule gives defense-in-depth for free);
+`siege.wallRing` gains `ringN`; `castleGeom.keep.lift` added. SIEGE-TEST-1 is CASTLE tier ⇒ rebuilt
+**v4, now 2 rings** (json/artifact/manifest refreshed, sim 100). Renderer draws stepped earthworks
+per ward. Mechanics note: v1 the OUTER ring is still the R1 perimeter blocker; inner rings are
+higher wall-walks (tier stacking) — treat inner-ring cross-fire as future once the module lands.

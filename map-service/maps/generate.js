@@ -820,11 +820,47 @@ function computeStairs(pts, gates, base) {
 }
 
 // tier ladder + per-tier build numbers (CASTLE-ARCHITECTURE-SPEC §3: walls climb, keeps crown)
+// CONCENTRIC LADDER (owner 2026-07-21: "the biggest castle should have 2 or 3 rings with further
+// elevation at each level"). ringN = nested wall rings; each inner ward climbs (defense in depth
+// reads from the air — CASTLE-ARCHITECTURE-SPEC §1). KEEP = motte (1 ring); CASTLE = concentric
+// (2); PALACE = the climbing silhouette (3).
 const CASTLE_TIERS = {
-  PALACE: { wallH: 11, keepTiers: 3, keepH: 30, moundRaise: 6 },
-  CASTLE: { wallH: 9, keepTiers: 2, keepH: 22, moundRaise: 4 },
-  KEEP: { wallH: 7, keepTiers: 2, keepH: 16, moundRaise: 3 },
+  PALACE: { wallH: 11, keepTiers: 3, keepH: 30, moundRaise: 6, ringN: 3 },
+  CASTLE: { wallH: 9, keepTiers: 2, keepH: 22, moundRaise: 4, ringN: 2 },
+  KEEP: { wallH: 7, keepTiers: 2, keepH: 16, moundRaise: 3, ringN: 1 },
 };
+
+// Build the nested rings from the single outer ring the layout grew. Deterministic (pure geometry
+// of geom + T2), so the siege block and castleGeom call it and always agree. Each inner ring is
+// the outer ring scaled toward the keep, with a taller wall, a climbing ward floor (`lift`), and
+// ONE staggered gate (no straight run to the keep). Returns rings[] + mound steps[].
+function concentricRings(geom, T2) {
+  const N = Math.max(1, T2.ringN || 1);
+  const kx = geom.keepAt[0], kz = geom.keepAt[1], outer = geom.pts;
+  const rings = [], moundSteps = [];
+  for (let ri = 0; ri < N; ri++) {
+    const s = ri === 0 ? 1 : Math.max(0.30, 1 - ri * 0.34);         // inward scale per ward
+    const pts = ri === 0 ? outer : outer.map(([x, z]) => [r1(kx + (x - kx) * s), r1(kz + (z - kz) * s)]);
+    const h = T2.wallH + ri * 2;                                    // inner curtains stand taller
+    const lift = ri === 0 ? 0 : r1(ri * T2.moundRaise * 1.15);      // each ward floor climbs
+    let gates;
+    if (ri === 0) gates = geom.gates;                              // outer keeps its two opposed doors
+    else {
+      const g0 = geom.gates[0] ? (geom.gates[0].at || geom.gates[0]) : [kx, kz + 1];
+      const wantA = Math.atan2(g0[1] - kz, g0[0] - kx) + ri * 2.2;  // stagger each ward's gate
+      let best = pts[0], bd = Infinity;
+      for (const pt of pts) {
+        const a = Math.atan2(pt[1] - kz, pt[0] - kx);
+        const d = Math.abs(Math.atan2(Math.sin(a - wantA), Math.cos(a - wantA)));
+        if (d < bd) { bd = d; best = pt; }
+      }
+      gates = [{ at: best }];
+    }
+    rings.push({ pts, h, gates, lift, tier: ri });
+    moundSteps.push({ ring: ri, raise: r1(T2.moundRaise + lift) });
+  }
+  return { rings, moundSteps };
+}
 // §2 style keys: PALACES carry their zone's named identity; everything else = generic fieldstone
 const PALACE_STYLES = { UW2: "drowned_bastion", ENT: "carnavale", EDU: "collegiate", HUB: "vermilion", BUS: "hanseatic" };
 
@@ -837,8 +873,10 @@ const PALACE_STYLES = { UW2: "drowned_bastion", ENT: "carnavale", EDU: "collegia
 // v6 = tower↔wall clearance on castle parcels. v7 = wall-conflicting towers relocate OUTWARD only
 // (courtyard = keep/CC + player builds; baked defaults = field pickets). v8 = standard top-level
 // `siege` block (tiers on ALL high ground, wallRing/gates/stairs-as-data/drawbridge on fortresses)
-// + designVersion made mandatory — MOBA contract fixes 1–4, 2026-07-21.
-export const GEN_VERSION = 8;
+// + designVersion made mandatory — MOBA contract fixes 1–4, 2026-07-21. v9 = CONCENTRIC castle
+// rings: CASTLE 2 / PALACE 3 nested wards, each climbing (lift) — owner "2 or 3 rings with further
+// elevation at each level".
+export const GEN_VERSION = 9;
 
 export function generate(parcel, params = null, designVersion = 0) {
   // designVersion is MANDATORY in every artifact (MOBA contract fix 3: it pins caches, replays,
@@ -1179,9 +1217,12 @@ export function generate(parcel, params = null, designVersion = 0) {
     if (castleParts) {
       const gpts = castleParts.geom.pts, gz2 = castleParts.geom.gates || [];
       const T2s = CASTLE_TIERS[castle && CASTLE_TIERS[castle.kind] ? castle.kind : "KEEP"];
+      const CRs = concentricRings(castleParts.geom, T2s);
       tier1.push({ kind: "MOUND", at: [r1(base.x), r1(base.z)], r: 34 });
-      out.elevationTiers.tier2.push({ kind: "WALL_WALK", ring: gpts });
-      out.wallRing = { pts: gpts, h: T2s.wallH, gates: gz2.map((g2) => g2.at || g2) };
+      // one WALL_WALK tier2 per nested ring, climbing (inner wards outrank outer — the
+      // strictly-above-tier over-wall rule makes defense-in-depth work for free).
+      for (const rr of CRs.rings) out.elevationTiers.tier2.push({ kind: "WALL_WALK", ring: rr.pts, lift: rr.lift, tier: rr.tier });
+      out.wallRing = { pts: gpts, h: T2s.wallH, gates: gz2.map((g2) => g2.at || g2), ringN: CRs.rings.length };
       out.gates = structures.filter((s2) => /^castle_gate_/.test(s2.anchorId))
         .map((s2) => ({ id: s2.anchorId, at: [s2.x, s2.z], hp: s2.hpMax }));
       out.stairs = computeStairs(gpts, gz2, base);
@@ -1213,11 +1254,13 @@ export function generate(parcel, params = null, designVersion = 0) {
               const tier = CASTLE_TIERS[castle.kind] ? castle.kind : "KEEP";
               const T2 = CASTLE_TIERS[tier];
               const styleKey = tier === "PALACE" ? (PALACE_STYLES[zone] || "fieldstone") : "fieldstone";
+              const CR = concentricRings(castleParts.geom, T2);
               return { castleGeom: {
                 tier, styleKey,
-                rings: [{ pts: castleParts.geom.pts, h: T2.wallH, gates: castleParts.geom.gates }],
-                keep: { at: castleParts.geom.keepAt, tiers: T2.keepTiers, h: T2.keepH },
-                mound: { steps: [{ ring: 0, raise: T2.moundRaise }] },
+                rings: CR.rings,
+                keep: { at: castleParts.geom.keepAt, tiers: T2.keepTiers, h: T2.keepH,
+                        lift: CR.rings[CR.rings.length - 1].lift },   // keep crowns the innermost ward
+                mound: { steps: CR.moundSteps },
                 moat: styleKey === "drowned_bastion",
               } };
             })() : {}),

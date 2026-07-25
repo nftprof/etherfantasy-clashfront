@@ -308,7 +308,7 @@ if(CG)(function(){
   // centroid + mound: the fortress climbs (§1 rule 1) — a stepped earthwork under the whole ward
   let cx=0,cz=0; for(const p of ring0.pts){cx+=p[0];cz+=p[1];} cx/=Math.max(1,ring0.pts.length); cz/=Math.max(1,ring0.pts.length);
   const rAvg=ring0.pts.length?ring0.pts.reduce((s,p)=>s+Math.hypot(p[0]-cx,p[1]-cz),0)/ring0.pts.length:20;
-  const raise=(CG.mound&&CG.mound.steps&&CG.mound.steps[0]?CG.mound.steps[0].raise:0)||0;
+  const baseRaise=(CG.mound&&CG.mound.steps&&CG.mound.steps[0]?CG.mound.steps[0].raise:0)||0;
   const baseY=hAt(cx,cz);
   // earthwork texture (owner 2026-07-21: "the area immediately around it needs texture") — banded
   // packed-earth canvas for the mound flanks + a flagstone courtyard inside the ward + seeded
@@ -319,20 +319,27 @@ if(CG)(function(){
     for(let i2=0;i2<420;i2++){g2.fillStyle=(rng()<.5?'rgba(40,32,20,':'rgba(190,175,140,')+(rng()*.22).toFixed(2)+')';
       g2.fillRect(rng()*128,rng()*128,1+rng()*2,1+rng()*2);}
     const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(5,2);t.anisotropy=MAXA;return t;})();
-  if(raise>0){const md=new THREE.Mesh(new THREE.CylinderGeometry(rAvg*1.06,rAvg*1.45,raise+2,26),
-    new THREE.MeshLambertMaterial({map:earthTex,flatShading:true}));
-    const w0=world(cx,cz);md.position.set(w0.x,baseY+(raise+2)/2-1,w0.z);scene.add(md);}
-  { // flagstone courtyard paving inside the ward (visible texture where the keep stands)
-    const court=new THREE.Mesh(new THREE.CircleGeometry(rAvg*0.88,30),
+  // STEPPED EARTHWORKS (owner 2026-07-21: "2 or 3 rings with further elevation at each level") —
+  // each nested ward sits on a taller mound. Draw outer→inner so inner wards stack visibly on top.
+  const ringRad=(r)=>{const pp=(r&&r.pts)||[];if(!pp.length)return rAvg;let s=0;for(const q of pp)s+=Math.hypot(q[0]-cx,q[1]-cz);return s/pp.length;};
+  const wardTop=(r)=>baseY+baseRaise+((r&&r.lift)||0);      // this ward's floor height
+  const RINGS=CG.rings||[ring0];
+  for(let ri=RINGS.length-1;ri>=0;ri--){const r=RINGS[ri],rr=ringRad(r),h=baseRaise+((r.lift)||0);
+    if(h<=0)continue;
+    const md=new THREE.Mesh(new THREE.CylinderGeometry(rr*1.02,rr*1.42,h+2,26),new THREE.MeshLambertMaterial({map:earthTex,flatShading:true}));
+    const w0=world(cx,cz);md.position.set(w0.x,baseY+(h+2)/2-1,w0.z);scene.add(md);}
+  { // flagstone courtyard paving on the INNERMOST ward (where the keep stands)
+    const inner=RINGS[RINGS.length-1]||ring0, rr=ringRad(inner);
+    const court=new THREE.Mesh(new THREE.CircleGeometry(rr*0.86,30),
       new THREE.MeshLambertMaterial({map:stoneTex,color:0xb9b0a0}));
-    court.rotation.x=-Math.PI/2;const w1=world(cx,cz);court.position.set(w1.x,baseY+raise+0.12,w1.z);scene.add(court);
-    for(let s3=0;s3<16;s3++){const a3=s3/16*Math.PI*2+rng(),rr=rAvg*(1.12+rng()*0.3);   // skirt scatter
-      const sx=cx+Math.cos(a3)*rr,sz=cz+Math.sin(a3)*rr;
+    court.rotation.x=-Math.PI/2;const w1=world(cx,cz);court.position.set(w1.x,wardTop(inner)+0.12,w1.z);scene.add(court);
+    for(let s3=0;s3<16;s3++){const a3=s3/16*Math.PI*2+rng(),rr2=rAvg*(1.12+rng()*0.3);   // skirt scatter (outer)
+      const sx=cx+Math.cos(a3)*rr2,sz=cz+Math.sin(a3)*rr2;
       const pr=rng()<0.45?new THREE.Mesh(new THREE.DodecahedronGeometry(0.9+rng()*1.4,0),rockMat)
                          :new THREE.Mesh(new THREE.ConeGeometry(1.1+rng(),1.4+rng(),6),treeLeaf(rng()*0.05,rng()));
       put(pr,sx,sz,0.5);}
   }
-  const yTop=baseY+raise;                                  // everything castle sits on the mound
+  const yTop=baseY+baseRaise;                              // OUTER ward floor; inner rings add ring.lift
   const putC=(mesh,x,z,y)=>{const w=world(x,z);mesh.position.set(w.x,yTop+y,w.z);scene.add(mesh);return mesh;};
   const gatePts=(ring0.gates||[]).map(g=>g.at);
   const nearGate=(x,z,d)=>gatePts.some(g=>Math.hypot(g[0]-x,g[1]-z)<d);
@@ -341,6 +348,14 @@ if(CG)(function(){
   const GATE_R=5.5;                                  // half-width of the open passage at each gate
   for(const ring of CG.rings||[]){
     const pts=ring.pts||[],H=ring.h||9;let run=0;
+    // per-ring elevation: each nested ward's walls/towers/gates/stairs sit on ITS floor (yTop+lift),
+    // and each ring clips at ITS OWN gates (owner 2026-07-21 concentric rings).
+    const lift=ring.lift||0;
+    const putC=(mesh,x,z,y)=>{const w=world(x,z);mesh.position.set(w.x,yTop+lift+y,w.z);scene.add(mesh);return mesh;};
+    const gatePts=(ring.gates||[]).map(g=>g.at||g);
+    const gd=(x,z)=>gatePts.length?Math.min(...gatePts.map(g=>Math.hypot(g[0]-x,g[1]-z))):1e9;
+    const nearGate=(x,z,d)=>gatePts.some(g=>Math.hypot(g[0]-x,g[1]-z)<d);
+    const rAvg=(()=>{let s=0;for(const q of pts)s+=Math.hypot(q[0]-cx,q[1]-cz);return pts.length?s/pts.length:20;})();
     for(let i=0;i<pts.length;i++){
       const p=pts[i],q=pts[(i+1)%pts.length];
       const dxw=q[0]-p[0],dzw=ZS*(q[1]-p[1]),L=Math.hypot(dxw,dzw);if(L<0.5)continue;
@@ -470,17 +485,18 @@ if(CG)(function(){
   }
   // ---- the KEEP: tiers climb, corner turrets, roof + banner — the silhouette (§1 rule 3) ----
   if(CG.keep){const K=CG.keep,tiers=Math.max(1,K.tiers|0),tierH=K.h/tiers;let w2=16,y2=0;
+    const kl=K.lift||0, putK=(m,x,z,y)=>putC(m,x,z,kl+y);   // keep crowns the innermost ward
     for(let t2=0;t2<tiers;t2++){
-      putC(new THREE.Mesh(new THREE.BoxGeometry(w2,tierH,w2),wallM),K.at[0],K.at[1],y2+tierH/2);
+      putK(new THREE.Mesh(new THREE.BoxGeometry(w2,tierH,w2),wallM),K.at[0],K.at[1],y2+tierH/2);
       if(t2===tiers-1)for(const [sx,sz] of [[-1,-1],[-1,1],[1,-1],[1,1]]){
         const tur=new THREE.Group();
         tur.add(new THREE.Mesh(new THREE.CylinderGeometry(1.7,2.0,5,8),wallM));
         const tr=new THREE.Mesh(new THREE.ConeGeometry(2.1,2.8,8),roofM);tr.position.y=3.6;tur.add(tr);
-        putC(tur,K.at[0]+sx*w2*0.46,K.at[1]+sz*w2*0.46,y2+tierH);}
+        putK(tur,K.at[0]+sx*w2*0.46,K.at[1]+sz*w2*0.46,y2+tierH);}
       y2+=tierH;w2*=0.74;}
-    const kr=new THREE.Mesh(new THREE.ConeGeometry(w2*0.9,6,4),roofM);putC(kr,K.at[0],K.at[1],y2+3);kr.rotation.y=Math.PI/4;
-    putC(new THREE.Mesh(new THREE.CylinderGeometry(0.18,0.18,7,5),wallM),K.at[0],K.at[1],y2+8);
-    const flag=putC(new THREE.Mesh(new THREE.PlaneGeometry(4.4,2.6),bannerM),K.at[0]+2.2,K.at[1],y2+10.4);flag.rotation.y=ZS>0?0:Math.PI;}
+    const kr=new THREE.Mesh(new THREE.ConeGeometry(w2*0.9,6,4),roofM);putK(kr,K.at[0],K.at[1],y2+3);kr.rotation.y=Math.PI/4;
+    putK(new THREE.Mesh(new THREE.CylinderGeometry(0.18,0.18,7,5),wallM),K.at[0],K.at[1],y2+8);
+    const flag=putK(new THREE.Mesh(new THREE.PlaneGeometry(4.4,2.6),bannerM),K.at[0]+2.2,K.at[1],y2+10.4);flag.rotation.y=ZS>0?0:Math.PI;}
   // ---- moat ring (drowned_bastion): a water annulus hugging the outer wall (§2) ----
   if(CG.moat){const mo=new THREE.Mesh(new THREE.RingGeometry(rAvg*1.12,rAvg*1.38,40),
     new THREE.MeshPhongMaterial({color:0x18384a,shininess:80,specular:0x557799,transparent:true,opacity:0.85}));
