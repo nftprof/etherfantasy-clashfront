@@ -4,6 +4,7 @@ pragma solidity ^0.8.24;
 import {Test} from "forge-std/Test.sol";
 import {ClashCTVault} from "../src/ClashCTVault.sol";
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import {ERC1967Proxy} from "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
 
 /// @dev Minimal burnable CT stand-in for tests.
 contract MockCT is ERC20 {
@@ -18,15 +19,20 @@ contract ClashCTVaultTest is Test {
 
     uint256 signerPk = 0xA11CE;
     address signer;
-    address owner = address(0xB0B);
+    address admin = address(0xB0B);
     address devVault = address(0xDEV);
-    address guardian = address(0x6A6D);
+    address moderator = address(0x6A6D);
     address alice = address(0xA1);
 
     function setUp() public {
         signer = vm.addr(signerPk);
         ct = new MockCT();
-        vault = new ClashCTVault(address(ct), true, address(0), signer, devVault, guardian, owner);
+        ClashCTVault impl = new ClashCTVault();
+        bytes memory initData = abi.encodeCall(
+            ClashCTVault.initialize,
+            (address(ct), true, address(0), signer, devVault, moderator, admin)
+        );
+        vault = ClashCTVault(address(new ERC1967Proxy(address(impl), initData)));
         ct.mint(alice, 1_000_000 ether);
     }
 

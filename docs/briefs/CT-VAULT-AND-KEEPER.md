@@ -80,6 +80,54 @@ vaultAmount, minReserveAfter, nonce, deadline, sig)` is signer-authorized and en
 - **`balance − sweep ≥ minReserveAfter`** — the signer attests how much must stay to cover
   outstanding user withdrawals, so an over-sweep can't strand user funds.
 
+## 4b. The master pool → burn → land-earmark model (owner 2026-07-25)
+
+The owner's redistribution pattern, and how it maps to the two layers:
+
+- **Every in-game action is a CT spend.** A spend maps to a **land ID** (the parcel it happens
+  on — the sim already threads `spendHexId` through `spendCT`). The spent CT goes into a **MASTER
+  POOL** rather than vanishing.
+- **Rewards follow DESTRUCTION.** When assets are destroyed/"burned" in-game on a parcel (units
+  lost, structures razed, a base pillaged), CT **shifts from the master pool, earmarked to the
+  parcel where the destruction happened.** Resources bought on Land A but destroyed on Land B ⇒
+  the CT accrues to **Land B** — "wherever it burns to ashes is where CT accumulates." Contested,
+  war-torn land therefore earns the most: **war makes land valuable.**
+- **Who earns:** the **LAND-NFT OWNER** (landlord) of the destruction parcel is the earner — it's
+  their asset appreciating from the war fought on it. The **WARLORD/occupier does NOT earn from
+  this pool**; the warlord's reward is the existing **pillage loot** (immediate, from the enemy
+  treasury) — landlord = passive burn-pool yield, warlord = active spoils. (⚙ a small governor
+  share of the burn-pool accrual is a tunable option, mirroring the 30/70 tax split, if you want
+  occupiers to also benefit — flagged as an open dial below.)
+- **The ≥10% protocol burn** is taken off the top of every pool→land shift (net-sink); the rest is
+  the redistribution to landlords.
+
+### Which layer owns which "burn" — the critical split
+
+There are TWO distinct "burns" and they live in different layers:
+
+| | The economy BURN (in-game) | The protocol BURN (on-chain) |
+|---|---|---|
+| What | asset destruction on a parcel drives pool→land earmark | ≥10% of CT flows destroyed forever (net-sink) |
+| Where | **backend sim** — only it knows *what* was destroyed *where* | **vault contract** — `sweepHouseCut` / `_burn` |
+| Currency | in-game `ct_units` (the master pool + earmarks are ledger state) | real on-chain CT |
+
+**Master pool + earmark distribution is a BACKEND feature** — the contract cannot know land IDs or
+destruction events, so it never holds per-land state. On-chain, the master pool is simply the
+vault's aggregate CT custody.
+
+### Why this does NOT break W ≤ D (the reconciliation)
+
+A landlord who earns pool CT gets richer **in-game** — but **`chainWithdrawableCtUnits =
+min(deposited − withdrawn, wallet)`** still caps their on-chain cash-out at their **own deposits**.
+Earned pool CT (beyond their deposit basis) is spendable in-game (buys units, enriches land — which
+burns/redistributes it onward) but is **NOT withdrawable**. This is exactly the doctrine: *in-game
+rich ≠ on-chain profit; the only path to net-positive is the discretionary dev vault.* So the
+redistribution pool makes land valuable and war meaningful **without** minting withdrawable CT and
+**without** weakening the anti-cheat backstop. ⚠ If instead you intend pool earnings to be
+**withdrawable** (players net-positive from war), that is a different, weaker invariant — it needs a
+`credited[user]` on-chain that the moderator raises, and the "vault is the only net-positive path"
+rule is relaxed. **Confirm which you want (see §6.5)** — it changes the contract.
+
 ## 5. Trust boundary (the "no weak link" analysis)
 
 | Actor | Can it steal? | Bound by |
@@ -88,24 +136,36 @@ vaultAmount, minReserveAfter, nonce, deadline, sig)` is signer-authorized and en
 | Keeper (deposit) | No | read-only + a signed endpoint; holds no keys/funds; deposits are idempotent |
 | Withdrawal signer (if stolen) | Only up to **each user's own deposits** | on-chain `withdrawn ≤ deposited` backstop |
 | Sweep signer (if stolen) | Bounded by `minReserveAfter` + `≥10%`-burn | on-chain checks; still audit the reserve figure |
-| Vault `owner` | Can rotate signer/vault, pause | **make it a timelock + multisig** |
-| Guardian | Pause only (fast incident response) | cannot move funds |
+| Vault `owner` / **admin** = `0xB2e3…F61f` | Upgrade the proxy, rotate signer/vault/moderator, unpause | **make it a timelock + multisig** — an upgrade can change everything |
+| **Moderator** (= the keeper) | Pause only (fast incident response) | cannot move funds, cannot upgrade |
 
 Keys: `withdrawalSigner` + keeper HMAC secret in an HSM/KMS; `owner` a timelock+multisig; a separate
 fast-pause guardian. `/internal/chain/*` is a deployment boundary — never on the public ingress.
 
-## 6. Owner must confirm before deploy (⚙)
+## 6. Owner decisions
 
+**LOCKED (owner 2026-07-25):**
+- **Admin/owner** = `0xB2e3e82a95f5c4c47E30A5b420Ac4f99d32EF61f` (set at `initialize`). Upgrade + config.
+- **Upgradeable** — UUPS proxy (ERC1967), upgrade gated `onlyOwner`. (Deploy the admin as a
+  timelock/multisig — an upgrade can rewrite any logic.)
+- **Keeper = moderator** — pause rights only, no funds power.
+- **Withdrawal model** — backend-signed EIP-712 cumulative vouchers (a stolen signer bounded by W≤D).
+- **Earner** — the LAND-NFT OWNER of the destruction parcel; the warlord earns via pillage loot, not
+  the burn pool (§4b).
+
+**STILL TO CONFIRM (⚙):**
 1. **CT token** on Pentagon Chain: address + decimals (keeper assumes 18-dp) + does it expose
-   `burn()`? (sets `BURN_SUPPORTED`; else the sweep uses `0x…dEaD`).
-2. **Withdrawal authorization model** — this v0 uses **backend-signed EIP-712 cumulative vouchers**
-   (recommended: a stolen signer is bounded by `W ≤ D`). Alternatives (Merkle-batch self-claim /
-   operator-direct) change the contract; confirm before build-out.
-3. **Custody & admin** — immutable core + `Ownable2Step` + `Pausable` (v0). Confirm the `owner`
-   timelock/multisig and the guardian key holder; decide if you want an upgradeable proxy (larger
-   attack surface — not recommended for the vault).
-4. **Rake band** — `≥10%` burn floor is hard-coded (`MIN_BURN_BPS`); the total cut (10–40%) is a
-   backend policy realized through sweep sizing. Confirm the target take.
+   `burn()`? (sets `burnSupported`; else the sweep uses `0x…dEaD`).
+2. **Rake band** — `≥10%` burn floor is on-chain; the total cut (10–40%) is realized by sweep sizing.
+   Confirm the target take.
+3. **Master-pool tuning** — what fraction of a spend enters the pool vs. burns immediately; what
+   fraction of destroyed-asset value earmarks to the land; immediate vs. accrual payout.
+4. **Governor share** — does the occupying warlord get a ⚙ slice of the burn-pool accrual (like the
+   30/70 tax split), or strictly loot-only? (Recommendation: loot-only for v1.)
+5. **⚠ Withdrawable-vs-in-game (the invariant fork)** — are landlord pool earnings **in-game only**
+   (recommended; on-chain W≤D unchanged, matches the locked doctrine) or **withdrawable** (players
+   net-positive from war; needs an on-chain `credited[user]` the moderator raises and relaxes the
+   "vault is the only net-positive path" rule)? This changes the contract — see §4b.
 
 ## 7. Env / wiring
 
