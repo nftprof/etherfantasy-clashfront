@@ -64,7 +64,7 @@ if [ -n "$ok" ]; then
   for q in "collection=estates&size=LARGE" "collection=parcels&zone=EDU"; do
     body="$(curl -sf -m 30 "http://127.0.0.1:${APP_PORT}/internal/v1/unminted?${q}" 2>/dev/null || echo '{}')"
     # pull a few scalar fields without assuming jq is present
-    echo "  ?${q} -> $(printf '%s' "$body" | grep -oE '"(collection|chain|total|mintedKnown|mintedCount|unmintedCount)":("?[A-Za-z0-9]+"?)' | tr '\n' ' ')"
+    echo "  ?${q} -> $(printf '%s' "$body" | grep -oE '"(collection|chain|total|mintedKnown|mintedCount|unmintedCount|distributor)":("?[A-Za-z0-9]+"?)' | tr '\n' ' ')"
   done
 else
   echo "❌ map-service health check failed after 30s — diagnostics:"

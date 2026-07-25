@@ -20,11 +20,11 @@ import * as reg from "./registry.js";
 import { translateDirective, llmEnabled } from "./llm.js";
 import { clampParams, budgetFor } from "./schema.js";
 import { verifyToken, loginPassword } from "../lobby/auth.js";
-import { worldParcel, l3Row, l3Zone, zoneList, loadWorldField, estateList } from "./worldfield.js";
+import { worldParcel, l3Row, l3Zone, zoneList, loadWorldField, estateList, dataRoot } from "./worldfield.js";
 import { landOfWallet, walletOwnsParcel, mintedSet, PARCELS_CONTRACT, ESTATE_CONTRACT } from "./nftowners.js";
 // Land mint config (distributors + size tokens) — the registry the other session delivered.
 let _landCfg = null;
-const landCfg = () => { if (_landCfg) return _landCfg; try { _landCfg = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "..", "data", "land-contracts.json"), "utf8")); } catch { _landCfg = {}; } return _landCfg; };
+const landCfg = () => { if (_landCfg) return _landCfg; try { _landCfg = JSON.parse(fs.readFileSync(path.join(dataRoot(), "land-contracts.json"), "utf8")); } catch { _landCfg = {}; } return _landCfg; };
 
 // STRICT NFT gating: when on, ONLY the on-chain owner (or admin) may edit a parcel. Default OFF =
 // testing (NFT owner OR the permissive game-feed fallback) so the tool stays usable pre-mint.
