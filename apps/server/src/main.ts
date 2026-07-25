@@ -104,6 +104,8 @@ async function main(): Promise<void> {
   });
 
   const bridgeSecret = process.env['BRIDGE_SECRET'];
+  // CT-vault keeper bridge — /internal/chain/* is ON only when the secret is set.
+  const chainKeeperSecret = process.env['CHAIN_KEEPER_SECRET'];
   // Pentagon Games identity — PG login is ON only when the (publishable) app key is set.
   const pgAppKey = process.env['PG_APP_KEY'];
   const pgApiUrl = process.env['PG_API_URL'];
@@ -116,6 +118,7 @@ async function main(): Promise<void> {
     tickMs,
     saveMs: envInt('SAVE_MS', 30_000),
     ...(bridgeSecret !== undefined && bridgeSecret !== '' ? { bridgeSecret } : {}),
+    ...(chainKeeperSecret !== undefined && chainKeeperSecret !== '' ? { chainKeeperSecret } : {}),
     ...(pgAppKey !== undefined && pgAppKey !== '' ? { pgAppKey } : {}),
     ...(pgApiUrl !== undefined && pgApiUrl !== '' ? { pgApiUrl } : {}),
     ...(mastersApiUrl !== undefined && mastersApiUrl !== '' ? { mastersApiUrl } : {}),

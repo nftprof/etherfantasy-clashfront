@@ -126,6 +126,24 @@ export interface EconomyState {
   recentLoot: LootInflowRecord[];
   /** Yield credits applied to state but not yet flushed into the journal. */
   pendingYield: PendingYieldRecord[];
+  /**
+   * On-chain CT bridge accounting (CT-VAULT-AND-KEEPER brief) — the backend
+   * MIRROR of the vault contract's per-user ledger. governorId → account.
+   * The anti-cheat invariant (ECONOMY-MASTER-SUMMARY §0b) is enforced HERE and
+   * on-contract: a user's cumulative authorized withdrawal can never exceed
+   * their cumulative deposits (W ≤ D). Plain JSON — serialized with EconomyState.
+   */
+  chainAccounts?: Record<string, ChainAccount>;
+}
+
+/** Per-governor on-chain CT bridge ledger (backend mirror of the vault contract). */
+export interface ChainAccount {
+  /** Cumulative CT (ct_units) this governor has deposited on-chain (monotonic up). */
+  depositedCtUnits: number;
+  /** Cumulative CT (ct_units) authorized+settled for withdrawal (monotonic up; ≤ deposited). */
+  withdrawnCtUnits: number;
+  /** Processed on-chain deposit ids (idempotency guard) — object map for JSON safety. */
+  processedDeposits: Record<string, true>;
 }
 
 // ── Container plumbing ────────────────────────────────────────────────────────
@@ -188,6 +206,102 @@ export function recordMint(
   eco.mintedTotal += amountCtUnits;
   addFlow(eco, `mint:${reason}`, amountCtUnits);
   appendJournal(eco, { tick: state.world.tick, kind: 'DEPOSIT', governorId, amountCtUnits, reason, destination });
+}
+
+// ── On-chain CT bridge (CT-VAULT-AND-KEEPER) ──────────────────────────────────
+
+/** Lazily get/init a governor's on-chain bridge account. */
+export function ensureChainAccount(state: WorldState, governorId: string): ChainAccount {
+  const eco = ensureEconomy(state);
+  eco.chainAccounts ??= {};
+  return (eco.chainAccounts[governorId] ??= {
+    depositedCtUnits: 0,
+    withdrawnCtUnits: 0,
+    processedDeposits: {},
+  });
+}
+
+/**
+ * Credit a CONFIRMED on-chain CT deposit to a governor's server wallet — the
+ * "backend job picks up the CT and credits the backend" step. Called by the
+ * keeper once the vault's `Deposit` event has N confirmations.
+ *
+ * IDEMPOTENT by `depositId` (the vault's monotonic deposit id / `txHash:logIndex`):
+ * re-delivering the same event is a no-op, so the keeper can safely replay from
+ * any block. Credits the server-authoritative `ctBalances` wallet AND books a
+ * DEPOSIT settlement-journal record (recordMint) so the conservation replay and
+ * the future chain-settlement worker stay exact. Raises `depositedCtUnits` — the
+ * per-user W≤D ceiling.
+ *
+ * The wallet is the ONLY place CT balance lives; the client never credits itself
+ * (no weak link) — CT enters the game exclusively through this confirmed-deposit
+ * path (plus the marked genesis/join faucets).
+ */
+export function applyChainDeposit(
+  state: WorldState,
+  governorId: string,
+  depositId: string,
+  amountCtUnits: number,
+): { applied: boolean; duplicate: boolean; walletCtUnits: number } {
+  if (!Number.isInteger(amountCtUnits) || amountCtUnits <= 0) {
+    throw new Error(`applyChainDeposit: amountCtUnits must be a positive integer (got ${amountCtUnits})`);
+  }
+  const acct = ensureChainAccount(state, governorId);
+  state.ctBalances ??= new Map();
+  const wallet0 = state.ctBalances.get(governorId) ?? 0;
+  if (acct.processedDeposits[depositId] === true) {
+    return { applied: false, duplicate: true, walletCtUnits: wallet0 };
+  }
+  acct.processedDeposits[depositId] = true;
+  acct.depositedCtUnits += amountCtUnits;
+  const walletCtUnits = wallet0 + amountCtUnits;
+  state.ctBalances.set(governorId, walletCtUnits);
+  // DEPOSIT faucet (E5): CT enters the world here, journaled for exact replay.
+  recordMint(state, governorId, amountCtUnits, 'chain_deposit', 'wallet');
+  return { applied: true, duplicate: false, walletCtUnits };
+}
+
+/**
+ * The maximum CT (ct_units) this governor may withdraw on-chain RIGHT NOW — the
+ * server's authoritative answer to the vault's withdrawal authorization.
+ *
+ * Enforces BOTH halves of the anti-cheat invariant:
+ *   headroom = depositedCtUnits − withdrawnCtUnits   (W ≤ D — never more than deposited)
+ *   result   = min(headroom, current server wallet)  (never more than you still hold —
+ *              CT spent in-game / lost to the house rake is simply gone)
+ * A negative-sum machine falls out for free: gameplay burns wallet CT, so the
+ * min() drops below headroom and the user's cash-out shrinks with their losses.
+ */
+export function chainWithdrawableCtUnits(state: WorldState, governorId: string): number {
+  const eco = state.economy;
+  const acct = eco?.chainAccounts?.[governorId];
+  const wallet = state.ctBalances?.get(governorId) ?? 0;
+  if (acct === undefined) return 0; // nothing deposited on-chain ⇒ nothing to withdraw
+  const headroom = Math.max(0, acct.depositedCtUnits - acct.withdrawnCtUnits);
+  return Math.max(0, Math.min(headroom, wallet));
+}
+
+/**
+ * Compute the EIP-712 withdrawal voucher figure the backend SIGNER will sign:
+ * the new CUMULATIVE authorized-withdrawn total. Cumulative (not per-tx) makes
+ * the on-chain withdrawal idempotent + replay-safe — the vault pays the delta
+ * once and ignores stale/re-submitted vouchers. Pure read: no state mutation
+ * (the wallet is debited only when the keeper observes the settled `Withdraw`
+ * event — see settleChainWithdrawal, phase 2). Returns 0-amount when nothing is
+ * withdrawable.
+ */
+export function withdrawalVoucherFigure(
+  state: WorldState,
+  governorId: string,
+  requestedCtUnits: number,
+): { amountCtUnits: number; authorizedCumulativeCtUnits: number } {
+  const acct = ensureChainAccount(state, governorId);
+  const available = chainWithdrawableCtUnits(state, governorId);
+  const amount = Math.max(0, Math.min(Math.floor(requestedCtUnits), available));
+  return {
+    amountCtUnits: amount,
+    authorizedCumulativeCtUnits: acct.withdrawnCtUnits + amount,
+  };
 }
 
 /**

@@ -61,6 +61,9 @@ import {
   type EngineSideResult,
   enrichTerritory,
   ensureEconomy,
+  applyChainDeposit,
+  chainWithdrawableCtUnits,
+  withdrawalVoucherFigure,
   findPath,
   type IntelGrade,
   intelGrade,
@@ -583,6 +586,8 @@ interface SaveFileV1 {
   governors: [string, GovernorMeta][];
   /** PG identity bindings: pgUid → governorId (docs/briefs/PG-IDENTITY.md). Optional for pre-PG saves. */
   pgBindings?: [string, string][];
+  /** On-chain wallet (lowercased) → governorId, for the CT-vault keeper. Optional for older saves. */
+  walletBindings?: [string, string][];
   /** governorId → canonical PG username (docs/maps/ECONOMY-SEAM.md §1). Optional for pre-maps saves. */
   pgUsernames?: [string, string][];
   purchases?: [string, number][];
@@ -675,6 +680,14 @@ export class Game {
    * legacy empire (PG "nftprof" → empire "Idon").
    */
   readonly pgUsernames = new Map<string, string>();
+  /**
+   * On-chain wallet → governorId (lowercased address). Captured at PG login from
+   * the PG `mm_address`; the CT-vault keeper resolves confirmed Deposit events to
+   * a governor through this map. Persisted — survives restarts. A deposit from an
+   * unbound wallet (user never logged in) stays unresolved; the keeper retries it
+   * once the binding exists (no CT is ever lost — the vault still custodies it).
+   */
+  readonly walletBindings = new Map<string, string>();
   /** governorId → lifetime purchased ct_units (E5 dev-phase faucet, cap-enforced). */
   readonly purchases = new Map<string, number>();
   npcGovernorId = '';
@@ -731,6 +744,7 @@ export class Game {
       for (const [id, meta] of save.governors) this.governors.set(id, meta);
       for (const [uid, gid] of save.pgBindings ?? []) this.pgBindings.set(uid, gid);
       for (const [gid, uname] of save.pgUsernames ?? []) this.pgUsernames.set(gid, uname);
+      for (const [addr, gid] of save.walletBindings ?? []) this.walletBindings.set(addr, gid);
       for (const [gid, amt] of save.purchases ?? []) this.purchases.set(gid, amt);
       this.recentBattles = save.recentBattles ?? [];
       this.recentDuels = save.recentDuels ?? [];
@@ -900,6 +914,7 @@ export class Game {
     displayName: string,
     bindGovernorId?: string,
     ownedMasters?: OwnedMaster[],
+    walletAddress?: string,
   ): { playerId: string; token: string; governorId: string; officers: DemoOfficer[] } {
     const base = this.resolveLoginGovernor(pgUid, displayName, bindGovernorId);
     // Record the canonical PG username against the resolved governor so the maps
@@ -907,8 +922,65 @@ export class Game {
     // the empire name (which differs when a PG account adopts a legacy empire).
     const uname = displayName.trim();
     if (uname !== '') this.pgUsernames.set(base.governorId, uname);
+    // Bind the PG wallet so the CT-vault keeper can resolve on-chain deposits
+    // from this address to this governor (CT-VAULT-AND-KEEPER).
+    const addr = walletAddress?.trim().toLowerCase();
+    if (addr !== undefined && addr !== '') this.walletBindings.set(addr, base.governorId);
     this.syncOfficersFromMasters(base.governorId, ownedMasters);
     return { ...base, officers: this.state.officers?.get(base.governorId) ?? [] };
+  }
+
+  // ── On-chain CT bridge (CT-VAULT-AND-KEEPER) ────────────────────────────────
+
+  /** Resolve an on-chain wallet address to its bound governor (undefined if unbound). */
+  governorForWallet(walletAddress: string): string | undefined {
+    return this.walletBindings.get(walletAddress.trim().toLowerCase());
+  }
+
+  /**
+   * Credit a CONFIRMED on-chain CT deposit — the keeper's "pick up the CT and
+   * credit the backend" call. Resolves the depositing wallet to its governor,
+   * then applies the idempotent ledger credit (economy.applyChainDeposit). An
+   * unbound wallet returns `resolved:false` (the keeper retries after the user
+   * logs in — the vault still custodies the CT, nothing is lost).
+   */
+  applyChainDeposit(
+    walletAddress: string,
+    depositId: string,
+    amountCtUnits: number,
+  ): { resolved: boolean; applied: boolean; duplicate: boolean; governorId?: string; walletCtUnits?: number } {
+    if (typeof depositId !== 'string' || depositId === '') {
+      throw new ApiError(400, 'BAD_DEPOSIT', 'depositId (string) is required');
+    }
+    if (!Number.isInteger(amountCtUnits) || amountCtUnits <= 0) {
+      throw new ApiError(400, 'BAD_AMOUNT', 'amountCtUnits must be a positive integer');
+    }
+    const governorId = this.governorForWallet(walletAddress);
+    if (governorId === undefined) return { resolved: false, applied: false, duplicate: false };
+    const r = applyChainDeposit(this.state, governorId, depositId, amountCtUnits);
+    return { resolved: true, governorId, ...r };
+  }
+
+  /** The server's authoritative answer to "how much CT may this governor withdraw now" (W ≤ D). */
+  chainWithdrawable(governorId: string): { withdrawableCtUnits: number } {
+    if (!this.governors.has(governorId)) throw new ApiError(404, 'NO_GOVERNOR', `no governor ${governorId}`);
+    return { withdrawableCtUnits: chainWithdrawableCtUnits(this.state, governorId) };
+  }
+
+  /**
+   * Produce the figures for an EIP-712 withdrawal voucher (the backend signer
+   * signs `authorizedCumulativeCtUnits`). Pure read — the wallet is debited only
+   * when the keeper observes the settled on-chain Withdraw (phase 2). Returns a
+   * 0-amount voucher when nothing is withdrawable.
+   */
+  authorizeWithdrawal(
+    governorId: string,
+    requestedCtUnits: number,
+  ): { governorId: string; amountCtUnits: number; authorizedCumulativeCtUnits: number } {
+    if (!this.governors.has(governorId)) throw new ApiError(404, 'NO_GOVERNOR', `no governor ${governorId}`);
+    const req = Number.isFinite(requestedCtUnits) ? Math.max(0, Math.floor(requestedCtUnits)) : 0;
+    const fig = withdrawalVoucherFigure(this.state, governorId, req);
+    return { governorId, ...fig };
   }
 
   /**
@@ -3608,6 +3680,7 @@ export class Game {
       governors: [...this.governors.entries()],
       pgBindings: [...this.pgBindings.entries()],
       pgUsernames: [...this.pgUsernames.entries()],
+      walletBindings: [...this.walletBindings.entries()],
       purchases: [...this.purchases.entries()],
       recentBattles: this.recentBattles,
       recentDuels: this.recentDuels,

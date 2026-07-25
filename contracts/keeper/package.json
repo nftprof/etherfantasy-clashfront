@@ -1,0 +1,14 @@
+{
+  "name": "clashfront-ct-keeper",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "description": "CT-vault keeper: watches on-chain CT deposits and credits the CF backend ledger. Standalone (NOT in the pnpm workspace).",
+  "bin": { "cf-ct-keeper": "keeper.mjs" },
+  "scripts": {
+    "start": "node keeper.mjs"
+  },
+  "dependencies": {
+    "ethers": "^6.13.0"
+  }
+}

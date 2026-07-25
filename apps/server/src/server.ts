@@ -50,6 +50,13 @@ export interface ServerConfig {
    */
   bridgeSecret?: string;
   /**
+   * Shared secret for the /internal/chain/* CT-vault keeper API (env
+   * CHAIN_KEEPER_SECRET, CT-VAULT-AND-KEEPER). The keeper HMAC-signs its
+   * requests exactly like the battle-result callback (X-CF-Signature). Undefined
+   * = the chain bridge is disabled (503) — deposits can't be credited until set.
+   */
+  chainKeeperSecret?: string;
+  /**
    * External M1 battle engine (docs/briefs/ALLOCATE-CALLBACK-SCHEMA.md):
    * allocate endpoint + bearer + HMAC secret. Undefined = feature OFF — pending
    * engine battles are never created (the Game's TickOptions gate that) and
@@ -476,6 +483,54 @@ export class ClashServer {
     sendJson(res, 200, { ok: true, applied, duplicate });
   }
 
+  /** Shared HMAC gate + JSON parse for the /internal/chain/* keeper endpoints. */
+  private async readKeeperBody(req: http.IncomingMessage): Promise<Record<string, unknown>> {
+    const secret = this.config.chainKeeperSecret;
+    if (secret === undefined || secret === '') {
+      throw new ApiError(503, 'CHAIN_DISABLED', 'CT-vault bridge is not enabled (set CHAIN_KEEPER_SECRET)');
+    }
+    const raw = await readRawBody(req);
+    if (!verifyCallbackSignature(secret, raw, req.headers['x-cf-signature'])) {
+      throw new ApiError(401, 'BAD_SIGNATURE', 'missing or invalid X-CF-Signature');
+    }
+    try {
+      const parsed: unknown = JSON.parse(raw.toString('utf8'));
+      if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) throw new Error('not an object');
+      return parsed as Record<string, unknown>;
+    } catch {
+      throw new ApiError(400, 'BAD_JSON', 'body must be a JSON object');
+    }
+  }
+
+  /**
+   * POST /internal/chain/deposit {wallet, depositId, amountCtUnits} — the keeper
+   * credits a CONFIRMED on-chain CT deposit to the server ledger. Idempotent by
+   * depositId; an unbound wallet returns {resolved:false} so the keeper retries
+   * after the user logs in (the vault still custodies the CT — nothing is lost).
+   */
+  private async chainDeposit(req: http.IncomingMessage, res: http.ServerResponse): Promise<void> {
+    const body = await this.readKeeperBody(req);
+    const wallet = typeof body['wallet'] === 'string' ? body['wallet'] : '';
+    const depositId = typeof body['depositId'] === 'string' ? body['depositId'] : '';
+    const amountCtUnits = typeof body['amountCtUnits'] === 'number' ? body['amountCtUnits'] : NaN;
+    if (wallet === '' || depositId === '') throw new ApiError(400, 'BAD_DEPOSIT', 'wallet + depositId are required');
+    const r = this.game.applyChainDeposit(wallet, depositId, amountCtUnits); // throws 400 on bad amount
+    sendJson(res, 200, { ok: true, ...r });
+  }
+
+  /**
+   * POST /internal/chain/authorize-withdraw {governorId, requestedCtUnits} — the
+   * keeper/signer asks the server how much this governor may withdraw on-chain
+   * (W ≤ D) and gets back the cumulative figure to EIP-712-sign. Read-only.
+   */
+  private async chainAuthorizeWithdraw(req: http.IncomingMessage, res: http.ServerResponse): Promise<void> {
+    const body = await this.readKeeperBody(req);
+    const governorId = typeof body['governorId'] === 'string' ? body['governorId'] : '';
+    const requestedCtUnits = typeof body['requestedCtUnits'] === 'number' ? body['requestedCtUnits'] : 0;
+    if (governorId === '') throw new ApiError(400, 'BAD_REQUEST', 'governorId is required');
+    sendJson(res, 200, { ok: true, ...this.game.authorizeWithdrawal(governorId, requestedCtUnits) });
+  }
+
   /** Stop loops, snapshot to disk, close sockets + server. */
   async stop(): Promise<void> {
     if (this.tickTimer !== undefined) clearInterval(this.tickTimer);
@@ -842,6 +897,16 @@ export class ClashServer {
       await this.battleResult(req, res);
       return;
     }
+    if (path === '/internal/chain/deposit' && method === 'POST') {
+      // CT-vault keeper: credit a CONFIRMED on-chain deposit (HMAC-gated).
+      await this.chainDeposit(req, res);
+      return;
+    }
+    if (path === '/internal/chain/authorize-withdraw' && method === 'POST') {
+      // CT-vault keeper: fetch the signed-voucher figures for a withdrawal (W ≤ D).
+      await this.chainAuthorizeWithdraw(req, res);
+      return;
+    }
     if (path === '/internal/economy/settlement' && method === 'GET') {
       // Settlement-journal export for the future chain-settlement worker
       // (PlayEscrow vault). /internal is a deployment boundary — do not expose
@@ -1103,7 +1168,9 @@ export class ClashServer {
       ownedMasters = await fetchActiveMasters(this.mastersApiUrl, wallet, this.config.mastersFetch ?? fetch);
     }
     const bindGovernorId = typeof bindToken === 'string' ? this.game.sessionByToken(bindToken)?.governorId : undefined;
-    const { playerId, token, governorId, officers } = this.game.loginPg(pgUid, displayName, bindGovernorId, ownedMasters);
+    // Bind the PG wallet (mm_address) → governor so the CT-vault keeper can
+    // resolve this player's on-chain deposits (CT-VAULT-AND-KEEPER).
+    const { playerId, token, governorId, officers } = this.game.loginPg(pgUid, displayName, bindGovernorId, ownedMasters, wallet);
     return { playerId, token, governorId, officers };
   }
 
