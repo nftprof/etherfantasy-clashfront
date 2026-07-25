@@ -17,6 +17,7 @@ export * from './build';
 export * from './weather';
 export * from './mythics';
 export * from './prosperity';
+export * from './supply';
 export * from './workers';
 export * from './market';
 export * from './transport';

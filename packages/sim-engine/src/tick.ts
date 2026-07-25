@@ -44,6 +44,7 @@ import { createWildBattle, stepWildBattle, type WildBattleState, wildBattleSurvi
 import { runMarketBalancer } from './market';
 import { chronicleAppend, recordMythicKo } from './mythics';
 import { granaryCap, runPopulation, runProsperity, runTaxCycle, setPillageScar } from './prosperity';
+import { armyOwnersByHex, isSuppliedGraph } from './supply';
 import { hash32 } from './weather';
 import { payTransitToll, raidCaravans, settleDeliveries } from './transport';
 import { runWorkerProduction } from './workers';
@@ -470,19 +471,18 @@ export function hostileArmiesAt(state: WorldState, hexId: string, governorId: st
 
 /**
  * Phase 4 — SUPPLY (docs/01 §5, §6.4).
- * isSupplied() for every army; regen/drain; supply-train raids.
+ * isSupplied() for every army (real §5.2 Dijkstra over the friendly route
+ * graph — supply.ts); regen when supplied, drain when cut.
  *
- * TODO(01 §5.2): real isSupplied — Dijkstra over the friendly-controlled route
- * graph to the nearest supplySource territory, range = SUPPLY_RANGE_HEXES +
- * train bonus. Placeholder below: GARRISON in a friendly supplySource territory
- * counts as supplied, everything else drains.
- * TODO(01 §5.4): SupplyTrain raiding (state:'RAIDED').
+ * TODO(01 §5.4): SupplyTrain raiding (state:'RAIDED') — trains aren't spawned
+ * yet, so the range bonus counts all attached train ids for now.
  */
 function phaseSupply(state: WorldState, _tick: number, _rng: Rng, balance: Balance): void {
+  const ownersByHex = armyOwnersByHex(state); // built once per phase (deterministic)
   for (const id of sortedIds(state.armies)) {
     const a = state.armies.get(id)!;
-    if (a.state === 'DISBANDED') continue;
-    const supplied = isSuppliedPlaceholder(state, a.hexId, a.ownerGovernorId);
+    if (a.state === 'DISBANDED' || a.kind === 'CARAVAN') continue; // caravans aren't military supply
+    const supplied = isSuppliedGraph(state, a, balance, ownersByHex);
     if (supplied) {
       a.supply = Math.min(a.supplyMax, a.supply + balance.supply.regenPerTick);
     } else {
@@ -494,12 +494,6 @@ function phaseSupply(state: WorldState, _tick: number, _rng: Rng, balance: Balan
       a.supply = Math.max(0, a.supply - Math.ceil(drain));
     }
   }
-}
-
-/** Placeholder for 01 §5.2's graph check — friendly supplySource territory on the army's hex. */
-function isSuppliedPlaceholder(state: WorldState, hexId: string, governorId: string): boolean {
-  const terr = territoryAt(state, hexId);
-  return terr !== undefined && terr.supplySource && terr.governorId === governorId;
 }
 
 /**
