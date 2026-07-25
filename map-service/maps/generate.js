@@ -698,7 +698,7 @@ function castleLayout(g, G, rng, { base, atkPt, poly, half, budgetLevel, bridge,
   // buffer — and (owner 2026-07-21) a PALACE leaves TOWN-SIZED baileys between rings. needR =
   // keep footprint + (ringN-1)·ringGap + margin.
   const avail = Math.max(26, half - 6 - Math.max(Math.abs(cx), Math.abs(cz)));
-  const needR = RING_KEEP_FOOT + (ringN - 1) * ringGap + 6;
+  const needR = RING_INNER_R + (ringN - 1) * ringGap + 6;   // outer radius fits the walkable core + all wards
   const Rbase = Math.max(35 + rng() * 15, needR);
   const Rx = Math.min(Rbase, avail), Rz = Math.min(Rbase * (0.9 + rng() * 0.18), avail);
   const n = 14 + Math.floor(rng() * 5);                   // 14–18 ring anchors ⇒ 8–12 WALLs after the 2 GATEs + 4 TOWERs
@@ -833,6 +833,9 @@ function computeStairs(pts, gates, base) {
 // buffer, and a PALACE leaves a TOWN-SIZED bailey — "literally having a town inside the wall is
 // fine"). RING_KEEP_FOOT = the innermost ward must clear the keep.
 const RING_KEEP_FOOT = 14;
+// innermost ward = the good WALKABLE "original tower" size; extra rings grow OUTWARD from it
+// (owner 2026-07-21: "our original basic tower is good … make new rings OUTSIDE of that size").
+const RING_INNER_R = 36;
 const CASTLE_TIERS = {
   PALACE: { wallH: 11, keepTiers: 3, keepH: 30, moundRaise: 6, ringN: 3, wardGap: 48 },
   CASTLE: { wallH: 9, keepTiers: 2, keepH: 22, moundRaise: 4, ringN: 2, wardGap: 26 },
@@ -846,15 +849,18 @@ const CASTLE_TIERS = {
 function concentricRings(geom, T2) {
   const N = Math.max(1, T2.ringN || 1);
   const kx = geom.keepAt[0], kz = geom.keepAt[1], outer = geom.pts;
-  // radial gap between wards: the target wardGap, but never more than fits between the outer ring's
-  // CLOSEST vertex and the keep footprint. Scaling by (gap/Rmin) makes the MINIMUM inter-ring gap
-  // exactly `gap` everywhere (wider at bulges) — so a stair flight + buffer always clears.
-  let Rmin = Infinity;
-  for (const [x, z] of outer) { const d = Math.hypot(x - kx, z - kz); if (d < Rmin) Rmin = d; }
-  const gap = N > 1 ? Math.min(T2.wardGap || 20, Math.max(6, (Rmin - RING_KEEP_FOOT) / (N - 1))) : 0;
+  // The INNERMOST ward is pinned to a WALKABLE base radius (RING_INNER_R — the good "original
+  // tower" size); additional rings grow OUTWARD from it (owner 2026-07-21). So the core is never a
+  // tiny unwalkable circle, and every bailey gets a full gap for its stairs.
+  let R0 = 0;
+  for (const [x, z] of outer) R0 += Math.hypot(x - kx, z - kz);
+  R0 /= Math.max(1, outer.length);                                 // outer ring AVG radius
+  const Rin = Math.min(R0 * 0.85, RING_INNER_R);                   // walkable innermost ward
+  const gap = N > 1 ? (R0 - Rin) / (N - 1) : 0;                    // uniform outward spacing
   const rings = [];
   for (let ri = 0; ri < N; ri++) {
-    const s = ri === 0 ? 1 : Math.max(0.16, 1 - ri * gap / Rmin);   // inward scale → uniform `gap`
+    const targetR = R0 - ri * gap;                                 // ri=0 outer … ri=N-1 = Rin (walkable)
+    const s = ri === 0 ? 1 : targetR / R0;                         // uniform scale toward the keep
     const pts = ri === 0 ? outer : outer.map(([x, z]) => [r1(kx + (x - kx) * s), r1(kz + (z - kz) * s)]);
     // OWNER 2026-07-21 simplification: NO ward elevation/ramps (lift=0 — flat interior, only the
     // OUTER wall keeps its motte). A 2-ring CASTLE is just a bigger outer circle, SAME wall height,
@@ -862,7 +868,7 @@ function concentricRings(geom, T2) {
     // SPIRAL stair that wraps around it (spiral:true) — the two outer walls stay standard height.
     const isFinalTall = (N >= 3 && ri === N - 1);
     const h = isFinalTall ? T2.wallH + 7 : T2.wallH;
-    const gapIn = r1(ri < N - 1 ? gap : Rmin * s - RING_KEEP_FOOT);
+    const gapIn = r1(ri < N - 1 ? gap : targetR - RING_KEEP_FOOT);
     let gates;
     if (ri === 0) gates = geom.gates;                              // outer keeps its two opposed doors
     else {
@@ -898,7 +904,7 @@ const PALACE_STYLES = { UW2: "drowned_bastion", ENT: "carnavale", EDU: "collegia
 // rings: CASTLE 2 / PALACE 3 nested wards, each climbing (lift). v10 = tier-scaled ward GAPS
 // (palace = town-sized bailey) + guaranteed min clearance (gapIn) so stairs never touch the next
 // wall + switchback stairs on tall walls — owner 2026-07-21.
-export const GEN_VERSION = 11;
+export const GEN_VERSION = 12;
 
 export function generate(parcel, params = null, designVersion = 0) {
   // designVersion is MANDATORY in every artifact (MOBA contract fix 3: it pins caches, replays,
