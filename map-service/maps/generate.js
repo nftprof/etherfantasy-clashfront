@@ -852,14 +852,16 @@ function concentricRings(geom, T2) {
   let Rmin = Infinity;
   for (const [x, z] of outer) { const d = Math.hypot(x - kx, z - kz); if (d < Rmin) Rmin = d; }
   const gap = N > 1 ? Math.min(T2.wardGap || 20, Math.max(6, (Rmin - RING_KEEP_FOOT) / (N - 1))) : 0;
-  const rings = [], moundSteps = [];
+  const rings = [];
   for (let ri = 0; ri < N; ri++) {
     const s = ri === 0 ? 1 : Math.max(0.16, 1 - ri * gap / Rmin);   // inward scale → uniform `gap`
     const pts = ri === 0 ? outer : outer.map(([x, z]) => [r1(kx + (x - kx) * s), r1(kz + (z - kz) * s)]);
-    const h = T2.wallH + ri * 2;                                    // inner curtains stand taller
-    const lift = ri === 0 ? 0 : r1(ri * T2.moundRaise * 1.15);      // each ward floor climbs
-    // gapIn = walkable clearance from THIS ring inward to the next ward (or the keep) — the stair
-    // renderer caps flight length to this so a flight never touches the next wall in.
+    // OWNER 2026-07-21 simplification: NO ward elevation/ramps (lift=0 — flat interior, only the
+    // OUTER wall keeps its motte). A 2-ring CASTLE is just a bigger outer circle, SAME wall height,
+    // no new mechanism. A 3-ring PALACE makes ONLY the FINAL (innermost) wall taller, climbed by a
+    // SPIRAL stair that wraps around it (spiral:true) — the two outer walls stay standard height.
+    const isFinalTall = (N >= 3 && ri === N - 1);
+    const h = isFinalTall ? T2.wallH + 7 : T2.wallH;
     const gapIn = r1(ri < N - 1 ? gap : Rmin * s - RING_KEEP_FOOT);
     let gates;
     if (ri === 0) gates = geom.gates;                              // outer keeps its two opposed doors
@@ -874,10 +876,11 @@ function concentricRings(geom, T2) {
       }
       gates = [{ at: best }];
     }
-    rings.push({ pts, h, gates, lift, tier: ri, gapIn });
-    moundSteps.push({ ring: ri, raise: r1(T2.moundRaise + lift) });
+    rings.push({ pts, h, gates, lift: 0, tier: ri, gapIn, ...(isFinalTall ? { spiral: true } : {}) });
   }
-  return { rings, moundSteps };
+  // mound ONLY under the outer wall (the motte) — no per-ward ramps (owner: "no MOUNT to the base
+  // other than the outermost wall … no ramp … otherwise this gets weird").
+  return { rings, moundSteps: [{ ring: 0, raise: T2.moundRaise }] };
 }
 // §2 style keys: PALACES carry their zone's named identity; everything else = generic fieldstone
 const PALACE_STYLES = { UW2: "drowned_bastion", ENT: "carnavale", EDU: "collegiate", HUB: "vermilion", BUS: "hanseatic" };
@@ -895,7 +898,7 @@ const PALACE_STYLES = { UW2: "drowned_bastion", ENT: "carnavale", EDU: "collegia
 // rings: CASTLE 2 / PALACE 3 nested wards, each climbing (lift). v10 = tier-scaled ward GAPS
 // (palace = town-sized bailey) + guaranteed min clearance (gapIn) so stairs never touch the next
 // wall + switchback stairs on tall walls — owner 2026-07-21.
-export const GEN_VERSION = 10;
+export const GEN_VERSION = 11;
 
 export function generate(parcel, params = null, designVersion = 0) {
   // designVersion is MANDATORY in every artifact (MOBA contract fix 3: it pins caches, replays,

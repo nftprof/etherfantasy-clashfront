@@ -319,27 +319,23 @@ if(CG)(function(){
     for(let i2=0;i2<420;i2++){g2.fillStyle=(rng()<.5?'rgba(40,32,20,':'rgba(190,175,140,')+(rng()*.22).toFixed(2)+')';
       g2.fillRect(rng()*128,rng()*128,1+rng()*2,1+rng()*2);}
     const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(5,2);t.anisotropy=MAXA;return t;})();
-  // STEPPED EARTHWORKS (owner 2026-07-21: "2 or 3 rings with further elevation at each level") —
-  // each nested ward sits on a taller mound. Draw outer→inner so inner wards stack visibly on top.
-  const ringRad=(r)=>{const pp=(r&&r.pts)||[];if(!pp.length)return rAvg;let s=0;for(const q of pp)s+=Math.hypot(q[0]-cx,q[1]-cz);return s/pp.length;};
-  const wardTop=(r)=>baseY+baseRaise+((r&&r.lift)||0);      // this ward's floor height
-  const RINGS=CG.rings||[ring0];
-  for(let ri=RINGS.length-1;ri>=0;ri--){const r=RINGS[ri],rr=ringRad(r),h=baseRaise+((r.lift)||0);
-    if(h<=0)continue;
-    const md=new THREE.Mesh(new THREE.CylinderGeometry(rr*1.02,rr*1.42,h+2,26),new THREE.MeshLambertMaterial({map:earthTex,flatShading:true}));
-    const w0=world(cx,cz);md.position.set(w0.x,baseY+(h+2)/2-1,w0.z);scene.add(md);}
-  { // flagstone courtyard paving on the INNERMOST ward (where the keep stands)
-    const inner=RINGS[RINGS.length-1]||ring0, rr=ringRad(inner);
-    const court=new THREE.Mesh(new THREE.CircleGeometry(rr*0.86,30),
+  // MOUND ONLY under the OUTER wall (owner 2026-07-21: "do NOT add a MOUNT to the base other than
+  // the outermost wall … no ramp"). Interior wards are FLAT (lift=0); a 2-ring castle is just a
+  // bigger outer circle, a 3-ring palace makes only the final wall taller. One motte, no ward ramps.
+  if(baseRaise>0){const md=new THREE.Mesh(new THREE.CylinderGeometry(rAvg*1.06,rAvg*1.45,baseRaise+2,26),
+    new THREE.MeshLambertMaterial({map:earthTex,flatShading:true}));
+    const w0=world(cx,cz);md.position.set(w0.x,baseY+(baseRaise+2)/2-1,w0.z);scene.add(md);}
+  { // flagstone courtyard paving across the (flat) interior
+    const court=new THREE.Mesh(new THREE.CircleGeometry(rAvg*0.9,30),
       new THREE.MeshLambertMaterial({map:stoneTex,color:0xb9b0a0}));
-    court.rotation.x=-Math.PI/2;const w1=world(cx,cz);court.position.set(w1.x,wardTop(inner)+0.12,w1.z);scene.add(court);
+    court.rotation.x=-Math.PI/2;const w1=world(cx,cz);court.position.set(w1.x,baseY+baseRaise+0.12,w1.z);scene.add(court);
     for(let s3=0;s3<16;s3++){const a3=s3/16*Math.PI*2+rng(),rr2=rAvg*(1.12+rng()*0.3);   // skirt scatter (outer)
       const sx=cx+Math.cos(a3)*rr2,sz=cz+Math.sin(a3)*rr2;
       const pr=rng()<0.45?new THREE.Mesh(new THREE.DodecahedronGeometry(0.9+rng()*1.4,0),rockMat)
                          :new THREE.Mesh(new THREE.ConeGeometry(1.1+rng(),1.4+rng(),6),treeLeaf(rng()*0.05,rng()));
       put(pr,sx,sz,0.5);}
   }
-  const yTop=baseY+baseRaise;                              // OUTER ward floor; inner rings add ring.lift
+  const yTop=baseY+baseRaise;                              // flat interior floor (lift=0 for all rings)
   const putC=(mesh,x,z,y)=>{const w=world(x,z);mesh.position.set(w.x,yTop+y,w.z);scene.add(mesh);return mesh;};
   const gatePts=(ring0.gates||[]).map(g=>g.at);
   const nearGate=(x,z,d)=>gatePts.some(g=>Math.hypot(g[0]-x,g[1]-z)<d);
@@ -432,6 +428,7 @@ if(CG)(function(){
       const arch=putC(new THREE.Mesh(new THREE.BoxGeometry(off*2-4,H*0.55,3.4),wallM),gx,gz,H*0.85);arch.rotation.y=ang;
       const port=putC(new THREE.Mesh(new THREE.BoxGeometry(off*2-8.5,H*0.34,0.5),
         new THREE.MeshLambertMaterial({color:0x181a1f,emissive:0x2a2416,flatShading:true})),gx,gz,H*0.68);port.rotation.y=ang;
+      if(ring.spiral)continue;   // tall final wall: climbed by a SPIRAL stair (built after this loop)
       // STAIRS to the wall-walk (owner 2026-07-21 ×4): PARALLEL to the wall is the real-castle
       // first choice — but ONLY along a straight wall stretch AT LEAST AS LONG as the flight
       // (never across a bend, never overlapping the wall body); where no such stretch exists on
@@ -510,6 +507,23 @@ if(CG)(function(){
           }
         }
       }
+    }
+    // SPIRAL STAIR (owner 2026-07-21: the tall final wall is climbed by steps that WRAP around it —
+    // "walk around the wall so stairs spiral around the wall to get up, then the tower"). Steps hug
+    // the inner face and climb continuously from the gate around the ring to the wall-walk.
+    if(ring.spiral){
+      const dense=[];
+      for(let i=0;i<pts.length;i++){const a=pts[i],b=pts[(i+1)%pts.length];const seg=Math.hypot(b[0]-a[0],b[1]-a[1]);const n=Math.max(1,Math.round(seg/1.5));for(let k=0;k<n;k++){const t=k/n;dense.push([a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t]);}}
+      const g0=(ring.gates&&ring.gates[0])?(ring.gates[0].at||ring.gates[0]):pts[0];
+      let gi=0,gbd=Infinity;for(let i=0;i<dense.length;i++){const d=Math.hypot(dense[i][0]-g0[0],dense[i][1]-g0[1]);if(d<gbd){gbd=d;gi=i;}}
+      const RISE=0.6,nS=Math.min(dense.length-1,Math.ceil(H/RISE));
+      for(let k=0;k<nS;k++){
+        const idx=(gi+k)%dense.length,pc=dense[idx],pn=dense[(idx+1)%dense.length];
+        const tx=pn[0]-pc[0],tz=pn[1]-pc[1],tl=Math.hypot(tx,tz)||1;
+        let nx=-tz/tl,nz=tx/tl;if(nx*(cx-pc[0])+nz*(cz-pc[1])<0){nx=-nx;nz=-nz;}
+        const y=Math.min(H,(k+1)*RISE),off=2.1+1.7;
+        const step=putC(new THREE.Mesh(new THREE.BoxGeometry(3.0,y,2.0),wallM),pc[0]+nx*off,pc[1]+nz*off,y/2);
+        step.rotation.y=Math.atan2(-ZS*tz,tx);}
     }
   }
   // ---- the KEEP: tiers climb, corner turrets, roof + banner — the silhouette (§1 rule 3) ----
