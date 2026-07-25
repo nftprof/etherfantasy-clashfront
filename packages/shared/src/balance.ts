@@ -108,6 +108,8 @@ export interface Balance {
     hardCapPerDay: number;
     desertersReturnToPopulationPct: number;
     desertersReturnToWildBanditPct: number;
+    /** ⚙ Deserter-bandit band spawns once this many wild deserters accrue on a hex (docs/03 §8). */
+    banditMinBand: number;
   };
   upkeep: {
     perUnitClassPer100PerDay: Record<UnitClass, UpkeepRates>;

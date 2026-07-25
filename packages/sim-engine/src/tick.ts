@@ -42,6 +42,7 @@ import { battleFoodNeed, enduranceMultiplier, marchFoodPerStep, troopCount } fro
 import { type ArmyRetreatRecord, type BattleLogisticsRecord, sortedIds, type WorldState } from './state';
 import { createWildBattle, stepWildBattle, type WildBattleState, wildBattleSurvivors } from './wildBattle';
 import { runMarketBalancer } from './market';
+import { runDesertion } from './desertion';
 import { chronicleAppend, recordMythicKo } from './mythics';
 import { granaryCap, runPopulation, runProsperity, runTaxCycle, setPillageScar } from './prosperity';
 import { armyOwnersByHex, isSuppliedGraph } from './supply';
@@ -498,18 +499,18 @@ function phaseSupply(state: WorldState, _tick: number, _rng: Rng, balance: Balan
 
 /**
  * Phase 5 — MORALE (docs/01 §7, §5.4; docs/03 §8).
- * Army + civil morale deltas; desertion.
+ * Army morale deltas, then the full §8 desertion model (desertion.ts).
  *
- * TODO(01 §7 / 03 §8): full morale event model (victory/defeat, deep enemy
- *   territory, resting, officer effects) and desertion below
- *   DESERTION_MORALE_THRESHOLD with the 03 §8 rate formula.
- * Placeholder below: unsupplied ticks bleed morale, supplied garrisons regen —
- *   clamped to [MORALE_MIN, MORALE_MAX] (invariant 6).
- * LIVE (docs/04 §7c.1 starvation): a MARCHING army with provisions.food = 0
- *   bleeds ⚙ starvationMoralePerTick; below DESERTION_MORALE_THRESHOLD its
- *   stacks desert at ⚙ starvationDesertionPctPerTick per tick.
+ * Morale: unsupplied ticks bleed ⚙ lossUnsuppliedPerTick, supplied garrisons
+ * regen ⚙ regenGarrisonPerTick, a MARCHING army out of rations bleeds ⚙
+ * starvationMoralePerTick — all clamped to [MORALE_MIN, MORALE_MAX] (inv. 6).
+ * Then runDesertion() bleeds troops from every low-morale army at the §8 rate
+ * (integer carry) and routes the deserters (home / bandits / vanish).
+ *
+ * TODO(01 §7 / 03 §8): richer morale EVENTS (victory/defeat deltas already land
+ *   at battle settlement; deep-enemy-territory drip + officer aura pending).
  */
-function phaseMorale(state: WorldState, _tick: number, _rng: Rng, balance: Balance): void {
+function phaseMorale(state: WorldState, _tick: number, rng: Rng, balance: Balance): void {
   for (const id of sortedIds(state.armies)) {
     const a = state.armies.get(id)!;
     if (a.state === 'DISBANDED') continue;
@@ -518,25 +519,17 @@ function phaseMorale(state: WorldState, _tick: number, _rng: Rng, balance: Balan
     } else if (a.state === 'GARRISON') {
       a.morale = Math.min(CONSTANTS.MORALE_MAX, a.morale + balance.morale.regenGarrisonPerTick);
     }
-    // Starving on the march (docs/04 §7c.1): morale bleeds; desperate men desert.
+    // Starving on the march (docs/04 §7c.1): morale bleeds — this is what DRIVES
+    // morale below the desertion threshold; the loss itself is applied here, the
+    // troop bleed is now the general §8 model in runDesertion (below).
     if (a.state === 'MARCHING' && a.provisions.food === 0) {
       a.morale = Math.max(CONSTANTS.MORALE_MIN, a.morale - balance.provisions.starvationMoralePerTick);
-      if (a.morale < CONSTANTS.DESERTION_MORALE_THRESHOLD) {
-        for (const stack of a.units) {
-          if (stack.count > 0) {
-            stack.count -= Math.ceil(stack.count * balance.provisions.starvationDesertionPctPerTick);
-          }
-        }
-        if (troopCount(a) === 0) {
-          a.state = 'DISBANDED'; // the army starved away on the road
-          delete a.path;
-          delete a.arrivalTick;
-        }
-      }
     }
-    // TODO(01 §5.4): full desertion — each stack loses ceil(count × DESERTION_RATE)
-    // while morale < DESERTION_MORALE_THRESHOLD; deserters may spawn WILD bandits (05).
   }
+  // Full desertion (docs/03 §8, wave 4.8): applies to ANY low-morale army —
+  // starving marchers, supply-cut garrisons, routed remnants — not just the
+  // marching-and-starving case the old inline block handled.
+  runDesertion(state, rng, balance);
 }
 
 /**

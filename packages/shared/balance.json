@@ -110,7 +110,8 @@
     "retreatingMult": 1.5,
     "hardCapPerDay": 0.2,
     "desertersReturnToPopulationPct": 0.5,
-    "desertersReturnToWildBanditPct": 0.1
+    "desertersReturnToWildBanditPct": 0.1,
+    "banditMinBand": 40
   },
   "upkeep": {
     "perUnitClassPer100PerDay": {

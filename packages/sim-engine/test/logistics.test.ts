@@ -169,19 +169,23 @@ test('provisionArmy: CT deducted at balance prices; only in GARRISON at a FRIEND
 
 // ── March rations & starvation (docs/04 §7c.1) ────────────────────────────────
 
-test('marching burns food per step; at food=0 morale bleeds and desperate stacks desert', () => {
+test('marching at food=0 bleeds morale each tick (desertion is the daily §8 model — see desertion.test.ts)', () => {
   const w = twoKingdoms('starving', makeGrid(4, 4));
   // Send the attacker on a never-ending march (huge step time keeps it MARCHING).
   const far: TickOptions = { travelTicksPerStep: 100, choiceTimeoutTicks: 3 };
   w.attacker.provisions.food = 0;
   w.attacker.morale = 26;
+  const before = w.attacker.units.map((s) => s.count); // 100/60/40
   const wildNeighbor = (w.state.adjacency!.get(w.hexA) ?? []).find((n) => n !== w.hexB)!;
   orderMarch(w.state, w.attacker.id, [wildNeighbor], far);
   for (let t = 1; t <= 4; t++) runTick(w.state, t, w.rng.fork('sim'), BALANCE, far);
   assert.equal(w.attacker.state, 'MARCHING');
-  // −1 morale/tick starving; desertion (2%/stack/tick, ceil) on the 3 ticks below 25.
+  // −1 morale/tick while starving: 26 → 22 over 4 ticks.
   assert.equal(w.attacker.morale, 22);
-  assert.deepEqual(w.attacker.units.map((s) => s.count), [94, 54, 37]); // from 100/60/40
+  // Desertion is now docs/03 §8's daily-prorated model (wave 4.8): a 200-troop
+  // army just below the threshold sheds NO whole soldiers over a 4-tick window —
+  // attrition is a multi-hour bleed, exercised in desertion.test.ts.
+  assert.deepEqual(w.attacker.units.map((s) => s.count), before);
 });
 
 test('march step consumes marchFoodPerStep-worth of carried food', () => {

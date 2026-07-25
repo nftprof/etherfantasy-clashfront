@@ -645,6 +645,9 @@ interface SerializedWorldState {
   /** Wave 4.5: rebellion bookkeeping. Optional for older saves. */
   governorSeen?: [string, { governorId: string; tick: number }][];
   rebellions?: [string, string][];
+  /** Wave 4.8: desertion carries. Optional for older saves. */
+  desertionCarry?: [string, number][];
+  banditCarry?: [string, number][];
   /** Feature Set 3 (circular economy). All optional for pre-FS3 saves. */
   economy?: EconomyState;
   enrichmentPools?: [string, number][];
@@ -3735,6 +3738,8 @@ function serializeWorldState(state: WorldState): SerializedWorldState {
     mythicFirstSlain: state.mythicFirstSlain ?? {},
     governorSeen: [...(state.governorSeen ?? new Map<string, { governorId: string; tick: number }>()).entries()],
     rebellions: [...(state.rebellions ?? new Map<string, string>()).entries()],
+    desertionCarry: [...(state.desertionCarry ?? new Map<string, number>()).entries()],
+    banditCarry: [...(state.banditCarry ?? new Map<string, number>()).entries()],
     economy: ensureEconomy(state),
     enrichmentPools: [...(state.enrichmentPools ?? new Map<string, number>()).entries()],
     enrichCarry: [...(state.enrichCarry ?? new Map<string, number>()).entries()],
@@ -3788,6 +3793,8 @@ function deserializeWorldState(s: SerializedWorldState): WorldState {
     mythicFirstSlain: s.mythicFirstSlain ?? {},
     governorSeen: new Map(s.governorSeen ?? []),
     rebellions: new Map(s.rebellions ?? []),
+    desertionCarry: new Map(s.desertionCarry ?? []),
+    banditCarry: new Map(s.banditCarry ?? []),
     ...(s.economy !== undefined ? { economy: s.economy } : {}),
     enrichmentPools: new Map(s.enrichmentPools ?? []),
     enrichCarry: new Map(s.enrichCarry ?? []),

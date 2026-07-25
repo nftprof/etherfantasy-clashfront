@@ -249,6 +249,11 @@ export interface WorldState {
   governorSeen?: Map<string, { governorId: string; tick: number }>;
   /** Live risings: rebel armyId → territoryId. Settled by the next phase-6 sweep (flip or crush). */
   rebellions?: Map<string, string>;
+  // ── Wave 4.8: desertion (docs/03 §8) ──────────────────────────────────────
+  /** armyId → fractional deserter carry (integer, /TICKS_PER_DAY units). */
+  desertionCarry?: Map<string, number>;
+  /** hexId → accrued wild deserters awaiting a full ⚙ banditMinBand to rise as a band. */
+  banditCarry?: Map<string, number>;
 }
 
 /**
