@@ -334,6 +334,19 @@
     "commandQueueTimeoutTicks": 20,
     "joinWindowSec": 90
   },
+  "weather": {
+    "_note": "⚙ Weather Phase 2 environmental effects (WEATHER-CONTINENT-PLAN §Phase 2). moveCostByState = per-tick march-speed penalty by weather state (rain +10%, storm +15%, snow +25%; others near-neutral). Applied in stepTicks; the server passes today's deterministic weather state (battleWeather) into the tick via TickOptions.weatherMoveCostMult. Type-advantage WarScore waits on the pet-element combat pass (sim units are class-typed, not element-typed).",
+    "moveCostByState": {
+      "clear": 1.0,
+      "overcast": 1.0,
+      "rain": 1.1,
+      "storm": 1.15,
+      "fog": 1.0,
+      "wind": 1.05,
+      "snow": 1.25,
+      "heatwave": 1.05
+    }
+  },
   "rebellion": {
     "_note": "⚙ docs/01 §7 civil rebellion (wave 4.5). Risk points/tick: starving +riskFood, governor changed within occupationGraceTicks +riskOccupation, prosperity below prosperityLowBand +riskPoverty; total scaled by (1 − civilMorale/100) — content people don't rise. Trigger chance per tick = risk/riskScale (deterministic hash roll): riskScale 100000 ⇒ a fully-miserable territory (~68 pts) risks ≈1 rising/day. Rebels = rebelPctOfPop of the populace (min rebelMin) rising as a SYSTEM army; the battle-spawning phase fights them THE SAME tick; an unopposed or victorious rising flips the land to the wilds — the Land NFT stays with its owner (ownership ≠ control, invariant 3). Crushed ⇒ civil morale capped at crushedMoraleCeiling (the resentment lingers).",
     "riskFood": 40,

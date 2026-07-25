@@ -1821,7 +1821,15 @@ export class Game {
       if (b.outcome !== undefined) settlingEngine.set(id, { reason: b.outcome.reason, live: b.mode === 'live' });
     }
 
-    runTick(this.state, tick, this.baseRng.fork('sim'), this.balance, this.tickOptions);
+    // Wave 4.9: today's weather slows marches deterministically (storms/snow).
+    // Computed from battleWeather().state so the whole world shares one sky in
+    // the MVP single-zone; per-tick so a day-boundary change takes effect.
+    const weatherMoveCostMult =
+      this.balance.weather.moveCostByState[this.battleWeather().state] ?? 1.0;
+    runTick(this.state, tick, this.baseRng.fork('sim'), this.balance, {
+      ...this.tickOptions,
+      weatherMoveCostMult,
+    });
 
     const events: GameEvent[] = this.pendingEvents.splice(0);
 

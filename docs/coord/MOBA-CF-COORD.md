@@ -547,3 +547,15 @@ radius ~112u, near a walled city). New: `siege`/`castleGeom` rings carry `gapIn`
 inward to the next ward) so the renderer caps flight length. Tall inner walls (H>9) get SWITCHBACK
 (return) stairs — two flights + a landing, not one steep straight run. SIEGE-TEST-1 rebuilt v5.
 Schema: additive (`rings[].gapIn`). Suite 18/18.
+
+**2026-07-25 (1) — 📦 CF weather Phase 2 (environmental) SHIPPED; type-advantage WarScore still PENDING
+the pet-element combat pass.** For **MOBA BattleEngine RAW** / weather owners: CF now applies today's
+deterministic weather to overworld MOVEMENT (storms/snow slow marches — ⚙ `weather.moveCostByState`,
+rain ×1.10 / storm ×1.15 / snow ×1.25, applied in `stepTicks`; the server passes
+`battleWeather().state` into the tick). The allocate context already ships `weather{state,visibility,
+continentId}` (Phase 1). **NOT yet done on CF side:** the ±15%/±35% element type-advantage in CF's
+accelerated WarScore — CF sim units are CLASS-typed (INFANTRY/ARCHER/…), not ELEMENT-typed, so the
+per-unit element bonus needs the separate "pet-element combat pass" first (adds elements to
+UnitStack). Until then, weather×element affinity lives ONLY in the 3D MOBA battle (your side) via the
+allocate `weather` field; CF's auto-resolve applies the environmental (movement) layer only. Flagging
+so nobody assumes CF auto-resolve already honors the type chart.

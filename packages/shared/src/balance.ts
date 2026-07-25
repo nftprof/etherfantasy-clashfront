@@ -445,6 +445,13 @@ export interface Balance {
     joinWindowSec: number;
   };
   /**
+   * ⚙ Wave 4.9 — weather Phase 2 environmental effects (WEATHER-CONTINENT-PLAN
+   * §Phase 2). moveCostByState scales march step-time by today's weather.
+   */
+  weather: {
+    moveCostByState: Record<string, number>;
+  };
+  /**
    * ⚙ Wave 4.5 — civil rebellion (docs/01 §7). Risk points accumulate per
    * tick from hunger/occupation/poverty, scaled by (1 − morale/100); the
    * trigger is a deterministic hash roll at risk/riskScale. See balance.json

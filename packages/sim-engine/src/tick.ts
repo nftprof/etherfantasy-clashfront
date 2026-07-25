@@ -90,6 +90,14 @@ export interface TickOptions {
    * this to the demo-world geometry). Undefined ⇒ a seeded synthetic outline.
    */
   parcelPolygonOf?: (hexId: string) => [number, number][] | undefined;
+  /**
+   * Wave 4.9 — today's weather march-speed penalty (WEATHER-CONTINENT-PLAN
+   * §Phase 2): step-time × this. The server computes it deterministically from
+   * battleWeather().state via balance.weather.moveCostByState and passes it in
+   * each tick; 1.0 (default) leaves movement untouched — so tests and the
+   * headless golden-master run are byte-identical.
+   */
+  weatherMoveCostMult?: number;
 }
 
 export const DEFAULT_TICK_OPTIONS: Required<TickOptions> = {
@@ -99,18 +107,23 @@ export const DEFAULT_TICK_OPTIONS: Required<TickOptions> = {
   engineBattles: false,
   liveBattles: true,
   parcelPolygonOf: () => undefined,
+  weatherMoveCostMult: 1.0,
 };
 
 function resolveOptions(options?: TickOptions): Required<TickOptions> {
   return { ...DEFAULT_TICK_OPTIONS, ...options };
 }
 
-/** World-ticks to traverse INTO the given hex (base step time × terrain moveCost). */
+/**
+ * World-ticks to traverse INTO the given hex: base step time × terrain moveCost
+ * × today's weather penalty (wave 4.9 — storms/snow slow the march; 1.0 leaves
+ * it untouched). Always ≥ 1 tick.
+ */
 export function stepTicks(state: WorldState, hexId: string, options?: TickOptions): number {
   const hex = state.hexes.get(hexId);
   if (hex === undefined) throw new Error(`stepTicks: unknown hex ${hexId}`);
-  const base = resolveOptions(options).travelTicksPerStep;
-  return Math.max(1, Math.round(base * hex.moveCost));
+  const opts = resolveOptions(options);
+  return Math.max(1, Math.round(opts.travelTicksPerStep * hex.moveCost * opts.weatherMoveCostMult));
 }
 
 type Phase = (
