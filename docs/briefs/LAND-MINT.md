@@ -8,18 +8,28 @@ Let a wallet MINT unminted land. Contracts + config: `data/land-contracts.json`.
 - Two distributors: **ETH estates** `0xB488…50F5`, **POL parcels** `0x411d…5265`.
 - Six size tokens gate it: EPIC/GIANT/LARGE/MEDIUM/SMALL (ETH) + SINGLE (POL).
 
-## The UI (owner: "like admin — VIEW all not-yet-minted; a wallet holding a size token sees + mints that size")
-1. Connect wallet (MetaMask — already built).
-2. Read the wallet's **size-token balances** (ERC-721 `balanceOf`, or the NFT-data API per size
-   contract) → the sizes they can claim.
-3. **Unminted explorer, gated by held size:** hold a LARGE token → see ALL unminted LARGE land; etc.
-   - Estates (ETH): a filterable list/map of unminted estates of that size.
-   - Parcels (POL, huge): the continent **dot map** with SOLD dots hidden — every remaining dot is
-     clickable + mintable (reuse the designer's light dot-picker; colour by unminted/size).
-4. Click a dot/row → `mintOne(tokenId, wallet)` on the size's distributor (or `mintMany` for a
-   multi-select batch). Show tx state.
-5. **Direct-buy hook (SOON):** leave a "Buy with ETH/POL" path per item — wired to the future
-   payable sale-minter (`data/land-contracts.json.directSale`); FCFS via the ERC-721 duplicate guard.
+## The UI (owner: "like admin — VIEW all not-yet-minted; a wallet holding a size token sees + mints that size") — ✅ BUILT 2026-07-25
+Lives in the Land Designer (`map-service/maps/designer.html`) behind the **🪙 Mint land** topbar
+button. Flow, as shipped:
+1. Connect wallet (MetaMask — already built; the panel reuses `connWallet`).
+2. **On-chain `balanceOf`** of each size token on the *current* network (Ethereum → the 5 estate
+   sizes; Polygon → SINGLE). Only sizes with balance > 0 are enabled (admins see all). Chain-switch
+   buttons (`wallet_switchEthereumChain`, auto-add Polygon) flip between the estate + parcel worlds.
+3. **Unminted explorer, gated by held size** (server `GET /internal/v1/unminted`):
+   - Estates (ETH): a checkbox list of unminted estates of that size (id · zone · subdivided flag).
+   - Parcels (POL): the continent **dot canvas** — minted dots greyed, unminted teal + click-to-select,
+     selected gold; per-zone dropdown.
+4. Click a row/dot → **hand-rolled ABI** `mintOne(tokenId, wallet)` (single) or `mintMany([…], wallet)`
+   (multi-select batch) on the size's distributor via `eth_sendTransaction`; tx hash + auto-refresh.
+   Selectors are keccak-256 of the signatures in `data/land-contracts.json` (`mintOne`=`0xbd6056f7`,
+   `mintMany`=`0x798c35b7`), verified against the known `balanceOf`/`transfer` selectors.
+5. **Direct-buy hook (SOON):** a disabled "💳 Buy with ETH/POL (soon)" button is present, to be wired
+   to the future payable sale-minter (`data/land-contracts.json.directSale`); FCFS via the ERC-721
+   duplicate guard.
+
+⚠ The mint calldata is encoded against the **documented** distributor signatures; verify against the
+deployed ABI on a networked box before enabling real mints (the sandbox can't reach an RPC). If the
+real signature differs, update `SEL`/`SIZE_TOKENS` in `designer.html` + `data/land-contracts.json`.
 
 ## Deriving the UNMINTED set
 Unminted tokenId = `ownerOf` reverts. Practical: **all tokenIds (corrected L3 snapshot) − minted

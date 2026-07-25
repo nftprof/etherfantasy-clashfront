@@ -88,6 +88,7 @@
       <div id="whoTop" class="stat">…</div>
       <div class="row" style="justify-content:flex-end;gap:6px;margin-top:6px">
         <button class="ghost" id="estatesBtn" title="Browse every curated estate castle">🏰 Estates</button>
+        <button class="ghost" id="mintBtn" title="Claim unminted land with a size token">🪙 Mint land</button>
         <button class="ghost" id="helpBtn">📖 How it works</button>
       </div>
     </div>
@@ -105,6 +106,41 @@
       <input id="cSearch" placeholder="search name / id…" style="width:180px">
     </div>
     <div id="castleList" style="max-height:440px;overflow:auto;display:grid;gap:5px"></div>
+  </div>
+
+  <!-- ===================== MINT LAND (free-claim by size token) — owner 2026-07-21 ============ -->
+  <div class="card" id="mintCard" style="display:none">
+    <h2><span class="n">🪙</span>Mint land <span class="stat" id="mintStat"></span>
+      <button class="ghost" id="mintClose" style="float:right;padding:3px 10px">✕ close</button></h2>
+    <div class="tag">Hold a LAND <b>size token</b> and claim unminted land of that size — the mint is <b>free</b> (you pay only gas). Estates live on <b>Ethereum</b>, single parcels on <b>Polygon</b>. Buying directly with ETH/POL is coming soon.</div>
+    <div id="mintConnect" class="hint" style="margin:10px 0"></div>
+    <div id="mintBody" style="display:none">
+      <div class="row" style="gap:8px;margin:8px 0;flex-wrap:wrap;align-items:center">
+        <span class="stat" id="mintChain"></span>
+        <button class="ghost" id="mintToEth" style="padding:4px 10px;display:none">⟠ Switch to Ethereum</button>
+        <button class="ghost" id="mintToPol" style="padding:4px 10px;display:none">⬡ Switch to Polygon</button>
+        <span class="stat" id="mintWallet" style="color:var(--fg-dim)"></span>
+      </div>
+      <div class="hint" id="mintSizesHint"></div>
+      <div class="row" id="mintSizes" style="gap:6px;margin:8px 0;flex-wrap:wrap"></div>
+      <div id="mintZoneRow" class="row" style="gap:8px;margin:8px 0;display:none;align-items:center">
+        <label style="margin:0;text-transform:none;letter-spacing:0;font-size:12.5px;color:var(--fg-dim)">Continent</label>
+        <select id="mintZone" style="width:auto"></select>
+        <span class="stat" id="mintZoneStat"></span>
+      </div>
+      <div id="mintList" style="max-height:360px;overflow:auto;display:grid;gap:5px;margin-top:6px"></div>
+      <div style="position:relative;display:none" id="mintDotWrap">
+        <canvas id="mintDots" width="1600" height="600" style="width:100%;border:1px solid var(--line);border-radius:9px;background:#0a0813;cursor:crosshair"></canvas>
+        <div class="legend" style="margin-top:6px">
+          <span><i style="background:#5fe9d0"></i>unminted (claimable)</span>
+          <span><i style="background:#3a3550"></i>already minted</span>
+          <span><i style="background:#ffd34d;box-shadow:0 0 0 2px #fff"></i>selected</span>
+        </div>
+      </div>
+      <div id="mintCart" class="row" style="gap:10px;margin-top:12px;align-items:center;flex-wrap:wrap"></div>
+      <div class="err" id="mintErr"></div>
+      <div class="hint" id="mintTx"></div>
+    </div>
   </div>
 
   <!-- ===================== 1. SELECT LAND (world → continent → parcel) ===================== -->
@@ -591,6 +627,186 @@ $("gen").onclick=async()=>{const id=selId||$("parcel").value.trim(),dir=$("direc
     $("genStat").textContent="✅ Saved as v"+d.row.designVersion+" — your land keeps this design until you change it.";
   }catch(e){$("err").textContent=e.message;$("genStat").textContent="";}
   $("gen").disabled=false;};
+
+/* ============ MINT LAND — free-claim unminted land with a size token (owner 2026-07-21) ============
+   Own the matching SIZE token → the size's distributor mints the LAND NFT free (gas only).
+   Estates on Ethereum (5 sizes), single parcels on Polygon (SINGLE). Server /internal/v1/unminted
+   gives the unminted set; on-chain balanceOf gates which sizes you can browse+claim; admins see all.
+   All ABI encoding is hand-rolled (no bundled web3): selectors below are keccak-256 of the
+   signatures in data/land-contracts.json / LAND-MINT.md, verified against balanceOf/transfer. */
+(function(){
+  const CHAIN={ETH:"0x1",POL:"0x89"};
+  const SIZE_TOKENS={   // MUST match data/land-contracts.json sizeTokens
+    EPIC:{addr:"0xe0A8F1Cb96a370E0736960e1B360c3d7e7f80280",chain:"ETH"},
+    GIANT:{addr:"0xB27f33682418c52b1DCCA1300B4982e3F6945800",chain:"ETH"},
+    LARGE:{addr:"0x2060599F7A1523B65b23aAC59570C8984e693D7a",chain:"ETH"},
+    MEDIUM:{addr:"0xDCb620d7e340c11919d580f1959D0c770F53D23B",chain:"ETH"},
+    SMALL:{addr:"0x7fa38443E5caEc9F8D9c3fC37CD1daE2A523d2f2",chain:"ETH"},
+    SINGLE:{addr:"0x86ecd87a384D623f34230f283362948bf5904147",chain:"POL"},
+  };
+  const SEL={mintOne:"0xbd6056f7",mintMany:"0x798c35b7"};   // mintOne(uint256,address) / mintMany(uint256[],address)
+  const pad=(h)=>h.padStart(64,"0");
+  const addrWord=(a)=>pad(String(a).toLowerCase().replace(/^0x/,""));
+  const uintWord=(n)=>pad(BigInt(n).toString(16));
+  const short=(a)=>a.slice(0,6)+"…"+a.slice(-4);
+
+  let mChainKey=null;     // "ETH" | "POL" | null (current claimable network)
+  let mHeld={}, mSize=null, mSel=new Set(), mDist=null, mDotData=null, mDotXf=null;
+  const hasW=()=>!!(connWallet&&window.ethereum);
+
+  const ethCall=(to,data)=>window.ethereum.request({method:"eth_call",params:[{to,data},"latest"]});
+  async function balanceOf(token,owner){try{const r=await ethCall(token,"0x70a08231"+addrWord(owner));return BigInt(r||"0x0");}catch(_){return 0n;}}
+  async function switchChain(hex){
+    try{await window.ethereum.request({method:"wallet_switchEthereumChain",params:[{chainId:hex}]});}
+    catch(e){if(e&&e.code===4902&&hex===CHAIN.POL){await window.ethereum.request({method:"wallet_addEthereumChain",params:[{chainId:CHAIN.POL,chainName:"Polygon",nativeCurrency:{name:"POL",symbol:"POL",decimals:18},rpcUrls:["https://polygon-rpc.com"],blockExplorerUrls:["https://polygonscan.com"]}]});}else throw e;}
+  }
+
+  async function openMint(){
+    $("mintCard").style.display="";$("mintCard").scrollIntoView({behavior:"smooth"});
+    if(!hasW()&&!admin){$("mintConnect").innerHTML='Connect MetaMask first (the 🦊 button in the “Connect your AI” panel below) to see and claim land with your size tokens.';$("mintBody").style.display="none";return;}
+    $("mintConnect").innerHTML="";$("mintBody").style.display="";
+    $("mintWallet").textContent=connWallet?("🦊 "+short(connWallet)):(admin?"👑 admin (browse-only — connect a wallet to claim)":"");
+    if(hasW())await refreshChain(); else browseAsAdmin();
+  }
+  // admin without a wallet: browse both collections read-only (server needs no wallet), mint disabled.
+  function browseAsAdmin(){
+    $("mintChain").textContent="browse";
+    $("mintToEth").style.display="";$("mintToEth").textContent="⟠ Estates";
+    $("mintToPol").style.display="";$("mintToPol").textContent="⬡ Parcels";
+    mChainKey=mChainKey||"ETH";resetPick();loadHeld();
+  }
+  async function refreshChain(){
+    const cid=await window.ethereum.request({method:"eth_chainId"});
+    const onEth=cid===CHAIN.ETH,onPol=cid===CHAIN.POL;
+    mChainKey=onEth?"ETH":(onPol?"POL":null);
+    $("mintChain").textContent=onEth?"⟠ Ethereum":(onPol?"⬡ Polygon":"⚠ wrong network");
+    $("mintToEth").style.display=onEth?"none":"";$("mintToEth").textContent="⟠ Switch to Ethereum";
+    $("mintToPol").style.display=onPol?"none":"";$("mintToPol").textContent="⬡ Switch to Polygon";
+    resetPick();await loadHeld();
+  }
+  function resetPick(){mSize=null;mSel.clear();mDist=null;$("mintList").innerHTML="";$("mintDotWrap").style.display="none";$("mintZoneRow").style.display="none";$("mintStat").textContent="";updateCart();}
+
+  async function loadHeld(){
+    mHeld={};$("mintSizes").innerHTML="";
+    if(!mChainKey){$("mintSizesHint").innerHTML="Switch to <b>Ethereum</b> (estates) or <b>Polygon</b> (single parcels) to claim.";return;}
+    const sizes=Object.keys(SIZE_TOKENS).filter(s=>SIZE_TOKENS[s].chain===mChainKey);
+    if(hasW()){
+      $("mintSizesHint").textContent="Reading your size-token balances…";
+      for(const s of sizes)mHeld[s]=await balanceOf(SIZE_TOKENS[s].addr,connWallet);
+    }
+    const held=sizes.filter(s=>(mHeld[s]||0n)>0n);
+    const canAll=admin;
+    if(!held.length&&!canAll){$("mintSizesHint").innerHTML="You hold no "+(mChainKey==="ETH"?"estate":"parcel")+" size tokens on this network. A size token (EPIC/GIANT/LARGE/MEDIUM/SMALL, or SINGLE on Polygon) lets you claim matching unminted land.";return;}
+    $("mintSizesHint").innerHTML=canAll?"👑 Admin — every size visible.":("You hold: <b>"+held.map(s=>s+" ×"+mHeld[s]).join(", ")+"</b>. Pick a size to browse claimable land.");
+    for(const s of sizes){
+      const on=held.includes(s)||canAll;
+      const b=document.createElement("button");b.className="ghost";b.style.padding="5px 12px";
+      b.textContent=s+((mHeld[s]||0n)>0n?" ×"+mHeld[s]:"");
+      if(!on){b.disabled=true;b.style.opacity=".4";}
+      if(mSize===s)b.style.borderColor="var(--acc)";
+      b.onclick=()=>{mSize=s;mSel.clear();loadHeld();pickSize(s);};
+      $("mintSizes").appendChild(b);
+    }
+  }
+  function pickSize(s){$("mintErr").textContent="";if(s==="SINGLE"){$("mintList").innerHTML="";$("mintZoneRow").style.display="";$("mintDotWrap").style.display="";loadParcelDots();}else{$("mintZoneRow").style.display="none";$("mintDotWrap").style.display="none";loadEstates(s);}updateCart();}
+
+  async function loadEstates(size){
+    $("mintList").innerHTML='<div class="hint" style="padding:10px">Loading unminted '+size+' estates…</div>';
+    let d;try{d=await fetch("/internal/v1/unminted?collection=estates&size="+size,{headers:hdrs()}).then(r=>r.json());}catch(e){$("mintList").innerHTML="";$("mintErr").textContent=e.message;return;}
+    if(!d||!d.ok){$("mintErr").textContent=(d&&d.error)||"load failed";return;}
+    mDist=d.distributor;$("mintStat").textContent="· "+d.unmintedCount.toLocaleString()+" unminted "+size;
+    const list=$("mintList");list.innerHTML="";
+    if(!d.items.length){list.innerHTML='<div class="hint" style="padding:10px">No unminted '+size+' estates.</div>';return;}
+    for(const e of d.items){
+      const row=document.createElement("div");
+      row.style.cssText="display:flex;align-items:center;gap:10px;padding:7px 10px;border:1px solid var(--line);border-radius:9px;background:rgba(255,255,255,.02)";
+      row.innerHTML='<input type="checkbox" '+(mSel.has(e.tokenId)?"checked":"")+' style="width:auto">'+
+        '<div style="flex:1;min-width:0"><div style="font-weight:600">Estate #'+e.tokenId+'</div><div class="stat">'+size+' · '+e.zone+(e.l3?" · subdivided":"")+'</div></div>'+
+        '<button class="ghost" style="padding:4px 10px" '+(hasW()?"":"disabled")+'>Claim</button>';
+      const cb=row.querySelector("input"),btn=row.querySelector("button");
+      cb.onchange=()=>{if(cb.checked)mSel.add(e.tokenId);else mSel.delete(e.tokenId);updateCart();};
+      btn.onclick=()=>mintTokens([e.tokenId],d.distributor,"ETH");
+      list.appendChild(row);
+    }
+  }
+
+  async function loadParcelDots(){
+    const zSel=$("mintZone");
+    if(!zSel.options.length)for(const z of ["EDU","BUS","ENT","HUB","UW2","UW3"]){const o=document.createElement("option");o.value=z;o.textContent=z;zSel.appendChild(o);}
+    const zone=zSel.value||"EDU";$("mintZoneStat").textContent="loading…";
+    let d;try{d=await fetch("/internal/v1/unminted?collection=parcels&zone="+zone,{headers:hdrs()}).then(r=>r.json());}catch(e){$("mintErr").textContent=e.message;return;}
+    if(!d||!d.ok){$("mintErr").textContent=(d&&d.error)||"load failed";return;}
+    mDotData=d;mDist=d.distributor;
+    $("mintZoneStat").textContent=d.unmintedCount.toLocaleString()+" unminted of "+d.total.toLocaleString();
+    $("mintStat").textContent="· "+d.unmintedCount.toLocaleString()+" unminted SINGLE";
+    drawDots();
+  }
+  function drawDots(){
+    const cv=$("mintDots"),ctx=cv.getContext("2d");ctx.clearRect(0,0,cv.width,cv.height);
+    const dots=(mDotData&&mDotData.dots)||[];if(!dots.length)return;
+    let x0=Infinity,y0=Infinity,x1=-Infinity,y1=-Infinity;
+    for(const d of dots){if(d.x<x0)x0=d.x;if(d.x>x1)x1=d.x;if(d.y<y0)y0=d.y;if(d.y>y1)y1=d.y;}
+    const pd=18,s=Math.min((cv.width-2*pd)/((x1-x0)||1),(cv.height-2*pd)/((y1-y0)||1));
+    mDotXf={x0,y0,s,pd,h:cv.height};
+    for(const d of dots){
+      const px=pd+(d.x-x0)*s,py=cv.height-(pd+(d.y-y0)*s),sel=mSel.has(String(d.t));
+      ctx.fillStyle=d.m?"#3a3550":(sel?"#ffd34d":"#5fe9d0");
+      const sz=sel?5:2;ctx.fillRect(px-sz/2,py-sz/2,sz,sz);
+    }
+  }
+  function canvasPick(ev){
+    if(!mDotData||!mDotXf)return;
+    const cv=$("mintDots"),r=cv.getBoundingClientRect();
+    const cx=(ev.clientX-r.left)*(cv.width/r.width),cy=(ev.clientY-r.top)*(cv.height/r.height);
+    const {x0,y0,s,pd,h}=mDotXf;let best=null,bd=Infinity;
+    for(const d of mDotData.dots){if(d.m)continue;const px=pd+(d.x-x0)*s,py=h-(pd+(d.y-y0)*s),dd=(px-cx)**2+(py-cy)**2;if(dd<bd){bd=dd;best=d;}}
+    if(best&&bd<400){const t=String(best.t);if(mSel.has(t))mSel.delete(t);else mSel.add(t);drawDots();updateCart();}
+  }
+
+  function updateCart(){
+    const cart=$("mintCart");cart.innerHTML="";
+    const n=mSel.size,chainKey=mSize==="SINGLE"?"POL":"ETH";
+    const info=document.createElement("span");info.className="stat";
+    info.textContent=n?(n+" selected"):(mSize?"Select land to claim (or use a row’s Claim button).":"Pick a size above.");
+    cart.appendChild(info);
+    if(n&&hasW()){
+      const b=document.createElement("button");b.className="primary";b.style.padding="6px 14px";
+      b.textContent="🪙 Claim "+n+(n>1?" · batch mint":"")+" (free)";
+      b.onclick=()=>mintTokens([...mSel],mDist,chainKey);cart.appendChild(b);
+      const clr=document.createElement("button");clr.className="ghost";clr.style.padding="6px 12px";clr.textContent="clear";
+      clr.onclick=()=>{mSel.clear();if(mSize==="SINGLE")drawDots();else if(mSize)loadEstates(mSize);updateCart();};cart.appendChild(clr);
+    } else if(n&&!hasW()){
+      const w=document.createElement("span");w.className="hint";w.textContent="Connect a wallet to claim your selection.";cart.appendChild(w);
+    }
+    const buy=document.createElement("button");buy.className="ghost";buy.style.padding="6px 12px";buy.disabled=true;buy.style.opacity=".5";buy.title="Native ETH/POL purchase — coming soon";buy.textContent="💳 Buy with ETH/POL (soon)";cart.appendChild(buy);
+  }
+
+  async function mintTokens(ids,distributor,chainKey){
+    $("mintErr").textContent="";$("mintTx").textContent="";
+    if(!hasW()){$("mintErr").textContent="Connect MetaMask to claim.";return;}
+    if(!distributor){$("mintErr").textContent="No distributor configured for this collection.";return;}
+    const want=chainKey==="ETH"?CHAIN.ETH:CHAIN.POL;
+    if(mChainKey!==chainKey){$("mintErr").textContent="Switch to "+(chainKey==="ETH"?"Ethereum":"Polygon")+" to claim this land.";return;}
+    let data;
+    if(ids.length===1)data=SEL.mintOne+uintWord(ids[0])+addrWord(connWallet);
+    else data=SEL.mintMany+uintWord(64)+addrWord(connWallet)+uintWord(ids.length)+ids.map(uintWord).join("");
+    try{
+      $("mintTx").textContent="Confirm the transaction in your wallet…";
+      const tx=await window.ethereum.request({method:"eth_sendTransaction",params:[{from:connWallet,to:distributor,data}]});
+      $("mintTx").innerHTML="✅ Submitted <code>"+String(tx).slice(0,12)+"…</code> — the mint shows once confirmed. Refreshing shortly…";
+      mSel.clear();updateCart();
+      setTimeout(()=>{if(mSize==="SINGLE")loadParcelDots();else if(mSize)loadEstates(mSize);if(typeof loadMyLand==="function")loadMyLand();},4500);
+    }catch(e){$("mintTx").textContent="";$("mintErr").textContent=(e&&e.message)||"Transaction rejected.";}
+  }
+
+  $("mintBtn").onclick=openMint;
+  $("mintClose").onclick=()=>{$("mintCard").style.display="none";};
+  $("mintZone").onchange=()=>{mSel.clear();loadParcelDots();};
+  $("mintDots").onclick=canvasPick;
+  $("mintToEth").onclick=async()=>{$("mintErr").textContent="";try{if(hasW()){await switchChain(CHAIN.ETH);await refreshChain();}else{mChainKey="ETH";resetPick();loadHeld();}}catch(e){$("mintErr").textContent=e.message;}};
+  $("mintToPol").onclick=async()=>{$("mintErr").textContent="";try{if(hasW()){await switchChain(CHAIN.POL);await refreshChain();}else{mChainKey="POL";resetPick();loadHeld();}}catch(e){$("mintErr").textContent=e.message;}};
+  if(window.ethereum&&window.ethereum.on)window.ethereum.on("chainChanged",()=>{if($("mintCard").style.display!=="none"&&hasW())refreshChain();});
+})();
 </script>
 </body>
 </html>
