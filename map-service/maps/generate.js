@@ -691,11 +691,16 @@ function placeBarriers(g, G, rng, count, avoid, budgetLevel) {
 // grid. The ground under the ring is cleared to a thin wall-walk band so every anchor sits on
 // walkable cells (CF invariant 3); when walls turn solid in v2 the carved gate openings already
 // guarantee courtyard↔outside connectivity.
-function castleLayout(g, G, rng, { base, atkPt, poly, half, budgetLevel, bridge }) {
+function castleLayout(g, G, rng, { base, atkPt, poly, half, budgetLevel, bridge, ringN = 1, ringGap = 0 }) {
   const cx = base.x, cz = base.z;
-  // radii: rough rectangle/oval 35–50 u, capped so the ring stays inside the arena square
+  // radii: rough rectangle/oval, capped so the ring stays inside the arena square. Multi-ring
+  // tiers need a BIGGER footprint so each nested ward clears the next by a full stair flight +
+  // buffer — and (owner 2026-07-21) a PALACE leaves TOWN-SIZED baileys between rings. needR =
+  // keep footprint + (ringN-1)·ringGap + margin.
   const avail = Math.max(26, half - 6 - Math.max(Math.abs(cx), Math.abs(cz)));
-  const Rx = Math.min(35 + rng() * 15, avail), Rz = Math.min(35 + rng() * 15, avail);
+  const needR = RING_KEEP_FOOT + (ringN - 1) * ringGap + 6;
+  const Rbase = Math.max(35 + rng() * 15, needR);
+  const Rx = Math.min(Rbase, avail), Rz = Math.min(Rbase * (0.9 + rng() * 0.18), avail);
   const n = 14 + Math.floor(rng() * 5);                   // 14–18 ring anchors ⇒ 8–12 WALLs after the 2 GATEs + 4 TOWERs
   const rot = rng() * Math.PI * 2;
   const ring = [];
@@ -824,10 +829,14 @@ function computeStairs(pts, gates, base) {
 // elevation at each level"). ringN = nested wall rings; each inner ward climbs (defense in depth
 // reads from the air — CASTLE-ARCHITECTURE-SPEC §1). KEEP = motte (1 ring); CASTLE = concentric
 // (2); PALACE = the climbing silhouette (3).
+// wardGap = target clearance between nested wards (owner 2026-07-21: enough for a stair flight +
+// buffer, and a PALACE leaves a TOWN-SIZED bailey — "literally having a town inside the wall is
+// fine"). RING_KEEP_FOOT = the innermost ward must clear the keep.
+const RING_KEEP_FOOT = 14;
 const CASTLE_TIERS = {
-  PALACE: { wallH: 11, keepTiers: 3, keepH: 30, moundRaise: 6, ringN: 3 },
-  CASTLE: { wallH: 9, keepTiers: 2, keepH: 22, moundRaise: 4, ringN: 2 },
-  KEEP: { wallH: 7, keepTiers: 2, keepH: 16, moundRaise: 3, ringN: 1 },
+  PALACE: { wallH: 11, keepTiers: 3, keepH: 30, moundRaise: 6, ringN: 3, wardGap: 48 },
+  CASTLE: { wallH: 9, keepTiers: 2, keepH: 22, moundRaise: 4, ringN: 2, wardGap: 26 },
+  KEEP: { wallH: 7, keepTiers: 2, keepH: 16, moundRaise: 3, ringN: 1, wardGap: 0 },
 };
 
 // Build the nested rings from the single outer ring the layout grew. Deterministic (pure geometry
@@ -837,12 +846,21 @@ const CASTLE_TIERS = {
 function concentricRings(geom, T2) {
   const N = Math.max(1, T2.ringN || 1);
   const kx = geom.keepAt[0], kz = geom.keepAt[1], outer = geom.pts;
+  // radial gap between wards: the target wardGap, but never more than fits between the outer ring's
+  // CLOSEST vertex and the keep footprint. Scaling by (gap/Rmin) makes the MINIMUM inter-ring gap
+  // exactly `gap` everywhere (wider at bulges) — so a stair flight + buffer always clears.
+  let Rmin = Infinity;
+  for (const [x, z] of outer) { const d = Math.hypot(x - kx, z - kz); if (d < Rmin) Rmin = d; }
+  const gap = N > 1 ? Math.min(T2.wardGap || 20, Math.max(6, (Rmin - RING_KEEP_FOOT) / (N - 1))) : 0;
   const rings = [], moundSteps = [];
   for (let ri = 0; ri < N; ri++) {
-    const s = ri === 0 ? 1 : Math.max(0.30, 1 - ri * 0.34);         // inward scale per ward
+    const s = ri === 0 ? 1 : Math.max(0.16, 1 - ri * gap / Rmin);   // inward scale → uniform `gap`
     const pts = ri === 0 ? outer : outer.map(([x, z]) => [r1(kx + (x - kx) * s), r1(kz + (z - kz) * s)]);
     const h = T2.wallH + ri * 2;                                    // inner curtains stand taller
     const lift = ri === 0 ? 0 : r1(ri * T2.moundRaise * 1.15);      // each ward floor climbs
+    // gapIn = walkable clearance from THIS ring inward to the next ward (or the keep) — the stair
+    // renderer caps flight length to this so a flight never touches the next wall in.
+    const gapIn = r1(ri < N - 1 ? gap : Rmin * s - RING_KEEP_FOOT);
     let gates;
     if (ri === 0) gates = geom.gates;                              // outer keeps its two opposed doors
     else {
@@ -856,7 +874,7 @@ function concentricRings(geom, T2) {
       }
       gates = [{ at: best }];
     }
-    rings.push({ pts, h, gates, lift, tier: ri });
+    rings.push({ pts, h, gates, lift, tier: ri, gapIn });
     moundSteps.push({ ring: ri, raise: r1(T2.moundRaise + lift) });
   }
   return { rings, moundSteps };
@@ -874,9 +892,10 @@ const PALACE_STYLES = { UW2: "drowned_bastion", ENT: "carnavale", EDU: "collegia
 // (courtyard = keep/CC + player builds; baked defaults = field pickets). v8 = standard top-level
 // `siege` block (tiers on ALL high ground, wallRing/gates/stairs-as-data/drawbridge on fortresses)
 // + designVersion made mandatory — MOBA contract fixes 1–4, 2026-07-21. v9 = CONCENTRIC castle
-// rings: CASTLE 2 / PALACE 3 nested wards, each climbing (lift) — owner "2 or 3 rings with further
-// elevation at each level".
-export const GEN_VERSION = 9;
+// rings: CASTLE 2 / PALACE 3 nested wards, each climbing (lift). v10 = tier-scaled ward GAPS
+// (palace = town-sized bailey) + guaranteed min clearance (gapIn) so stairs never touch the next
+// wall + switchback stairs on tall walls — owner 2026-07-21.
+export const GEN_VERSION = 10;
 
 export function generate(parcel, params = null, designVersion = 0) {
   // designVersion is MANDATORY in every artifact (MOBA contract fix 3: it pins caches, replays,
@@ -1044,8 +1063,10 @@ export function generate(parcel, params = null, designVersion = 0) {
   }
   // 3c) CASTLE LAYOUT: grow the WALL/GATE/TOWER ring around the relocated defender base (the
   //     castle IS the defended base). Runs after the carve so the courtyard/gates stay open.
+  const _ctier = castle ? (CASTLE_TIERS[castle.kind] || CASTLE_TIERS.KEEP) : null;
   const castleParts = castle
-    ? castleLayout(g, G, rng, { base, atkPt: atk, poly, half, budgetLevel: budget.level, bridge })
+    ? castleLayout(g, G, rng, { base, atkPt: atk, poly, half, budgetLevel: budget.level, bridge,
+                                ringN: _ctier.ringN, ringGap: _ctier.wardGap })
     : null;
   const castleStructures = castleParts ? castleParts.structures : [];
   sealDisconnectedPockets(g, G);

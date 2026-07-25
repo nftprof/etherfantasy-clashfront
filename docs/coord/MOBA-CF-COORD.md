@@ -539,3 +539,11 @@ lift,tier}`); `siege.elevationTiers.tier2[]` emits one WALL_WALK per ring with i
 **v4, now 2 rings** (json/artifact/manifest refreshed, sim 100). Renderer draws stepped earthworks
 per ward. Mechanics note: v1 the OUTER ring is still the R1 perimeter blocker; inner rings are
 higher wall-walks (tier stacking) — treat inner-ring cross-fire as future once the module lands.
+
+**2026-07-21 (13) — castle ring clearance + switchback stairs (GEN_VERSION 10, owner).** Tier-scaled
+ward gaps so stairs never touch the next wall: CASTLE ~26u bailey, PALACE ~44u TOWN-SIZED baileys
+("a town inside the wall is fine") — multi-ring tiers now get a bigger footprint (palace outer
+radius ~112u, near a walled city). New: `siege`/`castleGeom` rings carry `gapIn` (walkable clearance
+inward to the next ward) so the renderer caps flight length. Tall inner walls (H>9) get SWITCHBACK
+(return) stairs — two flights + a landing, not one steep straight run. SIEGE-TEST-1 rebuilt v5.
+Schema: additive (`rings[].gapIn`). Suite 18/18.
