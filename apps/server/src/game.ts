@@ -648,6 +648,9 @@ interface SerializedWorldState {
   /** Wave 4.8: desertion carries. Optional for older saves. */
   desertionCarry?: [string, number][];
   banditCarry?: [string, number][];
+  /** Wave 5.1: World Remembers — chronicled battle ids + monument POIs. Optional for older saves. */
+  chronicledBattles?: string[];
+  monuments?: [string, import('@clashfront/sim-engine').MonumentPoi[]][];
   /** Feature Set 3 (circular economy). All optional for pre-FS3 saves. */
   economy?: EconomyState;
   enrichmentPools?: [string, number][];
@@ -3748,6 +3751,8 @@ function serializeWorldState(state: WorldState): SerializedWorldState {
     rebellions: [...(state.rebellions ?? new Map<string, string>()).entries()],
     desertionCarry: [...(state.desertionCarry ?? new Map<string, number>()).entries()],
     banditCarry: [...(state.banditCarry ?? new Map<string, number>()).entries()],
+    chronicledBattles: [...(state.chronicledBattles ?? new Set<string>())],
+    monuments: [...(state.monuments ?? new Map()).entries()],
     economy: ensureEconomy(state),
     enrichmentPools: [...(state.enrichmentPools ?? new Map<string, number>()).entries()],
     enrichCarry: [...(state.enrichCarry ?? new Map<string, number>()).entries()],
@@ -3803,6 +3808,8 @@ function deserializeWorldState(s: SerializedWorldState): WorldState {
     rebellions: new Map(s.rebellions ?? []),
     desertionCarry: new Map(s.desertionCarry ?? []),
     banditCarry: new Map(s.banditCarry ?? []),
+    chronicledBattles: new Set(s.chronicledBattles ?? []),
+    monuments: new Map(s.monuments ?? []),
     ...(s.economy !== undefined ? { economy: s.economy } : {}),
     enrichmentPools: new Map(s.enrichmentPools ?? []),
     enrichCarry: new Map(s.enrichCarry ?? []),

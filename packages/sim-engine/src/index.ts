@@ -19,6 +19,7 @@ export * from './desertion';
 export * from './mythics';
 export * from './prosperity';
 export * from './supply';
+export * from './worldRemembers';
 export * from './workers';
 export * from './market';
 export * from './transport';

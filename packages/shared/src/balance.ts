@@ -445,6 +445,15 @@ export interface Balance {
     joinWindowSec: number;
   };
   /**
+   * ⚙ Wave 5.1 — THE WORLD REMEMBERS (decision 19). A settled battle whose
+   * total casualties reach greatBattleCasualties christens itself, archives in
+   * the World Chronicle, and leaves a monument POI (capped per parcel).
+   */
+  chronicle: {
+    greatBattleCasualties: number;
+    monumentCapPerParcel: number;
+  };
+  /**
    * ⚙ Wave 4.9 — weather Phase 2 environmental effects (WEATHER-CONTINENT-PLAN
    * §Phase 2). moveCostByState scales march step-time by today's weather.
    */

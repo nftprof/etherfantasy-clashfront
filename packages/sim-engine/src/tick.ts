@@ -47,6 +47,7 @@ import { chronicleAppend, recordMythicKo } from './mythics';
 import { granaryCap, runPopulation, runProsperity, runTaxCycle, setPillageScar } from './prosperity';
 import { armyOwnersByHex, isSuppliedGraph } from './supply';
 import { hash32 } from './weather';
+import { recordGreatBattles } from './worldRemembers';
 import { payTransitToll, raidCaravans, settleDeliveries } from './transport';
 import { runWorkerProduction } from './workers';
 
@@ -884,6 +885,10 @@ function phaseBattleSpawning(
     }
     resolveFieldBattle(state, hexId, attackers, defenders, tick, rng.fork(hexId), balance, options);
   }
+  // Wave 5.1 (decision 19): after all settlement paths this tick, the great
+  // battles christen themselves + archive in the World Chronicle + leave a
+  // monument POI. One scan over battles resolved this tick (idempotent).
+  recordGreatBattles(state, tick, balance);
 }
 
 // ── Reinforcement queue (Scenario H, REINFORCEMENT-LANE-QUEUE.md) ──────────

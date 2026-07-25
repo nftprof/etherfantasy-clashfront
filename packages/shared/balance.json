@@ -334,6 +334,11 @@
     "commandQueueTimeoutTicks": 20,
     "joinWindowSec": 90
   },
+  "chronicle": {
+    "_note": "⚙ THE WORLD REMEMBERS (decision 19, WORLD-REMEMBERS-AND-TOWNS §1). greatBattleCasualties = total casualties at/above which a settled battle christens itself, archives in the public World Chronicle, and leaves a monument POI on the parcel. monumentCapPerParcel = max scars kept per parcel (oldest fade). Demo-scale threshold; raise for a live world.",
+    "greatBattleCasualties": 150,
+    "monumentCapPerParcel": 5
+  },
   "weather": {
     "_note": "⚙ Weather Phase 2 environmental effects (WEATHER-CONTINENT-PLAN §Phase 2). moveCostByState = per-tick march-speed penalty by weather state (rain +10%, storm +15%, snow +25%; others near-neutral). Applied in stepTicks; the server passes today's deterministic weather state (battleWeather) into the tick via TickOptions.weatherMoveCostMult. Type-advantage WarScore waits on the pet-element combat pass (sim units are class-typed, not element-typed).",
     "moveCostByState": {

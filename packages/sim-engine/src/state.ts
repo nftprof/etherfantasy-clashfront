@@ -254,6 +254,11 @@ export interface WorldState {
   desertionCarry?: Map<string, number>;
   /** hexId → accrued wild deserters awaiting a full ⚙ banditMinBand to rise as a band. */
   banditCarry?: Map<string, number>;
+  // ── Wave 5.1: THE WORLD REMEMBERS (decision 19) ───────────────────────────
+  /** battleIds already archived in the Chronicle (dedupe for the great-battle scan). */
+  chronicledBattles?: Set<string>;
+  /** territoryId → persistent monument POIs (battle scars). Type in worldRemembers.ts. */
+  monuments?: Map<string, import('./worldRemembers').MonumentPoi[]>;
 }
 
 /**
