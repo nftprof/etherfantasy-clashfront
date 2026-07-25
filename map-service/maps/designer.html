@@ -183,6 +183,10 @@
         </div>
         <div class="hint">Same Pentagon Games account as the game. <a href="https://blockchainsuperheroes.github.io/pg-identity-docs/" target="_blank" rel="noopener" style="color:var(--ether-300)">What is Pentagon Games login?</a></div>
       </div>
+      <div class="row" style="margin-top:8px;gap:8px;align-items:center">
+        <button class="ghost" id="mmConnect">🦊 Connect MetaMask</button>
+        <span class="hint" id="mmState" style="margin:0">or connect a wallet to see the land it owns.</span>
+      </div>
       <label style="margin-top:10px">Admin key (ops only)</label><input id="adminKey" type="password" placeholder="x-maps-key (optional)" autocomplete="off">
       <div class="hint" id="genStat"></div>
     </div>
@@ -444,9 +448,11 @@ $("zreset").onclick=()=>{fitView();drawMap();updZoomUI();};
 // through matches). Selecting fetches the parcel's full design.
 let allParcels=[];
 let myParcels=new Set(),myWallet=null,myEstates=[];
+let connWallet=null;try{connWallet=localStorage.getItem("ef_mm_wallet");}catch(e){}
+const authHdr=()=>{const h={};if(pgTok)h.authorization="Bearer "+pgTok;if(connWallet)h["x-wallet"]=connWallet;return h;};
 async function loadParcels(){showParcelView();$("mapStat").textContent="· loading continent…";
   const url="/internal/v1/parcels?light=1&zone="+encodeURIComponent(zone||"EDU")+(mineOnly?"&mine=1":"")+(designedOnly?"&designed=1":"");
-  try{const d=await fetch(url,{headers:pgTok?{authorization:"Bearer "+pgTok}:{}}).then(r=>r.json());
+  try{const d=await fetch(url,{headers:authHdr()}).then(r=>r.json());
     allParcels=d.parcels||[];admin=!!d.admin;me=d.me||me;ownersKnown=!!d.ownersKnown;
     for(const pp of allParcels)if(myParcels.has(pp.parcelId)){pp.mine=true;pp.minted=true;}   // on-chain overlay
     setOwnHint();
@@ -489,13 +495,15 @@ function markStatus(id,row){const p=parcels.find(q=>q.parcelId===id);if(p&&row){
 /* ============ sign-in (PG identity) ============ */
 let pgTok=null;try{pgTok=localStorage.getItem("ef_pg_token");}catch(e){}
 async function refreshWho(){
-  try{const r=await fetch("/internal/v1/whoami",{headers:pgTok?{authorization:"Bearer "+pgTok}:{}}).then(x=>x.json());
+  try{const r=await fetch("/internal/v1/whoami",{headers:authHdr()}).then(x=>x.json());
     me=r.ok?r.username:null;admin=!!(r.ok&&r.admin);
     if(r.ok){
-      $("whoTop").innerHTML="✅ <b>"+r.username+"</b>"+(admin?' <span class="badge">👑 admin</span>':"")+' · <a href="#" id="signout" style="color:var(--fg-dim)">sign out</a>';
+      const disp=r.username||(connWallet?("🦊 "+connWallet.slice(0,6)+"…"+connWallet.slice(-4)):"connected");
+      $("whoTop").innerHTML="✅ <b>"+disp+"</b>"+(admin?' <span class="badge">👑 admin</span>':"")+(r.username?' · <a href="#" id="signout" style="color:var(--fg-dim)">sign out</a>':"");
       $("who").innerHTML="Signed in as <b>"+r.username+"</b> — provider choice saves to your account.";
       $("loginRow").style.display="none";
-      document.getElementById("signout").onclick=(e)=>{e.preventDefault();try{localStorage.removeItem("ef_pg_token");}catch(_){};pgTok=null;me=null;admin=false;myParcels=new Set();myWallet=null;refreshWho();loadParcels&&zone&&loadParcels();};
+      const _so=document.getElementById("signout");
+      if(_so)_so.onclick=(e)=>{e.preventDefault();try{localStorage.removeItem("ef_pg_token");}catch(_){};pgTok=null;me=null;admin=false;myParcels=new Set();myWallet=null;refreshWho();loadParcels&&zone&&loadParcels();};
       loadMyLand();   // pull the connected wallet's on-chain parcels → highlight + edit-enable
 
       try{const p=await fetch("/internal/v1/prefs",{headers:{authorization:"Bearer "+pgTok}}).then(x=>x.json());
@@ -519,7 +527,26 @@ window.syncPrefs=(()=>{let t=null;return()=>{if(!pgTok||!me)return;clearTimeout(
 
 /* ============ selection + design view ============ */
 let cur=null;
-const hdrs=()=>{const h={"content-type":"application/json"};if(pgTok)h.authorization="Bearer "+pgTok;if($("adminKey").value)h["x-maps-key"]=$("adminKey").value;return h;};
+const hdrs=()=>{const h={"content-type":"application/json"};if(pgTok)h.authorization="Bearer "+pgTok;if($("adminKey").value)h["x-maps-key"]=$("adminKey").value;if(connWallet)h["x-wallet"]=connWallet;return h;};
+function setMMState(){const el=$("mmState");if(!el)return;
+  el.innerHTML=connWallet?('🦊 <b>'+connWallet.slice(0,6)+'…'+connWallet.slice(-4)+'</b> connected · <a href="#" id="mmOff" style="color:var(--fg-dim)">disconnect</a>'):"or connect a wallet to see the land it owns.";
+  const off=$("mmOff");if(off)off.onclick=(e)=>{e.preventDefault();connWallet=null;try{localStorage.removeItem("ef_mm_wallet");}catch(_){}myParcels=new Set();myWallet=null;setMMState();refreshWho();if(zone)loadParcels();};}
+async function connectMM(){
+  if(!window.ethereum){$("mmState").innerHTML='No wallet found — install <a href="https://metamask.io" target="_blank" style="color:var(--ether-300)">MetaMask</a>.';return;}
+  try{
+    const accts=await window.ethereum.request({method:"eth_requestAccounts"});
+    const addr=(accts&&accts[0]||"").toLowerCase();if(!/^0x[0-9a-f]{40}$/.test(addr))return;
+    // best-effort ownership proof for the future signature-verified edit path (stored, not yet enforced)
+    try{const nonce="EtherFantasy Land Designer — verify wallet\n"+addr+"\n"+Date.now();
+      const sig=await window.ethereum.request({method:"personal_sign",params:[nonce,addr]});
+      window.__mmProof={addr,nonce,sig};}catch(_){}
+    connWallet=addr;try{localStorage.setItem("ef_mm_wallet",addr);}catch(_){}
+    setMMState();await refreshWho();await loadMyLand();if(zone)loadParcels();
+  }catch(e){$("mmState").textContent="Connect cancelled.";}
+}
+if($("mmConnect"))$("mmConnect").onclick=connectMM;
+setMMState();
+if(connWallet){loadMyLand();refreshWho();}   // restore a prior connect
 async function selectParcel(id){selId=id;$("parcel").value=id;$("selChip").hidden=false;$("selChip").textContent="📍 "+id;$("gen").disabled=false;$("err").textContent="";drawMap();
   $("dhint").textContent="Loading design…";
   try{const d=await fetch(`/internal/v1/designs/${id}`).then(r=>r.json());if(!d.ok)throw new Error(d.error||"load failed");show(id,d.row,d.artifact,d.budget);markStatus(id,d.row);}

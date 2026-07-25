@@ -86,6 +86,18 @@ const _who = new Map(); // token -> { u, at } (60s cache so POST bursts don't ha
 // and may design any land. Env override MAPS_ADMIN_USERS = comma list; default just nftprof.
 const ADMIN_USERS = new Set((process.env.MAPS_ADMIN_USERS || "nftprof").split(",").map((s) => s.trim().toLowerCase()).filter(Boolean));
 export const isAdminUser = (u) => !!u && ADMIN_USERS.has(String(u).toLowerCase());
+// Admin WALLETS (owner 2026-07-21) — a connected MetaMask wallet in this set sees ALL land.
+const ADMIN_WALLETS = new Set((process.env.MAPS_ADMIN_WALLETS ||
+  "0x1D187Aa2832cC7a3F778B075eEd0268744D3017a,0xB2e3e82a95f5c4c47E30A5b420Ac4f99d32EF61f")
+  .split(",").map((s) => s.trim().toLowerCase()).filter(Boolean));
+export const isAdminWallet = (w) => !!w && ADMIN_WALLETS.has(String(w).toLowerCase());
+// The wallet a MetaMask connect asserts (x-wallet header). Used for VIEW + admin-see-all + the
+// my-land highlight. NOTE: unverified (no server-side signature check yet) — so it grants VIEW
+// only; the design EDIT gate still requires the PG-verified mm_address (or PG-admin).
+const connectedWallet = (req) => {
+  const w = req.headers["x-wallet"];
+  return w && /^0x[0-9a-fA-F]{40}$/.test(String(w)) ? String(w).toLowerCase() : null;
+};
 async function identify(req) {
   if (TOKEN() && req.headers["x-maps-key"] === TOKEN()) return { admin: true, username: "__admin__" };
   const m = /^Bearer\s+(.+)$/.exec(req.headers.authorization || "");
@@ -153,9 +165,9 @@ export function mapsApi(req, res) {
   if (p === "/internal/v1/my-land") {                       // the connected wallet's on-chain land
     identify(req).then(async (id) => {                      // (NFT-data API — owner 2026-07-21).
       const u = new URL(req.url, "http://x");
-      // wallet = the PG-verified mm_address; admin may inspect any ?wallet= (read-only).
-      let wallet = id && id.wallet;
-      if (id && id.admin && u.searchParams.get("wallet")) wallet = u.searchParams.get("wallet");
+      // wallet = the connected MetaMask wallet, else the PG-verified mm_address; admin may inspect any ?wallet=.
+      let wallet = connectedWallet(req) || (id && id.wallet);
+      if (((id && id.admin) || isAdminWallet(connectedWallet(req))) && u.searchParams.get("wallet")) wallet = u.searchParams.get("wallet");
       if (!wallet) return J(res, 200, { ok: true, wallet: null, count: 0, parcels: [], estates: [] });
       const land = await landOfWallet(wallet).catch(() => ({ parcels: new Set(), estates: [] }));
       J(res, 200, { ok: true, wallet, count: land.parcels.size, parcels: [...land.parcels], estates: land.estates });
@@ -168,8 +180,12 @@ export function mapsApi(req, res) {
     return true;
   }
   if (p === "/internal/v1/whoami") {                        // designer sign-in state (Bearer = lobby's ef_pg_token)
-    identify(req).then((id) => J(res, 200, id ? { ok: true, username: id.username, admin: !!id.admin } : { ok: false }))
-      .catch(() => J(res, 200, { ok: false }));
+    const cw = connectedWallet(req), adminW = isAdminWallet(cw);
+    identify(req).then((id) => {
+      const admin = !!(id && id.admin) || adminW;           // PG-admin OR admin wallet → see all
+      if (!id && !cw) return J(res, 200, { ok: false });
+      J(res, 200, { ok: true, username: (id && id.username) || null, admin, wallet: cw || (id && id.wallet) || null, walletAdmin: adminW });
+    }).catch(() => J(res, 200, cw ? { ok: true, username: null, admin: adminW, wallet: cw, walletAdmin: adminW } : { ok: false }));
     return true;
   }
   if (p === "/internal/v1/login" && req.method === "POST") {  // direct PG email/password login (identity docs
@@ -276,7 +292,7 @@ function castlesList(req) {
 async function parcelsList(req) {
   const u = new URL(req.url, "http://x");
   const id = await identify(req);
-  const admin = !!(id && id.admin), me = id && id.username ? String(id.username).toLowerCase() : null;
+  const admin = !!(id && id.admin) || isAdminWallet(connectedWallet(req)), me = id && id.username ? String(id.username).toLowerCase() : null;
   const zone = String(u.searchParams.get("zone") || "EDU").toUpperCase();
   const q = String(u.searchParams.get("q") || "").trim().toLowerCase();
   const page = Math.max(0, parseInt(u.searchParams.get("page") || "0", 10) || 0);
