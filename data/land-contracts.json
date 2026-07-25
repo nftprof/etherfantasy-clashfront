@@ -1,0 +1,33 @@
+{
+  "_note": "Land mint/claim contracts (owner 2026-07-21). Free-mint currently active. Own the matching SIZE token → the size-specific distributor mintOne(tokenId,to)/mintMany(...) mints the LAND token free. tokenId = the ON-CHAIN parcel/estate id (see the tokenId-correction note below).",
+  "distributors": {
+    "eth_estates": "0xB488b04E5e804676e3ab085F0Fb9C3d9633b50F5",
+    "pol_parcels": "0x411d4B953BA5A54462728C78E71108F913565265"
+  },
+  "collections": {
+    "eth_estates": "0x28cd2990f34db387d011d7cc693a2bcedd8dc654",
+    "pol_parcels": "0x383fb8793294d82b3c20bf04c10f4b9b9cb2aca7"
+  },
+  "sizeTokens": {
+    "EPIC":   { "chain": "ethereum", "address": "0xe0A8F1Cb96a370E0736960e1B360c3d7e7f80280" },
+    "GIANT":  { "chain": "ethereum", "address": "0xB27f33682418c52b1DCCA1300B4982e3F6945800" },
+    "LARGE":  { "chain": "ethereum", "address": "0x2060599F7A1523B65b23aAC59570C8984e693D7a" },
+    "MEDIUM": { "chain": "ethereum", "address": "0xDCb620d7e340c11919d580f1959D0c770F53D23B" },
+    "SMALL":  { "chain": "ethereum", "address": "0x7fa38443E5caEc9F8D9c3fC37CD1daE2A523d2f2" },
+    "SINGLE": { "chain": "polygon",  "address": "0x86ecd87a384D623f34230f283362948bf5904147" }
+  },
+  "chains": { "ethereum": 1, "polygon": 137 },
+  "admin": "0x18b15e6f",
+  "unclaimedSnapshot": { "estates": 7753, "parcels": 267218, "note": "unminted = snapshot tokenIds where ownerOf reverts" },
+  "directSale": {
+    "status": "future",
+    "note": "distributor mintOne/mintMany are nonpayable; native ETH/POL sale needs a new payable sale-minter per chain: buy(tokenId) → require(msg.value ≥ price[size]) → NFT.mint(buyer,tokenId) (MINTER_ROLE, granted by admin). ERC-721 duplicate guard = FCFS; coexists with free-claim."
+  },
+  "tokenIdCorrection": {
+    "status": "REQUIRED — blocks live minting",
+    "problem": "On-chain parcel tokenIds embed the parent estate's SIZE digit, NOT 6. e.g. 20912230228 = GIANT(2)·UW1(09)·#1223·#228. The snapshot in data/hexagon-city-source/l3/ still uses the OLD 6… scheme (parcelId===tokenId).",
+    "needed": "The regenerated L3 snapshot (validated vs live ownerOf) with corrected `tokenId` + old value kept as `tokenIdOld` — pushed to this branch. Until then ownership/metadata/mint match on the WRONG id.",
+    "example": { "corrected": "20912230228", "decode": "GIANT·UW1·parent#1223·sub#228" }
+  },
+  "geometryGap": "CGI + KOL zones have real on-chain estates but NO map geometry in the snapshot (map covers 10 zones). If in the sale, their shapes must be sourced separately."
+}

@@ -559,3 +559,15 @@ per-unit element bonus needs the separate "pet-element combat pass" first (adds 
 UnitStack). Until then, weather×element affinity lives ONLY in the 3D MOBA battle (your side) via the
 allocate `weather` field; CF's auto-resolve applies the environmental (movement) layer only. Flagging
 so nobody assumes CF auto-resolve already honors the type chart.
+
+**2026-07-21 (14) — ⛔ BLOCKER for NFT mint/ownership/metadata: corrected L3 tokenIds not in scope.**
+Owner delivered the land mint/claim contracts (data/land-contracts.json: 2 distributors + 6 size
+tokens; free-claim = own size token → distributor mintOne/mintMany) and noted a real fix: on-chain
+parcel tokenIds embed the parent estate's SIZE digit (e.g. 20912230228 = GIANT·UW1·#1223·#228), NOT
+the old 6… scheme. I verified the regenerated L3 snapshot (with tokenIdOld) is NOT on any branch I
+can reach — all copies still have parcelId===tokenId===6…. Consequence: the ownership (nftowners.js),
+metadata (/nft/…), and any mint UI all match on the WRONG id until the corrected snapshot lands.
+NEED: the ownerOf-validated L3 (corrected `tokenId` + `tokenIdOld`) pushed to
+claude/clash-front-overworld-mkcyia, or the repo/branch that holds it. Mint UI spec staged:
+docs/briefs/LAND-MINT.md (free-claim by held size, dot-map hide-sold, direct-buy hook). Also: CGI+KOL
+have on-chain estates but no map geometry — flagged.
