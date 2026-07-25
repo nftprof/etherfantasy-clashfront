@@ -86,8 +86,25 @@
     </div>
     <div style="text-align:right">
       <div id="whoTop" class="stat">…</div>
-      <button class="ghost" id="helpBtn" style="margin-top:6px">📖 How it works</button>
+      <div class="row" style="justify-content:flex-end;gap:6px;margin-top:6px">
+        <button class="ghost" id="estatesBtn" title="Browse every curated estate castle">🏰 Estates</button>
+        <button class="ghost" id="helpBtn">📖 How it works</button>
+      </div>
     </div>
+  </div>
+
+  <!-- ===================== ESTATE CASTLE EXPLORER (owner 2026-07-21) ===================== -->
+  <div class="card" id="castleCard" style="display:none">
+    <h2><span class="n">🏰</span>Estate castles <span class="stat" id="castleStat"></span>
+      <button class="ghost" id="castleClose" style="float:right;padding:3px 10px">✕ close</button></h2>
+    <div class="tag">Every curated estate fortification — palaces, castles and keeps hand-placed across the world. Filter and click one to open its 3D. <span id="castleAdmin" style="color:var(--fg-dim)"></span></div>
+    <div class="row" style="gap:8px;margin:10px 0;flex-wrap:wrap">
+      <select id="cZone" style="width:auto"><option value="">All continents</option></select>
+      <div class="row" id="cTiers" style="gap:4px"></div>
+      <label style="display:flex;gap:6px;align-items:center;margin:0;text-transform:none;letter-spacing:0;font-size:12.5px;color:var(--fg-dim)"><input type="checkbox" id="cWater" style="width:auto"> near water 🌊</label>
+      <input id="cSearch" placeholder="search name / id…" style="width:180px">
+    </div>
+    <div id="castleList" style="max-height:440px;overflow:auto;display:grid;gap:5px"></div>
   </div>
 
   <!-- ===================== 1. SELECT LAND (world → continent → parcel) ===================== -->
@@ -300,6 +317,51 @@ if(!localStorage.getItem("efmaps-ftue")){$("ftue").style.display="flex";}
 const closeFtue=()=>{$("ftue").style.display="none";localStorage.setItem("efmaps-ftue","1");};
 $("ftueGo").onclick=closeFtue;$("ftueSkip").onclick=closeFtue;
 $("helpBtn").onclick=()=>{$("ftue").style.display="flex";};
+
+// ---- ESTATE CASTLE EXPLORER (owner 2026-07-21: "each castle for estates curated … a separate
+// explorer for large land … as admin filter for them easily") ----
+let cTier="";
+const TIER_ICON={PALACE:"👑",CASTLE:"🏰",KEEP:"🗼"};
+function renderTierBtns(counts){
+  const wrap=$("cTiers");wrap.innerHTML="";
+  [["","All"],["PALACE","Palaces"],["CASTLE","Castles"],["KEEP","Keeps"]].forEach(([k,label])=>{
+    const b=document.createElement("button");b.className="ghost";b.style.padding="4px 10px";
+    b.textContent=(TIER_ICON[k]||"")+" "+label+(counts&&k?(" "+(counts[k]||0)):"");
+    if(cTier===k)b.style.borderColor="var(--acc)";
+    b.onclick=()=>{cTier=k;loadCastles();};wrap.appendChild(b);});
+}
+async function loadCastles(){
+  const qs=new URLSearchParams();
+  if($("cZone").value)qs.set("zone",$("cZone").value);
+  if(cTier)qs.set("tier",cTier);
+  if($("cWater").checked)qs.set("water","1");
+  if($("cSearch").value.trim())qs.set("q",$("cSearch").value.trim());
+  let d;try{d=await fetch("/internal/v1/castles?"+qs,{headers:hdrs()}).then(r=>r.json());}catch(e){return;}
+  if(!d||!d.ok)return;
+  // zone dropdown (once) + tier chips with counts
+  if($("cZone").options.length<=1)for(const z of d.zones){const o=document.createElement("option");o.value=z;o.textContent=z;$("cZone").appendChild(o);}
+  renderTierBtns(d.counts);
+  $("castleStat").textContent="· "+d.total+" of "+d.grandTotal;
+  $("castleAdmin").textContent=admin?"👑 admin — all land visible.":"";
+  const list=$("castleList");list.innerHTML="";
+  if(!d.castles.length){list.innerHTML='<div class="hint" style="padding:12px">No castles match.</div>';return;}
+  for(const c of d.castles){
+    const row=document.createElement("div");
+    row.style.cssText="display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid var(--line);border-radius:9px;background:rgba(255,255,255,.02)"+(c.parcel?";cursor:pointer":"");
+    const water=c.water?`<span class="stat" style="color:#58d6c9">🌊 ${c.water.kind} ${c.water.d}u</span>`:"";
+    const parc=c.parcel?`<span class="stat">${c.parcel}</span>`:`<span class="stat" style="color:var(--fg-dim)">no parcel yet</span>`;
+    row.innerHTML=`<span style="font-size:18px">${TIER_ICON[c.kind]||"🏰"}</span>
+      <div style="flex:1;min-width:0"><div style="font-weight:600">${c.name}</div>
+        <div class="stat">${c.kind} · ${c.zoneName||c.zone} ${water}</div></div>
+      ${parc}${c.parcel?'<span class="badge">▶ 3D</span>':""}`;
+    if(c.parcel)row.onclick=()=>window.open(`/designer/3d?parcel=${c.parcel}`,"_blank");
+    list.appendChild(row);
+  }
+}
+$("estatesBtn").onclick=()=>{$("castleCard").style.display="";$("castleCard").scrollIntoView({behavior:"smooth"});loadCastles();};
+$("castleClose").onclick=()=>{$("castleCard").style.display="none";};
+$("cZone").onchange=loadCastles;$("cWater").onchange=loadCastles;
+let cST;$("cSearch").oninput=()=>{clearTimeout(cST);cST=setTimeout(loadCastles,220);};
 
 /* ============ picker: world → continent → parcel ============ */
 const STATUS_COL={undefined:"#4d5a68",SEED_V0:"#5fe9d0",AI_ITERATED:"#c08cff",OWNER_FROZEN:"#e0bd6b"};

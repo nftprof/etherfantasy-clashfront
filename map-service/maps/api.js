@@ -20,7 +20,7 @@ import * as reg from "./registry.js";
 import { translateDirective, llmEnabled } from "./llm.js";
 import { clampParams, budgetFor } from "./schema.js";
 import { verifyToken, loginPassword } from "../lobby/auth.js";
-import { worldParcel, l3Row, l3Zone, zoneList } from "./worldfield.js";
+import { worldParcel, l3Row, l3Zone, zoneList, loadWorldField } from "./worldfield.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const WORLD_URL = () => process.env.MAPS_WORLD_URL || "https://cf.etherfantasy.com/api/world";
@@ -133,6 +133,11 @@ export function mapsApi(req, res) {
     parcelsList(req).then((r) => J(res, 200, { ok: true, ...r })).catch((e) => J(res, 500, { ok: false, error: e.message }));
     return true;
   }
+  if (p === "/internal/v1/castles") {                       // ESTATE CASTLE EXPLORER (owner 2026-07-21):
+    try { J(res, 200, { ok: true, ...castlesList(req) }); }  // every authored castle, filterable, so admin
+    catch (e) { J(res, 500, { ok: false, error: e.message }); } //  can review all curated estate forts.
+    return true;
+  }
   if (p === "/internal/v1/whoami") {                        // designer sign-in state (Bearer = lobby's ef_pg_token)
     identify(req).then((id) => J(res, 200, id ? { ok: true, username: id.username, admin: !!id.admin } : { ok: false }))
       .catch(() => J(res, 200, { ok: false }));
@@ -180,6 +185,64 @@ export function mapsApi(req, res) {
 // Owner rules (owner 2026-07-18): every parcel links to its NFT owner (land-owners feed) or reads
 // UNMINTED when absent; a normal user sees ownership + may design only their own (edit gate stays
 // the authority); ADMIN (nftprof) sees + may design ALL. Facts-only endpoint — the edit gate on
+// ESTATE CASTLE EXPLORER — aggregate every authored castle POI across all zones so admin can review
+// the curated estate forts (owner 2026-07-21: "each castle for estates curated … eventually I
+// should see all of them … a separate explorer for large land … as admin filter for them easily").
+// Filters: ?zone, ?tier (KEEP|CASTLE|PALACE), ?water=1 (river/coast-adjacent), ?q (name/id).
+// Each row's `parcel` = the castle's own L3 hero-parcel (heroParcels[0]) — click-through to the 3D.
+function distToLines(pt, lines, thr) {
+  for (const L of lines || []) for (let i = 1; i < (L.pts || []).length; i++) {
+    const a = L.pts[i - 1], b = L.pts[i], ax = b[0] - a[0], az = b[1] - a[1], L2 = ax * ax + az * az || 1;
+    const t = Math.max(0, Math.min(1, ((pt[0] - a[0]) * ax + (pt[1] - a[1]) * az) / L2));
+    const d = Math.hypot(pt[0] - (a[0] + ax * t), pt[1] - (a[1] + az * t));
+    if (d < thr) return Math.round(d);
+  }
+  return null;
+}
+let _castleCache = null;
+function allCastles() {
+  if (_castleCache) return _castleCache;
+  const out = [];
+  for (const z of zoneList()) {
+    const field = loadWorldField(z.zoneId); if (!field) continue;
+    for (const c of field.castles || []) {
+      const at = Array.isArray(c.at) ? c.at : null;
+      const river = at ? distToLines(at, field.rivers, 18) : null;
+      const coast = at ? distToLines(at, field.coast, 18) : null;
+      out.push({
+        zone: z.zoneId, zoneName: z.name || z.zoneId, id: c.id,
+        kind: c.kind || "CASTLE", name: c.name || c.id, at,
+        parcel: (Array.isArray(c.heroParcels) && c.heroParcels[0]) || null,
+        heroParcels: c.heroParcels || [],
+        water: river != null ? { kind: "river", d: river } : (coast != null ? { kind: "coast", d: coast } : null),
+      });
+    }
+  }
+  _castleCache = out;
+  return out;
+}
+function castlesList(req) {
+  const u = new URL(req.url, "http://x");
+  const zone = (u.searchParams.get("zone") || "").toUpperCase();
+  const tier = (u.searchParams.get("tier") || "").toUpperCase();
+  const water = u.searchParams.get("water") === "1";
+  const q = String(u.searchParams.get("q") || "").trim().toLowerCase();
+  let list = allCastles();
+  if (zone) list = list.filter((c) => c.zone === zone);
+  if (tier) list = list.filter((c) => c.kind === tier);
+  if (water) list = list.filter((c) => c.water);
+  if (q) list = list.filter((c) => c.name.toLowerCase().includes(q) || String(c.id).toLowerCase().includes(q) || String(c.parcel || "").includes(q));
+  const tierRank = { PALACE: 0, CASTLE: 1, KEEP: 2 };
+  list = list.slice().sort((a, b) => (tierRank[a.kind] - tierRank[b.kind]) || a.zone.localeCompare(b.zone) || a.name.localeCompare(b.name));
+  const all = allCastles();
+  return {
+    total: list.length, grandTotal: all.length,
+    zones: [...new Set(all.map((c) => c.zone))].sort(),
+    counts: { PALACE: all.filter((c) => c.kind === "PALACE").length, CASTLE: all.filter((c) => c.kind === "CASTLE").length, KEEP: all.filter((c) => c.kind === "KEEP").length, water: all.filter((c) => c.water).length },
+    castles: list,
+  };
+}
+
 // POST is the real enforcement.
 async function parcelsList(req) {
   const u = new URL(req.url, "http://x");
