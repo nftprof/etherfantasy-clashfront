@@ -158,6 +158,7 @@
           <input id="search" placeholder="search parcel id…" style="width:200px">
           <label style="display:flex;gap:6px;align-items:center;margin:0;text-transform:none;letter-spacing:0;font-size:12.5px;color:var(--fg-dim)"><input type="checkbox" id="mineOnly" style="width:auto"> my land only</label>
           <label style="display:flex;gap:6px;align-items:center;margin:0;text-transform:none;letter-spacing:0;font-size:12.5px;color:var(--fg-dim)"><input type="checkbox" id="designedOnly" style="width:auto"> designed only</label>
+          <label style="display:flex;gap:6px;align-items:center;margin:0;text-transform:none;letter-spacing:0;font-size:12.5px;color:var(--fg-dim)"><input type="checkbox" id="featuresOverlay" style="width:auto"> 🗺 features</label>
         </div>
         <span class="sel" id="selChip" hidden></span>
       </div>
@@ -447,7 +448,45 @@ function parsePath(d){const t=d.match(/[a-zA-Z]|-?\d*\.?\d+(?:e-?\d+)?/g);let i=
     else if(C==="Z"){if(start)pts.push([start[0],start[1]]);}
     else{num();}}
   return pts.length>2?pts:null;}
+// ---- CONTINENT FEATURE OVERLAY (owner 2026-07-25): borders/rivers/roads/ridges/castles ----
+let showFeatures=false, wfOverlay=null;
+async function loadWorldFeatures(){
+  if(!zone){wfOverlay=null;return;}
+  try{const d=await fetch("/internal/v1/worldfield?zone="+encodeURIComponent(zone),{headers:authHdr()}).then(r=>r.json());
+    wfOverlay=(d&&d.ok)?d:null;}catch(e){wfOverlay=null;}
+  drawMap();
+}
+function drawFeatures(){                 // lines UNDER the parcel dots
+  const F=wfOverlay;if(!F)return;
+  cx.save();cx.lineJoin="round";cx.lineCap="round";
+  const draw=(arr,col,wpx,alpha,dash)=>{for(const f of arr||[]){const pts=f.pts;if(!pts||pts.length<2)continue;
+    cx.beginPath();for(let k=0;k<pts.length;k++){const[X,Y]=PX(pts[k][0],pts[k][1]);k?cx.lineTo(X,Y):cx.moveTo(X,Y);}
+    cx.strokeStyle=col;cx.globalAlpha=alpha;cx.lineWidth=wpx(f);cx.setLineDash(dash||[]);cx.stroke();}};
+  const wpx=(mul,min)=>(f)=>Math.max(min,(f.width||6)*view.s*zoom*mul);
+  draw(F.ridges,"#8a6a4a",wpx(0.9,2),0.45);                    // mountains — muted brown band
+  draw(F.coast,"#6fe0d0",()=>Math.max(1.6,zoom*1.2),0.85);     // continent border / coastline
+  draw(F.roads,"#caa869",()=>Math.max(0.6,zoom*0.5),0.5,[4,3]);// roads — dashed tan
+  for(const r of F.rivers||[]){const col=r.magma?"#e0611c":"#3f86d6";  // rivers (magma veins amber)
+    draw([r],col,wpx(0.8,2),0.82);}
+  cx.setLineDash([]);cx.globalAlpha=1;cx.restore();
+}
+function drawFeatureMarks(){             // castle/POI markers OVER the dots
+  const F=wfOverlay;if(!F)return;
+  const ICON={PALACE:"👑",CASTLE:"🏰",KEEP:"🗼"};
+  cx.save();cx.textAlign="center";cx.textBaseline="middle";
+  for(const c of F.castles||[]){if(!Array.isArray(c.at))continue;const[X,Y]=PX(c.at[0],c.at[1]);
+    if(X<-20||X>cv.width+20||Y<-20||Y>cv.height+20)continue;
+    cx.fillStyle="rgba(8,6,18,.62)";cx.beginPath();cx.arc(X,Y,10,0,7);cx.fill();
+    cx.strokeStyle="rgba(216,187,255,.7)";cx.lineWidth=1.4;cx.stroke();
+    cx.font="14px serif";cx.fillText(ICON[c.kind]||"🏰",X,Y+1);
+    if(zoom>=4&&c.name){cx.font="11px system-ui";cx.fillStyle="#e8e2ff";cx.fillText(c.name,X,Y-15);}}
+  for(const q of F.pois||[]){if(!Array.isArray(q.at))continue;const[X,Y]=PX(q.at[0],q.at[1]);
+    if(X<-10||X>cv.width+10||Y<-10||Y>cv.height+10)continue;
+    cx.fillStyle="rgba(255,211,77,.9)";cx.beginPath();cx.arc(X,Y,2.5,0,7);cx.fill();}
+  cx.restore();
+}
 function drawMap(){if(!view)return;cx.clearRect(0,0,cv.width,cv.height);
+  if(showFeatures&&wfOverlay&&wfOverlay.zone===zone)drawFeatures();   // geography under the parcels
   const usePoly=parcels.length<=600&&parcels[0]&&parcels[0].svgPath; // polygons only when svgPath is present + set is small
   const r=zoom>=6?3.4:(zoom>=3?2.9:2.4);          // dots grow a little as you zoom in
   for(const p of parcels){const[X,Y]=PX(p.x,p.y);
@@ -459,7 +498,8 @@ function drawMap(){if(!view)return;cx.clearRect(0,0,cv.width,cv.height);
       if(isSel){cx.lineWidth=2.6;cx.strokeStyle="#ffd34d";cx.stroke();}else if(isHov){cx.lineWidth=1.6;cx.strokeStyle="#d8bbff";cx.stroke();}}
     else{cx.beginPath();cx.arc(X,Y,isSel?7:(isHov?6:r),0,7);cx.fillStyle=col;cx.fill();
       if(p.mine){cx.lineWidth=2;cx.strokeStyle="#fff";cx.stroke();}
-      if(isSel){cx.lineWidth=2.4;cx.strokeStyle="#ffd34d";cx.stroke();}}}}
+      if(isSel){cx.lineWidth=2.4;cx.strokeStyle="#ffd34d";cx.stroke();}}}
+  if(showFeatures&&wfOverlay&&wfOverlay.zone===zone)drawFeatureMarks();}
 function nearest(ev){const r=cv.getBoundingClientRect(),mx=(ev.clientX-r.left)*cv.width/r.width,my=(ev.clientY-r.top)*cv.height/r.height;
   let best=null,bd=16*16;for(const p of parcels){const[X,Y]=PX(p.x,p.y);const d=(X-mx)*(X-mx)+(Y-my)*(Y-my);if(d<bd){bd=d;best=p;}}return best;}
 cv.addEventListener("mousemove",(ev)=>{if(window.__panning)return; const p=nearest(ev);hoverId=p?.parcelId||null;drawMap();
@@ -493,7 +533,9 @@ async function loadParcels(){showParcelView();$("mapStat").textContent="· loadi
     for(const pp of allParcels)if(myParcels.has(pp.parcelId)){pp.mine=true;pp.minted=true;}   // on-chain overlay
     setOwnHint();
     if(allParcels.length)fitView();updZoomUI();       // fit + reset zoom ONCE per continent
-    applyFilter();setCrumb();}catch(e){$("mapStat").textContent="· unavailable";$("err").textContent=e.message;}}
+    applyFilter();setCrumb();
+    if(showFeatures)loadWorldFeatures();              // refresh the geography overlay for the new continent
+  }catch(e){$("mapStat").textContent="· unavailable";$("err").textContent=e.message;}}
 function setOwnHint(){
   if(admin){$("ownHint").innerHTML="👑 <b>Admin</b> — you can view and design any land.";return;}
   if(myWallet)$("ownHint").innerHTML="🔗 Wallet <b>"+myWallet.slice(0,6)+"…"+myWallet.slice(-4)+"</b> — you own <b>"+myParcels.size+"</b> parcels on-chain"+(myEstates.length?" + "+myEstates.length+" estates":"")+". They're ringed in white; you can design them.";
@@ -524,6 +566,8 @@ function renderPager(){const el=$("pager");el.innerHTML="";if(!q||total<=1)retur
 let _st=null;$("search").addEventListener("input",(e)=>{clearTimeout(_st);_st=setTimeout(()=>{q=e.target.value.trim().toLowerCase();applyFilter();},220);});
 $("mineOnly").addEventListener("change",(e)=>{mineOnly=e.target.checked;loadParcels();});
 $("designedOnly").addEventListener("change",(e)=>{designedOnly=e.target.checked;loadParcels();});
+$("featuresOverlay").addEventListener("change",(e)=>{showFeatures=e.target.checked;
+  if(showFeatures&&(!wfOverlay||wfOverlay.zone!==zone))loadWorldFeatures();else drawMap();});
 loadZones();
 try{const _dl=new URLSearchParams(location.search).get("parcel");if(_dl){const z={"00":"BUS","01":"CGI","02":"EDU","03":"ENT","04":"HS1","05":"HS2","06":"HS3","07":"HUB","08":"KOL","09":"UW1","10":"UW2","11":"UW3"}[_dl.slice(1,3)];if(z){zone=z;loadParcels().then(()=>selectParcel(_dl.trim()));}else selectParcel(_dl.trim());}}catch(e){}
 function markStatus(id,row){const p=parcels.find(q=>q.parcelId===id);if(p&&row){p.status=row.status;p.v=row.designVersion;p.archetype=row.archetype;p.palette=row.palette;}drawMap();}

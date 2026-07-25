@@ -571,3 +571,17 @@ NEED: the ownerOf-validated L3 (corrected `tokenId` + `tokenIdOld`) pushed to
 claude/clash-front-overworld-mkcyia, or the repo/branch that holds it. Mint UI spec staged:
 docs/briefs/LAND-MINT.md (free-claim by held size, dot-map hide-sold, direct-buy hook). Also: CGI+KOL
 have on-chain estates but no map geometry — flagged.
+
+**2026-07-25 (2) — 💧 Water render: the spec already exists, it's a MOBA "layer 10" task.** For
+**MOBA BattleEngine RAW** (owner reports the live MOBA arena renders no water while CF's designer
+preview does): the full recipe is `docs/briefs/WATER-RENDER-SPEC.md` — IMPLEMENTED + owner-tuned in
+`map-service/maps/preview3d.html` `buildWater()` (~70 lines, copy-ready). Data contract (nothing new
+needed): water lives in the **terrain grid as WATER cells (enum 3)** + the **height grid** + the
+**`biome.water` mode** (`water|lava|ice`) in the render manifest (battlefield_converter.cjs output) —
+no converter change. Recipe in one line: flood-fill connected WATER cells → ONE FLAT waterline mesh
+per basin (`waterY = min(adjacent bank height) − 0.18`), depth-tinted by BFS-from-shore, biome mode
+picks the material (constants table in the doc). **NOT a plane draped on the heightfield** — that was
+the rejected approach (slides into the dipped basin). Right home = `shared/ef_battlefield.js` as
+layer 10; when it lands, all three surfaces (designer / hero mode / EF Hunt) render identical water
+and CF deletes its preview copy. Open refinement = V4 multi-elevation marsh (per-cell water surface
+height from the converter). This does NOT gate gameplay (water stays non-walkable via `masks.walk`).

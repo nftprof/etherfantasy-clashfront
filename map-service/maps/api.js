@@ -234,6 +234,23 @@ export function mapsApi(req, res) {
     catch (e) { J(res, 500, { ok: false, error: e.message }); } //  can review all curated estate forts.
     return true;
   }
+  if (p === "/internal/v1/worldfield") {                    // CONTINENT FEATURE OVERLAY (owner 2026-07-25):
+    try {                                                   // a zone's designed geography (borders/rivers/roads/
+      const u = new URL(req.url, "http://x");               // ridges/castles) as polylines in ZONE coords — the
+      const zone = (u.searchParams.get("zone") || "").toUpperCase();  // same space as the parcel dots, so the
+      const f = zone ? loadWorldField(zone) : null;         // client overlays them on the continent map directly.
+      if (!f) return J(res, 200, { ok: false, error: "no field for zone " + zone });
+      const lines = (arr) => (arr || []).filter((x) => Array.isArray(x.pts) && x.pts.length >= 2)
+        .map((x) => ({ id: x.id || null, name: x.name || null, width: x.width || null, magma: !!x.magma, fill: !!x.fill, pts: x.pts }));
+      J(res, 200, {
+        ok: true, zone,
+        rivers: lines(f.rivers), roads: lines(f.roads), coast: lines(f.coast), ridges: lines(f.ridges),
+        castles: (f.castles || []).map((c) => ({ id: c.id, name: c.name, kind: c.kind, at: c.at })),
+        pois: (f.pois || []).map((q) => ({ id: q.id, name: q.name, kind: q.kind, at: q.at })).filter((q) => Array.isArray(q.at)),
+      });
+    } catch (e) { J(res, 500, { ok: false, error: e.message }); }
+    return true;
+  }
   if (p === "/internal/v1/whoami") {                        // designer sign-in state (Bearer = lobby's ef_pg_token)
     const cw = connectedWallet(req), adminW = isAdminWallet(cw);
     identify(req).then((id) => {
