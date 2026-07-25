@@ -58,6 +58,14 @@ for i in $(seq 1 30); do
 done
 if [ -n "$ok" ]; then
   echo "✅ ${APP_NAME} healthy on :${APP_PORT} (map.etherfantasy.com upstream)"
+  # ---- mint-explorer smoke check (non-fatal) — hits the REAL NFT-data API from the box, which the
+  # CI sandbox can't reach; proves the unminted split resolves against live minted-token data. ------
+  echo "--- mint smoke: /internal/v1/unminted (live NFT-data API) ---"
+  for q in "collection=estates&size=LARGE" "collection=parcels&zone=EDU"; do
+    body="$(curl -sf -m 30 "http://127.0.0.1:${APP_PORT}/internal/v1/unminted?${q}" 2>/dev/null || echo '{}')"
+    # pull a few scalar fields without assuming jq is present
+    echo "  ?${q} -> $(printf '%s' "$body" | grep -oE '"(collection|chain|total|mintedKnown|mintedCount|unmintedCount)":("?[A-Za-z0-9]+"?)' | tr '\n' ' ')"
+  done
 else
   echo "❌ map-service health check failed after 30s — diagnostics:"
   echo "--- what is on :${APP_PORT} ---"; (ss -ltnp 2>/dev/null || netstat -ltnp 2>/dev/null) | grep -E ":${APP_PORT}\b" || echo "(nothing listening on ${APP_PORT})"
