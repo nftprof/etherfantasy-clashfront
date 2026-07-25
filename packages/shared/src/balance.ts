@@ -61,6 +61,8 @@ export interface Balance {
     soldierFoodPerDay: number;
     civilianFoodPerDay: number;
     granaryBaseCap: number;
+    /** ⚙ Larder ceiling per granary structure level: cap = base × (1 + this × level). docs/02 §6. */
+    granaryPerLevelBonus: number;
   };
   population: {
     basePopCap: Record<ZoneType, number>;

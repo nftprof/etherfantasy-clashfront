@@ -60,7 +60,8 @@
     "foodPerPopPerDay": 0.1,
     "soldierFoodPerDay": 1,
     "civilianFoodPerDay": 0.2,
-    "granaryBaseCap": 3500
+    "granaryBaseCap": 3500,
+    "granaryPerLevelBonus": 1.0
   },
   "population": {
     "basePopCap": {

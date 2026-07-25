@@ -38,6 +38,24 @@ export function foodProdPerDay(t: Territory, balance: Balance): number {
   );
 }
 
+/** Highest level of a structure key on a territory (0 = not built). */
+export function structureLevel(t: Territory, key: string): number {
+  let lvl = 0;
+  for (const s of t.structures) if (s.key === key && s.level > lvl) lvl = s.level;
+  return lvl;
+}
+
+/**
+ * The larder ceiling (docs/02 §6): `granaryBaseCap × (1 + granaryPerLevelBonus ×
+ * granary level)`. Production beyond this is wasted — the granary structure is
+ * the only lever that lifts it, so stockpiling for a winter/siege is a build
+ * decision, not a free accrual.
+ */
+export function granaryCap(t: Territory, balance: Balance): number {
+  const lvl = structureLevel(t, 'GRANARY');
+  return Math.floor(balance.food.granaryBaseCap * (1 + balance.food.granaryPerLevelBonus * lvl));
+}
+
 /**
  * The heartbeat runs only where civilization does: SEA never; WILD parcels
  * only once GOVERNED (an ungoverned wild's `prosperity` is the frozen Taming

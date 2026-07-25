@@ -43,8 +43,8 @@ import { type ArmyRetreatRecord, type BattleLogisticsRecord, sortedIds, type Wor
 import { createWildBattle, stepWildBattle, type WildBattleState, wildBattleSurvivors } from './wildBattle';
 import { runMarketBalancer } from './market';
 import { chronicleAppend, recordMythicKo } from './mythics';
+import { granaryCap, runPopulation, runProsperity, runTaxCycle, setPillageScar } from './prosperity';
 import { hash32 } from './weather';
-import { runPopulation, runProsperity, runTaxCycle, setPillageScar } from './prosperity';
 import { payTransitToll, raidCaravans, settleDeliveries } from './transport';
 import { runWorkerProduction } from './workers';
 
@@ -179,7 +179,8 @@ export function runTick(
  *   - E5: batched yield REWARDs flush into the settlement journal every
  *     ⚙ journalYieldBatchTicks.
  *
- * TODO(02 §6): structure bonuses, granary cap.
+ * Granary cap (docs/02 §6, wave 4.6): food production is bounded by the larder
+ * ceiling — excess is wasted; only the granary structure lifts it.
  * TODO(02 §3): prosperity target computation & per-tick movement (growth/decay).
  * TODO(02 §5): tax cycle every TAX_CYCLE_TICKS via double-entry LedgerEntry
  *   (economy package owns the ledger; this phase only requests draws).
@@ -196,7 +197,15 @@ function phaseProduction(state: WorldState, tick: number, _rng: Rng, balance: Ba
     if (perDay > 0) {
       state.foodCarry ??= new Map();
       const carry = (state.foodCarry.get(id) ?? 0) + perDay;
-      t.foodStock += Math.floor(carry / TICKS_PER_DAY);
+      const produced = Math.floor(carry / TICKS_PER_DAY);
+      // Wave 4.6 (docs/02 §6): the larder has a ceiling — excess production is
+      // WASTED (the granary structure is the only lever that lifts it). Never
+      // trims what's ALREADY stored (a raid/gift may legitimately overfill it);
+      // only new production above the cap is dropped.
+      const cap = granaryCap(t, balance);
+      if (produced > 0 && t.foodStock < cap) {
+        t.foodStock = Math.min(cap, t.foodStock + produced);
+      }
       state.foodCarry.set(id, carry % TICKS_PER_DAY);
     }
     // CT trickle (ECON, F4 + E5): the territory's treasury pays its governor —
