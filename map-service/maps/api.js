@@ -21,6 +21,23 @@ import { translateDirective, llmEnabled } from "./llm.js";
 import { clampParams, budgetFor } from "./schema.js";
 import { verifyToken, loginPassword } from "../lobby/auth.js";
 import { worldParcel, l3Row, l3Zone, zoneList, loadWorldField } from "./worldfield.js";
+import { landOfWallet, walletOwnsParcel } from "./nftowners.js";
+
+// STRICT NFT gating: when on, ONLY the on-chain owner (or admin) may edit a parcel. Default OFF =
+// testing (NFT owner OR the permissive game-feed fallback) so the tool stays usable pre-mint.
+const STRICT_NFT = () => process.env.MAPS_STRICT_NFT === "1";
+
+// The edit gate, NFT-aware (owner 2026-07-21): admin → yes; the CONNECTED WALLET owns this parcel
+// on-chain → yes; else STRICT ⇒ deny, testing ⇒ fall back to the game-feed / permissive default.
+async function editGate(req, parcelId) {
+  const id = await identify(req);
+  if (id && id.admin) return { ok: true, by: (id && id.username) || "__admin__" };
+  const owns = id && id.wallet ? await walletOwnsParcel(id.wallet, parcelId).catch(() => false) : false;
+  if (owns) return { ok: true, by: (id && id.username) || id.wallet };
+  if (STRICT_NFT()) return { ok: false, code: 403, error: id && id.wallet ? "this parcel isn't in your connected wallet" : "connect the wallet that owns this land to design it" };
+  const d = editDecision({ admin: false, username: id && id.username, owner: await ownerOf(parcelId) });
+  return d.ok ? { ...d, by: (id && id.username) || "__anon__" } : d;
+}
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const WORLD_URL = () => process.env.MAPS_WORLD_URL || "https://cf.etherfantasy.com/api/world";
@@ -74,11 +91,11 @@ async function identify(req) {
   const m = /^Bearer\s+(.+)$/.exec(req.headers.authorization || "");
   if (!m) return null;
   const tok = m[1], c = _who.get(tok);
-  if (c && Date.now() - c.at < 60_000) return c.u ? { username: c.u, admin: isAdminUser(c.u) } : null;
+  if (c && Date.now() - c.at < 60_000) return c.u ? { username: c.u, admin: isAdminUser(c.u), wallet: c.w || null } : null;
   const v = await verifyToken(tok).catch(() => null);
   if (_who.size > 500) _who.clear();
-  _who.set(tok, { u: v && v.ok ? v.username : null, at: Date.now() });
-  return v && v.ok ? { username: v.username, admin: isAdminUser(v.username) } : null;
+  _who.set(tok, { u: v && v.ok ? v.username : null, w: v && v.ok ? (v.wallet || null) : null, at: Date.now() });
+  return v && v.ok ? { username: v.username, admin: isAdminUser(v.username), wallet: v.wallet || null } : null;
 }
 // Ownership: pluggable feed (MAPS_OWNERS_URL → {owners:{parcelId:username}} or [{parcelId,owner}]),
 // cached 5 min. The public world snapshot has no owner data yet — until the CF overworld exposes
@@ -131,6 +148,18 @@ export function mapsApi(req, res) {
   }
   if (p === "/internal/v1/parcels") {                       // zone → PARCEL zoom: search + paged, owner-tagged
     parcelsList(req).then((r) => J(res, 200, { ok: true, ...r })).catch((e) => J(res, 500, { ok: false, error: e.message }));
+    return true;
+  }
+  if (p === "/internal/v1/my-land") {                       // the connected wallet's on-chain land
+    identify(req).then(async (id) => {                      // (NFT-data API — owner 2026-07-21).
+      const u = new URL(req.url, "http://x");
+      // wallet = the PG-verified mm_address; admin may inspect any ?wallet= (read-only).
+      let wallet = id && id.wallet;
+      if (id && id.admin && u.searchParams.get("wallet")) wallet = u.searchParams.get("wallet");
+      if (!wallet) return J(res, 200, { ok: true, wallet: null, count: 0, parcels: [], estates: [] });
+      const land = await landOfWallet(wallet).catch(() => ({ parcels: new Set(), estates: [] }));
+      J(res, 200, { ok: true, wallet, count: land.parcels.size, parcels: [...land.parcels], estates: land.estates });
+    }).catch((e) => J(res, 500, { ok: false, error: e.message }));
     return true;
   }
   if (p === "/internal/v1/castles") {                       // ESTATE CASTLE EXPLORER (owner 2026-07-21):
@@ -328,11 +357,12 @@ async function handle(req, res, p) {
 
   if (req.method === "OPTIONS") { res.writeHead(204, { "access-control-allow-origin": "*", "access-control-allow-headers": "content-type,x-maps-key,authorization" }); return res.end(); }
   if (req.method !== "POST" || !parcelId) return J(res, 404, { ok: false });
-  // EDIT GATE: viewing is public; prompt/regenerate/freeze need identity + (when known) ownership
+  // EDIT GATE: viewing is public; prompt/regenerate/freeze need identity + on-chain ownership
+  // (the connected wallet must own the parcel — owner 2026-07-21) or the testing fallback.
   const id = await identify(req);
-  const gate = editDecision({ admin: !!(id && id.admin), username: id && id.username, owner: await ownerOf(parcelId) });
+  const gate = await editGate(req, parcelId);
   if (!gate.ok) return J(res, gate.code, { ok: false, error: gate.error });
-  const by = (id && id.username) || "__admin__";
+  const by = gate.by || (id && id.username) || "__admin__";
   const body = await readBody(req);
   if (!body) return J(res, 400, { ok: false, error: "bad json" });
   const parcel = await parcelFacts(parcelId);

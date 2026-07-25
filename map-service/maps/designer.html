@@ -443,13 +443,29 @@ $("zreset").onclick=()=>{fitView();drawMap();updZoomUI();};
 // search + filters run client-side over that set; the pager pages the FILTERED list (for stepping
 // through matches). Selecting fetches the parcel's full design.
 let allParcels=[];
+let myParcels=new Set(),myWallet=null,myEstates=[];
 async function loadParcels(){showParcelView();$("mapStat").textContent="· loading continent…";
   const url="/internal/v1/parcels?light=1&zone="+encodeURIComponent(zone||"EDU")+(mineOnly?"&mine=1":"")+(designedOnly?"&designed=1":"");
   try{const d=await fetch(url,{headers:pgTok?{authorization:"Bearer "+pgTok}:{}}).then(r=>r.json());
     allParcels=d.parcels||[];admin=!!d.admin;me=d.me||me;ownersKnown=!!d.ownersKnown;
-    $("ownHint").innerHTML=admin?"👑 <b>Admin</b> — you can view and design any land.":(me?(ownersKnown?"Your parcels are ringed in white — you can design the land you own.":"Owner data not loaded yet — any signed-in account may design during testing."):"👁 Viewing is open. Sign in (below) to design your land.");
+    for(const pp of allParcels)if(myParcels.has(pp.parcelId)){pp.mine=true;pp.minted=true;}   // on-chain overlay
+    setOwnHint();
     if(allParcels.length)fitView();updZoomUI();       // fit + reset zoom ONCE per continent
     applyFilter();setCrumb();}catch(e){$("mapStat").textContent="· unavailable";$("err").textContent=e.message;}}
+function setOwnHint(){
+  if(admin){$("ownHint").innerHTML="👑 <b>Admin</b> — you can view and design any land.";return;}
+  if(myWallet)$("ownHint").innerHTML="🔗 Wallet <b>"+myWallet.slice(0,6)+"…"+myWallet.slice(-4)+"</b> — you own <b>"+myParcels.size+"</b> parcels on-chain"+(myEstates.length?" + "+myEstates.length+" estates":"")+". They're ringed in white; you can design them.";
+  else $("ownHint").innerHTML=me?"Signed in — connect a wallet with land to design it. Any signed-in account may design during testing.":"👁 Viewing is open. Sign in (below) to design your land.";
+}
+// on-chain land for the connected wallet (NFT-data API via the server; owner 2026-07-21).
+async function loadMyLand(){
+  if(!pgTok){myParcels=new Set();myWallet=null;myEstates=[];return;}
+  try{const d=await fetch("/internal/v1/my-land",{headers:hdrs()}).then(r=>r.json());
+    if(d&&d.ok){myParcels=new Set(d.parcels||[]);myWallet=d.wallet||null;myEstates=d.estates||[];
+      for(const pp of (allParcels||[]))if(myParcels.has(pp.parcelId)){pp.mine=true;pp.minted=true;}
+      setOwnHint();if(view)drawMap();}
+  }catch(e){}
+}
 function applyFilter(){page=0;
   parcels=q?allParcels.filter(p=>p.parcelId.toLowerCase().includes(q)):allParcels;
   total=parcels.length;
@@ -479,7 +495,9 @@ async function refreshWho(){
       $("whoTop").innerHTML="✅ <b>"+r.username+"</b>"+(admin?' <span class="badge">👑 admin</span>':"")+' · <a href="#" id="signout" style="color:var(--fg-dim)">sign out</a>';
       $("who").innerHTML="Signed in as <b>"+r.username+"</b> — provider choice saves to your account.";
       $("loginRow").style.display="none";
-      document.getElementById("signout").onclick=(e)=>{e.preventDefault();try{localStorage.removeItem("ef_pg_token");}catch(_){};pgTok=null;me=null;admin=false;refreshWho();loadParcels&&zone&&loadParcels();};
+      document.getElementById("signout").onclick=(e)=>{e.preventDefault();try{localStorage.removeItem("ef_pg_token");}catch(_){};pgTok=null;me=null;admin=false;myParcels=new Set();myWallet=null;refreshWho();loadParcels&&zone&&loadParcels();};
+      loadMyLand();   // pull the connected wallet's on-chain parcels → highlight + edit-enable
+
       try{const p=await fetch("/internal/v1/prefs",{headers:{authorization:"Bearer "+pgTok}}).then(x=>x.json());
         if(p.ok&&p.prefs){Object.assign(saved,{provider:p.prefs.provider,model:p.prefs.model,customUrl:p.prefs.customUrl,customModel:p.prefs.customModel});renderProv();}}catch(_){}
     }else{$("whoTop").innerHTML='<a href="#" id="topSignin" style="color:var(--ether-300)">🔐 Sign in</a>';

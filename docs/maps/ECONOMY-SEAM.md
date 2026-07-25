@@ -63,3 +63,22 @@ overworld accounting.
   point it at your overworld flow whenever it exists; the designer re-reads the budget on every
   load so tier changes show up immediately.
 - bfpreview / true-render underlays: game-dev OP 48 (`CLIENT_BATTLEFIELD_LOADER.md`).
+
+## NFT ownership wired (owner 2026-07-21) — REAL on-chain land gating
+
+The map designer now gates editing on **real NFT ownership** via the PG NFT-data API (base
+`https://nft-data.pentagon.games`), replacing the game-only land-owners feed as the authority:
+- **PARCELS (Polygon)** `0x383fb8793294d82b3c20bf04c10f4b9b9cb2aca7` — `tokenId === parcelId`
+  (verified in the l3 snapshot), so a wallet's owned tokenIds ARE its editable parcelIds.
+- **ESTATE (Ethereum)** `0x28cd2990f34db387d011d7cc693a2bcedd8dc654` — the L2 estate tokens.
+- Query form: `GET /api/v1/collection/<contract>/items?owner=<wallet>&page&limit`.
+- Wallet = the PG login's `mm_address` (captured in auth.normaliseProfile). `maps/nftowners.js`
+  fetches per-wallet (cached 2 min, injectable fetch for tests). Server: `GET /internal/v1/my-land`
+  → the connected wallet's parcels + estates; the edit gate (`editGate`) allows admin OR the wallet
+  that owns the parcel; `MAPS_STRICT_NFT=1` makes NFT ownership the ONLY path (default OFF = keep the
+  testing fallback). Client: after login the designer pulls `/my-land`, rings the owned parcels in
+  white and shows "you own N parcels on-chain + M estates". +4 tests (`nftowners.test.js`).
+- **Still open:** blocking edits to land owned by *someone else* needs the full parcelId→owner map
+  (the API is wallet-scoped; a per-token or bulk-owner endpoint, or a periodic crawl, would let the
+  gate deny non-owners in the default mode too). Direct on-chain `ownerOf/balanceOf` via the user's
+  web3 provider is a future client add (owner noted it as an option).

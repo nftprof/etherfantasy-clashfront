@@ -65,7 +65,14 @@ function normaliseProfile(body, fallbackJwt) {
   const username =
     r.username ?? r.name ?? r.display_name ??
     (fallbackJwt && (fallbackJwt.username ?? fallbackJwt.name)) ?? null;
-  return { id: id != null ? String(id) : null, username: username ? String(username) : null };
+  // wallet (mm_address) — the on-chain identity used to gate land editing via the NFT-data API
+  const wallet = r.mm_address ?? r.wallet ?? r.address ?? r.eth_address ??
+    (fallbackJwt && (fallbackJwt.mm_address ?? fallbackJwt.wallet)) ?? null;
+  return {
+    id: id != null ? String(id) : null,
+    username: username ? String(username) : null,
+    wallet: wallet && /^0x[0-9a-fA-F]{40}$/.test(String(wallet)) ? String(wallet).toLowerCase() : null,
+  };
 }
 
 // Verify a PG access token and return the canonical identity.
@@ -86,14 +93,14 @@ export async function verifyToken(token) {
   const res = await pgGet(PG.profilePath, token);
   if (res.ok && res.body) {
     const id = normaliseProfile(res.body, jwt);
-    if (id.username) return { ok: true, id: id.id, username: id.username, source: "pg" };
+    if (id.username) return { ok: true, id: id.id, username: id.username, wallet: id.wallet, source: "pg" };
   }
   if (res.status === 401 || res.status === 403) return { ok: false, reason: "rejected-by-pg" };
 
   // PG unreachable (our sandbox blocks it; the box will reach it). Dev fallback only.
   if (PG.allowInsecureDev && jwt) {
     const id = normaliseProfile({}, jwt);
-    if (id.username) return { ok: true, id: id.id, username: id.username, source: "jwt-dev" };
+    if (id.username) return { ok: true, id: id.id, username: id.username, wallet: id.wallet, source: "jwt-dev" };
     if (id.id) return { ok: true, id: id.id, username: "Player-" + id.id.slice(-4), source: "jwt-dev" };
   }
   return { ok: false, reason: res.error ? "pg-unreachable" : ("pg-status-" + (res.status || "?")) };
