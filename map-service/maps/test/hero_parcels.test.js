@@ -17,6 +17,10 @@ const ok = (cond, name) => { if (cond) { pass++; console.log("  ✓", name); } e
 const l2 = JSON.parse(fs.readFileSync(path.join(ROOT, "data/hexagon-city-source/parcels-l2.json"), "utf8")).parcels;
 const l2ById = new Map(l2.map((p) => [p.parcelId, p]));
 const zoneCode = { BUS: "00", EDU: "02", ENT: "03", HUB: "07", UW2: "10", UW3: "11" };
+// Corrected token-id scheme (owner 2026-07-21): a parcelId's LEADING digit is the parent estate's
+// SIZE digit (not the old "6"). Children inherit parentSizeClass === estate.sizeClass, so an estate's
+// L3 parcelIds all start with sizeDigit + zoneCode + padded(sourceIndex).
+const SIZE_DIGIT = { EPIC: "1", GIANT: "2", LARGE: "3", MEDIUM: "4", SMALL: "5" };
 const loadL3 = (z) => JSON.parse(fs.readFileSync(path.join(ROOT, `data/hexagon-city-source/l3/${z}.json`), "utf8")).singles;
 
 console.log("— the ladder + ownership + castle-first (all committed fields) —");
@@ -36,7 +40,7 @@ for (const zone of ["EDU", "HUB", "BUS", "ENT", "UW2", "UW3"]) {
     if (!kids.length) {
       if (!(Array.isArray(c.heroParcels) && c.heroParcels.length === 0 && typeof c.heroParcelsNote === "string" && /DEFERRED/i.test(c.heroParcelsNote))) deferGood = false;
     } else {
-      const prefix = "6" + zoneCode[zone] + String(estate.sourceIndex).padStart(4, "0");
+      const prefix = SIZE_DIGIT[estate.sizeClass] + zoneCode[zone] + String(estate.sourceIndex).padStart(4, "0");
       if (c.heroParcels.length !== Math.min(quota, kids.length)) allGood = false;
       if (new Set(c.heroParcels).size !== c.heroParcels.length) allGood = false;
       if (!c.heroParcels.every((p) => p.startsWith(prefix))) allGood = false;
@@ -61,7 +65,7 @@ console.log("— the headline case: a GIANT castle estate in EDU has exactly 5, 
   const estate = l2ById.get(westgate.townEstateId);
   ok(estate.sizeClass === "GIANT", "Westgate Castle sits on a GIANT estate (2020367)");
   ok(westgate.heroParcels.length === 5, "GIANT ladder: exactly 5 heroParcels");
-  const prefix = "602" + String(estate.sourceIndex).padStart(4, "0");
+  const prefix = SIZE_DIGIT[estate.sizeClass] + zoneCode.EDU + String(estate.sourceIndex).padStart(4, "0");
   ok(westgate.heroParcels.every((p) => p.startsWith(prefix)), "all 5 belong to estate 2020367");
   const l3ById = new Map(loadL3("EDU").map((s) => [s.parcelId, s]));
   const first = l3ById.get(westgate.heroParcels[0]);

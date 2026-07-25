@@ -18,10 +18,10 @@ let pass = 0, fail = 0;
 const ok = (cond, name) => { if (cond) { pass++; console.log("  ✓", name); } else { fail++; console.log("  ✗ FAIL", name); } };
 const decode = (s) => new Uint8Array(Buffer.from(s, "base64"));
 
-// a REAL Mere-of-Dominus interior parcel: UW2 L3 single 61007840000 sits 8.6 zone-units from the
+// a REAL Mere-of-Dominus interior parcel: UW2 L3 single 51007840000 sits 8.6 zone-units from the
 // Bastion island center — deep inside the Mere ring band (centerline r=9, honest half-width 2.25).
 const uw2l3 = JSON.parse(fs.readFileSync(path.join(ROOT, "data/hexagon-city-source/l3/UW2.json"), "utf8"));
-const MERE_SNAP = uw2l3.singles.find((s) => s.parcelId === "61007840000");
+const MERE_SNAP = uw2l3.singles.find((s) => s.parcelId === "51007840000");
 
 console.log("— fill bypasses the width cap (honest lake width) —");
 {

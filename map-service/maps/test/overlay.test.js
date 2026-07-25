@@ -177,7 +177,7 @@ console.log("— CRITICAL no-op: zones/parcels without overlay elements are byte
   // real-world samples across the no-overlay zones (EDU/HUB/BUS) + a field zone with no overlay
   // file (UW3) + an ENT parcel far from every hunt element (a zone WITH overlays).
   const samples = [];
-  for (const [zone, pid] of [["EDU", "60203670103"], ["HUB", "60716650182"], ["BUS", "60011440099"]]) {
+  for (const [zone, pid] of [["EDU", "20203670103"], ["HUB", "30716650182"], ["BUS", "20011440099"]]) {
     const snap = JSON.parse(fs.readFileSync(path.join(ROOT, `data/hexagon-city-source/l3/${zone}.json`), "utf8"))
       .singles.find((s) => s.parcelId === pid);
     samples.push({ zone, snap });
