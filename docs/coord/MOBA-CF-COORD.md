@@ -594,3 +594,16 @@ truth. The **render manifest's towers are cosmetic** (preview/visual only). CF a
 `preview3d.html` renders CORE/GATE/TOWER from `opts.structures` (the A1 shape) with the castle kit
 draped over it — "collision/HP stay the structures[] data." No CF change needed; flagging so the A1
 tower spots are never dropped on the assumption the manifest carries them.
+
+**2026-07-25 (4) — 💧 Water blocky-shoreline: it's the missing heightfield DIP, not the mesh.** Owner
+saw the live MOBA client render water as a flat cyan plane on flat grass with a hard stair-stepped
+edge (the "alias") while CF's preview looks smooth. Confirmed diagnosis: CF's canonical water
+(`preview3d.html buildWater()`, the WATER-RENDER-SPEC recipe) is STILL one flat quad per water cell —
+it does NOT smooth the shoreline in geometry. It reads smooth ONLY because **the converter dips the
+terrain heightfield under WATER cells**, so sloped banks occlude the stepped edge (+ depth-tint/foam/
+bump). The MOBA client's independent-renderer quick-fix skipped the dip AND the material → exposed
+cell edges. **Hand to MOBA BattleEngine RAW:** WATER-RENDER-SPEC.md, now with the "blocky-shoreline
+bug" section — fix = (1) consume the converter's DIPPED `height` grid and build water on it (canonical,
+what CF does), or (2) if terrain stays flat under water, marching-squares the WATER mask into a contour
+polygon instead of per-cell quads. Plus the depth-tint/foam/bump material either way. CF's buildWater()
+is the copy-ready reference (layer 10). No CF code change — this is a MOBA-renderer adoption gap.

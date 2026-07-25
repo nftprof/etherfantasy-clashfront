@@ -52,6 +52,28 @@ the water mesh from it directly — flat within each basin, stepped across eleva
 client-side. Also carry the biome styles (incl. the wetland murk row above) and skip-foam-on-tiny-
 bodies from the CF preview iterations.
 
+## ⚠ The blocky-shoreline bug (2026-07-25) — why a quick-fix water plane looks aliased
+
+Symptom (seen in the live MOBA client's independent renderer): water is a flat cyan plane on flat
+grass with a hard, stair-stepped shoreline and no depth/foam. **Root cause: the terrain heightfield
+was NOT dipped under the water cells.** This recipe's mesh is deliberately still ONE FLAT QUAD PER
+CELL — it does **not** smooth the shoreline in geometry. It only reads smooth because **the converter
+lowers (dips) the ground under every WATER cell**, so the sloped banks physically OCCLUDE the
+cell-stepped water edge, and the depth-tint + bank foam hide the seam. Render water as a plane on
+UN-dipped flat ground and every cell corner is exposed → the blocky look.
+
+**So the fix is one of two, in order of preference:**
+1. **Consume the converter's DIPPED height grid** (the `height` field in the render manifest —
+   already dipped under water) and build the flat-per-cell water mesh at `waterY` on top of it. This
+   is what CF's `preview3d.html` does; it's the canonical path. No new geometry smoothing needed.
+2. **If your renderer keeps terrain flat under water** (no dip), you MUST smooth the water FOOTPRINT
+   edge yourself — marching-squares the WATER cell mask into a contour polygon and build the surface
+   from that outline (optionally inset ~0.5 cell), instead of union-of-cell-quads. A raw per-cell
+   plane on flat ground will always alias.
+
+Either way, also apply the depth-tint + bank foam + animated bump + biome material below — a flat
+untinted cyan plane reads as a bug even with a smooth edge.
+
 ## Integration notes
 
 - Everything you need is already in the manifest: `masks.water`, the height grid, `biome.water`.
