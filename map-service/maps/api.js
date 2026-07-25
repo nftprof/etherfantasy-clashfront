@@ -20,8 +20,11 @@ import * as reg from "./registry.js";
 import { translateDirective, llmEnabled } from "./llm.js";
 import { clampParams, budgetFor } from "./schema.js";
 import { verifyToken, loginPassword } from "../lobby/auth.js";
-import { worldParcel, l3Row, l3Zone, zoneList, loadWorldField } from "./worldfield.js";
-import { landOfWallet, walletOwnsParcel, PARCELS_CONTRACT, ESTATE_CONTRACT } from "./nftowners.js";
+import { worldParcel, l3Row, l3Zone, zoneList, loadWorldField, estateList } from "./worldfield.js";
+import { landOfWallet, walletOwnsParcel, mintedSet, PARCELS_CONTRACT, ESTATE_CONTRACT } from "./nftowners.js";
+// Land mint config (distributors + size tokens) — the registry the other session delivered.
+let _landCfg = null;
+const landCfg = () => { if (_landCfg) return _landCfg; try { _landCfg = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "..", "data", "land-contracts.json"), "utf8")); } catch { _landCfg = {}; } return _landCfg; };
 
 // STRICT NFT gating: when on, ONLY the on-chain owner (or admin) may edit a parcel. Default OFF =
 // testing (NFT owner OR the permissive game-feed fallback) so the tool stays usable pre-mint.
@@ -176,6 +179,43 @@ export function mapsApi(req, res) {
       res.writeHead(200, { "content-type": "application/json", "cache-control": "public,max-age=120", "access-control-allow-origin": "*" });
       res.end(JSON.stringify(meta)); return true;
     }
+  }
+  // ---- UNMINTED (primary-sale) land — the mint explorer's data source (owner 2026-07-21) --------
+  //   GET /internal/v1/unminted?collection=estates&size=LARGE   → unminted estates of that size
+  //   GET /internal/v1/unminted?collection=parcels&zone=EDU     → all SINGLE parcel dots (minted flag)
+  // Unminted = the full snapshot MINUS minted (from the NFT-data API). tokenId === parcelId.
+  if (p === "/internal/v1/unminted") {
+    (async () => {
+      const u = new URL(req.url, "http://x");
+      const coll = (u.searchParams.get("collection") || "parcels").toLowerCase();
+      const cfg = landCfg();
+      if (coll === "estates") {
+        const size = (u.searchParams.get("size") || "").toUpperCase();
+        const minted = await mintedSet(ESTATE_CONTRACT()).catch(() => new Set());
+        let est = estateList();
+        if (size) est = est.filter((e) => e.sizeClass === size);
+        const unminted = est.filter((e) => !minted.has(e.tokenId));
+        J(res, 200, {
+          ok: true, collection: "estates", chain: "ethereum", size: size || null,
+          contract: ESTATE_CONTRACT(), distributor: (cfg.distributors || {}).eth_estates || null,
+          claimToken: size ? ((cfg.sizeTokens || {})[size] || {}).address || null : null,
+          total: est.length, mintedKnown: minted.size, unmintedCount: unminted.length,
+          items: unminted.slice(0, 5000).map((e) => ({ tokenId: e.tokenId, zone: e.zone, size: e.sizeClass, center: e.center, l3: e.l3Enabled })),
+        });
+      } else {
+        const zone = (u.searchParams.get("zone") || "EDU").toUpperCase();
+        const minted = await mintedSet(PARCELS_CONTRACT()).catch(() => new Set());
+        const singles = l3Zone(zone);
+        const dots = singles.map((s) => ({ t: s.tokenId, x: s.center[0], y: s.center[1], m: minted.has(String(s.tokenId)) ? 1 : 0 }));
+        J(res, 200, {
+          ok: true, collection: "parcels", chain: "polygon", zone,
+          contract: PARCELS_CONTRACT(), distributor: (cfg.distributors || {}).pol_parcels || null,
+          claimToken: ((cfg.sizeTokens || {}).SINGLE || {}).address || null,
+          total: singles.length, mintedCount: dots.filter((d) => d.m).length, unmintedCount: dots.filter((d) => !d.m).length, dots,
+        });
+      }
+    })().catch((e) => J(res, 500, { ok: false, error: e.message }));
+    return true;
   }
   if (p === "/internal/v1/my-land") {                       // the connected wallet's on-chain land
     identify(req).then(async (id) => {                      // (NFT-data API — owner 2026-07-21).

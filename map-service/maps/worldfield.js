@@ -452,6 +452,21 @@ export function l3Row(parcelId) {
 // all ~13k parcels per continent, not the 648 /api/world exposes). Cached per zone.
 export function l3Zone(zone) { return [...l3Map(String(zone).toUpperCase()).values()]; }
 
+// The L2 ESTATE table (parcels-l2.json — 8,482 sized estates; tokenId === parcelId). Cached.
+// Used by the mint explorer to list unminted estates by size.
+let _estates = null;
+export function estateList() {
+  if (_estates) return _estates;
+  try {
+    const j = JSON.parse(fs.readFileSync(path.join(dataRoot(), "hexagon-city-source/parcels-l2.json"), "utf8"));
+    _estates = (j.parcels || j.estates || []).map((e) => ({
+      tokenId: String(e.tokenId), parcelId: String(e.parcelId), zone: e.zone, sizeClass: e.sizeClass,
+      center: e.center, bbox: e.bbox, l3Enabled: !!e.l3Enabled,
+    }));
+  } catch { _estates = []; }
+  return _estates;
+}
+
 // the 12 continents with their aggregate bbox + parcel count (world/continent zoom level).
 // Reads the registry for names/biome; derives geometry from the l3 parcels so the picker can
 // frame each continent without a separate coordinate source. Cached.

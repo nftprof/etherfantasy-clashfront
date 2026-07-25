@@ -56,6 +56,19 @@ export async function landOfWallet(wallet, fetchImpl) {
   return rec;
 }
 
+// Every MINTED tokenId of a collection (each existing item IS a minted token). Cached ~10 min.
+// The UNMINTED (primary-sale) set = the full snapshot MINUS this. Crawls all pages (parcels ≈ 17k
+// minted / ~171 pages; estates ≈ 0.7k). fetchImpl injectable for tests.
+const _minted = new Map();  // contract → { at, set:Set<tokenId> }
+export async function mintedSet(contract, fetchImpl) {
+  const c = String(contract).toLowerCase(), hit = _minted.get(c);
+  if (hit && Date.now() - hit.at < 600_000) return hit.set;
+  const items = await fetchAllItems(c, "", fetchImpl);        // no owner filter = every minted token
+  const set = new Set(items.map((i) => String(i.tokenId)));
+  _minted.set(c, { at: Date.now(), set });
+  return set;
+}
+
 // Does this wallet own this parcel? (the edit-gate primitive)
 export async function walletOwnsParcel(wallet, parcelId, fetchImpl) {
   if (!isWallet(wallet)) return false;
