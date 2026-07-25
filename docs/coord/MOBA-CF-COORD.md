@@ -585,3 +585,12 @@ the rejected approach (slides into the dipped basin). Right home = `shared/ef_ba
 layer 10; when it lands, all three surfaces (designer / hero mode / EF Hunt) render identical water
 and CF deletes its preview copy. Open refinement = V4 multi-elevation marsh (per-cell water surface
 height from the converter). This does NOT gate gameplay (water stays non-walkable via `masks.walk`).
+
+**2026-07-25 (3) — 🗼 Tower spots: A1 is authoritative, render-manifest towers are preview-only.**
+Contract confirmed (MOBA → CF): keep tower spots in the **A1 / artifact** — `structures[]` `TOWER`
+anchors (id/kind/side/x/z/hpMax) + `buildSpots[]` (placeable CC/tower locations) are the gameplay
+truth. The **render manifest's towers are cosmetic** (preview/visual only). CF already complies:
+`generate.js` emits `castle_tower_*` TOWER structures + `buildSpots[]` in every artifact, and
+`preview3d.html` renders CORE/GATE/TOWER from `opts.structures` (the A1 shape) with the castle kit
+draped over it — "collision/HP stay the structures[] data." No CF change needed; flagging so the A1
+tower spots are never dropped on the assumption the manifest carries them.
