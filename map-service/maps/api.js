@@ -21,7 +21,7 @@ import { translateDirective, llmEnabled } from "./llm.js";
 import { clampParams, budgetFor } from "./schema.js";
 import { verifyToken, loginPassword } from "../lobby/auth.js";
 import { worldParcel, l3Row, l3Zone, zoneList, loadWorldField } from "./worldfield.js";
-import { landOfWallet, walletOwnsParcel } from "./nftowners.js";
+import { landOfWallet, walletOwnsParcel, PARCELS_CONTRACT, ESTATE_CONTRACT } from "./nftowners.js";
 
 // STRICT NFT gating: when on, ONLY the on-chain owner (or admin) may edit a parcel. Default OFF =
 // testing (NFT owner OR the permissive game-feed fallback) so the tool stays usable pre-mint.
@@ -162,6 +162,21 @@ export function mapsApi(req, res) {
     parcelsList(req).then((r) => J(res, 200, { ok: true, ...r })).catch((e) => J(res, 500, { ok: false, error: e.message }));
     return true;
   }
+  // ---- NFT METADATA OVERRIDE (owner 2026-07-21) — the pg-nft-data override SOURCE, ETH + Polygon.
+  //   GET /nft/<contract>/<tokenId>          → OpenSea-style metadata JSON (image = the parcel thumb)
+  //   GET /nft/<contract>/<tokenId>/image    → the thumb PNG, or the EtherFantasy logo placeholder
+  // The override service crawls the contract + points its metadata URI here; tokenId === parcelId
+  // for the Polygon parcels collection, so the image is that parcel's live design thumbnail.
+  {
+    const m = /^\/nft\/(0x[0-9a-fA-F]{40})\/([^/]+)(\/image)?$/.exec(p);
+    if (m && req.method === "GET") {
+      const contract = m[1].toLowerCase(), tokenId = decodeURIComponent(m[2]).trim();
+      if (m[3]) { nftImage(res, contract, tokenId); return true; }
+      const meta = nftMetadata(req, contract, tokenId);
+      res.writeHead(200, { "content-type": "application/json", "cache-control": "public,max-age=120", "access-control-allow-origin": "*" });
+      res.end(JSON.stringify(meta)); return true;
+    }
+  }
   if (p === "/internal/v1/my-land") {                       // the connected wallet's on-chain land
     identify(req).then(async (id) => {                      // (NFT-data API — owner 2026-07-21).
       const u = new URL(req.url, "http://x");
@@ -287,6 +302,51 @@ function castlesList(req) {
     castles: list,
   };
 }
+
+// ---- NFT metadata override helpers (owner 2026-07-21) --------------------------------------
+const publicBase = (req) => {
+  if (process.env.PUBLIC_MAP_URL) return String(process.env.PUBLIC_MAP_URL).replace(/\/$/, "");
+  const host = req.headers["x-forwarded-host"] || req.headers.host;
+  const proto = (req.headers["x-forwarded-proto"] || "https").split(",")[0];
+  return host ? `${proto}://${host}` : "https://map.etherfantasy.com";
+};
+const mapsDir = () => process.env.MAPS_DIR || path.join(process.env.HOME || ".", "ef-battlefields");
+// Serve the parcel's live thumbnail; fall back to the EtherFantasy logo when no design exists yet.
+function nftImage(res, contract, tokenId) {
+  const send = (buf, maxAge) => { res.writeHead(200, { "content-type": "image/png", "cache-control": `public,max-age=${maxAge}`, "access-control-allow-origin": "*" }); res.end(buf); };
+  const logo = () => fs.readFile(path.join(__dirname, "..", "assets", "ef-logo-512.png"), (e, buf) => e ? (res.writeHead(404), res.end()) : send(buf, 3600));
+  const row = contract === PARCELS_CONTRACT() ? reg.getRow(tokenId) : null;   // parcels only carry thumbs
+  if (!row) return logo();
+  fs.readFile(path.join(mapsDir(), String(tokenId), `thumb.v${row.designVersion}.png`), (e, buf) => e ? logo() : send(buf, 300));
+}
+// OpenSea-style metadata. tokenId === parcelId for the Polygon parcels collection.
+function nftMetadata(req, contract, tokenId) {
+  const base = publicBase(req);
+  const image = `${base}/nft/${contract}/${encodeURIComponent(tokenId)}/image`;
+  const attributes = [];
+  let name, description;
+  if (contract === ESTATE_CONTRACT()) {
+    const c = allCastles().find((x) => x.heroParcels && x.heroParcels.includes(String(tokenId)));
+    name = c ? c.name : `Ether Fantasy Estate #${tokenId}`;
+    description = "An Ether Fantasy estate — a large landholding in the Clash Front overworld.";
+    attributes.push({ trait_type: "Chain", value: "Ethereum" }, { trait_type: "Type", value: "Estate" });
+    if (c) attrPush(attributes, "Continent", c.zoneName || c.zone, "Fortification", c.kind);
+  } else {
+    const snap = l3Row(tokenId);
+    name = `Hexagon Parcel #${tokenId}`;
+    description = "A Hexagon City land parcel — a battlefield in the Clash Front overworld.";
+    attributes.push({ trait_type: "Chain", value: "Polygon" }, { trait_type: "Type", value: "Parcel" });
+    if (snap) {
+      const z = (zoneList() || []).find((x) => x.zoneId === snap.zone);
+      attrPush(attributes, "Continent", (z && z.name) || snap.zone, "Zone", snap.zone, "Size", snap.sizeClass);
+    }
+    const row = reg.getRow(tokenId);
+    attributes.push({ trait_type: "Designed", value: row ? "Yes" : "No" });
+    if (row && row.status) attributes.push({ trait_type: "Design status", value: row.status });
+  }
+  return { name, description, image, external_url: `${base}/designer/3d?parcel=${encodeURIComponent(tokenId)}`, attributes };
+}
+const attrPush = (arr, ...kv) => { for (let i = 0; i < kv.length; i += 2) if (kv[i + 1] != null && kv[i + 1] !== "") arr.push({ trait_type: kv[i], value: kv[i + 1] }); };
 
 // POST is the real enforcement.
 async function parcelsList(req) {
