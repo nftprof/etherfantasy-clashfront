@@ -1,0 +1,30 @@
+{
+  "calibration": {
+    "assumption": "SINGLE median = 0.5 acre (world-scale city)",
+    "k_m2_per_svg2": 7252.4373,
+    "single_median_areaSvg": 0.279,
+    "acre_m2": 4046.8564,
+    "note": "area_m2 = areaSvg * k. Global k (uniform cross-zone scale assumed). Rescale trivially if a real token size becomes available."
+  },
+  "total_map_km2": 1051.7,
+  "total_map_acres": 259892.0,
+  "zone_acres": {
+    "BUS": 58161.0,
+    "EDU": 12919.0,
+    "ENT": 33035.0,
+    "HS1": 11548.0,
+    "HS2": 11438.0,
+    "HS3": 11151.0,
+    "HUB": 64917.0,
+    "UW1": 25695.0,
+    "UW2": 26600.0,
+    "UW3": 4428.0
+  },
+  "class_median_acres": {
+    "SMALL": 13.885,
+    "MEDIUM": 58.578,
+    "LARGE": 101.091,
+    "GIANT": 151.765,
+    "EPIC": 241.002
+  }
+}

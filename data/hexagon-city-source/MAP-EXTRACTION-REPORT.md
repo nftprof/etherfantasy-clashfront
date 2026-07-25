@@ -97,11 +97,15 @@ Source of truth for the encoding: `_archive-cryptoverse-frontend/vendors/LandMap
 | Chain | **Ethereum (chainId 1)** | **Polygon (chainId 137)** |
 | Contract | `estate_contract` (env-config, not committed) | `parcel_contract` (env-config, not committed) |
 
-- Contract addresses are **not committed** (loaded from `app.config` in
-  `cryptoverse-scripts-python`). Candidate hard-coded addresses appear in
-  `cryptoverse-scripts-python/app/check_loaded_tokens.py`
-  (`0xB488b04E5e804676e3ab085F0Fb9C3d9633b50F5`, `0x411d4B953BA5A54462728C78E71108F913565265`) —
-  **verify against the live deployment before trusting**.
+- **Confirmed contract addresses** (from `cryptoverse-scripts-python/app/opensea_refresh_metadata.py`,
+  verified on-chain via `tokenURI`):
+  - **Estate (L2), Ethereum:** `0x28cd2990f34db387d011d7cc693a2bcedd8dc654`
+  - **Parcel (L3), Polygon:** `0x383FB8793294D82B3c20bf04c10f4B9B9cB2ACA7`
+- **Metadata (`tokenURI`)**: `https://api.cryptoverse.biz/metadata/<tokenId>` — served **dynamically**
+  by the backend `/metadata` endpoint (attributes: Zone, Size, Type, POI). ⚠️ The domain
+  `api.cryptoverse.biz` is now **NXDOMAIN (dead)**, so metadata resolves only from **OpenSea's cache**
+  now (collections `hexagoncity` L2 / `hexagoncity-527508635` L3). Nothing is pinned to IPFS except the
+  parcel *images* (`cg.mypinata.cloud`).
 - ERC-721 Transfer topic used for sync: `0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef`.
 - **Pentagon Chain**: used only for character minting in `games-etherfantasy-backend`
   (`api/blockchain/pentagonScanner.ts`); **no land** touches it.
@@ -198,3 +202,70 @@ axial `parcels.json` until step 1's sizing rule is signed off — it becomes per
 | `hexagon-crons` | MATIC staking sync — no land |
 | `games-etherfantasy-backend` | Characters/gameplay (Pentagon Chain) — no land |
 | `cryptoverse_land_pdf` | Static 42 MB PDF poster of the map (visual reference only) |
+
+---
+
+## 11. Parcel size — real-world area
+
+### Does the source have a real area? Yes.
+Each land has a `size` field = **`Area_Square_M`** (square metres), set in
+`cryptoverse-scripts-python/app/cv_new.py` from the (uncommitted) `Cryptoverse Resourses/L2 Json` +
+`L3 Json` resource files → DB `lands.size` → served by the land API (`size` field on
+`/land/*`, GraphQL). The OpenSea `/metadata` endpoint only exposes the size *class* name, not m².
+**These numeric m² values are not committed in any repo** — they live in the live DB /
+`api.hexagon.city`. The full token set is on OpenSea: `hexagoncity` (L2 estates) and
+`hexagoncity-527508635` (L3 parcels); token IDs match this snapshot's encoding (§2).
+
+### Relative size (computed here from geometry — robust)
+`areaSvg` (shoelace polygon area over path anchor points, in each zone's SVG units²) is now on every
+parcel in `parcels-l2.json` and `l3/*.json`. L3 SINGLEs are **near-uniform** (median 0.28, range
+0–1 svg²) — i.e. roughly equal "hexagon" plots. Median area by class and the ratio to a SINGLE:
+
+| class | median areaSvg | ×SINGLE |
+|---|--:|--:|
+| SINGLE | 0.28 | 1.0 |
+| SMALL | 7.75 | 27.7 |
+| MEDIUM | 32.69 | 116.7 |
+| LARGE | 56.41 | 201.5 |
+| GIANT | 84.69 | 302.5 |
+| EPIC | 134.48 | 480.3 |
+
+(Within a zone these ratios are exact-to-geometry; across zones they assume a uniform real-world
+scale — see caveat. Anchor-based shoelace slightly under-measures very curvy tiny shapes.)
+
+### Estimated absolute size (needs one real anchor to become exact)
+`area_m² = areaSvg × k`. Two candidate anchors:
+
+| anchor | k (m²/svg²) | SINGLE | SMALL | MEDIUM | LARGE | GIANT | EPIC | whole map |
+|---|--:|--:|--:|--:|--:|--:|--:|--:|
+| **SINGLE = ½ acre** | 7,227 | 0.5 ac | 13.8 ac | 58 ac | 101 ac | 151 ac | 240 ac | ~1,050 km² (259k ac) |
+| **SMALL = ½ acre** | 261 | 73 m² | 0.5 ac | 2.1 ac | 3.6 ac | 5.4 ac | 8.7 ac | ~38 km² (9.3k ac) |
+
+**Adopted working estimate: SINGLE = ½ acre** (`k = 7,252 m²/svg²`). hexagon-city is a full *world/
+city* with zones, so a ~1,050 km² footprint (≈ a large metropolis) is expected. Every parcel now
+carries `areaM2Est` + `areaAcresEst` under this anchor (rescale trivially with a real `size` value).
+
+**Per-zone area (L2 covers the whole map), SINGLE = ½ acre:**
+
+| zone | km² | acres | % of world |
+|---|--:|--:|--:|
+| HUB | 262.7 | 64,917 | 25.0% |
+| BUS | 235.4 | 58,161 | 22.4% |
+| ENT | 133.7 | 33,035 | 12.7% |
+| UW2 | 107.6 | 26,600 | 10.2% |
+| UW1 | 104.0 | 25,695 | 9.9% |
+| EDU | 52.3 | 12,919 | 5.0% |
+| HS1 | 46.7 | 11,548 | 4.4% |
+| HS2 | 46.3 | 11,438 | 4.4% |
+| HS3 | 45.1 | 11,151 | 4.3% |
+| UW3 | 17.9 | 4,428 | 1.7% |
+| **TOTAL** | **1,051.7** | **259,892** | 100% |
+
+**Estimated area per size class (median):** EPIC 241 ac · GIANT 152 ac · LARGE 101 ac · MEDIUM 59 ac ·
+SMALL 14 ac · SINGLE 0.5 ac. See `_area_summary.json`. If SMALL should be ½ acre instead, divide all
+`areaM2Est` by 27.7 (→ ~38 km² world).
+
+### To make it exact
+Provide a handful of real `token_id → size (m²)` values (OpenSea trait / `api.hexagon.city/land/<id>`),
+or the `L2 Json`/`L3 Json` resource files or a `lands` DB export. Then `area_m²` for all 292,766
+parcels is a one-multiply calibration over `areaSvg` (per-zone `k` if scales differ).
