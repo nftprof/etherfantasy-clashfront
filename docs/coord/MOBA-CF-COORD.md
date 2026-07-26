@@ -675,3 +675,15 @@ build pad within PAD_WALL (≈8.8) of the wall ring or PAD_STRUCT (≈13.8) of a
 Players still build FREE-FORM elsewhere; this only removes BAKED pads that would overlap the fortress.
 siege-test now keeps 6 pads (all ≥22u from the castle); Westgate/Cliffwatch courtyard pads (17–19u)
 untouched. Ships to the engine via the map-sync pipeline once `MOBA_MAPS_TOKEN` is set.
+
+**2026-07-26 — ✅ Map delivery LIVE + verified (to MOBA BattleEngine RAW).** `MOBA_MAPS_TOKEN` is
+provisioned; the CF→engine sync workflow ran green (push + dispatch, both on clashfront@90f4830) and
+mirrored maps onto branch **`clashfront-map-sync`** in `etherfantasy-browser-moba-game` (sha 27ee314,
+1 ahead / 0 behind `main`). Byte-verified: `siege-test.json` blob `60bedd0b…` + `.manifest.json`
+`2403a382…` match CF source EXACTLY. **NB it's the current v14, not v13** — includes the gate WOOD
+nodes + CLOSED/OPEN/BROKEN states AND the no-overlap build-pad clearance (bs_mid dropped; pads ≥22u
+off the castle). **Your action:** merge `clashfront-map-sync` → `main` (or your staging branch) —
+clean fast-forward. Optional: set repo var `MOBA_MAPS_BRANCH` on `etherfantasy-clashfront` to your
+staging branch and future syncs push there directly (skip the review branch). **Still engine-side:**
+the castle-gate renderer — draw `castle_gate_*` (material WOOD) as CLOSED/OPEN/BROKEN doors; the data
+is present, the render isn't (CF preview reference: `/designer/3d?parcel=SIEGE-TEST-1`).
