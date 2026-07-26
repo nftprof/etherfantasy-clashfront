@@ -234,6 +234,43 @@ export function mapsApi(req, res) {
     catch (e) { J(res, 500, { ok: false, error: e.message }); } //  can review all curated estate forts.
     return true;
   }
+  if (p.startsWith("/internal/v1/moba-map/")) {             // AUTHORITATIVE MOBA MAP FEED (owner 2026-07-25):
+    // the single source of truth for a committed data/moba-maps/<name>.json — so the MOBA staging can
+    // FETCH (not hand-copy) the current map + verify meta.genVersion instead of drifting to a stale copy.
+    // /internal/v1/moba-map/siege-test           → the Battlefield A1 (siege-test.json)
+    // /internal/v1/moba-map/siege-test?form=artifact|manifest → the raw artifact / render manifest
+    try {
+      const name = p.slice("/internal/v1/moba-map/".length).replace(/[^a-z0-9_-]/gi, "");
+      if (!name) return J(res, 400, { ok: false, error: "map name required" });
+      const form = (new URL(req.url, "http://x").searchParams.get("form") || "").toLowerCase();
+      const suffix = form === "artifact" ? ".artifact.json" : form === "manifest" ? ".manifest.json" : ".json";
+      const file = path.join(dataRoot(), "moba-maps", name + suffix);
+      fs.readFile(file, (e, buf) => {
+        if (e) return J(res, 404, { ok: false, error: "no such map: " + name + suffix });
+        res.writeHead(200, { "content-type": "application/json", "cache-control": "no-cache",
+          "x-map-name": name, "access-control-allow-origin": "*" });
+        res.end(buf);
+      });
+    } catch (e) { J(res, 500, { ok: false, error: e.message }); }
+    return true;
+  }
+  if (p === "/internal/v1/moba-maps") {                     // list the served maps + their genVersion (verify tool)
+    try {
+      const dir = path.join(dataRoot(), "moba-maps");
+      const files = fs.readdirSync(dir).filter((f) => f.endsWith(".json") && !f.includes(".artifact") && !f.includes(".manifest"));
+      const maps = files.map((f) => {
+        const name = f.replace(/\.json$/, "");
+        let genVersion = null, gates = null;
+        try { const m = JSON.parse(fs.readFileSync(path.join(dir, f), "utf8"));
+          genVersion = m.meta?.genVersion ?? null;
+          gates = (m.structures || []).filter((s) => s.kind === "GATE" && /^castle_gate_/.test(s.anchorId || "")).length;
+        } catch {}
+        return { name, genVersion, castleGates: gates, url: "/internal/v1/moba-map/" + name };
+      });
+      J(res, 200, { ok: true, maps });
+    } catch (e) { J(res, 500, { ok: false, error: e.message }); }
+    return true;
+  }
   if (p === "/internal/v1/worldfield") {                    // CONTINENT FEATURE OVERLAY (owner 2026-07-25):
     try {                                                   // a zone's designed geography (borders/rivers/roads/
       const u = new URL(req.url, "http://x");               // ridges/castles) as polylines in ZONE coords — the

@@ -622,3 +622,23 @@ drawbridge. Two real gaps, both fixed CF-side now:
    material WOOD) as a closed destructible wooden door — batter it down (HP→0) to open the passage.
    Reference visual: `map.etherfantasy.com/designer/3d?parcel=SIEGE-TEST-1`.
 GEN_VERSION bumped 12→13 (additive material tag on structures; geometry unchanged).
+
+**2026-07-25 (6) — 📍 WHERE the siege map is + the delivery GAP (owner: MOBA castle shows NO gate).**
+Owner: the single-player siege castle is a solid wall, no door — "seems to be the old version." Root
+cause is a DELIVERY gap, not the map. The authoritative castle siege map is committed at
+`data/moba-maps/siege-test.json` (Battlefield A1; +`.artifact.json` +`.manifest.json`), branch
+`claude/clash-front-overworld-mkcyia`, **genVersion 13, 2 castle gates (castle_gate_0/1) + drawbridge**.
+BUT nothing delivered it to the MOBA — the map deploy didn't ship `data/moba-maps/`, and there was no
+serving endpoint. So MOBA staging is a stale hand-copy. FIXED CF-side:
+- **Served now:** `GET https://map.etherfantasy.com/internal/v1/moba-map/siege-test` (A1; `?form=artifact|manifest`),
+  and `GET /internal/v1/moba-maps` lists every served map with its `genVersion` + `castleGates` count.
+  Deploy now rsyncs `data/moba-maps/` to the box.
+- **Gate contract enriched:** GATE structures + `siege.gates` carry `material:"WOOD"`, `hpMax`, and
+  `states:["CLOSED","OPEN","BROKEN"]` (renderer swaps the door leaf by runtime HP/toggle; "just OPEN"
+  is the minimum — BROKEN may reuse OPEN). CF preview renders the CLOSED leaf as reference.
+- **⚠ AMBIGUITY for MOBA BattleEngine RAW to confirm:** `data/moba-maps/` has TWO maps — `siege-test.json`
+  (the CASTLE siege map, gates) and `moba-singleplayer.json` (a plain 3-LANE map, CORE×2/TOWER×12, NO
+  castle, NO gate — reverse-engineered from the live client). The owner sees a CASTLE, so single-player
+  siege must load a castle map. **Which file does your single-player SIEGE load?** If it's a stale
+  siege-test, re-fetch `/internal/v1/moba-map/siege-test` (assert genVersion 13). If single-player is
+  meant to BE the castle, point it at siege-test (moba-singleplayer has no castle to ever show a gate).

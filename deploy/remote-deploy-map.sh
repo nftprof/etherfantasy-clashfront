@@ -66,6 +66,9 @@ if [ -n "$ok" ]; then
     # pull a few scalar fields without assuming jq is present
     echo "  ?${q} -> $(printf '%s' "$body" | grep -oE '"(collection|chain|total|mintedKnown|mintedCount|unmintedCount|distributor)":("?[A-Za-z0-9]+"?)' | tr '\n' ' ')"
   done
+  # served MOBA maps + their genVersion/gate count — proves the authoritative map feed is live.
+  echo "--- moba maps served (name/genVersion/castleGates) ---"
+  echo "  $(curl -sf -m 20 "http://127.0.0.1:${APP_PORT}/internal/v1/moba-maps" 2>/dev/null | grep -oE '"(name|genVersion|castleGates)":("?[A-Za-z0-9_-]+"?|null)' | tr '\n' ' ')"
 else
   echo "❌ map-service health check failed after 30s — diagnostics:"
   echo "--- what is on :${APP_PORT} ---"; (ss -ltnp 2>/dev/null || netstat -ltnp 2>/dev/null) | grep -E ":${APP_PORT}\b" || echo "(nothing listening on ${APP_PORT})"

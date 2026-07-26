@@ -46,6 +46,9 @@ jobs:
           # the distributor/claim addresses are null.
           cp "$GITHUB_WORKSPACE"/data/hexagon-city-source/parcels-l2.json "$HOME"/ef-map-service/data/hexagon-city-source/
           cp "$GITHUB_WORKSPACE"/data/land-contracts.json "$HOME"/ef-map-service/data/
+          # committed MOBA maps (siege-test etc.) — served at /internal/v1/moba-map/<name> so the MOBA
+          # staging FETCHES the authoritative current map instead of drifting to a stale hand-copy.
+          rsync -a --delete "$GITHUB_WORKSPACE"/data/moba-maps/ "$HOME"/ef-map-service/data/moba-maps/
           git -C "$GITHUB_WORKSPACE" rev-parse --short HEAD > "$HOME"/ef-map-service/BUILD
 
       - name: (re)start ef-map-service on :8150 (health-gated on /healthz)

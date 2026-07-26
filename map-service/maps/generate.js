@@ -759,7 +759,7 @@ function castleLayout(g, G, rng, { base, atkPt, poly, half, budgetLevel, bridge,
     if (gates.includes(i)) {
       const id = `castle_gate_${gateN++}`;
       gateInfo.push({ at: [ring[i].x, ring[i].z], structureId: id });
-      out.push({ anchorId: id, kind: "GATE", side: "DEFENDER", material: "WOOD", x: ring[i].x, z: ring[i].z, hpMax: 700 + budgetLevel * 150 });
+      out.push({ anchorId: id, kind: "GATE", side: "DEFENDER", material: "WOOD", states: ["CLOSED", "OPEN", "BROKEN"], x: ring[i].x, z: ring[i].z, hpMax: 700 + budgetLevel * 150 });
     }
     else if (ring[i].tower) out.push({ anchorId: `castle_tower_${towerN++}`, kind: "TOWER", side: "DEFENDER", x: ring[i].x, z: ring[i].z, hpMax: 1600 + budgetLevel * 250 });
     else out.push({ anchorId: `castle_wall_${wallN++}`, kind: "WALL", side: "DEFENDER", x: ring[i].x, z: ring[i].z, hpMax: 900 + budgetLevel * 150 });
@@ -904,8 +904,9 @@ const PALACE_STYLES = { UW2: "drowned_bastion", ENT: "carnavale", EDU: "collegia
 // rings: CASTLE 2 / PALACE 3 nested wards, each climbing (lift). v10 = tier-scaled ward GAPS
 // (palace = town-sized bailey) + guaranteed min clearance (gapIn) so stairs never touch the next
 // wall + switchback stairs on tall walls — owner 2026-07-21. v11/v12 = flat interior + outward-grown
-// rings (owner sign-off). v13 = GATE structures + siege.gates/drawbridge carry material:"WOOD" so
-// renderers draw a distinct wooden gate (not a stone segment) — owner 2026-07-25.
+// rings (owner sign-off). v13 = GATE structures + siege.gates/drawbridge carry material:"WOOD" +
+// states:["CLOSED","OPEN","BROKEN"] (renderer swaps the door leaf by runtime HP/toggle) so renderers
+// draw a distinct, stateful wooden gate (not a stone segment) — owner 2026-07-25.
 export const GEN_VERSION = 13;
 
 export function generate(parcel, params = null, designVersion = 0) {
@@ -1256,7 +1257,7 @@ export function generate(parcel, params = null, designVersion = 0) {
       for (const rr of CRs.rings) out.elevationTiers.tier2.push({ kind: "WALL_WALK", ring: rr.pts, lift: rr.lift, tier: rr.tier });
       out.wallRing = { pts: gpts, h: T2s.wallH, gates: gz2.map((g2) => g2.at || g2), ringN: CRs.rings.length };
       out.gates = structures.filter((s2) => /^castle_gate_/.test(s2.anchorId))
-        .map((s2) => ({ id: s2.anchorId, at: [s2.x, s2.z], hp: s2.hpMax, material: "WOOD" }));
+        .map((s2) => ({ id: s2.anchorId, at: [s2.x, s2.z], hp: s2.hpMax, material: "WOOD", states: ["CLOSED", "OPEN", "BROKEN"] }));
       out.stairs = computeStairs(gpts, gz2, base);
       if (bridge.reg.length) {          // nearest world-road bridge = the drawbridge/causeway site
         let bb = bridge.reg[0], bd = Infinity;
