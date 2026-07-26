@@ -729,7 +729,7 @@ export function toBattlefieldA1(artifact) {
   // game-time anchors (the synthesized reference chains below own the A1 towers).
   const castleStructures = (a.structures ?? [])
     .filter((s) => String(s.anchorId ?? "").startsWith("castle_"))
-    .map((s) => ({ anchorId: s.anchorId, kind: String(s.kind ?? "WALL").toUpperCase(), side: s.side ?? "DEFENDER", x: s.x ?? 0, z: s.z ?? 0 }));
+    .map((s) => ({ anchorId: s.anchorId, kind: String(s.kind ?? "WALL").toUpperCase(), side: s.side ?? "DEFENDER", x: s.x ?? 0, z: s.z ?? 0, ...(s.material ? { material: s.material } : {}), ...(s.hpMax != null ? { hpMax: s.hpMax } : {}) }));
   const resources = (a.resources ?? []).map((r, i) => ({
     id: r.id ?? `res_${i}`, kind: String(r.kind ?? "GOLD_MINE").toUpperCase(),
     x: r.x ?? 0, z: r.z ?? 0, richness: r.richness ?? 1,

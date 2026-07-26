@@ -55,6 +55,9 @@ if (!cg) { console.error("FATAL: no castleGeom emitted — castle didn't build")
 
 // ---- A1 + siege annotations -------------------------------------------------------------------
 const a1 = toBattlefieldA1(artifact);
+// stamp the build version onto the A1 so a stale deployed copy is DETECTABLE (the raw A1 carried no
+// genVersion — you couldn't tell old from new). Renderers/loaders can assert meta.genVersion.
+a1.meta = { ...(a1.meta || {}), genVersion: artifact.meta?.genVersion, designVersion: artifact.meta?.designVersion, builtFrom: "make_siege_test.mjs" };
 const gates = (artifact.structures || []).filter((s) => s.kind === "GATE");
 const bridgeAt = (() => {           // where the road polyline crosses the moat centerline
   // nearest road point to the moat polyline — good enough as the causeway/drawbridge anchor

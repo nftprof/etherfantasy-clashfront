@@ -607,3 +607,18 @@ bug" section — fix = (1) consume the converter's DIPPED `height` grid and buil
 what CF does), or (2) if terrain stays flat under water, marching-squares the WATER mask into a contour
 polygon instead of per-cell quads. Plus the depth-tint/foam/bump material either way. CF's buildWater()
 is the copy-ready reference (layer 10). No CF code change — this is a MOBA-renderer adoption gap.
+
+**2026-07-25 (5) — 🚪 Siege castle gate: the map HAS it; re-sync + render it as a WOODEN DOOR.** Owner
+attacked the single-player siege castle and saw no door ("seems to be the old version"). Verified: the
+committed siege-test map (`data/moba-maps/siege-test.*`) IS current and DOES have 2 castle gates +
+drawbridge. Two real gaps, both fixed CF-side now:
+1. **The A1 carried NO version stamp** → you can't tell old from new. Fixed: `siege-test.json`
+   `meta.genVersion` is now stamped (currently **13**). Assert it on load; if your deployed copy shows
+   a lower/absent genVersion, it's stale → re-sync `data/moba-maps/siege-test.json` (+ `.artifact.json`).
+2. **The gate had no "wood" hint and CF's own preview drew it as an open arch** (no door leaf). Fixed:
+   GATE structures + `siege.gates[]` + `siege.drawbridge` now carry **`material:"WOOD"`** (and gate
+   `hpMax:1150` survives into the A1), and CF's `preview3d.html` now renders a CLOSED banded timber
+   door filling the lower opening. **MOBA renderer TODO:** draw `castle_gate_*` (kind GATE,
+   material WOOD) as a closed destructible wooden door — batter it down (HP→0) to open the passage.
+   Reference visual: `map.etherfantasy.com/designer/3d?parcel=SIEGE-TEST-1`.
+GEN_VERSION bumped 12→13 (additive material tag on structures; geometry unchanged).

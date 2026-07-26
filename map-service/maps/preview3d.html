@@ -428,6 +428,16 @@ if(CG)(function(){
       const arch=putC(new THREE.Mesh(new THREE.BoxGeometry(off*2-4,H*0.55,3.4),wallM),gx,gz,H*0.85);arch.rotation.y=ang;
       const port=putC(new THREE.Mesh(new THREE.BoxGeometry(off*2-8.5,H*0.34,0.5),
         new THREE.MeshLambertMaterial({color:0x181a1f,emissive:0x2a2416,flatShading:true})),gx,gz,H*0.68);port.rotation.y=ang;
+      // CLOSED WOODEN GATE (owner 2026-07-25: "i don't see the door when i attack it… suppose to
+      // have a wooden gate"): the destructible castle_gate_N (material:WOOD, hpMax) rendered as a
+      // real timber door leaf filling the lower opening — banded with two iron straps. Attackers
+      // batter it down (HP→0 opens the passage). The open-arch above still frames the entrance.
+      const DW=off*2-9, DH=H*0.62;
+      const door=putC(new THREE.Mesh(new THREE.BoxGeometry(DW,DH,1.0),
+        new THREE.MeshLambertMaterial({color:0x6b4a2b,flatShading:true})),gx,gz,DH/2);door.rotation.y=ang;
+      for(const yb of [DH*0.28,DH*0.72]){                        // two iron bands across the planks
+        const band=putC(new THREE.Mesh(new THREE.BoxGeometry(DW+0.3,0.7,1.15),
+          new THREE.MeshLambertMaterial({color:0x2b2620,flatShading:true})),gx,gz,yb);band.rotation.y=ang;}
       if(ring.spiral)continue;   // tall final wall: climbed by a SPIRAL stair (built after this loop)
       // STAIRS to the wall-walk (owner 2026-07-21 ×4): PARALLEL to the wall is the real-castle
       // first choice — but ONLY along a straight wall stretch AT LEAST AS LONG as the flight
