@@ -656,3 +656,13 @@ the engine staging branch; else it pushes a `clashfront-map-sync` branch to merg
 has the 2 gate structures, yet the wall renders sealed — so this is ALSO a renderer task: cut the gate
 opening + draw `castle_gate_*` (material:WOOD) as a closed destructible door with states
 [CLOSED,OPEN,BROKEN]. Syncing v13 supplies the material/states hints; the door mesh is engine-side.
+
+**2026-07-25 (8) — 🗂 Scope: most maps are CF-only; the engine gets a curated few + runtime maps.** Owner
+clarified not every map is a MOBA map. Confirmed the 3-lane model (no pipeline change — it's already
+scoped right): (1) CF-only maps = the bulk (per-parcel designs in the registry/`data/cf-maps/`, CF
+command-view only, never sync); (2) runtime 3D maps = a real parcel's battlefield sent per-match via the
+allocate `battlefield` field (delivered at match time, not vendored); (3) vendored engine maps = the small
+curated `data/moba-maps/` set (test/reference: siege-test, moba-singleplayer) — the ONLY thing
+`sync-moba-maps.yml` mirrors into the engine repo. So the sync never floods the engine with CF-only parcel
+maps. `data/moba-maps/README.md` states the rule (put a map there only if the 3D engine must load it
+statically). The MOBA engine is used to TEST the lane-3 maps — those must render there.

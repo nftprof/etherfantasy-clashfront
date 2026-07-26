@@ -7,8 +7,19 @@ MOBA dev session). So whenever CF updates a map, the engine keeps serving its **
 exactly the drift that left the siege castle on an old `siege-test` (designVersion 2, not v13), so the
 enriched wooden gate never reached the game.
 
+## Scope — most maps are CF-only, only a curated few are vendored (owner 2026-07-25)
+Three delivery lanes; the pipeline below is **only lane 3**:
+1. **CF-only maps (the bulk)** — every parcel's design, generated on demand (registry `~/ef-battlefields`
+   / `data/cf-maps/`), served by the map-service + rendered in the CF command view. Never sync to the
+   engine.
+2. **Runtime 3D maps** — a real parcel's battlefield for a LIVE 3D battle, sent per-match via the
+   allocate `battlefield` field (`ALLOCATE-CALLBACK-SCHEMA.md`). Delivered at match time, not vendored.
+3. **Vendored engine maps** — the small curated set in `data/moba-maps/` (test/staging/reference: what
+   the owner tests with). ONLY these vendor into the engine repo. The pipeline mirrors this folder and
+   nothing else, so adding CF-only parcel maps elsewhere never floods the engine repo.
+
 ## Source of truth
-CF repo `data/moba-maps/` (this repo). A map = up to four files per name:
+CF repo `data/moba-maps/` (this repo) — the lane-3 curated set. A map = up to four files per name:
 `<name>.json` (Battlefield A1 — the engine loads this), `<name>.manifest.json` (render manifest — the
 client loads this too), `<name>.artifact.json` (raw artifact for renderers), `<name>.command.json`.
 
