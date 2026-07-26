@@ -642,3 +642,17 @@ serving endpoint. So MOBA staging is a stale hand-copy. FIXED CF-side:
   siege must load a castle map. **Which file does your single-player SIEGE load?** If it's a stale
   siege-test, re-fetch `/internal/v1/moba-map/siege-test` (assert genVersion 13). If single-player is
   meant to BE the castle, point it at siege-test (moba-singleplayer has no castle to ever show a gate).
+
+**2026-07-25 (7) — 📦 DURABLE map delivery to the engine (owner: "what works for the future for any new
+map").** Confirmed by MOBA BattleEngine RAW: the 3D client vendors a RELATIVE copy of the maps in the
+ENGINE repo (`etherfantasy-browser-moba-game/data/moba-maps/*.json`, index.html:6063–6064) and can't
+reach map-service (CORS + egress 403). So maps must be VENDORED into the engine repo, and that was
+manual → the engine drifted to a stale `siege-test` (designVersion 2, not v13). FIX: new CF workflow
+`.github/workflows/sync-moba-maps.yml` auto-mirrors CF `data/moba-maps/*.json` → the engine repo on
+every `deploy/map` map change (GitHub-hosted, no size limit, all future maps). **One-time owner setup:**
+repo secret `MOBA_MAPS_TOKEN` (Contents:write on the engine repo) + optional var `MOBA_MAPS_BRANCH` =
+the engine staging branch; else it pushes a `clashfront-map-sync` branch to merge. Full doc:
+`docs/briefs/MAP-DELIVERY-TO-ENGINE.md`. **NB for the gate specifically:** the engine's stale copy ALREADY
+has the 2 gate structures, yet the wall renders sealed — so this is ALSO a renderer task: cut the gate
+opening + draw `castle_gate_*` (material:WOOD) as a closed destructible door with states
+[CLOSED,OPEN,BROKEN]. Syncing v13 supplies the material/states hints; the door mesh is engine-side.

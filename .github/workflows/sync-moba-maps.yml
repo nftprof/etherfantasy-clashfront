@@ -1,0 +1,71 @@
+name: Sync MOBA maps → engine repo
+
+# DURABLE MAP DELIVERY (owner 2026-07-25: "what works for the future to deliver any new maps to the
+# engine"). The MOBA 3D client vendors a RELATIVE copy of the battlefield maps in its OWN repo
+# (etherfantasy-browser-moba-game: data/moba-maps/*.json), fetched by the client at runtime — it does
+# NOT hit the map-service /internal/ endpoint (CORS + not browser-facing + egress-blocked from dev).
+# So the source-of-truth maps committed here (data/moba-maps/) must be VENDORED into the engine repo.
+# This job mirrors them automatically on every map change, so a new/updated map is delivered without
+# anyone hand-copying a stale file (the exact drift that hid the siege castle gate).
+#
+# ONE-TIME SETUP (owner / deploy agent): add repo secret MOBA_MAPS_TOKEN = a fine-grained PAT (or a
+# machine-user token) with Contents:write on blockchainsuperheroes/etherfantasy-browser-moba-game.
+# Optionally set repo variable MOBA_MAPS_BRANCH to the branch the engine STAGING builds from (for
+# fully-automatic delivery); default below pushes to a review branch you then merge.
+
+on:
+  push:
+    branches: [deploy/map]
+    paths: ['data/moba-maps/**']
+  workflow_dispatch:
+    inputs:
+      target_branch:
+        description: 'Engine-repo branch to push the maps to'
+        required: false
+
+concurrency:
+  group: sync-moba-maps
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout CF (map source of truth)
+        uses: actions/checkout@v4
+        with: { path: cf }
+
+      - name: Resolve target branch
+        id: t
+        run: |
+          B="${{ github.event.inputs.target_branch || vars.MOBA_MAPS_BRANCH || 'clashfront-map-sync' }}"
+          echo "branch=$B" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout engine repo (destination)
+        uses: actions/checkout@v4
+        with:
+          repository: blockchainsuperheroes/etherfantasy-browser-moba-game
+          token: ${{ secrets.MOBA_MAPS_TOKEN }}
+          path: engine
+          fetch-depth: 0
+
+      - name: Mirror data/moba-maps → engine (no delete — engine-only files preserved)
+        run: |
+          mkdir -p engine/data/moba-maps
+          # copy every committed map form; keep files that only exist in the engine repo
+          rsync -a --include='*/' --include='*.json' --exclude='*' cf/data/moba-maps/ engine/data/moba-maps/
+
+      - name: Commit + push if changed
+        working-directory: engine
+        run: |
+          BR="${{ steps.t.outputs.branch }}"
+          git config user.name  "clashfront-map-bot"
+          git config user.email "maps@etherfantasy.com"
+          # land on the target branch (create from current HEAD if it doesn't exist yet)
+          git checkout "$BR" 2>/dev/null || git checkout -b "$BR"
+          git add data/moba-maps
+          if git diff --cached --quiet; then echo "✅ engine maps already up to date — nothing to push"; exit 0; fi
+          SHA="$(git -C ../cf rev-parse --short HEAD)"
+          git commit -m "maps: sync data/moba-maps from clashfront@${SHA}"
+          for i in 1 2 3 4; do git push -u origin "$BR" && break || sleep $((2**i)); done
+          echo "📦 pushed updated MOBA maps to engine branch: $BR"
