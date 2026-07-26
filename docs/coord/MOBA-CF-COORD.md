@@ -666,3 +666,12 @@ curated `data/moba-maps/` set (test/reference: siege-test, moba-singleplayer) �
 `sync-moba-maps.yml` mirrors into the engine repo. So the sync never floods the engine with CF-only parcel
 maps. `data/moba-maps/README.md` states the rule (put a map there only if the 3D engine must load it
 statically). The MOBA engine is used to TEST the lane-3 maps — those must render there.
+
+**2026-07-25 (9) — 🚧 No-overlap: build pads kept clear of the castle.** Owner: a tower/CC spawn pad
+sits too close to the castle (overlapping building). The baked defense TOWERS already had a wall
+clearance pass, but `buildSpots` (the tower/CC spawn pads) did NOT — so a pad could hug the fortress
+(siege-test `bs_mid` was 11.8u from a castle piece). GEN_VERSION 14: after castle assembly, drop any
+build pad within PAD_WALL (≈8.8) of the wall ring or PAD_STRUCT (≈13.8) of a castle tower/gate/keep.
+Players still build FREE-FORM elsewhere; this only removes BAKED pads that would overlap the fortress.
+siege-test now keeps 6 pads (all ≥22u from the castle); Westgate/Cliffwatch courtyard pads (17–19u)
+untouched. Ships to the engine via the map-sync pipeline once `MOBA_MAPS_TOKEN` is set.

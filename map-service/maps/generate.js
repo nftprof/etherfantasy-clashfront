@@ -906,8 +906,10 @@ const PALACE_STYLES = { UW2: "drowned_bastion", ENT: "carnavale", EDU: "collegia
 // wall + switchback stairs on tall walls — owner 2026-07-21. v11/v12 = flat interior + outward-grown
 // rings (owner sign-off). v13 = GATE structures + siege.gates/drawbridge carry material:"WOOD" +
 // states:["CLOSED","OPEN","BROKEN"] (renderer swaps the door leaf by runtime HP/toggle) so renderers
-// draw a distinct, stateful wooden gate (not a stone segment) — owner 2026-07-25.
-export const GEN_VERSION = 13;
+// draw a distinct, stateful wooden gate (not a stone segment) — owner 2026-07-25. v14 = drop baked
+// build pads that sit on/hug the castle (wall ring / tower / gate / keep) — no-overlap building,
+// owner 2026-07-25.
+export const GEN_VERSION = 14;
 
 export function generate(parcel, params = null, designVersion = 0) {
   // designVersion is MANDATORY in every artifact (MOBA contract fix 3: it pins caches, replays,
@@ -1204,6 +1206,21 @@ export function generate(parcel, params = null, designVersion = 0) {
         }
         if (!moved) break;
       }
+    }
+    // NO-OVERLAP build pads (owner 2026-07-25 "make sure no tower spawn points can be too close to
+    // the castle — this is a no-overlapping building"): drop any tower/CC spawn pad sitting on or
+    // hugging the castle — the wall ring, a castle tower/gate anchor, or the keep. Players still build
+    // FREE-FORM elsewhere; this only removes BAKED pads that would let a build overlap the fortress.
+    {
+      const keepAt = castleParts.geom.keepAt;
+      const PAD_WALL = MIND;                      // ≈8.8 : off the wall band (a courtyard pad may sit inside)
+      const PAD_STRUCT = MIND + 5;                // ≈13.8 : clearly off any tower/gate/keep footprint
+      buildSpots = buildSpots.filter((b) => {
+        if (distRing(b.x, b.z) < PAD_WALL) return false;                                        // on the wall
+        if (keepAt && Math.hypot(b.x - keepAt[0], b.z - keepAt[1]) < PAD_STRUCT + 4) return false; // the keep (bigger)
+        for (const s of castleStructures) if (Math.hypot(b.x - s.x, b.z - s.z) < PAD_STRUCT) return false; // tower/gate/wall anchor
+        return true;
+      });
     }
   }
   // castle anchors join AFTER snapOpen — they already stand on the cleared wall-walk band and
