@@ -54,6 +54,10 @@ const PALACES = [
   { id: "1020371", zone: "EDU", biome: "TEMPERATE_FOREST", castleId: "EDU-PALACE-ACADEMY", name: "The Grand Academy" },
   { id: "1071732", zone: "HUB", biome: "TEMPERATE_GRASS", castleId: "HUB-PALACE-ZHONGDU", name: "The Vermilion Palace (Zhongdu)" },
   { id: "1001178", zone: "BUS", biome: "SWAMP", castleId: "BUS-PALACE-EXCHANGE", name: "The Grand Exchange" },
+  // STORY-DESIGNATED PALACE (owner 2026-07-27): EF Hunt's finale — the Vault-Palace of Luxuria, EP7's
+  // Castle of Shadows. Rides a LARGE (UW3 has no EPIC) but promoted to a 3-ring PALACE so the game's
+  // single most important location reads as the world's top rank. First PALACE on an L3-subdivided estate.
+  { id: "3110087", zone: "UW3", biome: "VOLCANIC", castleId: "UW3-PALACE-VAULTPALACE", name: "The Vault-Palace of Luxuria" },
 ];
 const INVEST_LEVEL = 3;   // "Prosperous" — the snap constant (see header)
 

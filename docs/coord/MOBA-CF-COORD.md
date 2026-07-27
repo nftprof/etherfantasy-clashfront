@@ -687,3 +687,19 @@ clean fast-forward. Optional: set repo var `MOBA_MAPS_BRANCH` on `etherfantasy-c
 staging branch and future syncs push there directly (skip the review branch). **Still engine-side:**
 the castle-gate renderer — draw `castle_gate_*` (material WOOD) as CLOSED/OPEN/BROKEN doors; the data
 is present, the render isn't (CF preview reference: `/designer/3d?parcel=SIEGE-TEST-1`).
+
+**2026-07-27 — 🏰 EF Hunt map priority: Vault-Palace PALACE + castle inventory delivered.** Two headline
+asks from POI_PRIORITY_LIST.md done:
+1. **THE VAULT-PALACE (Priority-1 #8, the finale)** — estate `3110087` (UW3 Luxuria) was already placed
+   as `UW3-CASTLE-VAULTPALACE` (2-ring, because UW3 has no EPIC). STORY-OVERRIDE (owner): promoted to
+   `UW3-PALACE-VAULTPALACE` **PALACE (3-ring)** so the game's most important location reads as top rank.
+   The L3 castle parcel **`31100870136`** now generates a 3-ring palace (rings [11,11,18], spiral final
+   wall) — shootable NOW at `map.etherfantasy.com/designer/3d?parcel=31100870136`. Estate-scale palace
+   map baked → `data/cf-maps/parcels/3110087.json` (5/5 invariants). First PALACE on an L3-subdivided
+   estate; heroParcels stay LARGE=3. Throne-hall interior dressing stays engine-lane (yours).
+2. **CASTLE INVENTORY** (Priority-2) — `docs/maps/CASTLE-INVENTORY.md`: all 47 placed castles (6 PALACE
+   / 17 CASTLE / 24 KEEP) with tier, zone, estate, **castle-parcel view id**, location. Cast wardens onto
+   these; ring-count = visible rank. Westgate `20203670103`/Cliffwatch `30203520121` are in it.
+NEXT (Priority-1 Hobbit's Road, all at SEED_V0): designer passes on the 9 parcels (Carnavale 4031326,
+Sambadrome 60313260052→new id, Stair-foot 5100036, Drowned Banquet 1101099/1101096, Gardens 6110050…,
+Magma Throne 4110077 + its `UW3-HUNT-THRONE` overlay POI) — intent-tuned seeds → owner sign-off.
