@@ -366,7 +366,12 @@ function allCastles() {
       out.push({
         zone: z.zoneId, zoneName: z.name || z.zoneId, id: c.id,
         kind: c.kind || "CASTLE", name: c.name || c.id, at,
-        parcel: (Array.isArray(c.heroParcels) && c.heroParcels[0]) || null,
+        // castles without L3 subdivision link to their PRE-DESIGNED estate map (served read-only by
+        // the designs route) — every castle in the explorer gets a working ▶ 3D link. The estate
+        // artifact existence check covers non-palace estates (walled cities / beacons) too.
+        parcel: (Array.isArray(c.heroParcels) && c.heroParcels[0]) || c.estateMapId
+          || (c.townEstateId && fs.existsSync(path.join(dataRoot(), "cf-maps/artifacts", String(c.townEstateId) + ".artifact.json")) ? String(c.townEstateId) : null),
+        estateMap: !(Array.isArray(c.heroParcels) && c.heroParcels[0]),
         heroParcels: c.heroParcels || [],
         water: river != null ? { kind: "river", d: river } : (coast != null ? { kind: "coast", d: coast } : null),
       });
@@ -519,6 +524,17 @@ async function handle(req, res, p) {
   }
 
   if (req.method === "GET" && parcelId) {
+    // PRE-DESIGNED ESTATE MAPS (canon decision 5 — palaces are pre-designed, never lazily seeded):
+    // an ESTATE id (absent from the l3 snapshot) with a committed cf-maps artifact serves that
+    // artifact READ-ONLY — so every PALACE opens in the 3D viewer even with no L3 subdivision
+    // (estate_palace_maps.mjs is the single writer; the map is frozen by definition).
+    if (!l3Row(parcelId)) {
+      try {
+        const safe = String(parcelId).replace(/[^0-9A-Za-z_-]/g, "");
+        const est = JSON.parse(fs.readFileSync(path.join(dataRoot(), "cf-maps/artifacts", safe + ".artifact.json"), "utf8"));
+        return J(res, 200, { ok: true, row: { parcelId: safe, status: "ESTATE_MAP", designVersion: est.meta?.designVersion ?? 0, frozen: true, archetype: "palace estate", palette: est.meta?.biome || "" }, artifact: est, budget: budgetFor(3) });
+      } catch {}
+    }
     const v = u.searchParams.get("v");
     if (v != null) { const row = reg.getRow(parcelId); return J(res, 200, { ok: true, row, artifact: reg.readArtifact(parcelId, Number(v)), budget: budgetFor(row?.investLevel ?? 0) }); }
     const { row, artifact } = reg.ensureDesign(await parcelFacts(parcelId));   // lazy v0

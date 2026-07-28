@@ -720,3 +720,12 @@ world-wide and asserts the ruleset (333 checks; its first run caught 13 pre-exis
 castles — all fixed). siege-test + the 6 estate palace maps regenerated at v15 (sync pipeline
 delivers to the engine branch automatically). Vault-Palace re-shoot:
 `map.etherfantasy.com/designer/3d?parcel=31100870136`.
+
+**2026-07-28 — 🏰 Castle explorer: ALL 47 castles now open in 3D (post-v15 browse pass).** Owner asked
+to look through every castle after the v15 iteration. Gaps closed: (a) ESTATE ids now serve their
+PRE-DESIGNED committed artifact READ-ONLY from the designs route (canon decision 5 — never a lazy
+seed), so the 6 PALACE estate maps open in the 3D viewer; (b) baked estate maps for the 5 un-subdivided
+NON-palace castle estates (Jinjiang/Yong'an/Xichuan/Nanping walled cities + Shaftwatch Beacon — all
+5/5 invariants); (c) the explorer's ▶ 3D link falls back to the estate map when no L3 castle parcel
+exists — 47/47 rows link (PALACE 6 / CASTLE 17 / KEEP 24). Deploy ships the 7-digit estate artifacts.
+Browse: map.etherfantasy.com/designer → 🏰 Estates.

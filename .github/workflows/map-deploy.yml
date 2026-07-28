@@ -49,6 +49,10 @@ jobs:
           # committed MOBA maps (siege-test etc.) — served at /internal/v1/moba-map/<name> so the MOBA
           # staging FETCHES the authoritative current map instead of drifting to a stale hand-copy.
           rsync -a --delete "$GITHUB_WORKSPACE"/data/moba-maps/ "$HOME"/ef-map-service/data/moba-maps/
+          # pre-designed ESTATE PALACE artifacts (7-digit estate ids) — the designs route serves them
+          # read-only so every PALACE in the castle explorer opens in 3D (canon decision 5).
+          mkdir -p "$HOME/ef-map-service/data/cf-maps/artifacts"
+          cp "$GITHUB_WORKSPACE"/data/cf-maps/artifacts/???????.artifact.json "$HOME"/ef-map-service/data/cf-maps/artifacts/
           git -C "$GITHUB_WORKSPACE" rev-parse --short HEAD > "$HOME"/ef-map-service/BUILD
 
       - name: (re)start ef-map-service on :8150 (health-gated on /healthz)

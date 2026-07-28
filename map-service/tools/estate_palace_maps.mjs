@@ -58,6 +58,14 @@ const PALACES = [
   // Castle of Shadows. Rides a LARGE (UW3 has no EPIC) but promoted to a 3-ring PALACE so the game's
   // single most important location reads as the world's top rank. First PALACE on an L3-subdivided estate.
   { id: "3110087", zone: "UW3", biome: "VOLCANIC", castleId: "UW3-PALACE-VAULTPALACE", name: "The Vault-Palace of Luxuria" },
+  // NON-PALACE castle estates with NO L3 subdivision (owner 2026-07-28: "all castles I can look
+  // through") — same pre-designed estate-map mechanism, their field kind (CASTLE/KEEP) sets the ring
+  // tier. Without these, 5 of the 47 explorer rows had no map to open.
+  { id: "1071729", zone: "HUB", biome: "TEMPERATE_GRASS", castleId: "HUB-CASTLE-JINJIANG", name: "Jinjiang River Citadel" },
+  { id: "1071728", zone: "HUB", biome: "TEMPERATE_GRASS", castleId: "HUB-CASTLE-YONGAN", name: "Yong'an Walled City" },
+  { id: "1071738", zone: "HUB", biome: "TEMPERATE_GRASS", castleId: "HUB-CASTLE-XICHUAN", name: "Xichuan Round City" },
+  { id: "1071733", zone: "HUB", biome: "TEMPERATE_GRASS", castleId: "HUB-CASTLE-NANPING", name: "Nanping Walled City" },
+  { id: "3071605", zone: "HUB", biome: "TEMPERATE_GRASS", castleId: "HUB-KEEP-SHAFTWATCH", name: "Shaftwatch Beacon" },
 ];
 const INVEST_LEVEL = 3;   // "Prosperous" — the snap constant (see header)
 
