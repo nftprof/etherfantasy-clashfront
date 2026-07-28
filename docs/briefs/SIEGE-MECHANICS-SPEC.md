@@ -53,7 +53,9 @@ no 3D math needed (the sim can stay 2D + a per-cell `tier`/`wall` layer).
 
 Every parcel with siege-relevant geometry carries a **top-level `siege` block** in the artifact,
 the Battlefield A1, AND the render manifest (same object, verbatim passthrough):
-- `siege.elevationTiers`: tier-1 zones (MOUND disc, RIDGE_TOP bands) + tier-2 `WALL_WALK` ring.
+- `siege.elevationTiers`: tier-1 zones (RIDGE_TOP bands — natural terrain only; the MOUND disc was
+  REMOVED at GEN_VERSION 15, owner 2026-07-27: castles sit FLAT on the land, elevation advantage
+  comes only from the wall-walk) + tier-2 `WALL_WALK` ring.
   **Emitted on ANY parcel with baked high ground, castle or not** (fix 4) — the strictly-above-
   tier over-wall rule works wherever ridges/plateaus exist, automatically.
 - `siege.wallRing` (pts + height + gate points) · `siege.gates` (id/at/hp) ·

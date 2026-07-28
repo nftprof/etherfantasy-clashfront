@@ -703,3 +703,20 @@ asks from POI_PRIORITY_LIST.md done:
 NEXT (Priority-1 Hobbit's Road, all at SEED_V0): designer passes on the 9 parcels (Carnavale 4031326,
 Sambadrome 60313260052→new id, Stair-foot 5100036, Drowned Banquet 1101099/1101096, Gardens 6110050…,
 Magma Throne 4110077 + its `UW3-HUNT-THRONE` overlay POI) — intent-tuned seeds → owner sign-off.
+
+**2026-07-27 (2) — 🏰 GEN_VERSION 15: castle rules pass (flat, enclosed, guarded stairs) + the
+never-again sweep.** Owner caught the Vault-Palace rendering as a 3-anchor triangle of arena-long
+walls (SEED_V0 shot). Root cause: the ring radius was capped by the arena square but NOT the parcel
+polygon — out-of-polygon anchors were silently CULLED, opening the circuit. v15 ships four rules
+(full text `docs/maps/CASTLE-STAIRS-AND-WALLS-SPEC.md`):
+(a) ring radius capped by the parcel polygon's inscribed radius (wards compress, ring COUNT = rank);
+(b) ENCLOSED CIRCUITS — invalid anchors pull radially inward, never culled (last resort: wall stands
+in water); (c) **FLAT castles** — no mound/motte at all; ⚠ **SIEGE-BLOCK CHANGE for the engine/
+netcode: `siege.elevationTiers.tier1` no longer contains a `MOUND` entry** (ridges remain; elevation
+advantage = WALL_WALK only); (d) stairs verified NON-INTERSECTING with every wall (top-tread-only
+contact, perpendiculars now PROJECT onto the real wall segment, safe fallback per gate — tops always
+land on the wall-walk). PREVENTION: new `castle_geometry.test.js` generates ALL 37 castle parcels
+world-wide and asserts the ruleset (333 checks; its first run caught 13 pre-existing violations on 6
+castles — all fixed). siege-test + the 6 estate palace maps regenerated at v15 (sync pipeline
+delivers to the engine branch automatically). Vault-Palace re-shoot:
+`map.etherfantasy.com/designer/3d?parcel=31100870136`.
