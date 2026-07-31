@@ -67,6 +67,19 @@ for (const zone of zones) {
         if (Math.abs(p[0]) > half || Math.abs(p[1]) > half || (poly && poly.length >= 3 && !inPoly(p[0], p[1], poly))) insideOK = false;
     }
     ok(ringsOK, `${label}: R-RING full nested circuits (≥12 anchors each, strictly inward)`);
+    // R-GAP per-anchor: consecutive rings never merge — ≥8u centerline spacing at EVERY anchor
+    // (exempt where the outer anchor is keep-foot-clamped, local radius ≤23 — the rare deep dent).
+    let wardOK = true;
+    for (let ri = 0; ri + 1 < cg.rings.length; ri++) {
+      const a = cg.rings[ri].pts, b = cg.rings[ri + 1].pts;
+      if (a.length !== b.length) { wardOK = false; break; }
+      for (let j = 0; j < a.length; j++) {
+        const rLoc = Math.hypot(a[j][0] - keep[0], a[j][1] - keep[1]);
+        const d = Math.hypot(a[j][0] - b[j][0], a[j][1] - b[j][1]);
+        if (d < 8 && rLoc > 23) wardOK = false;
+      }
+    }
+    ok(wardOK, `${label}: R-GAP per-anchor ward spacing ≥8u (no merged walls)`);
     ok(gapsOK, `${label}: R-EN enclosure — no angular gap > 2.4× nominal spacing`);
     ok(insideOK, `${label}: R-RING every ring point inside the parcel polygon + arena`);
     ok((sg.gates || []).length >= 1, `${label}: R-AR at least one gate arch`);
@@ -91,6 +104,8 @@ for (const zone of zones) {
     }
     ok(clearOK, `${label}: R-ST1 no stair intersects a wall (body ≥3.2u clear)`);
     ok(topOK, `${label}: R-ST2 every stair top lands on the wall-walk platform`);
+    ok(stairs.every((s) => inPoly(s.foot[0], s.foot[1], ring0)),
+      `${label}: R-ST3 every stair foot stands INSIDE its ward (never outside the wall)`);
     ok(((cg.mound && cg.mound.steps) || []).length === 0
       && !(sg.elevationTiers.tier1 || []).some((t) => t.kind === "MOUND"),
       `${label}: R-FLAT flat on the land (no moundSteps, no siege MOUND tier)`);

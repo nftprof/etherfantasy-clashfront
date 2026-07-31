@@ -729,3 +729,18 @@ NON-palace castle estates (Jinjiang/Yong'an/Xichuan/Nanping walled cities + Shaf
 5/5 invariants); (c) the explorer's ▶ 3D link falls back to the estate map when no L3 castle parcel
 exists — 47/47 rows link (PALACE 6 / CASTLE 17 / KEEP 24). Deploy ships the 7-digit estate artifacts.
 Browse: map.etherfantasy.com/designer → 🏰 Estates.
+
+**2026-07-28 (2) — 🏰 GEN_VERSION 16: castle-tour fixes (merged rings, joint gaps, stray stairs, OPEN
+gates).** Owner toured the castles and caught four issues; all fixed + sweep-guarded (now 407 checks):
+(a) MERGED RINGS (Grand Exchange 1001178) — inner rings were uniform scaled copies, collapsing below
+one wall thickness at dented spots; v16 derives each inner ring PER ANCHOR with WARD_MIN 10u clearance
+(`gapIn` = actual min ward clearance; anchors exiting the parcel polygon pull further inward);
+(b) WALL JOINT SLITS (Middlequay 20011730078 outer wall + wall↔tower gaps) — render kit adds a corner
+post drum at every ring anchor sealing all miters; (c) STRAY OUTSIDE STAIRS (Grand Academy 1020371) —
+parallel stairs judged their inner side from the GATE, flipping outside on far segments; now judged at
+the flight's own midpoint + every stair foot must be inside its ward polygon (data + preview both);
+preview perpendiculars also project onto the real nearest wall segment; (d) ENTRANCES — the designer
+preview now renders the wooden gate leaves swung ~66° OPEN into the courtyard so the attackable
+entrance reads at a glance (CLOSED/BROKEN stay runtime states; the data contract is unchanged).
+siege-test + all 11 estate maps regenerated at v16 (sync pipeline delivers). Spec updated
+(R-GAP/R-JOINT/R-ENTRANCE in CASTLE-STAIRS-AND-WALLS-SPEC.md).

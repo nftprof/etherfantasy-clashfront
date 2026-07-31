@@ -878,7 +878,11 @@ function computeStairs(pts, gates, base) {
       }
       if (par) {
         let nx = -par.dz2, nz = par.dx2;
-        if (nx * (cx - gx) + nz * (cz - gzp) < 0) { nx = -nx; nz = -nz; }
+        // INNER side judged from the FLIGHT'S OWN midpoint (owner 2026-07-28, Grand Academy: "stairs
+        // outside going nowhere") — the matched segment may sit far from the gate, and judging
+        // "inner" from the gate could flip the offset to the OUTSIDE of the wall there.
+        const smx = par.A[0] + par.dx2 * (par.a0 + par.a1) / 2, smz = par.A[1] + par.dz2 * (par.a0 + par.a1) / 2;
+        if (nx * (cx - smx) + nz * (cz - smz) < 0) { nx = -nx; nz = -nz; }
         const off = 2.1 + 1.7;
         out.push({ gate: gi, side, mode: "PARALLEL",
           foot: [r1(par.A[0] + par.dx2 * par.a0 + nx * off), r1(par.A[1] + par.dz2 * par.a0 + nz * off)],
@@ -899,6 +903,7 @@ function computeStairs(pts, gates, base) {
   };
   const clearOfWalls = (s) => {
     const [fx, fz] = s.foot, [tx, tz] = s.top, L = Math.hypot(tx - fx, tz - fz) || 1;
+    if (!pointInPoly(fx, fz, pts)) return false;       // the foot must stand INSIDE the ward — never outside the wall
     for (let d = 0; d <= L - 4.5; d += 1.2) {          // stop short of the top-contact zone
       const px2 = fx + ((tx - fx) / L) * d, pz2 = fz + ((tz - fz) / L) * d;
       for (let i = 0; i < pts.length; i++) {
@@ -939,7 +944,7 @@ export const CASTLE_TIERS = {          // exported for the castle-geometry sweep
 // of geom + T2), so the siege block and castleGeom call it and always agree. Each inner ring is
 // the outer ring scaled toward the keep, with a taller wall, a climbing ward floor (`lift`), and
 // ONE staggered gate (no straight run to the keep). Returns rings[] + mound steps[].
-function concentricRings(geom, T2) {
+function concentricRings(geom, T2, poly) {
   const N = Math.max(1, T2.ringN || 1);
   const kx = geom.keepAt[0], kz = geom.keepAt[1], outer = geom.pts;
   // The INNERMOST ward is pinned to a WALKABLE base radius (RING_INNER_R — the good "original
@@ -952,19 +957,39 @@ function concentricRings(geom, T2) {
   // castles (R0 at the 26u floor) the 0.85 scale left wards only 3.9u apart, too thin to read as
   // distinct rings or to hold a stair. Floor at 16 (keep footprint + margin).
   const Rin = Math.max(16, Math.min(R0 * 0.85, RING_INNER_R, R0 - 4.5));
-  const gap = N > 1 ? (R0 - Rin) / (N - 1) : 0;                    // uniform outward spacing
+  const gap = N > 1 ? (R0 - Rin) / (N - 1) : 0;                    // uniform outward spacing (target)
+  // PER-ANCHOR ward spacing (owner 2026-07-28, Grand Exchange: "some parts merged — no gap between
+  // walls"): inner rings were UNIFORM scaled copies, so wherever the outer ring is locally dented or
+  // small the ward collapsed below one wall thickness. Build each inner ring from the PREVIOUS ring
+  // per anchor: follow the uniform target where roomy, but never closer than WARD_MIN centerline-to-
+  // centerline (4.2u wall + walkable room), floored at the keep footprint.
+  const WARD_MIN = 10;
+  const ptsArr = [outer];
+  for (let ri = 1; ri < N; ri++) {
+    const sRatio = (R0 - ri * gap) / ((R0 - (ri - 1) * gap) || 1);
+    ptsArr.push(ptsArr[ri - 1].map(([x, z]) => {
+      const dx = x - kx, dz = z - kz, r = Math.hypot(dx, dz) || 1;
+      let rNew = Math.max(RING_KEEP_FOOT, Math.min(r * sRatio, r - WARD_MIN));
+      // the parcel polygon is not star-shaped around the keep — a radial step inward can EXIT
+      // through a notch; keep pulling inward until the anchor is back inside.
+      if (poly && poly.length >= 3)                       // may dent BELOW the keep-foot floor: an
+        while (rNew > 2 && !pointInPoly(kx + (dx / r) * rNew, kz + (dz / r) * rNew, poly)) rNew -= 1.5;   // in-parcel dent beats an out-of-parcel wall
+      return [r1(kx + (dx / r) * rNew), r1(kz + (dz / r) * rNew)];
+    }));
+  }
   const rings = [];
   for (let ri = 0; ri < N; ri++) {
     const targetR = R0 - ri * gap;                                 // ri=0 outer … ri=N-1 = Rin (walkable)
-    const s = ri === 0 ? 1 : targetR / R0;                         // uniform scale toward the keep
-    const pts = ri === 0 ? outer : outer.map(([x, z]) => [r1(kx + (x - kx) * s), r1(kz + (z - kz) * s)]);
+    const pts = ptsArr[ri];
     // OWNER 2026-07-21 simplification: NO ward elevation/ramps (lift=0 — flat interior, only the
     // OUTER wall keeps its motte). A 2-ring CASTLE is just a bigger outer circle, SAME wall height,
     // no new mechanism. A 3-ring PALACE makes ONLY the FINAL (innermost) wall taller, climbed by a
     // SPIRAL stair that wraps around it (spiral:true) — the two outer walls stay standard height.
     const isFinalTall = (N >= 3 && ri === N - 1);
     const h = isFinalTall ? T2.wallH + 7 : T2.wallH;
-    const gapIn = r1(ri < N - 1 ? gap : targetR - RING_KEEP_FOOT);
+    const gapIn = r1(ri < N - 1
+      ? Math.min(...pts.map(([x, z], j) => { const q = ptsArr[ri + 1][j]; return Math.hypot(x - q[0], z - q[1]); }))
+      : targetR - RING_KEEP_FOOT);                                 // ACTUAL min clearance to the next ward
     let gates;
     if (ri === 0) gates = geom.gates;                              // outer keeps its two opposed doors
     else {
@@ -1013,7 +1038,12 @@ const PALACE_STYLES = { UW2: "drowned_bastion", ENT: "carnavale", EDU: "collegia
 // always [], siege MOUND tier gone; elevation = WALL_WALK only); (d) stair↔wall NO-INTERSECTION
 // guard — stairs verified clear of every wall segment except the top-tread platform contact, with
 // a safe perpendicular fallback per gate. See docs/maps/CASTLE-STAIRS-AND-WALLS-SPEC.md.
-export const GEN_VERSION = 15;
+// v16 (owner 2026-07-28 castle tour): (a) PER-ANCHOR ward spacing — inner rings derive from the
+// previous ring per anchor with WARD_MIN 10u centerline clearance (uniform scaling merged walls at
+// dented spots); gapIn = the ACTUAL min ward clearance; (b) parallel stairs judge their inner side
+// from the flight's own midpoint (a far segment judged from the gate could land the stair OUTSIDE)
+// and every stair foot must be inside its ward polygon.
+export const GEN_VERSION = 16;
 
 export function generate(parcel, params = null, designVersion = 0) {
   // designVersion is MANDATORY in every artifact (MOBA contract fix 3: it pins caches, replays,
@@ -1371,7 +1401,7 @@ export function generate(parcel, params = null, designVersion = 0) {
     if (castleParts) {
       const gpts = castleParts.geom.pts, gz2 = castleParts.geom.gates || [];
       const T2s = CASTLE_TIERS[castle && CASTLE_TIERS[castle.kind] ? castle.kind : "KEEP"];
-      const CRs = concentricRings(castleParts.geom, T2s);
+      const CRs = concentricRings(castleParts.geom, T2s, poly);
       // NO MOUND tier (owner 2026-07-27 flat-castle ruling): castle elevation advantage comes ONLY
       // from the WALL_WALK tier2 entries below — never a motte under the ward.
       // one WALL_WALK tier2 per nested ring, climbing (inner wards outrank outer — the
@@ -1409,7 +1439,7 @@ export function generate(parcel, params = null, designVersion = 0) {
               const tier = CASTLE_TIERS[castle.kind] ? castle.kind : "KEEP";
               const T2 = CASTLE_TIERS[tier];
               const styleKey = tier === "PALACE" ? (PALACE_STYLES[zone] || "fieldstone") : "fieldstone";
-              const CR = concentricRings(castleParts.geom, T2);
+              const CR = concentricRings(castleParts.geom, T2, poly);
               return { castleGeom: {
                 tier, styleKey,
                 rings: CR.rings,
