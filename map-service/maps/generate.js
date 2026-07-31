@@ -692,28 +692,50 @@ function placeBarriers(g, G, rng, count, avoid, budgetLevel) {
 // walkable cells (CF invariant 3); when walls turn solid in v2 the carved gate openings already
 // guarantee courtyard↔outside connectivity.
 function castleLayout(g, G, rng, { base, atkPt, poly, half, budgetLevel, bridge, ringN = 1, ringGap = 0 }) {
-  const cx = base.x, cz = base.z;
+  let cx = base.x, cz = base.z;
+  // polygon depth at a point (an inscribed-radius upper bound); −1 when outside the polygon
+  const depth = (x, z) => {
+    if (!poly || poly.length < 3) return Infinity;
+    if (!pointInPoly(x, z, poly)) return -1;
+    let best = Infinity;
+    for (let i = 0; i < poly.length; i++) {
+      const A = poly[i], B = poly[(i + 1) % poly.length];
+      const abx = B[0] - A[0], abz = B[1] - A[1], L2 = abx * abx + abz * abz || 1;
+      const t = Math.max(0, Math.min(1, ((x - A[0]) * abx + (z - A[1]) * abz) / L2));
+      best = Math.min(best, Math.hypot(x - (A[0] + abx * t), z - (A[1] + abz * t)));
+    }
+    return best;
+  };
+  // RE-CENTER (owner 2026-07-29 — the Vault-Palace ESTATE map crushed its 3-ring palace to r≈20
+  // with deep dents because the declared castle point hugs the polygon edge): when the center is
+  // too shallow to hold the tier's rings, slide the castle to the DEEPEST nearby interior point
+  // (deterministic ring search, pure geometry — no rng call-order change). The defender base
+  // follows its courtyard: generate() re-anchors base + def_base from geom.keepAt afterwards.
+  {
+    const need = 30 + (ringN - 1) * 11;              // comfortable footprint radius for the tier
+    let bd = depth(cx, cz);
+    if (bd < need) {
+      let bx2 = cx, bz2 = cz;
+      for (let rr = 8; rr <= 72; rr += 8) for (let k = 0; k < 16; k++) {
+        const a = (k / 16) * Math.PI * 2;
+        const x = cx + Math.cos(a) * rr, z = cz + Math.sin(a) * rr;
+        if (Math.abs(x) > half - 10 || Math.abs(z) > half - 10) continue;
+        const d = depth(x, z);
+        if (d > bd + 0.5) { bd = d; bx2 = x; bz2 = z; }
+      }
+      cx = r1(bx2); cz = r1(bz2);
+    }
+  }
   // radii: rough rectangle/oval, capped so the ring stays inside the arena square. Multi-ring
   // tiers need a BIGGER footprint so each nested ward clears the next by a full stair flight +
   // buffer — and (owner 2026-07-21) a PALACE leaves TOWN-SIZED baileys between rings. needR =
   // keep footprint + (ringN-1)·ringGap + margin.
   const availSq = Math.max(26, half - 6 - Math.max(Math.abs(cx), Math.abs(cz)));
   // POLYGON-AWARE CAP (owner 2026-07-27, Vault-Palace screenshot): the ring must fit inside the
-  // PARCEL FOOTPRINT, not just the arena square. Each anchor is pointInPoly-tested below — at a
-  // radius beyond the polygon's inscribed radius most anchors CULL and the "ring" degenerates to a
-  // 3-point triangle of arena-long wall runs. Cap by the inscribed radius around the keep (with
-  // wobble headroom w≤1.075 + wall margin); multi-ring wards then COMPRESS via concentricRings
-  // (uniform gap from the actual outer radius) — rank stays readable as ring COUNT, never overflow.
-  let availPg = Infinity;
-  if (poly && poly.length >= 3) {
-    for (let i = 0; i < poly.length; i++) {
-      const A = poly[i], B = poly[(i + 1) % poly.length];
-      const abx = B[0] - A[0], abz = B[1] - A[1], L2 = abx * abx + abz * abz || 1;
-      const t = Math.max(0, Math.min(1, ((cx - A[0]) * abx + (cz - A[1]) * abz) / L2));
-      availPg = Math.min(availPg, Math.hypot(cx - (A[0] + abx * t), cz - (A[1] + abz * t)));
-    }
-    availPg = availPg / 1.08 - 3;
-  }
+  // PARCEL FOOTPRINT, not just the arena square — beyond the inscribed radius the pointInPoly cull
+  // degenerated rings to arena-long triangles. Wobble headroom w≤1.075 + wall margin; multi-ring
+  // wards COMPRESS via concentricRings — rank stays readable as ring COUNT, never overflow.
+  const availPg = (poly && poly.length >= 3) ? depth(cx, cz) / 1.08 - 3 : Infinity;
   const avail = Math.max(26, Math.min(availSq, availPg));
   const needR = RING_INNER_R + (ringN - 1) * ringGap + 6;   // outer radius fits the walkable core + all wards
   const Rbase = Math.max(35 + rng() * 15, needR);
@@ -977,6 +999,36 @@ function concentricRings(geom, T2, poly) {
       return [r1(kx + (dx / r) * rNew), r1(kz + (dz / r) * rNew)];
     }));
   }
+  // SEGMENT-LEVEL clearance pass (owner 2026-07-29: "minimal distance between walls still an issue
+  // on some maps"): the per-anchor radial rule bounds anchor↔anchor spacing, but after dents and
+  // polygon pulls an inner-ring SEGMENT can still cut close to the outer ring at a DIFFERENT angle.
+  // Push every inner anchor further inward until it clears the outer ring's whole POLYLINE by
+  // WARD_MIN (processed outer→inner so each consecutive pair settles).
+  const segDist = (px, pz, ringPts) => {
+    let best = Infinity;
+    for (let i = 0; i < ringPts.length; i++) {
+      const A = ringPts[i], B = ringPts[(i + 1) % ringPts.length];
+      const abx = B[0] - A[0], abz = B[1] - A[1], L2 = abx * abx + abz * abz || 1;
+      const t = Math.max(0, Math.min(1, ((px - A[0]) * abx + (pz - A[1]) * abz) / L2));
+      best = Math.min(best, Math.hypot(px - (A[0] + abx * t), pz - (A[1] + abz * t)));
+    }
+    return best;
+  };
+  for (let ri = 1; ri < N; ri++) {
+    for (const p of ptsArr[ri]) {
+      for (let it = 0; it < 24; it++) {
+        const d = segDist(p[0], p[1], ptsArr[ri - 1]);
+        if (d >= WARD_MIN - 0.01) break;
+        const dx = p[0] - kx, dz = p[1] - kz, r = Math.hypot(dx, dz) || 1;
+        let rNew = r - Math.max(1, WARD_MIN - d + 0.4);
+        if (rNew < 2) break;
+        if (poly && poly.length >= 3)
+          while (rNew > 2 && !pointInPoly(kx + (dx / r) * rNew, kz + (dz / r) * rNew, poly)) rNew -= 1.5;
+        if (rNew < 2) break;
+        p[0] = r1(kx + (dx / r) * rNew); p[1] = r1(kz + (dz / r) * rNew);
+      }
+    }
+  }
   const rings = [];
   for (let ri = 0; ri < N; ri++) {
     const targetR = R0 - ri * gap;                                 // ri=0 outer … ri=N-1 = Rin (walkable)
@@ -1042,8 +1094,10 @@ const PALACE_STYLES = { UW2: "drowned_bastion", ENT: "carnavale", EDU: "collegia
 // previous ring per anchor with WARD_MIN 10u centerline clearance (uniform scaling merged walls at
 // dented spots); gapIn = the ACTUAL min ward clearance; (b) parallel stairs judge their inner side
 // from the flight's own midpoint (a far segment judged from the gate could land the stair OUTSIDE)
-// and every stair foot must be inside its ward polygon.
-export const GEN_VERSION = 16;
+// and every stair foot must be inside its ward polygon. v17 = SEGMENT-LEVEL ward clearance — every
+// inner-ring anchor is pushed until it clears the outer ring's whole polyline by WARD_MIN (the
+// per-anchor radial rule alone still let dented segments graze at other angles) — owner 2026-07-29.
+export const GEN_VERSION = 17;
 
 export function generate(parcel, params = null, designVersion = 0) {
   // designVersion is MANDATORY in every artifact (MOBA contract fix 3: it pins caches, replays,
@@ -1217,6 +1271,16 @@ export function generate(parcel, params = null, designVersion = 0) {
                                 ringN: _ctier.ringN, ringGap: _ctier.wardGap })
     : null;
   const castleStructures = castleParts ? castleParts.structures : [];
+  // the castle may have RE-CENTERED to deeper ground (castleLayout depth search) — the defender
+  // base + its spawn belong in the courtyard, so they follow the keep.
+  if (castleParts && castleParts.geom && castleParts.geom.keepAt) {
+    const [ncx, ncz] = castleParts.geom.keepAt;
+    if (Math.hypot(ncx - base.x, ncz - base.z) > 0.5) {
+      base.x = ncx; base.z = ncz;
+      const db = spawnZones.find((s) => s.id === "def_base");
+      if (db) { db.x = ncx; db.z = ncz; }
+    }
+  }
   sealDisconnectedPockets(g, G);
 
   // resource nodes: exactly p.resourceNodes (budget-capped). Explicit resourceAt placements

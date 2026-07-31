@@ -744,3 +744,16 @@ preview now renders the wooden gate leaves swung ~66° OPEN into the courtyard s
 entrance reads at a glance (CLOSED/BROKEN stay runtime states; the data contract is unchanged).
 siege-test + all 11 estate maps regenerated at v16 (sync pipeline delivers). Spec updated
 (R-GAP/R-JOINT/R-ENTRANCE in CASTLE-STAIRS-AND-WALLS-SPEC.md).
+
+**2026-07-29 — 🏰 GEN_VERSION 17: SEGMENT-level ward clearance + castle RE-CENTER + estate maps join
+the sweep.** Owner: "minimal distance between walls still an issue on some map." Two real holes found:
+(a) the v16 rule bounded ANCHOR↔anchor spacing only — after dents a wall SEGMENT could still graze the
+outer ring at a different angle; v17 pushes every inner anchor until it clears the outer ring's whole
+POLYLINE by WARD_MIN 10u; (b) the sweep only covered the 37 L3 castle parcels — the 11 committed
+ESTATE maps (where the merge was seen) were never swept; they're in now (576 checks total, all green,
+asserting the COMMITTED files so a forgotten re-bake also fails). Bonus fix surfaced by the wider
+sweep: estate maps whose castle point hugs the polygon edge (Vault-Palace 3110087, Grand Academy
+1020371) crushed their rings to r≈20 with deep dents — castleLayout now RE-CENTERS to the deepest
+nearby interior point (deterministic depth search; base + def_base follow the keep). All 11 estate
+maps + siege-test regenerated at v17 and shipped; on-box parcel registries self-heal on view
+(SEED_V0 auto-reseed at the version bump).
