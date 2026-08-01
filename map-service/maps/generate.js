@@ -805,14 +805,73 @@ function castleLayout(g, G, rng, { base, atkPt, poly, half, budgetLevel, bridge,
       }
     }
   }
-  // GATE COUNT LADDER (owner 2026-08-01, parcel 21010920077 "no outside castle wall gate"): the
-  // OUTERMOST wall carries ringN+1 doors (KEEP 2 / CASTLE 3 / PALACE 4), evenly spread from the
-  // attacker approach — inner wards get their own, fewer, doors in concentricRings.
-  const aAtk = Math.atan2(atkPt.z - cz, atkPt.x - cx);
+  // EFFECTIVE RING COUNT (v19 owner 2026-08-01, Jinjiang Citadel: "either needs to be 1 ring wall
+  // or something entirely wrong — too compact"): full-width wards or FEWER rings, never a crushed
+  // nest. The footprint this ring actually achieved (avg radius after all caps/pulls) affords
+  // floor((R0 − keepFoot)/12) wards of honest 12u width; the tier's ringN is a CEILING, not a
+  // mandate. Supersedes the v15 "rank = ring count" reading — the owner ruled compactness worse.
+  const okAn = ring.filter((p) => p.ok);
+  // ROAD DOORS (v19 owner 2026-08-01, Vermilion Palace: "a castle where a road leads to the wall
+  // must have an opening = a door where the road comes — apply to all castles"): walk the whole
+  // wall polyline at ~1u steps; group CONSECUTIVE road-hit samples into RUNS (an oblique road
+  // cutting the wall at a shallow angle is ONE crossing, never a stitch-line of many); the anchor
+  // nearest each run's midpoint MOVES onto the road and becomes a GATE — the door stands exactly
+  // where the road pierces the wall. World roads + lanes are painted before the castle grows, and
+  // the castle's own carves never lay ROAD on land, so this reads the true road network.
   const taken = new Set();
   const gates = [];
-  const gateWant = Math.min(4, ringN + 1);
-  for (let k = 0; k < gateWant; k++) {
+  {
+    const samples = [];
+    for (let q = 0; q < okAn.length; q++) {
+      const A = okAn[q], B = okAn[(q + 1) % okAn.length];
+      const L = Math.hypot(B.x - A.x, B.z - A.z), steps = Math.max(1, Math.round(L));
+      for (let k = 0; k < steps; k++)
+        samples.push([A.x + (B.x - A.x) * (k / steps), A.z + (B.z - A.z) * (k / steps)]);
+    }
+    const hit = samples.map(([x, z]) => g[gIdx(G, cellOf(G, x), cellOf(G, z))] === T.ROAD);
+    const runs = [];
+    let cur = null, gapRun = 0;
+    for (let i = 0; i < samples.length; i++) {
+      if (hit[i]) { if (!cur) cur = [i, i]; else cur[1] = i; gapRun = 0; }
+      else if (cur && ++gapRun > 6) { runs.push(cur); cur = null; }
+    }
+    if (cur) runs.push(cur);
+    if (runs.length >= 2 && runs[0][0] === 0 && runs[runs.length - 1][1] === samples.length - 1) {
+      const last = runs.pop();                          // the polyline is closed — merge the wrap
+      runs[0] = [last[0] - samples.length, runs[0][1]];
+    }
+    for (const [s0, s1] of runs.slice(0, 5)) {          // hard cap — a wall is not a sieve
+      const mi = ((Math.round((s0 + s1) / 2) % samples.length) + samples.length) % samples.length;
+      const mid = samples[mi];
+      let bi = -1, bd2 = Infinity;
+      for (let i = 0; i < n; i++) {
+        if (!ring[i].ok || taken.has(i)) continue;
+        const d = Math.hypot(ring[i].x - mid[0], ring[i].z - mid[1]);
+        if (d < bd2) { bd2 = d; bi = i; }
+      }
+      if (bi >= 0 && bd2 < 30) {
+        ring[bi].x = r1(mid[0]); ring[bi].z = r1(mid[1]);   // the door stands ON the road
+        taken.add(bi); gates.push(bi);
+      }
+    }
+  }
+  // EFFECTIVE RING COUNT + KEEP-RATIO (after the road-door anchor moves — R0est reads the FINAL
+  // ring, so the affordability math and the sweep test always agree).
+  const R0est = okAn.reduce((s, p) => s + Math.hypot(p.x - cx, p.z - cz), 0) / (okAn.length || 1);
+  const nEff = Math.max(1, Math.min(ringN, Math.floor((R0est - RING_KEEP_FOOT) / 12) + 1));
+  // KEEP-RATIO SIZING LAW (owner 2026-08-01): the outer wall's circumference stays ≥2–3× the
+  // keep's (PALACE 2×+, target 3×; CASTLE 1.5×+, target 2×). Roomy land already exceeds this by
+  // construction (palaces span most of the parcel — intended, "you feel like you are right at the
+  // gate"); on cramped footprints the KEEP SHRINKS to hold the ratio (radius ∝ circumference;
+  // keep visual radius ≈ 0.72 × its base width).
+  const keepMinRatio = ringN >= 3 ? 2 : ringN === 2 ? 1.5 : 1.2;
+  const keepW = r1(Math.min(16, Math.max(8, (R0est / keepMinRatio) / 0.72)));
+  const aAtk = Math.atan2(atkPt.z - cz, atkPt.x - cx);
+  // GATE COUNT LADDER (owner 2026-08-01, parcel 21010920077 "no outside castle wall gate"): the
+  // OUTERMOST wall carries nEff+1 doors (KEEP 2 / CASTLE 3 / PALACE 4) — road doors count toward
+  // the ladder; the spread fills from the attacker approach.
+  const gateWant = Math.min(4, nEff + 1);
+  for (let k = 0; k < gateWant && gates.length < gateWant; k++) {
     const gi = nearestOk(aAtk + (k * Math.PI * 2) / gateWant, taken);
     if (gi >= 0) { taken.add(gi); gates.push(gi); }
   }
@@ -857,7 +916,8 @@ function castleLayout(g, G, rng, { base, atkPt, poly, half, budgetLevel, bridge,
   // crenellated curtain walls from (the structures above stay the HP/collision truth — every ring
   // vertex maps onto a structure anchor).
   const geom = { pts: ring.filter((p) => p.ok).map((p) => [p.x, p.z]), gates: gateInfo, keepAt: [r1(cx), r1(cz)],
-    towers: ring.filter((p) => p.ok && p.tower).map((p) => [p.x, p.z]) };   // stair tops steer clear of these (v18)
+    towers: ring.filter((p) => p.ok && p.tower).map((p) => [p.x, p.z]),   // stair tops steer clear of these (v18)
+    ringNEff: nEff, keepW };                                              // v19: honest ring count + ratio-law keep size
   return { structures: out, geom };
 }
 
@@ -876,6 +936,64 @@ function computeStairs(pts, gates, base, towers = [], runCap = Infinity) {
   const STEPS = 7, TREAD = 1.6, ALONG = 13.5, FLIGHT = STEPS * TREAD + 0.6;
   const cx = base.x, cz = base.z, out = [], fb = new Map();   // fb = per-gate safe perpendicular fallback
   const rAvg = pts.reduce((s, q) => s + Math.hypot(q[0] - cx, q[1] - cz), 0) / (pts.length || 1);
+  // ---- guards (defined up front — the tight-ward parallel search below validates with them) ----
+  const segD = (px, pz, ax, az, bx2, bz2) => {
+    const abx = bx2 - ax, abz = bz2 - az, L2 = abx * abx + abz * abz || 1;
+    const t = Math.max(0, Math.min(1, ((px - ax) * abx + (pz - az) * abz) / L2));
+    return Math.hypot(px - (ax + abx * t), pz - (az + abz * t));
+  };
+  // R-ST1 — NO STAIR↔WALL INTERSECTION (owner 2026-07-27): the centerline keeps clearance from
+  // EVERY wall segment — only the TOP-TREAD contact zone (the last ~4.5u, where the stair lands
+  // flush on the wall-walk platform) may approach the wall. Foot must stand INSIDE the ward.
+  const clearOfWalls = (s) => {
+    const [fx, fz] = s.foot, [tx, tz] = s.top, L = Math.hypot(tx - fx, tz - fz) || 1;
+    if (!pointInPoly(fx, fz, pts)) return false;
+    for (let d = 0; d <= L - 4.5; d += 1.2) {
+      const px2 = fx + ((tx - fx) / L) * d, pz2 = fz + ((tz - fz) / L) * d;
+      for (let i = 0; i < pts.length; i++) {
+        const A = pts[i], B = pts[(i + 1) % pts.length];
+        if (segD(px2, pz2, A[0], A[1], B[0], B[1]) < 3.3) return false;   // wall half 2.1 + stair half 1.7 − wobble tolerance
+      }
+    }
+    return true;
+  };
+  // v18: a top inside a drum/corner tower footprint isn't walkable-onto — ≥5u from tower anchors.
+  const clearOfTowers = (s) => towers.every((t) => Math.hypot(s.top[0] - t[0], s.top[1] - t[1]) >= 5);
+  // TIGHT WARD ⇒ PARALLEL PATTERN (v19 owner 2026-08-01: "where the distance is too close use the
+  // other pattern of stairs, parallel to the walls, from ground to the wall height"): when the
+  // ward can't hold a full-tread perpendicular run, a compressed steep flight jamming the bailey
+  // is the WRONG answer — hug the wall instead. This permissive parallel search accepts ANY
+  // straight-enough wall stretch near the gate (not just one collinear with the gate wall),
+  // compresses the run down to 0.62× a full flight if the segment is short, and validates with
+  // the full guard set before accepting.
+  const tight = runCap < STEPS * TREAD;
+  const mkPar2 = (gi, gx, gzp, side, used) => {
+    const cand = [];
+    for (let i = 0; i < pts.length; i++) {
+      const A = pts[i], B = pts[(i + 1) % pts.length];
+      const sdx = B[0] - A[0], sdz = B[1] - A[1], sL = Math.hypot(sdx, sdz);
+      if (sL < FLIGHT * 0.62 + 2.4) continue;
+      const mx = (A[0] + B[0]) / 2, mz = (A[1] + B[1]) / 2;
+      cand.push({ i, A, dx2: sdx / sL, dz2: sdz / sL, sL, d: Math.hypot(mx - gx, mz - gzp) });
+    }
+    cand.sort((q, w) => q.d - w.d);
+    for (const c of cand) {
+      if (used.has(c.i)) continue;
+      const run = Math.min(FLIGHT, c.sL - 2.4);
+      for (const dir of side > 0 ? [1, -1] : [-1, 1]) {
+        const a0 = dir > 0 ? 1.2 : c.sL - 1.2, a1 = a0 + dir * run;
+        let nx = -c.dz2, nz = c.dx2;
+        const smx = c.A[0] + c.dx2 * (a0 + a1) / 2, smz = c.A[1] + c.dz2 * (a0 + a1) / 2;
+        if (nx * (cx - smx) + nz * (cz - smz) < 0) { nx = -nx; nz = -nz; }
+        const off = 2.1 + 1.7;
+        const s = { gate: gi, side, mode: "PARALLEL",
+          foot: [r1(c.A[0] + c.dx2 * a0 + nx * off), r1(c.A[1] + c.dz2 * a0 + nz * off)],
+          top: [r1(c.A[0] + c.dx2 * a1 + nx * off), r1(c.A[1] + c.dz2 * a1 + nz * off)] };
+        if (clearOfWalls(s) && clearOfTowers(s)) { used.add(c.i); return s; }
+      }
+    }
+    return null;
+  };
   for (let gi = 0; gi < gates.length; gi++) {
     const ga = gates[gi].at || gates[gi], gx = ga[0], gzp = ga[1];
     let bx = 1, bz = 0, bd = Infinity;                 // local wall tangent at this gate
@@ -887,6 +1005,7 @@ function computeStairs(pts, gates, base, towers = [], runCap = Infinity) {
     const bL = Math.hypot(bx, bz) || 1, wdx = bx / bL, wdz = bz / bL;
     let ux = -wdz, uz = wdx;                          // inner normal (toward the courtyard)
     if (ux * (cx - gx) + uz * (cz - gzp) < 0) { ux = -ux; uz = -uz; }
+    const usedSeg = new Set();                        // one tight-ward parallel per wall stretch per gate
     for (const side of [1, -1]) {
       // the inward PERPENDICULAR is always constructible and safe by design (it runs along the inner
       // normal, away from the wall body; only its TOP TREAD meets the wall face) — build it as the
@@ -936,52 +1055,38 @@ function computeStairs(pts, gates, base, towers = [], runCap = Infinity) {
         out.push({ gate: gi, side, mode: "PARALLEL",
           foot: [r1(par.A[0] + par.dx2 * par.a0 + nx * off), r1(par.A[1] + par.dz2 * par.a0 + nz * off)],
           top: [r1(par.A[0] + par.dx2 * par.a1 + nx * off), r1(par.A[1] + par.dz2 * par.a1 + nz * off)] });
+      } else if (tight) {
+        // too close between walls for a comfortable inward run — the wall-hugging parallel is the
+        // owner-spec'd pattern here; the compressed perpendicular only if no stretch validates.
+        const s2 = mkPar2(gi, gx, gzp, side, usedSeg);
+        out.push(s2 || mkPerp());
       } else out.push(mkPerp());
     }
   }
-  // R-ST1 — NO STAIR↔WALL INTERSECTION (owner 2026-07-27: "stairs shouldn't intersect with the
-  // walls … stairs need a clear path to a platform wall"): verify every candidate's centerline
-  // keeps clearance from EVERY wall segment — only the TOP-TREAD contact zone (the last ~4.5u,
-  // where the stair lands flush on the wall-walk platform's inner face) may approach the wall.
-  // Violators drop; a gate that loses both sides gets its inward PERPENDICULAR fallback so the
-  // parapet is always reachable (≥1 stair per gate, R-ST2).
-  const segD = (px, pz, ax, az, bx2, bz2) => {
-    const abx = bx2 - ax, abz = bz2 - az, L2 = abx * abx + abz * abz || 1;
-    const t = Math.max(0, Math.min(1, ((px - ax) * abx + (pz - az) * abz) / L2));
-    return Math.hypot(px - (ax + abx * t), pz - (az + abz * t));
-  };
-  const clearOfWalls = (s) => {
-    const [fx, fz] = s.foot, [tx, tz] = s.top, L = Math.hypot(tx - fx, tz - fz) || 1;
-    if (!pointInPoly(fx, fz, pts)) return false;       // the foot must stand INSIDE the ward — never outside the wall
-    for (let d = 0; d <= L - 4.5; d += 1.2) {          // stop short of the top-contact zone
-      const px2 = fx + ((tx - fx) / L) * d, pz2 = fz + ((tz - fz) / L) * d;
-      for (let i = 0; i < pts.length; i++) {
-        const A = pts[i], B = pts[(i + 1) % pts.length];
-        if (segD(px2, pz2, A[0], A[1], B[0], B[1]) < 3.3) return false;   // wall half 2.1 + stair half 1.7 − wobble tolerance
-      }
-    }
-    return true;
-  };
-  // v18: a top that lands inside a drum/corner tower's footprint isn't walkable-onto — reject
-  // candidates within 5u of a tower anchor (the per-gate perpendicular fallback stays exempt:
-  // parapet reachability wins, and renderers skip drums near data stair tops).
-  const clearOfTowers = (s) => towers.every((t) => Math.hypot(s.top[0] - t[0], s.top[1] - t[1]) >= 5);
+  // Violators of the guard set drop; a gate that loses both sides walks a FALLBACK CHAIN, every
+  // link guard-checked: its safe perpendicular (run compressed until the foot stands in-ward) →
+  // a permissive wall-hugging parallel → STAIRLESS (the ring's other gates keep the parapet
+  // reachable — a stair jammed into a wall is never emitted). Only a ring that would end up with
+  // ZERO stairs accepts its least-bad fallback (reachability beats purity, and only then).
   const kept = out.filter((s) => clearOfWalls(s) && clearOfTowers(s));
-  for (let gi = 0; gi < gates.length; gi++)
-    if (!kept.some((s) => s.gate === gi) && fb.has(gi)) {
-      const s = fb.get(gi);
+  for (let gi = 0; gi < gates.length; gi++) {
+    if (kept.some((s) => s.gate === gi)) continue;
+    const ga = gates[gi].at || gates[gi];
+    const s = fb.get(gi);
+    if (s && !pointInPoly(s.foot[0], s.foot[1], pts)) {
       // a deeply dented ward can leave even the safe fallback's foot outside the polygon —
-      // compress the run toward the wall until the foot stands inside (steeper treads beat an
-      // out-of-ward foot; R-ST3).
-      if (!pointInPoly(s.foot[0], s.foot[1], pts)) {
-        const dx = s.foot[0] - s.top[0], dz = s.foot[1] - s.top[1];
-        for (const f of [0.75, 0.55, 0.4, 0.28]) {
-          const fx = r1(s.top[0] + dx * f), fz = r1(s.top[1] + dz * f);
-          if (pointInPoly(fx, fz, pts)) { s.foot = [fx, fz]; break; }
-        }
+      // compress the run toward the wall until the foot stands inside (R-ST3).
+      const dx = s.foot[0] - s.top[0], dz = s.foot[1] - s.top[1];
+      for (const f of [0.75, 0.55, 0.4, 0.28]) {
+        const fx = r1(s.top[0] + dx * f), fz = r1(s.top[1] + dz * f);
+        if (pointInPoly(fx, fz, pts)) { s.foot = [fx, fz]; break; }
       }
-      kept.push(s);
     }
+    if (s && clearOfWalls(s) && clearOfTowers(s)) { kept.push(s); continue; }
+    const p2 = mkPar2(gi, ga[0], ga[1], 1, new Set());
+    if (p2) kept.push(p2);
+  }
+  if (!kept.length && fb.size) kept.push(fb.values().next().value);
   return kept;
 }
 
@@ -1011,7 +1116,11 @@ export const CASTLE_TIERS = {          // exported for the castle-geometry sweep
 // the outer ring scaled toward the keep, with a taller wall, a climbing ward floor (`lift`), and
 // ONE staggered gate (no straight run to the keep). Returns rings[] + mound steps[].
 function concentricRings(geom, T2, poly) {
-  const N = Math.max(1, T2.ringN || 1);
+  // v19 (owner 2026-08-01, Jinjiang Citadel "either 1 ring wall or too compact"): the ring count
+  // ADAPTS to the honest footprint — castleLayout computed how many full-width 12u wards this
+  // castle's achieved radius affords (geom.ringNEff); the tier's ringN is the ceiling. A cramped
+  // citadel builds ONE grand wall, never a crushed nest. Supersedes the v15 "rank = ring count".
+  const N = Math.max(1, Math.min(T2.ringN || 1, geom.ringNEff || (T2.ringN || 1)));
   const kx = geom.keepAt[0], kz = geom.keepAt[1], outer = geom.pts;
   // The INNERMOST ward is pinned to a WALKABLE base radius (RING_INNER_R — the good "original
   // tower" size); additional rings grow OUTWARD from it (owner 2026-07-21). So the core is never a
@@ -1019,22 +1128,20 @@ function concentricRings(geom, T2, poly) {
   let R0 = 0;
   for (const [x, z] of outer) R0 += Math.hypot(x - kx, z - kz);
   R0 /= Math.max(1, outer.length);                                 // outer ring AVG radius
-  // walkable innermost ward — with a GUARANTEED minimum ward gap (≥4.5u): on tiny polygon-capped
-  // castles (R0 at the 26u floor) the 0.85 scale left wards only 3.9u apart, too thin to read as
-  // distinct rings or to hold a stair. Floor at 16 (keep footprint + margin).
-  const Rin = Math.max(16, Math.min(R0 * 0.85, RING_INNER_R, R0 - 4.5));
+  // walkable innermost ward. v19 ward TARGET = 16u (owner 2026-08-01, parcel 20716710172 "okay
+  // but not greatest — a bit wider"): where the radius affords it, each bailey aims for 16u of
+  // ring-to-ring room; the keep-foot floor keeps the core walkable on small castles.
+  const Rin = Math.max(RING_KEEP_FOOT, Math.min(R0 * 0.85, RING_INNER_R, R0 - 16));
   const gap = N > 1 ? (R0 - Rin) / (N - 1) : 0;                    // uniform outward spacing (target)
   // PER-ANCHOR ward spacing (owner 2026-07-28, Grand Exchange: "some parts merged — no gap between
   // walls"): inner rings were UNIFORM scaled copies, so wherever the outer ring is locally dented or
   // small the ward collapsed below one wall thickness. Build each inner ring from the PREVIOUS ring
   // per anchor: follow the uniform target where roomy, but never closer than wardMin centerline-to-
-  // centerline, floored at the keep footprint. FULL ward = 12 (v18, owner 2026-08-01: "the distance
-  // between walls should be at least 1 stair's width + some margin") = 4.2u wall thickness + 3.4u
-  // stair width + ~4.4u margin of clear ground. On footprints too small to hold every ward at 12
-  // (story-override palaces on LARGE estates), the minimum scales down to what the radius budget
-  // (R0 → keep foot, split over N−1 wards) can honestly afford — floored at 8.5 so wards always
-  // read as distinct walls with stair room; NEVER ring-count reduction (rank = ring count, v15).
-  const wardMin = Math.max(8.5, Math.min(12, (R0 - RING_KEEP_FOOT) / Math.max(1, N - 1)));
+  // centerline, floored at the keep footprint. HARD ward minimum = 12u (owner 2026-08-01: "the
+  // distance between walls should be at least 1 stair's width + some margin") = 4.2u wall
+  // thickness + 3.4u stair width + ~4.4u margin. Since v19 the ring COUNT adapts (above) instead
+  // of the width scaling down — 12 is absolute.
+  const wardMin = 12;
   const ptsArr = [outer];
   for (let ri = 1; ri < N; ri++) {
     const sRatio = (R0 - ri * gap) / ((R0 - (ri - 1) * gap) || 1);
@@ -1174,7 +1281,17 @@ const PALACE_STYLES = { UW2: "drowned_bastion", ENT: "carnavale", EDU: "collegia
 // LADDER — outer wall ringN+1 doors (KEEP 2 / CASTLE 3 / PALACE 4), each ward inward one fewer,
 // floored at 2; (d) TREES OUT OF THE CASTLE — FOREST/ROCK cells inside the outer ring clear to
 // OPEN and every gate gets a 14u apron disc (no canopy barging a door arch).
-export const GEN_VERSION = 18;
+// v19 (owner 2026-08-01 castle tour round 3): (a) ADAPTIVE RING COUNT — the tier's ringN is a
+// CEILING; the achieved outer radius affords floor((R0−keepFoot)/12)+1 honest 12u wards and a
+// cramped citadel builds ONE grand wall, never a crushed nest ("either 1 ring wall or too
+// compact"; supersedes v15 rank=ring-count and retires the v18 8.5u ward scale-down — 12u is
+// absolute, target 16u where roomy); (b) TIGHT WARD ⇒ PARALLEL stairs — where a full-tread
+// perpendicular can't fit the bailey, a wall-hugging parallel flight (permissive search, full
+// guard set) replaces the steep compressed run; (c) ROAD DOORS — every road crossing the wall
+// line claims a gate there (cap 5); (d) KEEP-RATIO LAW — outer wall circumference ≥2–3× keep
+// (PALACE) / 1.5–2× (CASTLE); cramped castles shrink the keep (castleGeom.keep.w) to hold it;
+// (e) renderer: estate maps mask OOB to the parcel silhouette (the "square maps" fix).
+export const GEN_VERSION = 19;
 
 export function generate(parcel, params = null, designVersion = 0) {
   // designVersion is MANDATORY in every artifact (MOBA contract fix 3: it pins caches, replays,
@@ -1387,6 +1504,57 @@ export function generate(parcel, params = null, designVersion = 0) {
   // 5) validate + repair (edge corridors, base clearing, safety net) then snap points to open
   const v = validateAndRepair(g, G, base, laneStarts);
   snapOpen(resources, v.eroded, G); buildSpots = snapOpenOrDrop(buildSpots, v.eroded, G); snapOpen(spawnZones, v.eroded, G);
+  // 5b) POST-REPAIR ROAD DOORS (v19): the repair pass may carve NEW road corridors/causeways that
+  // cross the castle wall (castleLayout only saw the pre-repair network). Re-scan the final grid
+  // for road runs through the wall polyline; any run without a door converts the nearest WALL
+  // anchor into a GATE moved onto the road — the owner rule ("a road that leads to the wall must
+  // have an opening") holds against every road source, repairs included.
+  if (castleParts && castleParts.geom && castleParts.geom.pts.length >= 3) {
+    const geo = castleParts.geom, structures2 = castleParts.structures;
+    const samples = [];
+    for (let q = 0; q < geo.pts.length; q++) {
+      const A = geo.pts[q], B = geo.pts[(q + 1) % geo.pts.length];
+      const L = Math.hypot(B[0] - A[0], B[1] - A[1]), steps = Math.max(1, Math.round(L));
+      for (let k = 0; k < steps; k++)
+        samples.push([A[0] + (B[0] - A[0]) * (k / steps), A[1] + (B[1] - A[1]) * (k / steps)]);
+    }
+    const hit = samples.map(([x, z]) => g[gIdx(G, cellOf(G, x), cellOf(G, z))] === T.ROAD);
+    const runs = [];
+    let cur = null, gapRun = 0;
+    for (let i = 0; i < samples.length; i++) {
+      if (hit[i]) { if (!cur) cur = [i, i]; else cur[1] = i; gapRun = 0; }
+      else if (cur && ++gapRun > 6) { runs.push(cur); cur = null; }
+    }
+    if (cur) runs.push(cur);
+    if (runs.length >= 2 && runs[0][0] === 0 && runs[runs.length - 1][1] === samples.length - 1) {
+      const last = runs.pop();
+      runs[0] = [last[0] - samples.length, runs[0][1]];
+    }
+    for (const [s0, s1] of runs) {
+      if ((geo.gates || []).length >= 5) break;                       // same hard cap as castleLayout
+      const mi = ((Math.round((s0 + s1) / 2) % samples.length) + samples.length) % samples.length;
+      const mid = samples[mi];
+      if ((geo.gates || []).some((g2) => { const at = g2.at || g2; return Math.hypot(at[0] - mid[0], at[1] - mid[1]) <= 16; })) continue;
+      // nearest WALL structure (never a tower/gate) converts to a door ON the road
+      let bi = -1, bd2 = Infinity;
+      for (let i = 0; i < structures2.length; i++) {
+        const s2 = structures2[i];
+        if (s2.kind !== "WALL") continue;
+        const d = Math.hypot(s2.x - mid[0], s2.z - mid[1]);
+        if (d < bd2) { bd2 = d; bi = i; }
+      }
+      if (bi < 0 || bd2 >= 30) continue;
+      const s2 = structures2[bi];
+      const pi = geo.pts.findIndex((p2) => p2[0] === s2.x && p2[1] === s2.z);
+      const gid = `castle_gate_${(geo.gates || []).length}r`;        // r-suffix: repair-road door
+      const nx2 = r1(mid[0]), nz2 = r1(mid[1]);
+      if (pi >= 0) { geo.pts[pi][0] = nx2; geo.pts[pi][1] = nz2; }
+      structures2[bi] = { anchorId: gid, kind: "GATE", side: "DEFENDER", material: "WOOD",
+        states: ["CLOSED", "OPEN", "BROKEN"], x: nx2, z: nz2, hpMax: s2.hpMax };
+      geo.gates.push({ at: [nx2, nz2], structureId: gid });
+      disc(g, G, cellOf(G, nx2), cellOf(G, nz2), 7, false);          // apron — the arch stays clear
+    }
+  }
   const lanes = net.lanes.map((wp) => wp.map(([x, z]) => [r1(x), r1(z)]));
   // per-edge NPC routes: entry→center chain for every arrival edge (multi-sided modes). lanes[]
   // stays the DUEL attacker→base push; routes[] is what a unit arriving from an arbitrary edge
@@ -1585,6 +1753,7 @@ export function generate(parcel, params = null, designVersion = 0) {
                 tier, styleKey,
                 rings: CR.rings,
                 keep: { at: castleParts.geom.keepAt, tiers: T2.keepTiers, h: T2.keepH,
+                        w: castleParts.geom.keepW || 16,              // v19 keep-ratio law (owner: wall ≥2–3× keep)
                         lift: CR.rings[CR.rings.length - 1].lift },   // keep crowns the innermost ward
                 mound: { steps: CR.moundSteps },
                 moat: styleKey === "drowned_bastion",

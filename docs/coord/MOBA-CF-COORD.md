@@ -780,3 +780,26 @@ derive stair placement. siege-test (now 3 outer doors, CASTLE tier) + all 11 est
 regenerated at v18 (sync-moba-maps delivers to the engine branch); sweep = 751 checks green
 (37 parcels + 11 estates, new rules R-GATE/R-STD/R-TREE). Spec: CASTLE-STAIRS-AND-WALLS-SPEC.md
 rewritten at v18.
+
+**2026-08-01 (2) — 🏰 GEN_VERSION 19: adaptive ring count, road doors, tight-ward parallel stairs,
+keep-ratio law, estate silhouettes.** Owner castle-tour round 3 (five directives, all shipped +
+sweep-guarded — 844 checks green): (a) ADAPTIVE RING COUNT (Jinjiang Citadel 1071729 "either 1 ring
+wall or too compact — is this an EPIC estate?" — yes, HUB EPIC, but its river-hugging polygon only
+affords ~25u of inscribed radius): tier ringN is now a CEILING; the achieved radius affords
+floor((R0−14)/12)+1 honest 12u wards, so cramped citadels build ONE grand wall (1071729/1071733 now
+single-ring, Vault-Palace 2 rings) — supersedes v15 rank=ring-count; ward width is 12u ABSOLUTE,
+16u target where roomy; (b) ROAD DOORS (Vermilion Palace 1071732 "a road that leads to the wall
+must have an opening — apply to all castles"): road runs through the wall polyline claim gates ON
+the road (anchor moves to the crossing; oblique roads group to one run; cap 5) + a post-repair
+second pass catches validateAndRepair-carved corridors/causeways (WALL structure converts to GATE);
+(c) TIGHT WARD ⇒ PARALLEL stairs ("where distance is too close use the other pattern — parallel to
+the walls, ground to wall height"): permissive wall-hugging parallel replaces compressed steep
+perpendiculars; the fallback chain is guard-checked end-to-end (a stair jammed into a wall is never
+emitted); (d) KEEP-RATIO LAW: outer wall circumference ≥2–3× keep (PALACE) / 1.5–2× (CASTLE);
+cramped castles shrink the keep — **castleGeom.keep.w is new; renderers use w (default 16)**;
+palace-fills-70%-of-parcel confirmed INTENDED ("you feel like you are right at the gate");
+(e) ESTATE SILHOUETTE ("why are all maps square instead of the shape of the estate?"): the DATA was
+always the estate polygon (arena.bounds, OOB-stamped terrain) — the game-render module path just
+never masked it; the CF designer now overlays the OOB haze so estates read as their true shape.
+**MOBA renderer owes the same OOB honor: mask/skip cells with terrain value OOB(6) — arena.bounds
+is the parcel silhouette.** All 11 estate maps + siege-test re-baked at v19.

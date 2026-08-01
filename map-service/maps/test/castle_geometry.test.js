@@ -18,12 +18,17 @@
 //   R-GATE  (v18) gate-count ladder: outer wall min(4, ringN+1) doors, each ward inward one
 //           fewer, floored at 2.
 //   R-TREE  (v18) no TREE/ROCK prop deep inside the walled interior, none within 10u of a gate.
+//   R-ROAD  (v19) a road passing through the wall line has a door there (≤23u).
+//   R-KEEP  (v19) outer wall circumference ≥2× keep (PALACE) / 1.5× (CASTLE); cramped keeps shrink.
+//   R-RING  (v19, adaptive) tier ringN is a CEILING — the achieved radius affords
+//           floor((R0−14)/12)+1 full-width wards; cramped castles build fewer rings, never a nest.
 //   R-FLAT  flat on the land: no moundSteps, no siege MOUND tier.
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { loadWorldField, worldParcel, l3Row, clearWorldFieldCache } from "../worldfield.js";
 import { generate, CASTLE_TIERS } from "../generate.js";
+import { T } from "../schema.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "../../..");
@@ -55,8 +60,17 @@ function checkArtifact(label, art) {
   const cg = art.meta && art.meta.castleGeom, sg = art.siege;
   if (!cg || !sg || !sg.wallRing) { ok(false, `${label}: no castleGeom/siege emitted`); return; }
   const T2 = CASTLE_TIERS[cg.tier];
-  ok(cg.rings.length === (T2 ? T2.ringN : 1), `${label}: R-RING ring count ${cg.rings.length} ≠ tier ${cg.tier}`);
   const keep = cg.keep.at, poly = art.arena.bounds, half = art.arena.sizeM / 2;
+  // R-RING (v19 adaptive): the tier's ringN is a CEILING; the achieved outer radius affords
+  // floor((R0−keepFoot)/12)+1 full-width wards — a cramped footprint builds fewer, never a nest.
+  const R0 = cg.rings[0].pts.reduce((s, p) => s + Math.hypot(p[0] - keep[0], p[1] - keep[1]), 0) / (cg.rings[0].pts.length || 1);
+  const expectN = Math.max(1, Math.min(T2 ? T2.ringN : 1, Math.floor((R0 - 14) / 12) + 1));
+  ok(cg.rings.length === expectN, `${label}: R-RING ring count ${cg.rings.length} ≠ affordable ${expectN} (tier ${cg.tier}, R0 ${R0.toFixed(1)})`);
+  // R-KEEP (v19 owner sizing law): outer wall circumference ≥ 2× keep (PALACE) / 1.5× (CASTLE) —
+  // on cramped land the KEEP shrinks (keep.w) to hold the ratio; keep visual radius ≈ 0.72 × w.
+  const keepRatioMin = cg.tier === "PALACE" ? 2 : cg.tier === "CASTLE" ? 1.5 : 1.2;
+  ok(R0 >= keepRatioMin * 0.72 * (cg.keep.w || 16) - 0.5,
+    `${label}: R-KEEP wall ≥${keepRatioMin}× keep circumference (R0 ${R0.toFixed(1)}, keep.w ${cg.keep.w || 16})`);
   let prevR = Infinity, ringsOK = true, gapsOK = true, insideOK = true;
   for (const r of cg.rings) {
     if (r.pts.length < 12) ringsOK = false;
@@ -94,10 +108,12 @@ function checkArtifact(label, art) {
   ok(wardOK, `${label}: R-GAP per-anchor ward spacing ≥8u (no merged walls)`);
   ok(segOK, `${label}: R-GAP segment-level ward clearance ≥7.5u (no wall grazes another at ANY angle)`);
   ok((sg.gates || []).length >= 1, `${label}: R-AR at least one gate arch`);
-  // R-GATE (v18 owner ladder): outer wall min(4, ringN+1) doors; each ward inward one fewer, ≥2.
+  // R-GATE (v18 owner ladder + v19 road doors): outer wall ≥ min(4, N+1) doors (road crossings
+  // may add more, capped 5); each ward inward one fewer, ≥2.
   const N = cg.rings.length;
-  ok((cg.rings[0].gates || []).length === Math.min(4, N + 1),
-    `${label}: R-GATE outer wall carries ${Math.min(4, N + 1)} doors (got ${(cg.rings[0].gates || []).length})`);
+  const outerG = (cg.rings[0].gates || []).length;
+  ok(outerG >= Math.min(4, N + 1) && outerG <= 5,
+    `${label}: R-GATE outer wall carries ${Math.min(4, N + 1)}..5 doors (got ${outerG})`);
   for (let ri = 1; ri < N; ri++)
     ok((cg.rings[ri].gates || []).length === Math.max(2, Math.min(4, N + 1 - ri)),
       `${label}: R-GATE ward ${ri} carries ${Math.max(2, Math.min(4, N + 1 - ri))} doors (got ${(cg.rings[ri].gates || []).length})`);
@@ -131,6 +147,56 @@ function checkArtifact(label, art) {
     && ((inPoly(o.x, o.z, ring0) && polyD(o.x, o.z, ring0) > 2.5)
         || (sg.gates || []).some((g2) => Math.hypot(g2.at[0] - o.x, g2.at[1] - o.z) < 10)));
   ok(treeBad.length === 0, `${label}: R-TREE walled interior + door aprons clear of trees/rocks (${treeBad.length} inside)`);
+  // R-ROAD (v19 owner 2026-08-01): a road that passes THROUGH the wall line has a door there.
+  // Sample the outer polyline for ROAD ground; count only real crossings (ROAD continues ≥4u on
+  // BOTH sides of the wall — ford/band artifacts along the wall don't) and require a gate ≤23u.
+  {
+    const G = art.terrain.w, cellM = art.terrain.cellM || 2, halfM = (G * cellM) / 2;
+    const cells = new Uint8Array(Buffer.from(art.terrain.cells, "base64"));
+    const cellAt = (x, z) => {
+      const cx2 = Math.max(0, Math.min(G - 1, Math.floor((x + halfM) / cellM)));
+      const cz2 = Math.max(0, Math.min(G - 1, Math.floor((z + halfM) / cellM)));
+      return cells[cz2 * G + cx2];
+    };
+    const gatePts = (sg.gates || []).map((g2) => g2.at);
+    // walk the closed polyline; group road-hit samples into RUNS (same rule as the generator); a
+    // run is a REAL crossing if any sample has ROAD ≥4u out on BOTH sides of the wall (ford/band
+    // artifacts along a water-standing wall don't). Door within 16u of the run midpoint. Runs
+    // beyond the generator's 5-door cap are exempt.
+    const samples = [], through = [];
+    for (let i = 0; i < ring0.length; i++) {
+      const A = ring0[i], B = ring0[(i + 1) % ring0.length];
+      const L = Math.hypot(B[0] - A[0], B[1] - A[1]) || 1;
+      const dx = (B[0] - A[0]) / L, dz = (B[1] - A[1]) / L, nx = -dz, nz = dx;
+      for (let d = 0; d < L; d += 1) {
+        const x = A[0] + dx * d, z = A[1] + dz * d;
+        samples.push([x, z]);
+        through.push(cellAt(x, z) === T.ROAD
+          && cellAt(x + nx * 4, z + nz * 4) === T.ROAD && cellAt(x - nx * 4, z - nz * 4) === T.ROAD);
+      }
+    }
+    const isRoad = samples.map(([x, z]) => cellAt(x, z) === T.ROAD);
+    const runs = [];
+    let cur = null, gapRun = 0;
+    for (let i = 0; i < samples.length; i++) {
+      if (isRoad[i]) { if (!cur) cur = [i, i, through[i]]; else { cur[1] = i; cur[2] = cur[2] || through[i]; } gapRun = 0; }
+      else if (cur && ++gapRun > 6) { runs.push(cur); cur = null; }
+    }
+    if (cur) runs.push(cur);
+    if (runs.length >= 2 && runs[0][0] === 0 && runs[runs.length - 1][1] === samples.length - 1) {
+      const last = runs.pop();
+      runs[0] = [last[0] - samples.length, runs[0][1], runs[0][2] || last[2]];
+    }
+    const missed = [];
+    for (const [s0, s1, real] of runs) {
+      if (!real) continue;
+      const mi = ((Math.round((s0 + s1) / 2) % samples.length) + samples.length) % samples.length;
+      const [mx2, mz2] = samples[mi];
+      if (!gatePts.some((g2) => Math.hypot(g2[0] - mx2, g2[1] - mz2) <= 16)) missed.push([Math.round(mx2), Math.round(mz2)]);
+    }
+    ok(missed.length === 0 || gatePts.length >= 5,
+      `${label}: R-ROAD every road through the wall has a door (${missed.length} missing: ${JSON.stringify(missed)})`);
+  }
   ok(((cg.mound && cg.mound.steps) || []).length === 0
     && !(sg.elevationTiers.tier1 || []).some((t) => t.kind === "MOUND"),
     `${label}: R-FLAT flat on the land (no moundSteps, no siege MOUND tier)`);

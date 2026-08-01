@@ -143,6 +143,15 @@ const TESS=hgrid?Math.min(200,(hw-1)*3):1;
 function plane(tex,y,mat){tex.minFilter=tex.magFilter=THREE.LinearFilter;const m=new THREE.Mesh(drape(new THREE.PlaneGeometry(S,S,TESS,TESS),y),mat);m.material.map=tex;m.rotation.x=-Math.PI/2;if(!hgrid)m.position.y=y;scene.add(m);return m;}
 // road (legacy only — parity gets baked road cells + lane ribbons from the module)
 if(!parity){const cc=cellCanvas(c=>c===T.ROAD,'rgba(120,96,58,.9)');if(cc)plane(new THREE.CanvasTexture(soften(cc,4,3)),0.15,new THREE.MeshBasicMaterial({transparent:true,depthWrite:false}));}
+// ESTATE SILHOUETTE (v19 owner 2026-08-01 "why are all maps square instead of the shape of the
+// estate?"): the game-render module draws the full square arena; on polygon parcels the OOB cells
+// (already in the data — arena.bounds IS the estate shape) mask to a dark haze overlay so the map
+// reads as the estate's actual silhouette. Legacy path already alpha-masks its ground; this covers
+// the parity/9-layer path. Renderer-only — the MOBA engine owes the same OOB honor (coord log).
+if(parity&&a.arena&&a.arena.shape==="polygon"){
+  const cc=cellCanvas(c=>c===T.OOB,'rgb(14,22,34)');
+  if(cc)plane(new THREE.CanvasTexture(soften(cc,4,2)),0.55,new THREE.MeshBasicMaterial({transparent:true,depthWrite:false,opacity:0.96}));
+}
 
 // ---- WATER: flat waterline surface per basin (the module dips the heightfield; the surface must
 // NOT drape into the dip — real water sits level inside the basin). Per connected water body:
@@ -489,7 +498,7 @@ if(CG)(function(){
     }
   }
   // ---- the KEEP: tiers climb, corner turrets, roof + banner — the silhouette (§1 rule 3) ----
-  if(CG.keep){const K=CG.keep,tiers=Math.max(1,K.tiers|0),tierH=K.h/tiers;let w2=16,y2=0;
+  if(CG.keep){const K=CG.keep,tiers=Math.max(1,K.tiers|0),tierH=K.h/tiers;let w2=K.w||16,y2=0;
     const kl=K.lift||0, putK=(m,x,z,y)=>putC(m,x,z,kl+y);   // keep crowns the innermost ward
     for(let t2=0;t2<tiers;t2++){
       putK(new THREE.Mesh(new THREE.BoxGeometry(w2,tierH,w2),wallM),K.at[0],K.at[1],y2+tierH/2);

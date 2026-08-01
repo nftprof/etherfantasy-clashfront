@@ -36,8 +36,8 @@
               84.2
             ],
             [
-              -58.1,
-              77.2
+              -59.8,
+              78.4
             ],
             [
               -46.1,
@@ -64,8 +64,8 @@
               118.5
             ],
             [
-              -29.5,
-              128.6
+              -31.2,
+              129.5
             ]
           ],
           "lift": 0,
@@ -75,94 +75,27 @@
           "kind": "WALL_WALK",
           "ring": [
             [
-              -42.5,
-              124.8
-            ],
-            [
-              -50.9,
-              122.9
-            ],
-            [
-              -59.8,
-              121.8
-            ],
-            [
-              -63.8,
-              113.8
-            ],
-            [
-              -68.4,
-              106.1
-            ],
-            [
-              -65.1,
-              97.9
-            ],
-            [
-              -61.2,
-              90.7
-            ],
-            [
-              -54.4,
-              85.9
-            ],
-            [
-              -46.3,
-              86
-            ],
-            [
-              -38.2,
-              86.2
-            ],
-            [
-              -30.5,
-              90.2
-            ],
-            [
-              -25.2,
-              97.7
-            ],
-            [
-              -26.5,
-              106.7
-            ],
-            [
-              -30.1,
-              114.1
-            ],
-            [
-              -35,
-              120.8
-            ]
-          ],
-          "lift": 0,
-          "tier": 1
-        },
-        {
-          "kind": "WALL_WALK",
-          "ring": [
-            [
-              -43.9,
-              117.9
+              -43.8,
+              118.4
             ],
             [
               -49.7,
               117.8
             ],
             [
-              -55,
-              115.4
+              -55.7,
+              116.3
             ],
             [
               -58.8,
               111
             ],
             [
-              -60.5,
+              -61.4,
               105.5
             ],
             [
-              -59.9,
+              -59.8,
               99.7
             ],
             [
@@ -170,11 +103,11 @@
               94.7
             ],
             [
-              -52.1,
-              91.3
+              -53,
+              91.7
             ],
             [
-              -46.4,
+              -46.3,
               90.2
             ],
             [
@@ -182,12 +115,12 @@
               91.5
             ],
             [
-              -36,
-              95
+              -35.6,
+              94.6
             ],
             [
-              -33.2,
-              100.2
+              -32.2,
+              99.8
             ],
             [
               -32.7,
@@ -198,12 +131,12 @@
               111.4
             ],
             [
-              -38.6,
-              115.7
+              -39.3,
+              116.2
             ]
           ],
           "lift": 0,
-          "tier": 2
+          "tier": 1
         }
       ]
     },
@@ -238,8 +171,8 @@
           84.2
         ],
         [
-          -58.1,
-          77.2
+          -59.8,
+          78.4
         ],
         [
           -46.1,
@@ -266,37 +199,33 @@
           118.5
         ],
         [
-          -29.5,
-          128.6
+          -31.2,
+          129.5
         ]
       ],
       "h": 11,
       "gates": [
         [
-          -52.8,
-          131.2
-        ],
-        [
-          -74,
-          94.8
+          -59.8,
+          78.4
         ],
         [
           -34.2,
           77.6
         ],
         [
-          -22.8,
-          118.5
+          -31.2,
+          129.5
         ]
       ],
-      "ringN": 3
+      "ringN": 2
     },
     "gates": [
       {
         "id": "castle_gate_0",
         "at": [
-          -52.8,
-          131.2
+          -59.8,
+          78.4
         ],
         "hp": 1150,
         "material": "WOOD",
@@ -309,20 +238,6 @@
       {
         "id": "castle_gate_1",
         "at": [
-          -74,
-          94.8
-        ],
-        "hp": 1150,
-        "material": "WOOD",
-        "states": [
-          "CLOSED",
-          "OPEN",
-          "BROKEN"
-        ]
-      },
-      {
-        "id": "castle_gate_2",
-        "at": [
           -34.2,
           77.6
         ],
@@ -335,10 +250,10 @@
         ]
       },
       {
-        "id": "castle_gate_3",
+        "id": "castle_gate_2",
         "at": [
-          -22.8,
-          118.5
+          -31.2,
+          129.5
         ],
         "hp": 1150,
         "material": "WOOD",
@@ -353,92 +268,79 @@
       {
         "gate": 0,
         "side": 1,
-        "mode": "PERPENDICULAR",
+        "mode": "PARALLEL",
         "foot": [
-          -60.3,
-          124.7
+          -64.9,
+          86.6
         ],
         "top": [
-          -64.4,
-          127
+          -58.6,
+          82.2
         ]
       },
       {
         "gate": 0,
         "side": -1,
-        "mode": "PERPENDICULAR",
+        "mode": "PARALLEL",
         "foot": [
-          -43.5,
-          127.5
+          -46.8,
+          80.4
         ],
         "top": [
-          -41.3,
-          131.7
+          -58.1,
+          82
         ]
       },
       {
         "gate": 1,
         "side": 1,
-        "mode": "PERPENDICULAR",
+        "mode": "PARALLEL",
         "foot": [
-          -62.8,
-          89.6
+          -45.3,
+          80.4
         ],
         "top": [
-          -65.5,
-          85.7
+          -35.7,
+          81.3
         ]
       },
       {
         "gate": 1,
         "side": -1,
-        "mode": "PERPENDICULAR",
+        "mode": "PARALLEL",
         "foot": [
-          -71.4,
-          103.6
+          -26.2,
+          86.6
         ],
         "top": [
-          -75.6,
-          105.8
+          -35.1,
+          81.5
         ]
       },
       {
         "gate": 2,
         "side": 1,
-        "mode": "PERPENDICULAR",
+        "mode": "PARALLEL",
         "foot": [
-          -27.3,
-          90.2
+          -41.4,
+          130.5
         ],
         "top": [
-          -24.9,
-          86.1
+          -34,
+          126.7
         ]
       },
       {
         "gate": 2,
         "side": -1,
-        "mode": "PERPENDICULAR",
+        "mode": "PARALLEL",
         "foot": [
-          -47.2,
-          84
+          -33.5,
+          126.2
         ],
         "top": [
-          -47.5,
-          79.3
-        ]
-      },
-      {
-        "gate": 3,
-        "side": -1,
-        "mode": "PERPENDICULAR",
-        "foot": [
-          -24.4,
-          106.5
-        ],
-        "top": [
-          -19.7,
-          106.9
+          -26.5,
+          117.1
         ]
       }
     ]
@@ -1080,9 +982,40 @@
     {
       "id": "rock_4",
       "kind": "ROCK",
-      "x": 24.67,
-      "z": -22.67,
-      "r": 2,
+      "footprint": [
+        [
+          25,
+          -25
+        ],
+        [
+          23,
+          -25
+        ],
+        [
+          23,
+          -19
+        ],
+        [
+          25,
+          -19
+        ],
+        [
+          25,
+          -21
+        ],
+        [
+          27,
+          -21
+        ],
+        [
+          27,
+          -23
+        ],
+        [
+          25,
+          -23
+        ]
+      ],
       "passable": false
     },
     {
@@ -2698,21 +2631,52 @@
     {
       "id": "cliff_13",
       "kind": "CLIFF",
-      "x": -49,
-      "z": 80,
-      "r": 2,
+      "footprint": [
+        [
+          -67,
+          89
+        ],
+        [
+          -69,
+          89
+        ],
+        [
+          -69,
+          93
+        ],
+        [
+          -71,
+          93
+        ],
+        [
+          -71,
+          97
+        ],
+        [
+          -73,
+          97
+        ],
+        [
+          -73,
+          99
+        ],
+        [
+          -69,
+          99
+        ],
+        [
+          -69,
+          95
+        ],
+        [
+          -67,
+          95
+        ]
+      ],
       "passable": false
     },
     {
       "id": "cliff_14",
-      "kind": "CLIFF",
-      "x": -61.33,
-      "z": 84.67,
-      "r": 2,
-      "passable": false
-    },
-    {
-      "id": "cliff_15",
       "kind": "CLIFF",
       "footprint": [
         [
@@ -2759,7 +2723,7 @@
       "passable": false
     },
     {
-      "id": "cliff_16",
+      "id": "cliff_15",
       "kind": "CLIFF",
       "x": -78,
       "z": 116,
@@ -2767,11 +2731,42 @@
       "passable": false
     },
     {
-      "id": "cliff_17",
+      "id": "cliff_16",
       "kind": "CLIFF",
       "x": -81,
       "z": 126,
       "r": 2,
+      "passable": false
+    },
+    {
+      "id": "cliff_17",
+      "kind": "CLIFF",
+      "footprint": [
+        [
+          -63,
+          125
+        ],
+        [
+          -63,
+          127
+        ],
+        [
+          -59,
+          127
+        ],
+        [
+          -59,
+          129
+        ],
+        [
+          -55,
+          129
+        ],
+        [
+          -55,
+          125
+        ]
+      ],
       "passable": false
     },
     {
@@ -2864,14 +2859,22 @@
         ],
         [
           -63,
-          139
+          141
         ],
         [
-          -65,
-          139
+          -61,
+          141
         ],
         [
-          -65,
+          -61,
+          135
+        ],
+        [
+          -59,
+          135
+        ],
+        [
+          -59,
           133
         ],
         [
@@ -2888,7 +2891,7 @@
     {
       "id": "prop_0",
       "kind": "ROCK",
-      "x": 100.5,
+      "x": 92.5,
       "z": -151,
       "r": 2.5,
       "passable": true
@@ -2896,7 +2899,7 @@
     {
       "id": "prop_1",
       "kind": "ROCK",
-      "x": 103.4,
+      "x": 95.4,
       "z": -151.2,
       "r": 1.9,
       "passable": true
@@ -2904,7 +2907,7 @@
     {
       "id": "prop_2",
       "kind": "ROCK",
-      "x": 115.8,
+      "x": 107.8,
       "z": -151.5,
       "r": 2.5,
       "passable": true
@@ -2912,15 +2915,15 @@
     {
       "id": "prop_3",
       "kind": "ROCK",
-      "x": 96.4,
-      "z": -147.5,
+      "x": 116.4,
+      "z": -151.5,
       "r": 3,
       "passable": true
     },
     {
       "id": "prop_4",
       "kind": "ROCK",
-      "x": 107.3,
+      "x": 99.3,
       "z": -148,
       "r": 1.8,
       "passable": true
@@ -2928,31 +2931,31 @@
     {
       "id": "prop_5",
       "kind": "ROCK",
-      "x": 100.7,
-      "z": -145,
+      "x": 112.7,
+      "z": -149,
       "r": 3,
       "passable": true
     },
     {
       "id": "prop_6",
       "kind": "ROCK",
-      "x": 104.2,
-      "z": -144.6,
+      "x": 116.2,
+      "z": -148.6,
       "r": 3.1,
       "passable": true
     },
     {
       "id": "prop_7",
       "kind": "ROCK",
-      "x": 91.5,
-      "z": -59.6,
+      "x": 83.5,
+      "z": -63.6,
       "r": 1.9,
       "passable": true
     },
     {
       "id": "prop_8",
       "kind": "ROCK",
-      "x": 91.8,
+      "x": 83.8,
       "z": -51.2,
       "r": 2.6,
       "passable": true
@@ -2960,15 +2963,15 @@
     {
       "id": "prop_9",
       "kind": "ROCK",
-      "x": 40.4,
-      "z": -43.1,
+      "x": 92.4,
+      "z": -47.1,
       "r": 2.4,
       "passable": true
     },
     {
       "id": "prop_10",
       "kind": "ROCK",
-      "x": 84.5,
+      "x": 76.5,
       "z": -40.8,
       "r": 2.9,
       "passable": true
@@ -2976,15 +2979,15 @@
     {
       "id": "prop_11",
       "kind": "ROCK",
-      "x": 52.9,
-      "z": -35.4,
+      "x": 88.9,
+      "z": -39.4,
       "r": 3,
       "passable": true
     },
     {
       "id": "prop_12",
       "kind": "ROCK",
-      "x": 87.5,
+      "x": 79.5,
       "z": -35.2,
       "r": 3.1,
       "passable": true
@@ -2992,15 +2995,15 @@
     {
       "id": "prop_13",
       "kind": "ROCK",
-      "x": 72,
-      "z": -31.2,
+      "x": 88,
+      "z": -35.2,
       "r": 2.7,
       "passable": true
     },
     {
       "id": "prop_14",
       "kind": "ROCK",
-      "x": 59.6,
+      "x": 23.6,
       "z": -19.7,
       "r": 2.3,
       "passable": true
@@ -3008,7 +3011,7 @@
     {
       "id": "prop_15",
       "kind": "ROCK",
-      "x": 68.4,
+      "x": 60.4,
       "z": -11.6,
       "r": 3.1,
       "passable": true
@@ -3016,8 +3019,8 @@
     {
       "id": "prop_16",
       "kind": "ROCK",
-      "x": 29,
-      "z": 15.4,
+      "x": 65,
+      "z": -8.6,
       "r": 2,
       "passable": true
     },
@@ -3025,14 +3028,14 @@
       "id": "prop_17",
       "kind": "ROCK",
       "x": 27.5,
-      "z": 19.1,
+      "z": 15.1,
       "r": 2.1,
       "passable": true
     },
     {
       "id": "prop_18",
       "kind": "ROCK",
-      "x": 31.5,
+      "x": 23.5,
       "z": 20,
       "r": 2.1,
       "passable": true
@@ -3040,23 +3043,23 @@
     {
       "id": "prop_19",
       "kind": "ROCK",
-      "x": -4,
-      "z": 63.5,
+      "x": 4,
+      "z": 59.5,
       "r": 2.8,
       "passable": true
     },
     {
       "id": "prop_20",
       "kind": "ROCK",
-      "x": -3,
-      "z": 72.8,
+      "x": 9,
+      "z": 68.8,
       "r": 2.6,
       "passable": true
     },
     {
       "id": "prop_21",
       "kind": "ROCK",
-      "x": 11.4,
+      "x": 3.4,
       "z": 72.9,
       "r": 2.1,
       "passable": true
@@ -3064,23 +3067,23 @@
     {
       "id": "prop_22",
       "kind": "ROCK",
-      "x": 0,
-      "z": 79.5,
+      "x": 20,
+      "z": 75.5,
       "r": 2.5,
       "passable": true
     },
     {
       "id": "prop_23",
       "kind": "ROCK",
-      "x": -7.4,
-      "z": 83.2,
+      "x": 12.6,
+      "z": 79.2,
       "r": 2.5,
       "passable": true
     },
     {
       "id": "prop_24",
       "kind": "ROCK",
-      "x": 11.9,
+      "x": 3.9,
       "z": 84.5,
       "r": 1.9,
       "passable": true
@@ -3088,23 +3091,23 @@
     {
       "id": "prop_25",
       "kind": "ROCK",
-      "x": -8.4,
-      "z": 87.5,
+      "x": 11.6,
+      "z": 83.5,
       "r": 2.5,
       "passable": true
     },
     {
       "id": "prop_26",
       "kind": "ROCK",
-      "x": -3.1,
-      "z": 88.2,
+      "x": 16.9,
+      "z": 84.2,
       "r": 2.1,
       "passable": true
     },
     {
       "id": "prop_27",
       "kind": "ROCK",
-      "x": 7.1,
+      "x": -0.9,
       "z": 92.9,
       "r": 3.2,
       "passable": true
@@ -3112,7 +3115,7 @@
     {
       "id": "prop_28",
       "kind": "ROCK",
-      "x": -0.1,
+      "x": -8.1,
       "z": 95.3,
       "r": 1.8,
       "passable": true
@@ -3120,7 +3123,7 @@
     {
       "id": "prop_29",
       "kind": "ROCK",
-      "x": 20.2,
+      "x": 12.2,
       "z": 95.6,
       "r": 2.7,
       "passable": true
@@ -3128,7 +3131,7 @@
     {
       "id": "prop_30",
       "kind": "ROCK",
-      "x": 3.3,
+      "x": -4.7,
       "z": 99.5,
       "r": 2.7,
       "passable": true
@@ -3136,8 +3139,8 @@
     {
       "id": "prop_31",
       "kind": "ROCK",
-      "x": -100.5,
-      "z": 147.9,
+      "x": 11.5,
+      "z": 103.9,
       "r": 2.2,
       "passable": true
     }
@@ -3466,6 +3469,14 @@
         ],
         [
           27,
+          -21
+        ],
+        [
+          25,
+          -21
+        ],
+        [
+          25,
           -19
         ],
         [
@@ -3733,26 +3744,20 @@
       "z": 19.4
     },
     {
-      "anchorId": "castle_wall_0",
-      "kind": "WALL",
+      "anchorId": "castle_tower_0",
+      "kind": "TOWER",
       "side": "DEFENDER",
       "x": -40.7,
       "z": 134.4,
-      "hpMax": 1350
+      "hpMax": 2350
     },
     {
-      "anchorId": "castle_gate_0",
-      "kind": "GATE",
+      "anchorId": "castle_wall_0",
+      "kind": "WALL",
       "side": "DEFENDER",
       "x": -52.8,
       "z": 131.2,
-      "material": "WOOD",
-      "states": [
-        "CLOSED",
-        "OPEN",
-        "BROKEN"
-      ],
-      "hpMax": 1150
+      "hpMax": 1350
     },
     {
       "anchorId": "castle_wall_1",
@@ -3763,7 +3768,7 @@
       "hpMax": 1350
     },
     {
-      "anchorId": "castle_tower_0",
+      "anchorId": "castle_tower_1",
       "kind": "TOWER",
       "side": "DEFENDER",
       "x": -72.1,
@@ -3779,11 +3784,27 @@
       "hpMax": 1350
     },
     {
-      "anchorId": "castle_gate_1",
-      "kind": "GATE",
+      "anchorId": "castle_wall_3",
+      "kind": "WALL",
       "side": "DEFENDER",
       "x": -74,
       "z": 94.8,
+      "hpMax": 1350
+    },
+    {
+      "anchorId": "castle_tower_2",
+      "kind": "TOWER",
+      "side": "DEFENDER",
+      "x": -68.1,
+      "z": 84.2,
+      "hpMax": 2350
+    },
+    {
+      "anchorId": "castle_gate_0",
+      "kind": "GATE",
+      "side": "DEFENDER",
+      "x": -59.8,
+      "z": 78.4,
       "material": "WOOD",
       "states": [
         "CLOSED",
@@ -3791,22 +3812,6 @@
         "BROKEN"
       ],
       "hpMax": 1150
-    },
-    {
-      "anchorId": "castle_wall_3",
-      "kind": "WALL",
-      "side": "DEFENDER",
-      "x": -68.1,
-      "z": 84.2,
-      "hpMax": 1350
-    },
-    {
-      "anchorId": "castle_tower_1",
-      "kind": "TOWER",
-      "side": "DEFENDER",
-      "x": -58.1,
-      "z": 77.2,
-      "hpMax": 2350
     },
     {
       "anchorId": "castle_wall_4",
@@ -3817,7 +3822,7 @@
       "hpMax": 1350
     },
     {
-      "anchorId": "castle_gate_2",
+      "anchorId": "castle_gate_1",
       "kind": "GATE",
       "side": "DEFENDER",
       "x": -34.2,
@@ -3839,7 +3844,7 @@
       "hpMax": 1350
     },
     {
-      "anchorId": "castle_tower_2",
+      "anchorId": "castle_tower_3",
       "kind": "TOWER",
       "side": "DEFENDER",
       "x": -16.1,
@@ -3855,11 +3860,19 @@
       "hpMax": 1350
     },
     {
-      "anchorId": "castle_gate_3",
-      "kind": "GATE",
+      "anchorId": "castle_wall_7",
+      "kind": "WALL",
       "side": "DEFENDER",
       "x": -22.8,
       "z": 118.5,
+      "hpMax": 1350
+    },
+    {
+      "anchorId": "castle_gate_2",
+      "kind": "GATE",
+      "side": "DEFENDER",
+      "x": -31.2,
+      "z": 129.5,
       "material": "WOOD",
       "states": [
         "CLOSED",
@@ -3867,23 +3880,15 @@
         "BROKEN"
       ],
       "hpMax": 1150
-    },
-    {
-      "anchorId": "castle_tower_3",
-      "kind": "TOWER",
-      "side": "DEFENDER",
-      "x": -29.5,
-      "z": 128.6,
-      "hpMax": 2350
     }
   ],
   "mobs": [
     {
       "id": "mob0",
-      "kind": "BANDIT",
-      "x": 22,
-      "z": -18,
-      "count": 7
+      "kind": "TROLL",
+      "x": -2,
+      "z": 36,
+      "count": 9
     }
   ]
 }

@@ -20,8 +20,8 @@
               51.3
             ],
             [
-              -18.2,
-              46.4
+              -21.2,
+              42.7
             ],
             [
               -24.2,
@@ -32,8 +32,8 @@
               29.5
             ],
             [
-              -24.1,
-              20.5
+              -23.9,
+              19.5
             ],
             [
               -21.7,
@@ -60,8 +60,8 @@
               17
             ],
             [
-              20.6,
-              26.7
+              20.8,
+              21.9
             ],
             [
               20,
@@ -74,77 +74,6 @@
           ],
           "lift": 0,
           "tier": 0
-        },
-        {
-          "kind": "WALL_WALK",
-          "ring": [
-            [
-              4.2,
-              40.7
-            ],
-            [
-              -1.1,
-              42.5
-            ],
-            [
-              -6.5,
-              41.3
-            ],
-            [
-              -11.2,
-              38.6
-            ],
-            [
-              -14.5,
-              34.2
-            ],
-            [
-              -15.9,
-              29
-            ],
-            [
-              -15.1,
-              23.6
-            ],
-            [
-              -12.4,
-              18.8
-            ],
-            [
-              -8,
-              15.5
-            ],
-            [
-              -2.8,
-              14.1
-            ],
-            [
-              2.9,
-              14.3
-            ],
-            [
-              7.6,
-              17.3
-            ],
-            [
-              10.7,
-              22
-            ],
-            [
-              12.1,
-              27.2
-            ],
-            [
-              11.3,
-              32.7
-            ],
-            [
-              8.6,
-              37.4
-            ]
-          ],
-          "lift": 0,
-          "tier": 1
         }
       ]
     },
@@ -163,8 +92,8 @@
           51.3
         ],
         [
-          -18.2,
-          46.4
+          -21.2,
+          42.7
         ],
         [
           -24.2,
@@ -175,8 +104,8 @@
           29.5
         ],
         [
-          -24.1,
-          20.5
+          -23.9,
+          19.5
         ],
         [
           -21.7,
@@ -203,8 +132,8 @@
           17
         ],
         [
-          20.6,
-          26.7
+          20.8,
+          21.9
         ],
         [
           20,
@@ -218,26 +147,30 @@
       "h": 9,
       "gates": [
         [
-          -24.2,
-          38.9
+          -21.2,
+          42.7
         ],
         [
-          -3.4,
-          3.1
+          -23.9,
+          19.5
         ],
         [
-          20,
-          35.7
+          20.8,
+          21.9
+        ],
+        [
+          16.6,
+          44.5
         ]
       ],
-      "ringN": 2
+      "ringN": 1
     },
     "gates": [
       {
         "id": "castle_gate_0",
         "at": [
-          -24.2,
-          38.9
+          -21.2,
+          42.7
         ],
         "hp": 1150,
         "material": "WOOD",
@@ -250,8 +183,8 @@
       {
         "id": "castle_gate_1",
         "at": [
-          -3.4,
-          3.1
+          -23.9,
+          19.5
         ],
         "hp": 1150,
         "material": "WOOD",
@@ -264,8 +197,22 @@
       {
         "id": "castle_gate_2",
         "at": [
-          20,
-          35.7
+          20.8,
+          21.9
+        ],
+        "hp": 1150,
+        "material": "WOOD",
+        "states": [
+          "CLOSED",
+          "OPEN",
+          "BROKEN"
+        ]
+      },
+      {
+        "id": "castle_gate_3",
+        "at": [
+          16.6,
+          44.5
         ],
         "hp": 1150,
         "material": "WOOD",
@@ -280,53 +227,105 @@
       {
         "gate": 0,
         "side": 1,
-        "mode": "PERPENDICULAR",
+        "mode": "PARALLEL",
         "foot": [
-          -17.1,
-          26
+          -8.6,
+          47.5
         ],
         "top": [
-          -21.8,
-          25.7
+          -17.9,
+          40.4
+        ]
+      },
+      {
+        "gate": 0,
+        "side": -1,
+        "mode": "PARALLEL",
+        "foot": [
+          -20.2,
+          21
+        ],
+        "top": [
+          -20.9,
+          28.6
         ]
       },
       {
         "gate": 1,
         "side": 1,
-        "mode": "PERPENDICULAR",
+        "mode": "PARALLEL",
         "foot": [
-          3.7,
-          10.1
+          -20.9,
+          28.6
         ],
         "top": [
-          6.2,
-          6
+          -20.2,
+          21
         ]
       },
       {
         "gate": 1,
         "side": -1,
-        "mode": "PERPENDICULAR",
+        "mode": "PARALLEL",
         "foot": [
-          -12.2,
-          13.5
+          -18.7,
+          13.2
         ],
         "top": [
-          -14.6,
-          9.4
+          -12,
+          9.2
+        ]
+      },
+      {
+        "gate": 2,
+        "side": 1,
+        "mode": "PARALLEL",
+        "foot": [
+          16.3,
+          34.3
+        ],
+        "top": [
+          16.9,
+          22.9
         ]
       },
       {
         "gate": 2,
         "side": -1,
-        "mode": "PERPENDICULAR",
+        "mode": "PARALLEL",
         "foot": [
-          13.3,
-          22
+          12.9,
+          11.6
         ],
         "top": [
-          18,
-          22.1
+          17,
+          18
+        ]
+      },
+      {
+        "gate": 3,
+        "side": 1,
+        "mode": "PARALLEL",
+        "foot": [
+          6.3,
+          47.4
+        ],
+        "top": [
+          -0.8,
+          50.5
+        ]
+      },
+      {
+        "gate": 3,
+        "side": -1,
+        "mode": "PARALLEL",
+        "foot": [
+          16.3,
+          34.3
+        ],
+        "top": [
+          16.9,
+          22.9
         ]
       }
     ],
@@ -1036,22 +1035,6 @@
           7
         ],
         [
-          19,
-          7
-        ],
-        [
-          19,
-          9
-        ],
-        [
-          21,
-          9
-        ],
-        [
-          21,
-          7
-        ],
-        [
           23,
           7
         ],
@@ -1159,22 +1142,6 @@
         ],
         [
           -23,
-          5
-        ],
-        [
-          -25,
-          5
-        ],
-        [
-          -25,
-          9
-        ],
-        [
-          -23,
-          9
-        ],
-        [
-          -23,
           7
         ],
         [
@@ -1183,43 +1150,35 @@
         ],
         [
           -19,
-          3
-        ],
-        [
-          -17,
-          3
-        ],
-        [
-          -17,
-          -3
+          5
         ],
         [
           -15,
-          -3
+          5
         ],
         [
           -15,
-          -5
+          3
         ],
         [
           -13,
-          -5
+          3
         ],
         [
           -13,
-          -7
+          -3
         ],
         [
           -11,
-          -7
+          -3
         ],
         [
           -11,
-          -9
+          -5
         ],
         [
           -9,
-          -9
+          -5
         ],
         [
           -9,
@@ -1817,7 +1776,7 @@
     {
       "id": "prop_21",
       "kind": "TREE",
-      "x": 20.4,
+      "x": -15.6,
       "z": -0.3,
       "r": 2.5,
       "passable": true
@@ -1825,7 +1784,7 @@
     {
       "id": "prop_22",
       "kind": "TREE",
-      "x": 15.8,
+      "x": -0.2,
       "z": 68.3,
       "r": 3.3,
       "passable": true
@@ -1833,15 +1792,15 @@
     {
       "id": "prop_23",
       "kind": "TREE",
-      "x": 0.3,
-      "z": 127.8,
+      "x": 4.3,
+      "z": 123.8,
       "r": 3.7,
       "passable": true
     },
     {
       "id": "prop_24",
       "kind": "TREE",
-      "x": 4.4,
+      "x": 0.4,
       "z": 128.4,
       "r": 2.9,
       "passable": true
@@ -1849,15 +1808,15 @@
     {
       "id": "prop_25",
       "kind": "TREE",
-      "x": 0.9,
-      "z": 144.7,
+      "x": 8.9,
+      "z": 140.7,
       "r": 3.4,
       "passable": true
     },
     {
       "id": "prop_26",
       "kind": "TREE",
-      "x": 11.3,
+      "x": 7.3,
       "z": 147.9,
       "r": 3.4,
       "passable": true
@@ -2114,27 +2073,19 @@
       "hpMax": 1350
     },
     {
-      "anchorId": "castle_wall_2",
-      "kind": "WALL",
-      "side": "DEFENDER",
-      "x": -9.9,
-      "z": 51.3,
-      "hpMax": 1350
-    },
-    {
       "anchorId": "castle_tower_0",
       "kind": "TOWER",
       "side": "DEFENDER",
-      "x": -18.2,
-      "z": 46.4,
+      "x": -9.9,
+      "z": 51.3,
       "hpMax": 2350
     },
     {
       "anchorId": "castle_gate_0",
       "kind": "GATE",
       "side": "DEFENDER",
-      "x": -24.2,
-      "z": 38.9,
+      "x": -21.2,
+      "z": 42.7,
       "material": "WOOD",
       "states": [
         "CLOSED",
@@ -2142,6 +2093,14 @@
         "BROKEN"
       ],
       "hpMax": 1150
+    },
+    {
+      "anchorId": "castle_wall_2",
+      "kind": "WALL",
+      "side": "DEFENDER",
+      "x": -24.2,
+      "z": 38.9,
+      "hpMax": 1350
     },
     {
       "anchorId": "castle_wall_3",
@@ -2152,12 +2111,18 @@
       "hpMax": 1350
     },
     {
-      "anchorId": "castle_wall_4",
-      "kind": "WALL",
+      "anchorId": "castle_gate_1",
+      "kind": "GATE",
       "side": "DEFENDER",
-      "x": -24.1,
-      "z": 20.5,
-      "hpMax": 1350
+      "x": -23.9,
+      "z": 19.5,
+      "material": "WOOD",
+      "states": [
+        "CLOSED",
+        "OPEN",
+        "BROKEN"
+      ],
+      "hpMax": 1150
     },
     {
       "anchorId": "castle_tower_1",
@@ -2168,7 +2133,7 @@
       "hpMax": 2350
     },
     {
-      "anchorId": "castle_wall_5",
+      "anchorId": "castle_wall_4",
       "kind": "WALL",
       "side": "DEFENDER",
       "x": -12.9,
@@ -2176,18 +2141,12 @@
       "hpMax": 1350
     },
     {
-      "anchorId": "castle_gate_1",
-      "kind": "GATE",
+      "anchorId": "castle_wall_5",
+      "kind": "WALL",
       "side": "DEFENDER",
       "x": -3.4,
       "z": 3.1,
-      "material": "WOOD",
-      "states": [
-        "CLOSED",
-        "OPEN",
-        "BROKEN"
-      ],
-      "hpMax": 1150
+      "hpMax": 1350
     },
     {
       "anchorId": "castle_wall_6",
@@ -2214,19 +2173,11 @@
       "hpMax": 1350
     },
     {
-      "anchorId": "castle_wall_8",
-      "kind": "WALL",
-      "side": "DEFENDER",
-      "x": 20.6,
-      "z": 26.7,
-      "hpMax": 1350
-    },
-    {
       "anchorId": "castle_gate_2",
       "kind": "GATE",
       "side": "DEFENDER",
-      "x": 20,
-      "z": 35.7,
+      "x": 20.8,
+      "z": 21.9,
       "material": "WOOD",
       "states": [
         "CLOSED",
@@ -2239,9 +2190,23 @@
       "anchorId": "castle_tower_3",
       "kind": "TOWER",
       "side": "DEFENDER",
+      "x": 20,
+      "z": 35.7,
+      "hpMax": 2350
+    },
+    {
+      "anchorId": "castle_gate_3",
+      "kind": "GATE",
+      "side": "DEFENDER",
       "x": 16.6,
       "z": 44.5,
-      "hpMax": 2350
+      "material": "WOOD",
+      "states": [
+        "CLOSED",
+        "OPEN",
+        "BROKEN"
+      ],
+      "hpMax": 1150
     }
   ],
   "mobs": [
