@@ -2154,22 +2154,6 @@
         ],
         [
           25,
-          -49
-        ],
-        [
-          27,
-          -49
-        ],
-        [
-          27,
-          -51
-        ],
-        [
-          31,
-          -51
-        ],
-        [
-          31,
           -53
         ],
         [
@@ -3794,24 +3778,16 @@
           53
         ],
         [
-          -3,
+          1,
           53
         ],
         [
-          -3,
-          55
-        ],
-        [
-          -5,
-          55
-        ],
-        [
-          -5,
-          57
+          1,
+          59
         ],
         [
           -3,
-          57
+          59
         ],
         [
           -3,
@@ -4699,23 +4675,23 @@
     {
       "id": "prop_0",
       "kind": "TREE",
-      "x": -69,
+      "x": -73,
       "z": -83.6,
       "r": 2.5,
       "passable": true
     },
     {
       "id": "prop_1",
-      "kind": "ROCK",
-      "x": -55.8,
+      "kind": "TREE",
+      "x": -63.8,
       "z": -84.4,
-      "r": 2.6,
+      "r": 3.2,
       "passable": true
     },
     {
       "id": "prop_2",
       "kind": "TREE",
-      "x": -63.9,
+      "x": -67.9,
       "z": -80.2,
       "r": 2.2,
       "passable": true
@@ -4723,23 +4699,23 @@
     {
       "id": "prop_3",
       "kind": "TREE",
-      "x": -68.8,
-      "z": -75.4,
+      "x": -64.8,
+      "z": -79.4,
       "r": 2.6,
       "passable": true
     },
     {
       "id": "prop_4",
       "kind": "ROCK",
-      "x": 143.3,
-      "z": -23.1,
+      "x": 151.3,
+      "z": -27.1,
       "r": 3.2,
       "passable": true
     },
     {
       "id": "prop_5",
       "kind": "ROCK",
-      "x": 147.2,
+      "x": 143.2,
       "z": -19.7,
       "r": 2.7,
       "passable": true
@@ -4747,55 +4723,55 @@
     {
       "id": "prop_6",
       "kind": "ROCK",
-      "x": 143.3,
-      "z": -16.1,
+      "x": 151.3,
+      "z": -20.1,
       "r": 3,
       "passable": true
     },
     {
       "id": "prop_7",
-      "kind": "ROCK",
-      "x": 144,
-      "z": -12.9,
-      "r": 2.7,
+      "kind": "TREE",
+      "x": 152,
+      "z": -16.9,
+      "r": 3.2,
       "passable": true
     },
     {
       "id": "prop_8",
-      "kind": "ROCK",
-      "x": 143.7,
-      "z": -7.6,
-      "r": 2.4,
+      "kind": "TREE",
+      "x": 151.7,
+      "z": -11.6,
+      "r": 2.9,
       "passable": true
     },
     {
       "id": "prop_9",
-      "kind": "TREE",
-      "x": 148,
+      "kind": "ROCK",
+      "x": 144,
       "z": -7.6,
-      "r": 3.5,
+      "r": 2.9,
       "passable": true
     },
     {
       "id": "prop_10",
       "kind": "TREE",
-      "x": 152.1,
+      "x": 148.1,
       "z": -4.8,
       "r": 2.8,
       "passable": true
     },
     {
       "id": "prop_11",
-      "kind": "TREE",
-      "x": 148.7,
+      "kind": "ROCK",
+      "x": 144.7,
       "z": 3.1,
-      "r": 3.9,
+      "r": 3.2,
       "passable": true
     },
     {
       "id": "prop_12",
       "kind": "ROCK",
-      "x": 143.4,
+      "x": 139.4,
       "z": 40.3,
       "r": 2.3,
       "passable": true
@@ -4803,23 +4779,23 @@
     {
       "id": "prop_13",
       "kind": "ROCK",
-      "x": 151.2,
+      "x": 147.2,
       "z": 51.1,
       "r": 1.8,
       "passable": true
     },
     {
       "id": "prop_14",
-      "kind": "TREE",
-      "x": -51.1,
-      "z": 68,
-      "r": 2.4,
+      "kind": "ROCK",
+      "x": -31.1,
+      "z": 64,
+      "r": 2,
       "passable": true
     },
     {
       "id": "prop_15",
       "kind": "ROCK",
-      "x": 0.9,
+      "x": -3.1,
       "z": 76.2,
       "r": 3.1,
       "passable": true
@@ -4827,15 +4803,15 @@
     {
       "id": "prop_16",
       "kind": "TREE",
-      "x": -7.2,
-      "z": 79.9,
+      "x": 152.8,
+      "z": 75.9,
       "r": 3.9,
       "passable": true
     },
     {
       "id": "prop_17",
       "kind": "ROCK",
-      "x": 0.6,
+      "x": -3.4,
       "z": 81,
       "r": 2.4,
       "passable": true
@@ -4843,7 +4819,7 @@
     {
       "id": "prop_18",
       "kind": "ROCK",
-      "x": 140.9,
+      "x": 136.9,
       "z": 84.3,
       "r": 2.5,
       "passable": true
@@ -4851,7 +4827,7 @@
     {
       "id": "prop_19",
       "kind": "ROCK",
-      "x": 143.7,
+      "x": 139.7,
       "z": 91.7,
       "r": 1.9,
       "passable": true
@@ -4859,7 +4835,7 @@
     {
       "id": "prop_20",
       "kind": "ROCK",
-      "x": 152.3,
+      "x": 148.3,
       "z": 95.2,
       "r": 1.9,
       "passable": true
@@ -5276,17 +5252,17 @@
   "mobs": [
     {
       "id": "mob0",
-      "kind": "WOLF",
+      "kind": "TROLL",
       "x": -84,
       "z": -68,
-      "count": 8
+      "count": 7
     },
     {
       "id": "mob1",
-      "kind": "BANDIT",
+      "kind": "HARPY",
       "x": 50,
       "z": 18,
-      "count": 9
+      "count": 8
     }
   ]
 }

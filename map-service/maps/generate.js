@@ -859,6 +859,7 @@ function castleLayout(g, G, rng, { base, atkPt, poly, half, budgetLevel, bridge,
       }
     }
   }
+  const roadGateN = gates.length;                     // doors claimed by roads (approach re-carved below)
   // EFFECTIVE RING COUNT + KEEP-RATIO (after the road-door anchor moves — R0est reads the FINAL
   // ring, so the affordability math and the sweep test always agree).
   const R0est = okAn.reduce((s, p) => s + Math.hypot(p.x - cx, p.z - cz), 0) / (okAn.length || 1);
@@ -905,6 +906,51 @@ function castleLayout(g, G, rng, { base, atkPt, poly, half, budgetLevel, bridge,
     const oz = Math.max(-half + 4, Math.min(half - 4, gp.z + ((gp.z - cz) / m) * 12));
     carveCorridor(g, G, [[cx, cz], [gp.x, gp.z], [ox, oz]], 2.0, bridge);
     disc(g, G, cellOf(G, gp.x), cellOf(G, gp.z), 7, false);
+  }
+  // ROAD–DOOR ALIGNMENT (v21 owner 2026-08-01, Grand Academy: "doors exactly where the path is …
+  // a path must never walk into a tower"): (a) every ROAD door gets its approach RE-CARVED as a
+  // clean bend through the arch — a short road leg along the door's normal, outside→arch→inside,
+  // reconnected to the surviving network on the outside; (b) then the wall line is SWEPT: any
+  // road cell hugging the wall farther than the arch zone from every door repaints to OPEN
+  // (walkability unchanged — OPEN walks the same; only the drawn path is trimmed), so no path
+  // ever visually dead-ends into masonry or runs under a tower.
+  for (const gi of gates.slice(0, roadGateN)) {
+    const gp = ring[gi];
+    const m = Math.hypot(gp.x - cx, gp.z - cz) || 1;
+    const nx2 = (gp.x - cx) / m, nz2 = (gp.z - cz) / m;
+    const outP = [gp.x + nx2 * 14, gp.z + nz2 * 14], inP = [gp.x - nx2 * 12, gp.z - nz2 * 12];
+    carvePath(g, G, [inP, [gp.x, gp.z], outP], 1.6, true);
+    let best = null, bd4 = Infinity;                    // reconnect the outside stub to the network
+    for (let rr2 = 3; rr2 <= 15 && !best; rr2 += 3) {
+      for (let a2 = 0; a2 < 16; a2++) {
+        const x = outP[0] + Math.cos((a2 / 16) * Math.PI * 2) * rr2, z = outP[1] + Math.sin((a2 / 16) * Math.PI * 2) * rr2;
+        if (Math.abs(x) > half - 3 || Math.abs(z) > half - 3) continue;
+        if (g[gIdx(G, cellOf(G, x), cellOf(G, z))] === T.ROAD) {
+          const d = Math.hypot(x - outP[0], z - outP[1]);
+          if (d < bd4) { bd4 = d; best = [x, z]; }
+        }
+      }
+    }
+    if (best) carvePath(g, G, [outP, best], 1.6, true);
+  }
+  {
+    const gatePts2 = gates.map((gi) => [ring[gi].x, ring[gi].z]);
+    const okA2 = ring.filter((p) => p.ok);
+    for (let q = 0; q < okA2.length; q++) {
+      const A = okA2[q], B = okA2[(q + 1) % okA2.length];
+      const L = Math.hypot(B.x - A.x, B.z - A.z), steps = Math.max(1, Math.round(L));
+      for (let k = 0; k <= steps; k++) {
+        const x = A.x + (B.x - A.x) * (k / steps), z = A.z + (B.z - A.z) * (k / steps);
+        if (gatePts2.some((gp2) => Math.hypot(gp2[0] - x, gp2[1] - z) < 7)) continue;
+        const cx2 = cellOf(G, x), cz2 = cellOf(G, z);
+        for (let dz = -1; dz <= 1; dz++) for (let dx = -1; dx <= 1; dx++) {
+          const nx = cx2 + dx, nz = cz2 + dz;
+          if (!inG(G, nx, nz)) continue;
+          const i = gIdx(G, nx, nz);
+          if (g[i] === T.ROAD && Math.hypot(worldOf(G, nx) - x, worldOf(G, nz) - z) <= 2.6) g[i] = T.OPEN;
+        }
+      }
+    }
   }
   // 4 corner TOWERs at the diagonals between the gates
   for (let k = 0; k < 4; k++) {
@@ -1337,7 +1383,13 @@ const PALACE_STYLES = { UW2: "drowned_bastion", ENT: "carnavale", EDU: "collegia
 // (c) the estate silhouette mask is a translucent DIMMING VEIL (terrain reads through) instead of
 // a black void; (d) NEW traverse-audit endpoint + designer overlay (headless walk sims: ground +
 // gate arches + stairs→wall-walk, green/red trails) for visual pathability audits.
-export const GEN_VERSION = 20;
+// v21 (owner 2026-08-01, Grand Academy "path walks into a tower"): ROAD–DOOR ALIGNMENT — every
+// road door's approach is RE-CARVED as a clean bend through the arch (outside→arch→inside along
+// the door's normal, reconnected to the network), and the wall line is SWEPT after both the
+// castle pass and the repair pass: road cells hugging the wall away from every arch repaint to
+// OPEN (walkability identical) — a path can only ever cross a wall at a door, never dead-end
+// into masonry or run under a tower.
+export const GEN_VERSION = 21;
 
 export function generate(parcel, params = null, designVersion = 0) {
   // designVersion is MANDATORY in every artifact (MOBA contract fix 3: it pins caches, replays,
@@ -1599,6 +1651,27 @@ export function generate(parcel, params = null, designVersion = 0) {
         states: ["CLOSED", "OPEN", "BROKEN"], x: nx2, z: nz2, hpMax: s2.hpMax };
       geo.gates.push({ at: [nx2, nz2], structureId: gid });
       disc(g, G, cellOf(G, nx2), cellOf(G, nz2), 7, false);          // apron — the arch stays clear
+    }
+    // v21 wall-line sweep, repair edition: repair-carved corridors/causeways crossing the wall
+    // away from every door repaint to OPEN on the wall band (walkability identical — only the
+    // drawn path is trimmed so it never dead-ends into masonry).
+    {
+      const gatePts3 = (geo.gates || []).map((g2) => g2.at || g2);
+      for (let q = 0; q < geo.pts.length; q++) {
+        const A = geo.pts[q], B = geo.pts[(q + 1) % geo.pts.length];
+        const L = Math.hypot(B[0] - A[0], B[1] - A[1]), steps = Math.max(1, Math.round(L));
+        for (let k = 0; k <= steps; k++) {
+          const x = A[0] + (B[0] - A[0]) * (k / steps), z = A[1] + (B[1] - A[1]) * (k / steps);
+          if (gatePts3.some((gp2) => Math.hypot(gp2[0] - x, gp2[1] - z) < 7)) continue;
+          const cx2 = cellOf(G, x), cz2 = cellOf(G, z);
+          for (let dz = -1; dz <= 1; dz++) for (let dx = -1; dx <= 1; dx++) {
+            const nx = cx2 + dx, nz = cz2 + dz;
+            if (!inG(G, nx, nz)) continue;
+            const i = gIdx(G, nx, nz);
+            if (g[i] === T.ROAD && Math.hypot(worldOf(G, nx) - x, worldOf(G, nz) - z) <= 2.6) g[i] = T.OPEN;
+          }
+        }
+      }
     }
   }
   const lanes = net.lanes.map((wp) => wp.map(([x, z]) => [r1(x), r1(z)]));

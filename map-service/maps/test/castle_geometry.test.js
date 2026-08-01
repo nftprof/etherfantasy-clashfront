@@ -196,6 +196,16 @@ function checkArtifact(label, art) {
     }
     ok(missed.length === 0 || gatePts.length >= 5,
       `${label}: R-ROAD every road through the wall has a door (${missed.length} missing: ${JSON.stringify(missed)})`);
+    // R-PATH (v21, owner "path walks into a tower"): road only ever crosses the wall at an arch —
+    // no ROAD cell hugs the wall line (≤2.4u) farther than 8u from every door.
+    let hugging = 0;
+    for (let si = 0; si < samples.length; si += 2) {
+      const [x, z] = samples[si];
+      if (!isRoad[si]) continue;
+      if (gatePts.some((g2) => Math.hypot(g2[0] - x, g2[1] - z) <= 8)) continue;
+      hugging++;
+    }
+    ok(hugging === 0, `${label}: R-PATH no road hugs the wall away from a door (${hugging} cells)`);
   }
   ok(((cg.mound && cg.mound.steps) || []).length === 0
     && !(sg.elevationTiers.tier1 || []).some((t) => t.kind === "MOUND"),

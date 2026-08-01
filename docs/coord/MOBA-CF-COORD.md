@@ -829,3 +829,15 @@ disagree). +36-check traverse test (deterministic, gates-arch-walkable, all stai
 walls solid in the audit grid). All estates + siege-test re-baked at v20; sweep 844 green.
 **MOBA note:** the same walls-solid/arches-open collision model is what the engine should enforce
 in-match; the audit endpoint is public if the engine team wants to diff against their navmesh.
+
+**2026-08-01 (4) — 🏰 GEN_VERSION 21: ROAD–DOOR ALIGNMENT ("path walks into a tower", Grand
+Academy 1020371).** Owner rule: the door sits exactly where the path meets the wall — update the
+road or move the door, never let a path run into masonry. v20 already moved road doors onto the
+crossing; v21 completes it: (a) every road door's approach is RE-CARVED as a clean bend through
+the arch (outside→arch→inside along the door's normal, hw 1.6, reconnected to the surviving road
+network outside); (b) the wall line is SWEPT after BOTH the castle pass and the post-repair pass —
+any ROAD cell hugging the wall (≤2.6u) farther than 7u from every door repaints to OPEN
+(walkability identical; only the drawn path is trimmed), so a road can only ever cross a wall at
+an arch and never dead-ends into a wall or runs under a gatehouse/drum tower. New sweep rule
+R-PATH asserts it on every castle + estate (sweep now 892 checks green); traverse audit 36 green;
+all 11 estates + siege-test re-baked at v21.
