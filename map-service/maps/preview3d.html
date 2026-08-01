@@ -342,11 +342,6 @@ if(CG)(function(){
   // ---- curtain walls ring by ring: batter + body + wall-walk crenellations (§3a) ----
   const gd=(x,z)=>gatePts.length?Math.min(...gatePts.map(g=>Math.hypot(g[0]-x,g[1]-z))):1e9;
   const GATE_R=5.5;                                  // half-width of the open passage at each gate
-  // point-in-ring test — stairs must stand INSIDE their ward (owner 2026-07-28: "stairs outside
-  // going nowhere"); shared by the parallel-fit validation below.
-  const inRingPoly=(x,z,poly)=>{let inn=false;for(let i=0,j=poly.length-1;i<poly.length;j=i++){
-    const[xi,zi]=poly[i],[xj,zj]=poly[j];
-    if((zi>z)!==(zj>z)&&x<(xj-xi)*(z-zi)/(zj-zi)+xi)inn=!inn;}return inn;};
   for(const ring of CG.rings||[]){
     const pts=ring.pts||[],H=ring.h||9;let run=0;
     // per-ring elevation: each nested ward's walls/towers/gates/stairs sit on ITS floor (yTop+lift),
@@ -357,6 +352,10 @@ if(CG)(function(){
     const gd=(x,z)=>gatePts.length?Math.min(...gatePts.map(g=>Math.hypot(g[0]-x,g[1]-z))):1e9;
     const nearGate=(x,z,d)=>gatePts.some(g=>Math.hypot(g[0]-x,g[1]-z)<d);
     const rAvg=(()=>{let s=0;for(const q of pts)s+=Math.hypot(q[0]-cx,q[1]-cz);return pts.length?s/pts.length:20;})();
+    // v18: stair placement is DATA (ring.stairs from the generator) — the kit renders it verbatim
+    // below and keeps drum towers off the landings.
+    const stairTops=(ring.stairs||[]).map(s=>s.top);
+    const nearStairTop=(x,z,d)=>stairTops.some(t=>Math.hypot(t[0]-x,t[1]-z)<d);
     for(let i=0;i<pts.length;i++){
       const p=pts[i],q=pts[(i+1)%pts.length];
       const dxw=q[0]-p[0],dzw=ZS*(q[1]-p[1]),L=Math.hypot(dxw,dzw);if(L<0.5)continue;
@@ -378,8 +377,10 @@ if(CG)(function(){
       // side, it's now looking like ladder"): thicker curtain (4.2u ≈ 3m walk) and the merlons sit
       // on the OUTER edge only — the inner top stays open as the wall-walk, with a low inner curb.
       const WT=4.2;
-      const body=putC(new THREE.Mesh(new THREE.BoxGeometry(L2+1.2,H,WT),wallM),mx,mz,H/2);body.rotation.y=ang;
-      const bat=putC(new THREE.Mesh(new THREE.BoxGeometry(L2+1.2,H*0.22,WT+1.1),wallM),mx,mz,H*0.11);bat.rotation.y=ang; // sloped footing read
+      // v18 seam fix (owner 2026-08-01 "gaps in wall please close this"): overhang 1.6u past each
+      // anchor (was 0.6) — sharp enclosure dents no longer open slits between adjacent boxes.
+      const body=putC(new THREE.Mesh(new THREE.BoxGeometry(L2+3.2,H,WT),wallM),mx,mz,H/2);body.rotation.y=ang;
+      const bat=putC(new THREE.Mesh(new THREE.BoxGeometry(L2+3.2,H*0.22,WT+1.1),wallM),mx,mz,H*0.11);bat.rotation.y=ang; // sloped footing read
       { // outward normal for this segment (away from the ring centroid) → merlons + curb offsets
         const dxa=(qx-px)/(Math.hypot(qx-px,qz-pz)||1),dza=(qz-pz)/(Math.hypot(qx-px,qz-pz)||1);
         let nx2=-dza,nz2=dxa;
@@ -398,7 +399,7 @@ if(CG)(function(){
       // the turret HUT floating above an open walk-through band: two jamb walls on the inner/outer
       // faces carry it, the two along-wall faces stay OPEN as doorways for the walk.
       const before=Math.floor(run/26);run+=L;
-      if(Math.floor(run/26)>before&&!nearGate(p[0],p[1],9)){
+      if(Math.floor(run/26)>before&&!nearGate(p[0],p[1],9)&&!nearStairTop(p[0],p[1],9)){
         const dxa2=(qx-px),dza2=(qz-pz),dl2=Math.hypot(dxa2,dza2)||1;
         let tnx=-dza2/dl2,tnz=dxa2/dl2;                       // across-wall normal at this tower
         if(tnx*(p[0]-cx)+tnz*(p[1]-cz)<0){tnx=-tnx;tnz=-tnz;}
@@ -422,8 +423,10 @@ if(CG)(function(){
     // every wall↔wall and wall↔tower miter; gate anchors are framed by the gatehouse instead. ----
     for(const p of pts){
       if(nearGate(p[0],p[1],6.5))continue;
-      const post=putC(new THREE.Mesh(new THREE.CylinderGeometry(2.5,2.9,H+1.4,8),wallM),p[0],p[1],(H+1.4)/2);
-      const cap=putC(new THREE.Mesh(new THREE.CylinderGeometry(2.9,2.9,0.9,8),wallM),p[0],p[1],H+1.7);
+      // v18: fatter posts (3.4/3.8 ≥ the 2.1u wall half-thickness at any miter angle) and NEAR-FLUSH
+      // height — a stair top may land beside a post and the walk stays continuous over it.
+      const post=putC(new THREE.Mesh(new THREE.CylinderGeometry(3.4,3.8,H+0.4,8),wallM),p[0],p[1],(H+0.4)/2);
+      const cap=putC(new THREE.Mesh(new THREE.CylinderGeometry(3.8,3.8,0.7,8),wallM),p[0],p[1],H+0.6);
     }
     // ---- gatehouses: twin towers + recessed arch + portcullis glow (§3a) ----
     for(const g of ring.gates||[]){
@@ -464,123 +467,25 @@ if(CG)(function(){
           const band=putC(new THREE.Mesh(new THREE.BoxGeometry(LEAF+0.2,0.55,1.05),ironM),lcx,lcz,yb);
           band.rotation.y=leaf.rotation.y;}
       }
-      if(ring.spiral)continue;   // tall final wall: climbed by a SPIRAL stair (built after this loop)
-      // STAIRS to the wall-walk (owner 2026-07-21 ×4): PARALLEL to the wall is the real-castle
-      // first choice — but ONLY along a straight wall stretch AT LEAST AS LONG as the flight
-      // (never across a bend, never overlapping the wall body); where no such stretch exists on
-      // that side of the gate, fall back to the PERPENDICULAR flight (straight out into the
-      // courtyard, top tread flush against the inner face at parapet height — owner-approved).
-      const bL=Math.hypot(bx,bz)||1,wdx=bx/bL,wdz=bz/bL;      // local along-wall unit
-      let ux=-wdz,uz=wdx;                                     // inner normal (toward the courtyard)
-      if(ux*(cx-gx)+uz*(cz-gz)<0){ux=-ux;uz=-uz;}
-      const STEPS=7,TREAD=1.6,SW=3.4,ALONG=13.5;              // flight sits clear of the gatehouse
-      const FLIGHT=STEPS*TREAD+0.6;                            // required straight run for parallel
-      for(const side of [1,-1]){
-        // find a straight segment on this side of the gate with ≥ FLIGHT of run beyond the
-        // gatehouse clearance — measured ON the segment (so the flight can never span a bend)
-        let par=null;
-        for(let i2=0;i2<pts.length&&!par;i2++){
-          const p2=pts[i2],q2=pts[(i2+1)%pts.length];
-          const sdx=q2[0]-p2[0],sdz=q2[1]-p2[1],sL=Math.hypot(sdx,sdz);if(sL<FLIGHT)continue;
-          const dx2=sdx/sL,dz2=sdz/sL;
-          if(Math.abs(dx2*wdx+dz2*wdz)<0.92)continue;          // not the same straight as the gate wall
-          const t0=(gx-p2[0])*dx2+(gz-p2[1])*dz2;              // gate's along-parameter on this segment
-          const dirS=Math.sign(dx2*wdx+dz2*wdz)*side;          // travel sign on this segment for this side
-          const a0=t0+dirS*ALONG, a1=t0+dirS*(ALONG+FLIGHT);   // flight span on the segment
-          if(Math.min(a0,a1)>=1.2&&Math.max(a0,a1)<=sL-1.2)par={p2,dx2,dz2,a0,dirS};
-        }
-        if(par){                                               // validate: inner side at the FLIGHT + foot inside the ward
-          const alM=par.a0+par.dirS*(FLIGHT/2);
-          const smx=par.p2[0]+par.dx2*alM,smz=par.p2[1]+par.dz2*alM;
-          let vx3=-par.dz2,vz3=par.dx2;
-          if(vx3*(cx-smx)+vz3*(cz-smz)<0){vx3=-vx3;vz3=-vz3;}  // judged at the flight, NOT the gate (far segments flipped outside)
-          const ffx=par.p2[0]+par.dx2*par.a0+vx3*(2.1+SW/2),ffz=par.p2[1]+par.dz2*par.a0+vz3*(2.1+SW/2);
-          if(!inRingPoly(ffx,ffz,pts))par=null;else{par.nx3=vx3;par.nz3=vz3;}
-        }
-        if(par){                                               // PARALLEL: hug the inner face
-          const nx3=par.nx3,nz3=par.nz3;
-          const aW=Math.atan2(-ZS*par.dz2,par.dx2);
-          const SWITCH_H=9;                                    // taller ⇒ a SWITCHBACK (return) stair
-          if(H<=SWITCH_H){                                     // single straight flight
-            for(let st=0;st<STEPS;st++){
-              const fr=(st+1)/STEPS,al=par.a0+par.dirS*(st*TREAD+TREAD/2);
-              const sx=par.p2[0]+par.dx2*al+nx3*(2.1+SW/2),
-                    sz=par.p2[1]+par.dz2*al+nz3*(2.1+SW/2);
-              const step=putC(new THREE.Mesh(new THREE.BoxGeometry(TREAD+0.12,H*fr,SW),wallM),sx,sz,H*fr/2);
-              step.rotation.y=aW;}
-          }else{
-            // SWITCHBACK (owner 2026-07-21: tall walls "need real stairs, not straight-up larger
-            // steps"): flight 1 climbs 0→H/2 along the wall at inner offset A; a landing; flight 2
-            // RETURNS the other way, one stair-width further in, H/2→top flush to the wall-walk.
-            const offA=2.1+SW/2, offB=offA+SW+0.5;
-            for(let f=0;f<2;f++){
-              const off=f?offB:offA, dir=f?-par.dirS:par.dirS, a0f=par.a0+(f?par.dirS*(STEPS*TREAD):0);
-              for(let st=0;st<STEPS;st++){
-                const boxH=f*(H/2)+(H/2)*(st+1)/STEPS, al=a0f+dir*(st*TREAD+TREAD/2);
-                const sx=par.p2[0]+par.dx2*al+nx3*off, sz=par.p2[1]+par.dz2*al+nz3*off;
-                const step=putC(new THREE.Mesh(new THREE.BoxGeometry(TREAD+0.12,boxH,SW),wallM),sx,sz,boxH/2);
-                step.rotation.y=aW;}}
-            const alL=par.a0+par.dirS*(STEPS*TREAD+0.8);       // landing at the turn
-            const lx=par.p2[0]+par.dx2*alL+nx3*(offA+SW/2+0.25),lz=par.p2[1]+par.dz2*alL+nz3*(offA+SW/2+0.25);
-            const land=putC(new THREE.Mesh(new THREE.BoxGeometry(SW+1,H/2,SW*2+1),wallM),lx,lz,H/4);land.rotation.y=aW;
-          }
-        }else{                                                 // PERPENDICULAR fallback (small rings)
-          // The flight must fit the WARD GAP — never reach the next wall in (owner 2026-07-21).
-          // Cap the run to gapIn (clearance to the inner ring) and to the courtyard diameter;
-          // compress treads (steeper) on tiny rings; switchback for tall short-gap walls.
-          const cap=Math.min(rAvg*1.7-2.7,((ring.gapIn||99)-3));
-          const maxRun=Math.max(3.5,cap);
-          // ANCHOR TO THE REAL WALL (same rule as the siege data layer, owner 2026-07-28): project
-          // the along-walked point onto the NEAREST wall segment and build down ITS inner normal —
-          // the old gate-tangent walk drifted off curved rings (stairs floating off / outside).
-          const px0=gx+wdx*side*ALONG,pz0=gz+wdz*side*ALONG;
-          let bq=null,bd3=Infinity;
-          for(let i3=0;i3<pts.length;i3++){
-            const A3=pts[i3],B3=pts[(i3+1)%pts.length];
-            const abx=B3[0]-A3[0],abz=B3[1]-A3[1],L32=abx*abx+abz*abz||1;
-            const t3=Math.max(0,Math.min(1,((px0-A3[0])*abx+(pz0-A3[1])*abz)/L32));
-            const qx=A3[0]+abx*t3,qz=A3[1]+abz*t3,d3=Math.hypot(px0-qx,pz0-qz);
-            if(d3<bd3){bd3=d3;bq={qx,qz,ux:abx/(Math.sqrt(L32)||1),uz:abz/(Math.sqrt(L32)||1)};}
-          }
-          let pux=-bq.uz,puz=bq.ux;
-          if(pux*(cx-bq.qx)+puz*(cz-bq.qz)<0){pux=-pux;puz=-puz;}
-          const pAng=Math.atan2(-ZS*bq.uz,bq.ux);
-          if(H<=9||maxRun>=STEPS*TREAD){                       // one straight flight fits
-            const tread2=Math.min(TREAD,maxRun/STEPS);
-            for(let st=0;st<STEPS;st++){
-              const fr=(st+1)/STEPS,dOut=2.1+0.6+(STEPS-1-st)*tread2;
-              const step=putC(new THREE.Mesh(new THREE.BoxGeometry(SW,H*fr,tread2+0.12),wallM),bq.qx+pux*dOut,bq.qz+puz*dOut,H*fr/2);
-              step.rotation.y=pAng;}
-          }else{                                               // tall + tight ⇒ switchback across the wall
-            const tread2=Math.min(TREAD,maxRun/STEPS);
-            for(let f=0;f<2;f++){
-              const alongOff=f?SW+0.5:0;
-              for(let st=0;st<STEPS;st++){
-                const boxH=f*(H/2)+(H/2)*(st+1)/STEPS;
-                const dOut=2.1+0.6+(f?st:(STEPS-1-st))*tread2;   // f0 climbs inward, f1 returns outward
-                const bx2=bq.qx+bq.ux*alongOff, bz2=bq.qz+bq.uz*alongOff;
-                const step=putC(new THREE.Mesh(new THREE.BoxGeometry(SW,boxH,tread2+0.12),wallM),bx2+pux*dOut,bz2+puz*dOut,boxH/2);
-                step.rotation.y=pAng;}}
-          }
-        }
-      }
     }
-    // SPIRAL STAIR (owner 2026-07-21: the tall final wall is climbed by steps that WRAP around it —
-    // "walk around the wall so stairs spiral around the wall to get up, then the tower"). Steps hug
-    // the inner face and climb continuously from the gate around the ring to the wall-walk.
-    if(ring.spiral){
-      const dense=[];
-      for(let i=0;i<pts.length;i++){const a=pts[i],b=pts[(i+1)%pts.length];const seg=Math.hypot(b[0]-a[0],b[1]-a[1]);const n=Math.max(1,Math.round(seg/1.5));for(let k=0;k<n;k++){const t=k/n;dense.push([a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t]);}}
-      const g0=(ring.gates&&ring.gates[0])?(ring.gates[0].at||ring.gates[0]):pts[0];
-      let gi=0,gbd=Infinity;for(let i=0;i<dense.length;i++){const d=Math.hypot(dense[i][0]-g0[0],dense[i][1]-g0[1]);if(d<gbd){gbd=d;gi=i;}}
-      const RISE=0.6,nS=Math.min(dense.length-1,Math.ceil(H/RISE));
-      for(let k=0;k<nS;k++){
-        const idx=(gi+k)%dense.length,pc=dense[idx],pn=dense[(idx+1)%dense.length];
-        const tx=pn[0]-pc[0],tz=pn[1]-pc[1],tl=Math.hypot(tx,tz)||1;
-        let nx=-tz/tl,nz=tx/tl;if(nx*(cx-pc[0])+nz*(cz-pc[1])<0){nx=-nx;nz=-nz;}
-        const y=Math.min(H,(k+1)*RISE),off=2.1+1.7;
-        const step=putC(new THREE.Mesh(new THREE.BoxGeometry(3.0,y,2.0),wallM),pc[0]+nx*off,pc[1]+nz*off,y/2);
-        step.rotation.y=Math.atan2(-ZS*tz,tx);}
+    // ---- STAIRS FROM DATA (v18, owner 2026-08-01: "we only spec two types of stairs —
+    // perpendicular to the inner wall onto the wall top, or along the inner side of the wall
+    // ending at a walkable part of the wall or a tower"). Every flight comes VERBATIM from
+    // ring.stairs (generator computeStairs): wall clearance, in-ward feet, tower avoidance and
+    // ward-gap run caps are all guaranteed at the DATA layer, so the kit only extrudes each
+    // foot→top line as rising treads. No renderer-side stair derivation remains (the spiral and
+    // the per-gate parallel/perpendicular builders are retired — that drift class is gone). ----
+    for(const s of ring.stairs||[]){
+      const [fx,fz]=s.foot,[tx,tz]=s.top;
+      const dxs=tx-fx,dzs=tz-fz,Ls=Math.hypot(dxs,dzs)||1;
+      const aS=Math.atan2(-ZS*dzs,dxs);
+      const nSt=Math.max(5,Math.min(12,Math.round(H/1.5)));
+      const tread=Ls/nSt;
+      for(let st=0;st<nSt;st++){
+        const t=(st+0.5)/nSt, hh=H*(st+1)/nSt;
+        const step=putC(new THREE.Mesh(new THREE.BoxGeometry(tread+0.12,hh,3.4),wallM),fx+dxs*t,fz+dzs*t,hh/2);
+        step.rotation.y=aS;
+      }
     }
   }
   // ---- the KEEP: tiers climb, corner turrets, roof + banner — the silhouette (§1 rule 3) ----

@@ -740,7 +740,7 @@ function castleLayout(g, G, rng, { base, atkPt, poly, half, budgetLevel, bridge,
   const needR = RING_INNER_R + (ringN - 1) * ringGap + 6;   // outer radius fits the walkable core + all wards
   const Rbase = Math.max(35 + rng() * 15, needR);
   const Rx = Math.min(Rbase, avail), Rz = Math.min(Rbase * (0.9 + rng() * 0.18), avail);
-  const n = 14 + Math.floor(rng() * 5);                   // 14–18 ring anchors ⇒ 8–12 WALLs after the 2 GATEs + 4 TOWERs
+  const n = 14 + Math.floor(rng() * 5);                   // 14–18 ring anchors ⇒ 6–12 WALLs after the 2–4 GATEs + 4 TOWERs
   const rot = rng() * Math.PI * 2;
   const ring = [];
   for (let i = 0; i < n; i++) {
@@ -791,12 +791,29 @@ function castleLayout(g, G, rng, { base, atkPt, poly, half, budgetLevel, bridge,
     }
     return bi;
   };
-  // gates: toward the attacker approach + the opposite side (two opposed doors)
+  // TREES OUT OF THE CASTLE (owner 2026-08-01, estate 1071728 — a tree blocking a gate arch):
+  // the whole walled interior is lived-in ground. Clear every FOREST/ROCK cell inside the outer
+  // ring polygon to OPEN — no props bake there (sampleProps reads the grid) and the walk grid
+  // opens with it. Pure grid writes, no rng — call order untouched.
+  {
+    const ringPoly = ring.filter((p) => p.ok).map((p) => [p.x, p.z]);
+    if (ringPoly.length >= 3) {
+      for (let zc = 0; zc < G; zc++) for (let xc = 0; xc < G; xc++) {
+        const i = gIdx(G, xc, zc);
+        if (g[i] !== T.FOREST && g[i] !== T.ROCK) continue;
+        if (pointInPoly(worldOf(G, xc), worldOf(G, zc), ringPoly)) g[i] = T.OPEN;
+      }
+    }
+  }
+  // GATE COUNT LADDER (owner 2026-08-01, parcel 21010920077 "no outside castle wall gate"): the
+  // OUTERMOST wall carries ringN+1 doors (KEEP 2 / CASTLE 3 / PALACE 4), evenly spread from the
+  // attacker approach — inner wards get their own, fewer, doors in concentricRings.
   const aAtk = Math.atan2(atkPt.z - cz, atkPt.x - cx);
   const taken = new Set();
   const gates = [];
-  for (const want of [aAtk, aAtk + Math.PI]) {
-    const gi = nearestOk(want, taken);
+  const gateWant = Math.min(4, ringN + 1);
+  for (let k = 0; k < gateWant; k++) {
+    const gi = nearestOk(aAtk + (k * Math.PI * 2) / gateWant, taken);
     if (gi >= 0) { taken.add(gi); gates.push(gi); }
   }
   // ground prep: a thin wall-walk band along the ring (anchors stand on walkable ground)
@@ -806,13 +823,17 @@ function castleLayout(g, G, rng, { base, atkPt, poly, half, budgetLevel, bridge,
   }
   // courtyard: cleared OPEN (the defended base; the 22 u build-spot ring fits inside)
   disc(g, G, cellOf(G, cx), cellOf(G, cz), Math.max(12, (Math.min(Rx, Rz) - 8) / CELL_M));
-  // gate openings: courtyard → gate → ~12 u beyond the wall line
+  // gate openings: courtyard → gate → ~12 u beyond the wall line. The apron disc keeps every
+  // arch clear of tree canopy from OUTSIDE the wall too (owner 2026-08-01 — the corridor alone
+  // was narrower than a mature TREE prop's radius, so a cell just off the path could still
+  // barge the doorway).
   for (const gi of gates) {
     const gp = ring[gi];
     const m = Math.hypot(gp.x - cx, gp.z - cz) || 1;
     const ox = Math.max(-half + 4, Math.min(half - 4, gp.x + ((gp.x - cx) / m) * 12));
     const oz = Math.max(-half + 4, Math.min(half - 4, gp.z + ((gp.z - cz) / m) * 12));
     carveCorridor(g, G, [[cx, cz], [gp.x, gp.z], [ox, oz]], 2.0, bridge);
+    disc(g, G, cellOf(G, gp.x), cellOf(G, gp.z), 7, false);
   }
   // 4 corner TOWERs at the diagonals between the gates
   for (let k = 0; k < 4; k++) {
@@ -835,17 +856,23 @@ function castleLayout(g, G, rng, { base, atkPt, poly, half, budgetLevel, bridge,
   // CASTLE-ARCHITECTURE-SPEC §5: the geometry block the shared renderer extrudes CONTINUOUS
   // crenellated curtain walls from (the structures above stay the HP/collision truth — every ring
   // vertex maps onto a structure anchor).
-  const geom = { pts: ring.filter((p) => p.ok).map((p) => [p.x, p.z]), gates: gateInfo, keepAt: [r1(cx), r1(cz)] };
+  const geom = { pts: ring.filter((p) => p.ok).map((p) => [p.x, p.z]), gates: gateInfo, keepAt: [r1(cx), r1(cz)],
+    towers: ring.filter((p) => p.ok && p.tower).map((p) => [p.x, p.z]) };   // stair tops steer clear of these (v18)
   return { structures: out, geom };
 }
 
-// STAIR ACCESS POINTS AS DATA (MOBA contract fix 2, 2026-07-21): the sim needs the legal
-// ground↔parapet transition points and the visual kit must not derive placement independently —
-// this is the ONE source both consume. Mirrors the owner-locked size ladder: PARALLEL hugging a
-// straight wall stretch at least one flight long, else PERPENDICULAR into the courtyard (run may
-// pass the ring radius, never the diameter — treads compress on tiny rings). foot = ground entry,
-// top = parapet landing (flush at wall-walk height).
-function computeStairs(pts, gates, base) {
+// STAIR ACCESS POINTS AS DATA (MOBA contract fix 2, 2026-07-21; v18 owner 2026-08-01: "we only
+// spec two types of stairs — perpendicular to the inner wall onto the wall's top surface, or
+// along the inner side of the wall ending at a part of the wall or a tower you can walk into"):
+// the sim needs the legal ground↔parapet transition points and the visual kit must not derive
+// placement independently — this is the ONE source both consume, and since v18 renderers draw
+// these flights VERBATIM (no renderer-side stair derivation at all — the drift class is gone).
+// PARALLEL hugs a straight wall stretch at least one flight long; else PERPENDICULAR descends
+// the wall's inner normal into the ward. foot = ground entry, top = parapet landing (flush).
+// towers[] = anchor points a top may NOT land within 5u of (a drum/corner tower would swallow
+// the landing); runCap bounds the perpendicular run so an inner-ward flight never crosses the
+// NEXT ring's wall line (callers pass the ward's actual clearance).
+function computeStairs(pts, gates, base, towers = [], runCap = Infinity) {
   const STEPS = 7, TREAD = 1.6, ALONG = 13.5, FLIGHT = STEPS * TREAD + 0.6;
   const cx = base.x, cz = base.z, out = [], fb = new Map();   // fb = per-gate safe perpendicular fallback
   const rAvg = pts.reduce((s, q) => s + Math.hypot(q[0] - cx, q[1] - cz), 0) / (pts.length || 1);
@@ -880,7 +907,7 @@ function computeStairs(pts, gates, base) {
         }
         let nx2 = -best.abz / best.L, nz2 = best.abx / best.L;      // inner normal of the REAL segment
         if (nx2 * (cx - best.qx) + nz2 * (cz - best.qz) < 0) { nx2 = -nx2; nz2 = -nz2; }
-        const maxRun = Math.max(3.5, rAvg * 1.7 - 2.7), tread2 = Math.min(TREAD, maxRun / STEPS);
+        const maxRun = Math.max(3.5, Math.min(rAvg * 1.7 - 2.7, runCap)), tread2 = Math.min(TREAD, maxRun / STEPS);
         return { gate: gi, side, mode: "PERPENDICULAR",
           foot: [r1(best.qx + nx2 * (2.7 + (STEPS - 1) * tread2)), r1(best.qz + nz2 * (2.7 + (STEPS - 1) * tread2))],
           top: [r1(best.qx + nx2 * 2.7), r1(best.qz + nz2 * 2.7)] };
@@ -935,9 +962,26 @@ function computeStairs(pts, gates, base) {
     }
     return true;
   };
-  const kept = out.filter(clearOfWalls);
+  // v18: a top that lands inside a drum/corner tower's footprint isn't walkable-onto — reject
+  // candidates within 5u of a tower anchor (the per-gate perpendicular fallback stays exempt:
+  // parapet reachability wins, and renderers skip drums near data stair tops).
+  const clearOfTowers = (s) => towers.every((t) => Math.hypot(s.top[0] - t[0], s.top[1] - t[1]) >= 5);
+  const kept = out.filter((s) => clearOfWalls(s) && clearOfTowers(s));
   for (let gi = 0; gi < gates.length; gi++)
-    if (!kept.some((s) => s.gate === gi) && fb.has(gi)) kept.push(fb.get(gi));
+    if (!kept.some((s) => s.gate === gi) && fb.has(gi)) {
+      const s = fb.get(gi);
+      // a deeply dented ward can leave even the safe fallback's foot outside the polygon —
+      // compress the run toward the wall until the foot stands inside (steeper treads beat an
+      // out-of-ward foot; R-ST3).
+      if (!pointInPoly(s.foot[0], s.foot[1], pts)) {
+        const dx = s.foot[0] - s.top[0], dz = s.foot[1] - s.top[1];
+        for (const f of [0.75, 0.55, 0.4, 0.28]) {
+          const fx = r1(s.top[0] + dx * f), fz = r1(s.top[1] + dz * f);
+          if (pointInPoly(fx, fz, pts)) { s.foot = [fx, fz]; break; }
+        }
+      }
+      kept.push(s);
+    }
   return kept;
 }
 
@@ -983,15 +1027,20 @@ function concentricRings(geom, T2, poly) {
   // PER-ANCHOR ward spacing (owner 2026-07-28, Grand Exchange: "some parts merged — no gap between
   // walls"): inner rings were UNIFORM scaled copies, so wherever the outer ring is locally dented or
   // small the ward collapsed below one wall thickness. Build each inner ring from the PREVIOUS ring
-  // per anchor: follow the uniform target where roomy, but never closer than WARD_MIN centerline-to-
-  // centerline (4.2u wall + walkable room), floored at the keep footprint.
-  const WARD_MIN = 10;
+  // per anchor: follow the uniform target where roomy, but never closer than wardMin centerline-to-
+  // centerline, floored at the keep footprint. FULL ward = 12 (v18, owner 2026-08-01: "the distance
+  // between walls should be at least 1 stair's width + some margin") = 4.2u wall thickness + 3.4u
+  // stair width + ~4.4u margin of clear ground. On footprints too small to hold every ward at 12
+  // (story-override palaces on LARGE estates), the minimum scales down to what the radius budget
+  // (R0 → keep foot, split over N−1 wards) can honestly afford — floored at 8.5 so wards always
+  // read as distinct walls with stair room; NEVER ring-count reduction (rank = ring count, v15).
+  const wardMin = Math.max(8.5, Math.min(12, (R0 - RING_KEEP_FOOT) / Math.max(1, N - 1)));
   const ptsArr = [outer];
   for (let ri = 1; ri < N; ri++) {
     const sRatio = (R0 - ri * gap) / ((R0 - (ri - 1) * gap) || 1);
     ptsArr.push(ptsArr[ri - 1].map(([x, z]) => {
       const dx = x - kx, dz = z - kz, r = Math.hypot(dx, dz) || 1;
-      let rNew = Math.max(RING_KEEP_FOOT, Math.min(r * sRatio, r - WARD_MIN));
+      let rNew = Math.max(RING_KEEP_FOOT, Math.min(r * sRatio, r - wardMin));
       // the parcel polygon is not star-shaped around the keep — a radial step inward can EXIT
       // through a notch; keep pulling inward until the anchor is back inside.
       if (poly && poly.length >= 3)                       // may dent BELOW the keep-foot floor: an
@@ -1003,7 +1052,7 @@ function concentricRings(geom, T2, poly) {
   // on some maps"): the per-anchor radial rule bounds anchor↔anchor spacing, but after dents and
   // polygon pulls an inner-ring SEGMENT can still cut close to the outer ring at a DIFFERENT angle.
   // Push every inner anchor further inward until it clears the outer ring's whole POLYLINE by
-  // WARD_MIN (processed outer→inner so each consecutive pair settles).
+  // wardMin (processed outer→inner so each consecutive pair settles).
   const segDist = (px, pz, ringPts) => {
     let best = Infinity;
     for (let i = 0; i < ringPts.length; i++) {
@@ -1018,10 +1067,14 @@ function concentricRings(geom, T2, poly) {
     for (const p of ptsArr[ri]) {
       for (let it = 0; it < 24; it++) {
         const d = segDist(p[0], p[1], ptsArr[ri - 1]);
-        if (d >= WARD_MIN - 0.01) break;
+        if (d >= wardMin - 0.01) break;
         const dx = p[0] - kx, dz = p[1] - kz, r = Math.hypot(dx, dz) || 1;
-        let rNew = r - Math.max(1, WARD_MIN - d + 0.4);
-        if (rNew < 2) break;
+        let rNew = r - Math.max(1, wardMin - d + 0.4);
+        // v18 (Vault-Palace): the wardMin push never crushes a ward below the keep footprint —
+        // an innermost ring collapsed to an unwalkable blob is worse than a locally tight ward.
+        // Only the POLYGON pull below may dent deeper (an in-parcel dent beats an OOB wall).
+        if (rNew < RING_KEEP_FOOT) rNew = RING_KEEP_FOOT;
+        if (rNew >= r - 0.01) break;
         if (poly && poly.length >= 3)
           while (rNew > 2 && !pointInPoly(kx + (dx / r) * rNew, kz + (dz / r) * rNew, poly)) rNew -= 1.5;
         if (rNew < 2) break;
@@ -1033,29 +1086,45 @@ function concentricRings(geom, T2, poly) {
   for (let ri = 0; ri < N; ri++) {
     const targetR = R0 - ri * gap;                                 // ri=0 outer … ri=N-1 = Rin (walkable)
     const pts = ptsArr[ri];
-    // OWNER 2026-07-21 simplification: NO ward elevation/ramps (lift=0 — flat interior, only the
-    // OUTER wall keeps its motte). A 2-ring CASTLE is just a bigger outer circle, SAME wall height,
-    // no new mechanism. A 3-ring PALACE makes ONLY the FINAL (innermost) wall taller, climbed by a
-    // SPIRAL stair that wraps around it (spiral:true) — the two outer walls stay standard height.
+    // OWNER 2026-07-21 simplification: NO ward elevation/ramps (lift=0 — flat interior). A 2-ring
+    // CASTLE is just a bigger outer circle, SAME wall height, no new mechanism. A 3-ring PALACE
+    // makes ONLY the FINAL (innermost) wall taller. v18 (owner 2026-08-01): the SPIRAL stair is
+    // RETIRED — only the two spec'd stair types exist, so the tall final wall is climbed by the
+    // same standard flights (renderers just draw more/steeper treads from the same data).
     const isFinalTall = (N >= 3 && ri === N - 1);
     const h = isFinalTall ? T2.wallH + 7 : T2.wallH;
     const gapIn = r1(ri < N - 1
       ? Math.min(...pts.map(([x, z], j) => { const q = ptsArr[ri + 1][j]; return Math.hypot(x - q[0], z - q[1]); }))
       : targetR - RING_KEEP_FOOT);                                 // ACTUAL min clearance to the next ward
     let gates;
-    if (ri === 0) gates = geom.gates;                              // outer keeps its two opposed doors
+    if (ri === 0) gates = geom.gates;                              // outer doors come from castleLayout (ringN+1 of them)
     else {
+      // GATE COUNT LADDER, inner wards (owner 2026-08-01): each ward inward carries one door
+      // fewer than the one outside it, floored at 2 (PALACE 4/3/2, CASTLE 3/2) — evenly spread
+      // from a staggered base angle so there is never a straight run to the keep.
       const g0 = geom.gates[0] ? (geom.gates[0].at || geom.gates[0]) : [kx, kz + 1];
-      const wantA = Math.atan2(g0[1] - kz, g0[0] - kx) + ri * 2.2;  // stagger each ward's gate
-      let best = pts[0], bd = Infinity;
-      for (const pt of pts) {
-        const a = Math.atan2(pt[1] - kz, pt[0] - kx);
-        const d = Math.abs(Math.atan2(Math.sin(a - wantA), Math.cos(a - wantA)));
-        if (d < bd) { bd = d; best = pt; }
+      const baseA = Math.atan2(g0[1] - kz, g0[0] - kx) + ri * 2.2;  // stagger each ward's doors
+      const count = Math.min(pts.length, Math.max(2, Math.min(4, N + 1 - ri)));
+      const chosen = new Set();
+      gates = [];
+      for (let k2 = 0; k2 < count; k2++) {
+        const wantA = baseA + (k2 * Math.PI * 2) / count;
+        let best = -1, bd = Infinity;
+        for (let pi = 0; pi < pts.length; pi++) {
+          if (chosen.has(pi)) continue;
+          const a = Math.atan2(pts[pi][1] - kz, pts[pi][0] - kx);
+          const d = Math.abs(Math.atan2(Math.sin(a - wantA), Math.cos(a - wantA)));
+          if (d < bd) { bd = d; best = pi; }
+        }
+        if (best >= 0) { chosen.add(best); gates.push({ at: pts[best] }); }
       }
-      gates = [{ at: best }];
     }
-    rings.push({ pts, h, gates, lift: 0, tier: ri, gapIn, ...(isFinalTall ? { spiral: true } : {}) });
+    // PER-RING STAIRS AS DATA (v18): every ring computes its own flights with the full guard set
+    // (wall clearance, in-ward foot, tower-top avoidance, run capped to the ward's ACTUAL
+    // clearance so a flight never crosses the next wall line). Renderers draw these verbatim.
+    const stairs = computeStairs(pts, gates, { x: kx, z: kz },
+      ri === 0 ? (geom.towers || []) : [], Math.max(4.5, gapIn - 3));
+    rings.push({ pts, h, gates, lift: 0, tier: ri, gapIn, stairs });
   }
   // NO MOUND AT ALL (owner 2026-07-27, supersedes the earlier outer-motte ruling): the castle sits
   // FLAT on the existing land. moundSteps stays in the schema (renderers read steps[0].raise ?? 0,
@@ -1097,7 +1166,15 @@ const PALACE_STYLES = { UW2: "drowned_bastion", ENT: "carnavale", EDU: "collegia
 // and every stair foot must be inside its ward polygon. v17 = SEGMENT-LEVEL ward clearance — every
 // inner-ring anchor is pushed until it clears the outer ring's whole polyline by WARD_MIN (the
 // per-anchor radial rule alone still let dented segments graze at other angles) — owner 2026-07-29.
-export const GEN_VERSION = 17;
+// v18 (owner 2026-08-01 castle tour round 2): (a) STAIRS AS DATA PER RING — every ring carries its
+// own computeStairs flights (wall clearance + in-ward foot + tower-top avoidance + run capped to
+// the ward's actual clearance) and renderers draw them VERBATIM (renderer-side stair derivation
+// retired — the drift class is gone); only the two spec'd stair types exist, the SPIRAL is
+// RETIRED; (b) ward min 10→12 — full 12u, scaling down to 8.5u only where the footprint cannot afford it ("at least 1 stair width + margin" between walls); (c) GATE COUNT
+// LADDER — outer wall ringN+1 doors (KEEP 2 / CASTLE 3 / PALACE 4), each ward inward one fewer,
+// floored at 2; (d) TREES OUT OF THE CASTLE — FOREST/ROCK cells inside the outer ring clear to
+// OPEN and every gate gets a 14u apron disc (no canopy barging a door arch).
+export const GEN_VERSION = 18;
 
 export function generate(parcel, params = null, designVersion = 0) {
   // designVersion is MANDATORY in every artifact (MOBA contract fix 3: it pins caches, replays,
@@ -1474,7 +1551,7 @@ export function generate(parcel, params = null, designVersion = 0) {
       out.wallRing = { pts: gpts, h: T2s.wallH, gates: gz2.map((g2) => g2.at || g2), ringN: CRs.rings.length };
       out.gates = structures.filter((s2) => /^castle_gate_/.test(s2.anchorId))
         .map((s2) => ({ id: s2.anchorId, at: [s2.x, s2.z], hp: s2.hpMax, material: "WOOD", states: ["CLOSED", "OPEN", "BROKEN"] }));
-      out.stairs = computeStairs(gpts, gz2, base);
+      out.stairs = CRs.rings[0].stairs;      // v18: ONE stair source — the ring's own data flights
       if (bridge.reg.length) {          // nearest world-road bridge = the drawbridge/causeway site
         let bb = bridge.reg[0], bd = Infinity;
         for (const c of bridge.reg) { const d2 = Math.hypot(c[0] - base.x, c[1] - base.z); if (d2 < bd) { bd = d2; bb = c; } }

@@ -757,3 +757,26 @@ sweep: estate maps whose castle point hugs the polygon edge (Vault-Palace 311008
 nearby interior point (deterministic depth search; base + def_base follow the keep). All 11 estate
 maps + siege-test regenerated at v17 and shipped; on-box parcel registries self-heal on view
 (SEED_V0 auto-reseed at the version bump).
+
+**2026-08-01 — 🏰 GEN_VERSION 18: stairs are PER-RING DATA (spiral retired), gate-count ladder,
+ward min 12u, trees cleared from castle interiors.** Owner castle-tour round 2 (five reports + two
+follow-ups). The structural fix: the drift class where the preview derived its own stairs is GONE —
+`concentricRings` now computes `stairs[]` PER RING via `computeStairs` (wall clearance, in-ward
+feet, tower-top avoidance, run capped to the ward's ACTUAL clearance so a flight never crosses the
+next wall line) and the CF preview draws each foot→top flight VERBATIM; the per-gate parallel/
+perpendicular renderer builders AND the spiral stair are deleted (owner: "we only spec two types of
+stairs"). `siege.stairs` === ring 0's array (one source). Also: (a) GATE LADDER (owner, parcel
+21010920077 had no outer door): outermost wall = ringN+1 doors (KEEP 2 / CASTLE 3 / PALACE 4), each
+ward inward one fewer, floored at 2, staggered — sweep asserts exact counts; (b) WARD MIN 10→12u
+("at least 1 stair width + margin"), per-anchor + segment-level; scales down honestly (floor 8.5)
+only where a story-override palace footprint can't afford 12, and the push never crushes a ward
+below the 14u keep footprint (the Vault-Palace inner ring was collapsing to a 4u blob); (c) R-TREE
+(owner, estate 1071728 tree barging a door arch): FOREST/ROCK cells inside the outer ring clear to
+OPEN + a 14u apron disc at every gate — no tree inside any castle, nothing blocks an arch;
+(d) render-kit seams: wall boxes overhang 1.6u past anchors (was 0.6) + fat near-flush corner posts
+(3.4/3.8u) — no more wall slits; drum towers skip within 9u of data stair tops. **MOBA renderer
+note:** consume `castleGeom.rings[].stairs[]` verbatim exactly like the CF kit now does — never
+derive stair placement. siege-test (now 3 outer doors, CASTLE tier) + all 11 estate maps
+regenerated at v18 (sync-moba-maps delivers to the engine branch); sweep = 751 checks green
+(37 parcels + 11 estates, new rules R-GATE/R-STD/R-TREE). Spec: CASTLE-STAIRS-AND-WALLS-SPEC.md
+rewritten at v18.

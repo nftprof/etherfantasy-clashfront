@@ -79,68 +79,68 @@
           "kind": "WALL_WALK",
           "ring": [
             [
-              -76.1,
-              -32.8
+              -76,
+              -32.7
             ],
             [
-              -70.7,
-              -34.1
+              -70.8,
+              -34.2
             ],
             [
-              -66,
-              -31.8
+              -65.4,
+              -33.5
             ],
             [
-              -61.7,
-              -29.5
+              -60.6,
+              -30.8
             ],
             [
               -57.3,
-              -26.4
+              -26.5
             ],
             [
-              -53.8,
-              -21.3
+              -55.5,
+              -21.2
             ],
             [
-              -53.8,
-              -14.8
+              -55.2,
+              -15.3
             ],
             [
-              -57.7,
-              -9.8
+              -59.1,
+              -10.9
             ],
             [
-              -63.5,
-              -7.6
+              -63.6,
+              -7.7
             ],
             [
               -68.8,
-              -5.6
+              -6.2
             ],
             [
-              -73.9,
-              -7.8
+              -74.2,
+              -6.9
             ],
             [
-              -79.1,
-              -9.4
+              -79,
+              -9.6
             ],
             [
-              -82.7,
-              -13.8
+              -82.3,
+              -14
             ],
             [
-              -84.4,
+              -83.8,
               -19.2
             ],
             [
-              -85.5,
-              -25.5
+              -83.9,
+              -24.9
             ],
             [
-              -81.4,
-              -30.2
+              -80.4,
+              -29.4
             ]
           ],
           "lift": 0,
@@ -218,8 +218,12 @@
       "h": 9,
       "gates": [
         [
-          -48.9,
-          -2
+          -42.8,
+          -22.1
+        ],
+        [
+          -77.3,
+          2.2
         ],
         [
           -89.9,
@@ -232,8 +236,8 @@
       {
         "id": "castle_gate_0",
         "at": [
-          -48.9,
-          -2
+          -42.8,
+          -22.1
         ],
         "hp": 1150,
         "material": "WOOD",
@@ -245,6 +249,20 @@
       },
       {
         "id": "castle_gate_1",
+        "at": [
+          -77.3,
+          2.2
+        ],
+        "hp": 1150,
+        "material": "WOOD",
+        "states": [
+          "CLOSED",
+          "OPEN",
+          "BROKEN"
+        ]
+      },
+      {
+        "id": "castle_gate_2",
         "at": [
           -89.9,
           -37.7
@@ -261,28 +279,15 @@
     "stairs": [
       {
         "gate": 0,
-        "side": 1,
-        "mode": "PERPENDICULAR",
-        "foot": [
-          -66.9,
-          -8.5
-        ],
-        "top": [
-          -62.7,
-          0.2
-        ]
-      },
-      {
-        "gate": 0,
         "side": -1,
         "mode": "PERPENDICULAR",
         "foot": [
-          -54.3,
-          -17
+          -54.1,
+          -27.2
         ],
         "top": [
-          -46,
-          -12.1
+          -51.1,
+          -31.1
         ]
       },
       {
@@ -290,8 +295,21 @@
         "side": 1,
         "mode": "PERPENDICULAR",
         "foot": [
-          -71.3,
-          -33.1
+          -81.6,
+          -7.8
+        ],
+        "top": [
+          -85.8,
+          -5.1
+        ]
+      },
+      {
+        "gate": 2,
+        "side": 1,
+        "mode": "PERPENDICULAR",
+        "foot": [
+          -73.7,
+          -37
         ],
         "top": [
           -76.3,
@@ -299,12 +317,12 @@
         ]
       },
       {
-        "gate": 1,
+        "gate": 2,
         "side": -1,
         "mode": "PERPENDICULAR",
         "foot": [
-          -83.7,
-          -29.7
+          -88.3,
+          -29.4
         ],
         "top": [
           -93.3,
@@ -476,14 +494,6 @@
     {
       "id": "forest_1",
       "kind": "FOREST",
-      "x": -88,
-      "z": -44,
-      "r": 2,
-      "passable": false
-    },
-    {
-      "id": "forest_2",
-      "kind": "FOREST",
       "footprint": [
         [
           -121,
@@ -505,7 +515,7 @@
       "passable": false
     },
     {
-      "id": "forest_3",
+      "id": "forest_2",
       "kind": "FOREST",
       "x": 12,
       "z": 24,
@@ -513,7 +523,7 @@
       "passable": false
     },
     {
-      "id": "forest_4",
+      "id": "forest_3",
       "kind": "FOREST",
       "x": 24,
       "z": 38,
@@ -521,7 +531,7 @@
       "passable": false
     },
     {
-      "id": "forest_5",
+      "id": "forest_4",
       "kind": "FOREST",
       "footprint": [
         [
@@ -560,7 +570,7 @@
       "passable": false
     },
     {
-      "id": "forest_6",
+      "id": "forest_5",
       "kind": "FOREST",
       "x": 26,
       "z": 40,
@@ -568,7 +578,7 @@
       "passable": false
     },
     {
-      "id": "forest_7",
+      "id": "forest_6",
       "kind": "FOREST",
       "footprint": [
         [
@@ -642,75 +652,75 @@
         [
           87,
           51
+        ]
+      ],
+      "passable": false
+    },
+    {
+      "id": "forest_7",
+      "kind": "FOREST",
+      "footprint": [
+        [
+          139,
+          67
+        ],
+        [
+          137,
+          67
+        ],
+        [
+          137,
+          73
+        ],
+        [
+          135,
+          73
+        ],
+        [
+          135,
+          77
+        ],
+        [
+          143,
+          77
+        ],
+        [
+          143,
+          75
+        ],
+        [
+          151,
+          75
+        ],
+        [
+          151,
+          73
+        ],
+        [
+          147,
+          73
+        ],
+        [
+          147,
+          71
+        ],
+        [
+          143,
+          71
+        ],
+        [
+          143,
+          69
+        ],
+        [
+          139,
+          69
         ]
       ],
       "passable": false
     },
     {
       "id": "forest_8",
-      "kind": "FOREST",
-      "footprint": [
-        [
-          139,
-          67
-        ],
-        [
-          137,
-          67
-        ],
-        [
-          137,
-          73
-        ],
-        [
-          135,
-          73
-        ],
-        [
-          135,
-          77
-        ],
-        [
-          143,
-          77
-        ],
-        [
-          143,
-          75
-        ],
-        [
-          151,
-          75
-        ],
-        [
-          151,
-          73
-        ],
-        [
-          147,
-          73
-        ],
-        [
-          147,
-          71
-        ],
-        [
-          143,
-          71
-        ],
-        [
-          143,
-          69
-        ],
-        [
-          139,
-          69
-        ]
-      ],
-      "passable": false
-    },
-    {
-      "id": "forest_9",
       "kind": "FOREST",
       "footprint": [
         [
@@ -751,7 +761,7 @@
     {
       "id": "prop_0",
       "kind": "TREE",
-      "x": -107.3,
+      "x": -103.3,
       "z": -47.1,
       "r": 2.3,
       "passable": true
@@ -759,17 +769,9 @@
     {
       "id": "prop_1",
       "kind": "TREE",
-      "x": -116.1,
+      "x": -112.1,
       "z": -44.6,
       "r": 2.6,
-      "passable": true
-    },
-    {
-      "id": "prop_2",
-      "kind": "TREE",
-      "x": 135.3,
-      "z": 76.6,
-      "r": 2.2,
       "passable": true
     }
   ],
@@ -1143,27 +1145,11 @@
       "hpMax": 1350
     },
     {
-      "anchorId": "castle_tower_1",
-      "kind": "TOWER",
-      "side": "DEFENDER",
-      "x": -42.8,
-      "z": -22.1,
-      "hpMax": 2350
-    },
-    {
-      "anchorId": "castle_wall_4",
-      "kind": "WALL",
-      "side": "DEFENDER",
-      "x": -43.4,
-      "z": -11.3,
-      "hpMax": 1350
-    },
-    {
       "anchorId": "castle_gate_0",
       "kind": "GATE",
       "side": "DEFENDER",
-      "x": -48.9,
-      "z": -2,
+      "x": -42.8,
+      "z": -22.1,
       "material": "WOOD",
       "states": [
         "CLOSED",
@@ -1171,6 +1157,22 @@
         "BROKEN"
       ],
       "hpMax": 1150
+    },
+    {
+      "anchorId": "castle_tower_1",
+      "kind": "TOWER",
+      "side": "DEFENDER",
+      "x": -43.4,
+      "z": -11.3,
+      "hpMax": 2350
+    },
+    {
+      "anchorId": "castle_wall_4",
+      "kind": "WALL",
+      "side": "DEFENDER",
+      "x": -48.9,
+      "z": -2,
+      "hpMax": 1350
     },
     {
       "anchorId": "castle_wall_5",
@@ -1189,15 +1191,21 @@
       "hpMax": 2350
     },
     {
-      "anchorId": "castle_wall_6",
-      "kind": "WALL",
+      "anchorId": "castle_gate_1",
+      "kind": "GATE",
       "side": "DEFENDER",
       "x": -77.3,
       "z": 2.2,
-      "hpMax": 1350
+      "material": "WOOD",
+      "states": [
+        "CLOSED",
+        "OPEN",
+        "BROKEN"
+      ],
+      "hpMax": 1150
     },
     {
-      "anchorId": "castle_wall_7",
+      "anchorId": "castle_wall_6",
       "kind": "WALL",
       "side": "DEFENDER",
       "x": -86.4,
@@ -1205,7 +1213,7 @@
       "hpMax": 1350
     },
     {
-      "anchorId": "castle_wall_8",
+      "anchorId": "castle_wall_7",
       "kind": "WALL",
       "side": "DEFENDER",
       "x": -91.7,
@@ -1221,7 +1229,7 @@
       "hpMax": 2350
     },
     {
-      "anchorId": "castle_wall_9",
+      "anchorId": "castle_wall_8",
       "kind": "WALL",
       "side": "DEFENDER",
       "x": -96,
@@ -1229,7 +1237,7 @@
       "hpMax": 1350
     },
     {
-      "anchorId": "castle_gate_1",
+      "anchorId": "castle_gate_2",
       "kind": "GATE",
       "side": "DEFENDER",
       "x": -89.9,
@@ -1247,9 +1255,9 @@
     {
       "id": "mob0",
       "kind": "WYRM",
-      "x": -60,
-      "z": -40,
-      "count": 8
+      "x": 46,
+      "z": 30,
+      "count": 9
     }
   ]
 }

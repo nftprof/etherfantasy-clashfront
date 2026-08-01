@@ -13,6 +13,11 @@
 //   R-ST1   no stair intersects a wall (body ≥3.2u clear outside the 4.5u top-contact zone).
 //   R-ST2   every stair top lands on the wall-walk platform; ≥1 stair exists.
 //   R-ST3   every stair foot stands INSIDE its ward.
+//   R-STD   (v18) stairs are PER-RING DATA: every ring carries its own stairs[] and each flight
+//           passes R-ST1/2/3 against ITS OWN ring; siege.stairs === ring0's stairs.
+//   R-GATE  (v18) gate-count ladder: outer wall min(4, ringN+1) doors, each ward inward one
+//           fewer, floored at 2.
+//   R-TREE  (v18) no TREE/ROCK prop deep inside the walled interior, none within 10u of a gate.
 //   R-FLAT  flat on the land: no moundSteps, no siege MOUND tier.
 import fs from "node:fs";
 import path from "node:path";
@@ -89,21 +94,43 @@ function checkArtifact(label, art) {
   ok(wardOK, `${label}: R-GAP per-anchor ward spacing ≥8u (no merged walls)`);
   ok(segOK, `${label}: R-GAP segment-level ward clearance ≥7.5u (no wall grazes another at ANY angle)`);
   ok((sg.gates || []).length >= 1, `${label}: R-AR at least one gate arch`);
-  const ring0 = cg.rings[0].pts, stairs = sg.stairs || [];
-  ok(stairs.length >= 1, `${label}: R-ST2 at least one stair (parapet reachable)`);
-  let clearOK = true, topOK = true;
-  for (const s of stairs) {
-    const [fx, fz] = s.foot, [tx, tz] = s.top, L = Math.hypot(tx - fx, tz - fz) || 1;
-    for (let d = 0; d <= L - 4.5; d += 1.0) {
-      const px = fx + ((tx - fx) / L) * d, pz = fz + ((tz - fz) / L) * d;
-      if (polyD(px, pz, ring0) < 3.2) clearOK = false;
+  // R-GATE (v18 owner ladder): outer wall min(4, ringN+1) doors; each ward inward one fewer, ≥2.
+  const N = cg.rings.length;
+  ok((cg.rings[0].gates || []).length === Math.min(4, N + 1),
+    `${label}: R-GATE outer wall carries ${Math.min(4, N + 1)} doors (got ${(cg.rings[0].gates || []).length})`);
+  for (let ri = 1; ri < N; ri++)
+    ok((cg.rings[ri].gates || []).length === Math.max(2, Math.min(4, N + 1 - ri)),
+      `${label}: R-GATE ward ${ri} carries ${Math.max(2, Math.min(4, N + 1 - ri))} doors (got ${(cg.rings[ri].gates || []).length})`);
+  // R-ST1/2/3 + R-STD (v18): EVERY ring's own stairs[] verified against ITS OWN wall polyline.
+  let clearOK = true, topOK = true, footOK = true, stairsOK = true;
+  for (const r of cg.rings) {
+    const stairs = r.stairs || [];
+    if (!stairs.length) stairsOK = false;
+    for (const s of stairs) {
+      const [fx, fz] = s.foot, [tx, tz] = s.top, L = Math.hypot(tx - fx, tz - fz) || 1;
+      for (let d = 0; d <= L - 4.5; d += 1.0) {
+        const px = fx + ((tx - fx) / L) * d, pz = fz + ((tz - fz) / L) * d;
+        if (polyD(px, pz, r.pts) < 3.2) clearOK = false;
+      }
+      if (polyD(s.top[0], s.top[1], r.pts) > 6.5) topOK = false;
+      if (!inPoly(s.foot[0], s.foot[1], r.pts)) footOK = false;
     }
-    if (polyD(s.top[0], s.top[1], ring0) > 6.5) topOK = false;
   }
-  ok(clearOK, `${label}: R-ST1 no stair intersects a wall (body ≥3.2u clear)`);
-  ok(topOK, `${label}: R-ST2 every stair top lands on the wall-walk platform`);
-  ok(stairs.every((s) => inPoly(s.foot[0], s.foot[1], ring0)),
-    `${label}: R-ST3 every stair foot stands INSIDE its ward (never outside the wall)`);
+  ok(stairsOK, `${label}: R-STD every ring carries its own stairs[] (parapet reachable per ward)`);
+  ok(clearOK, `${label}: R-ST1 no stair intersects a wall (body ≥3.2u clear, per ring)`);
+  ok(topOK, `${label}: R-ST2 every stair top lands on its own wall-walk platform`);
+  ok(footOK, `${label}: R-ST3 every stair foot stands INSIDE its ward (never outside the wall)`);
+  ok(JSON.stringify(sg.stairs || []) === JSON.stringify(cg.rings[0].stairs || []),
+    `${label}: R-STD siege.stairs IS the outer ring's data flights (one source)`);
+  // R-TREE (v18, owner 2026-08-01 "clear all trees inside the castle / one barges a door"):
+  // no TREE/ROCK prop deep inside the walled interior (>2.5u in — cell-jitter overhang at the
+  // wall line is fine) and none within 10u of any door arch.
+  const ring0 = cg.rings[0].pts;
+  const treeBad = (art.obstacles || []).filter((o) =>
+    (o.kind === "TREE" || o.kind === "ROCK")
+    && ((inPoly(o.x, o.z, ring0) && polyD(o.x, o.z, ring0) > 2.5)
+        || (sg.gates || []).some((g2) => Math.hypot(g2.at[0] - o.x, g2.at[1] - o.z) < 10)));
+  ok(treeBad.length === 0, `${label}: R-TREE walled interior + door aprons clear of trees/rocks (${treeBad.length} inside)`);
   ok(((cg.mound && cg.mound.steps) || []).length === 0
     && !(sg.elevationTiers.tier1 || []).some((t) => t.kind === "MOUND"),
     `${label}: R-FLAT flat on the land (no moundSteps, no siege MOUND tier)`);
