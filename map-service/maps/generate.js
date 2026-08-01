@@ -21,6 +21,7 @@ import { makeRng } from "../sim/rng.js";
 import { clampParams, budgetFor, ARCHETYPES, PALETTES, LANDMARKS, BARRIER_KINDS, T, CELL_M, gIdx, inG, cellOf, worldOf, isBlocked, b64, pointInPoly } from "./schema.js";
 import { archetypes } from "./archetypes.js";
 import { validateAndRepair, snapOpen, snapOpenOrDrop, erode, routesToCenter } from "./validate.js";
+import { groundReachability } from "./traverse.js";
 import { executeFeatures } from "./features.js";
 import { loadWorldField, featuresForParcel, fitToArena } from "./worldfield.js";
 import { ruinLore, RUIN_TYPES } from "./chronicle.js";
@@ -843,6 +844,9 @@ function castleLayout(g, G, rng, { base, atkPt, poly, half, budgetLevel, bridge,
     for (const [s0, s1] of runs.slice(0, 5)) {          // hard cap — a wall is not a sieve
       const mi = ((Math.round((s0 + s1) / 2) % samples.length) + samples.length) % samples.length;
       const mid = samples[mi];
+      // GATE SPACING (v20, Grand Exchange "outer wall entirely broken"): doors ≥20u apart — two
+      // openings closer than that erase the whole wall stretch between their gatehouses.
+      if (gates.some((g3) => Math.hypot(ring[g3].x - mid[0], ring[g3].z - mid[1]) < 20)) continue;
       let bi = -1, bd2 = Infinity;
       for (let i = 0; i < n; i++) {
         if (!ring[i].ok || taken.has(i)) continue;
@@ -872,8 +876,16 @@ function castleLayout(g, G, rng, { base, atkPt, poly, half, budgetLevel, bridge,
   // the ladder; the spread fills from the attacker approach.
   const gateWant = Math.min(4, nEff + 1);
   for (let k = 0; k < gateWant && gates.length < gateWant; k++) {
-    const gi = nearestOk(aAtk + (k * Math.PI * 2) / gateWant, taken);
-    if (gi >= 0) { taken.add(gi); gates.push(gi); }
+    const want = aAtk + (k * Math.PI * 2) / gateWant;
+    let bi = -1, bd3 = Infinity;
+    for (let i = 0; i < n; i++) {
+      if (!ring[i].ok || taken.has(i)) continue;
+      // v20 gate spacing: never open a door within 20u of another (the wall between vanishes)
+      if (gates.some((g3) => Math.hypot(ring[g3].x - ring[i].x, ring[g3].z - ring[i].z) < 20)) continue;
+      const d = angDiff(ring[i].a, want);
+      if (d < bd3) { bd3 = d; bi = i; }
+    }
+    if (bi >= 0) { taken.add(bi); gates.push(bi); }
   }
   // ground prep: a thin wall-walk band along the ring (anchors stand on walkable ground)
   for (let i = 0; i < n; i++) {
@@ -932,8 +944,21 @@ function castleLayout(g, G, rng, { base, atkPt, poly, half, budgetLevel, bridge,
 // towers[] = anchor points a top may NOT land within 5u of (a drum/corner tower would swallow
 // the landing); runCap bounds the perpendicular run so an inner-ward flight never crosses the
 // NEXT ring's wall line (callers pass the ward's actual clearance).
-function computeStairs(pts, gates, base, towers = [], runCap = Infinity) {
+function computeStairs(pts, gates, base, towers = [], runCap = Infinity, ground = null) {
   const STEPS = 7, TREAD = 1.6, ALONG = 13.5, FLIGHT = STEPS * TREAD + 0.6;
+  // v20 (traverse audit finding, Bastion of Dominus): a flight's FOOT must stand on WALKABLE
+  // ground — geometry guards alone let a stair descend into moat marsh. ground = {g, G} of the
+  // final grid; 1-cell tolerance (the foot may kiss a blocked cell's edge).
+  const footOnGround = (s) => {
+    if (!ground) return true;
+    const { g, G } = ground;
+    const cx2 = cellOf(G, s.foot[0]), cz2 = cellOf(G, s.foot[1]);
+    for (const [dx, dz] of [[0, 0], [1, 0], [-1, 0], [0, 1], [0, -1]]) {
+      const nx = cx2 + dx, nz = cz2 + dz;
+      if (inG(G, nx, nz) && !isBlocked(g, gIdx(G, nx, nz))) return true;
+    }
+    return false;
+  };
   const cx = base.x, cz = base.z, out = [], fb = new Map();   // fb = per-gate safe perpendicular fallback
   const rAvg = pts.reduce((s, q) => s + Math.hypot(q[0] - cx, q[1] - cz), 0) / (pts.length || 1);
   // ---- guards (defined up front — the tight-ward parallel search below validates with them) ----
@@ -985,11 +1010,11 @@ function computeStairs(pts, gates, base, towers = [], runCap = Infinity) {
         let nx = -c.dz2, nz = c.dx2;
         const smx = c.A[0] + c.dx2 * (a0 + a1) / 2, smz = c.A[1] + c.dz2 * (a0 + a1) / 2;
         if (nx * (cx - smx) + nz * (cz - smz) < 0) { nx = -nx; nz = -nz; }
-        const off = 2.1 + 1.7;
+        const off = 2.1 + 1.7 - 0.35;   // v20: stair EMBEDS 0.35u into the wall face — touching, walkable-onto (owner 2026-08-01)
         const s = { gate: gi, side, mode: "PARALLEL",
           foot: [r1(c.A[0] + c.dx2 * a0 + nx * off), r1(c.A[1] + c.dz2 * a0 + nz * off)],
           top: [r1(c.A[0] + c.dx2 * a1 + nx * off), r1(c.A[1] + c.dz2 * a1 + nz * off)] };
-        if (clearOfWalls(s) && clearOfTowers(s)) { used.add(c.i); return s; }
+        if (clearOfWalls(s) && clearOfTowers(s) && footOnGround(s)) { used.add(c.i); return s; }
       }
     }
     return null;
@@ -1051,7 +1076,7 @@ function computeStairs(pts, gates, base, towers = [], runCap = Infinity) {
         // "inner" from the gate could flip the offset to the OUTSIDE of the wall there.
         const smx = par.A[0] + par.dx2 * (par.a0 + par.a1) / 2, smz = par.A[1] + par.dz2 * (par.a0 + par.a1) / 2;
         if (nx * (cx - smx) + nz * (cz - smz) < 0) { nx = -nx; nz = -nz; }
-        const off = 2.1 + 1.7;
+        const off = 2.1 + 1.7 - 0.35;   // v20: stair EMBEDS 0.35u into the wall face — touching, walkable-onto (owner 2026-08-01)
         out.push({ gate: gi, side, mode: "PARALLEL",
           foot: [r1(par.A[0] + par.dx2 * par.a0 + nx * off), r1(par.A[1] + par.dz2 * par.a0 + nz * off)],
           top: [r1(par.A[0] + par.dx2 * par.a1 + nx * off), r1(par.A[1] + par.dz2 * par.a1 + nz * off)] });
@@ -1068,7 +1093,7 @@ function computeStairs(pts, gates, base, towers = [], runCap = Infinity) {
   // a permissive wall-hugging parallel → STAIRLESS (the ring's other gates keep the parapet
   // reachable — a stair jammed into a wall is never emitted). Only a ring that would end up with
   // ZERO stairs accepts its least-bad fallback (reachability beats purity, and only then).
-  const kept = out.filter((s) => clearOfWalls(s) && clearOfTowers(s));
+  const kept = out.filter((s) => clearOfWalls(s) && clearOfTowers(s) && footOnGround(s));
   for (let gi = 0; gi < gates.length; gi++) {
     if (kept.some((s) => s.gate === gi)) continue;
     const ga = gates[gi].at || gates[gi];
@@ -1082,7 +1107,7 @@ function computeStairs(pts, gates, base, towers = [], runCap = Infinity) {
         if (pointInPoly(fx, fz, pts)) { s.foot = [fx, fz]; break; }
       }
     }
-    if (s && clearOfWalls(s) && clearOfTowers(s)) { kept.push(s); continue; }
+    if (s && clearOfWalls(s) && clearOfTowers(s) && footOnGround(s)) { kept.push(s); continue; }
     const p2 = mkPar2(gi, ga[0], ga[1], 1, new Set());
     if (p2) kept.push(p2);
   }
@@ -1115,7 +1140,7 @@ export const CASTLE_TIERS = {          // exported for the castle-geometry sweep
 // of geom + T2), so the siege block and castleGeom call it and always agree. Each inner ring is
 // the outer ring scaled toward the keep, with a taller wall, a climbing ward floor (`lift`), and
 // ONE staggered gate (no straight run to the keep). Returns rings[] + mound steps[].
-function concentricRings(geom, T2, poly) {
+function concentricRings(geom, T2, poly, ground = null) {
   // v19 (owner 2026-08-01, Jinjiang Citadel "either 1 ring wall or too compact"): the ring count
   // ADAPTS to the honest footprint — castleLayout computed how many full-width 12u wards this
   // castle's achieved radius affords (geom.ringNEff); the tier's ringN is the ceiling. A cramped
@@ -1230,8 +1255,20 @@ function concentricRings(geom, T2, poly) {
     // (wall clearance, in-ward foot, tower-top avoidance, run capped to the ward's ACTUAL
     // clearance so a flight never crosses the next wall line). Renderers draw these verbatim.
     const stairs = computeStairs(pts, gates, { x: kx, z: kz },
-      ri === 0 ? (geom.towers || []) : [], Math.max(4.5, gapIn - 3));
+      ri === 0 ? (geom.towers || []) : [], Math.max(4.5, gapIn - 3), ground);
     rings.push({ pts, h, gates, lift: 0, tier: ri, gapIn, stairs });
+  }
+  // STAIR FOOT REACHABILITY PRUNE (v20, traverse-audit finding on the Bastion of Dominus): a
+  // geometrically valid flight can still descend into a bailey pocket sealed off by walls + moat
+  // marsh. BFS from the courtyard over the walls-solid/arches-open model (the SAME stamping the
+  // audit uses) and drop unreachable-footed flights — unless that would leave a ring stairless
+  // (then they stay, and the audit paints them red for the designer to see).
+  if (ground) {
+    const reach = groundReachability(ground.g, ground.G, rings, [kx, kz]);
+    for (const r of rings) {
+      const kept2 = (r.stairs || []).filter((s) => reach(s.foot[0], s.foot[1]));
+      if (kept2.length) r.stairs = kept2;
+    }
   }
   // NO MOUND AT ALL (owner 2026-07-27, supersedes the earlier outer-motte ruling): the castle sits
   // FLAT on the existing land. moundSteps stays in the schema (renderers read steps[0].raise ?? 0,
@@ -1291,7 +1328,16 @@ const PALACE_STYLES = { UW2: "drowned_bastion", ENT: "carnavale", EDU: "collegia
 // line claims a gate there (cap 5); (d) KEEP-RATIO LAW — outer wall circumference ≥2–3× keep
 // (PALACE) / 1.5–2× (CASTLE); cramped castles shrink the keep (castleGeom.keep.w) to hold it;
 // (e) renderer: estate maps mask OOB to the parcel silhouette (the "square maps" fix).
-export const GEN_VERSION = 19;
+// v20 (owner 2026-08-01 castle tour round 4): (a) GATE SPACING — doors never open within 20u of
+// each other (road doors + ladder + post-repair passes all guard it; adjacent doors on the Grand
+// Exchange erased 20–35u wall stretches between their gatehouses) + the renderer clips walls
+// PER-SAMPLE (a segment near two gates keeps its middle — nothing vanishes wholesale);
+// (b) STAIRS TOUCH THE WALL — parallel flights embed 0.35u into the wall face (off 3.45) and the
+// kit extends the drawn flight 1u past the data top so the last tread lands flush INTO the wall;
+// (c) the estate silhouette mask is a translucent DIMMING VEIL (terrain reads through) instead of
+// a black void; (d) NEW traverse-audit endpoint + designer overlay (headless walk sims: ground +
+// gate arches + stairs→wall-walk, green/red trails) for visual pathability audits.
+export const GEN_VERSION = 20;
 
 export function generate(parcel, params = null, designVersion = 0) {
   // designVersion is MANDATORY in every artifact (MOBA contract fix 3: it pins caches, replays,
@@ -1534,7 +1580,7 @@ export function generate(parcel, params = null, designVersion = 0) {
       if ((geo.gates || []).length >= 5) break;                       // same hard cap as castleLayout
       const mi = ((Math.round((s0 + s1) / 2) % samples.length) + samples.length) % samples.length;
       const mid = samples[mi];
-      if ((geo.gates || []).some((g2) => { const at = g2.at || g2; return Math.hypot(at[0] - mid[0], at[1] - mid[1]) <= 16; })) continue;
+      if ((geo.gates || []).some((g2) => { const at = g2.at || g2; return Math.hypot(at[0] - mid[0], at[1] - mid[1]) <= 20; })) continue;   // v20 gate spacing
       // nearest WALL structure (never a tower/gate) converts to a door ON the road
       let bi = -1, bd2 = Infinity;
       for (let i = 0; i < structures2.length; i++) {
@@ -1710,7 +1756,7 @@ export function generate(parcel, params = null, designVersion = 0) {
     if (castleParts) {
       const gpts = castleParts.geom.pts, gz2 = castleParts.geom.gates || [];
       const T2s = CASTLE_TIERS[castle && CASTLE_TIERS[castle.kind] ? castle.kind : "KEEP"];
-      const CRs = concentricRings(castleParts.geom, T2s, poly);
+      const CRs = concentricRings(castleParts.geom, T2s, poly, { g, G });
       // NO MOUND tier (owner 2026-07-27 flat-castle ruling): castle elevation advantage comes ONLY
       // from the WALL_WALK tier2 entries below — never a motte under the ward.
       // one WALL_WALK tier2 per nested ring, climbing (inner wards outrank outer — the
@@ -1748,7 +1794,7 @@ export function generate(parcel, params = null, designVersion = 0) {
               const tier = CASTLE_TIERS[castle.kind] ? castle.kind : "KEEP";
               const T2 = CASTLE_TIERS[tier];
               const styleKey = tier === "PALACE" ? (PALACE_STYLES[zone] || "fieldstone") : "fieldstone";
-              const CR = concentricRings(castleParts.geom, T2, poly);
+              const CR = concentricRings(castleParts.geom, T2, poly, { g, G });
               return { castleGeom: {
                 tier, styleKey,
                 rings: CR.rings,

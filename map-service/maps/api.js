@@ -21,6 +21,7 @@ import { translateDirective, llmEnabled } from "./llm.js";
 import { clampParams, budgetFor } from "./schema.js";
 import { verifyToken, loginPassword } from "../lobby/auth.js";
 import { worldParcel, l3Row, l3Zone, zoneList, loadWorldField, estateList, dataRoot } from "./worldfield.js";
+import { runAudit } from "./traverse.js";
 import { landOfWallet, walletOwnsParcel, mintedSet, PARCELS_CONTRACT, ESTATE_CONTRACT } from "./nftowners.js";
 // Land mint config (distributors + size tokens) — the registry the other session delivered.
 let _landCfg = null;
@@ -521,6 +522,23 @@ async function handle(req, res, p) {
     if (m.error) return J(res, m.error === "converter_unavailable" ? 501 : 500, { ok: false, ...m });
     res.writeHead(200, { "content-type": "application/json", "cache-control": "public,max-age=31536000,immutable", "access-control-allow-origin": "*" });
     return res.end(JSON.stringify(m));
+  }
+
+  // TRAVERSABILITY AUDIT (owner 2026-08-01): headless walk sims over the artifact — the designer's
+  // ⛔ collision + 🧭 paths overlays. Public (viewing is open, same as the artifact GET).
+  if (req.method === "GET" && parcelId && action === "traverse.json") {
+    let artifact = null;
+    if (!l3Row(parcelId)) {
+      try {
+        const safe = String(parcelId).replace(/[^0-9A-Za-z_-]/g, "");
+        artifact = JSON.parse(fs.readFileSync(path.join(dataRoot(), "cf-maps/artifacts", safe + ".artifact.json"), "utf8"));
+      } catch {}
+    }
+    if (!artifact) {
+      try { ({ artifact } = reg.ensureDesign(await parcelFacts(parcelId))); } catch {}
+    }
+    if (!artifact) return J(res, 404, { ok: false, error: "no_design" });
+    return J(res, 200, { ok: true, ...runAudit(artifact) });
   }
 
   if (req.method === "GET" && parcelId) {

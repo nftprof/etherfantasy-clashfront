@@ -18,7 +18,7 @@
 <body>
 <div id="hud">loading battlefield…</div>
 <div id="north">⬆ N</div>
-<div id="hint"><button id="texBtn">🎨 grass</button>drag = orbit · wheel = zoom · right-drag = pan</div>
+<div id="hint"><button id="texBtn">🎨 grass</button><button id="colBtn">⛔ collision</button><button id="pathBtn">🧭 paths</button>drag = orbit · wheel = zoom · right-drag = pan</div>
 <div id="err"></div>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
@@ -148,9 +148,11 @@ if(!parity){const cc=cellCanvas(c=>c===T.ROAD,'rgba(120,96,58,.9)');if(cc)plane(
 // (already in the data — arena.bounds IS the estate shape) mask to a dark haze overlay so the map
 // reads as the estate's actual silhouette. Legacy path already alpha-masks its ground; this covers
 // the parity/9-layer path. Renderer-only — the MOBA engine owes the same OOB honor (coord log).
+// v20 (owner: "not sure what the black areas are"): a DIMMING VEIL, not a void — the terrain
+// beyond the estate boundary reads through, darkened, so it's clearly "outside the estate".
 if(parity&&a.arena&&a.arena.shape==="polygon"){
-  const cc=cellCanvas(c=>c===T.OOB,'rgb(14,22,34)');
-  if(cc)plane(new THREE.CanvasTexture(soften(cc,4,2)),0.55,new THREE.MeshBasicMaterial({transparent:true,depthWrite:false,opacity:0.96}));
+  const cc=cellCanvas(c=>c===T.OOB,'rgb(10,16,28)');
+  if(cc)plane(new THREE.CanvasTexture(soften(cc,4,3)),0.55,new THREE.MeshBasicMaterial({transparent:true,depthWrite:false,opacity:0.55}));
 }
 
 // ---- WATER: flat waterline surface per basin (the module dips the heightfield; the surface must
@@ -369,23 +371,27 @@ if(CG)(function(){
       const p=pts[i],q=pts[(i+1)%pts.length];
       const dxw=q[0]-p[0],dzw=ZS*(q[1]-p[1]),L=Math.hypot(dxw,dzw);if(L<0.5)continue;
       const ang=Math.atan2(-dzw,dxw);
-      // THE ENTRANCE (owner 2026-07-21 "there is no entrance — how do you enter?"): gates sit ON
-      // ring vertices, so the old midpoint-distance skip never fired and the ring rendered sealed.
-      // Clip each segment short of any gate point instead — a real ~11u opening the road passes
-      // through, framed by the gatehouse. Both ends near a gate ⇒ the segment IS the opening.
-      const dp=gd(p[0],p[1]),dq=gd(q[0],q[1]);
-      if(dp<GATE_R&&dq<GATE_R){run+=L;continue;}
-      let t0=0,t1=1;
-      if(dp<GATE_R)t0=Math.min(0.92,(GATE_R-dp)/Math.max(0.001,dq-dp));
-      if(dq<GATE_R)t1=Math.max(0.08,1-(GATE_R-dq)/Math.max(0.001,dp-dq));
+      // THE ENTRANCE (owner 2026-07-21) + SUB-RUN CLIP (v20 owner 2026-08-01 "some outer wall
+      // entirely broken or not connected"): with road doors a segment can sit near SEVERAL gates —
+      // the old endpoint clip dropped any segment whose BOTH ends were near (different!) gates,
+      // erasing 20–35u wall stretches. Clip per-sample instead: draw every stretch whose samples
+      // are ≥GATE_R from ALL gates — openings appear exactly at doors, nothing else vanishes.
+      const WT=4.2;
+      const nSm=Math.max(2,Math.ceil(L/1.2));
+      const spans=[];let c0=-1;
+      for(let si=0;si<=nSm;si++){
+        const t=si/nSm,sx=p[0]+(q[0]-p[0])*t,sz=p[1]+(q[1]-p[1])*t;
+        const clear=gd(sx,sz)>=GATE_R;
+        if(clear&&c0<0)c0=t;
+        if((!clear||si===nSm)&&c0>=0){const te=clear?t:(si-1)/nSm;if(te>c0)spans.push([c0,te]);c0=-1;}
+      }
+      for(const[t0,t1]of spans){
       const px=p[0]+(q[0]-p[0])*t0,pz=p[1]+(q[1]-p[1])*t0,
             qx=p[0]+(q[0]-p[0])*t1,qz=p[1]+(q[1]-p[1])*t1;
-      const L2=L*(t1-t0);if(L2<0.8){run+=L;continue;}
+      const L2=L*(t1-t0);if(L2<0.8)continue;
       const mx=(px+qx)/2,mz=(pz+qz)/2;
-      // WALK-WIDE wall (owner 2026-07-21: "is the wall wide enough… blocking on the wall the wrong
-      // side, it's now looking like ladder"): thicker curtain (4.2u ≈ 3m walk) and the merlons sit
-      // on the OUTER edge only — the inner top stays open as the wall-walk, with a low inner curb.
-      const WT=4.2;
+      // WALK-WIDE wall (owner 2026-07-21): thicker curtain (4.2u ≈ 3m walk); merlons OUTER edge
+      // only — the inner top stays open as the wall-walk, with a low inner curb.
       // v18 seam fix (owner 2026-08-01 "gaps in wall please close this"): overhang 1.6u past each
       // anchor (was 0.6) — sharp enclosure dents no longer open slits between adjacent boxes.
       const body=putC(new THREE.Mesh(new THREE.BoxGeometry(L2+3.2,H,WT),wallM),mx,mz,H/2);body.rotation.y=ang;
@@ -401,6 +407,7 @@ if(CG)(function(){
         const curb=putC(new THREE.Mesh(new THREE.BoxGeometry(L2+1.0,0.4,0.5),wallM),               // low inner curb
           mx-nx2*(WT/2-0.3),mz-nz2*(WT/2-0.3),H+0.2);curb.rotation.y=ang;
       }
+      }
       // ---- drum towers punctuate every ~26u of curtain run (§3a) ----
       // TWO-PART TOWER (owner 2026-07-21: "u can walk in between through the tower… build the wall
       // first, that u can walk on with guard rails, then build the hut with opening on top"): the
@@ -409,7 +416,7 @@ if(CG)(function(){
       // faces carry it, the two along-wall faces stay OPEN as doorways for the walk.
       const before=Math.floor(run/26);run+=L;
       if(Math.floor(run/26)>before&&!nearGate(p[0],p[1],9)&&!nearStairTop(p[0],p[1],9)){
-        const dxa2=(qx-px),dza2=(qz-pz),dl2=Math.hypot(dxa2,dza2)||1;
+        const dxa2=(q[0]-p[0]),dza2=(q[1]-p[1]),dl2=Math.hypot(dxa2,dza2)||1;
         let tnx=-dza2/dl2,tnz=dxa2/dl2;                       // across-wall normal at this tower
         if(tnx*(p[0]-cx)+tnz*(p[1]-cz)<0){tnx=-tnx;tnz=-tnz;}
         const twAng=Math.atan2(-ZS*dza2,dxa2);
@@ -485,7 +492,11 @@ if(CG)(function(){
     // foot→top line as rising treads. No renderer-side stair derivation remains (the spiral and
     // the per-gate parallel/perpendicular builders are retired — that drift class is gone). ----
     for(const s of ring.stairs||[]){
-      const [fx,fz]=s.foot,[tx,tz]=s.top;
+      const [fx,fz]=s.foot;let [tx,tz]=s.top;
+      // v20 (owner 2026-08-01 "stairs need to touch the wall to be able to walk on it"): the last
+      // tread centered short of `top` left a ~0.6u air gap at the wall face — extend the drawn
+      // flight 1u past the data top so the highest tread lands INTO the wall/tower body, flush.
+      {const ddx=tx-fx,ddz=tz-fz,dL=Math.hypot(ddx,ddz)||1;tx+=ddx/dL*1.0;tz+=ddz/dL*1.0;}
       const dxs=tx-fx,dzs=tz-fz,Ls=Math.hypot(dxs,dzs)||1;
       const aS=Math.atan2(-ZS*dzs,dxs);
       const nSt=Math.max(5,Math.min(12,Math.round(H/1.5)));
@@ -565,6 +576,56 @@ document.getElementById("texBtn").onclick=()=>{raw=!raw;
     else{ground.material.map=grassTex;ground.material.color.setHex(TINT);}
     ground.material.needsUpdate=true;document.getElementById("texBtn").textContent=raw?"🎨 cells":"🎨 grass";
   }};
+
+// ---- TRAVERSABILITY AUDIT overlays (owner 2026-08-01: "show me an NPC traversable audit …
+// collision boxes … pathfinding — can walk on stairs over to the wall, through gates, not through
+// walls"). Two toggles, one server-computed audit (/designs/:id/traverse.json — 100 seeded
+// headless walks over the artifact's walk model with castle walls solid + arches open):
+//   ⛔ collision — red translucent field over every cell an agent can NOT stand on (incl. walls)
+//   🧭 paths     — the walk trails: green = traversed, red = UNREACHABLE (audit failures);
+//                  cyan loops = the wall-walk network at parapet height; gold = stair links
+//                  ground↔parapet (red stair link = its foot is cut off from the courtyard).
+let audit=null,colMesh=null,pathGrp=null;
+async function loadAudit(){
+  if(audit)return audit;
+  try{audit=await fetch(`/internal/v1/designs/${encodeURIComponent(pid)}/traverse.json`).then(r=>r.ok?r.json():null);}catch(e){}
+  return audit;
+}
+const yAt=(x,z,lift)=>((typeof hAt==="function"?(hAt(x,z)||0):0))+(lift||0);
+document.getElementById("colBtn").onclick=async()=>{
+  const au=await loadAudit();if(!au){document.getElementById("colBtn").textContent="⛔ n/a";return;}
+  if(colMesh){colMesh.visible=!colMesh.visible;document.getElementById("colBtn").style.opacity=colMesh.visible?1:.5;return;}
+  const Gg=au.grid.w,bl=Uint8Array.from(atob(au.grid.blocked),c=>c.charCodeAt(0));
+  const cc=document.createElement('canvas');cc.width=cc.height=Gg;const g2=cc.getContext('2d');
+  for(let z=0;z<Gg;z++)for(let x=0;x<Gg;x++)if(bl[z*Gg+x]){g2.fillStyle='rgba(255,64,64,0.85)';g2.fillRect(x,ZS>0?z:Gg-1-z,1,1);}
+  colMesh=plane(new THREE.CanvasTexture(cc),1.1,new THREE.MeshBasicMaterial({transparent:true,opacity:.5,depthWrite:false}));
+  colMesh.renderOrder=6;document.getElementById("colBtn").style.opacity=1;
+};
+document.getElementById("pathBtn").onclick=async()=>{
+  const au=await loadAudit();if(!au){document.getElementById("pathBtn").textContent="🧭 n/a";return;}
+  if(pathGrp){pathGrp.visible=!pathGrp.visible;document.getElementById("pathBtn").style.opacity=pathGrp.visible?1:.5;return;}
+  pathGrp=new THREE.Group();
+  const mkLine=(pts3,color,op)=>{const geo=new THREE.BufferGeometry().setFromPoints(pts3.map(p=>new THREE.Vector3(p[0],p[1],p[2])));
+    const ln=new THREE.Line(geo,new THREE.LineBasicMaterial({color,transparent:true,opacity:op??.75,depthWrite:false}));pathGrp.add(ln);return ln;};
+  const w3=(x,z,y)=>{const w=world(x,z);return [w.x,y,w.z];};
+  for(const t of au.trails||[]){
+    if(t.ok&&t.wp)mkLine(t.wp.map(([x,z])=>w3(x,z,yAt(x,z)+1.0)),0x39d353,.55);
+    else{ // failed walk: a red dashed-look straight indicator from→to so the failure is visible
+      mkLine([w3(t.from[0],t.from[1],yAt(t.from[0],t.from[1])+1.6),w3(t.to[0],t.to[1],yAt(t.to[0],t.to[1])+1.6)],0xff4040,.9);
+      const mk=new THREE.Mesh(new THREE.SphereGeometry(1.6,8,6),new THREE.MeshBasicMaterial({color:0xff4040}));
+      const pw=w3(t.to[0],t.to[1],yAt(t.to[0],t.to[1])+1.6);mk.position.set(pw[0],pw[1],pw[2]);pathGrp.add(mk);
+    }
+  }
+  for(const wn of au.wallNet||[]){
+    const loop=[...wn.pts,wn.pts[0]];
+    mkLine(loop.map(([x,z])=>w3(x,z,yAt(x,z)+wn.h+0.8)),0x35d0e0,.9);
+  }
+  for(const s of au.stairLinks||[]){
+    mkLine([w3(s.foot[0],s.foot[1],yAt(s.foot[0],s.foot[1])+0.6),w3(s.top[0],s.top[1],yAt(s.top[0],s.top[1])+s.h+0.6)],s.ok?0xf5c542:0xff4040,.95);
+  }
+  scene.add(pathGrp);document.getElementById("pathBtn").style.opacity=1;
+  const st=au.stats||{};document.getElementById("pathBtn").textContent=`🧭 ${st.reached??"?"}/${st.walks??"?"}·⇑${st.stairsOk??"?"}/${st.stairs??"?"}`;
+};
 
 // HUD
 let ver=null; try{ ver=await fetch("/internal/v1/version").then(r=>r.ok?r.json():null); }catch(e){}

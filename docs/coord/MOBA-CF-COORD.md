@@ -803,3 +803,29 @@ always the estate polygon (arena.bounds, OOB-stamped terrain) — the game-rende
 never masked it; the CF designer now overlays the OOB haze so estates read as their true shape.
 **MOBA renderer owes the same OOB honor: mask/skip cells with terrain value OOB(6) — arena.bounds
 is the parcel silhouette.** All 11 estate maps + siege-test re-baked at v19.
+
+**2026-08-01 (3) — 🏰 GEN_VERSION 20: gate spacing + per-sample wall clip, stairs touch the wall,
+silhouette veil, TRAVERSE AUDIT (headless walk sims + designer overlays).** Owner castle-tour
+round 4: (a) "some outer wall entirely broken" (Grand Exchange 1001178) — road doors + ladder gates
+could open <20u apart and the kit dropped any wall segment whose both ends were near (different)
+gates, erasing 20–35u stretches; now doors keep ≥20u spacing (road pass + ladder + post-repair all
+guard it) and the kit clips walls PER-SAMPLE — openings appear exactly at doors, nothing else
+vanishes; (b) "stairs need to touch the wall to walk on it" — parallel flights embed 0.35u into
+the wall face (data off 3.45) and the kit extends every drawn flight 1u past the data top so the
+last tread lands flush INTO the wall/tower; (c) the estate silhouette mask is now a translucent
+DIMMING VEIL (owner: "not sure what the black areas are" — it was the beyond-the-estate mask at
+96% opacity; now 55%, terrain reads through); (d) NEW **TRAVERSE AUDIT** (owner: "run like 100
+simulations … show all the lines … NPC traversable audit"): `GET /internal/v1/designs/:id/
+traverse.json` runs ~100 seeded headless BFS walks over the artifact's walk model with castle
+walls SOLID + gate arches OPEN (entries→keep, every outer gate outside→courtyard, every stair
+foot←courtyard, resources, seeded roams over the main field) + the wall-walk network; designer
+gets two toggles — **⛔ collision** (red field over every non-standable cell incl. wall bodies)
+and **🧭 paths** (green traversed trails / red unreachable indicators, cyan wall-walk loops at
+parapet height, gold ground↔parapet stair links; button shows reached/walks + stairsOk/stairs).
+The audit immediately caught a REAL bug — a Bastion-of-Dominus flight descending into a bailey
+pocket sealed by walls+moat — so the generator now BFS-prunes unreachable-footed stairs using the
+SAME walls-solid model (shared `traverse.js groundReachability`; audit and generator can never
+disagree). +36-check traverse test (deterministic, gates-arch-walkable, all stair feet reachable,
+walls solid in the audit grid). All estates + siege-test re-baked at v20; sweep 844 green.
+**MOBA note:** the same walls-solid/arches-open collision model is what the engine should enforce
+in-match; the audit endpoint is public if the engine team wants to diff against their navmesh.
