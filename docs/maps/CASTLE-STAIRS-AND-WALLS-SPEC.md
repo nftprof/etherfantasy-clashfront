@@ -1,4 +1,4 @@
-# Castle stairs & walls — the ruleset (owner 2026-07-27 → 2026-08-01, GEN_VERSION 21)
+# Castle stairs & walls — the ruleset (owner 2026-07-27 → 2026-08-02, GEN_VERSION 22)
 
 *The owner's directives, made law: "stairs shouldn't intersect with the walls … stairs need a clear
 path to a platform wall … paths into the walls are arches that can have gates … most keeps should be
@@ -13,8 +13,15 @@ owner's review.*
 ## Anatomy (shared vocabulary)
 
 - **Wall body** — the curtain segment between two ring anchors: 4.2u thick, tier height
-  (KEEP 7 / CASTLE 9 / PALACE 11; the PALACE's final inner wall 18). Solid: no fire through it
-  (siege R1), no walking through it.
+  (HERO-SCALE, owner 2026-08-02: KEEP 11 / CASTLE 14 / PALACE 17; the PALACE's final inner wall
+  24 — even the lowest wall stands well over a hero, and the gate arch's clear opening is
+  0.65×wallH, `siege.wallRing.archClearH`, so no hero ducks through a door). Solid: no fire
+  through it (siege R1), no walking through it. **Collision contract (v22):** wall collision =
+  the `wallRing` POLYLINE at thickness `t` 4.2 with openings at the gates — WALL anchors are
+  vertices of that curtain (`blocking:"WALL_RING"`), TOWER structures are solid drums
+  (`blocking:"SOLID"`, r 5.4), GATE structures are DOORS (`blocking:"DOOR"`, r 5.5 — the arch is
+  PASSABLE unless the leaf is CLOSED). Engines build the navmesh from THIS; placing independent
+  solid cylinders on gate/wall anchors is what makes units orbit towers.
 - **Wall-walk platform** — the flat walkable top of the wall body. Merlons on the OUTER edge only,
   a low curb on the inner edge. This is the `WALL_WALK` siege elevation tier — the ONLY elevation
   a castle grants.

@@ -841,3 +841,24 @@ any ROAD cell hugging the wall (≤2.6u) farther than 7u from every door repaint
 an arch and never dead-ends into a wall or runs under a gatehouse/drum tower. New sweep rule
 R-PATH asserts it on every castle + estate (sweep now 892 checks green); traverse audit 36 green;
 all 11 estates + siege-test re-baked at v21.
+
+**2026-08-02 — 🏰 GEN_VERSION 22: HERO-SCALE WALLS + the collision/blocking contract (owner
+live-play findings).** (a) "Walls way too small to fit a hero underneath — you feel like you need
+to duck": wall heights ×~1.5 → **KEEP 11 / CASTLE 14 / PALACE 17 (final inner 24)**, and the gate
+arch's CLEAR opening is now 0.65×wallH (KEEP 7.2u / CASTLE 9.1 / PALACE 11.1), exported as
+`siege.wallRing.archClearH` — heroes walk through standing tall at every tier. (b) "My units are
+running in circles around towers": on the map side the likely cause is the engine treating castle
+structure anchors as uniform solid cylinders — including GATES (which then BLOCK their own arch —
+units orbit forever) and WALL anchors (phantom pillars mid-curtain). v22 makes the collision truth
+explicit IN THE DATA: every castle structure now carries `blocking` + `r` —
+  • GATE: `blocking:"DOOR"`, r 5.5 — the arch is PASSABLE unless the leaf state is CLOSED; never
+    a solid cylinder;
+  • TOWER: `blocking:"SOLID"`, r 5.4 — a real drum obstacle;
+  • WALL: `blocking:"WALL_RING"`, r 2.1 — a VERTEX of the solid curtain; collision comes from the
+    `siege.wallRing` polyline (new `t: 4.2` thickness field) with openings at `gates`, never from
+    independent cylinders at the anchors.
+**→ EF Moba / MOBA BattleEngine RAW:** please build unit pathfinding/collision from
+`wallRing{pts,t,gates,archClearH}` + per-structure `blocking/r` (mirrors the CF traverse-audit
+model — `GET /internal/v1/designs/:id/traverse.json` is public if you want to diff navmeshes).
+All 11 estates + siege-test re-baked at v22 (sync delivers to `clashfront-map-sync`); sweep 892 +
+traverse 36 green.

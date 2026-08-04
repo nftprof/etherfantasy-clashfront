@@ -965,10 +965,15 @@ function castleLayout(g, G, rng, { base, atkPt, poly, half, budgetLevel, bridge,
     if (gates.includes(i)) {
       const id = `castle_gate_${gateN++}`;
       gateInfo.push({ at: [ring[i].x, ring[i].z], structureId: id });
-      out.push({ anchorId: id, kind: "GATE", side: "DEFENDER", material: "WOOD", states: ["CLOSED", "OPEN", "BROKEN"], x: ring[i].x, z: ring[i].z, hpMax: 700 + budgetLevel * 150 });
+      // blocking contract (v22, owner "units running in circles around towers"): a GATE is a
+      // DOOR — its arch is PASSABLE unless the leaf is CLOSED; engines must never place a solid
+      // cylinder on a gate anchor. r = the arch half-width.
+      out.push({ anchorId: id, kind: "GATE", side: "DEFENDER", material: "WOOD", states: ["CLOSED", "OPEN", "BROKEN"], blocking: "DOOR", r: 5.5, x: ring[i].x, z: ring[i].z, hpMax: 700 + budgetLevel * 150 });
     }
-    else if (ring[i].tower) out.push({ anchorId: `castle_tower_${towerN++}`, kind: "TOWER", side: "DEFENDER", x: ring[i].x, z: ring[i].z, hpMax: 1600 + budgetLevel * 250 });
-    else out.push({ anchorId: `castle_wall_${wallN++}`, kind: "WALL", side: "DEFENDER", x: ring[i].x, z: ring[i].z, hpMax: 900 + budgetLevel * 150 });
+    else if (ring[i].tower) out.push({ anchorId: `castle_tower_${towerN++}`, kind: "TOWER", side: "DEFENDER", blocking: "SOLID", r: 5.4, x: ring[i].x, z: ring[i].z, hpMax: 1600 + budgetLevel * 250 });
+    // WALL anchors are VERTICES of the solid curtain (siege.wallRing, thickness t) — collision
+    // comes from the ring POLYLINE, never from independent cylinders at the anchors.
+    else out.push({ anchorId: `castle_wall_${wallN++}`, kind: "WALL", side: "DEFENDER", blocking: "WALL_RING", r: 2.1, x: ring[i].x, z: ring[i].z, hpMax: 900 + budgetLevel * 150 });
   }
   // CASTLE-ARCHITECTURE-SPEC §5: the geometry block the shared renderer extrudes CONTINUOUS
   // crenellated curtain walls from (the structures above stay the HP/collision truth — every ring
@@ -1177,9 +1182,13 @@ export const CASTLE_TIERS = {          // exported for the castle-geometry sweep
   // FLAT ON THE LAND (owner 2026-07-27: "castles do NOT need to be on an elevation — flat on the
   // existing land"): no moundRaise — the fortress sits on the existing terrain; height reads from
   // wall/keep geometry alone, and siege elevation comes ONLY from the WALL_WALK tier (never a motte).
-  PALACE: { wallH: 11, keepTiers: 3, keepH: 30, ringN: 3, wardGap: 48 },
-  CASTLE: { wallH: 9, keepTiers: 2, keepH: 22, ringN: 2, wardGap: 26 },
-  KEEP: { wallH: 7, keepTiers: 2, keepH: 16, ringN: 1, wardGap: 0 },
+  // HERO-SCALE HEIGHTS (owner 2026-08-02, from live play: "walls are way too small — a hero has
+  // to duck to walk in; make even the lowest wall at least ~1.5x bigger than a person"): heights
+  // ×~1.5 so the gate arch (clear opening = 0.65×wallH, see the render kit) always clears a hero
+  // with real headroom — KEEP 11 → 7.2u clear, CASTLE 14 → 9.1, PALACE 17 → 11.
+  PALACE: { wallH: 17, keepTiers: 3, keepH: 30, ringN: 3, wardGap: 48 },
+  CASTLE: { wallH: 14, keepTiers: 2, keepH: 22, ringN: 2, wardGap: 26 },
+  KEEP: { wallH: 11, keepTiers: 2, keepH: 18, ringN: 1, wardGap: 0 },
 };
 
 // Build the nested rings from the single outer ring the layout grew. Deterministic (pure geometry
@@ -1389,7 +1398,14 @@ const PALACE_STYLES = { UW2: "drowned_bastion", ENT: "carnavale", EDU: "collegia
 // castle pass and the repair pass: road cells hugging the wall away from every arch repaint to
 // OPEN (walkability identical) — a path can only ever cross a wall at a door, never dead-end
 // into masonry or run under a tower.
-export const GEN_VERSION = 21;
+// v22 (owner 2026-08-02, live-play findings): (a) HERO-SCALE WALLS — heights ×~1.5 (KEEP 11 /
+// CASTLE 14 / PALACE 17, final inner 24) and the render kit lifts the arch underside to 0.65×H so
+// no hero ducks through a gate; (b) BLOCKING CONTRACT — castle structures declare their collision
+// truth (GATE = DOOR, arch passable unless the leaf is CLOSED, r 5.5; TOWER = SOLID r 5.4; WALL
+// anchors = vertices of the solid wallRing polyline t 4.2, never independent cylinders) +
+// siege.wallRing gains t/archClearH — engines build the navmesh from THIS instead of guessing
+// (the "units running in circles around towers" fix on the map side).
+export const GEN_VERSION = 22;
 
 export function generate(parcel, params = null, designVersion = 0) {
   // designVersion is MANDATORY in every artifact (MOBA contract fix 3: it pins caches, replays,
@@ -1648,7 +1664,7 @@ export function generate(parcel, params = null, designVersion = 0) {
       const nx2 = r1(mid[0]), nz2 = r1(mid[1]);
       if (pi >= 0) { geo.pts[pi][0] = nx2; geo.pts[pi][1] = nz2; }
       structures2[bi] = { anchorId: gid, kind: "GATE", side: "DEFENDER", material: "WOOD",
-        states: ["CLOSED", "OPEN", "BROKEN"], x: nx2, z: nz2, hpMax: s2.hpMax };
+        states: ["CLOSED", "OPEN", "BROKEN"], blocking: "DOOR", r: 5.5, x: nx2, z: nz2, hpMax: s2.hpMax };
       geo.gates.push({ at: [nx2, nz2], structureId: gid });
       disc(g, G, cellOf(G, nx2), cellOf(G, nz2), 7, false);          // apron — the arch stays clear
     }
@@ -1835,7 +1851,8 @@ export function generate(parcel, params = null, designVersion = 0) {
       // one WALL_WALK tier2 per nested ring, climbing (inner wards outrank outer — the
       // strictly-above-tier over-wall rule makes defense-in-depth work for free).
       for (const rr of CRs.rings) out.elevationTiers.tier2.push({ kind: "WALL_WALK", ring: rr.pts, lift: rr.lift, tier: rr.tier });
-      out.wallRing = { pts: gpts, h: T2s.wallH, gates: gz2.map((g2) => g2.at || g2), ringN: CRs.rings.length };
+      out.wallRing = { pts: gpts, h: T2s.wallH, t: 4.2, archClearH: r1(T2s.wallH * 0.65),
+        gates: gz2.map((g2) => g2.at || g2), ringN: CRs.rings.length };
       out.gates = structures.filter((s2) => /^castle_gate_/.test(s2.anchorId))
         .map((s2) => ({ id: s2.anchorId, at: [s2.x, s2.z], hp: s2.hpMax, material: "WOOD", states: ["CLOSED", "OPEN", "BROKEN"] }));
       out.stairs = CRs.rings[0].stairs;      // v18: ONE stair source — the ring's own data flights

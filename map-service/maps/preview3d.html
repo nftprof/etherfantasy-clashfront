@@ -456,11 +456,13 @@ if(CG)(function(){
         const roof=new THREE.Mesh(new THREE.ConeGeometry(3.9,4.4,9),roofM);roof.position.y=H*0.78+2.2;tw.add(roof);
         putC(tw,gx+s2*ox,gz+s2*oz,H*0.78);}
       // OPEN passage: a lintel spans ABOVE head height and the portcullis grate hangs half-raised
-      // in the upper half — the road walks straight through (the DOOR itself = the castle_gate_N
+      // in the upper band — the road walks straight through (the DOOR itself = the castle_gate_N
       // structure's HP: attackers batter it down; visuals stay open-arch so the entrance READS).
-      const arch=putC(new THREE.Mesh(new THREE.BoxGeometry(off*2-4,H*0.55,3.4),wallM),gx,gz,H*0.85);arch.rotation.y=ang;
-      const port=putC(new THREE.Mesh(new THREE.BoxGeometry(off*2-8.5,H*0.34,0.5),
-        new THREE.MeshLambertMaterial({color:0x181a1f,emissive:0x2a2416,flatShading:true})),gx,gz,H*0.68);port.rotation.y=ang;
+      // v22 hero-scale (owner 2026-08-02 "walls too small to fit a hero underneath — no ducking"):
+      // the arch's clear opening is 0.65×H (matches siege.wallRing.archClearH).
+      const arch=putC(new THREE.Mesh(new THREE.BoxGeometry(off*2-4,H*0.4,3.4),wallM),gx,gz,H*0.85);arch.rotation.y=ang;
+      const port=putC(new THREE.Mesh(new THREE.BoxGeometry(off*2-8.5,H*0.28,0.5),
+        new THREE.MeshLambertMaterial({color:0x181a1f,emissive:0x2a2416,flatShading:true})),gx,gz,H*0.79);port.rotation.y=ang;
       // OPEN WOODEN GATES (owner 2026-07-28: "show them with the OPEN wooden gates for the actual
       // attackable entrances" — supersedes the closed leaf of 07-25): the destructible castle_gate_N
       // (material:WOOD, hpMax, states CLOSED/OPEN/BROKEN) renders in the designer as TWO timber
