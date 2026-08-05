@@ -752,6 +752,7 @@ export function toBattlefieldA1(artifact) {
       biome: a.meta?.biome ?? "TEMPERATE_GRASS",
       palette: a.meta?.params?.palette ?? null,   // biome-derived ground palette (matches thumb/3D colour)
       sizeClass: a.meta?.sizeClass ?? a.meta?.params?.sizeClass ?? "SINGLE",
+      ...(a.meta?.theme ? { theme: a.meta.theme } : {}),   // v24: visuals-only skin key (engine asset packs)
       sizeM,
       laneCount: a.laneCount ?? lanes.length ?? 1,
     },

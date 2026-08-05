@@ -1482,6 +1482,11 @@ export function generate(parcel, params = null, designVersion = 0) {
   // (worldfield.zoneBiomeFamily; kept OUT of seedFor so layouts don't re-roll — palette only).
   const bp = biomePalette(biome || parcel.biomeFamily || "", palSeed);
   if (bp && !(params && params.palette)) p.palette = bp;
+  // THEME (v24 pilot, owner 2026-08-05 "candy land"): a theme is VISUALS ONLY — palette + prop/
+  // castle/water skins keyed by meta.theme. Masks, anchors, lanes and every generation gate are
+  // untouched, so themed maps pass the identical validators. Renderers (CF kit now, engine asset
+  // packs later) map the key to a skin; unknown keys fall back to the biome look.
+  const theme = parcel.theme || null;
   const sizeM = parcel.sizeM || 322;   // CANON (2026-07-08): fixed ±161 world-unit frame, every parcel/battle
   const G = Math.round(sizeM / CELL_M);
   const rng = makeRng(seed ^ fnv1a("v" + designVersion));    // each version rolls fresh, still deterministic
@@ -1945,6 +1950,7 @@ export function generate(parcel, params = null, designVersion = 0) {
     resources, buildSpots, spawnZones, lanes, routes, barriers, mobs, structures,
     ...(siege ? { siege } : {}),
     meta: { seed, designVersion, genVersion: GEN_VERSION, parcelId, biome, zone, params: p, repairs: v.repairs,
+            ...(theme ? { theme } : {}),
             budget: { level: budget.level, name: budget.name },
             ...(castle ? { castle: { id: castle.id, kind: castle.kind, name: castle.name } } : {}),
             ...(castleParts ? (() => {
@@ -1953,7 +1959,8 @@ export function generate(parcel, params = null, designVersion = 0) {
               // 2026-07-17: "even with extra elevation, up a hill for the most epic"), style key.
               const tier = CASTLE_TIERS[castle.kind] ? castle.kind : "KEEP";
               const T2 = CASTLE_TIERS[tier];
-              const styleKey = tier === "PALACE" ? (PALACE_STYLES[zone] || "fieldstone") : "fieldstone";
+              const styleKey = theme === "candyland" ? "candy"
+                : tier === "PALACE" ? (PALACE_STYLES[zone] || "fieldstone") : "fieldstone";
               const CR = concentricRings(castleParts.geom, T2, poly, { g, G });
               return { castleGeom: {
                 tier, styleKey,

@@ -889,3 +889,15 @@ lazy seed, owner regenerate, LLM/designer prompt, and the 20K bulk bake — funn
 All 11 estates + siege-test re-baked at v23 and mirrored to `clashfront-map-sync`. Waypoint-graph
 note: the A1 already ships `lanes[]` + per-entry `routes[]` — that IS the minimum nav data the
 older brief asked for; flow-fields stay on the wishlist.
+
+**2026-08-05 (2) — 🍭 THEME PILOT: CANDY LAND (v24).** Owner: "create me a candy land world
+example" + designer idea presets ("go standard / go creative — FREE for now"). Shipped the
+visuals-only theme contract (docs/briefs/MAP-THEMES.md): `meta.theme` rides artifact → A1 →
+manifest (`theme`); gameplay/validators untouched — a themed map is a standard map in a costume.
+Pilot skin `candyland` lives in the CF designer kit (pink sugar meadows, SODA water, caramel
+roads, lollipop/candy-cane groves, gumdrop boulders, gingerbread castle w/ icing roofs); demo
+world CANDYLAND (soda river + licorice road + The Gingerbread Keep, 5/5 invariants, all 10 engine
+rules) at /designer/3d?parcel=CANDYLAND. **→ MOBA BattleEngine RAW:** `manifest.theme` is the
+asset-pack key — unknown key = biome fallback, so nothing breaks before packs ship. Designer got
+standard + creative idea chips (creative FREE for now; ENABLE/pay gate = economy-seam Hook-2
+pattern when the owner prices it).

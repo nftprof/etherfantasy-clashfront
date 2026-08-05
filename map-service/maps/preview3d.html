@@ -32,6 +32,14 @@ const a=d.artifact, T={OPEN:0,FOREST:1,ROCK:2,WATER:3,CLIFF:4,ROAD:5,OOB:6};
 const G=a.terrain.w, CELL=a.terrain.cellM, S=a.arena.sizeM, half=S/2;
 const cells=Uint8Array.from(atob(a.terrain.cells),c=>c.charCodeAt(0));
 const p=a.meta.params||{}, lava=p.palette==="volcanic";
+// THEME (v24 pilot — visuals only; gameplay identical): the CF kit carries the skin until the
+// engine ships asset packs. A themed map renders on the LEGACY path (ours) by design.
+const theme=(a.meta&&a.meta.theme)||null;
+const THEMES={candyland:{
+  tint:0xffc9e2, sky:['#ff9ecb','#ffe3f2'], fog:0xffd2e8,
+  grass:{base:'#f2aecf',macro:['#f8c6dd','#ffd9ec','#eb9cc4'],patches:[['#ffe0ef',38],['#f6b6d6',32],['#fff0d9',24]],blades:['#ff8fc0','#a5f0d9','#fff3a8','#c9a8ff']},
+  water:{color:0xff7fb4,shallow:[1.0,0.78,0.88],deep:[0.85,0.30,0.55],op:0.9,shin:120,spec:0xffc0dd,em:0x33101f,emI:0.25,bump:0.3,speed:0.8},
+  road:'rgba(196,124,72,.95)', rock:[0xff6fa5,0x7fe0c3,0xffd166,0xb18cff,0x6fd3ff], trunk:0xfff5f0}}[theme]||null;
 // engine-ready render manifest (battlefield_converter.cjs output). With it, the preview renders
 // THE GAME's nine layers via EF_BATTLEFIELD — the same scene builder the MOBA client runs, so what
 // the designer sees IS the final look. Without it (404/converter off) → legacy flat fallback.
@@ -43,7 +51,7 @@ if(man&&(man.ok===false||!man.height))man=null;
 function loadScript(src){return new Promise((ok,bad)=>{const s=document.createElement("script");s.src=src;s.onload=ok;s.onerror=bad;document.head.appendChild(s);});}
 let parity=false;
 const RENDERER_SRC=q.get("legacyRenderer")?"/ef_battlefield.js":"/ef_battlefield_renderer.js";
-if(man){ if(!window.EF_BATTLEFIELD){ try{ await loadScript(RENDERER_SRC); }catch(e){} } parity=!!window.EF_BATTLEFIELD; }
+if(man&&!THEMES){ if(!window.EF_BATTLEFIELD){ try{ await loadScript(RENDERER_SRC); }catch(e){} } parity=!!window.EF_BATTLEFIELD; }
 let hgrid=null,hw=0,hh=0,hmin=0,hmax=0;
 if(man&&man.height){hgrid=Uint8Array.from(atob(man.height.data),c=>c.charCodeAt(0));hw=man.height.w;hh=man.height.h;hmin=man.height.hMin;hmax=man.height.hMax;}
 function hAt(x,z){ if(!hgrid)return 0;
@@ -67,7 +75,7 @@ const rng=()=>{_s=(_s+0x6D2B79F5)>>>0;let t=_s;t=Math.imul(t^(t>>>15),t|1);t^=t+
 const R=(x,y)=>x+(y-x)*rng();
 
 // per-palette ground tint (legacy fallback only — parity mode gets the real biome material set)
-const TINT={verdant:0xffffff,autumn:0xd9b978,volcanic:0x6a5a52,tundra:0xcdd6da,desert:0xd8c28a,swamp:0x8fa06a,sakura:0xe6c8d6}[p.palette]||0xffffff;
+const TINT=THEMES?THEMES.tint:({verdant:0xffffff,autumn:0xd9b978,volcanic:0x6a5a52,tundra:0xcdd6da,desert:0xd8c28a,swamp:0x8fa06a,sakura:0xe6c8d6}[p.palette]||0xffffff);
 
 const scene=new THREE.Scene();
 const cam=new THREE.PerspectiveCamera(parity?50:45,innerWidth/innerHeight,1,S*6);
@@ -103,19 +111,19 @@ if(parity){
 }else{
   // ============ legacy fallback (no manifest / converter off): approximate look ============
   function skyTex(top,bot){const c=document.createElement('canvas');c.width=8;c.height=256;const g=c.getContext('2d');const grd=g.createLinearGradient(0,0,0,256);grd.addColorStop(0,top);grd.addColorStop(0.62,bot);grd.addColorStop(1,bot);g.fillStyle=grd;g.fillRect(0,0,8,256);return new THREE.CanvasTexture(c);}
-  scene.background=skyTex(lava?'#4a1c0a':'#3a5578', lava?'#120806':'#0e1622');
-  scene.fog=new THREE.Fog(lava?0x1a0f0c:0x111c2b, S*0.95, S*2.6);
+  scene.background=THEMES?skyTex(THEMES.sky[0],THEMES.sky[1]):skyTex(lava?'#4a1c0a':'#3a5578', lava?'#120806':'#0e1622');
+  scene.fog=new THREE.Fog(THEMES?THEMES.fog:(lava?0x1a0f0c:0x111c2b), S*0.95, S*2.6);
   scene.add(new THREE.HemisphereLight(lava?0xffb27a:0xbfd4ff, 0x223044, 0.9));
   const sun=new THREE.DirectionalLight(0xfff2dd,0.8); sun.position.set(S*0.25,S*0.42,S*0.17); scene.add(sun);
   // ground: the game's makeGrassTexture (index.html verbatim), biome-tinted, polygon-cut
   function makeGrassTexture(){const c=document.createElement('canvas');c.width=c.height=512;const x=c.getContext('2d');const Sz=512;
-   x.fillStyle='#557f49';x.fillRect(0,0,Sz,Sz);
+   x.fillStyle=THEMES?THEMES.grass.base:'#557f49';x.fillRect(0,0,Sz,Sz);
    const tile=(fn)=>{for(let oy=-Sz;oy<=Sz;oy+=Sz)for(let ox=-Sz;ox<=Sz;ox+=Sz){x.save();x.translate(ox,oy);fn();x.restore();}};
-   const macro=['#6a9a58','#7aa861','#4f7a45'];
+   const macro=THEMES?THEMES.grass.macro:['#6a9a58','#7aa861','#4f7a45'];
    for(let i=0;i<7;i++){const mc=macro[i%3],px=rng()*Sz,py=rng()*Sz,r=180+rng()*150;tile(()=>{const g=x.createRadialGradient(px,py,0,px,py,r);g.addColorStop(0,mc);g.addColorStop(1,'rgba(0,0,0,0)');x.globalAlpha=.10;x.fillStyle=g;x.beginPath();x.arc(px,py,r,0,7);x.fill();x.globalAlpha=1;});}
-   const patches=[['#6f9d5a',38],['#618c4d',32],['#80ac63',24]];
+   const patches=THEMES?THEMES.grass.patches:[['#6f9d5a',38],['#618c4d',32],['#80ac63',24]];
    for(let i=0;i<38;i++){const cc=patches[(rng()*3)|0],px=rng()*Sz,py=rng()*Sz,r=cc[1]*(.6+rng()*.8);tile(()=>{const g=x.createRadialGradient(px,py,0,px,py,r);g.addColorStop(0,cc[0]);g.addColorStop(1,'rgba(0,0,0,0)');x.globalAlpha=.18;x.fillStyle=g;x.beginPath();x.arc(px,py,r,0,7);x.fill();x.globalAlpha=1;});}
-   const blades=['#74a257','#5e8a49','#88b266','#52864a'];x.lineCap='round';
+   const blades=THEMES?THEMES.grass.blades:['#74a257','#5e8a49','#88b266','#52864a'];x.lineCap='round';
    for(let i=0;i<1150;i++){const bx=rng()*Sz,by=rng()*Sz,len=4+rng()*8,bend=(rng()-.5)*5,col=blades[(rng()*4)|0],al=.13+rng()*.18,lw=.6+rng()*.7;tile(()=>{x.strokeStyle=col;x.globalAlpha=al;x.lineWidth=lw;x.beginPath();x.moveTo(bx,by);x.quadraticCurveTo(bx+bend,by-len*.6,bx+bend*.4,by-len);x.stroke();});}
    x.globalAlpha=1;
    for(let i=0;i<2200;i++){x.fillStyle=rng()<.6?'rgba(255,255,255,.020)':'rgba(0,0,0,.020)';x.fillRect(rng()*Sz,rng()*Sz,1,1);}
@@ -142,7 +150,7 @@ function cellCanvas(pred,style){const cc=document.createElement('canvas');cc.wid
 const TESS=hgrid?Math.min(200,(hw-1)*3):1;
 function plane(tex,y,mat){tex.minFilter=tex.magFilter=THREE.LinearFilter;const m=new THREE.Mesh(drape(new THREE.PlaneGeometry(S,S,TESS,TESS),y),mat);m.material.map=tex;m.rotation.x=-Math.PI/2;if(!hgrid)m.position.y=y;scene.add(m);return m;}
 // road (legacy only — parity gets baked road cells + lane ribbons from the module)
-if(!parity){const cc=cellCanvas(c=>c===T.ROAD,'rgba(120,96,58,.9)');if(cc)plane(new THREE.CanvasTexture(soften(cc,4,3)),0.15,new THREE.MeshBasicMaterial({transparent:true,depthWrite:false}));}
+if(!parity){const cc=cellCanvas(c=>c===T.ROAD,THEMES?THEMES.road:'rgba(120,96,58,.9)');if(cc)plane(new THREE.CanvasTexture(soften(cc,4,3)),0.15,new THREE.MeshBasicMaterial({transparent:true,depthWrite:false}));}
 // ESTATE SILHOUETTE (v19 owner 2026-08-01 "why are all maps square instead of the shape of the
 // estate?"): the game-render module draws the full square arena; on polygon parcels the OOB cells
 // (already in the data — arena.bounds IS the estate shape) mask to a dark haze overlay so the map
@@ -172,7 +180,7 @@ const waterMats=[];
   for(let h=0;h<bfs.length;h+=2){const i=bfs[h],j=bfs[h+1],d=dist[j*G+i];
     for(const[di,dj]of[[1,0],[-1,0],[0,1],[0,-1]]){const ni=i+di,nj=j+dj;
       if(isW(ni,nj)&&dist[nj*G+ni]>d+1){dist[nj*G+ni]=d+1;bfs.push(ni,nj);}}}
-  const mode=(parity&&man.biome&&man.biome.water)||(lava?"lava":"water");
+  const mode=THEMES?"soda":((parity&&man.biome&&man.biome.water)||(lava?"lava":"water"));
   // tileable value-noise bump canvas (seeded — same ripples every load)
   const bcv=document.createElement('canvas');bcv.width=bcv.height=256;const bg=bcv.getContext('2d');
   const bi=bg.createImageData(256,256);let bs=(((a.meta&&a.meta.seed)>>>0)||7)^0x9e37;
@@ -193,7 +201,8 @@ const waterMats=[];
       ?{color:0x3d5a3c,shallow:[0.46,0.55,0.40],deep:[0.10,0.17,0.10],op:0.92,shin:36,spec:0x46543e,em:0x0a120a,emI:0.22,bump:0.5,speed:0.5}
       :{color:0x2e6ea8,shallow:[0.55,0.72,0.85],deep:[0.10,0.26,0.44],op:0.9,shin:64,spec:0x5f83a8,em:0x06121e,emI:0.25,bump:0.38,speed:1},
     lava:{color:0xd8491c,shallow:[1.0,0.62,0.25],deep:[0.42,0.06,0.02],op:0.97,shin:6,spec:0x1a0a00,em:0xff5a1e,emI:0.8,bump:1.2,speed:0.25},
-    ice:{color:0xbfdcea,shallow:[0.92,0.98,1.0],deep:[0.55,0.72,0.85],op:0.93,shin:170,spec:0xffffff,em:0x0a141c,emI:0.1,bump:0.15,speed:0}
+    ice:{color:0xbfdcea,shallow:[0.92,0.98,1.0],deep:[0.55,0.72,0.85],op:0.93,shin:170,spec:0xffffff,em:0x0a141c,emI:0.1,bump:0.15,speed:0},
+    soda:THEMES?THEMES.water:{color:0xff7fb4,shallow:[1.0,0.78,0.88],deep:[0.85,0.30,0.55],op:0.9,shin:120,spec:0xffc0dd,em:0x33101f,emI:0.25,bump:0.3,speed:0.8}
   }[mode]||{color:0x2e6ea8,shallow:[0.62,0.80,0.92],deep:[0.10,0.26,0.44],op:0.88,shin:110,spec:0x9fc8ee,em:0x06121e,emI:0.25,bump:0.55,speed:1};
   // flood-fill components → one flat mesh each at its own waterline
   for(let j0=0;j0<G;j0++)for(let i0=0;i0<G;i0++){
@@ -263,6 +272,26 @@ const stoneTex=(function(){const c=document.createElement('canvas');c.width=c.he
  const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(2,3);t.anisotropy=MAXA;return t;})();
 
 for(const o of a.obstacles||[]){
+  if(THEMES&&o.kind==="TREE"){                          // 🍭 candy theme: lollipop groves
+    const s2=o.r/2.9, tr=new THREE.Group();
+    const cc=THEMES.rock[(rng()*THEMES.rock.length)|0];
+    const stick=new THREE.Mesh(new THREE.CylinderGeometry(0.35*s2,0.45*s2,5.5*s2,6),lam(THEMES.trunk));stick.position.y=2.7*s2;
+    if(rng()<0.35){                                     // candy cane: hooked stick, striped read via two tones
+      const hook=new THREE.Mesh(new THREE.TorusGeometry(1.2*s2,0.38*s2,6,10,Math.PI),lam(0xff4d6d));hook.position.y=5.6*s2;
+      tr.add(stick,hook);
+    }else{                                              // lollipop: glossy candy ball on a white stick
+      const ball=new THREE.Mesh(new THREE.SphereGeometry(2.1*s2,10,8),new THREE.MeshPhongMaterial({color:cc,shininess:90,specular:0xffffff}));
+      ball.position.y=6.4*s2;
+      const swirl=new THREE.Mesh(new THREE.TorusGeometry(1.15*s2,0.22*s2,6,12),lam(0xffffff));swirl.position.y=6.4*s2;swirl.rotation.y=rng()*3;
+      tr.add(stick,ball,swirl);
+    }
+    tr.rotation.y=rng()*6.28;put(tr,o.x,o.z);continue;
+  }
+  if(THEMES&&o.kind==="ROCK"){                          // 🍬 gumdrops
+    const cc=THEMES.rock[(rng()*THEMES.rock.length)|0];
+    const gd2=new THREE.Mesh(new THREE.SphereGeometry(o.r*0.95,10,8),new THREE.MeshPhongMaterial({color:cc,shininess:60,specular:0xffe9f4}));
+    gd2.scale.y=0.72;put(gd2,o.x,o.z,o.r*0.28);continue;
+  }
   if(o.kind==="TREE"){ if(parity)continue;              // module: layer 7 (+ manifest trees)
     const s=o.r/2.9, tr=new THREE.Group();
     const leaf=treeLeaf(R(-0.03,0.04),rng());
@@ -310,7 +339,8 @@ if(CG)(function(){
   const STYLES={fieldstone:{wall:0x958f80,roof:0x5d4a37,banner:0xaa3333},
     collegiate:{wall:0xbfb59e,roof:0x3d5a73,banner:0x2255aa},   hanseatic:{wall:0x8a4a34,roof:0x35424e,banner:0xcc8822},
     vermilion:{wall:0xa33c2e,roof:0xcc9922,banner:0xffcc44},    carnavale:{wall:0xcfc4ae,roof:0x8a6aa0,banner:0xaa44aa},
-    drowned_bastion:{wall:0x4a4d54,roof:0x2a2d33,banner:0x226644}};
+    drowned_bastion:{wall:0x4a4d54,roof:0x2a2d33,banner:0x226644},
+    candy:{wall:0x9c6238,roof:0xff7fb0,banner:0xff4d8d}};   // 🍫 gingerbread walls, icing-pink roofs
   const ST=STYLES[CG.styleKey]||STYLES.fieldstone;
   const wallM=new THREE.MeshLambertMaterial({map:stoneTex,color:ST.wall,flatShading:true});
   const roofM=new THREE.MeshLambertMaterial({color:ST.roof,flatShading:true});
@@ -342,7 +372,8 @@ if(CG)(function(){
     court.rotation.x=-Math.PI/2;const w1=world(cx,cz);court.position.set(w1.x,baseY+baseRaise+0.12,w1.z);scene.add(court);
     for(let s3=0;s3<16;s3++){const a3=s3/16*Math.PI*2+rng(),rr2=rAvg*(1.12+rng()*0.3);   // skirt scatter (outer)
       const sx=cx+Math.cos(a3)*rr2,sz=cz+Math.sin(a3)*rr2;
-      const pr=rng()<0.45?new THREE.Mesh(new THREE.DodecahedronGeometry(0.9+rng()*1.4,0),rockMat)
+      const pr=THEMES?new THREE.Mesh(new THREE.SphereGeometry(0.9+rng()*1.2,8,6),new THREE.MeshPhongMaterial({color:THEMES.rock[(rng()*THEMES.rock.length)|0],shininess:70}))
+        :rng()<0.45?new THREE.Mesh(new THREE.DodecahedronGeometry(0.9+rng()*1.4,0),rockMat)
                          :new THREE.Mesh(new THREE.ConeGeometry(1.1+rng(),1.4+rng(),6),treeLeaf(rng()*0.05,rng()));
       put(pr,sx,sz,0.5);}
   }

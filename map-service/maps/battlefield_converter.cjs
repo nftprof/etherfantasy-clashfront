@@ -228,6 +228,7 @@ function convert(artifact, opts){
     arena:{ shape:arena.shape||'square', sizeM, half, bounds },
     grid:{ w, h, cellM:cell },
     biome:{ key:pal.biome, palette:palKey, floor:pal.floor, dry:pal.dry, wet:pal.wet, fog:pal.fog, water:pal.water },
+    ...(meta.theme?{theme:meta.theme}:{}),  /* v24: visuals-only skin key — engine maps it to an asset pack */
     height:{ w, h, hMin:+hMin.toFixed(3), hMax:+hMax.toFixed(3), data:u8ToB64(hu8) },  /* worldY = hMin + u8/255*(hMax-hMin), bilinear */
     depth:{ w, h, scale:80, data:u8ToB64(depth8) },  /* v23 rule 4: per-cell water depth (u8/80 = depth in u; 0 = land) */
     masks:{ walk:u8ToB64(walk), oob:u8ToB64(oob), water:u8ToB64(water), road:u8ToB64(road) },
