@@ -70,6 +70,17 @@ let inv = "not-validated";
 if (validateBattlefield) { const v = validateBattlefield(b1.a1); inv = v.ok ? "5/5 OK" : `INVALID: ${v.errors.join("; ")}`; if (!v.ok) process.exit(1); }
 writeFileSync(path.join(ROOT, "data/cf-maps/artifacts/CANDYLAND.artifact.json"), sArt);
 writeFileSync(path.join(ROOT, "data/cf-maps/parcels/CANDYLAND.json"), sA1);
+// render manifest too — the designer's game-render (9-layer) path needs /designs/CANDYLAND/
+// render.json, and named demo maps live outside the registry (served from this committed file).
+{
+  const { mkdirSync } = await import("node:fs");
+  const conv = require("../maps/battlefield_converter.cjs").convert;
+  const man = conv(b1.art, { parcelId: "CANDYLAND", designVersion: b1.art.meta.designVersion });
+  if (man.designVersion == null) man.designVersion = b1.art.meta.designVersion;
+  if (b1.art.siege && !man.siege) man.siege = b1.art.siege;
+  mkdirSync(path.join(ROOT, "data/cf-maps/manifests"), { recursive: true });
+  writeFileSync(path.join(ROOT, "data/cf-maps/manifests/CANDYLAND.manifest.json"), JSON.stringify(man));
+}
 console.log("wrote CANDYLAND 🍭 sha256", createHash("sha256").update(sA1).digest("hex").slice(0, 16),
   `| castle ${cg.tier}/${cg.styleKey} rings ${cg.rings.length} gates ${(b1.art.siege.gates || []).length}`,
   `| invariants ${inv} | view /designer/3d?parcel=CANDYLAND`);

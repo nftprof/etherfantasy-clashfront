@@ -95,8 +95,14 @@ function convert(artifact, opts){
 
   /* --- palette / biome --- */
   const palKey = String(params.palette||DEFAULT_PALETTE).toLowerCase();
-  const pal = PALETTE[palKey] || PALETTE[DEFAULT_PALETTE];
+  let pal = PALETTE[palKey] || PALETTE[DEFAULT_PALETTE];
   if (!PALETTE[palKey]) warn.push('unknown palette "'+palKey+'" → fell back to '+DEFAULT_PALETTE+'.');
+  /* v24.2 THEME FLOOR (owner: "make the floor DREAM like — the Kai & Yui chase, masquerade dance
+   * feel"): a theme may re-tint the biome floor through the manifest — the game module then
+   * renders it natively (smooth water, real floors — no legacy fallback). candyland = the
+   * Carnavale masquerade dusk: pale lilac-rose ground, deep indigo fog. */
+  const THEME_BIOME = { candyland: { biome:'meadow', floor:'grass_01', dry:0xf2e4f0, wet:0xcbaed4, fog:0x261b3a, water:'water', treeHSL:[0.92,0.50,0.62] } };
+  if (meta.theme && THEME_BIOME[meta.theme]) pal = THEME_BIOME[meta.theme];
 
   /* --- seeded RNG (deterministic across runs) --- */
   const seed = (meta.seed>>>0) || 0x1a2b3c4d;

@@ -53,7 +53,7 @@ if(man&&(man.ok===false||!man.height))man=null;
 function loadScript(src){return new Promise((ok,bad)=>{const s=document.createElement("script");s.src=src;s.onload=ok;s.onerror=bad;document.head.appendChild(s);});}
 let parity=false;
 const RENDERER_SRC=q.get("legacyRenderer")?"/ef_battlefield.js":"/ef_battlefield_renderer.js";
-if(man&&!THEMES){ if(!window.EF_BATTLEFIELD){ try{ await loadScript(RENDERER_SRC); }catch(e){} } parity=!!window.EF_BATTLEFIELD; }
+if(man){ if(!window.EF_BATTLEFIELD){ try{ await loadScript(RENDERER_SRC); }catch(e){} } parity=!!window.EF_BATTLEFIELD; }
 let hgrid=null,hw=0,hh=0,hmin=0,hmax=0;
 if(man&&man.height){hgrid=Uint8Array.from(atob(man.height.data),c=>c.charCodeAt(0));hw=man.height.w;hh=man.height.h;hmin=man.height.hMin;hmax=man.height.hMax;}
 function hAt(x,z){ if(!hgrid)return 0;
@@ -108,7 +108,7 @@ if(parity){
   // fountains stripped (owner 2026-07-21: the module's flat spawn pads clip into sloped terrain —
   // "can u make them floating above as well") — every spawn/entry marker is a FLOATING BEACON now
   // (the block below), so the module draws no ground pads at all.
-  bf=EF_BATTLEFIELD.buildBattlefield(scene,{manifest:{...man,fountains:[]},THREE,floorsBase:"/floors/",addLights:true,addFog:true,
+  bf=EF_BATTLEFIELD.buildBattlefield(scene,{manifest:{...man,fountains:[],...(THEMES?{trees:[],rocks:[]}:{})},THREE,floorsBase:"/floors/",addLights:true,addFog:true,
     structures:(a.structures||[]).filter(s=>s.kind!=="WALL"&&!isCastleAnchor(s))});
 }else{
   // ============ legacy fallback (no manifest / converter off): approximate look ============

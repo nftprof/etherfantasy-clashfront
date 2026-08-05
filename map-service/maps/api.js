@@ -514,6 +514,16 @@ async function handle(req, res, p) {
   // Lazily built + cached per designVersion. Consumed by the client ?bfpreview= render, command-mode
   // underlay, and the designer 3D preview. Public (viewing is open, same as thumb/artifact).
   if (req.method === "GET" && parcelId && action === "render.json") {
+    // named demo/theme maps (CANDYLAND …) live outside the registry — serve their committed
+    // manifest file so the game-render path works for them too.
+    if (!l3Row(parcelId)) {
+      try {
+        const safe = String(parcelId).replace(/[^0-9A-Za-z_-]/g, "");
+        const buf = fs.readFileSync(path.join(dataRoot(), "cf-maps/manifests", safe + ".manifest.json"));
+        res.writeHead(200, { "content-type": "application/json", "cache-control": "no-cache", "access-control-allow-origin": "*" });
+        return res.end(buf);
+      } catch {}
+    }
     const row = reg.getRow(parcelId);
     if (!row) { await reg.ensureDesign(await parcelFacts(parcelId)); }   // lazy v0 so first hit works
     const v = u.searchParams.get("v");
