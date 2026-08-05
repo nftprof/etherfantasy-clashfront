@@ -99,12 +99,18 @@ function convert(artifact, opts){
   if (!PALETTE[palKey]) warn.push('unknown palette "'+palKey+'" → fell back to '+DEFAULT_PALETTE+'.');
   /* v24.2 THEME FLOOR (owner: "make the floor DREAM like — the Kai & Yui chase, masquerade dance
    * feel"): a theme may re-tint the biome floor through the manifest — the game module then
-   * renders it natively (smooth water, real floors — no legacy fallback). candyland = the
-   * Carnavale masquerade dusk: the AUTHORED veil_masquerade floor (owner 2026-08-05: "make a NEW
-   * texture based on the Hunt masquerade mini-game floors — purple themed veil", tools/
-   * make_veil_floor.mjs), dry tint pure white + bake:'none' so the harlequin purples read TRUE
-   * (no brown dirt splotches over the ballroom), deep indigo fog. */
-  const THEME_BIOME = { candyland: { biome:'meadow', floor:'veil_masquerade', dry:0xffffff, wet:0xd8cce6, fog:0x261b3a, water:'water', treeHSL:[0.92,0.50,0.62], bake:'none' } };
+   * renders it natively (smooth water, real floors — no legacy fallback).
+   * candyland (v24.4, owner: "ur best version of a candy land — rainbow land or purple dream"):
+   * the AUTHORED candy_dream floor (tools/make_candy_floor.mjs — frosting cream marbled with
+   * pastel-rainbow taffy swirls + rainbow sprinkles + sugar sparkle, designed for the module's
+   * 23×25 tiling: zero straight lines ⇒ can't read as a grid), soft dream-lavender fog.
+   * cyber (owner: the veil floor "is a cool cyber tron floor u can keep"): the veil_masquerade
+   * harlequin floor (tools/make_veil_floor.mjs) under deep indigo fog — the digital-world skin.
+   * Both use bake:'none' (authored floors — no dirt splotches) + dry 0xffffff (art reads true). */
+  const THEME_BIOME = {
+    candyland: { biome:'meadow', floor:'candy_dream',     dry:0xffffff, wet:0xf0d8e4, fog:0x8f6fa5, water:'water', treeHSL:[0.92,0.50,0.62], bake:'none' },
+    cyber:     { biome:'meadow', floor:'veil_masquerade', dry:0xffffff, wet:0xd8cce6, fog:0x261b3a, water:'water', treeHSL:[0.75,0.45,0.55], bake:'none' },
+  };
   if (meta.theme && THEME_BIOME[meta.theme]) pal = THEME_BIOME[meta.theme];
 
   /* --- seeded RNG (deterministic across runs) --- */

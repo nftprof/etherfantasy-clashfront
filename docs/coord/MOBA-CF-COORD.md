@@ -916,3 +916,14 @@ existing manifest). **→ MOBA BattleEngine RAW:** please mirror the `biome.bake
 in your copy of the ground bake when you next touch the renderer — the CF vendored module
 (`map-service/maps/ef_battlefield_renderer.js`) has the reference diff; themed manifests now
 depend on it to keep authored floors clean.
+
+**2026-08-05 (4) — 🍬 CANDY DREAM floor + 🕹 CYBER theme (v24.4).** The veil floor at arena tiling
+read as a glowing digital lattice; owner kept it ("a cool cyber tron floor u can keep") and asked
+for the best real candy land ("rainbow land or purple dream"). Candyland now uses the NEW authored
+`floors/candy_dream.png` (`tools/make_candy_floor.mjs` — frosting cream marbled with pastel-rainbow
+taffy swirls through a periodic domain warp, rainbow sprinkle capsules, sugar sparkle; designed FOR
+the module's 23×25 tiling: zero straight lines ⇒ no grid artifact) under soft dream-lavender fog
+`0x8f6fa5`. The veil floor is preserved as a second registered theme **`cyber`** (deep indigo fog,
+same bake:'none' contract) with a 🕹 Cyber grid designer chip. Fallback agreed with the owner: if
+this pass still doesn't look right live, candyland reverts to the standard sakura landscape (drop
+the THEME_BIOME candyland entry — one line).

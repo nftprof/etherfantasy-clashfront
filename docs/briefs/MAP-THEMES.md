@@ -19,14 +19,21 @@ falls back to the biome look and loses nothing but flavour.
 - **CF designer skin for `candyland`** (the reference implementation, legacy render path):
   pink sugar meadows + pastel sky, SODA water mode, caramel roads, lollipop groves + candy-cane
   hooks for TREE, glossy gumdrops for ROCK, gingerbread walls with icing-pink roofs.
-- **Authored theme floor (v24.3):** a theme may ship its OWN floor texture instead of re-tinting a
-  biome one. `veil_masquerade.png` (the Hunt masquerade mini-game floor mood — harlequin purple
-  diamonds, gold seams, orchid silk veils; generated deterministically by
-  `map-service/tools/make_veil_floor.mjs`, served at `/floors/veil_masquerade.png`) is candyland's
-  ground. The converter's `THEME_BIOME` sets `biome.floor:"veil_masquerade"`, `dry:0xffffff`
-  (neutral tint — the authored art reads true) and **`biome.bake:"none"`** — a new OPTIONAL manifest
-  field telling the render module to skip the dirt/meadow/rock vertex-colour splotches (they would
-  muddy a designed floor); absent = classic bake, fully backward-compatible.
+- **Authored theme floors (v24.3/v24.4):** a theme may ship its OWN floor texture instead of
+  re-tinting a biome one. Both are deterministic zero-dep generators in `map-service/tools/`,
+  served at `/floors/<name>.png`; `THEME_BIOME` sets `dry:0xffffff` (neutral tint — the art reads
+  true) and **`biome.bake:"none"`** — an OPTIONAL manifest field telling the render module to skip
+  the dirt/meadow/rock vertex-colour splotches (they would muddy a designed floor); absent =
+  classic bake, fully backward-compatible.
+  - `candy_dream.png` (`make_candy_floor.mjs`) — **candyland's** ground (owner: "ur best version
+    of a candy land — rainbow land or purple dream"): frosting cream marbled with pastel-rainbow
+    taffy swirls, rainbow sprinkles, sugar sparkle. Designed FOR the module's 23×25 tiling — zero
+    straight lines, low-contrast organic features only, so it cannot read as a grid. Fog =
+    soft dream-lavender `0x8f6fa5`.
+  - `veil_masquerade.png` (`make_veil_floor.mjs`) — harlequin purple diamonds + gold seams +
+    orchid veils. At arena tiling it reads as a glowing digital lattice — the owner kept it as
+    the **`cyber`** theme ("a cool cyber tron floor"): deep indigo fog `0x261b3a`, the
+    digital-world skin. Designer chip 🕹 Cyber grid.
 - **The demo world:** `data/cf-maps/artifacts/CANDYLAND.artifact.json` — authored soda river +
   licorice road + The Gingerbread Keep (CASTLE tier), built by
   `map-service/tools/make_candyland_demo.mjs` (deterministic, 5/5 invariants, rule-compliant).
