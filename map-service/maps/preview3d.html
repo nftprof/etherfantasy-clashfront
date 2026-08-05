@@ -35,11 +35,13 @@ const p=a.meta.params||{}, lava=p.palette==="volcanic";
 // THEME (v24 pilot — visuals only; gameplay identical): the CF kit carries the skin until the
 // engine ships asset packs. A themed map renders on the LEGACY path (ours) by design.
 const theme=(a.meta&&a.meta.theme)||null;
+// v24.1 (owner: "went too far — keep land NORMAL, cosmetic first; take more care designing the
+// candy"): the theme no longer repaints the world. Ground/sky/fog/cliffs render exactly like the
+// biome; the candy is IN THE OBJECTS — designed lollipops & candy canes, gumdrop boulders, a
+// soda river, graham roads, a gingerbread-and-icing castle.
 const THEMES={candyland:{
-  tint:0xffc9e2, sky:['#ff9ecb','#ffe3f2'], fog:0xffd2e8,
-  grass:{base:'#f2aecf',macro:['#f8c6dd','#ffd9ec','#eb9cc4'],patches:[['#ffe0ef',38],['#f6b6d6',32],['#fff0d9',24]],blades:['#ff8fc0','#a5f0d9','#fff3a8','#c9a8ff']},
-  water:{color:0xff7fb4,shallow:[1.0,0.78,0.88],deep:[0.85,0.30,0.55],op:0.9,shin:120,spec:0xffc0dd,em:0x33101f,emI:0.25,bump:0.3,speed:0.8},
-  road:'rgba(196,124,72,.95)', rock:[0xff6fa5,0x7fe0c3,0xffd166,0xb18cff,0x6fd3ff], trunk:0xfff5f0}}[theme]||null;
+  water:{color:0xe8558e,shallow:[1.0,0.82,0.90],deep:[0.72,0.18,0.42],op:0.9,shin:120,spec:0xffc0dd,em:0x2a0f1c,emI:0.22,bump:0.3,speed:0.8},
+  road:'rgba(214,178,116,.92)', rock:[0xff6fa5,0x7fe0c3,0xffd166,0xb18cff,0x6fd3ff], trunk:0xfff5f0}}[theme]||null;
 // engine-ready render manifest (battlefield_converter.cjs output). With it, the preview renders
 // THE GAME's nine layers via EF_BATTLEFIELD — the same scene builder the MOBA client runs, so what
 // the designer sees IS the final look. Without it (404/converter off) → legacy flat fallback.
@@ -75,7 +77,7 @@ const rng=()=>{_s=(_s+0x6D2B79F5)>>>0;let t=_s;t=Math.imul(t^(t>>>15),t|1);t^=t+
 const R=(x,y)=>x+(y-x)*rng();
 
 // per-palette ground tint (legacy fallback only — parity mode gets the real biome material set)
-const TINT=THEMES?THEMES.tint:({verdant:0xffffff,autumn:0xd9b978,volcanic:0x6a5a52,tundra:0xcdd6da,desert:0xd8c28a,swamp:0x8fa06a,sakura:0xe6c8d6}[p.palette]||0xffffff);
+const TINT={verdant:0xffffff,autumn:0xd9b978,volcanic:0x6a5a52,tundra:0xcdd6da,desert:0xd8c28a,swamp:0x8fa06a,sakura:0xe6c8d6}[p.palette]||0xffffff;
 
 const scene=new THREE.Scene();
 const cam=new THREE.PerspectiveCamera(parity?50:45,innerWidth/innerHeight,1,S*6);
@@ -111,19 +113,19 @@ if(parity){
 }else{
   // ============ legacy fallback (no manifest / converter off): approximate look ============
   function skyTex(top,bot){const c=document.createElement('canvas');c.width=8;c.height=256;const g=c.getContext('2d');const grd=g.createLinearGradient(0,0,0,256);grd.addColorStop(0,top);grd.addColorStop(0.62,bot);grd.addColorStop(1,bot);g.fillStyle=grd;g.fillRect(0,0,8,256);return new THREE.CanvasTexture(c);}
-  scene.background=THEMES?skyTex(THEMES.sky[0],THEMES.sky[1]):skyTex(lava?'#4a1c0a':'#3a5578', lava?'#120806':'#0e1622');
-  scene.fog=new THREE.Fog(THEMES?THEMES.fog:(lava?0x1a0f0c:0x111c2b), S*0.95, S*2.6);
+  scene.background=skyTex(lava?'#4a1c0a':'#3a5578', lava?'#120806':'#0e1622');
+  scene.fog=new THREE.Fog(lava?0x1a0f0c:0x111c2b, S*0.95, S*2.6);
   scene.add(new THREE.HemisphereLight(lava?0xffb27a:0xbfd4ff, 0x223044, 0.9));
   const sun=new THREE.DirectionalLight(0xfff2dd,0.8); sun.position.set(S*0.25,S*0.42,S*0.17); scene.add(sun);
   // ground: the game's makeGrassTexture (index.html verbatim), biome-tinted, polygon-cut
   function makeGrassTexture(){const c=document.createElement('canvas');c.width=c.height=512;const x=c.getContext('2d');const Sz=512;
-   x.fillStyle=THEMES?THEMES.grass.base:'#557f49';x.fillRect(0,0,Sz,Sz);
+   x.fillStyle='#557f49';x.fillRect(0,0,Sz,Sz);
    const tile=(fn)=>{for(let oy=-Sz;oy<=Sz;oy+=Sz)for(let ox=-Sz;ox<=Sz;ox+=Sz){x.save();x.translate(ox,oy);fn();x.restore();}};
-   const macro=THEMES?THEMES.grass.macro:['#6a9a58','#7aa861','#4f7a45'];
+   const macro=['#6a9a58','#7aa861','#4f7a45'];
    for(let i=0;i<7;i++){const mc=macro[i%3],px=rng()*Sz,py=rng()*Sz,r=180+rng()*150;tile(()=>{const g=x.createRadialGradient(px,py,0,px,py,r);g.addColorStop(0,mc);g.addColorStop(1,'rgba(0,0,0,0)');x.globalAlpha=.10;x.fillStyle=g;x.beginPath();x.arc(px,py,r,0,7);x.fill();x.globalAlpha=1;});}
-   const patches=THEMES?THEMES.grass.patches:[['#6f9d5a',38],['#618c4d',32],['#80ac63',24]];
+   const patches=[['#6f9d5a',38],['#618c4d',32],['#80ac63',24]];
    for(let i=0;i<38;i++){const cc=patches[(rng()*3)|0],px=rng()*Sz,py=rng()*Sz,r=cc[1]*(.6+rng()*.8);tile(()=>{const g=x.createRadialGradient(px,py,0,px,py,r);g.addColorStop(0,cc[0]);g.addColorStop(1,'rgba(0,0,0,0)');x.globalAlpha=.18;x.fillStyle=g;x.beginPath();x.arc(px,py,r,0,7);x.fill();x.globalAlpha=1;});}
-   const blades=THEMES?THEMES.grass.blades:['#74a257','#5e8a49','#88b266','#52864a'];x.lineCap='round';
+   const blades=['#74a257','#5e8a49','#88b266','#52864a'];x.lineCap='round';
    for(let i=0;i<1150;i++){const bx=rng()*Sz,by=rng()*Sz,len=4+rng()*8,bend=(rng()-.5)*5,col=blades[(rng()*4)|0],al=.13+rng()*.18,lw=.6+rng()*.7;tile(()=>{x.strokeStyle=col;x.globalAlpha=al;x.lineWidth=lw;x.beginPath();x.moveTo(bx,by);x.quadraticCurveTo(bx+bend,by-len*.6,bx+bend*.4,by-len);x.stroke();});}
    x.globalAlpha=1;
    for(let i=0;i<2200;i++){x.fillStyle=rng()<.6?'rgba(255,255,255,.020)':'rgba(0,0,0,.020)';x.fillRect(rng()*Sz,rng()*Sz,1,1);}
@@ -272,25 +274,56 @@ const stoneTex=(function(){const c=document.createElement('canvas');c.width=c.he
  const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(2,3);t.anisotropy=MAXA;return t;})();
 
 for(const o of a.obstacles||[]){
-  if(THEMES&&o.kind==="TREE"){                          // 🍭 candy theme: lollipop groves
-    const s2=o.r/2.9, tr=new THREE.Group();
-    const cc=THEMES.rock[(rng()*THEMES.rock.length)|0];
-    const stick=new THREE.Mesh(new THREE.CylinderGeometry(0.35*s2,0.45*s2,5.5*s2,6),lam(THEMES.trunk));stick.position.y=2.7*s2;
-    if(rng()<0.35){                                     // candy cane: hooked stick, striped read via two tones
-      const hook=new THREE.Mesh(new THREE.TorusGeometry(1.2*s2,0.38*s2,6,10,Math.PI),lam(0xff4d6d));hook.position.y=5.6*s2;
-      tr.add(stick,hook);
-    }else{                                              // lollipop: glossy candy ball on a white stick
-      const ball=new THREE.Mesh(new THREE.SphereGeometry(2.1*s2,10,8),new THREE.MeshPhongMaterial({color:cc,shininess:90,specular:0xffffff}));
-      ball.position.y=6.4*s2;
-      const swirl=new THREE.Mesh(new THREE.TorusGeometry(1.15*s2,0.22*s2,6,12),lam(0xffffff));swirl.position.y=6.4*s2;swirl.rotation.y=rng()*3;
-      tr.add(stick,ball,swirl);
+  if(THEMES&&o.kind==="TREE"){                          // 🍭 candy groves — DESIGNED, not pins
+    const nIn=1+((rng()*3)|0);                          // small cluster where a tree stood
+    for(let ci=0;ci<nIn;ci++){
+      const s2=(o.r/2.9)*(0.8+rng()*0.6), ox2=ci?(rng()-0.5)*5:0, oz2=ci?(rng()-0.5)*5:0;
+      const tr=new THREE.Group();
+      if(rng()<0.3){
+        // CANDY CANE: thick white shaft with REAL red stripes (stacked rings) + a hooked head
+        const hgt=7.5*s2, shaft=new THREE.Mesh(new THREE.CylinderGeometry(0.62*s2,0.62*s2,hgt,8),lam(0xfff8f4));
+        shaft.position.y=hgt/2; tr.add(shaft);
+        for(let st2=0;st2<5;st2++){                      // candy stripes wind up the shaft
+          const ring=new THREE.Mesh(new THREE.TorusGeometry(0.62*s2,0.2*s2,6,12),lam(0xe23b52));
+          ring.rotation.x=Math.PI/2-0.35; ring.position.y=hgt*(0.14+st2*0.18); tr.add(ring);
+        }
+        const hook=new THREE.Mesh(new THREE.TorusGeometry(1.5*s2,0.6*s2,8,14,Math.PI),lam(0xfff8f4));
+        hook.position.y=hgt; hook.rotation.z=0; tr.add(hook);
+        const hookTip=new THREE.Mesh(new THREE.SphereGeometry(0.62*s2,8,6),lam(0xe23b52));
+        hookTip.position.set(-3.0*s2,hgt,0); tr.add(hookTip);
+      }else{
+        // LOLLIPOP: stout stick, big glossy DISC head with a two-tone spiral, gentle tilt
+        const hgt=5.2*s2, cc=THEMES.rock[(rng()*THEMES.rock.length)|0];
+        const stick=new THREE.Mesh(new THREE.CylinderGeometry(0.5*s2,0.62*s2,hgt,7),lam(0xfff8f4));
+        stick.position.y=hgt/2; tr.add(stick);
+        const head=new THREE.Group();
+        const disc=new THREE.Mesh(new THREE.CylinderGeometry(2.4*s2,2.4*s2,0.9*s2,18),
+          new THREE.MeshPhongMaterial({color:cc,shininess:110,specular:0xffffff}));
+        disc.rotation.x=Math.PI/2; head.add(disc);
+        for(const rr2 of [1.75,1.05,0.4]){               // the spiral read: inset rings on both faces
+          for(const fz of [0.5,-0.5]){
+            const sw=new THREE.Mesh(new THREE.TorusGeometry(rr2*s2,0.16*s2,6,18),lam(0xfff2f6));
+            sw.position.z=fz*0.9*s2; head.add(sw);
+          }
+        }
+        const rim=new THREE.Mesh(new THREE.TorusGeometry(2.4*s2,0.18*s2,6,18),lam(0xffffff));head.add(rim);
+        head.position.y=hgt+2.0*s2; head.rotation.y=rng()*6.28; head.rotation.x=(rng()-0.5)*0.25;
+        tr.add(head);
+      }
+      tr.rotation.y=rng()*6.28; put(tr,o.x+ox2,o.z+oz2);
     }
-    tr.rotation.y=rng()*6.28;put(tr,o.x,o.z);continue;
+    continue;
   }
-  if(THEMES&&o.kind==="ROCK"){                          // 🍬 gumdrops
-    const cc=THEMES.rock[(rng()*THEMES.rock.length)|0];
-    const gd2=new THREE.Mesh(new THREE.SphereGeometry(o.r*0.95,10,8),new THREE.MeshPhongMaterial({color:cc,shininess:60,specular:0xffe9f4}));
-    gd2.scale.y=0.72;put(gd2,o.x,o.z,o.r*0.28);continue;
+  if(THEMES&&o.kind==="ROCK"){                          // 🍬 gumdrop clusters, sugar-dusted
+    const nIn=1+(rng()<0.4?1:0);
+    for(let ci=0;ci<nIn;ci++){
+      const cc=THEMES.rock[(rng()*THEMES.rock.length)|0], rr2=o.r*(ci?0.55:0.95);
+      const gd2=new THREE.Mesh(new THREE.SphereGeometry(rr2,10,8),
+        new THREE.MeshPhongMaterial({color:cc,shininess:55,specular:0xfff4fa,emissive:0x1a0f14}));
+      gd2.scale.y=0.62+rng()*0.16;
+      put(gd2,o.x+(ci?(rng()-0.5)*4:0),o.z+(ci?(rng()-0.5)*4:0),rr2*0.24);
+    }
+    continue;
   }
   if(o.kind==="TREE"){ if(parity)continue;              // module: layer 7 (+ manifest trees)
     const s=o.r/2.9, tr=new THREE.Group();
@@ -340,9 +373,12 @@ if(CG)(function(){
     collegiate:{wall:0xbfb59e,roof:0x3d5a73,banner:0x2255aa},   hanseatic:{wall:0x8a4a34,roof:0x35424e,banner:0xcc8822},
     vermilion:{wall:0xa33c2e,roof:0xcc9922,banner:0xffcc44},    carnavale:{wall:0xcfc4ae,roof:0x8a6aa0,banner:0xaa44aa},
     drowned_bastion:{wall:0x4a4d54,roof:0x2a2d33,banner:0x226644},
-    candy:{wall:0x9c6238,roof:0xff7fb0,banner:0xff4d8d}};   // 🍫 gingerbread walls, icing-pink roofs
+    candy:{wall:0xa9713f,roof:0xff8fb8,banner:0xff4d8d,icing:0xfff3ec,noTex:true}};   // 🍫 warm gingerbread, white icing trim
   const ST=STYLES[CG.styleKey]||STYLES.fieldstone;
-  const wallM=new THREE.MeshLambertMaterial({map:stoneTex,color:ST.wall,flatShading:true});
+  const wallM=ST.noTex?new THREE.MeshLambertMaterial({color:ST.wall,flatShading:true})
+                      :new THREE.MeshLambertMaterial({map:stoneTex,color:ST.wall,flatShading:true});
+  const icingM=ST.icing?new THREE.MeshLambertMaterial({color:ST.icing,flatShading:true}):null;
+  const trimM=icingM||wallM;                            // merlons/curbs/caps: icing on candy castles
   const roofM=new THREE.MeshLambertMaterial({color:ST.roof,flatShading:true});
   const bannerM=new THREE.MeshLambertMaterial({color:ST.banner,side:THREE.DoubleSide});
   const ring0=CG.rings[0]||{pts:[],h:9,gates:[]};
@@ -434,8 +470,8 @@ if(CG)(function(){
         const mOff=WT/2-0.6;                                          // merlon band: outer edge
         for(let m=1.4;m<L2-0.8;m+=2.2){
           const t=m/L2,mxx=px+(qx-px)*t+nx2*mOff,mzz=pz+(qz-pz)*t+nz2*mOff;
-          const mer=putC(new THREE.Mesh(new THREE.BoxGeometry(1.15,1.2,1.1),wallM),mxx,mzz,H+0.6);mer.rotation.y=ang;}
-        const curb=putC(new THREE.Mesh(new THREE.BoxGeometry(L2+1.0,0.4,0.5),wallM),               // low inner curb
+          const mer=putC(new THREE.Mesh(new THREE.BoxGeometry(1.15,1.2,1.1),trimM),mxx,mzz,H+0.6);mer.rotation.y=ang;}
+        const curb=putC(new THREE.Mesh(new THREE.BoxGeometry(L2+1.0,0.4,0.5),trimM),               // low inner curb
           mx-nx2*(WT/2-0.3),mz-nz2*(WT/2-0.3),H+0.2);curb.rotation.y=ang;
       }
       }
@@ -473,7 +509,7 @@ if(CG)(function(){
       // v18: fatter posts (3.4/3.8 ≥ the 2.1u wall half-thickness at any miter angle) and NEAR-FLUSH
       // height — a stair top may land beside a post and the walk stays continuous over it.
       const post=putC(new THREE.Mesh(new THREE.CylinderGeometry(3.4,3.8,H+0.4,8),wallM),p[0],p[1],(H+0.4)/2);
-      const cap=putC(new THREE.Mesh(new THREE.CylinderGeometry(3.8,3.8,0.7,8),wallM),p[0],p[1],H+0.6);
+      const cap=putC(new THREE.Mesh(new THREE.CylinderGeometry(3.8,3.8,0.7,8),trimM),p[0],p[1],H+0.6);
     }
     // ---- gatehouses: twin towers + recessed arch + portcullis glow (§3a) ----
     for(const g of ring.gates||[]){

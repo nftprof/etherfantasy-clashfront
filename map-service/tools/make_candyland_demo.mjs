@@ -43,8 +43,17 @@ const distPath = path.join(ROOT, "apps/server/dist/src/battlefield.js");
 if (existsSync(distPath)) ({ validateBattlefield } = require(distPath));
 else console.warn("WARN: apps/server dist not built — 5-invariant validation skipped (run pnpm -r build)");
 
+// DESIGNED params (v24.1 owner: "take more care designing the candy"): a gentle open meadow —
+// riverCrossing archetype (the soda river is the centerpiece), soft density, no harsh canyon
+// mesas; sakura palette keeps the land NORMAL with a light warm cast. Full param set (clampParams
+// zero-fills missing keys).
+const params = {
+  archetype: "riverCrossing", palette: "sakura", landmark: "NONE", laneCount: 1,
+  density: 0.45, waterLevel: 0.55, resourceNodes: 4, resourceRichness: 0.5,
+  mobCamps: 2, towers: 3, barriers: 1, roughness: 0.35, mirrorFair: false,
+};
 const build = () => {
-  const art = generate(parcel);
+  const art = generate(parcel, params);
   return { art, a1: toBattlefieldA1(art) };
 };
 const b1 = build(), b2 = build();
