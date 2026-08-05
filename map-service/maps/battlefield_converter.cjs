@@ -100,8 +100,11 @@ function convert(artifact, opts){
   /* v24.2 THEME FLOOR (owner: "make the floor DREAM like — the Kai & Yui chase, masquerade dance
    * feel"): a theme may re-tint the biome floor through the manifest — the game module then
    * renders it natively (smooth water, real floors — no legacy fallback). candyland = the
-   * Carnavale masquerade dusk: pale lilac-rose ground, deep indigo fog. */
-  const THEME_BIOME = { candyland: { biome:'meadow', floor:'grass_01', dry:0xf2e4f0, wet:0xcbaed4, fog:0x261b3a, water:'water', treeHSL:[0.92,0.50,0.62] } };
+   * Carnavale masquerade dusk: the AUTHORED veil_masquerade floor (owner 2026-08-05: "make a NEW
+   * texture based on the Hunt masquerade mini-game floors — purple themed veil", tools/
+   * make_veil_floor.mjs), dry tint pure white + bake:'none' so the harlequin purples read TRUE
+   * (no brown dirt splotches over the ballroom), deep indigo fog. */
+  const THEME_BIOME = { candyland: { biome:'meadow', floor:'veil_masquerade', dry:0xffffff, wet:0xd8cce6, fog:0x261b3a, water:'water', treeHSL:[0.92,0.50,0.62], bake:'none' } };
   if (meta.theme && THEME_BIOME[meta.theme]) pal = THEME_BIOME[meta.theme];
 
   /* --- seeded RNG (deterministic across runs) --- */
@@ -233,7 +236,7 @@ function convert(artifact, opts){
     modes: meta.modes||params.modes||null,
     arena:{ shape:arena.shape||'square', sizeM, half, bounds },
     grid:{ w, h, cellM:cell },
-    biome:{ key:pal.biome, palette:palKey, floor:pal.floor, dry:pal.dry, wet:pal.wet, fog:pal.fog, water:pal.water },
+    biome:{ key:pal.biome, palette:palKey, floor:pal.floor, dry:pal.dry, wet:pal.wet, fog:pal.fog, water:pal.water, ...(pal.bake?{bake:pal.bake}:{}) },
     ...(meta.theme?{theme:meta.theme}:{}),  /* v24: visuals-only skin key — engine maps it to an asset pack */
     height:{ w, h, hMin:+hMin.toFixed(3), hMax:+hMax.toFixed(3), data:u8ToB64(hu8) },  /* worldY = hMin + u8/255*(hMax-hMin), bilinear */
     depth:{ w, h, scale:80, data:u8ToB64(depth8) },  /* v23 rule 4: per-cell water depth (u8/80 = depth in u; 0 = land) */

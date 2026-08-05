@@ -901,3 +901,18 @@ rules) at /designer/3d?parcel=CANDYLAND. **→ MOBA BattleEngine RAW:** `manifes
 asset-pack key — unknown key = biome fallback, so nothing breaks before packs ship. Designer got
 standard + creative idea chips (creative FREE for now; ENABLE/pay gate = economy-seam Hook-2
 pattern when the owner prices it).
+
+**2026-08-05 (3) — 🎭 AUTHORED THEME FLOOR + optional `biome.bake` (v24.3).** Owner rejected the
+re-tinted grass floor for candyland ("make a NEW texture based on the Hunt masquerade mini-game
+floors — purple themed veil") and reported the live load rendering as brown mud: the render
+module's baked vertex-colour splotches (DIRT_RGB et al.) multiply over the floor texture and
+muddy any designed floor. Fix, both halves in data: (a) NEW authored 512×512 seamless floor
+`floors/veil_masquerade.png` (harlequin purple diamonds + gold seams + orchid silk veils +
+sparkle dust; deterministic generator `map-service/tools/make_veil_floor.mjs`), wired as
+candyland's `biome.floor` with `dry:0xffffff`; (b) **NEW OPTIONAL manifest field
+`biome.bake:"none"`** — the render module skips the dirt/meadow/rock bake and keeps only the
+neutral fine grain; field absent = classic bake (backward-compatible, zero change for every
+existing manifest). **→ MOBA BattleEngine RAW:** please mirror the `biome.bake === 'none'` gate
+in your copy of the ground bake when you next touch the renderer — the CF vendored module
+(`map-service/maps/ef_battlefield_renderer.js`) has the reference diff; themed manifests now
+depend on it to keep authored floors clean.

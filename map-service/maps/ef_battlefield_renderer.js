@@ -174,20 +174,25 @@ function buildBattlefield(scene, opts){
       /* UV normalised across the arena; the texture's repeat/rotation does the tiling */
       uv[k*2]=(x+half)/sizeM; uv[k*2+1]=(z+half)/sizeM;
 
-      /* --- L3: the bake (this is the biggest "why does theirs look good" layer) --- */
-      var big  = 0.62*noise(x,z,82) + 0.38*noise(x+1500,z-900,31);
+      /* --- L3: the bake (this is the biggest "why does theirs look good" layer) ---
+         biome.bake === 'none' (optional manifest field, themed floors): the floor texture is an
+         AUTHORED design (e.g. veil_masquerade) — skip the dirt/meadow/rock splotches that would
+         muddy it; keep only the neutral fine luminance grain. */
       var fine = noise(x-700,z+400,12);
-      var dirt = smooth(TUNED.DIRT_EDGE[0], TUNED.DIRT_EDGE[1], big);
-      var mead = smooth(TUNED.MEAD_EDGE[0], TUNED.MEAD_EDGE[1], big);
       var r=1,g=1,b=1;
-      r=mix(r,TUNED.DIRT_RGB[0],dirt); g=mix(g,TUNED.DIRT_RGB[1],dirt); b=mix(b,TUNED.DIRT_RGB[2],dirt);
-      r=mix(r,TUNED.MEAD_RGB[0],mead*TUNED.MEAD_AMT); g=mix(g,TUNED.MEAD_RGB[1],mead*TUNED.MEAD_AMT); b=mix(b,TUNED.MEAD_RGB[2],mead*TUNED.MEAD_AMT);
-      var hN = clamp((y-hMin)/hRange, 0, 1);
-      if (hN > 0.02){
-        var rim = smooth(TUNED.RIM_EDGE[0], TUNED.RIM_EDGE[1], hN) * TUNED.RIM_AMT;
-        r=mix(r,TUNED.RIM_RGB[0],rim); g=mix(g,TUNED.RIM_RGB[1],rim); b=mix(b,TUNED.RIM_RGB[2],rim);
-        var rock = smooth(TUNED.ROCK_EDGE[0], TUNED.ROCK_EDGE[1], hN) * (0.4 + 0.6*noise(x+300,z-200,9));
-        r=mix(r,TUNED.ROCK_RGB[0],rock); g=mix(g,TUNED.ROCK_RGB[1],rock); b=mix(b,TUNED.ROCK_RGB[2],rock);
+      if (M.biome.bake !== 'none'){
+        var big  = 0.62*noise(x,z,82) + 0.38*noise(x+1500,z-900,31);
+        var dirt = smooth(TUNED.DIRT_EDGE[0], TUNED.DIRT_EDGE[1], big);
+        var mead = smooth(TUNED.MEAD_EDGE[0], TUNED.MEAD_EDGE[1], big);
+        r=mix(r,TUNED.DIRT_RGB[0],dirt); g=mix(g,TUNED.DIRT_RGB[1],dirt); b=mix(b,TUNED.DIRT_RGB[2],dirt);
+        r=mix(r,TUNED.MEAD_RGB[0],mead*TUNED.MEAD_AMT); g=mix(g,TUNED.MEAD_RGB[1],mead*TUNED.MEAD_AMT); b=mix(b,TUNED.MEAD_RGB[2],mead*TUNED.MEAD_AMT);
+        var hN = clamp((y-hMin)/hRange, 0, 1);
+        if (hN > 0.02){
+          var rim = smooth(TUNED.RIM_EDGE[0], TUNED.RIM_EDGE[1], hN) * TUNED.RIM_AMT;
+          r=mix(r,TUNED.RIM_RGB[0],rim); g=mix(g,TUNED.RIM_RGB[1],rim); b=mix(b,TUNED.RIM_RGB[2],rim);
+          var rock = smooth(TUNED.ROCK_EDGE[0], TUNED.ROCK_EDGE[1], hN) * (0.4 + 0.6*noise(x+300,z-200,9));
+          r=mix(r,TUNED.ROCK_RGB[0],rock); g=mix(g,TUNED.ROCK_RGB[1],rock); b=mix(b,TUNED.ROCK_RGB[2],rock);
+        }
       }
       var f = 0.95 + fine*TUNED.FINE_AMT; r*=f; g*=f; b*=f;
       col[k*3]=r; col[k*3+1]=g; col[k*3+2]=b;

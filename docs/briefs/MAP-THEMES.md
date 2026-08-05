@@ -19,6 +19,14 @@ falls back to the biome look and loses nothing but flavour.
 - **CF designer skin for `candyland`** (the reference implementation, legacy render path):
   pink sugar meadows + pastel sky, SODA water mode, caramel roads, lollipop groves + candy-cane
   hooks for TREE, glossy gumdrops for ROCK, gingerbread walls with icing-pink roofs.
+- **Authored theme floor (v24.3):** a theme may ship its OWN floor texture instead of re-tinting a
+  biome one. `veil_masquerade.png` (the Hunt masquerade mini-game floor mood — harlequin purple
+  diamonds, gold seams, orchid silk veils; generated deterministically by
+  `map-service/tools/make_veil_floor.mjs`, served at `/floors/veil_masquerade.png`) is candyland's
+  ground. The converter's `THEME_BIOME` sets `biome.floor:"veil_masquerade"`, `dry:0xffffff`
+  (neutral tint — the authored art reads true) and **`biome.bake:"none"`** — a new OPTIONAL manifest
+  field telling the render module to skip the dirt/meadow/rock vertex-colour splotches (they would
+  muddy a designed floor); absent = classic bake, fully backward-compatible.
 - **The demo world:** `data/cf-maps/artifacts/CANDYLAND.artifact.json` — authored soda river +
   licorice road + The Gingerbread Keep (CASTLE tier), built by
   `map-service/tools/make_candyland_demo.mjs` (deterministic, 5/5 invariants, rule-compliant).
