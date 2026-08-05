@@ -12,6 +12,7 @@ import { fileURLToPath } from "node:url";
 import { worldParcel, l3Row, clearWorldFieldCache } from "../worldfield.js";
 import { generate } from "../generate.js";
 import { runAudit, buildAuditGrid } from "../traverse.js";
+import { toBattlefieldA1 } from "../command_converter.js";
 import { gIdx, cellOf } from "../schema.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -51,6 +52,21 @@ for (const [label, art] of arts) {
     blockedOk = !!blocked[gIdx(G, cellOf(G, mx), cellOf(G, mz))];
   }
   ok(!checked || blockedOk, `${label}: wall bodies are solid in the audit grid (no through-wall walks)`);
+}
+
+// v23 A1 contract spot-checks (engine 10-rule brief): typed grid ships; lane waypoints keep
+// ≥8u from every structure anchor (rule 3); castle structures keep blocking/r.
+{
+  const art = arts[0][1];
+  const a1 = toBattlefieldA1(art);
+  ok(!!(a1.terrain && a1.terrain.cells && a1.terrain.w), "A1 ships the typed terrain grid");
+  const anchors = (a1.structures || []).map((st) => [st.x, st.z]);
+  let close = 0;
+  for (const ln of a1.lanes || []) for (const wpt of ln.waypoints || [])
+    for (const [ax, az] of anchors) if (Math.hypot(wpt[0] - ax, wpt[1] - az) < 7.9) close++;
+  ok(close === 0, `A1 lane waypoints ≥8u from every structure anchor (${close} close)`);
+  ok((a1.structures || []).filter((st) => String(st.anchorId).startsWith("castle_")).every((st) => st.blocking),
+    "A1 castle structures carry the blocking contract");
 }
 
 console.log(`\ntraverse audit: ${pass} passed, ${fail} failed`);

@@ -103,19 +103,58 @@ function convert(artifact, opts){
   const rnd = mulberry32(seed);
   const noise = mkNoise(seed);
 
-  /* --- synthesize a heightfield (artifact is 2-D; the live map drapes ground on
-   *     heightAt()). Base = gentle rolling noise; CLIFF/ROCK raise, WATER dips. --- */
+  /* --- synthesize a heightfield (artifact is 2-D; the live map drapes ground on heightAt()).
+   *     v23 — THE FLAT RULING (engine 10-rule brief, rules 1/4/6/8: "most ground is FLAT; every
+   *     slope is INTENTIONAL"): walkable ground (OPEN/ROAD/FOREST) is EXACTLY 0 — no rolling
+   *     noise under armies' feet (noise wiggled units across the engine's y=2 combat-tier
+   *     boundary and clipped feet/rings). Structure pads are flat by construction. Drama lives
+   *     at the EDGES: CLIFF plateaus (tier-high, unwalkable) keep their noise, ROCK stands
+   *     proud, and WATER gets a ≥6u SHORE SHELF graded 0 → −1.1 (the engine's wade→swim
+   *     threshold) before deepening — never a vertical plunge at the waterline (rule 4). --- */
   const hgrid = new Float32Array(w*h);
+  /* distance-to-land (in cells) for every water cell — drives the shore shelf + the depth mask */
+  const wdist = new Float32Array(w*h).fill(0);
+  {
+    const q=[];
+    for (let j=0;j<h;j++) for (let i=0;i<w;i++){
+      const c=cells.length?cells[j*w+i]:TERR.OPEN;
+      if (c!==TERR.WATER) continue;
+      let shore=false;
+      for (const [di,dj] of [[1,0],[-1,0],[0,1],[0,-1]]){
+        const ni=i+di,nj=j+dj;
+        if (ni<0||nj<0||ni>=w||nj>=h) continue;
+        const nc=cells.length?cells[nj*w+ni]:TERR.OPEN;
+        if (nc!==TERR.WATER&&nc!==TERR.OOB){shore=true;break;}
+      }
+      wdist[j*w+i]=shore?1:1e9;
+      if (shore) q.push(i,j);
+    }
+    for (let k2=0;k2<q.length;k2+=2){
+      const i=q[k2],j=q[k2+1],d=wdist[j*w+i];
+      for (const [di,dj] of [[1,0],[-1,0],[0,1],[0,-1]]){
+        const ni=i+di,nj=j+dj;
+        if (ni<0||nj<0||ni>=w||nj>=h) continue;
+        if (wdist[nj*w+ni]>d+1){wdist[nj*w+ni]=d+1;q.push(ni,nj);}
+      }
+    }
+  }
   let hMin=1e9,hMax=-1e9;
+  const depth8 = new Uint8Array(w*h);                       /* per-cell water depth ×80 (rule 4: "a depth value beats inferring") */
   for (let j=0;j<h;j++) for (let i=0;i<w;i++){
     const wx=cx(i), wz=cz(j), c=cells.length?cells[j*w+i]:TERR.OPEN;
-    let y = 6*noise(wx,wz,64) + 2.4*noise(wx+900,wz-500,22); /* rolling relief */
-    if (c===TERR.CLIFF) y += 10 + 4*noise(wx,wz,7);
-    else if (c===TERR.ROCK) y += 3.5;
-    else if (c===TERR.WATER) y -= 2.2;
+    let y = 0;                                              /* walkable ground: FLAT — the ruling */
+    if (c===TERR.CLIFF) y = 10 + 4*noise(wx,wz,7);          /* unwalkable high drama keeps its noise */
+    else if (c===TERR.ROCK) y = 3.5;
+    else if (c===TERR.WATER){
+      const d=Math.min(wdist[j*w+i],1e8);
+      const dep = d<=3 ? 1.1*(d/3) : Math.min(2.6, 1.1+0.5*(d-3));  /* 6u shelf to −1.1, then deepen */
+      y = -dep;
+      depth8[j*w+i]=clamp(Math.round(dep*80),0,255);
+    }
     hgrid[j*w+i]=y; if(y<hMin)hMin=y; if(y>hMax)hMax=y;
   }
   if(hMin>hMax){hMin=0;hMax=1;}
+  if(hMax-hMin<0.01)hMax=hMin+0.01;                         /* an all-flat map still encodes */
   const hspan = (hMax-hMin)||1;
   const hu8 = new Uint8Array(w*h);
   for (let k=0;k<hgrid.length;k++) hu8[k]=clamp(Math.round((hgrid[k]-hMin)/hspan*255),0,255);
@@ -190,6 +229,7 @@ function convert(artifact, opts){
     grid:{ w, h, cellM:cell },
     biome:{ key:pal.biome, palette:palKey, floor:pal.floor, dry:pal.dry, wet:pal.wet, fog:pal.fog, water:pal.water },
     height:{ w, h, hMin:+hMin.toFixed(3), hMax:+hMax.toFixed(3), data:u8ToB64(hu8) },  /* worldY = hMin + u8/255*(hMax-hMin), bilinear */
+    depth:{ w, h, scale:80, data:u8ToB64(depth8) },  /* v23 rule 4: per-cell water depth (u8/80 = depth in u; 0 = land) */
     masks:{ walk:u8ToB64(walk), oob:u8ToB64(oob), water:u8ToB64(water), road:u8ToB64(road) },
     trees, rocks, scatter,
     lanes,

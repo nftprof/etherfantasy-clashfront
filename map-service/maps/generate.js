@@ -651,13 +651,18 @@ function sealDisconnectedPockets(g, G) {
 function placeBarriers(g, G, rng, count, avoid, budgetLevel) {
   if (count <= 0) return [];
   const openAt = (x, z) => x >= 0 && z >= 0 && x < G && z < G && g[gIdx(G, x, z)] !== T.OOB && !isBlocked(g, gIdx(G, x, z));
+  const blkAt = (x, z) => x >= 0 && z >= 0 && x < G && z < G && g[gIdx(G, x, z)] !== T.OOB && isBlocked(g, gIdx(G, x, z));
+  // v23 (engine rule 9): 1-cell walls no longer exist (the sliver pass opens them), so a breach
+  // now cuts through a TWO-cell wall — the gate's `opens` spans both across-cells. Intentional
+  // breach points stay legal (rule 7); the wall around them stays ≥2 cells thick.
   const cand = [];
-  for (let z = 2; z < G - 2; z++) for (let x = 2; x < G - 2; x++) {
+  for (let z = 2; z < G - 3; z++) for (let x = 2; x < G - 3; x++) {
     const i = gIdx(G, x, z);
     if (g[i] === T.OOB || !isBlocked(g, i)) continue;
-    const horiz = openAt(x - 1, z) && openAt(x + 1, z);   // wall runs vertically, breach goes E–W
-    const vert = openAt(x, z - 1) && openAt(x, z + 1);     // wall runs horizontally, breach goes N–S
-    if (horiz || vert) cand.push({ x, z, axis: horiz ? "h" : "v", kind: g[i] });
+    if (openAt(x - 1, z) && blkAt(x + 1, z) && openAt(x + 2, z)) cand.push({ x, z, axis: "h", depth: [[x + 1, z]], kind: g[i] });
+    else if (openAt(x, z - 1) && blkAt(x, z + 1) && openAt(x, z + 2)) cand.push({ x, z, axis: "v", depth: [[x, z + 1]], kind: g[i] });
+    else if (openAt(x - 1, z) && openAt(x + 1, z)) cand.push({ x, z, axis: "h", depth: [], kind: g[i] });
+    else if (openAt(x, z - 1) && openAt(x, z + 1)) cand.push({ x, z, axis: "v", depth: [], kind: g[i] });
   }
   // deterministic shuffle, then greedily take spaced-out gates that don't touch a route waypoint
   for (let i = cand.length - 1; i > 0; i--) { const j = Math.floor(rng() * (i + 1)); [cand[i], cand[j]] = [cand[j], cand[i]]; }
@@ -665,8 +670,9 @@ function placeBarriers(g, G, rng, count, avoid, budgetLevel) {
   const kindOf = (t) => t === T.FOREST ? "FOREST_WALL" : t === T.ROCK ? "BOULDER_PILE" : t === T.WATER ? "ICE_WALL" : "PORTCULLIS";
   for (const c of cand) {
     if (out.length >= count) break;
-    // grow the gate 1 cell each way ALONG the wall (perpendicular to the breach axis)
-    const seg = [[c.x, c.z]];
+    // grow the gate 1 cell each way ALONG the wall (perpendicular to the breach axis); a 2-deep
+    // wall's breach opens BOTH across-cells (c.depth) so the corridor punches all the way through
+    const seg = [[c.x, c.z], ...(c.depth || [])];
     const [ax, az] = c.axis === "h" ? [0, 1] : [1, 0];     // wall direction
     for (const s of [-1, 1]) { const nx = c.x + ax * s, nz = c.z + az * s; const ni = gIdx(G, nx, nz); if (nx > 0 && nz > 0 && nx < G - 1 && nz < G - 1 && g[ni] !== T.OOB && isBlocked(g, ni)) seg.push([nx, nz]); }
     if (seg.some(([x, z]) => used.has(gIdx(G, x, z)))) continue;         // don't reuse / touch a route cell
@@ -906,6 +912,15 @@ function castleLayout(g, G, rng, { base, atkPt, poly, half, budgetLevel, bridge,
     const oz = Math.max(-half + 4, Math.min(half - 4, gp.z + ((gp.z - cz) / m) * 12));
     carveCorridor(g, G, [[cx, cz], [gp.x, gp.z], [ox, oz]], 2.0, bridge);
     disc(g, G, cellOf(G, gp.x), cellOf(G, gp.z), 7, false);
+  }
+  // BREACH WARD (v23, engine rule 10: "a flat ward ≥25u inside the main gate — the breach fight
+  // happens there"): clear an open pocket just inside the FIRST (main/attacker-facing) door so
+  // the wave that breaks through has ground to fight on. Grid-level clearing here; the v23
+  // converter keeps all walkable ground flat, so the pocket is flat by construction.
+  if (gates.length) {
+    const gp0 = ring[gates[0]];
+    const m0 = Math.hypot(gp0.x - cx, gp0.z - cz) || 1;
+    disc(g, G, cellOf(G, gp0.x - ((gp0.x - cx) / m0) * 13), cellOf(G, gp0.z - ((gp0.z - cz) / m0) * 13), 6, false);
   }
   // ROAD–DOOR ALIGNMENT (v21 owner 2026-08-01, Grand Academy: "doors exactly where the path is …
   // a path must never walk into a tower"): (a) every ROAD door gets its approach RE-CARVED as a
@@ -1186,9 +1201,11 @@ export const CASTLE_TIERS = {          // exported for the castle-geometry sweep
   // to duck to walk in; make even the lowest wall at least ~1.5x bigger than a person"): heights
   // ×~1.5 so the gate arch (clear opening = 0.65×wallH, see the render kit) always clears a hero
   // with real headroom — KEEP 11 → 7.2u clear, CASTLE 14 → 9.1, PALACE 17 → 11.
-  PALACE: { wallH: 17, keepTiers: 3, keepH: 30, ringN: 3, wardGap: 48 },
-  CASTLE: { wallH: 14, keepTiers: 2, keepH: 22, ringN: 2, wardGap: 26 },
-  KEEP: { wallH: 11, keepTiers: 2, keepH: 18, ringN: 1, wardGap: 0 },
+  // v23 floor (engine rule 10, MAP-INPUTS brief: ring.h ≥ 14 — walls read taller than a person
+  // even at the lowest tier): KEEP raised to the engine floor, ladder keeps its rank spread.
+  PALACE: { wallH: 18, keepTiers: 3, keepH: 30, ringN: 3, wardGap: 48 },
+  CASTLE: { wallH: 16, keepTiers: 2, keepH: 24, ringN: 2, wardGap: 26 },
+  KEEP: { wallH: 14, keepTiers: 2, keepH: 20, ringN: 1, wardGap: 0 },
 };
 
 // Build the nested rings from the single outer ring the layout grew. Deterministic (pure geometry
@@ -1234,6 +1251,33 @@ function concentricRings(geom, T2, poly, ground = null) {
         while (rNew > 2 && !pointInPoly(kx + (dx / r) * rNew, kz + (dz / r) * rNew, poly)) rNew -= 1.5;   // in-parcel dent beats an out-of-parcel wall
       return [r1(kx + (dx / r) * rNew), r1(kz + (dz / r) * rNew)];
     }));
+  }
+  // MAIN-GATE BREACH WARD, multi-ring (v23, engine rule 10): the ward directly INSIDE the main
+  // outer door deepens to ≥25u — ring-1 anchors within ~40° of the main-gate bearing pull inward
+  // (keep-foot floored, polygon respected). The clearance passes below re-settle the inner rings.
+  if (N > 1 && geom.gates && geom.gates[0]) {
+    const g0 = geom.gates[0].at || geom.gates[0];
+    const gA = Math.atan2(g0[1] - kz, g0[0] - kx);
+    for (const p of ptsArr[1]) {
+      const a = Math.atan2(p[1] - kz, p[0] - kx);
+      if (Math.abs(Math.atan2(Math.sin(a - gA), Math.cos(a - gA))) > 0.7) continue;
+      const dx = p[0] - kx, dz = p[1] - kz, r = Math.hypot(dx, dz) || 1;
+      let rNew = r;
+      for (let it = 0; it < 24; it++) {
+        let best = Infinity;
+        for (let i = 0; i < outer.length; i++) {
+          const A = outer[i], B = outer[(i + 1) % outer.length];
+          const abx = B[0] - A[0], abz = B[1] - A[1], L2 = abx * abx + abz * abz || 1;
+          const t = Math.max(0, Math.min(1, (((kx + (dx / r) * rNew) - A[0]) * abx + ((kz + (dz / r) * rNew) - A[1]) * abz) / L2));
+          best = Math.min(best, Math.hypot((kx + (dx / r) * rNew) - (A[0] + abx * t), (kz + (dz / r) * rNew) - (A[1] + abz * t)));
+        }
+        if (best >= 25 || rNew <= RING_KEEP_FOOT) break;
+        rNew = Math.max(RING_KEEP_FOOT, rNew - 2);
+      }
+      if (poly && poly.length >= 3)
+        while (rNew > 2 && !pointInPoly(kx + (dx / r) * rNew, kz + (dz / r) * rNew, poly)) rNew -= 1.5;
+      if (rNew < r) { p[0] = r1(kx + (dx / r) * rNew); p[1] = r1(kz + (dz / r) * rNew); }
+    }
   }
   // SEGMENT-LEVEL clearance pass (owner 2026-07-29: "minimal distance between walls still an issue
   // on some maps"): the per-anchor radial rule bounds anchor↔anchor spacing, but after dents and
@@ -1398,6 +1442,16 @@ const PALACE_STYLES = { UW2: "drowned_bastion", ENT: "carnavale", EDU: "collegia
 // castle pass and the repair pass: road cells hugging the wall away from every arch repaint to
 // OPEN (walkability identical) — a path can only ever cross a wall at a door, never dead-end
 // into masonry or run under a tower.
+// v23 (engine 10-rule brief MAP-INPUTS-THE-ENGINE-WANTS.md, owner 2026-08-05 — the rules gate ALL
+// generation paths: seed / regenerate / LLM prompt / the 20K bulk bake, because every path funnels
+// through generate()): (a) rule 9 SLIVER REMOVAL — no 1-cell blockers survive bake; (b) rule 10 —
+// wall floor 14 (KEEP 14 / CASTLE 16 / PALACE 18, final 25) + a ≥25u BREACH WARD inside the main
+// gate (courtyard pocket cleared; ring-1 locally deepened on multi-ring castles); (c) rule 1/4/6
+// live in the render manifest: walkable ground is FLAT (zero noise), water gets a ≥6u shore shelf
+// graded to the −1.1u swim threshold with a per-cell depth mask, cliffs/rocks keep the drama;
+// (d) A1 gains the TYPED terrain grid (cells enum + depth — the engine's #1 ask) and castle
+// structures carry blocking/r through; (e) A1 lane waypoints keep ≥8u from every structure anchor
+// (rule 3 — the "units orbit their tower" root).
 // v22 (owner 2026-08-02, live-play findings): (a) HERO-SCALE WALLS — heights ×~1.5 (KEEP 11 /
 // CASTLE 14 / PALACE 17, final inner 24) and the render kit lifts the arch underside to 0.65×H so
 // no hero ducks through a gate; (b) BLOCKING CONTRACT — castle structures declare their collision
@@ -1405,7 +1459,7 @@ const PALACE_STYLES = { UW2: "drowned_bastion", ENT: "carnavale", EDU: "collegia
 // anchors = vertices of the solid wallRing polyline t 4.2, never independent cylinders) +
 // siege.wallRing gains t/archClearH — engines build the navmesh from THIS instead of guessing
 // (the "units running in circles around towers" fix on the map side).
-export const GEN_VERSION = 22;
+export const GEN_VERSION = 23;
 
 export function generate(parcel, params = null, designVersion = 0) {
   // designVersion is MANDATORY in every artifact (MOBA contract fix 3: it pins caches, replays,
@@ -1694,6 +1748,22 @@ export function generate(parcel, params = null, designVersion = 0) {
   // per-edge NPC routes: entry→center chain for every arrival edge (multi-sided modes). lanes[]
   // stays the DUEL attacker→base push; routes[] is what a unit arriving from an arbitrary edge
   // follows so the dumb lane-AI has a guaranteed path from any side to the central objective.
+  // 4c) SLIVER REMOVAL (runs BEFORE routes/barriers — barriers seal on stable ground) (v23, engine rule 9: "blockers ≥3u thick — 1-cell slivers pass the BFS
+  //     but block collision → stuck pockets"): any blocked non-OOB cell with OPEN ground on both
+  //     opposite sides (N+S or E+W) is a 1-cell blade — open it. Iterate to STABILITY (each
+  //     opening can expose the next blade in a chain). Opening-only ⇒ walkability never regresses.
+  for (let pass2 = 0; pass2 < 24; pass2++) {
+    let changed = 0;
+    for (let z2 = 1; z2 < G - 1; z2++) for (let x2 = 1; x2 < G - 1; x2++) {
+      const i = gIdx(G, x2, z2);
+      if (g[i] === T.OOB || !isBlocked(g, i)) continue;
+      const opN = !isBlocked(g, i - G) && g[i - G] !== T.OOB, opS = !isBlocked(g, i + G) && g[i + G] !== T.OOB;
+      const opW = !isBlocked(g, i - 1) && g[i - 1] !== T.OOB, opE = !isBlocked(g, i + 1) && g[i + 1] !== T.OOB;
+      if ((opN && opS) || (opW && opE)) { g[i] = T.OPEN; changed++; }
+    }
+    if (!changed) break;
+  }
+
   const routes = routesToCenter(g, G, spawnZones.filter((s) => s.side === "ANY" || s.side === "ATTACKER"));
 
   // 5a) destructible HP-gates (investment content): seal shortcuts/pockets, never the main path.

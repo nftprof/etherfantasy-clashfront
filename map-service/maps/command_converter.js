@@ -729,7 +729,7 @@ export function toBattlefieldA1(artifact) {
   // game-time anchors (the synthesized reference chains below own the A1 towers).
   const castleStructures = (a.structures ?? [])
     .filter((s) => String(s.anchorId ?? "").startsWith("castle_"))
-    .map((s) => ({ anchorId: s.anchorId, kind: String(s.kind ?? "WALL").toUpperCase(), side: s.side ?? "DEFENDER", x: s.x ?? 0, z: s.z ?? 0, ...(s.material ? { material: s.material } : {}), ...(Array.isArray(s.states) ? { states: s.states } : {}), ...(s.hpMax != null ? { hpMax: s.hpMax } : {}) }));
+    .map((s) => ({ anchorId: s.anchorId, kind: String(s.kind ?? "WALL").toUpperCase(), side: s.side ?? "DEFENDER", x: s.x ?? 0, z: s.z ?? 0, ...(s.material ? { material: s.material } : {}), ...(Array.isArray(s.states) ? { states: s.states } : {}), ...(s.hpMax != null ? { hpMax: s.hpMax } : {}), ...(s.blocking ? { blocking: s.blocking } : {}), ...(s.r != null ? { r: s.r } : {}) }));
   const resources = (a.resources ?? []).map((r, i) => ({
     id: r.id ?? `res_${i}`, kind: String(r.kind ?? "GOLD_MINE").toUpperCase(),
     x: r.x ?? 0, z: r.z ?? 0, richness: r.richness ?? 1,
@@ -739,6 +739,7 @@ export function toBattlefieldA1(artifact) {
     x: m.x ?? 0, z: m.z ?? 0, count: m.count ?? 4,
   }));
 
+  const structuresAll = [...synthStructures(spawnZones, lanes), ...castleStructures];
   const bf = {
     v: 1,
     // standard siege block passthrough (MOBA contract fix 1, 2026-07-21): elevation tiers /
@@ -755,17 +756,67 @@ export function toBattlefieldA1(artifact) {
       laneCount: a.laneCount ?? lanes.length ?? 1,
     },
     arena: { shape: "polygon", sizeM, bounds: a.arena?.bounds ?? [[-161, -161], [161, -161], [161, 161], [-161, 161]] },
+    // v23 — TYPED TERRAIN GRID (the engine's #1 ask, MAP-INPUTS brief + rule 9 "one type per
+    // cell"): the raw cell enum (OPEN 0 · FOREST 1 · ROCK 2 · WATER 3 · CLIFF 4 · ROAD 5 · OOB 6)
+    // so the engine applies its own movement rule per type (forest = passable-slow, etc.) with
+    // ZERO inference. `walk` stays CF's conservative sim mask (forest counted blocked) — engines
+    // should read `cells`, sims may read `walk`.
+    ...(a.terrain?.cells ? { terrain: { cellM: a.terrain.cellM ?? 2, w: a.terrain.w, h: a.terrain.h, cells: a.terrain.cells, ...(a.terrain.walk ? { walk: a.terrain.walk } : {}) } } : {}),
     obstacles,
     resources,
     buildSpots: convertBuildSpots(a.buildSpots),
     spawnZones,
     lanes,
-    structures: [...synthStructures(spawnZones, lanes), ...castleStructures],
+    structures: structuresAll,
     ...(mobs.length ? { mobs } : {}),
   };
   // Repair gate: a map CF's validator accepts is returned EXACTLY as built above (byte-identical
   // for every committed passing map); a map it would reject (extreme slivers) gets the repair pass.
-  return vFails(bf) ? repairA1(bf, a.terrain, clearPts) : bf;
+  const out = vFails(bf) ? repairA1(bf, a.terrain, clearPts) : bf;
+  // v23 rule 3 (engine brief: "the road IS the AI lane — waypoints ≥8u clear of every structure
+  // anchor"; a waypoint 0.45u from a tower caused units orbiting it): push every lane waypoint
+  // radially out of each anchor's 8u disc — runs LAST (the repair pass may rebuild lanes). The
+  // polyline between waypoints still crosses gate arches; only the STOP points move; a waypoint
+  // pinned between overlapping discs is DROPPED (the polyline spans its neighbors).
+  {
+    const anchors = (out.structures ?? []).map((s2) => [s2.x, s2.z]);
+    const clearOfAnchors = (pt) => anchors.every(([ax, az]) => Math.hypot(pt[0] - ax, pt[1] - az) >= 8);
+    // walkability guard: a pushed waypoint must land on walkable ground or the lane invariant
+    // ("lane unblocked between waypoints") breaks — try the radial push, then rotated escapes.
+    const tw = a.terrain ?? {};
+    const wmask = tw.walk ? new Uint8Array(Buffer.from(tw.walk, "base64")) : null;
+    const G2 = tw.w ?? 0, cellM2 = tw.cellM ?? 2, half2 = (G2 * cellM2) / 2;
+    const walkableAt = (x, z) => {
+      if (!wmask) return true;
+      const cx2 = Math.max(0, Math.min(G2 - 1, Math.floor((x + half2) / cellM2)));
+      const cz2 = Math.max(0, Math.min(G2 - 1, Math.floor((z + half2) / cellM2)));
+      return !!wmask[cz2 * G2 + cx2];
+    };
+    for (const ln of out.lanes ?? []) {
+      for (const pt of ln.waypoints ?? []) {
+        if (clearOfAnchors(pt)) continue;
+        let done = false;
+        for (const rot of [0, 0.9, -0.9, 1.8, -1.8]) {         // radial first, then rotated escapes
+          const cand = [pt[0], pt[1]];
+          for (let it = 0; it < 6 && !clearOfAnchors(cand); it++) {
+            for (const [ax, az] of anchors) {
+              const d = Math.hypot(cand[0] - ax, cand[1] - az);
+              if (d >= 8) continue;
+              const a0 = d > 0.01 ? Math.atan2(cand[1] - az, cand[0] - ax) + rot : rot;
+              cand[0] = +(ax + Math.cos(a0) * 8.5).toFixed(1);
+              cand[1] = +(az + Math.sin(a0) * 8.5).toFixed(1);
+            }
+          }
+          if (clearOfAnchors(cand) && walkableAt(cand[0], cand[1])) { pt[0] = cand[0]; pt[1] = cand[1]; done = true; break; }
+        }
+        if (!done) pt._drop = true;                            // pinned or no walkable escape — drop below
+      }
+      if ((ln.waypoints ?? []).length > 2)
+        ln.waypoints = ln.waypoints.filter((pt, i) => (!pt._drop && clearOfAnchors(pt)) || i === 0 || i === ln.waypoints.length - 1);
+      for (const pt of ln.waypoints ?? []) delete pt._drop;
+    }
+  }
+  return out;
 }
 
 export default toBattlefieldA1;

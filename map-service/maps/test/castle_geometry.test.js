@@ -147,6 +147,38 @@ function checkArtifact(label, art) {
     && ((inPoly(o.x, o.z, ring0) && polyD(o.x, o.z, ring0) > 2.5)
         || (sg.gates || []).some((g2) => Math.hypot(g2.at[0] - o.x, g2.at[1] - o.z) < 10)));
   ok(treeBad.length === 0, `${label}: R-TREE walled interior + door aprons clear of trees/rocks (${treeBad.length} inside)`);
+  // ENGINE RULE 10 (v23): every ring's wall ≥14u tall.
+  ok(cg.rings.every((r) => (r.h || 0) >= 14), `${label}: R-H14 every wall ≥14u (engine floor)`);
+  // ENGINE RULE 9 (v23): no 1-cell blocker slivers survive bake (open ground on both opposite sides).
+  {
+    const G2 = art.terrain.w, cells2 = new Uint8Array(Buffer.from(art.terrain.cells, "base64"));
+    const BLK = new Set([1, 2, 3, 4]);
+    let sliver = 0;
+    for (let z2 = 1; z2 < G2 - 1; z2++) for (let x2 = 1; x2 < G2 - 1; x2++) {
+      const i = z2 * G2 + x2;
+      if (!BLK.has(cells2[i])) continue;
+      const opN = !BLK.has(cells2[i - G2]) && cells2[i - G2] !== 6, opS = !BLK.has(cells2[i + G2]) && cells2[i + G2] !== 6;
+      const opW = !BLK.has(cells2[i - 1]) && cells2[i - 1] !== 6, opE = !BLK.has(cells2[i + 1]) && cells2[i + 1] !== 6;
+      if ((opN && opS) || (opW && opE)) sliver++;
+    }
+    ok(sliver === 0, `${label}: R-SLIVER no 1-cell blockers (${sliver} found)`);
+    // ENGINE RULE 10 (v23): breach ward — mostly-open pocket just inside the MAIN gate.
+    const g0 = (cg.rings[0].gates[0] || {}).at || cg.rings[0].gates[0];
+    if (g0) {
+      const m0 = Math.hypot(g0[0] - keep[0], g0[1] - keep[1]) || 1;
+      const px = g0[0] - ((g0[0] - keep[0]) / m0) * 13, pz = g0[1] - ((g0[1] - keep[1]) / m0) * 13;
+      let openN = 0, tot = 0;
+      const cellM2 = art.terrain.cellM || 2, halfM2 = (G2 * cellM2) / 2;
+      for (let dz = -5; dz <= 5; dz++) for (let dx = -5; dx <= 5; dx++) {
+        if (dx * dx + dz * dz > 25) continue;
+        const cx3 = Math.max(0, Math.min(G2 - 1, Math.floor((px + dx * cellM2 + halfM2) / cellM2)));
+        const cz3 = Math.max(0, Math.min(G2 - 1, Math.floor((pz + dz * cellM2 + halfM2) / cellM2)));
+        tot++;
+        if (!BLK.has(cells2[cz3 * G2 + cx3]) && cells2[cz3 * G2 + cx3] !== 6) openN++;
+      }
+      ok(openN / (tot || 1) >= 0.75, `${label}: R-BREACH open ward inside the main gate (${openN}/${tot} open)`);
+    }
+  }
   // R-ROAD (v19 owner 2026-08-01): a road that passes THROUGH the wall line has a door there.
   // Sample the outer polyline for ROAD ground; count only real crossings (ROAD continues ≥4u on
   // BOTH sides of the wall — ford/band artifacts along the wall don't) and require a gate ≤23u.

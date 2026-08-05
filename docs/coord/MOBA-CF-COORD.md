@@ -862,3 +862,30 @@ explicit IN THE DATA: every castle structure now carries `blocking` + `r` —
 model — `GET /internal/v1/designs/:id/traverse.json` is public if you want to diff navmeshes).
 All 11 estates + siege-test re-baked at v22 (sync delivers to `clashfront-map-sync`); sweep 892 +
 traverse 36 green.
+
+**2026-08-05 — 🏰 GEN_VERSION 23: the engine's 10 terrain-authoring rules are now GENERATION
+GATES (MAP-INPUTS-THE-ENGINE-WANTS.md @844ef7d, owner: "generate new castle maps based on this,
+and make the rules passes for bulk regeneration AND UI/AI-made maps").** Because every path —
+lazy seed, owner regenerate, LLM/designer prompt, and the 20K bulk bake — funnels through ONE
+`generate()` + converter pipeline, the rules gate ALL of them by construction; the sweep
+(1036 checks) + traverse audit (39) enforce them in CI. What changed:
+• Rule 1/6/8 — THE FLAT RULING: the render-manifest heightfield no longer has rolling noise under
+  walkable ground (OPEN/ROAD/FOREST = exactly flat); structure pads flat by construction; drama
+  stays on CLIFF plateaus + ROCK. No unit ever wiggles across the y=2 combat-tier boundary.
+• Rule 4 — water shelf: ≥6u shore band graded 0→−1.1 (the wade→swim threshold) then deepening
+  (cap −2.6), never a vertical plunge; NEW per-cell depth mask in the manifest
+  (`depth:{scale:80,data}` — u8/80 = depth in units, 0 = land).
+• Rule 3 — the A1 lane waypoints keep ≥8u from EVERY structure anchor (runs after the repair
+  pass; pinned waypoints drop, walkability-guarded) — the "units orbit their tower" root, killed
+  in data.
+• Rule 9 — typed terrain grid NOW IN THE A1 (`terrain:{cellM,w,h,cells[,walk]}` — the engine's #1
+  ask; forest readable as passable-slow); 1-cell blocker slivers eliminated at bake (destructible
+  barrier gates now breach 2-cell walls instead — rule 7 intentional breach points preserved).
+• Rule 10 — wall floor 14 (KEEP 14 / CASTLE 16 / PALACE 18, final 25) + a cleared BREACH WARD
+  inside the main gate (courtyard pocket; ring-1 locally deepened ≥25u on multi-ring castles).
+• Rule 2/5 follow from the flat ruling (no walkable tier transitions exist ⇒ no ramps needed yet;
+  crossings carve at grade ≥8u); rule 7 gate carve is 11u ≥ 8.4 ✓.
+• v22 recap for the engine: castle structures carry blocking/r; wallRing has t + archClearH.
+All 11 estates + siege-test re-baked at v23 and mirrored to `clashfront-map-sync`. Waypoint-graph
+note: the A1 already ships `lanes[]` + per-entry `routes[]` — that IS the minimum nav data the
+older brief asked for; flow-fields stay on the wishlist.
