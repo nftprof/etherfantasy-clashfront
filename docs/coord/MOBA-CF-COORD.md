@@ -936,3 +936,15 @@ dusk fog) — candy is carried by props, land stays normal. candy_dream lives on
 theme **`snowdream`** (dream-lavender fog, bake:'none', ❄️ Snow dream designer chip) beside
 **`cyber`**. Theme roster now: candyland (grass + candy props) / cyber (veil lattice) / snowdream
 (frosted rainbow-sprinkle fields).
+
+**2026-08-05 (6) — 🌊 natural shorelines in the designer water layer.** Owner: "river still looks
+laddered/choppy — round the shapes into natural pond curves." Root cause: preview3d's water (the
+game module ships NO water layer) was one flat quad per WATER cell — a staircase by construction.
+Fix (render-only, gameplay truth untouched): (1) 3×3-blurred water field sampled on a 2× fine
+lattice smooths the outline lumps; (2) the mesh EXPANDS slightly past true water cells (blur ≥
+0.42, never shrinks, capped at 1 coarse cell, per-body guarded) and since the waterline sits
+below every bank the rim tucks UNDER rising terrain — the visible shore becomes the smooth
+terrain∩plane contour of the rule-4 dip, not the mesh edge. Depth tints/foam now bilinear.
+**→ MOBA BattleEngine RAW:** when you build real in-match water, same recipe applies (or we
+promote the smoothing to bake time and ship `waterBodies[{poly,waterline}]` polygons in the
+manifest — flagged as the V4 upstream note in preview3d).

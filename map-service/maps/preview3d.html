@@ -206,11 +206,31 @@ const waterMats=[];
     ice:{color:0xbfdcea,shallow:[0.92,0.98,1.0],deep:[0.55,0.72,0.85],op:0.93,shin:170,spec:0xffffff,em:0x0a141c,emI:0.1,bump:0.15,speed:0},
     soda:THEMES?THEMES.water:{color:0xff7fb4,shallow:[1.0,0.78,0.88],deep:[0.85,0.30,0.55],op:0.9,shin:120,spec:0xffc0dd,em:0x33101f,emI:0.25,bump:0.3,speed:0.8}
   }[mode]||{color:0x2e6ea8,shallow:[0.62,0.80,0.92],deep:[0.10,0.26,0.44],op:0.88,shin:110,spec:0x9fc8ee,em:0x06121e,emI:0.25,bump:0.55,speed:1};
+  // ---- NATURAL SHORELINE (owner 2026-08-05: "river looks laddered/choppy — round the shapes
+  // into natural pond curves"). Two ingredients: (1) a 3×3-blurred water field sampled on a 2×
+  // fine lattice smooths the outline's high-frequency cell lumps; (2) the mesh EXPANDS slightly
+  // past the true water cells (threshold 0.42 < 0.5) and the waterline sits below every bank, so
+  // the expanded rim tucks UNDER the rising terrain — the VISIBLE shore becomes the smooth
+  // terrain∩plane contour of the dip, not the quad-union staircase. Gameplay truth (walk mask,
+  // depth8, rule-4 shelf) is untouched — this is a render-only shoreline.
+  const Wb=new Float32Array(G*G);
+  {const wv=(i,j)=>(i<0||j<0||i>=G||j>=G||cells[j*G+i]===T.OOB)?null:(cells[j*G+i]===T.WATER?1:0);
+   for(let j=0;j<G;j++)for(let i=0;i<G;i++){let s=0,n=0;
+     for(let dj=-1;dj<=1;dj++)for(let di=-1;di<=1;di++){const v=wv(i+di,j+dj);if(v==null)continue;
+       const k2=(di?1:2)*(dj?1:2);s+=v*k2;n+=k2;}
+     Wb[j*G+i]=n?s/n:0;}}
+  const bil=(f,x,z)=>{ // bilinear sample of a per-cell-center field at world-cell coords
+    const u=Math.min(G-1.001,Math.max(0,x-0.5)),v=Math.min(G-1.001,Math.max(0,z-0.5));
+    const i0=u|0,j0=v|0,fx=u-i0,fz=v-j0,q=j0*G+i0;
+    return f[q]*(1-fx)*(1-fz)+f[q+1]*fx*(1-fz)+f[q+G]*(1-fx)*fz+f[q+G+1]*fx*fz;};
+  const distC=new Float32Array(G*G);
+  for(let k=0;k<G*G;k++)distC[k]=(cells[k]===T.WATER&&dist[k]<1e8)?Math.min(dist[k],5):0;
   // flood-fill components → one flat mesh each at its own waterline
+  const cid=new Int32Array(G*G).fill(-1);let ncomp=0;
   for(let j0=0;j0<G;j0++)for(let i0=0;i0<G;i0++){
     if(!isW(i0,j0)||seen[j0*G+i0])continue;
-    const comp=[];const st=[i0,j0];seen[j0*G+i0]=1;
-    while(st.length){const j=st.pop(),i=st.pop();comp.push(i,j);
+    const comp=[];const st=[i0,j0];seen[j0*G+i0]=1;const myId=ncomp++;
+    while(st.length){const j=st.pop(),i=st.pop();comp.push(i,j);cid[j*G+i]=myId;
       for(const[di,dj]of[[1,0],[-1,0],[0,1],[0,-1]]){const ni=i+di,nj=j+dj;
         if(isW(ni,nj)&&!seen[nj*G+ni]){seen[nj*G+ni]=1;st.push(ni,nj);}}}
     // tiny all-shore bodies (max shore-distance < 1.5 cells) skip the bright shallow ramp — they
@@ -230,25 +250,39 @@ const waterMats=[];
     let floorMin=1e9;
     for(let h=0;h<comp.length;h+=2){const wx=-half+(comp[h]+0.5)*CELL,wz=-half+(comp[h+1]+0.5)*CELL;const y=hAt(wx,wz);if(y<floorMin)floorMin=y;}
     const waterY=Math.max(bank-0.18,(floorMin<1e8?floorMin:0)+0.12);
-    // flat geometry: one quad per cell, corner vertices shared, depth colour per corner
+    // fine-lattice geometry (2× subcells): a fine cell is emitted when its coarse cell is TRUE
+    // water of THIS body (never shrinks), or the blurred field says ≥0.42 next to this body
+    // (smooth expansion — hides under the terrain, rounding the visible shore).
+    const SS=2,FC=CELL/SS,FG=G*SS;
+    const ownId=(ci,cj)=>{ // this body's id if (ci,cj) is its water or borders it
+      if(ci<0||cj<0||ci>=G||cj>=G||cells[cj*G+ci]===T.OOB)return -1;
+      if(cid[cj*G+ci]===myId)return myId;
+      if(cells[cj*G+ci]===T.WATER)return -1;            // another body's water — leave it alone
+      for(const[di,dj]of[[1,0],[-1,0],[0,1],[0,-1],[1,1],[-1,1],[1,-1],[-1,-1]]){
+        const ni=ci+di,nj=cj+dj;
+        if(ni>=0&&nj>=0&&ni<G&&nj<G&&cid[nj*G+ni]===myId)return myId;}
+      return -1;};
+    const inBody=(fi,fj)=>{const ci=(fi/SS)|0,cj=(fj/SS)|0;
+      if(ownId(ci,cj)!==myId)return false;
+      if(cid[cj*G+ci]===myId)return true;               // true water cell — always kept
+      return bil(Wb,(fi+0.5)/SS,(fj+0.5)/SS)>=0.42;};   // expansion rim
     const vidx=new Map(),pos=[],col=[],uv=[],idx=[];
-    const dAt=(i,j)=>{let s=0,n=0;for(const[di,dj]of[[0,0],[-1,0],[0,-1],[-1,-1]]){const ni=i+di,nj=j+dj;
-      if(isW(ni,nj)){s+=Math.min(dist[nj*G+ni],5);n++;}}return n?s/n:0;};
-    const vtx=(i,j)=>{const k=j*(G+1)+i;let v=vidx.get(k);if(v!=null)return v;
+    const vtx=(fi,fj)=>{const k=fj*(FG+1)+fi;let v=vidx.get(k);if(v!=null)return v;
       v=pos.length/3;vidx.set(k,v);
       // KNOWN LIMIT (V4 upstream): one flat waterline per body — a marsh component spanning
       // elevations shows pale dipped ground above the line. The true fix needs the PRE-dip ground
       // height (per-cell fill level), which only the converter knows → WATER-RENDER-SPEC V4 note.
-      const x=-half+i*CELL,z=-half+j*CELL;pos.push(x,waterY,ZS*z);
-      uv.push(i/16,j/16);
-      const d=dAt(i,j),t=tiny?0.55:Math.min(1,d/4);
+      const x=-half+fi*FC,z=-half+fj*FC;pos.push(x,waterY,ZS*z);
+      uv.push(fi/(16*SS),fj/(16*SS));
+      const d=bil(distC,fi/SS,fj/SS),t=tiny?0.55:Math.min(1,d/4);
       let r=STYLE.shallow[0]+(STYLE.deep[0]-STYLE.shallow[0])*t,
           g=STYLE.shallow[1]+(STYLE.deep[1]-STYLE.shallow[1])*t,
           b=STYLE.shallow[2]+(STYLE.deep[2]-STYLE.shallow[2])*t;
       if(d<0.5&&mode!=="lava"&&!tiny){const f=(1-d/0.5)*0.4;r+=(1.12-r)*f;g+=(1.12-g)*f;b+=(1.12-b)*f;} // subtle foam bake at the bank line (skipped on tiny bodies — all-shore foam = glare)
       col.push(r,g,b);return v;};
-    for(let h=0;h<comp.length;h+=2){const i=comp[h],j=comp[h+1];
-      const a1=vtx(i,j),b1=vtx(i+1,j),c1=vtx(i,j+1),d1=vtx(i+1,j+1);
+    for(let fj=0;fj<FG;fj++)for(let fi=0;fi<FG;fi++){
+      if(!inBody(fi,fj))continue;
+      const a1=vtx(fi,fj),b1=vtx(fi+1,fj),c1=vtx(fi,fj+1),d1=vtx(fi+1,fj+1);
       if(ZS>0)idx.push(a1,c1,b1,b1,c1,d1);else idx.push(a1,b1,c1,b1,d1,c1);} // winding flips with the mirror
     const geo=new THREE.BufferGeometry();
     geo.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));
