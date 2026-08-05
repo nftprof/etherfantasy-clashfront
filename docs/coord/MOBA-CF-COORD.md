@@ -948,3 +948,23 @@ terrain∩plane contour of the rule-4 dip, not the mesh edge. Depth tints/foam n
 **→ MOBA BattleEngine RAW:** when you build real in-match water, same recipe applies (or we
 promote the smoothing to bake time and ship `waterBodies[{poly,waterline}]` polygons in the
 manifest — flagged as the V4 upstream note in preview3d).
+
+**2026-08-05 (7) — 🚨 OUTER-RING GATES "MISSING" = the map sync was silently DEAD since Jul 28.**
+Owner (playing the MOBA siege): "castle gates missing on the outer ring (again)". The DATA is
+correct — current v23 castles ship 2–3 rings with 3–4 outer-ring DOOR gates (castle_gate_*,
+material WOOD, states CLOSED/OPEN/BROKEN, road-aligned; verified on siege-test + CANDYLAND:
+every gate sits exactly on its ring polyline). The engine was playing a **genVersion-14 relic**
+(single wall ring, 2 gates): `sync-moba-maps.yml` had failed on EVERY run since Jul 28 —
+actions/checkout only fetches the default branch, so `git checkout clashfront-map-sync` fell back
+to creating the branch from main → push rejected non-fast-forward → the retry loop swallowed the
+failure and printed the success line. Green runs, zero deliveries. FIXED: the workflow now fetches
+the target branch explicitly, re-mirrors on its tip, and HARD-FAILS if the push fails; and the
+v23 maps were hand-delivered — engine repo `clashfront-map-sync` is now at the current bake
+(commit fe1206a, siege-test with castle_gate_0/1/2 on the outer ring).
+**→ EF Moba + MOBA BattleEngine RAW: merge `clashfront-map-sync` into your working/staging branch**
+— you've been on the stale copy since v14. Re the earlier engine request on WHERE gates are placed
+(MAP-INPUTS-THE-ENGINE-WANTS.md + the wall-aware gate-routing fix 49dd1e7 that steers walled-off
+attackers to the nearest gate): confirmed as the standing CF contract — every road crossing a wall
+gets a door exactly on the road (R-ROAD, run-grouped), the outer ring always carries the ladder
+minimum (min(4, rings+1), ≥20u apart), gates ship as semantic anchors (position + material +
+states + hpMax + blocking DOOR r5.5), and the A1 `lanes[]`/`routes[]` include the gate approaches.

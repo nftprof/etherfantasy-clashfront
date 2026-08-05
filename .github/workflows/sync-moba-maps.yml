@@ -72,11 +72,22 @@ jobs:
           BR="${{ steps.t.outputs.branch }}"
           git config user.name  "clashfront-map-bot"
           git config user.email "maps@etherfantasy.com"
-          # land on the target branch (create from current HEAD if it doesn't exist yet)
-          git checkout "$BR" 2>/dev/null || git checkout -b "$BR"
+          # land on the REMOTE tip of the target branch. actions/checkout only fetches the default
+          # branch, so a bare `git checkout $BR` used to fall back to -b from main HEAD → the push
+          # was rejected non-fast-forward on every run (and the retry loop swallowed it) → the
+          # engine silently played months-stale castles. Fetch explicitly; create only if new.
+          git reset --hard -q && git clean -fdq data/moba-maps   # drop the pre-step mirror; re-done below
+          git fetch origin "$BR" && git checkout -B "$BR" "origin/$BR" || git checkout -B "$BR"
+          # re-mirror on top of the branch tip (the pre-step rsync landed on the default checkout)
+          rsync -a --include='*/' --include='*.json' --exclude='*' ../cf/data/moba-maps/ data/moba-maps/
           git add data/moba-maps
           if git diff --cached --quiet; then echo "✅ engine maps already up to date — nothing to push"; exit 0; fi
           SHA="$(git -C ../cf rev-parse --short HEAD)"
           git commit -m "maps: sync data/moba-maps from clashfront@${SHA}"
-          for i in 1 2 3 4; do git push -u origin "$BR" && break || sleep $((2**i)); done
+          ok=0
+          for i in 1 2 3 4; do
+            if git push -u origin "$BR"; then ok=1; break; fi
+            sleep $((2**i)); git fetch origin "$BR" && git rebase "origin/$BR" || true
+          done
+          if [ "$ok" != 1 ]; then echo "::error::push to engine branch $BR FAILED after 4 attempts"; exit 1; fi
           echo "📦 pushed updated MOBA maps to engine branch: $BR"
