@@ -25,15 +25,18 @@ falls back to the biome look and loses nothing but flavour.
   true) and **`biome.bake:"none"`** — an OPTIONAL manifest field telling the render module to skip
   the dirt/meadow/rock vertex-colour splotches (they would muddy a designed floor); absent =
   classic bake, fully backward-compatible.
-  - `candy_dream.png` (`make_candy_floor.mjs`) — **candyland's** ground (owner: "ur best version
-    of a candy land — rainbow land or purple dream"): frosting cream marbled with pastel-rainbow
-    taffy swirls, rainbow sprinkles, sugar sparkle. Designed FOR the module's 23×25 tiling — zero
-    straight lines, low-contrast organic features only, so it cannot read as a grid. Fog =
-    soft dream-lavender `0x8f6fa5`.
+  - `candy_dream.png` (`make_candy_floor.mjs`) — frosting cream marbled with pastel-rainbow taffy
+    swirls, rainbow sprinkles, sugar sparkle; designed FOR the module's 23×25 tiling (zero straight
+    lines — cannot read as a grid). Live it reads as SNOW-WHITE dream land — owner kept it as the
+    **`snowdream`** theme ("interesting keeper for later"): dream-lavender fog `0x8f6fa5`, designer
+    chip ❄️ Snow dream.
   - `veil_masquerade.png` (`make_veil_floor.mjs`) — harlequin purple diamonds + gold seams +
     orchid veils. At arena tiling it reads as a glowing digital lattice — the owner kept it as
     the **`cyber`** theme ("a cool cyber tron floor"): deep indigo fog `0x261b3a`, the
     digital-world skin. Designer chip 🕹 Cyber grid.
+  - **`candyland` itself reverted to the green-grass look (v24.5, owner):** normal `grass_01`
+    floor with a light lilac-rose cast + classic bake — candy is carried by the PROPS (lollipops,
+    canes, gumdrops, gingerbread castle), the land stays normal.
 - **The demo world:** `data/cf-maps/artifacts/CANDYLAND.artifact.json` — authored soda river +
   licorice road + The Gingerbread Keep (CASTLE tier), built by
   `map-service/tools/make_candyland_demo.mjs` (deterministic, 5/5 invariants, rule-compliant).

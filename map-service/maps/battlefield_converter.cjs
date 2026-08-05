@@ -100,16 +100,16 @@ function convert(artifact, opts){
   /* v24.2 THEME FLOOR (owner: "make the floor DREAM like — the Kai & Yui chase, masquerade dance
    * feel"): a theme may re-tint the biome floor through the manifest — the game module then
    * renders it natively (smooth water, real floors — no legacy fallback).
-   * candyland (v24.4, owner: "ur best version of a candy land — rainbow land or purple dream"):
-   * the AUTHORED candy_dream floor (tools/make_candy_floor.mjs — frosting cream marbled with
-   * pastel-rainbow taffy swirls + rainbow sprinkles + sugar sparkle, designed for the module's
-   * 23×25 tiling: zero straight lines ⇒ can't read as a grid), soft dream-lavender fog.
-   * cyber (owner: the veil floor "is a cool cyber tron floor u can keep"): the veil_masquerade
-   * harlequin floor (tools/make_veil_floor.mjs) under deep indigo fog — the digital-world skin.
-   * Both use bake:'none' (authored floors — no dirt splotches) + dry 0xffffff (art reads true). */
+   * candyland (v24.5, owner: "lets reverse to the green grass version earlier"): back to the
+   * v24.2 look — normal grass floor with a light lilac-rose cast, classic bake, indigo dusk fog.
+   * The two AUTHORED floors stayed registered as KEEPER themes (owner: "interesting keeper for
+   * later"): cyber = veil_masquerade harlequin under deep indigo ("a cool cyber tron floor");
+   * snowdream = candy_dream frosting/rainbow-sprinkle floor ("snow white dream land") under
+   * dream-lavender. Keepers use bake:'none' + dry 0xffffff so the authored art reads true. */
   const THEME_BIOME = {
-    candyland: { biome:'meadow', floor:'candy_dream',     dry:0xffffff, wet:0xf0d8e4, fog:0x8f6fa5, water:'water', treeHSL:[0.92,0.50,0.62], bake:'none' },
+    candyland: { biome:'meadow', floor:'grass_01',        dry:0xf2e4f0, wet:0xcbaed4, fog:0x261b3a, water:'water', treeHSL:[0.92,0.50,0.62] },
     cyber:     { biome:'meadow', floor:'veil_masquerade', dry:0xffffff, wet:0xd8cce6, fog:0x261b3a, water:'water', treeHSL:[0.75,0.45,0.55], bake:'none' },
+    snowdream: { biome:'meadow', floor:'candy_dream',     dry:0xffffff, wet:0xf0d8e4, fog:0x8f6fa5, water:'water', treeHSL:[0.92,0.50,0.62], bake:'none' },
   };
   if (meta.theme && THEME_BIOME[meta.theme]) pal = THEME_BIOME[meta.theme];
 

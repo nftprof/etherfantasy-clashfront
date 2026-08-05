@@ -927,3 +927,12 @@ the module's 23×25 tiling: zero straight lines ⇒ no grid artifact) under soft
 same bake:'none' contract) with a 🕹 Cyber grid designer chip. Fallback agreed with the owner: if
 this pass still doesn't look right live, candyland reverts to the standard sakura landscape (drop
 the THEME_BIOME candyland entry — one line).
+
+**2026-08-05 (5) — v24.5: candyland back to green grass; candy_dream kept as `snowdream`.** Owner
+on the candy_dream floor live: "another interesting floor for snow white dream land... but lets
+reverse to the green grass version earlier — interesting keeper for later." Candyland's
+THEME_BIOME entry reverted to the v24.2 look (grass_01, lilac-rose dry tint, classic bake, indigo
+dusk fog) — candy is carried by props, land stays normal. candy_dream lives on as registered
+theme **`snowdream`** (dream-lavender fog, bake:'none', ❄️ Snow dream designer chip) beside
+**`cyber`**. Theme roster now: candyland (grass + candy props) / cyber (veil lattice) / snowdream
+(frosted rainbow-sprinkle fields).
