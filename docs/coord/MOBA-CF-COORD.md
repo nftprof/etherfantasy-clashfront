@@ -968,3 +968,16 @@ attackers to the nearest gate): confirmed as the standing CF contract — every 
 gets a door exactly on the road (R-ROAD, run-grouped), the outer ring always carries the ladder
 minimum (min(4, rings+1), ≥20u apart), gates ship as semantic anchors (position + material +
 states + hpMax + blocking DOOR r5.5), and the A1 `lanes[]`/`routes[]` include the gate approaches.
+
+**2026-08-06 — 🍬 v25 FULL CANDY-LAND BUILD + local screenshot loop.** Owner supplied reference
+art ("build every element… make the end result wow"). Built with a NEW self-serve iteration loop:
+map-service run locally + headless Chromium (vendored three.js r128 at /vendor/ — the designer no
+longer depends on a CDN) → screenshot → self-critique, 10 passes this round. Delivered: authored
+`cotton_candy` floor (cream-rose cotton, pastel drifts, candy flowers), pastel dream castle
+(cream-pink walls, rotating pastel cone roofs, gold star finials, icing courtyard), soft-serve
+swirl trees, saturated lollipop/gumdrop palette, milky soda water, floating cotton-candy clouds +
+rainbow arc, dream-lavender-pink sky. **→ MOBA BattleEngine RAW — two new OPTIONAL manifest
+fields in the vendored render module (mirror when convenient):** `biome.sky` (full-strength
+day-lit sky/fog + warm hemi/sun + soft glow; absent = classic dusk rig unchanged) and
+`biome.floorRepeat` ([rx,rz] floor tiling override). Also note the exposure rule: pastel
+textures/materials need ~÷1.4 pre-division for the light rig or they clamp to white.

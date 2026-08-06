@@ -20,8 +20,8 @@
 <div id="north">⬆ N</div>
 <div id="hint"><button id="texBtn">🎨 grass</button><button id="colBtn">⛔ collision</button><button id="pathBtn">🧭 paths</button>drag = orbit · wheel = zoom · right-drag = pan</div>
 <div id="err"></div>
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script src="/vendor/three.min.js"></script>
+<script src="/vendor/OrbitControls.js"></script>
 <script>
 (async function(){
 const q=new URLSearchParams(location.search), pid=q.get("parcel"), vv=q.get("v");
@@ -40,8 +40,8 @@ const theme=(a.meta&&a.meta.theme)||null;
 // biome; the candy is IN THE OBJECTS — designed lollipops & candy canes, gumdrop boulders, a
 // soda river, graham roads, a gingerbread-and-icing castle.
 const THEMES={candyland:{
-  water:{color:0xe8558e,shallow:[1.0,0.82,0.90],deep:[0.72,0.18,0.42],op:0.9,shin:120,spec:0xffc0dd,em:0x2a0f1c,emI:0.22,bump:0.3,speed:0.8},
-  road:'rgba(214,178,116,.92)', rock:[0xff6fa5,0x7fe0c3,0xffd166,0xb18cff,0x6fd3ff], trunk:0xfff5f0}}[theme]||null;
+  water:{color:0xffaacb,shallow:[1.0,0.93,0.95],deep:[0.96,0.62,0.76],op:0.85,shin:140,spec:0xfff0f6,em:0x3a2030,emI:0.12,bump:0.22,speed:0.6},
+  road:'rgba(214,178,116,.92)', rock:[0xf05f95,0x3fbf96,0xf2b83c,0x9668e0,0x3fa8e8], trunk:0xfff5f0}}[theme]||null;
 // engine-ready render manifest (battlefield_converter.cjs output). With it, the preview renders
 // THE GAME's nine layers via EF_BATTLEFIELD — the same scene builder the MOBA client runs, so what
 // the designer sees IS the final look. Without it (404/converter off) → legacy flat fallback.
@@ -313,7 +313,22 @@ for(const o of a.obstacles||[]){
     for(let ci=0;ci<nIn;ci++){
       const s2=(o.r/2.9)*(0.8+rng()*0.6), ox2=ci?(rng()-0.5)*5:0, oz2=ci?(rng()-0.5)*5:0;
       const tr=new THREE.Group();
-      if(rng()<0.3){
+      const kindRoll=rng();
+      if(kindRoll<0.2){
+        // SOFT-SERVE SWIRL TREE (ref art): stout trunk + a stacked pastel swirl crown
+        const hgt=4.6*s2, trunk=new THREE.Mesh(new THREE.CylinderGeometry(0.7*s2,0.9*s2,hgt,7),lam(0xb98a6a));
+        trunk.position.y=hgt/2; tr.add(trunk);
+        const cc2=THEMES.rock[(rng()*THEMES.rock.length)|0];
+        let ry=hgt, rr3=2.6*s2;
+        while(rr3>0.5*s2){
+          const band=new THREE.Mesh(new THREE.TorusGeometry(rr3,0.75*s2*Math.min(1,rr3/(2.2*s2)),8,16),
+            new THREE.MeshPhongMaterial({color:(rr3/s2>1.6?cc2:0xfff0f4),shininess:80}));
+          band.rotation.x=Math.PI/2; band.position.y=ry; tr.add(band);
+          ry+=0.95*s2; rr3-=0.55*s2;
+        }
+        const tip=new THREE.Mesh(new THREE.SphereGeometry(0.55*s2,8,6),lam(0xfff0f4));
+        tip.position.y=ry; tr.add(tip);
+      }else if(kindRoll<0.42){
         // CANDY CANE: thick white shaft with REAL red stripes (stacked rings) + a hooked head
         const hgt=7.5*s2, shaft=new THREE.Mesh(new THREE.CylinderGeometry(0.62*s2,0.62*s2,hgt,8),lam(0xfff8f4));
         shaft.position.y=hgt/2; tr.add(shaft);
@@ -341,7 +356,7 @@ for(const o of a.obstacles||[]){
           }
         }
         const rim=new THREE.Mesh(new THREE.TorusGeometry(2.4*s2,0.18*s2,6,18),lam(0xffffff));head.add(rim);
-        head.position.y=hgt+2.0*s2; head.rotation.y=rng()*6.28; head.rotation.x=(rng()-0.5)*0.25;
+        head.position.y=hgt+2.0*s2; head.rotation.y=rng()*6.28; head.rotation.x=(rng()-0.5)*0.12;
         tr.add(head);
       }
       tr.rotation.y=rng()*6.28; put(tr,o.x+ox2,o.z+oz2);
@@ -402,18 +417,48 @@ for(const s of a.structures||[]){
 // batter footing → drum towers every ~26u of run → twin-tower gatehouses → the multi-tier keep with
 // a banner crown → moat (drowned_bastion). styleKey swaps materials/roofs only; the kit is shared.
 // Gameplay-neutral: collision/HP stay the structures[] data — this is visuals draped over it.
+if(THEMES)(function dreamSky(){
+  // ☁️ floating cotton-candy clouds (ref art): soft puff clusters drifting over the field
+  const puffM=new THREE.MeshLambertMaterial({color:0xfbe8ee,flatShading:true});
+  const puffM2=new THREE.MeshLambertMaterial({color:0xf3d2e0,flatShading:true});
+  for(let c9=0;c9<9;c9++){
+    const g9=new THREE.Group();
+    const n9=3+((rng()*4)|0); let px9=0;
+    for(let p9=0;p9<n9;p9++){
+      const r9=3.5+rng()*4.5;
+      const m9=new THREE.Mesh(new THREE.SphereGeometry(r9,9,7),rng()<0.6?puffM:puffM2);
+      m9.position.set(px9,(rng()-0.5)*2.2,(rng()-0.5)*4); m9.scale.y=0.62; g9.add(m9); px9+=r9*1.15;
+    }
+    const a9=rng()*Math.PI*2, rr9=45+rng()*95;
+    g9.position.set(Math.cos(a9)*rr9,30+rng()*22,Math.sin(a9)*rr9*(ZS>0?1:-1));
+    g9.rotation.y=rng()*Math.PI; scene.add(g9);
+  }
+  // 🌈 rainbow arc on the horizon (billboard-ish: five nested half-tori)
+  const RB=[0xe86a6a,0xe8a860,0xe8d860,0x6ac48a,0x6a9ae0];
+  const rb=new THREE.Group();
+  RB.forEach((c8,i8)=>{
+    const t8=new THREE.Mesh(new THREE.TorusGeometry(95+i8*4.0,2.2,6,48,Math.PI),
+      new THREE.MeshBasicMaterial({color:c8,transparent:true,opacity:0.5}));
+    rb.add(t8);
+  });
+  rb.position.set(-40,-4,ZS>0?-135:135); scene.add(rb);
+})();
 if(CG)(function(){
   const STYLES={fieldstone:{wall:0x958f80,roof:0x5d4a37,banner:0xaa3333},
     collegiate:{wall:0xbfb59e,roof:0x3d5a73,banner:0x2255aa},   hanseatic:{wall:0x8a4a34,roof:0x35424e,banner:0xcc8822},
     vermilion:{wall:0xa33c2e,roof:0xcc9922,banner:0xffcc44},    carnavale:{wall:0xcfc4ae,roof:0x8a6aa0,banner:0xaa44aa},
     drowned_bastion:{wall:0x4a4d54,roof:0x2a2d33,banner:0x226644},
-    candy:{wall:0xa9713f,roof:0xff8fb8,banner:0xff4d8d,icing:0xfff3ec,noTex:true}};   // 🍫 warm gingerbread, white icing trim
+    candy:{wall:0xd6aabe,roof:0xd45f90,roofs:[0xd45f90,0x4fb28c,0x8668cc,0xdc9a50],banner:0xff8fb8,
+      icing:0xf0dcd8,court:0xe9d2c4,star:0xcf9430,noTex:true}};   // 🍬 pastel dream castle (ref art 2026-08-06; colors pre-divided for the bright dream light rig)
   const ST=STYLES[CG.styleKey]||STYLES.fieldstone;
   const wallM=ST.noTex?new THREE.MeshLambertMaterial({color:ST.wall,flatShading:true})
                       :new THREE.MeshLambertMaterial({map:stoneTex,color:ST.wall,flatShading:true});
   const icingM=ST.icing?new THREE.MeshLambertMaterial({color:ST.icing,flatShading:true}):null;
   const trimM=icingM||wallM;                            // merlons/curbs/caps: icing on candy castles
   const roofM=new THREE.MeshLambertMaterial({color:ST.roof,flatShading:true});
+  const roofMs=(ST.roofs||[ST.roof]).map(c=>new THREE.MeshLambertMaterial({color:c,flatShading:true}));
+  let roofI=0; const nextRoofM=()=>roofMs[(roofI++)%roofMs.length];
+  const starM=ST.star?new THREE.MeshLambertMaterial({color:ST.star,emissive:0x6a4a10}):null;
   const bannerM=new THREE.MeshLambertMaterial({color:ST.banner,side:THREE.DoubleSide});
   const ring0=CG.rings[0]||{pts:[],h:9,gates:[]};
   // centroid + mound: the fortress climbs (§1 rule 1) — a stepped earthwork under the whole ward
@@ -438,7 +483,8 @@ if(CG)(function(){
     const w0=world(cx,cz);md.position.set(w0.x,baseY+(baseRaise+2)/2-1,w0.z);scene.add(md);}
   { // flagstone courtyard paving across the (flat) interior
     const court=new THREE.Mesh(new THREE.CircleGeometry(rAvg*0.9,30),
-      new THREE.MeshLambertMaterial({map:stoneTex,color:0xb9b0a0}));
+      ST.court?new THREE.MeshLambertMaterial({color:ST.court,flatShading:true})
+              :new THREE.MeshLambertMaterial({map:stoneTex,color:0xb9b0a0}));
     court.rotation.x=-Math.PI/2;const w1=world(cx,cz);court.position.set(w1.x,baseY+baseRaise+0.12,w1.z);scene.add(court);
     for(let s3=0;s3<16;s3++){const a3=s3/16*Math.PI*2+rng(),rr2=rAvg*(1.12+rng()*0.3);   // skirt scatter (outer)
       const sx=cx+Math.cos(a3)*rr2,sz=cz+Math.sin(a3)*rr2;
@@ -554,7 +600,8 @@ if(CG)(function(){
       const off=7.2,ox=(bx/ (Math.hypot(bx,bz)||1))*off,oz=(bz/(Math.hypot(bx,bz)||1))*off;
       for(const s2 of [-1,1]){const tw=new THREE.Group();
         tw.add(new THREE.Mesh(new THREE.CylinderGeometry(3.4,4.0,H*1.55,9),wallM));
-        const roof=new THREE.Mesh(new THREE.ConeGeometry(3.9,4.4,9),roofM);roof.position.y=H*0.78+2.2;tw.add(roof);
+        const roof=new THREE.Mesh(new THREE.ConeGeometry(3.9,4.4,9),nextRoofM());roof.position.y=H*0.78+2.2;tw.add(roof);
+        if(starM){const st4=new THREE.Mesh(new THREE.OctahedronGeometry(1.15,0),starM);st4.position.y=H*0.78+4.9;tw.add(st4);}
         putC(tw,gx+s2*ox,gz+s2*oz,H*0.78);}
       // OPEN passage: a lintel spans ABOVE head height and the portcullis grate hangs half-raised
       // in the upper band — the road walks straight through (the DOOR itself = the castle_gate_N
@@ -619,10 +666,12 @@ if(CG)(function(){
       if(t2===tiers-1)for(const [sx,sz] of [[-1,-1],[-1,1],[1,-1],[1,1]]){
         const tur=new THREE.Group();
         tur.add(new THREE.Mesh(new THREE.CylinderGeometry(1.7,2.0,5,8),wallM));
-        const tr=new THREE.Mesh(new THREE.ConeGeometry(2.1,2.8,8),roofM);tr.position.y=3.6;tur.add(tr);
+        const tr=new THREE.Mesh(new THREE.ConeGeometry(2.1,2.8,8),nextRoofM());tr.position.y=3.6;tur.add(tr);
+        if(starM){const st5=new THREE.Mesh(new THREE.OctahedronGeometry(0.55,0),starM);st5.position.y=5.4;tur.add(st5);}
         putK(tur,K.at[0]+sx*w2*0.46,K.at[1]+sz*w2*0.46,y2+tierH);}
       y2+=tierH;w2*=0.74;}
-    const kr=new THREE.Mesh(new THREE.ConeGeometry(w2*0.9,6,4),roofM);putK(kr,K.at[0],K.at[1],y2+3);kr.rotation.y=Math.PI/4;
+    const kr=new THREE.Mesh(new THREE.ConeGeometry(w2*0.9,6,4),ST.roofs?nextRoofM():roofM);putK(kr,K.at[0],K.at[1],y2+3);kr.rotation.y=Math.PI/4;
+    if(starM){const st6=new THREE.Mesh(new THREE.OctahedronGeometry(1.2,0),starM);putK(st6,K.at[0],K.at[1],y2+7.2);}
     putK(new THREE.Mesh(new THREE.CylinderGeometry(0.18,0.18,7,5),wallM),K.at[0],K.at[1],y2+8);
     const flag=putK(new THREE.Mesh(new THREE.PlaneGeometry(4.4,2.6),bannerM),K.at[0]+2.2,K.at[1],y2+10.4);flag.rotation.y=ZS>0?0:Math.PI;}
   // ---- moat ring (drowned_bastion): a water annulus hugging the outer wall (§2) ----

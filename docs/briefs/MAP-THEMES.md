@@ -34,9 +34,16 @@ falls back to the biome look and loses nothing but flavour.
     orchid veils. At arena tiling it reads as a glowing digital lattice — the owner kept it as
     the **`cyber`** theme ("a cool cyber tron floor"): deep indigo fog `0x261b3a`, the
     digital-world skin. Designer chip 🕹 Cyber grid.
-  - **`candyland` itself reverted to the green-grass look (v24.5, owner):** normal `grass_01`
-    floor with a light lilac-rose cast + classic bake — candy is carried by the PROPS (lollipops,
-    canes, gumdrops, gingerbread castle), the land stays normal.
+  - **v25 FULL CANDY-LAND BUILD (owner 2026-08-06, reference art):** supersedes the v24.5
+    green-grass revert. `cotton_candy.png` (`make_cotton_floor.mjs`) — cream-rose cotton with
+    pastel drifts + candy flowers — is candyland's ground at `floorRepeat:[7,8]` (meadow-scale
+    features). New OPTIONAL manifest fields the render module honors: **`biome.sky`** (full-strength
+    day-lit sky/fog + warm light rig + soft glow — the classic dusk rig is byte-identical when
+    absent) and **`biome.floorRepeat`** ([rx,rz] texture tiling override). Designer candy kit:
+    pastel dream castle (cream-pink walls, rotating pink/mint/lavender/peach cone roofs, gold star
+    finials, icing courtyard), soft-serve swirl trees, saturated lollipop/gumdrop palette, floating
+    cotton-candy clouds + a rainbow arc (themed maps only). Exposure rule learned: bright pastel
+    textures/materials must be pre-divided ~÷1.4 for the light rig or they clamp to white.
 - **The demo world:** `data/cf-maps/artifacts/CANDYLAND.artifact.json` — authored soda river +
   licorice road + The Gingerbread Keep (CASTLE tier), built by
   `map-service/tools/make_candyland_demo.mjs` (deterministic, 5/5 invariants, rule-compliant).

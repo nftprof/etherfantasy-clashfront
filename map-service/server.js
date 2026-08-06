@@ -116,6 +116,12 @@ export function handleRequest(req, res) {
   // /ef_battlefield.js = the pre-unification module (served from the .bak) — ?legacyRenderer=1
   // rollback path per the switchover protocol; remove after soak.
   if (p === "/ef_battlefield_renderer.js") return sendFile(res, "maps/ef_battlefield_renderer.js", "application/javascript");
+  // vendored three.js (r128) — the designer no longer depends on a CDN (blocked in sandboxes,
+  // a single point of failure in prod). Same files jsdelivr served; version-locked.
+  {
+    const vd = /^\/vendor\/([a-zA-Z0-9._-]+\.js)$/.exec(p);
+    if (vd) return sendFile(res, "vendor/" + vd[1], "application/javascript");
+  }
   if (p === "/ef_battlefield.js") return sendFile(res, "maps/ef_battlefield.js.bak", "application/javascript");
   {
     const fl = /^\/floors\/([a-z0-9_]+\.png)$/.exec(p);

@@ -213,7 +213,8 @@ function buildBattlefield(scene, opts){
     /* --- L2: the photographic floor, tiled deliberately "wrong" --- */
     var tex = keepT(new THREE.TextureLoader().load(floorsBase + M.biome.floor + '.png'));
     tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
-    tex.repeat.set(TUNED.FLOOR_REPEAT[0], TUNED.FLOOR_REPEAT[1]);
+    var _fr = (M.biome.floorRepeat && M.biome.floorRepeat.length===2) ? M.biome.floorRepeat : TUNED.FLOOR_REPEAT;
+    tex.repeat.set(_fr[0], _fr[1]);
     tex.center.set(0.5,0.5);
     tex.rotation = TUNED.FLOOR_ROTATION;
     tex.anisotropy = TUNED.FLOOR_ANISO;
@@ -234,7 +235,12 @@ function buildBattlefield(scene, opts){
     var c = document.createElement('canvas'); c.width = c.height = 256;
     var x = c.getContext('2d');
     var g = x.createRadialGradient(128,128,10,128,128,128);
-    TUNED.GLOW_STOPS.forEach(function(s){ g.addColorStop(s[0], s[1]); });
+    /* dream maps (biome.sky set): warm sun pool + soft lavender edge — never the dark vignette */
+    var stops = (M.biome.sky != null) ? [
+      [0.00,'rgba(255,246,224,0.20)'],[0.35,'rgba(255,236,214,0.06)'],
+      [0.60,'rgba(255,255,255,0.00)'],[1.00,'rgba(214,186,226,0.14)'],
+    ] : TUNED.GLOW_STOPS;
+    stops.forEach(function(s){ g.addColorStop(s[0], s[1]); });
     x.fillStyle = g; x.fillRect(0,0,256,256);
     var t = keepT(new THREE.CanvasTexture(c)); t.anisotropy = 2;
     var m = keepM(new THREE.MeshBasicMaterial({ map:t, transparent:true, depthWrite:false }));
@@ -247,16 +253,30 @@ function buildBattlefield(scene, opts){
   /* ======================================================================
      LAYER 5 — fog + matching background + the light rig
      ====================================================================== */
+  /* biome.sky (OPTIONAL manifest field, themed/dream maps): a full-strength day-lit sky.
+     When present the sky colour IS the background+fog (no dark navy base mix), pushed farther
+     out, and the light rig warms up. Absent = the classic dusk rig, byte-identical. */
+  var DREAM = M.biome.sky != null;
   if (opts.addFog !== false){
-    var fogCol = new THREE.Color(TUNED.FOG_COLOR);
-    if (M.biome.fog != null) fogCol.lerp(new THREE.Color(M.biome.fog), TUNED.BIOME_FOG_MIX);
-    scene.fog = new THREE.Fog(fogCol.getHex(), TUNED.FOG_NEAR, TUNED.FOG_FAR);
+    var fogCol;
+    if (DREAM){
+      fogCol = new THREE.Color(M.biome.sky);
+      scene.fog = new THREE.Fog(fogCol.getHex(), TUNED.FOG_NEAR*1.7, TUNED.FOG_FAR*2.3);
+    } else {
+      fogCol = new THREE.Color(TUNED.FOG_COLOR);
+      if (M.biome.fog != null) fogCol.lerp(new THREE.Color(M.biome.fog), TUNED.BIOME_FOG_MIX);
+      scene.fog = new THREE.Fog(fogCol.getHex(), TUNED.FOG_NEAR, TUNED.FOG_FAR);
+    }
     scene.background = fogCol.clone();   /* MUST equal the fog colour or the horizon seams */
   }
   var _rim = null, _fills = [];
   if (opts.addLights !== false){
-    var hemi = new THREE.HemisphereLight(TUNED.HEMI.sky, TUNED.HEMI.ground, TUNED.HEMI.intensity);
-    var sun  = new THREE.DirectionalLight(TUNED.SUN.color, TUNED.SUN.intensity);
+    var hemi = DREAM
+      ? new THREE.HemisphereLight(0xfff0e2, 0xe8c4d6, 0.82)
+      : new THREE.HemisphereLight(TUNED.HEMI.sky, TUNED.HEMI.ground, TUNED.HEMI.intensity);
+    var sun  = DREAM
+      ? new THREE.DirectionalLight(0xffe4c0, 0.72)
+      : new THREE.DirectionalLight(TUNED.SUN.color, TUNED.SUN.intensity);
     sun.position.set(TUNED.SUN.pos[0], TUNED.SUN.pos[1], TUNED.SUN.pos[2]);
     root.add(hemi); root.add(sun);
     /* char rig (web-34): cool rim from behind-off-axis + distance-capped colored fills.

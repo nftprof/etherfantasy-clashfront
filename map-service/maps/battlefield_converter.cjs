@@ -107,7 +107,7 @@ function convert(artifact, opts){
    * snowdream = candy_dream frosting/rainbow-sprinkle floor ("snow white dream land") under
    * dream-lavender. Keepers use bake:'none' + dry 0xffffff so the authored art reads true. */
   const THEME_BIOME = {
-    candyland: { biome:'meadow', floor:'grass_01',        dry:0xf2e4f0, wet:0xcbaed4, fog:0x261b3a, water:'water', treeHSL:[0.92,0.50,0.62] },
+    candyland: { biome:'meadow', floor:'cotton_candy',    dry:0xb9aeb6, wet:0xf0d8e4, fog:0xf2cfd8, sky:0xf6d9de, water:'water', treeHSL:[0.92,0.50,0.62], bake:'none', floorRepeat:[7,8] },
     cyber:     { biome:'meadow', floor:'veil_masquerade', dry:0xffffff, wet:0xd8cce6, fog:0x261b3a, water:'water', treeHSL:[0.75,0.45,0.55], bake:'none' },
     snowdream: { biome:'meadow', floor:'candy_dream',     dry:0xffffff, wet:0xf0d8e4, fog:0x8f6fa5, water:'water', treeHSL:[0.92,0.50,0.62], bake:'none' },
   };
@@ -242,7 +242,7 @@ function convert(artifact, opts){
     modes: meta.modes||params.modes||null,
     arena:{ shape:arena.shape||'square', sizeM, half, bounds },
     grid:{ w, h, cellM:cell },
-    biome:{ key:pal.biome, palette:palKey, floor:pal.floor, dry:pal.dry, wet:pal.wet, fog:pal.fog, water:pal.water, ...(pal.bake?{bake:pal.bake}:{}) },
+    biome:{ key:pal.biome, palette:palKey, floor:pal.floor, dry:pal.dry, wet:pal.wet, fog:pal.fog, water:pal.water, ...(pal.bake?{bake:pal.bake}:{}), ...(pal.sky!=null?{sky:pal.sky}:{}), ...(pal.floorRepeat?{floorRepeat:pal.floorRepeat}:{}) },
     ...(meta.theme?{theme:meta.theme}:{}),  /* v24: visuals-only skin key — engine maps it to an asset pack */
     height:{ w, h, hMin:+hMin.toFixed(3), hMax:+hMax.toFixed(3), data:u8ToB64(hu8) },  /* worldY = hMin + u8/255*(hMax-hMin), bilinear */
     depth:{ w, h, scale:80, data:u8ToB64(depth8) },  /* v23 rule 4: per-cell water depth (u8/80 = depth in u; 0 = land) */
