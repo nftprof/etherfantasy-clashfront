@@ -1025,3 +1025,16 @@ matrix (pathfinding verification, color layout, prop/polygon lanes, image-refere
 honest verification table (all proven except the AR-box worker topology, which awaits the owner's
 lockdown OK), and the delegation rule of thumb: delegate what a screenshot or gate can catch, keep
 what is a judgment call — then turn each ruling into a new gate.
+
+**2026-08-07 (4) — ⛏ TERRAFORM POWER designed (docs/briefs/TERRAFORM-POWER.md).** Owner: user AIs
+edit land only MARGINALLY under hard invariants; more change = more cost; VIP = more drastic;
+full redo = pay the NPC. Design: (1) five hard invariants — parcel polygon, EDGE CONNECTIONS
+(roads still lead in, rivers still run: edgeCrossings become a validator), the 10 rules + 5
+invariants + traverse audit, battle anchors, theme=visuals-only; (2) TP change budget priced by
+class-weighted grid DIFF with superlinear total (diff^1.3) + per-class instance caps 30/60/100%
+(non-VIP/VIP/VIP3) — "remove trees yes, replace ALL trees no"; (3) TP trickles free daily
+(incremental path), buys with CT that BURNS (net-sink; = economy-seam Hook 2's concrete meaning);
+(4) full redo = 👷 Royal Surveyor NPC, flat CT + cooldown; (5) execution model per owner
+clarification: "their AI" = OUR hosted claude-code agent running per-user constraint envelopes
+(2–3 free candidate previews, applying costs TP; envelope in the job context so the agent
+self-censors over-cap designs). All numbers ⚙ owner-tunable.
