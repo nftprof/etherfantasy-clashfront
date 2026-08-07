@@ -1008,3 +1008,11 @@ stub build refuses (exit 2), post-write verify fails the deploy if any covered f
 Verified end-to-end BEFORE shipping via the local screenshot loop: an obfuscated copy of the full
 service rendered CANDYLAND pixel-identical (module + inline + themed paths + castle kit). Also
 v25.2 polish: cotton-candy clouds now highly translucent (opacity 0.18/0.24, depthWrite off).
+
+**2026-08-07 (2) — 🤖 hosted-AI tier auth DELIVERED (AI map build).** Owner relayed the AR /
+etherfantasy-BE box setup: Claude Code auth is live on 13.213.205.145 — operator doc ON THE BOX at
+`/home/ubuntu/CLAUDE-TOKEN-SETUP.md` (token path, CLI path, localhost-only admin page, manual
+refresh flow). `docs/briefs/AI-MAP-BUILD.md` updated with the summary + the recommended topology:
+the AI-build WORKER runs on the AR box (token never leaves it) and drives map.etherfantasy.com
+over HTTPS; a standing worker/service on that box needs the owner's explicit OK (lockdown rule).
+Remaining blockers unchanged: worker-topology OK, VIP-level lookup API, reference-image storage.

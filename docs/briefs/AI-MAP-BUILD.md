@@ -37,13 +37,33 @@ the WAR. The agent output is clamped data, so a hostile prompt/reference can at 
 skin, never break gameplay, geometry, or the server. Pass caps + token budget per job; BYO keys
 used in-memory only.
 
-## What CF needs from the owner to wire it
+## Hosted-model tier — DELIVERED auth (owner relay, 2026-08-07)
 
-1. The AWS agent box's claude-code API **endpoint URL + auth token** (drop as `~/.cf_ai_build_url`
-   / `~/.cf_ai_build_token` on the map box — deploy auto-sources, same pattern as the battle
-   secrets), OR an Anthropic API key for the hosted-model tier.
+The AR / etherfantasy-BE box (**13.213.205.145**) now carries working Claude Code auth — full
+operator doc lives ON THAT BOX at `/home/ubuntu/CLAUDE-TOKEN-SETUP.md` (read it before wiring
+anything). Summary of what it provides:
+- long-lived OAuth token at `~/.config/cf/claude_oauth_token` (mode 600), used as the env var
+  `CLAUDE_CODE_OAUTH_TOKEN` — a bare token string, NOT a `~/.claude/.credentials.json` blob
+  (moving it there breaks refresh → 401). Verified live.
+- `claude` CLI at `~/.npm-global/bin/claude` (v2.1.197).
+- token admin page: systemd `claude-token-manager`, **127.0.0.1:8091 only** (SSH tunnel to reach;
+  key at `~/.config/cf/tm_key`). View/live-test/paste-refresh. Token refresh is manual: mint on a
+  browser machine (`claude setup-token`) → paste into the admin page.
+- HARD RULES from the box doc: never expose :8091 publicly, never paste the token into chat, and
+  **check with the owner before creating any standing service config** (box is under lockdown).
+
+**Recommended topology given the token lives on the AR box:** run the AI-build WORKER on the AR
+box (where `claude` + token are) and have it drive the map service over HTTPS
+(map.etherfantasy.com designs/validate/render APIs + its own headless Chromium for screenshots) —
+the token never leaves its box. The map-service endpoint then just enqueues jobs the AR worker
+pulls. The alternative (an HTTP runner wrapper on the AR box that map-service calls) needs the
+owner's explicit OK per the lockdown rule.
+
+## Still needed to finish wiring
+
+1. Owner OK on the worker topology above (it is a standing process on the locked-down AR box).
 2. VIP tier lookup: which API tells us a PG user's VIP level (games-etherfantasy-backend?).
-3. Reference-image storage decision (S3 bucket vs local disk on the map box).
+3. Reference-image storage decision (S3 bucket vs local disk).
 
-Until those land, the endpoint ships as a stub (501 + this contract). The sandbox agent cannot
-reach the AWS box from here — wiring happens at deploy time via the secret files.
+Until those land, the endpoint ships as a stub (501 + this contract). The CF sandbox agent cannot
+reach the AWS boxes directly — box-side steps run at deploy time or by an operator session.
