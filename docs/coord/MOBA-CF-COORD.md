@@ -994,3 +994,17 @@ red=DEF, gold=neutral) instead of solid grey towers; castle towers stay real. En
 towers get real themed models when actually built (asset-pack item). (3) NEW brief
 `docs/briefs/AI-MAP-BUILD.md` — the v25 screenshot-loop productized as a landowner service; tiers
 locked by owner: non-VIP = BYO AI key, VIP = hosted models, VIP3 = image-reference upload.
+
+**2026-08-07 — 🔒 map-service client obfuscation (the MOBA obfuse engine, ported).** Owner: "take
+the same obfuse engine to cover the map — eventually it may be as important as the renderer." And
+the owner's sharper question answered precisely: the shared renderer module was published
+obfuscated by the MOBA build (shared/ef_battlefield_renderer.js is in build.mjs jsFiles) but
+map.etherfantasy.com served ITS copy READABLE — the designer was the last raw surface. Closed:
+`map-service/build/obfuscate.mjs` (javascript-obfuscator, the MOBA profile verbatim — CFF 0.5,
+string-array b64, self-defending, renameGlobals off + EF_BATTLEFIELD/THREE reserved) runs AT
+DEPLOY over the deployed mirror; repo source stays readable. Covered: the renderer module, the
+legacy .bak, and the inline scripts of /designer + /designer/3d. Guards per the MOBA doctrine:
+stub build refuses (exit 2), post-write verify fails the deploy if any covered file lacks _0x.
+Verified end-to-end BEFORE shipping via the local screenshot loop: an obfuscated copy of the full
+service rendered CANDYLAND pixel-identical (module + inline + themed paths + castle kit). Also
+v25.2 polish: cotton-candy clouds now highly translucent (opacity 0.18/0.24, depthWrite off).

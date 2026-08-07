@@ -1,0 +1,9 @@
+{
+  "name": "map-service-obfuscate",
+  "private": true,
+  "type": "module",
+  "description": "Deploy-time client obfuscation for map-service (same engine as the MOBA build)",
+  "dependencies": {
+    "javascript-obfuscator": "^4.1.1"
+  }
+}

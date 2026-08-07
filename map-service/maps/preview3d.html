@@ -439,8 +439,8 @@ for(const s of a.structures||[]){
 // Gameplay-neutral: collision/HP stay the structures[] data — this is visuals draped over it.
 if(THEMES)(function dreamSky(){
   // ☁️ floating cotton-candy clouds (ref art): soft puff clusters drifting over the field
-  const puffM=new THREE.MeshLambertMaterial({color:0xfbe8ee,flatShading:true});
-  const puffM2=new THREE.MeshLambertMaterial({color:0xf3d2e0,flatShading:true});
+  const puffM=new THREE.MeshLambertMaterial({color:0xfbe8ee,flatShading:true,transparent:true,opacity:0.18,depthWrite:false});
+  const puffM2=new THREE.MeshLambertMaterial({color:0xf3d2e0,flatShading:true,transparent:true,opacity:0.24,depthWrite:false});
   for(let c9=0;c9<9;c9++){
     const g9=new THREE.Group();
     const n9=3+((rng()*4)|0); let px9=0;

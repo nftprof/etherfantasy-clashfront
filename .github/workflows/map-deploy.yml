@@ -32,6 +32,17 @@ jobs:
           rsync -a --delete --exclude='.git' \
             "$GITHUB_WORKSPACE"/map-service/ "$HOME"/ef-map-service/
 
+      # Client obfuscation (owner 2026-08-06: "take the same obfuse engine to cover the map") —
+      # the MOBA repo's javascript-obfuscator profile, run IN PLACE over the deployed mirror.
+      # SOURCE stays readable in the repo; the box serves hardened copies. The script exits
+      # non-zero on a stub build or any file left readable, which FAILS the deploy — a silent
+      # fallback to raw is the failure that matters (same doctrine as the MOBA pipeline).
+      - name: Obfuscate served client JS/HTML (MOBA obfuse engine)
+        run: |
+          cd "$GITHUB_WORKSPACE/map-service/build"
+          npm install --no-audit --no-fund
+          DOMAIN_LOCK="" node obfuscate.mjs --dir "$HOME/ef-map-service"
+
       # worldfield's dataRoot() probes ~/ef-map-service/data on the box. WITHOUT these files the
       # service silently falls back to /api/world and loses zone/bbox/palette coherence.
       - name: Ship world data + build stamp
