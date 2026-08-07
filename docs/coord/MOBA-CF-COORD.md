@@ -981,3 +981,16 @@ fields in the vendored render module (mirror when convenient):** `biome.sky` (fu
 day-lit sky/fog + warm hemi/sun + soft glow; absent = classic dusk rig unchanged) and
 `biome.floorRepeat` ([rx,rz] floor tiling override). Also note the exposure rule: pastel
 textures/materials need ~÷1.4 pre-division for the light rig or they clamp to white.
+
+**2026-08-06 (2) — 🌉 bridges, tower seed-markers, AI-map-build brief.** Owner review of v25:
+(1) "road not cutting through the bridge but over the river, sharp edges" — TWO fixes: the module's
+lane ribbon now holds a FLAT DECK line (last bank height) while over WATER cells instead of draping
+into the shore-shelf dip (module change — MOBA BattleEngine RAW please mirror; visual only, pathing
+untouched), and themed maps draw a real PEPPERMINT BRIDGE (white deck, red stripe rails, candy
+posts) on each lane water-span (span detection walks the lane polyline — never a deck for road
+merely running beside water). (2) Field TOWERs are SEED SPOTS, not built structures — the designer
+now renders them as ghost spot-markers (side-colored pad ring + translucent hologram; blue=ATK,
+red=DEF, gold=neutral) instead of solid grey towers; castle towers stay real. Engine-side: seeded
+towers get real themed models when actually built (asset-pack item). (3) NEW brief
+`docs/briefs/AI-MAP-BUILD.md` — the v25 screenshot-loop productized as a landowner service; tiers
+locked by owner: non-VIP = BYO AI key, VIP = hosted models, VIP3 = image-reference upload.

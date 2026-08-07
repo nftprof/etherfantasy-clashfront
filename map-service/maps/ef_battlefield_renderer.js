@@ -334,6 +334,12 @@ function buildBattlefield(scene, opts){
     var SEG = Math.max(28, Math.round(curve.getLength()/3));
     var cp = curve.getPoints(SEG), seed = (chain[0][0]+chain[0][1])*0.013;
     var pos=[], uv=[], col=[], idx=[], dist=0, pcx=0, pcz=0;
+    /* water lookup from the manifest mask: crossings ride a flat DECK at the last land height */
+    var wMask = b64ToU8((M.masks && M.masks.water) || '');
+    var overWater = function(x,z){ if(!wMask.length) return false;
+      var i2=Math.floor((x+half)/CELL), j2=Math.floor((z+half)/CELL);
+      if(i2<0||j2<0||i2>=W||j2>=H) return false; return wMask[j2*W+i2]===1; };
+    var deckY=null;
     for (var i=0;i<cp.length;i++){
       var p = cp[i];
       var a = cp[Math.max(0,i-1)], b = cp[Math.min(cp.length-1,i+1)];
@@ -347,8 +353,15 @@ function buildBattlefield(scene, opts){
       pcx=cx; pcz=cz;
       var hw = TUNED.LANE_HALFWIDTH*(1 + 0.17*Math.sin(i*0.6+seed) + 0.07*Math.sin(i*0.21+seed*3));
       var lx=cx+nx*hw, lz=cz+nz*hw, rx=cx-nx*hw, rz=cz-nz*hw;
-      pos.push(lx, heightAt(lx,lz)+TUNED.LANE_Y, lz);
-      pos.push(rx, heightAt(rx,rz)+TUNED.LANE_Y, rz);
+      if (overWater(cx,cz)){
+        if (deckY==null) deckY = heightAt(pcx,pcz);      /* entered water: freeze at bank height */
+        pos.push(lx, deckY+TUNED.LANE_Y+0.22, lz);
+        pos.push(rx, deckY+TUNED.LANE_Y+0.22, rz);
+      } else {
+        deckY = null;
+        pos.push(lx, heightAt(lx,lz)+TUNED.LANE_Y, lz);
+        pos.push(rx, heightAt(rx,rz)+TUNED.LANE_Y, rz);
+      }
       var u = dist/9; uv.push(u,0, u,1);
       var ef = Math.min(1, Math.min(tt, 1-tt)/TUNED.LANE_TAPER);
       var fa = ef*ef*(3-2*ef);   /* alpha dissolves into grass at both ends */

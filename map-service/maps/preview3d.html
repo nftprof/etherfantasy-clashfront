@@ -108,8 +108,28 @@ if(parity){
   // fountains stripped (owner 2026-07-21: the module's flat spawn pads clip into sloped terrain —
   // "can u make them floating above as well") — every spawn/entry marker is a FLOATING BEACON now
   // (the block below), so the module draws no ground pads at all.
+  // field TOWERs are SEED SPOTS, not built structures (owner 2026-08-06: "they shouldn't appear
+  // unless seeded… we need a marker instead") — keep them out of the module's solid placeholder
+  // render and draw ghost spot-markers below. Castle towers stay real (they ARE built).
   bf=EF_BATTLEFIELD.buildBattlefield(scene,{manifest:{...man,fountains:[],...(THEMES?{trees:[],rocks:[]}:{})},THREE,floorsBase:"/floors/",addLights:true,addFog:true,
-    structures:(a.structures||[]).filter(s=>s.kind!=="WALL"&&!isCastleAnchor(s))});
+    structures:(a.structures||[]).filter(s=>s.kind!=="WALL"&&!isCastleAnchor(s)&&s.kind!=="TOWER")});
+  (a.structures||[]).filter(s=>s.kind==="TOWER"&&!isCastleAnchor(s)).forEach(s=>{
+    const col=s.side==="ATTACKER"?0x4a86e8:s.side==="DEFENDER"?0xd8534a:0xd8a340;
+    const g=new THREE.Group();
+    const pad=new THREE.Mesh(new THREE.RingGeometry(2.2,3.4,24),
+      new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:0.5,side:THREE.DoubleSide}));
+    pad.rotation.x=-Math.PI/2;pad.position.y=0.15;g.add(pad);
+    const dot=new THREE.Mesh(new THREE.CircleGeometry(0.9,16),
+      new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:0.35,side:THREE.DoubleSide}));
+    dot.rotation.x=-Math.PI/2;dot.position.y=0.16;g.add(dot);
+    const ghost=new THREE.Mesh(new THREE.CylinderGeometry(1.4,1.8,7,10),
+      new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:0.14,depthWrite:false}));
+    ghost.position.y=3.6;g.add(ghost);
+    const tip=new THREE.Mesh(new THREE.ConeGeometry(1.0,1.6,10),
+      new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:0.35,depthWrite:false}));
+    tip.position.y=8.1;g.add(tip);
+    const w=world(s.x,s.z);g.position.set(w.x,hAt(s.x,s.z),w.z);scene.add(g);
+  });
 }else{
   // ============ legacy fallback (no manifest / converter off): approximate look ============
   function skyTex(top,bot){const c=document.createElement('canvas');c.width=8;c.height=256;const g=c.getContext('2d');const grd=g.createLinearGradient(0,0,0,256);grd.addColorStop(0,top);grd.addColorStop(0.62,bot);grd.addColorStop(1,bot);g.fillStyle=grd;g.fillRect(0,0,8,256);return new THREE.CanvasTexture(c);}
@@ -433,6 +453,60 @@ if(THEMES)(function dreamSky(){
     g9.position.set(Math.cos(a9)*rr9,30+rng()*22,Math.sin(a9)*rr9*(ZS>0?1:-1));
     g9.rotation.y=rng()*Math.PI; scene.add(g9);
   }
+  // 🍬 PEPPERMINT BRIDGES (owner 2026-08-06: "the road is not cutting through the bridge but over
+  // the river"): every road∩water run gets a real candy deck — white plank box, red stripe rails,
+  // peppermint posts — sitting flat at bank height over the crossing.
+  (function candyBridges(){
+    // walk each LANE polyline (the real road path); a contiguous span over WATER cells = one
+    // bridge, oriented along the path — never a deck merely because road runs beside the river.
+    const lanes=(man&&man.lanes)||[];
+    const isWat=(x,z)=>{const i=Math.floor((x+half)/CELL),j=Math.floor((z+half)/CELL);
+      return i>=0&&j>=0&&i<G&&j<G&&cells[j*G+i]===T.WATER;};
+    for(const chain of lanes){
+      if(!chain||chain.length<2)continue;
+      // densify the polyline
+      const P=[];
+      for(let k=0;k<chain.length-1;k++){
+        const[a1,b1]=[chain[k],chain[k+1]];
+        const d=Math.hypot(b1[0]-a1[0],b1[1]-a1[1]),n=Math.max(1,Math.ceil(d/1.5));
+        for(let t=0;t<n;t++)P.push([a1[0]+(b1[0]-a1[0])*t/n,a1[1]+(b1[1]-a1[1])*t/n]);
+      }
+      P.push(chain[chain.length-1]);
+      let spanStart=-1;
+      for(let k=0;k<=P.length;k++){
+        const w4=k<P.length&&isWat(P[k][0],P[k][1]);
+        if(w4&&spanStart<0)spanStart=k;
+        if(!w4&&spanStart>=0){
+          const kEnd=k-1;
+          if(kEnd-spanStart>=2){                            // real crossing, not a bank nick
+            const A=P[Math.max(0,spanStart-2)],B=P[Math.min(P.length-1,kEnd+2)];
+            const mx=(A[0]+B[0])/2,mz=(A[1]+B[1])/2;
+            const ang=Math.atan2(B[1]-A[1],B[0]-A[0]);
+            const len=Math.hypot(B[0]-A[0],B[1]-A[1])+3, wid=7;
+            const deckY=Math.max(hAt(A[0],A[1]),hAt(B[0],B[1]))+0.3;
+            const br=new THREE.Group();
+            br.add(new THREE.Mesh(new THREE.BoxGeometry(len,0.8,wid),
+              new THREE.MeshLambertMaterial({color:0xf6ede8,flatShading:true})));
+            for(const sgn of [1,-1]){
+              const rail=new THREE.Mesh(new THREE.BoxGeometry(len,0.7,0.7),lam(0xd84858));
+              rail.position.set(0,0.75,sgn*(wid/2-0.35));br.add(rail);
+              const nPost=Math.max(2,Math.round(len/6));
+              for(let p2=0;p2<=nPost;p2++){
+                const post=new THREE.Mesh(new THREE.CylinderGeometry(0.32,0.32,1.9,6),lam(0xfff6f2));
+                post.position.set(-len/2+p2*(len/nPost),0.6,sgn*(wid/2-0.35));br.add(post);
+                const cap=new THREE.Mesh(new THREE.SphereGeometry(0.4,6,5),lam(0xd84858));
+                cap.position.set(-len/2+p2*(len/nPost),1.75,sgn*(wid/2-0.35));br.add(cap);
+              }
+            }
+            const w5=world(mx,mz);br.position.set(w5.x,deckY,w5.z);
+            br.rotation.y=ZS>0?-ang:ang;
+            scene.add(br);
+          }
+          spanStart=-1;
+        }
+      }
+    }
+  })();
   // 🌈 rainbow arc on the horizon (billboard-ish: five nested half-tori)
   const RB=[0xe86a6a,0xe8a860,0xe8d860,0x6ac48a,0x6a9ae0];
   const rb=new THREE.Group();
