@@ -1016,3 +1016,12 @@ refresh flow). `docs/briefs/AI-MAP-BUILD.md` updated with the summary + the reco
 the AI-build WORKER runs on the AR box (token never leaves it) and drives map.etherfantasy.com
 over HTTPS; a standing worker/service on that box needs the owner's explicit OK (lockdown rule).
 Remaining blockers unchanged: worker-topology OK, VIP-level lookup API, reference-image storage.
+
+**2026-08-07 (3) — 📖 AI MAP-AGENT PLAYBOOK.** Owner: "verify it can work + TLDR internal doc of
+what the agent can do / how to prompt / how to max-delegate." → `docs/briefs/AI-MAP-AGENT-
+PLAYBOOK.md`: the proven loop (generate→gates→traverse audit→screenshot→self-critique), capability
+matrix (pathfinding verification, color layout, prop/polygon lanes, image-reference builds), the
+3 autonomy rings (user-AI data-only / dev-agent code+tests / owner-only canon), prompt templates,
+honest verification table (all proven except the AR-box worker topology, which awaits the owner's
+lockdown OK), and the delegation rule of thumb: delegate what a screenshot or gate can catch, keep
+what is a judgment call — then turn each ruling into a new gate.
