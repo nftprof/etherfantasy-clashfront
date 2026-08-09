@@ -25,6 +25,8 @@
 <script>
 (async function(){
 const q=new URLSearchParams(location.search), pid=q.get("parcel"), vv=q.get("v");
+const EXPORT=q.get("export")==="1";                    // AR terrain GLB export: strip scatter/props, LOD the ground
+const GSTRIDE=EXPORT?(parseInt(q.get("stride")||"3",10)||3):1;
 if(!pid){document.getElementById("err").textContent="missing ?parcel=<id>";return;}
 let d; try{ d=await fetch(`/internal/v1/designs/${pid}${vv!=null?`?v=${vv}`:""}`).then(r=>r.json()); }catch(e){}
 if(!d||!d.ok||!d.artifact){document.getElementById("err").textContent="could not load design "+pid;return;}
@@ -111,9 +113,9 @@ if(parity){
   // field TOWERs are SEED SPOTS, not built structures (owner 2026-08-06: "they shouldn't appear
   // unless seeded… we need a marker instead") — keep them out of the module's solid placeholder
   // render and draw ghost spot-markers below. Castle towers stay real (they ARE built).
-  bf=EF_BATTLEFIELD.buildBattlefield(scene,{manifest:{...man,fountains:[],...(THEMES?{trees:[],rocks:[]}:{})},THREE,floorsBase:"/floors/",addLights:true,addFog:true,
-    structures:(a.structures||[]).filter(s=>s.kind!=="WALL"&&!isCastleAnchor(s)&&s.kind!=="TOWER")});
-  (a.structures||[]).filter(s=>s.kind==="TOWER"&&!isCastleAnchor(s)).forEach(s=>{
+  bf=EF_BATTLEFIELD.buildBattlefield(scene,{manifest:{...man,fountains:[],...(EXPORT?{scatter:[]}:{}),...(THEMES||EXPORT?{trees:[],rocks:[]}:{})},THREE,floorsBase:"/floors/",addLights:true,addFog:true,groundStride:GSTRIDE,
+    structures:EXPORT?[]:(a.structures||[]).filter(s=>s.kind!=="WALL"&&!isCastleAnchor(s)&&s.kind!=="TOWER")});
+  (EXPORT?[]:(a.structures||[]).filter(s=>s.kind==="TOWER"&&!isCastleAnchor(s))).forEach(s=>{
     const col=s.side==="ATTACKER"?0x4a86e8:s.side==="DEFENDER"?0xd8534a:0xd8a340;
     const g=new THREE.Group();
     const pad=new THREE.Mesh(new THREE.RingGeometry(2.2,3.4,24),
@@ -327,7 +329,7 @@ const stoneTex=(function(){const c=document.createElement('canvas');c.width=c.he
  for(let i=0;i<260;i++){x.fillStyle=(rng()<.5?'rgba(255,255,255,':'rgba(0,0,0,')+(rng()*.1).toFixed(3)+')';x.fillRect(rng()*128,rng()*128,1,1);}
  const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(2,3);t.anisotropy=MAXA;return t;})();
 
-for(const o of a.obstacles||[]){
+for(const o of (EXPORT?[]:(a.obstacles||[]))){         // export = clean terrain (no scatter foliage/props)
   if(THEMES&&o.kind==="TREE"){                          // 🍭 candy groves — DESIGNED, not pins
     const nIn=1+((rng()*3)|0);                          // small cluster where a tree stood
     for(let ci=0;ci<nIn;ci++){
@@ -409,7 +411,7 @@ for(const o of a.obstacles||[]){
     put(lm,o.x,o.z,11);}
 }
 // gold = the game's 5-octahedron cluster · wood = 3 clustered pines (index.html mkNode verbatim)
-for(const r of a.resources||[]){
+for(const r of (EXPORT?[]:(a.resources||[]))){
   const grp=new THREE.Group();
   if(r.kind==="WOOD_GROVE"){for(let i=0;i<3;i++){const t=new THREE.Group();
     t.add(new THREE.Mesh(new THREE.CylinderGeometry(.35,.5,2.4,6),lam(0x5a3b22)).translateY(1.2));
@@ -753,8 +755,8 @@ if(CG)(function(){
     new THREE.MeshPhongMaterial({color:0x18384a,shininess:80,specular:0x557799,transparent:true,opacity:0.85}));
     mo.rotation.x=-Math.PI/2;const w3=world(cx,cz);mo.position.set(w3.x,baseY+0.5,w3.z);scene.add(mo);}
 })();
-for(const mb of a.mobs||[]){const c=new THREE.Mesh(new THREE.TetrahedronGeometry(3.4),new THREE.MeshLambertMaterial({color:0xc04ac0,emissive:0x501050}));put(c,mb.x,mb.z,2.4);}
-for(const b of a.buildSpots||[]){const pad=new THREE.Mesh(new THREE.CylinderGeometry(b.size*0.6,b.size*0.6,0.4,12),lam(0x3a4152));put(pad,b.x,b.z,0.25);}
+for(const mb of (EXPORT?[]:(a.mobs||[]))){const c=new THREE.Mesh(new THREE.TetrahedronGeometry(3.4),new THREE.MeshLambertMaterial({color:0xc04ac0,emissive:0x501050}));put(c,mb.x,mb.z,2.4);}
+for(const b of (EXPORT?[]:(a.buildSpots||[]))){const pad=new THREE.Mesh(new THREE.CylinderGeometry(b.size*0.6,b.size*0.6,0.4,12),lam(0x3a4152));put(pad,b.x,b.z,0.25);}
 // destructible HP-gates: a low breachable wall spanning the cells it opens, colored by kind
 const GATE={FOREST_WALL:0x6b4a2a,BOULDER_PILE:0x6e6a63,PORTCULLIS:0x8a7c4a,ICE_WALL:0x9fd0e6};
 for(const b of a.barriers||[]){const bcells=b.opens||[[b.x,b.z]];const w=Math.max(4,Math.hypot(bcells[bcells.length-1][0]-bcells[0][0],bcells[bcells.length-1][1]-bcells[0][1])+CELL*2);
@@ -872,6 +874,16 @@ addEventListener("resize",()=>{cam.aspect=innerWidth/innerHeight;cam.updateProje
 // PREVIEW-ONLY camera-adaptive fog: the module's TUNED fog (175/310) is calibrated for the game's
 // close camera. At/below that distance the exact numbers apply; orbiting further out scales the
 // range proportionally so the designer can still see the whole map with the same relative haze.
+// ---- AR TERRAIN EXPORT HOOK (owner 2026-08-07: Clash Lands AR game reuses these environments).
+// ?export=1 exposes the built scene for a headless GLTFExporter pass (tools/export_ar_terrains.mjs)
+// and hides the floating spawn beacons (HUD markers, not part of the environment). Everything else
+// — terrain, water/lava, castle, trees, rocks, lanes — IS the exportable environment.
+if(new URLSearchParams(location.search).get('export')==='1'){
+  for(const b of beacons){ if(b.ring)b.ring.visible=false; if(b.bob)b.bob.visible=false; }
+  window.__CF_EXPORT={ scene, THREE, ready:true,
+    // the environment root minus helpers: cull invisible + the gold selection ring
+    envObjects(){ const keep=[]; scene.traverse(o=>{ if(o.isMesh && o.visible!==false) keep.push(o); }); return keep; } };
+}
 const fogBase=parity&&scene.fog?{near:scene.fog.near,far:scene.fog.far,dist:220}:null;
 let _clock=0;
 (function loop(){requestAnimationFrame(loop);ctl.update();_clock+=1/60;beaconBob(_clock);

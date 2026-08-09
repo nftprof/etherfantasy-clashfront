@@ -1053,3 +1053,18 @@ designer header, obfuscation list, +3 tests (suite 30 files green). Dev aid: `WO
 `?demo=<frac>` deterministically previews coverage on an empty-registry box. **→ CF ParcelMap
 Design Agent: this is the coverage dashboard for the 20K bake — wilderness fill (4 zones missing
 world-terrain: HS1/HS2/HS3/UW1) is now visible as the incomplete part of the world.**
+
+**2026-08-07 (6) — 🕹→📱 AR TERRAIN EXPORT (Clash Lands reuses CF maps).** Owner: the AR pet game
+reuses the environments we build — castle, lava, water, flat, candy — as GLB terrains. Delivered
+LIVE at `https://map.etherfantasy.com/clash-lands/terrains/{manifest.json,<id>.glb,<id>.json,
+<id>.height.png}` (CORS-open; served from map-service data/cf-maps/ar-terrains/; the AR msg named
+pets.etherfantasy.com but that box isn't CF-writable, so we serve the map host — same shared EF
+server over HTTPS; nginx alias to pets is trivial if preferred). Pipeline: `tools/
+build_ar_terrains.mjs` (source manifests + descriptors + grayscale height.pngs) + `tools/
+export_ar_glb.mjs` (headless GLTFExport of the designer scene in a NEW `?export=1` mode — scatter/
+props/markers stripped, ground LOD via renderer's new `opts.groundStride`). 5 terrains, all ≤60k
+tris (castle 25.7k / lava 35.4k / water 25.8k / flat 6.5k / candy 39.4k), GLB validated by a
+standalone GLTFLoader round-trip. Descriptor = their contract (bounds, groundY/heightScale, liquid
+crust+pockets, castle walls+gates polylines, spawnBounds, lighting, landmarks). Full doc:
+`docs/briefs/AR-TERRAIN-EXPORT.md`. Owner roadmap noted: iconic-landmark + route/race-track exports
+(descriptor already has walls/landmarks; a `routes[]` from manifest lanes is the next add).

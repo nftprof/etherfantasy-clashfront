@@ -1,0 +1,233 @@
+{
+ "id": "candy",
+ "schema": "clash-lands-terrain/1",
+ "source": "CANDYLAND",
+ "designVersion": 0,
+ "units": "meters",
+ "upAxis": "Y",
+ "originCentered": true,
+ "bounds": {
+  "min": [
+   -161,
+   -2.6,
+   -161
+  ],
+  "max": [
+   161,
+   3.5,
+   161
+  ],
+  "sizeM": 322
+ },
+ "groundY": -2.6,
+ "heightScale": 6.1,
+ "height": {
+  "file": "candy.height.png",
+  "w": 161,
+  "h": 161,
+  "cellM": 2,
+  "note": "grayscale 0..255 → floorY = groundY + g/255*heightScale"
+ },
+ "liquid": {
+  "type": "water",
+  "surfaceY": -2.45,
+  "deepY": -2.6,
+  "crust": "mostly shallow; only small deep pockets — safe to walk the crust (their rule)"
+ },
+ "walls": [
+  {
+   "ring": 0,
+   "height": 16,
+   "polyline": [
+    [
+     73,
+     108.8
+    ],
+    [
+     47.7,
+     127.7
+    ],
+    [
+     15.9,
+     125.3
+    ],
+    [
+     -11.8,
+     108
+    ],
+    [
+     -21.2,
+     76
+    ],
+    [
+     -26.3,
+     45.9
+    ],
+    [
+     -19.4,
+     15.3
+    ],
+    [
+     0.5,
+     -8.7
+    ],
+    [
+     29,
+     -18.6
+    ],
+    [
+     57.7,
+     -13.5
+    ],
+    [
+     85.6,
+     3.9
+    ],
+    [
+     96.9,
+     28.2
+    ],
+    [
+     102.7,
+     58.1
+    ],
+    [
+     97.9,
+     90.3
+    ]
+   ],
+   "gates": [
+    {
+     "at": [
+      -19.4,
+      15.3
+     ]
+    },
+    {
+     "at": [
+      0.5,
+      -8.7
+     ]
+    },
+    {
+     "at": [
+      85.6,
+      3.9
+     ]
+    }
+   ]
+  },
+  {
+   "ring": 1,
+   "height": 16,
+   "polyline": [
+    [
+     56.2,
+     81.5
+    ],
+    [
+     43,
+     91.4
+    ],
+    [
+     26.5,
+     90.1
+    ],
+    [
+     12.1,
+     81.1
+    ],
+    [
+     7.2,
+     64.5
+    ],
+    [
+     4.6,
+     48.8
+    ],
+    [
+     8.2,
+     32.9
+    ],
+    [
+     18.5,
+     20.4
+    ],
+    [
+     33.3,
+     15.3
+    ],
+    [
+     48.2,
+     17.9
+    ],
+    [
+     62.7,
+     27
+    ],
+    [
+     68.6,
+     39.6
+    ],
+    [
+     71.6,
+     55.2
+    ],
+    [
+     69.1,
+     71.9
+    ]
+   ],
+   "gates": [
+    {
+     "at": [
+      68.6,
+      39.6
+     ]
+    },
+    {
+     "at": [
+      7.2,
+      64.5
+     ]
+    }
+   ]
+  }
+ ],
+ "spawnBounds": {
+  "min": [
+   -88.55000000000001,
+   -88.55000000000001
+  ],
+  "max": [
+   88.55000000000001,
+   88.55000000000001
+  ],
+  "note": "flat inner play area"
+ },
+ "lighting": {
+  "sky": "#f6d9de",
+  "fog": "#f2cfd8",
+  "sun": {
+   "dir": [
+    0.5,
+    -0.8,
+    0.33
+   ],
+   "color": "#ffe4c0",
+   "intensity": 0.85
+  },
+  "ambient": 0.9
+ },
+ "landmarks": [
+  {
+   "kind": "castle",
+   "tier": "CASTLE",
+   "at": [
+    37.8,
+    53
+   ],
+   "rings": 2
+  }
+ ]
+}

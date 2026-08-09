@@ -65,6 +65,9 @@ jobs:
           mkdir -p "$HOME/ef-map-service/data/cf-maps/artifacts" "$HOME/ef-map-service/data/cf-maps/manifests"
           cp "$GITHUB_WORKSPACE"/data/cf-maps/artifacts/*.artifact.json "$HOME"/ef-map-service/data/cf-maps/artifacts/
           cp "$GITHUB_WORKSPACE"/data/cf-maps/manifests/*.manifest.json "$HOME"/ef-map-service/data/cf-maps/manifests/ 2>/dev/null || true
+          # 🕹→📱 Clash Lands AR terrains (glb/json/height.png/manifest) served at /clash-lands/terrains/
+          mkdir -p "$HOME/ef-map-service/data/cf-maps/ar-terrains"
+          cp "$GITHUB_WORKSPACE"/data/cf-maps/ar-terrains/* "$HOME"/ef-map-service/data/cf-maps/ar-terrains/ 2>/dev/null || true
           git -C "$GITHUB_WORKSPACE" rev-parse --short HEAD > "$HOME"/ef-map-service/BUILD
 
       - name: (re)start ef-map-service on :8150 (health-gated on /healthz)

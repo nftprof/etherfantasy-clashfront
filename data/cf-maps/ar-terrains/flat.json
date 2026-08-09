@@ -1,0 +1,59 @@
+{
+ "id": "flat",
+ "schema": "clash-lands-terrain/1",
+ "source": "AR-FLAT",
+ "designVersion": 0,
+ "units": "meters",
+ "upAxis": "Y",
+ "originCentered": true,
+ "bounds": {
+  "min": [
+   -161,
+   0,
+   -161
+  ],
+  "max": [
+   161,
+   3.5,
+   161
+  ],
+  "sizeM": 322
+ },
+ "groundY": 0,
+ "heightScale": 3.5,
+ "height": {
+  "file": "flat.height.png",
+  "w": 161,
+  "h": 161,
+  "cellM": 2,
+  "note": "grayscale 0..255 → floorY = groundY + g/255*heightScale"
+ },
+ "liquid": null,
+ "walls": [],
+ "spawnBounds": {
+  "min": [
+   -88.55000000000001,
+   -88.55000000000001
+  ],
+  "max": [
+   88.55000000000001,
+   88.55000000000001
+  ],
+  "note": "flat inner play area"
+ },
+ "lighting": {
+  "sky": "#bfd4ff",
+  "fog": "#14202e",
+  "sun": {
+   "dir": [
+    0.5,
+    -0.8,
+    0.33
+   ],
+   "color": "#fff2dd",
+   "intensity": 0.85
+  },
+  "ambient": 0.9
+ },
+ "landmarks": []
+}

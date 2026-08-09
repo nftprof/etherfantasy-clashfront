@@ -1,0 +1,11 @@
+{
+ "version": "v1",
+ "schema": "clash-lands-terrains/1",
+ "terrains": [
+  "castle",
+  "candy",
+  "lava",
+  "water",
+  "flat"
+ ]
+}

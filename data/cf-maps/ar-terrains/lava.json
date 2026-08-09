@@ -1,0 +1,64 @@
+{
+ "id": "lava",
+ "schema": "clash-lands-terrain/1",
+ "source": "AR-LAVA",
+ "designVersion": 0,
+ "units": "meters",
+ "upAxis": "Y",
+ "originCentered": true,
+ "bounds": {
+  "min": [
+   -161,
+   -2.6,
+   -161
+  ],
+  "max": [
+   161,
+   13.918,
+   161
+  ],
+  "sizeM": 322
+ },
+ "groundY": -2.6,
+ "heightScale": 16.518,
+ "height": {
+  "file": "lava.height.png",
+  "w": 161,
+  "h": 161,
+  "cellM": 2,
+  "note": "grayscale 0..255 → floorY = groundY + g/255*heightScale"
+ },
+ "liquid": {
+  "type": "lava",
+  "surfaceY": -2.45,
+  "deepY": -2.6,
+  "crust": "mostly shallow; only small deep pockets — safe to walk the crust (their rule)"
+ },
+ "walls": [],
+ "spawnBounds": {
+  "min": [
+   -88.55000000000001,
+   -88.55000000000001
+  ],
+  "max": [
+   88.55000000000001,
+   88.55000000000001
+  ],
+  "note": "flat inner play area"
+ },
+ "lighting": {
+  "sky": "#bfd4ff",
+  "fog": "#281410",
+  "sun": {
+   "dir": [
+    0.5,
+    -0.8,
+    0.33
+   ],
+   "color": "#fff2dd",
+   "intensity": 0.85
+  },
+  "ambient": 0.9
+ },
+ "landmarks": []
+}

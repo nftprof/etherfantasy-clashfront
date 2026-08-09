@@ -124,6 +124,20 @@ export function handleRequest(req, res) {
   }
   if (p === "/ef_battlefield.js") return sendFile(res, "maps/ef_battlefield.js.bak", "application/javascript");
   {
+    // 🕹→📱 Clash Lands AR terrains — the shared EF drop the AR pet game fetches (glb / json /
+    // height.png / manifest.json). CORS-open, cached. Built by tools/build_ar_terrains.mjs +
+    // tools/export_ar_glb.mjs, shipped from data/cf-maps/ar-terrains/.
+    const ar = /^\/clash-lands\/terrains\/([a-zA-Z0-9._-]+\.(glb|json|png))$/.exec(p);
+    if (ar) {
+      const type = ar[1].endsWith(".glb") ? "model/gltf-binary" : ar[1].endsWith(".png") ? "image/png" : "application/json";
+      return fs.readFile(path.join(dataRoot(), "cf-maps/ar-terrains", ar[1]), (e, buf) => {
+        if (e) { res.writeHead(404); return res.end(); }
+        res.writeHead(200, { "content-type": type, "cache-control": "public,max-age=3600", "access-control-allow-origin": "*" });
+        res.end(buf);
+      });
+    }
+  }
+  {
     const fl = /^\/floors\/([a-z0-9_]+\.png)$/.exec(p);
     if (fl) {
       return fs.readFile(path.join(__dirname, "floors", fl[1]), (e, buf) => {

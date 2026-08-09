@@ -164,15 +164,19 @@ function buildBattlefield(scene, opts){
      cells are simply not emitted → polygon parcels are clipped for free.
      ====================================================================== */
   (function ground(){
-    var gw = W+1, gh = H+1;
+    // groundStride (opts, default 1): sample every Nth grid cell for the VISUAL ground mesh — a
+    // cheap LOD for exports/mobile (AR terrain GLBs). Collision/height data stay full-res elsewhere.
+    var S = Math.max(1, (opts.groundStride|0) || 1);
+    var gw = Math.floor(W/S)+1, gh = Math.floor(H/S)+1;
+    var CS = CELL*S;
     var pos = new Float32Array(gw*gh*3), col = new Float32Array(gw*gh*3), uv = new Float32Array(gw*gh*2);
     for (var j=0;j<gh;j++) for (var i=0;i<gw;i++){
       var k = j*gw+i;
-      var x = -half + i*CELL, z = -half + j*CELL;
+      var x = -half + i*CS, z = -half + j*CS;
       var y = heightAt(x,z);
       pos[k*3]=x; pos[k*3+1]=y; pos[k*3+2]=z;
       /* UV normalised across the arena; the texture's repeat/rotation does the tiling */
-      uv[k*2]=(x+half)/sizeM; uv[k*2+1]=(z+half)/sizeM;
+      uv[k*2]=(x+half)/sizeM; uv[k*2+1]=(z+half)/sizeM; /* stride-safe: x/z already strided */
 
       /* --- L3: the bake (this is the biggest "why does theirs look good" layer) ---
          biome.bake === 'none' (optional manifest field, themed floors): the floor texture is an
@@ -197,10 +201,10 @@ function buildBattlefield(scene, opts){
       var f = 0.95 + fine*TUNED.FINE_AMT; r*=f; g*=f; b*=f;
       col[k*3]=r; col[k*3+1]=g; col[k*3+2]=b;
     }
-    /* emit two triangles per NON-OOB cell → clips polygon parcels automatically */
+    /* emit two triangles per NON-OOB coarse cell → clips polygon parcels automatically */
     var idx = [];
-    for (var jj=0;jj<H;jj++) for (var ii=0;ii<W;ii++){
-      if (oob.length && oob[jj*W+ii]===1) continue;
+    for (var jj=0;jj<gh-1;jj++) for (var ii=0;ii<gw-1;ii++){
+      if (oob.length && oob[Math.min(H-1,jj*S)*W + Math.min(W-1,ii*S)]===1) continue;
       var a=jj*gw+ii, b2=a+1, c=a+gw, d=c+1;
       idx.push(a,c,b2,  b2,c,d);
     }
