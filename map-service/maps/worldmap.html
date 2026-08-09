@@ -1,0 +1,150 @@
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CF World Map — coverage overview</title>
+<style>
+  :root{--bg:#0c1018;--panel:#141b28;--ink:#e8eef6;--dim:#8ea0b8;--line:#243247;
+        --gen:#54d18b;--seed:#3a5578;--wild:#caa14a;--sel:#ffd24a;}
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);
+    font:13px/1.4 ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+  #wrap{display:flex;flex-direction:column;height:100%}
+  header{display:flex;align-items:center;gap:14px;padding:10px 14px;border-bottom:1px solid var(--line);
+    background:var(--panel);flex-wrap:wrap}
+  header b{font-size:15px;letter-spacing:.3px}
+  .pill{background:#0e1622;border:1px solid var(--line);border-radius:20px;padding:4px 11px;color:var(--dim)}
+  .pill.big{color:var(--ink);font-weight:600}
+  .bar{position:relative;height:10px;width:220px;background:#0e1622;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+  .bar>i{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,#3a8f60,var(--gen));display:block}
+  .legend{display:flex;gap:12px;color:var(--dim);align-items:center;margin-left:auto;flex-wrap:wrap}
+  .legend span{display:inline-flex;align-items:center;gap:5px}
+  .sw{width:11px;height:11px;border-radius:3px;display:inline-block}
+  main{flex:1;position:relative;overflow:hidden}
+  canvas{display:block;width:100%;height:100%;cursor:grab}
+  canvas.drag{cursor:grabbing}
+  #tip{position:absolute;pointer-events:none;background:#0e1622ee;border:1px solid var(--line);
+    border-radius:8px;padding:7px 10px;font-size:12px;display:none;max-width:240px;z-index:5}
+  #tip b{color:var(--sel)}
+  .hint{position:absolute;left:12px;bottom:10px;color:var(--dim);font-size:11px;z-index:4}
+  a{color:#7fb2ff}
+  .toggle{display:inline-flex;gap:6px;align-items:center;cursor:pointer;color:var(--dim);user-select:none}
+</style></head>
+<body><div id="wrap">
+  <header>
+    <b>🗺 CF World Map</b>
+    <span class="pill big" id="cov">— generated</span>
+    <div class="bar"><i id="covbar" style="width:0"></i></div>
+    <span class="pill" id="parcels">— parcels</span>
+    <span class="pill" id="wild">— wilderness fields</span>
+    <label class="toggle"><input type="checkbox" id="tGen" checked> show generated</label>
+    <label class="toggle"><input type="checkbox" id="tLabels" checked> zone labels</label>
+    <div class="legend">
+      <span><i class="sw" style="background:var(--gen)"></i>generated</span>
+      <span><i class="sw" style="background:var(--seed)"></i>seeded (not baked)</span>
+      <span><i class="sw" style="background:var(--wild)"></i>wilderness authored</span>
+    </div>
+  </header>
+  <main>
+    <canvas id="c"></canvas>
+    <div id="tip"></div>
+    <div class="hint">drag = pan · wheel = zoom · click a cell = open that parcel in the 3D designer</div>
+  </main>
+</div>
+<script>
+const cv=document.getElementById('c'), ctx=cv.getContext('2d'), tip=document.getElementById('tip');
+let DATA=null, view={x:0,z:0,s:1}, dpr=Math.max(1,window.devicePixelRatio||1);
+const tGen=document.getElementById('tGen'), tLabels=document.getElementById('tLabels');
+function resize(){cv.width=cv.clientWidth*dpr;cv.height=cv.clientHeight*dpr;draw();}
+window.addEventListener('resize',resize);
+
+function fit(){
+  if(!DATA)return; const b=DATA.bounds, pad=40;
+  const W=cv.clientWidth-pad*2, H=cv.clientHeight-pad*2;
+  const sx=W/Math.max(1e-6,b.x1-b.x0), sz=H/Math.max(1e-6,b.z1-b.z0);
+  view.s=Math.min(sx,sz); view.x=(b.x0+b.x1)/2; view.z=(b.z0+b.z1)/2;
+}
+function w2s(x,z){ // world → screen
+  return [cv.clientWidth/2+(x-view.x)*view.s, cv.clientHeight/2+(z-view.z)*view.s];
+}
+function draw(){
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.fillStyle=getComputedStyle(document.documentElement).getPropertyValue('--bg');
+  ctx.fillRect(0,0,cv.clientWidth,cv.clientHeight);
+  if(!DATA)return;
+  const showGen=tGen.checked;
+  for(const z of DATA.zones){
+    const g=z.grid, cw=z.world.w/g.w*view.s, ch=z.world.h/g.h*view.s;
+    const [ox,oy]=w2s(z.world.x-z.world.w/2, z.world.z-z.world.h/2);
+    // tile backdrop (wilderness tint if the field is authored)
+    ctx.fillStyle = z.wilderness ? 'rgba(202,161,74,.07)' : 'rgba(58,85,120,.05)';
+    ctx.fillRect(ox,oy,z.world.w*view.s,z.world.h*view.s);
+    ctx.strokeStyle='rgba(36,50,71,.9)'; ctx.lineWidth=1; ctx.strokeRect(ox,oy,z.world.w*view.s,z.world.h*view.s);
+    // cells
+    const dot=Math.max(1,Math.min(cw,ch)*0.82);
+    for(let j=0;j<g.h;j++)for(let i=0;i<g.w;i++){
+      const k=j*g.w+i, t=z.total[k]; if(!t)continue;
+      const gen=z.generatedGrid[k];
+      const cx=ox+(i+0.5)*cw, cy=oy+(j+0.5)*ch;
+      let col;
+      if(showGen && gen>0) col=`rgba(84,209,139,${0.45+0.55*Math.min(1,gen/t)})`;
+      else col= z.wilderness ? 'rgba(120,140,170,.55)' : 'rgba(58,85,120,.75)';
+      ctx.fillStyle=col;
+      ctx.fillRect(cx-dot/2,cy-dot/2,dot,dot);
+    }
+    if(tLabels.checked && view.s*z.world.w>60){
+      ctx.fillStyle='rgba(232,238,246,.9)'; ctx.font='700 12px system-ui';
+      ctx.textAlign='center';
+      ctx.fillText(z.zoneId, ox+z.world.w*view.s/2, oy-6);
+      ctx.fillStyle='rgba(142,160,184,.85)'; ctx.font='11px system-ui';
+      ctx.fillText(`${z.name} · ${(z.coverage*100).toFixed(0)}%`, ox+z.world.w*view.s/2, oy+z.world.h*view.s+14);
+    }
+  }
+}
+function cellAt(mx,my){
+  if(!DATA)return null;
+  for(const z of DATA.zones){
+    const [ox,oy]=w2s(z.world.x-z.world.w/2, z.world.z-z.world.h/2);
+    const W=z.world.w*view.s, H=z.world.h*view.s;
+    if(mx<ox||my<oy||mx>ox+W||my>oy+H)continue;
+    const g=z.grid, i=Math.min(g.w-1,Math.floor((mx-ox)/W*g.w)), j=Math.min(g.h-1,Math.floor((my-oy)/H*g.h));
+    const k=j*g.w+i;
+    return {z,i,j,k,total:z.total[k],gen:z.generatedGrid[k],id:z.ids[k]};
+  }
+  return null;
+}
+// interaction
+let drag=null;
+cv.addEventListener('mousedown',e=>{drag={x:e.clientX,y:e.clientY,vx:view.x,vz:view.z,moved:false};cv.classList.add('drag');});
+window.addEventListener('mouseup',()=>{if(drag)cv.classList.remove('drag');drag=null;});
+window.addEventListener('mousemove',e=>{
+  const r=cv.getBoundingClientRect(), mx=e.clientX-r.left, my=e.clientY-r.top;
+  if(drag){const dx=e.clientX-drag.x,dy=e.clientY-drag.y; if(Math.abs(dx)+Math.abs(dy)>3)drag.moved=true;
+    view.x=drag.vx-dx/view.s; view.z=drag.vz-dy/view.s; draw(); tip.style.display='none'; return;}
+  const c=cellAt(mx,my);
+  if(c&&c.total){ tip.style.display='block'; tip.style.left=(mx+14)+'px'; tip.style.top=(my+14)+'px';
+    tip.innerHTML=`<b>${c.z.zoneId}</b> · ${c.z.name}<br>${c.total} parcel${c.total>1?'s':''} here · ${c.gen} generated`+
+      (c.id?`<br><span style="color:#8ea0b8">click → parcel ${c.id}</span>`:''); }
+  else tip.style.display='none';
+});
+cv.addEventListener('click',e=>{
+  if(drag&&drag.moved)return;
+  const r=cv.getBoundingClientRect(); const c=cellAt(e.clientX-r.left,e.clientY-r.top);
+  if(c&&c.id) window.open('/designer/3d?parcel='+encodeURIComponent(c.id),'_blank');
+});
+cv.addEventListener('wheel',e=>{e.preventDefault();
+  const r=cv.getBoundingClientRect(), mx=e.clientX-r.left, my=e.clientY-r.top;
+  const wx=view.x+(mx-cv.clientWidth/2)/view.s, wz=view.z+(my-cv.clientHeight/2)/view.s;
+  const f=e.deltaY<0?1.15:1/1.15; view.s*=f;
+  view.x=wx-(mx-cv.clientWidth/2)/view.s; view.z=wz-(my-cv.clientHeight/2)/view.s; draw();
+},{passive:false});
+tGen.onchange=tLabels.onchange=draw;
+
+fetch('/internal/v1/worldmap.json'+location.search).then(r=>r.json()).then(d=>{
+  if(!d.ok){document.getElementById('cov').textContent='world map unavailable';return;}
+  DATA=d; const s=d.stats;
+  document.getElementById('cov').textContent=`${(s.parcelCoverage*100).toFixed(1)}% generated`;
+  document.getElementById('covbar').style.width=(s.parcelCoverage*100).toFixed(1)+'%';
+  document.getElementById('parcels').textContent=`${s.totalGenerated.toLocaleString()} / ${s.totalParcels.toLocaleString()} parcels`;
+  document.getElementById('wild').textContent=`${s.zonesWithWilderness}/${s.zones} wilderness fields`;
+  fit(); resize();
+}).catch(e=>{document.getElementById('cov').textContent='error: '+e.message;});
+</script></body></html>

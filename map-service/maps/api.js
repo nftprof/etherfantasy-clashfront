@@ -22,6 +22,7 @@ import { clampParams, budgetFor } from "./schema.js";
 import { verifyToken, loginPassword } from "../lobby/auth.js";
 import { worldParcel, l3Row, l3Zone, zoneList, loadWorldField, estateList, dataRoot } from "./worldfield.js";
 import { runAudit } from "./traverse.js";
+import { worldMap } from "./worldmap.js";
 import { landOfWallet, walletOwnsParcel, mintedSet, PARCELS_CONTRACT, ESTATE_CONTRACT } from "./nftowners.js";
 // Land mint config (distributors + size tokens) — the registry the other session delivered.
 let _landCfg = null;
@@ -148,14 +149,33 @@ export const editDecision = ({ admin, username, owner }) =>
 // returns true if the request was ours (response handled), false to let the lobby continue
 export function mapsApi(req, res) {
   const [p] = req.url.split("?");
-  if (p === "/designer" || p === "/designer/" || p === "/designer/3d") {
-    // /designer = the studio · /designer/3d?parcel= = standalone layout-true 3D preview
-    // (placeholder art; the game-model render is the client's bfpreview, CLIENT_BATTLEFIELD_LOADER.md)
-    fs.readFile(path.join(__dirname, p === "/designer/3d" ? "preview3d.html" : "designer.html"), (e, buf) => {
+  if (p === "/designer" || p === "/designer/" || p === "/designer/3d" || p === "/designer/world") {
+    // /designer = the studio · /designer/3d?parcel= = standalone 3D preview · /designer/world =
+    // the 2D WORLD OVERVIEW (coverage map — the whole CF game map as one picture).
+    const page = p === "/designer/3d" ? "preview3d.html" : p === "/designer/world" ? "worldmap.html" : "designer.html";
+    fs.readFile(path.join(__dirname, page), (e, buf) => {
       if (e) { res.writeHead(404); return res.end("page missing"); }
       res.writeHead(200, { "content-type": "text/html", "cache-control": "no-cache" });
       res.end(buf);
     });
+    return true;
+  }
+  if (p === "/internal/v1/worldmap.json") {                 // the 2D world overview data + coverage %
+    try {
+      const u = new URL(req.url, "http://x");
+      const gen = new Set(reg.list().map((r) => String(r.parcelId)));
+      // dev-only visual aid: ?demo=<frac> deterministically marks a fraction "generated" so the
+      // coverage overlay can be eyeballed on a box with an empty registry. Never affects prod data.
+      const demo = parseFloat(u.searchParams.get("demo") || "");
+      if (process.env.WORLDMAP_DEMO === "1" && demo > 0) {
+        for (const z of zoneList()) for (const r of l3Zone(z.zoneId)) {
+          const pid = String(r.parcelId);
+          let h = 2166136261; for (let i = 0; i < pid.length; i++) { h ^= pid.charCodeAt(i); h = Math.imul(h, 16777619); }
+          if (((h >>> 0) % 1000) < demo * 1000) gen.add(pid);
+        }
+      }
+      J(res, 200, { ok: true, ...worldMap(gen) });
+    } catch (e) { J(res, 500, { ok: false, error: e.message }); }
     return true;
   }
   if (p === "/internal/v1/zones") {                         // world → CONTINENT zoom: the 12 zones + counts + bbox

@@ -1038,3 +1038,18 @@ class-weighted grid DIFF with superlinear total (diff^1.3) + per-class instance 
 clarification: "their AI" = OUR hosted claude-code agent running per-user constraint envelopes
 (2–3 free candidate previews, applying costs TP; envelope in the job context so the agent
 self-censors over-cap designs). All numbers ⚙ owner-tunable.
+
+**2026-08-07 (5) — 🌍 2D WORLD MAP + coverage overview in the designer.** Owner: "view the whole CF
+game map as one 2D picture (dots / thumbs combined), % of total land generated, + the non-parcel
+areas so the world is complete." Built: `maps/worldmap.js` (pure, tested) assembles every zone as a
+TILE placed at its `zone-layout.json worldOffset`, rasterizes parcels into a coarse coverage grid
+(≤48×48/zone), overlays the live registry generated-set → per-cell + per-zone + world coverage %.
+Endpoint `GET /internal/v1/worldmap.json`; page `/designer/world` (2D canvas: pan/zoom, generated
+vs seeded vs wilderness-authored legend, per-zone %, click-a-cell → opens that parcel in
+/designer/3d). Header shows total coverage (e.g. "35.1% generated · 99,745/284,284 parcels ·
+6/10 wilderness fields"). Non-parcel WILDERNESS tracked as `data/world-terrain/<ZONE>.json`
+presence (6/10 authored — the gap between parcels the CF game map still needs). Wired into the
+designer header, obfuscation list, +3 tests (suite 30 files green). Dev aid: `WORLDMAP_DEMO=1` +
+`?demo=<frac>` deterministically previews coverage on an empty-registry box. **→ CF ParcelMap
+Design Agent: this is the coverage dashboard for the 20K bake — wilderness fill (4 zones missing
+world-terrain: HS1/HS2/HS3/UW1) is now visible as the incomplete part of the world.**

@@ -33,7 +33,7 @@ const ROOT = path.resolve(process.argv[dirIx + 1]);
 if (!fs.existsSync(path.join(ROOT, "maps"))) { console.error(`✗ ${ROOT} does not look like a map-service root (no maps/)`); process.exit(1); }
 
 const JS_FILES = ["maps/ef_battlefield_renderer.js", "maps/ef_battlefield.js.bak"];
-const HTML_FILES = ["maps/preview3d.html", "maps/designer.html"];
+const HTML_FILES = ["maps/preview3d.html", "maps/designer.html", "maps/worldmap.html"];
 
 // profile: the MOBA build.mjs settings, verbatim philosophy — renameGlobals off +
 // reserved cross-file API names so EF_BATTLEFIELD/THREE keep working.
