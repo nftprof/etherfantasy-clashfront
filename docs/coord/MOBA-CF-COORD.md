@@ -1068,3 +1068,15 @@ standalone GLTFLoader round-trip. Descriptor = their contract (bounds, groundY/h
 crust+pockets, castle walls+gates polylines, spawnBounds, lighting, landmarks). Full doc:
 `docs/briefs/AR-TERRAIN-EXPORT.md`. Owner roadmap noted: iconic-landmark + route/race-track exports
 (descriptor already has walls/landmarks; a `routes[]` from manifest lanes is the next add).
+
+**2026-08-09 — 🍭 AR candy fix + Ethermon AR rendering review.** Owner: the AR game's candy "looks
+nothing like the latest candy land" (it showed sphere-lollipops over flat pink) and the castle is a
+grey box. Root cause on our side: the v1 export stripped ALL props, so candy.glb was cotton-floor +
+castle with zero candy elements. FIXED (v2): export keeps the DESIGNED identity props (candy
+lollipops/canes/gumdrops/swirl-trees, trees, rocks), dropping only heavy random scatter + HUD
+markers + floating sky; tri-heavy detail rings simplified to base shapes + props subsampled → all
+5 GLBs ≤60k (candy 56.6k). candy.glb now round-trips (standalone GLTFLoader) as a full pink castle +
+candy props over the cotton floor with the soda river. The grey-box castle in the AR shots = the AR
+game not yet loading our castle.glb (which IS the real detailed castle). Added an Ethermon AR
+rendering review to docs/briefs/AR-TERRAIN-EXPORT.md (load the GLB not local blocks; use descriptor
+lighting/groundY/spawnBounds/walls/liquid; uniform scale for tabletop; static-batch by material).
