@@ -74,6 +74,21 @@ assets ship via the map deploy.
   descriptor already carries `walls`/`landmarks`; a `routes[]` field (from manifest `lanes`) is the
   next add for race-track / fly-through modes.
 
+## ⚠ CRITICAL: a GLB has NO lights/sky/fog — you MUST supply the descriptor lighting
+
+The #1 reason a terrain "looks nothing like the designer": a GLB is **geometry + baked
+vertex-colors + textures ONLY**. The designer's look is ~60% its sky + light rig + fog + glow,
+and **none of that is in the mesh**. Render the same candy.glb with a dark-grey background and it
+looks dead; render it with the descriptor's pink sky + warm sun and it looks like the designer —
+same bytes. So the AR renderer MUST apply `descriptor.lighting`:
+- `scene.background` = `lighting.sky`; `scene.fog` = `lighting.fog`
+- one `HemisphereLight(sky, fog, ~0.95)` + one `DirectionalLight(sun.color, sun.intensity)` aimed
+  along `-sun.dir`
+- enable `outputEncoding = sRGBEncoding`
+Reference renders of every terrain lit exactly this way are committed next to each asset as
+`<id>.preview.png` (also served at `/clash-lands/terrains/<id>.preview.png`) — match that and you
+match the designer.
+
 ## v2 (2026-08-09) — export now KEEPS designed identity props + Ethermon AR rendering review
 
 **Fix:** the first export stripped ALL props, so `candy.glb` was terrain+castle with no candy
