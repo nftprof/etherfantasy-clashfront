@@ -329,7 +329,9 @@ const stoneTex=(function(){const c=document.createElement('canvas');c.width=c.he
  for(let i=0;i<260;i++){x.fillStyle=(rng()<.5?'rgba(255,255,255,':'rgba(0,0,0,')+(rng()*.1).toFixed(3)+')';x.fillRect(rng()*128,rng()*128,1,1);}
  const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(2,3);t.anisotropy=MAXA;return t;})();
 
-for(const o of (EXPORT?[]:(a.obstacles||[]))){         // export = clean terrain (no scatter foliage/props)
+let _exProp=0;
+for(const o of (a.obstacles||[])){                     // export KEEPS designed props (candy/trees/rocks = identity); only random scatter+markers+sky are stripped
+  if(EXPORT && (o.kind==="TREE"||o.kind==="ROCK") && (_exProp++ % 4 !== 0)) continue;  // subsample props for AR budget
   if(THEMES&&o.kind==="TREE"){                          // 🍭 candy groves — DESIGNED, not pins
     const nIn=1+((rng()*3)|0);                          // small cluster where a tree stood
     for(let ci=0;ci<nIn;ci++){
@@ -342,11 +344,17 @@ for(const o of (EXPORT?[]:(a.obstacles||[]))){         // export = clean terrain
         trunk.position.y=hgt/2; tr.add(trunk);
         const cc2=THEMES.rock[(rng()*THEMES.rock.length)|0];
         let ry=hgt, rr3=2.6*s2;
-        while(rr3>0.5*s2){
-          const band=new THREE.Mesh(new THREE.TorusGeometry(rr3,0.75*s2*Math.min(1,rr3/(2.2*s2)),8,16),
-            new THREE.MeshPhongMaterial({color:(rr3/s2>1.6?cc2:0xfff0f4),shininess:80}));
-          band.rotation.x=Math.PI/2; band.position.y=ry; tr.add(band);
-          ry+=0.95*s2; rr3-=0.55*s2;
+        if(EXPORT){ // low-poly swirl crown: two stacked cones (candy identity, ~tiny tris)
+          const c1=new THREE.Mesh(new THREE.ConeGeometry(2.4*s2,2.6*s2,8),lam(cc2)); c1.position.y=hgt+1.0*s2; tr.add(c1);
+          const c2=new THREE.Mesh(new THREE.ConeGeometry(1.5*s2,2.0*s2,8),lam(0xfff0f4)); c2.position.y=hgt+2.6*s2; tr.add(c2);
+          ry=hgt+3.6*s2;
+        } else {
+          while(rr3>0.5*s2){
+            const band=new THREE.Mesh(new THREE.TorusGeometry(rr3,0.75*s2*Math.min(1,rr3/(2.2*s2)),8,16),
+              new THREE.MeshPhongMaterial({color:(rr3/s2>1.6?cc2:0xfff0f4),shininess:80}));
+            band.rotation.x=Math.PI/2; band.position.y=ry; tr.add(band);
+            ry+=0.95*s2; rr3-=0.55*s2;
+          }
         }
         const tip=new THREE.Mesh(new THREE.SphereGeometry(0.55*s2,8,6),lam(0xfff0f4));
         tip.position.y=ry; tr.add(tip);
@@ -354,7 +362,7 @@ for(const o of (EXPORT?[]:(a.obstacles||[]))){         // export = clean terrain
         // CANDY CANE: thick white shaft with REAL red stripes (stacked rings) + a hooked head
         const hgt=7.5*s2, shaft=new THREE.Mesh(new THREE.CylinderGeometry(0.62*s2,0.62*s2,hgt,8),lam(0xfff8f4));
         shaft.position.y=hgt/2; tr.add(shaft);
-        for(let st2=0;st2<5;st2++){                      // candy stripes wind up the shaft
+        if(!EXPORT) for(let st2=0;st2<5;st2++){          // candy stripes wind up the shaft (detail — skip for AR)
           const ring=new THREE.Mesh(new THREE.TorusGeometry(0.62*s2,0.2*s2,6,12),lam(0xe23b52));
           ring.rotation.x=Math.PI/2-0.35; ring.position.y=hgt*(0.14+st2*0.18); tr.add(ring);
         }
@@ -371,13 +379,15 @@ for(const o of (EXPORT?[]:(a.obstacles||[]))){         // export = clean terrain
         const disc=new THREE.Mesh(new THREE.CylinderGeometry(2.4*s2,2.4*s2,0.9*s2,18),
           new THREE.MeshPhongMaterial({color:cc,shininess:110,specular:0xffffff}));
         disc.rotation.x=Math.PI/2; head.add(disc);
-        for(const rr2 of [1.75,1.05,0.4]){               // the spiral read: inset rings on both faces
-          for(const fz of [0.5,-0.5]){
-            const sw=new THREE.Mesh(new THREE.TorusGeometry(rr2*s2,0.16*s2,6,18),lam(0xfff2f6));
-            sw.position.z=fz*0.9*s2; head.add(sw);
+        if(!EXPORT){
+          for(const rr2 of [1.75,1.05,0.4]){             // the spiral read: inset rings on both faces
+            for(const fz of [0.5,-0.5]){
+              const sw=new THREE.Mesh(new THREE.TorusGeometry(rr2*s2,0.16*s2,6,18),lam(0xfff2f6));
+              sw.position.z=fz*0.9*s2; head.add(sw);
+            }
           }
+          const rim=new THREE.Mesh(new THREE.TorusGeometry(2.4*s2,0.18*s2,6,18),lam(0xffffff));head.add(rim);
         }
-        const rim=new THREE.Mesh(new THREE.TorusGeometry(2.4*s2,0.18*s2,6,18),lam(0xffffff));head.add(rim);
         head.position.y=hgt+2.0*s2; head.rotation.y=rng()*6.28; head.rotation.x=(rng()-0.5)*0.12;
         tr.add(head);
       }
@@ -439,7 +449,7 @@ for(const s of a.structures||[]){
 // batter footing → drum towers every ~26u of run → twin-tower gatehouses → the multi-tier keep with
 // a banner crown → moat (drowned_bastion). styleKey swaps materials/roofs only; the kit is shared.
 // Gameplay-neutral: collision/HP stay the structures[] data — this is visuals draped over it.
-if(THEMES)(function dreamSky(){
+if(THEMES&&!EXPORT)(function dreamSky(){
   // ☁️ floating cotton-candy clouds (ref art): soft puff clusters drifting over the field
   const puffM=new THREE.MeshLambertMaterial({color:0xfbe8ee,flatShading:true,transparent:true,opacity:0.18,depthWrite:false});
   const puffM2=new THREE.MeshLambertMaterial({color:0xf3d2e0,flatShading:true,transparent:true,opacity:0.24,depthWrite:false});

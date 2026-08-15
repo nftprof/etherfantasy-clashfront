@@ -73,3 +73,32 @@ assets ship via the map deploy.
   castles, the Diminishing Stair, ports), and lane/road polylines as flyable ROUTES — the
   descriptor already carries `walls`/`landmarks`; a `routes[]` field (from manifest `lanes`) is the
   next add for race-track / fly-through modes.
+
+## v2 (2026-08-09) — export now KEEPS designed identity props + Ethermon AR rendering review
+
+**Fix:** the first export stripped ALL props, so `candy.glb` was terrain+castle with no candy
+elements (read as "cotton floor", not candy land). v2 keeps the DESIGNED props (candy lollipops/
+canes/gumdrops/swirl trees, forest trees, rocks) — the identity — while still dropping only the
+heavy random scatter (grass/flowers), HUD markers, and floating sky dressing (AR composites its
+own sky). Detail geometry that ballooned tris (lollipop spiral rings, cane stripe rings, swirl
+tori) is simplified to the base shapes in export, and props are subsampled to ~¼ for the budget.
+Result: candy now renders as a full pink castle + lollipops/canes/gumdrops/swirl-trees over the
+cotton floor with the soda river — validated by a standalone GLTFLoader round-trip. Tris (all
+≤60k): castle 25.7k / candy 56.6k / lava 35.4k / water 25.8k / flat 6.5k.
+
+### Ethermon AR rendering review (owner asked CF to review the AR project's rendering)
+
+From the AR screenshots, the arena/castle is grey untextured placeholder geometry and the candy
+world is spheres-on-sticks — i.e. the AR game is NOT yet loading these GLBs. To match the CF look:
+1. **Load the terrain GLB** for the scene (`/clash-lands/terrains/<id>.glb`) instead of the local
+   grey blocks — it carries baked vertex colours + materials, so it renders correctly with a
+   simple hemisphere + directional light (no textures required beyond the floor).
+2. **Use the descriptor's `lighting`** (`sky`/`fog`/`sun.dir`/`ambient`) so tint/direction match
+   the designer; the GLB's per-vertex colour does the rest. Flat MeshLambert/Standard is fine.
+3. **Apply `groundY` + `spawnBounds`** to place pets on the floor and inside the play area; use
+   `walls[].polyline` (castle) as arena bounds / no-go, and `liquid.surfaceY`/`deepY` for the
+   water/lava plane + hazard pockets.
+4. **Scale:** GLBs are 1 unit = 1 m, origin-centered, ~322 m across. For an AR tabletop, scale the
+   whole terrain group uniformly (e.g. ×0.03 for a ~10 m room) — pets scale with it.
+5. **Draw calls:** castle/candy import as many small meshes — static-batch by material on import
+   for mobile framerate (tris are already in budget).
