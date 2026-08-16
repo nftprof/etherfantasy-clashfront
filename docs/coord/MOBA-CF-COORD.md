@@ -1100,3 +1100,15 @@ skip ring vertices within 16u of any gate (min tower-gate now 27.2u, verified). 
 changed data/moba-maps/ so `sync-moba-maps` re-fires to `clashfront-map-sync`; the engine had still
 been on v23 (the Jul hand-delivery), so **merge `clashfront-map-sync` again** to pick up v24. Also
 re-baked: all estate/palace maps, CANDYLAND, AR terrains (castle/candy GLB + previews).
+
+**2026-08-15 (3) — 📨 REQUEST to MOBA BattleEngine RAW (issue #38) + always-latest-map wiring.**
+Sent a direct request (engine repo issue #38) to use the v24 siege-test for the siege-mode test:
+`clashfront-map-sync` @ 4ba37a9 has siege-test genVersion 24 + 3 gates; the engine must MERGE that
+branch to actually play it (the manual gap that stranded the engine on v13/v23 twice). **Always-
+latest fix (no code change needed):** `sync-moba-maps.yml` already reads `vars.MOBA_MAPS_BRANCH`
+(default `clashfront-map-sync`) — set that CF repo variable to the engine's live siege/staging
+branch and every future CF map bake pushes straight there, no merge. **OWN ACTION NEEDED:** engine
+team gives the branch name (asked in #38) → set `MOBA_MAPS_BRANCH` in the CF repo (Settings →
+Variables, or `gh variable set`). Alternative offered: runtime-load from
+`/internal/v1/moba-map/siege-test` (always current, but the 3D client vendors a relative copy per
+CORS/egress, so the branch var is the pragmatic path).
