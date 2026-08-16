@@ -1080,3 +1080,13 @@ candy props over the cotton floor with the soda river. The grey-box castle in th
 game not yet loading our castle.glb (which IS the real detailed castle). Added an Ethermon AR
 rendering review to docs/briefs/AR-TERRAIN-EXPORT.md (load the GLB not local blocks; use descriptor
 lighting/groundY/spawnBounds/walls/liquid; uniform scale for tabletop; static-batch by material).
+
+**2026-08-15 — 🏰 castle gates confirmed OPEN + AR the-wild gate guidance.** Owner: "does the outer
+wall have gates, it seems not? did you deliver the wrong version?" — NO, it's the right v23 castle:
+outer curtain wall has 3 gates (castle_gate_0/1/2), inner has 2, all with the wall mesh clipped
+open + wooden leaves swung OPEN. They read subtle because each opening is ~11 m in a ~140 m ring.
+Added to every castle descriptor: `walls[].outer`, per-gate `openWidthM` (~11) + `state:"OPEN"`,
+and a top-level `gatesNote`. Ethermon AR the-wild guidance (docs/briefs/AR-TERRAIN-EXPORT.md): keep
+gates open by building pet collision from `walls[].polyline` MINUS an openWidthM gap centred on each
+`gates[].at` (no door collider exists in the GLB to remove); wider gates = a one-number GATE_R
+re-export on our side. GLBs unchanged (geometry already open); only descriptors updated.

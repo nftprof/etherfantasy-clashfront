@@ -38,6 +38,7 @@
   {
    "ring": 0,
    "height": 16,
+   "outer": true,
    "polyline": [
     [
      73,
@@ -101,25 +102,32 @@
      "at": [
       -19.4,
       15.3
-     ]
+     ],
+     "openWidthM": 11,
+     "state": "OPEN"
     },
     {
      "at": [
       0.5,
       -8.7
-     ]
+     ],
+     "openWidthM": 11,
+     "state": "OPEN"
     },
     {
      "at": [
       85.6,
       3.9
-     ]
+     ],
+     "openWidthM": 11,
+     "state": "OPEN"
     }
    ]
   },
   {
    "ring": 1,
    "height": 16,
+   "outer": false,
    "polyline": [
     [
      56.2,
@@ -183,13 +191,17 @@
      "at": [
       68.6,
       39.6
-     ]
+     ],
+     "openWidthM": 11,
+     "state": "OPEN"
     },
     {
      "at": [
       7.2,
       64.5
-     ]
+     ],
+     "openWidthM": 11,
+     "state": "OPEN"
     }
    ]
   }
@@ -229,5 +241,6 @@
    ],
    "rings": 2
   }
- ]
+ ],
+ "gatesNote": "Gates are OPEN passages (the wall mesh is clipped and the wooden leaves are swung open). Build wall collision from walls[].polyline but subtract an openWidthM gap centred on each gates[].at so pets pass freely."
 }

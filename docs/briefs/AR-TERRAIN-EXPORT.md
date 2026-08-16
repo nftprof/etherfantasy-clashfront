@@ -117,3 +117,21 @@ world is spheres-on-sticks — i.e. the AR game is NOT yet loading these GLBs. T
    whole terrain group uniformly (e.g. ×0.03 for a ~10 m room) — pets scale with it.
 5. **Draw calls:** castle/candy import as many small meshes — static-batch by material on import
    for mobile framerate (tris are already in budget).
+
+## Castle gates — they ARE open (outer wall has 3), how to keep them open for the-wild
+
+The castle (`castle.glb`, source v23 siege-test) has an outer curtain wall with **3 gates** and an
+inner wall with **2** — confirmed in `castle.json → walls[].gates` (outer = `walls[0]`, `"outer":true`).
+The wall MESH is physically clipped open at each gate and the wooden leaves are drawn **swung open**,
+so each archway stands open in the GLB. They look subtle from a distance (each opening ≈ **11 m** in
+a ~140 m ring), which is why "it seems not" to have gates — but they're there.
+
+**For Ethermon AR's the-wild (pets walk in and out), keep the gates open:**
+1. Do NOT rebuild the wall as a solid loop. Build pet collision from `walls[].polyline`, then
+   **subtract an `openWidthM` (≈11 m) gap centred on each `gates[].at`** — that's exactly where the
+   mesh has no wall. `gates[].state` is `"OPEN"`; there is no door collider in the GLB to remove.
+2. If you want the pets funnelled, treat each gate `at` as a waypoint/portal between "outside" and
+   "inside the ward"; the outer ring's 3 gates are the outer world↔bailey passages.
+3. Want WIDER gates for easy pet flow? Ask CF to re-export the castle with a bigger gate radius —
+   it's a one-number change on our side (`GATE_R`), then the mesh opening + `openWidthM` both grow.
+The `gatesNote` field in every castle descriptor restates rule 1 inline.

@@ -95,14 +95,20 @@ function describe(id, man) {
     for (const ring of cg.rings) for (const p of ring.pts) { cx += p[0]; cz += p[1]; n++; }
     if (n) { cx /= n; cz /= n; }
     desc.landmarks.push({ kind: "castle", tier: cg.tier, at: [+cx.toFixed(1), +cz.toFixed(1)], rings: cg.rings.length });
+    // GATE_R (5.5) = half the passage the wall MESH is clipped open at each gate ⇒ full opening ≈ 11 m.
+    // The wooden leaves are drawn swung OPEN (the archway physically stands open in the GLB). For a
+    // collision wall built from `polyline`, LEAVE A GAP of `openWidthM` centred on each gate `at` so
+    // pets can walk in/out (that is exactly where the mesh has no wall).
+    const GATE_R = 5.5;
     for (let ri = 0; ri < cg.rings.length; ri++) {
       const ring = cg.rings[ri];
       desc.walls.push({
-        ring: ri, height: ring.h || 12,
+        ring: ri, height: ring.h || 12, outer: ri === 0,
         polyline: ring.pts.map((p) => [+p[0].toFixed(1), +p[1].toFixed(1)]),
-        gates: (ring.gates || []).map((g) => ({ at: (g.at || g).map((v) => +v.toFixed(1)) })),
+        gates: (ring.gates || []).map((g) => ({ at: (g.at || g).map((v) => +v.toFixed(1)), openWidthM: +(GATE_R * 2).toFixed(1), state: "OPEN" })),
       });
     }
+    desc.gatesNote = "Gates are OPEN passages (the wall mesh is clipped and the wooden leaves are swung open). Build wall collision from walls[].polyline but subtract an openWidthM gap centred on each gates[].at so pets pass freely.";
   }
   writeFileSync(path.join(OUT, id + ".json"), JSON.stringify(desc, null, 1) + "\n");
   return { hasLiquid, liquidType, walls: desc.walls.length };
