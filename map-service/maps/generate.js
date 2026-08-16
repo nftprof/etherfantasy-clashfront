@@ -110,6 +110,31 @@ function sampleProps(g, G, rng) {
 }
 const r1 = (n) => Math.round(n * 10) / 10;
 
+// ROAD CLEARANCE (owner 2026-08-15: "no rocks where paths are — keep them x distance so all main
+// roads are walkable"). Multi-source BFS from every ROAD cell; any ROCK within `rockR` cells and any
+// FOREST within `forestR` cells becomes OPEN. Runs on the FINAL grid BEFORE prop sampling + the walk
+// mask, so no obstacle spawns on/beside a road AND the road corridor is guaranteed walkable margin.
+function clearNearRoads(g, G, rockR = 3, forestR = 2) {
+  const CAP = Math.max(rockR, forestR);
+  const dist = new Int16Array(G * G).fill(CAP + 1);
+  let fr = [];
+  for (let z = 0; z < G; z++) for (let x = 0; x < G; x++) { const i = gIdx(G, x, z); if (g[i] === T.ROAD) { dist[i] = 0; fr.push([x, z]); } }
+  if (!fr.length) return;
+  for (let d = 0; d < CAP && fr.length; d++) {
+    const nx = [];
+    for (const [x, z] of fr) for (const [ax, az] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+      const bx = x + ax, bz = z + az; if (bx < 0 || bz < 0 || bx >= G || bz >= G) continue;
+      const j = gIdx(G, bx, bz); if (dist[j] > d + 1) { dist[j] = d + 1; nx.push([bx, bz]); }
+    }
+    fr = nx;
+  }
+  for (let z = 0; z < G; z++) for (let x = 0; x < G; x++) {
+    const i = gIdx(G, x, z);
+    if (g[i] === T.ROCK && dist[i] <= rockR) g[i] = T.OPEN;
+    else if (g[i] === T.FOREST && dist[i] <= forestR) g[i] = T.OPEN;
+  }
+}
+
 // ---- RUIN — the seeded Chronicle layer (depth-layer 1) ------------------------------------------
 // A low-density seeded entity like the landmark: fallen keeps / cairns / old walls / sunken
 // shrines of the pre-Sundering kingdoms, named + inscribed from the Chronicle table
@@ -967,10 +992,17 @@ function castleLayout(g, G, rng, { base, atkPt, poly, half, budgetLevel, bridge,
       }
     }
   }
-  // 4 corner TOWERs at the diagonals between the gates
+  // 4 corner TOWERs at the diagonals between the gates. NO TOWER NEAR A GATE (owner 2026-08-15:
+  // "we added a rule to NOT have a tower within vicinity of gates — still seeing it"): block every
+  // ring vertex within TOWER_GATE_MIN of any gate from taking a tower, so a drum tower can never
+  // swallow the gate opening / crowd the doorway.
+  const TOWER_GATE_MIN = 16;                              // world-units; gate opening is ~11u
+  const gatePtsT = gates.map((gi) => [ring[gi].x, ring[gi].z]);
+  const towerBlock = new Set(taken);
+  for (let i = 0; i < n; i++) if (gatePtsT.some((gp) => Math.hypot(ring[i].x - gp[0], ring[i].z - gp[1]) < TOWER_GATE_MIN)) towerBlock.add(i);
   for (let k = 0; k < 4; k++) {
-    const gi = nearestOk(aAtk + Math.PI / 4 + (k * Math.PI) / 2, taken);
-    if (gi >= 0) { taken.add(gi); ring[gi].tower = true; }
+    const gi = nearestOk(aAtk + Math.PI / 4 + (k * Math.PI) / 2, towerBlock);
+    if (gi >= 0) { taken.add(gi); towerBlock.add(gi); ring[gi].tower = true; }
   }
   const out = [];
   const gateInfo = [];
@@ -1459,7 +1491,7 @@ const PALACE_STYLES = { UW2: "drowned_bastion", ENT: "carnavale", EDU: "collegia
 // anchors = vertices of the solid wallRing polyline t 4.2, never independent cylinders) +
 // siege.wallRing gains t/archClearH — engines build the navmesh from THIS instead of guessing
 // (the "units running in circles around towers" fix on the map side).
-export const GEN_VERSION = 23;
+export const GEN_VERSION = 24;   // v24: road clearance (no obstacles on paths) + tower-gate clearance
 
 export function generate(parcel, params = null, designVersion = 0) {
   // designVersion is MANDATORY in every artifact (MOBA contract fix 3: it pins caches, replays,
@@ -1753,6 +1785,9 @@ export function generate(parcel, params = null, designVersion = 0) {
   // per-edge NPC routes: entry→center chain for every arrival edge (multi-sided modes). lanes[]
   // stays the DUEL attacker→base push; routes[] is what a unit arriving from an arbitrary edge
   // follows so the dumb lane-AI has a guaranteed path from any side to the central objective.
+  // 4b-road) ROAD CLEARANCE (v24, owner: no obstacles on/beside paths) — runs BEFORE the sliver
+  //     pass so any 1-cell blockers it exposes get cleaned by it. ROCK≤3 / FOREST≤2 cells of a road.
+  clearNearRoads(g, G);
   // 4c) SLIVER REMOVAL (runs BEFORE routes/barriers — barriers seal on stable ground) (v23, engine rule 9: "blockers ≥3u thick — 1-cell slivers pass the BFS
   //     but block collision → stuck pockets"): any blocked non-OOB cell with OPEN ground on both
   //     opposite sides (N+S or E+W) is a 1-cell blade — open it. Iterate to STABILITY (each
@@ -1897,7 +1932,7 @@ export function generate(parcel, params = null, designVersion = 0) {
     ? placeOverlayDecor(g, G, wf.overlayElements)
     : { decor: [], dropped: [] };
 
-  // 6) bake: props from final grid; walkability bitmask (1 = open at native cell res)
+  // 6) bake: props from final grid; walkability bitmask
   const props = sampleProps(g, G, rng);
   if (ruin) props.unshift(ruin);
   if (landmark) props.unshift(landmark);
