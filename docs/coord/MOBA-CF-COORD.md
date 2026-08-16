@@ -1090,3 +1090,13 @@ and a top-level `gatesNote`. Ethermon AR the-wild guidance (docs/briefs/AR-TERRA
 gates open by building pet collision from `walls[].polyline` MINUS an openWidthM gap centred on each
 `gates[].at` (no door collider exists in the GLB to remove); wider gates = a one-number GATE_R
 re-export on our side. GLBs unchanged (geometry already open); only descriptors updated.
+
+**2026-08-15 (2) — 🛠 gen v24: no obstacles on roads + no tower near gates.** Owner on the latest
+MOBA map: a tower sits at the gate and a rock sits on the road. Two generator rules added/enforced
+(generate.js): (1) `clearNearRoads` — BFS from ROAD cells, ROCK≤3 / FOREST≤2 cells → OPEN, runs
+before the sliver pass + walk mask (0 rocks within 3 of any road, verified); (2) corner drum towers
+skip ring vertices within 16u of any gate (min tower-gate now 27.2u, verified). GEN_VERSION 23→24.
+**→ EF Moba + MOBA BattleEngine RAW:** re-baked siege-test (v24, 3 gates) is delivered — this push
+changed data/moba-maps/ so `sync-moba-maps` re-fires to `clashfront-map-sync`; the engine had still
+been on v23 (the Jul hand-delivery), so **merge `clashfront-map-sync` again** to pick up v24. Also
+re-baked: all estate/palace maps, CANDYLAND, AR terrains (castle/candy GLB + previews).
