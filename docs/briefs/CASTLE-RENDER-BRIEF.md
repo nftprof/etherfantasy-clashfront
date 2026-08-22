@@ -23,12 +23,13 @@ the block, and the CF 3D preview ships a working reference implementation you ca
 "castleGeom": {
   "tier": "KEEP|CASTLE|PALACE",            // LARGE / GIANT / EPIC ladder (canon decision 22)
   "styleKey": "fieldstone|collegiate|hanseatic|vermilion|carnavale|drowned_bastion",
-  "rings": [                                // outer→inner enceintes; v1 emits 1 ring
+  "rings": [                                // outer→inner enceintes; multi-ring for CASTLE/PALACE
     { "pts": [[x,z], …],                    // CLOSED wall polyline (last→first implied)
-      "h": 9,                               // curtain height: KEEP 7 / CASTLE 9 / PALACE 11
-      "gates": [ { "at": [x,z], "structureId": "castle_gate_0" } ] }
+      "h": 16,                              // curtain height HERO-SCALE: KEEP 14 / CASTLE 16 / PALACE 18
+      "gates": [ { "at": [x,z], "structureId": "castle_gate_0", "door": "PORTCULLIS|DOUBLE_LEAF" } ] }
   ],
-  "keep": { "at": [x,z], "tiers": 2, "h": 22 },   // KEEP 2×16 / CASTLE 2×22 / PALACE 3×30
+  "gateOpenWidth": 13,                      // clear gate passage width (world-units, ≈9.6 m)
+  "keep": { "at": [x,z], "tiers": 2, "h": 24 },   // KEEP 2×20 / CASTLE 2×24 / PALACE 3×30
   "mound": { "steps": [ { "ring": 0, "raise": 4 } ] },  // earthwork raise inside ring N
   "moat": false                             // true only for drowned_bastion (UW2 palace)
 }
@@ -43,13 +44,31 @@ Damage states = drape your rubble/breach visuals per-anchor from structure HP, g
 1. **Mound first** (§1 rule: fortresses climb): raise the ward interior by `mound.steps[].raise`
    (heightfield bump or a stepped earthwork mesh). Everything castle sits on top.
 2. **Curtain walls**: for each ring, extrude wall segments pts[i]→pts[i+1]: batter footing
-   (+~30% thickness, bottom 22%), wall body (`h`), **crenellated parapet** (merlon boxes every
-   ~2.2u along the top). A wall is CONTINUOUS — towers punctuate, gates interrupt, nothing else.
+   (+~30% thickness, bottom 22%), wall body (`h`), then the **wall-walk** on top. **⚠ THE WALL TOP
+   IS WALKABLE (handshake 2026-08-22) — read `wallRing.wallWalk` and honor it:**
+   - the top surface (`wallWalk.surfaceY` = `h`) is a **walkable platform** — units patrol it,
+     stairs land on it. It is the `WALL_WALK` elevation tier (`siege.elevationTiers.tier2`).
+   - **merlons are EDGE TEETH on BOTH parapet edges** (`wallWalk.merlons.edge:"BOTH"`), spaced
+     `gap` (~2.2u), each ~`w`×`depth` (1.15×1.1) inset `inset` (~1.5u) from the centreline on each
+     edge. They are decoration on the rims — **NEVER lay a merlon (or any block) across the walk.**
+   - a **clear central walkway of `wallWalk.walkWidth`** (~1.9u) runs the full ring between the two
+     tooth rows. A consumer that reads `wallWalk` and still bars the centre is violating the contract
+     — that is exactly the "can't walk on the wall / units trip on blocks" bug this handshake closes.
+   - build the navmesh so the walkway is traversable and only the teeth (and the outer face) block.
+   A wall is CONTINUOUS — towers punctuate, gates interrupt, nothing else.
 3. **Drum towers** every ~26u of accumulated curtain run: r≈4.5–5.2, h = wall+5, crenellated
-   crown + roof (style-keyed: cone / square / pavilion).
-4. **Gatehouse** per `gates[]`: twin flanking towers (h ≈ wall×1.55), recessed arch block over
-   the opening, portcullis slit (dark + faint emissive). Leave the wall OPEN within ~7u of the
-   gate point — the road passes through.
+   crown + roof (style-keyed: cone / square / pavilion). The wall-walk **passes THROUGH** each tower
+   (two-part tower: solid base to walk level, turret hut floating above an open walk-through band) —
+   never a solid drum that dead-ends the walk.
+4. **Gatehouse** per `gates[]`: twin flanking towers (h ≈ wall×1.55) set **OUTSIDE** the passage so
+   they do NOT pinch it, a recessed arch block over the opening (arch clear = `archClearH` = 0.65·h,
+   above head height). **Gate opening width = `wallRing.gateOpenWidth` (~13u, ≈9.6 m)** — carve the
+   wall this wide at each gate point (NOT a per-engine ~7u guess). **Two DOOR TYPES, read `gates[].door`:**
+   - `PORTCULLIS` (the main/road gate) — an iron grid that **raises straight up** into the gatehouse;
+     draw it retracted (bottom above head) for the OPEN state.
+   - `DOUBLE_LEAF` — two timber leaves that **swing open left/right** from the jambs.
+   The door itself is the destructible `castle_gate_N` structure (HP; CLOSED/OPEN/BROKEN). The road
+   passes straight through the opening.
 5. **Keep** at `keep.at`: `tiers` stacked blocks (each ~0.74× the last, total height `h`),
    corner turrets on the top tier, roof + **banner** (the one dominant vertical — §1 rule 3).
 6. **Moat** when `moat:true`: water annulus hugging the outer ring.
@@ -67,7 +86,16 @@ placeholder path (`isCastleAnchor`). Screenshot-verified on Westgate (EDU).
 
 ## 5. Acceptance
 
-- A castle parcel in your client shows: raised ward, continuous crenellated curtain with drum
-  towers, an open gate where the road enters, a keep silhouette taller than the walls, banner.
-- Non-castle parcels: zero change. Old manifests without `castleGeom`: zero change.
-- Collision/pathing/HP identical before/after (visuals draped over the same structure anchors).
+- A castle parcel in your client shows: continuous crenellated curtain with drum towers, a keep
+  silhouette taller than the walls, banner. (Flat on the land — no mound; elevation = the wall-walk.)
+- **Wall-top is WALKABLE end-to-end:** a unit can walk the full ring on the wall-walk; merlons are
+  edge teeth on both rims with a clear central path; the walk passes through every tower; no block
+  bars the walkway. (This is the 2026-08-22 handshake acceptance — the "can't walk on the wall /
+  units trip on the blocks" report must be gone.)
+- **Gates are WIDE + typed:** each opening is `gateOpenWidth` (~13u) wide with flanking towers OUTSIDE
+  the passage (not pinched); the main/road gate renders as a raise-up PORTCULLIS, others as swing
+  DOUBLE_LEAF, per `gates[].door`.
+- Non-castle parcels: zero change. Old manifests without `castleGeom`/`wallWalk`: fall back gracefully
+  (walkable top assumed; `gateOpenWidth` default 13; door default = main gate portcullis).
+- Collision/pathing/HP identical before/after for the STRUCTURES (visuals draped over the same
+  anchors); the ONLY navmesh change is that the wall-walk is now correctly traversable.

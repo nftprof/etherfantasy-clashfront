@@ -22,14 +22,21 @@ owner's review.*
   (`blocking:"SOLID"`, r 5.4), GATE structures are DOORS (`blocking:"DOOR"`, r 5.5 — the arch is
   PASSABLE unless the leaf is CLOSED). Engines build the navmesh from THIS; placing independent
   solid cylinders on gate/wall anchors is what makes units orbit towers.
-- **Wall-walk platform** — the flat walkable top of the wall body. Merlons on the OUTER edge only,
-  a low curb on the inner edge. This is the `WALL_WALK` siege elevation tier — the ONLY elevation
-  a castle grants.
-- **Arch** — the ONE legal ground-level way through a wall: a ~11u opening at a gate anchor, framed
-  by the twin-tower gatehouse with a lintel above head height. An arch MAY carry a **gate leaf**
-  (`castle_gate_*`: kind GATE, `material:"WOOD"`, `hpMax`, `states:[CLOSED,OPEN,BROKEN]`) — batter
-  it to BROKEN and the arch stands open. Walls are otherwise CONTINUOUS: there is never a hole in a
-  wall that is not an arch.
+- **Wall-walk platform** — the flat WALKABLE top of the wall body, published as DATA in
+  `siege.wallRing.wallWalk` (owner 2026-08-22 "walls should be walkable … tooth on both side of the
+  wall"): `{ walkable, surfaceY=h, walkWidth, merlons:{edge:"BOTH",w,depth,h,gap,inset} }`. Merlons
+  are EDGE TEETH on **both** parapet edges (a low guard-rail sits under the inner teeth); a **clear
+  central walkway** of `walkWidth` (~1.9u) runs the whole ring between the two tooth rows — a merlon
+  is NEVER laid across the walk. Inner teeth are gapped at stair landings + gates so defenders step
+  on/off freely. This is the `WALL_WALK` siege elevation tier — the ONLY elevation a castle grants.
+- **Arch** — the ONE legal ground-level way through a wall: a `gateOpenWidth` (~13u ≈ 9.6 m, owner
+  2026-08-22 "gates should be wide enough") opening at a gate anchor, framed by the twin-tower
+  gatehouse — the flanking towers sit OUTSIDE the passage so it is not pinched — with a lintel above
+  head height (`archClearH` = 0.65·h). An arch carries a **gate** (`castle_gate_*`: kind GATE,
+  `material:"WOOD"`, `hpMax`, `states:[CLOSED,OPEN,BROKEN]`) of one of **two door types**
+  (`gates[].door`): **PORTCULLIS** (iron grid, raises straight up — the main/road gate) or
+  **DOUBLE_LEAF** (twin timber leaves, swing open left/right). Batter it to BROKEN and the arch
+  stands open. Walls are otherwise CONTINUOUS: there is never a hole in a wall that is not an arch.
 - **Stair** — the ONE legal ground→platform transition. Flights TOUCH the wall (v20): parallel
   flights embed 0.35u into the wall face and renderers extend the drawn flight 1u past the data
   top so the last tread lands flush into the wall/tower body. EXACTLY TWO types exist (owner 2026-08-01;
@@ -63,6 +70,8 @@ owner's review.*
 | **R-JOINT** | Wall runs join SEAMLESSLY — no slit at a bend or at a tower (owner 2026-07-28/08-01: "outer wall got gaps … please close this"). | Render kit: wall boxes overhang 1.6u past each anchor (v18, was 0.6 — sharp enclosure dents opened slits) and a fat corner post (3.4/3.8u ≥ the wall half-thickness at any miter angle, near-flush height) seals every wall↔wall / wall↔tower miter; gate anchors framed by the gatehouse. |
 | **R-ENTRANCE** | The attackable entrance READS at a glance (owner 2026-07-28). | Designer preview renders the wooden gate leaves swung ~66° OPEN into the courtyard from the jambs; CLOSED/BROKEN remain runtime states in-engine. |
 | **R-TREE** | **The walled interior is lived-in ground (owner 2026-08-01):** no trees/rocks inside the castle, and NOTHING ever barges a door arch. | `castleLayout` clears every FOREST/ROCK cell inside the outer ring polygon to OPEN (props can't bake there and the walk grid opens with it) and stamps a 14u apron disc at every gate so no canopy overhangs the entrance from outside. Sweep asserts zero TREE/ROCK props deep inside the interior or within 10u of a door. |
+| **R-WALK** | **The wall top is WALKABLE (owner 2026-08-22):** every wall carries a clear central walkway; merlons are edge teeth on BOTH rims, NEVER laid across the walk; the walk passes through every tower. | `siege.wallRing.wallWalk` is emitted as DATA (`walkable`, `surfaceY`, `walkWidth`, `merlons.edge:"BOTH"`); the reference renderer draws teeth on both edges (inner teeth gapped at stair tops + gates) with the clear centre; consumers build the navmesh from this. |
+| **R-DOOR** | **Gates are wide + typed (owner 2026-08-22):** each opening is `gateOpenWidth` (~13u) with flanking towers OUTSIDE the passage; the main/road gate = PORTCULLIS (raise-up), others = DOUBLE_LEAF (swing). | `GATE_OPEN_W` = 13 on `wallRing.gateOpenWidth` + each `siege.gates[]`; `door` decided per gate (nearest the drawbridge/road ⇒ PORTCULLIS, else DOUBLE_LEAF) and mirrored onto `castleGeom.rings[].gates[].door`. |
 
 ## How we prevent "the broken castle reaching the owner" again
 
@@ -85,5 +94,9 @@ owner's review.*
   guarantees clearance, run caps and landings.
 - Drum towers skip within 9u of any data stair top (the landing stays clear); every drum is
   two-part walk-through (the wall-walk passes through an open band under the turret hut).
-- The gate leaf renders per state: CLOSED (banded timber door), OPEN (raised/swung), BROKEN
-  (shattered, passage free).
+- **Wall-walk: read `wallRing.wallWalk`** — draw merlon teeth on BOTH parapet edges (inner teeth
+  gapped at stair tops + gates), keep the central `walkWidth` clear + walkable; never a block on the
+  walk. This is the reference for the MOBA engine's own wall mesh (2026-08-22 handshake).
+- **Gate: read `wallRing.gateOpenWidth` + `gates[].door`** — carve the opening `gateOpenWidth` wide,
+  seat flanking towers OUTSIDE it, and render PORTCULLIS (raise-up iron grid) or DOUBLE_LEAF (swing
+  timber leaves) per the door type. Each renders per state: CLOSED / OPEN (raised or swung) / BROKEN.

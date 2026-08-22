@@ -1239,6 +1239,9 @@ export const CASTLE_TIERS = {          // exported for the castle-geometry sweep
   CASTLE: { wallH: 16, keepTiers: 2, keepH: 24, ringN: 2, wardGap: 26 },
   KEEP: { wallH: 14, keepTiers: 2, keepH: 20, ringN: 1, wardGap: 0 },
 };
+// Gate clear-passage width (owner 2026-08-22 "gates should be wide enough"): the opening carved in
+// the wall + the clear span between the flanking gatehouse towers. ≈9.6 m — a wide, un-pinched gate.
+export const GATE_OPEN_W = 13;
 
 // Build the nested rings from the single outer ring the layout grew. Deterministic (pure geometry
 // of geom + T2), so the siege block and castleGeom call it and always agree. Each inner ring is
@@ -1491,7 +1494,7 @@ const PALACE_STYLES = { UW2: "drowned_bastion", ENT: "carnavale", EDU: "collegia
 // anchors = vertices of the solid wallRing polyline t 4.2, never independent cylinders) +
 // siege.wallRing gains t/archClearH — engines build the navmesh from THIS instead of guessing
 // (the "units running in circles around towers" fix on the map side).
-export const GEN_VERSION = 24;   // v24: road clearance (no obstacles on paths) + tower-gate clearance
+export const GEN_VERSION = 25;   // v25: wallRing.wallWalk contract (walkable top, edge-teeth merlons both edges)
 
 export function generate(parcel, params = null, designVersion = 0) {
   // designVersion is MANDATORY in every artifact (MOBA contract fix 3: it pins caches, replays,
@@ -1961,16 +1964,49 @@ export function generate(parcel, params = null, designVersion = 0) {
       // one WALL_WALK tier2 per nested ring, climbing (inner wards outrank outer — the
       // strictly-above-tier over-wall rule makes defense-in-depth work for free).
       for (const rr of CRs.rings) out.elevationTiers.tier2.push({ kind: "WALL_WALK", ring: rr.pts, lift: rr.lift, tier: rr.tier });
-      out.wallRing = { pts: gpts, h: T2s.wallH, t: 4.2, archClearH: r1(T2s.wallH * 0.65),
-        gates: gz2.map((g2) => g2.at || g2), ringN: CRs.rings.length };
-      out.gates = structures.filter((s2) => /^castle_gate_/.test(s2.anchorId))
-        .map((s2) => ({ id: s2.anchorId, at: [s2.x, s2.z], hp: s2.hpMax, material: "WOOD", states: ["CLOSED", "OPEN", "BROKEN"] }));
-      out.stairs = CRs.rings[0].stairs;      // v18: ONE stair source — the ring's own data flights
-      if (bridge.reg.length) {          // nearest world-road bridge = the drawbridge/causeway site
+      // WALL-WALK CONTRACT (MOBA handshake 2026-08-22): the wall TOP is WALKABLE. Emitted as DATA
+      // so no consumer guesses. Merlons are EDGE TEETH on BOTH parapet edges (medieval crenels),
+      // NEVER laid across the walk — a clear central walkway of `walkWidth` runs the whole ring.
+      // A consumer that reads `wallWalk` and still blocks the centre is violating the contract.
+      // Dims mirror the CF reference renderer (preview3d.html): merlon w 1.15 / depth 1.1 / gap 2.2,
+      // inset t/2−0.6 from the centreline on each edge ⇒ clear walk = t − 2·(0.6) − depth ≈ t−2.3.
+      const WT = 4.2, mDepth = 1.1, mInset = r1(WT / 2 - 0.6);
+      out.wallRing = { pts: gpts, h: T2s.wallH, t: WT, archClearH: r1(T2s.wallH * 0.65),
+        gates: gz2.map((g2) => g2.at || g2), ringN: CRs.rings.length,
+        wallWalk: {
+          walkable: true,
+          surfaceY: T2s.wallH,                       // wall-walk floor = top of the wall body
+          walkWidth: r1(WT - 2 * (WT / 2 - mInset) - mDepth), // clear central path (world-units)
+          merlons: { edge: "BOTH", w: 1.15, depth: mDepth, h: r1(T2s.wallH * 0.13 + 0.4), gap: 2.2, inset: mInset },
+          note: "merlons are edge teeth on BOTH edges; centre stays clear + walkable — never bar the walk",
+        },
+        // GATE OPENING WIDTH (owner 2026-08-22 "gates should be wide enough"): the clear passage a
+        // consumer carves in the wall at each gate — DATA, not a per-engine guess (was ~7u/GATE_R).
+        // ≈9.6 m; the flanking gatehouse towers sit OUTSIDE this so the walkway isn't pinched.
+        gateOpenWidth: GATE_OPEN_W };
+      // drawbridge/causeway site first — it names the MAIN gate (the grand entrance = portcullis).
+      let dbAt = null;
+      if (bridge.reg.length) {
         let bb = bridge.reg[0], bd = Infinity;
         for (const c of bridge.reg) { const d2 = Math.hypot(c[0] - base.x, c[1] - base.z); if (d2 < bd) { bd = d2; bb = c; } }
-        out.drawbridge = { at: [r1(bb[0]), r1(bb[1])], material: "WOOD" };
+        dbAt = [r1(bb[0]), r1(bb[1])];
+        out.drawbridge = { at: dbAt, material: "WOOD" };
       }
+      const castleGates = structures.filter((s2) => /^castle_gate_/.test(s2.anchorId));
+      // main gate = nearest the drawbridge/road (else the first, most attacker-facing) → PORTCULLIS
+      // (raise-up). Every other gate = DOUBLE_LEAF (swing L/R). TWO DOOR TYPES (owner 2026-08-22).
+      let mainId = castleGates[0]?.anchorId;
+      if (dbAt && castleGates.length) {
+        let bd = Infinity;
+        for (const s2 of castleGates) { const d2 = Math.hypot(s2.x - dbAt[0], s2.z - dbAt[1]); if (d2 < bd) { bd = d2; mainId = s2.anchorId; } }
+      }
+      out.gates = castleGates.map((s2) => ({
+        id: s2.anchorId, at: [s2.x, s2.z], hp: s2.hpMax, material: "WOOD",
+        states: ["CLOSED", "OPEN", "BROKEN"],
+        door: s2.anchorId === mainId ? "PORTCULLIS" : "DOUBLE_LEAF",
+        openWidth: GATE_OPEN_W,
+      }));
+      out.stairs = CRs.rings[0].stairs;      // v18: ONE stair source — the ring's own data flights
     }
     return out;
   })();
@@ -1997,9 +2033,16 @@ export function generate(parcel, params = null, designVersion = 0) {
               const styleKey = theme === "candyland" ? "candy"
                 : tier === "PALACE" ? (PALACE_STYLES[zone] || "fieldstone") : "fieldstone";
               const CR = concentricRings(castleParts.geom, T2, poly, { g, G });
+              // carry the DOOR TYPE (PORTCULLIS raise-up / DOUBLE_LEAF swing) onto each ring gate so
+              // renderers draw it from ONE source — the siege block decided it (main gate=portcullis).
+              const doorOf = (sid) => (siege?.gates || []).find((x) => x.id === sid)?.door;
+              const ringsWithDoors = CR.rings.map((rr) => ({
+                ...rr, gates: (rr.gates || []).map((g2) => { const d = doorOf(g2.structureId); return d ? { ...g2, door: d } : g2; }),
+              }));
               return { castleGeom: {
                 tier, styleKey,
-                rings: CR.rings,
+                rings: ringsWithDoors,
+                gateOpenWidth: GATE_OPEN_W,
                 keep: { at: castleParts.geom.keepAt, tiers: T2.keepTiers, h: T2.keepH,
                         w: castleParts.geom.keepW || 16,              // v19 keep-ratio law (owner: wall ≥2–3× keep)
                         lift: CR.rings[CR.rings.length - 1].lift },   // keep crowns the innermost ward

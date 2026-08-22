@@ -279,7 +279,29 @@
           40.1
         ]
       ],
-      "ringN": 3
+      "ringN": 3,
+      "wallWalk": {
+        "walkable": true,
+        "surfaceY": 18,
+        "walkWidth": 1.9,
+        "merlons": {
+          "edge": "BOTH",
+          "w": 1.15,
+          "depth": 1.1,
+          "h": 2.7,
+          "gap": 2.2,
+          "inset": 1.5
+        },
+        "note": "merlons are edge teeth on BOTH edges; centre stays clear + walkable — never bar the walk"
+      },
+      "gateOpenWidth": 13
+    },
+    "drawbridge": {
+      "at": [
+        -22.6,
+        -8.4
+      ],
+      "material": "WOOD"
     },
     "gates": [
       {
@@ -294,7 +316,9 @@
           "CLOSED",
           "OPEN",
           "BROKEN"
-        ]
+        ],
+        "door": "DOUBLE_LEAF",
+        "openWidth": 13
       },
       {
         "id": "castle_gate_1",
@@ -308,7 +332,9 @@
           "CLOSED",
           "OPEN",
           "BROKEN"
-        ]
+        ],
+        "door": "DOUBLE_LEAF",
+        "openWidth": 13
       },
       {
         "id": "castle_gate_2",
@@ -322,7 +348,9 @@
           "CLOSED",
           "OPEN",
           "BROKEN"
-        ]
+        ],
+        "door": "DOUBLE_LEAF",
+        "openWidth": 13
       },
       {
         "id": "castle_gate_3",
@@ -336,7 +364,9 @@
           "CLOSED",
           "OPEN",
           "BROKEN"
-        ]
+        ],
+        "door": "DOUBLE_LEAF",
+        "openWidth": 13
       },
       {
         "id": "castle_gate_4",
@@ -350,7 +380,9 @@
           "CLOSED",
           "OPEN",
           "BROKEN"
-        ]
+        ],
+        "door": "PORTCULLIS",
+        "openWidth": 13
       }
     ],
     "stairs": [
@@ -484,14 +516,7 @@
           32.4
         ]
       }
-    ],
-    "drawbridge": {
-      "at": [
-        -22.6,
-        -8.4
-      ],
-      "material": "WOOD"
-    }
+    ]
   },
   "meta": {
     "parcelId": "1101100",

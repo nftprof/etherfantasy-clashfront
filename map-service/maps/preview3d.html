@@ -585,7 +585,7 @@ if(CG)(function(){
   const nearGate=(x,z,d)=>gatePts.some(g=>Math.hypot(g[0]-x,g[1]-z)<d);
   // ---- curtain walls ring by ring: batter + body + wall-walk crenellations (§3a) ----
   const gd=(x,z)=>gatePts.length?Math.min(...gatePts.map(g=>Math.hypot(g[0]-x,g[1]-z))):1e9;
-  const GATE_R=5.5;                                  // half-width of the open passage at each gate
+  const GATE_R=(CG.gateOpenWidth||13)/2;             // half-width of the open passage (data-driven, owner 2026-08-22 wider gates)
   for(const ring of CG.rings||[]){
     const pts=ring.pts||[],H=ring.h||9;let run=0;
     // per-ring elevation: each nested ward's walls/towers/gates/stairs sit on ITS floor (yTop+lift),
@@ -629,15 +629,21 @@ if(CG)(function(){
       // anchor (was 0.6) — sharp enclosure dents no longer open slits between adjacent boxes.
       const body=putC(new THREE.Mesh(new THREE.BoxGeometry(L2+3.2,H,WT),wallM),mx,mz,H/2);body.rotation.y=ang;
       const bat=putC(new THREE.Mesh(new THREE.BoxGeometry(L2+3.2,H*0.22,WT+1.1),wallM),mx,mz,H*0.11);bat.rotation.y=ang; // sloped footing read
-      { // outward normal for this segment (away from the ring centroid) → merlons + curb offsets
+      { // BOTH-EDGE crenellations (owner 2026-08-22 "tooth on both side of the wall … walkable top"):
+        // edge teeth on the OUTER and INNER parapet with a CLEAR central walkway between them. The
+        // top is the WALL_WALK; teeth are EDGE decoration, NEVER laid across the walk (a block on the
+        // walk is exactly what trips units). Matches the emitted siege.wallRing.wallWalk contract.
         const dxa=(qx-px)/(Math.hypot(qx-px,qz-pz)||1),dza=(qz-pz)/(Math.hypot(qx-px,qz-pz)||1);
         let nx2=-dza,nz2=dxa;
         if(nx2*(mx-cx)+nz2*(mz-cz)<0){nx2=-nx2;nz2=-nz2;}
-        const mOff=WT/2-0.6;                                          // merlon band: outer edge
+        const mOff=WT/2-0.6;                                          // teeth band = each parapet edge
         for(let m=1.4;m<L2-0.8;m+=2.2){
-          const t=m/L2,mxx=px+(qx-px)*t+nx2*mOff,mzz=pz+(qz-pz)*t+nz2*mOff;
-          const mer=putC(new THREE.Mesh(new THREE.BoxGeometry(1.15,1.2,1.1),trimM),mxx,mzz,H+0.6);mer.rotation.y=ang;}
-        const curb=putC(new THREE.Mesh(new THREE.BoxGeometry(L2+1.0,0.4,0.5),trimM),               // low inner curb
+          const t=m/L2,bx=px+(qx-px)*t,bz=pz+(qz-pz)*t;
+          const mo=putC(new THREE.Mesh(new THREE.BoxGeometry(1.15,1.2,1.1),trimM),bx+nx2*mOff,bz+nz2*mOff,H+0.6);mo.rotation.y=ang; // OUTER battlement tooth
+          if(!nearStairTop(bx,bz,4)&&gd(bx,bz)>=GATE_R){            // INNER teeth — gapped at stairs/gates so access stays clear
+            const mi=putC(new THREE.Mesh(new THREE.BoxGeometry(1.15,0.95,1.1),trimM),bx-nx2*mOff,bz-nz2*mOff,H+0.5);mi.rotation.y=ang;}
+        }
+        const curb=putC(new THREE.Mesh(new THREE.BoxGeometry(L2+1.0,0.4,0.5),trimM),               // low inner guard-rail under the teeth
           mx-nx2*(WT/2-0.3),mz-nz2*(WT/2-0.3),H+0.2);curb.rotation.y=ang;
       }
       }
@@ -683,41 +689,46 @@ if(CG)(function(){
       let bx=0,bz=0;for(let i2=0;i2<pts.length;i2++){const p2=pts[i2],q2=pts[(i2+1)%pts.length];
         if(Math.hypot((p2[0]+q2[0])/2-gx,(p2[1]+q2[1])/2-gz)<9){bx=q2[0]-p2[0];bz=q2[1]-p2[1];break;}}
       const gl=Math.hypot(bx,ZS*bz)||1,ang=Math.atan2(-ZS*bz/gl*gl,bx);
-      const off=7.2,ox=(bx/ (Math.hypot(bx,bz)||1))*off,oz=(bz/(Math.hypot(bx,bz)||1))*off;
+      // WIDE gate (owner 2026-08-22): flanking towers sit OUTSIDE the clear passage (off = GATE_R +
+      // tower radius) and are slimmer, so the walkway between them is a full ~GATE_R*2 wide, un-pinched.
+      const TWR=3.0,TWB=3.6,off=GATE_R+TWB+0.4,ox=(bx/(Math.hypot(bx,bz)||1))*off,oz=(bz/(Math.hypot(bx,bz)||1))*off;
       for(const s2 of [-1,1]){const tw=new THREE.Group();
-        tw.add(new THREE.Mesh(new THREE.CylinderGeometry(3.4,4.0,H*1.55,9),wallM));
-        const roof=new THREE.Mesh(new THREE.ConeGeometry(3.9,4.4,9),nextRoofM());roof.position.y=H*0.78+2.2;tw.add(roof);
+        tw.add(new THREE.Mesh(new THREE.CylinderGeometry(TWR,TWB,H*1.55,9),wallM));
+        const roof=new THREE.Mesh(new THREE.ConeGeometry(TWB+0.4,4.4,9),nextRoofM());roof.position.y=H*0.78+2.2;tw.add(roof);
         if(starM){const st4=new THREE.Mesh(new THREE.OctahedronGeometry(1.15,0),starM);st4.position.y=H*0.78+4.9;tw.add(st4);}
         putC(tw,gx+s2*ox,gz+s2*oz,H*0.78);}
-      // OPEN passage: a lintel spans ABOVE head height and the portcullis grate hangs half-raised
-      // in the upper band — the road walks straight through (the DOOR itself = the castle_gate_N
-      // structure's HP: attackers batter it down; visuals stay open-arch so the entrance READS).
-      // v22 hero-scale (owner 2026-08-02 "walls too small to fit a hero underneath — no ducking"):
-      // the arch's clear opening is 0.65×H (matches siege.wallRing.archClearH).
-      const arch=putC(new THREE.Mesh(new THREE.BoxGeometry(off*2-4,H*0.4,3.4),wallM),gx,gz,H*0.85);arch.rotation.y=ang;
-      const port=putC(new THREE.Mesh(new THREE.BoxGeometry(off*2-8.5,H*0.28,0.5),
-        new THREE.MeshLambertMaterial({color:0x181a1f,emissive:0x2a2416,flatShading:true})),gx,gz,H*0.79);port.rotation.y=ang;
-      // OPEN WOODEN GATES (owner 2026-07-28: "show them with the OPEN wooden gates for the actual
-      // attackable entrances" — supersedes the closed leaf of 07-25): the destructible castle_gate_N
-      // (material:WOOD, hpMax, states CLOSED/OPEN/BROKEN) renders in the designer as TWO timber
-      // leaves swung ~66° into the courtyard from the jambs — the archway visibly stands open, so
-      // every attackable entrance reads at a glance. CLOSED/BROKEN remain runtime states in-engine.
+      // OPEN passage: a lintel spans ABOVE head height (arch clear = 0.65×H = siege.wallRing.archClearH)
+      // and the DOOR renders per its TYPE (owner 2026-08-22 two door types). The door itself = the
+      // castle_gate_N structure HP (CLOSED/OPEN/BROKEN); the designer shows it OPEN so the entrance READS.
       const uL=Math.hypot(bx,bz)||1,uxw=bx/uL,uzw=bz/uL;         // wall tangent at the gate
       let inx=-uzw,inz=uxw;if(inx*(cx-gx)+inz*(cz-gz)<0){inx=-inx;inz=-inz;}
-      const DW=off*2-9,DH=H*0.62,LEAF=DW/2,openA=1.15;
+      const OPENW=GATE_R*2, arch=putC(new THREE.Mesh(new THREE.BoxGeometry(OPENW+3.2,H*0.35,3.4),wallM),gx,gz,H*0.85);arch.rotation.y=ang;
       const woodM=new THREE.MeshLambertMaterial({color:0x6b4a2b,flatShading:true});
       const ironM=new THREE.MeshLambertMaterial({color:0x2b2620,flatShading:true});
-      for(const sgn of [1,-1]){
-        const hx=gx+uxw*sgn*(DW/2),hz=gz+uzw*sgn*(DW/2);         // hinge at the jamb
-        const ca=Math.cos(openA),sa=Math.sin(openA);             // leaf swings from "toward center" into the courtyard
-        const ldx=(-uxw*sgn)*ca+inx*sa, ldz=(-uzw*sgn)*ca+inz*sa;
-        const ll=Math.hypot(ldx,ldz)||1;
-        const lcx=hx+(ldx/ll)*(LEAF/2), lcz=hz+(ldz/ll)*(LEAF/2);
-        const leaf=putC(new THREE.Mesh(new THREE.BoxGeometry(LEAF,DH,0.9),woodM),lcx,lcz,DH/2);
-        leaf.rotation.y=Math.atan2(-ZS*ldz,ldx);
-        for(const yb of [DH*0.28,DH*0.72]){                      // iron straps across the planks
-          const band=putC(new THREE.Mesh(new THREE.BoxGeometry(LEAF+0.2,0.55,1.05),ironM),lcx,lcz,yb);
-          band.rotation.y=leaf.rotation.y;}
+      const door=g.door || (((ring.gates||[]).indexOf(g)===0 && (ring.tier??0)===0) ? "PORTCULLIS" : "DOUBLE_LEAF");
+      if(door==="PORTCULLIS"){
+        // RAISE-UP portcullis: an iron grid RETRACTED into the gatehouse (bottom above head = OPEN).
+        const gridW=OPENW-1.2,y0=H*0.62,gh=H*0.30,nbar=Math.max(5,Math.round(gridW/1.5));
+        for(let b=0;b<=nbar;b++){const t=b/nbar-0.5;                     // vertical bars
+          const bar=putC(new THREE.Mesh(new THREE.BoxGeometry(0.3,gh,0.3),ironM),gx+uxw*t*gridW,gz+uzw*t*gridW,y0+gh/2);bar.rotation.y=ang;}
+        for(const yb of [y0+gh*0.12,y0+gh*0.88]){                        // two cross-bars
+          const cb=putC(new THREE.Mesh(new THREE.BoxGeometry(gridW,0.32,0.32),ironM),gx,gz,yb);cb.rotation.y=ang;}
+        const lintel=putC(new THREE.Mesh(new THREE.BoxGeometry(OPENW+1,0.7,3.2),woodM),gx,gz,y0-0.2);lintel.rotation.y=ang; // timber threshold beam
+      } else {
+        // DOUBLE_LEAF: two timber leaves swung ~66° into the courtyard from the jambs (open, attackable).
+        const DW=OPENW-1.0,DH=H*0.62,LEAF=DW/2,openA=1.15;
+        for(const sgn of [1,-1]){
+          const hx=gx+uxw*sgn*(DW/2),hz=gz+uzw*sgn*(DW/2);         // hinge at the jamb
+          const ca=Math.cos(openA),sa=Math.sin(openA);             // leaf swings from "toward center" into the courtyard
+          const ldx=(-uxw*sgn)*ca+inx*sa, ldz=(-uzw*sgn)*ca+inz*sa;
+          const ll=Math.hypot(ldx,ldz)||1;
+          const lcx=hx+(ldx/ll)*(LEAF/2), lcz=hz+(ldz/ll)*(LEAF/2);
+          const leaf=putC(new THREE.Mesh(new THREE.BoxGeometry(LEAF,DH,0.9),woodM),lcx,lcz,DH/2);
+          leaf.rotation.y=Math.atan2(-ZS*ldz,ldx);
+          for(const yb of [DH*0.28,DH*0.72]){                      // iron straps across the planks
+            const band=putC(new THREE.Mesh(new THREE.BoxGeometry(LEAF+0.2,0.55,1.05),ironM),lcx,lcz,yb);
+            band.rotation.y=leaf.rotation.y;}
+        }
       }
     }
     // ---- STAIRS FROM DATA (v18, owner 2026-08-01: "we only spec two types of stairs —

@@ -1112,3 +1112,26 @@ team gives the branch name (asked in #38) → set `MOBA_MAPS_BRANCH` in the CF r
 Variables, or `gh variable set`). Alternative offered: runtime-load from
 `/internal/v1/moba-map/siege-test` (always current, but the 3D client vendors a relative copy per
 CORS/egress, so the branch var is the pragmatic path).
+
+**2026-08-22 — 🧱 WALL-WALK + GATE handshake (gen v25). → MOBA BattleEngine RAW + EF Moba.**
+Owner on the latest MOBA siege map: "walls are taller but still not walkable on top … those blocks
+should be teeth on BOTH sides of the wall like a medieval battlement, not tripped over / blocking
+the walk … gates should be wide enough … maybe two door types (raise-up vs open left/right)." Root
+cause = a CONTRACT GAP, not a wrong map: CF only exported the wall polyline + `h`/`t`, so the engine
+invented its own wall mesh (bigger/taller) and put merlons across the walk. It's not the wrong map —
+the engine's own wall renderer isn't honoring the walk tier. Also the render brief was STALE on
+heights (said KEEP 7/CASTLE 9/PALACE 11; real HERO-SCALE is 14/16/18 — that's the "taller" drift).
+FIX (CF side, GEN_VERSION 24→25, additive + backward-compatible):
+- `siege.wallRing.wallWalk = { walkable, surfaceY=h, walkWidth(~1.9u), merlons:{edge:"BOTH",w,depth,h,gap,inset} }`
+  — the wall TOP is walkable; merlons are edge teeth on BOTH rims; a clear central walkway runs the
+  whole ring; NEVER a block across the walk. The walk passes through every (two-part) tower.
+- `siege.wallRing.gateOpenWidth = 13` (~9.6 m) — the opening to carve at each gate; flanking towers
+  seat OUTSIDE it (no pinch). Replaces the per-engine ~7u/GATE_R guess.
+- `siege.gates[].door = "PORTCULLIS" | "DOUBLE_LEAF"` (mirrored onto `castleGeom.rings[].gates[].door`)
+  — main/road gate = raise-up portcullis, others = swing double-leaf.
+Docs: CASTLE-RENDER-BRIEF.md §2/§5 (walk rule + wide/typed gates + heights corrected) and
+CASTLE-STAIRS-AND-WALLS-SPEC.md (anatomy + new rules R-WALK / R-DOOR + renderer notes). CF reference
+renderer (preview3d.html) updated to match; siege-test + all 11 estate/palace castles re-baked to
+v25; castle sweep 1036/1036 green. **→ engine:** read `wallRing.wallWalk`/`gateOpenWidth`/`gates[].door`
+and build the navmesh so the wall-walk is traversable + gates open wide; siege-test.json (A1) carries
+it now on `clashfront-map-sync`. Old manifests without these fields fall back gracefully.
