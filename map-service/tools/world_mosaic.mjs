@@ -15,7 +15,7 @@
 import { writeFileSync, readFileSync, existsSync, mkdirSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { worldParcel } from "../maps/worldfield.js";
+import { worldParcel, svgPathToPolygon } from "../maps/worldfield.js";
 import { generate } from "../maps/generate.js";
 import { encodePNG } from "../maps/png.js";
 import { T } from "../maps/schema.js";
@@ -46,17 +46,39 @@ const PALETTE_RGB = {
 };
 const BG = [14, 18, 26];                          // dark ground behind the continent
 
+// ⚠ RENDER ALL *LEAF* PARCELS — the recurring gap bug (owner 2026-08-23, "not the first time"):
+// the world is a HIERARCHY (L2 estate/parcel → optionally subdivided into L3 singles). A leaf is
+// an L3 single OR an L2 parcel that was NEVER subdivided (`l3Enabled === false`). Rendering L3
+// singles ONLY omits the un-subdivided L2/estate parcels, which then read as wide black CHANNELS —
+// the "gaps" are missing L2 leaves, NOT real voids and NOT wrong shapes. Leaves TESSELLATE.
 const l3Path = path.join(ROOT, `data/hexagon-city-source/l3/${zone}.json`);
 if (!existsSync(l3Path)) { console.error(`no L3 data for zone ${zone}`); process.exit(1); }
-let singles = JSON.parse(readFileSync(l3Path, "utf8")).singles;
+let leaves = JSON.parse(readFileSync(l3Path, "utf8")).singles.slice();       // L3 singles = always leaves
+const l2Path = path.join(ROOT, "data/hexagon-city-source/parcels-l2.json");
+if (existsSync(l2Path)) {
+  const l2raw = JSON.parse(readFileSync(l2Path, "utf8"));
+  const l2 = Array.isArray(l2raw) ? l2raw : (l2raw.parcels || l2raw.estates || Object.values(l2raw)[0] || []);
+  const l2leaves = l2.filter((s) => s.zone === zone && s.l3Enabled === false && s.svgPath); // un-subdivided L2
+  leaves = leaves.concat(l2leaves);
+  console.log(`${zone}: ${leaves.length} leaf parcels (L3 singles + ${l2leaves.length} un-subdivided L2)`);
+}
+let singles = leaves;
 if (CENTER) {
-  const c = singles.find((s) => s.parcelId === CENTER);
+  const c = leaves.find((s) => s.parcelId === CENTER) || JSON.parse(readFileSync(l3Path, "utf8")).singles.find((s) => s.parcelId === CENTER);
   if (!c) { console.error(`center ${CENTER} not in ${zone}`); process.exit(1); }
   const [cx, cy] = c.center;
-  singles = singles.filter((s) => Math.hypot(s.center[0] - cx, s.center[1] - cy) <= RADIUS);
+  // the view box = the extent of the L3 singles within the radius (the intended patch)…
+  let vx0 = Infinity, vy0 = Infinity, vx1 = -Infinity, vy1 = -Infinity;
+  for (const s of leaves) if (s.center && Math.hypot(s.center[0] - cx, s.center[1] - cy) <= RADIUS) {
+    const [a, b, c2, d] = s.bbox; if (a < vx0) vx0 = a; if (b < vy0) vy0 = b; if (c2 > vx1) vx1 = c2; if (d > vy1) vy1 = d;
+  }
+  // …then include EVERY leaf whose BBOX INTERSECTS that view (a big L2 estate whose CENTER is
+  // outside the radius still covers the view — the recurring gap bug was filtering it out by center).
+  singles = leaves.filter((s) => { const [a, b, c2, d] = s.bbox; return c2 >= vx0 && a <= vx1 && d >= vy0 && b <= vy1; });
 }
 if (!singles.length) { console.error("no parcels selected"); process.exit(1); }
-console.log(`${zone}: ${singles.length} parcels in the patch`);
+const nL2 = singles.filter((s) => s.sizeClass && s.sizeClass !== "SINGLE").length;
+console.log(`${zone}: ${singles.length} parcels in view (${nL2} larger/L2 leaves by bbox-overlap)`);
 
 // world extent over the selected parcels' bboxes → canvas size
 let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
@@ -69,38 +91,70 @@ console.log(`canvas ${W}×${H} px  (${spanX.toFixed(1)}×${spanY.toFixed(1)} zon
 const px = new Uint8Array(W * H * 4);
 for (let i = 0; i < W * H; i++) { px[i * 4] = BG[0]; px[i * 4 + 1] = BG[1]; px[i * 4 + 2] = BG[2]; px[i * 4 + 3] = 255; }
 const put = (x, y, r, g, b) => { if (x < 0 || y < 0 || x >= W || y >= H) return; const i = (y * W + x) * 4; px[i] = r; px[i + 1] = g; px[i + 2] = b; px[i + 3] = 255; };
+const BORDER = [24, 30, 42];                       // clear parcel outline (owner 2026-08-23 "show borders")
+const line = (x0, y0, x1, y1, c) => {             // Bresenham stroke
+  x0 = Math.round(x0); y0 = Math.round(y0); x1 = Math.round(x1); y1 = Math.round(y1);
+  const dx = Math.abs(x1 - x0), dy = -Math.abs(y1 - y0), sx = x0 < x1 ? 1 : -1, sy = y0 < y1 ? 1 : -1;
+  let err = dx + dy;
+  for (;;) { put(x0, y0, c[0], c[1], c[2]); if (x0 === x1 && y0 === y1) break; const e2 = 2 * err; if (e2 >= dy) { err += dy; x0 += sx; } if (e2 <= dx) { err += dx; y0 += sy; } }
+};
+
+// zone svg coords (y DOWN, matching the original hexagon-city SVG) → canvas px. No Y-flip: the source
+// map is y-down, and we want the same orientation so parcels tile exactly as in the real continent.
+const toCanvas = (zx, zy) => [(zx - minX) * PPU, (zy - minY) * PPU];
 
 const t0 = Date.now();
-let ok = 0, failed = 0;
+let ok = 0, failed = 0, nopoly = 0;
 const rects = [];
 for (let n = 0; n < singles.length; n++) {
   const s = singles[n];
+  const zpoly = s.svgPath ? svgPathToPolygon(s.svgPath) : null;   // REAL parcel polygon (zone coords)
+  if (!zpoly || zpoly.length < 3) { nopoly++; continue; }
   let art;
   try { art = generate(worldParcel(s, { investLevel: INVEST })); }
   catch { failed++; continue; }
   const G = art.terrain.w;
   const cells = new Uint8Array(Buffer.from(art.terrain.cells, "base64"));
   const pal = PALETTE_RGB[art.meta?.params?.palette] || PALETTE_RGB.verdant;
-  // parcel bbox → canvas rect (flip Y so higher zone-y = north = up, matching thumb.js)
-  const [bx0, by0, bx1, by1] = s.bbox;
-  const rx0 = Math.floor((bx0 - minX) * PPU), rx1 = Math.ceil((bx1 - minX) * PPU);
-  const ry0 = Math.floor((maxY - by1) * PPU), ry1 = Math.ceil((maxY - by0) * PPU);
-  const rw = Math.max(1, rx1 - rx0), rh = Math.max(1, ry1 - ry0);
-  rects.push({ id: s.parcelId, x: rx0, y: ry0, w: rw, h: rh });
-  for (let yy = ry0; yy < ry1; yy++) {
-    for (let xx = rx0; xx < rx1; xx++) {
-      const fx = (xx - rx0) / rw, fy = (yy - ry0) / rh;
-      const cx = Math.min(G - 1, Math.floor(fx * G));
-      const cz = Math.min(G - 1, Math.floor((1 - fy) * G));   // flip: top row = north
-      const cell = cells[cz * G + cx];
-      if (cell === T.OOB) continue;                           // outside the polygon → keep background
-      const c = pal[Math.min(cell, 5)];
-      put(xx, yy, c[0], c[1], c[2]);
+  // polygon in canvas px + its bbox (for texture mapping)
+  const cpoly = zpoly.map(([zx, zy]) => toCanvas(zx, zy));
+  let px0 = Infinity, py0 = Infinity, px1 = -Infinity, py1 = -Infinity;
+  for (const [x, y] of cpoly) { if (x < px0) px0 = x; if (y < py0) py0 = y; if (x > px1) px1 = x; if (y > py1) py1 = y; }
+  const pw = Math.max(1, px1 - px0), ph = Math.max(1, py1 - py0);
+  rects.push({ id: s.parcelId, x: Math.round(px0), y: Math.round(py0), w: Math.round(pw), h: Math.round(ph) });
+  // dominant non-OOB terrain color → the fallback fill so a polygon never has holes at OOB samples
+  const counts = [0, 0, 0, 0, 0, 0];
+  for (let k = 0; k < cells.length; k++) { const c = cells[k]; if (c !== T.OOB) counts[Math.min(c, 5)]++; }
+  let dom = 0; for (let c = 1; c < 6; c++) if (counts[c] > counts[dom]) dom = c;
+  const domRGB = pal[dom];
+  // SCANLINE-FILL the real polygon (seamless with neighbours — this is what CF does), texture each
+  // pixel from the parcel's top-down thumbnail sampled over the polygon's bbox.
+  const yA = Math.max(0, Math.floor(py0)), yB = Math.min(H - 1, Math.ceil(py1));
+  for (let y = yA; y <= yB; y++) {
+    const xs = [];
+    for (let e = 0; e < cpoly.length; e++) {
+      const a = cpoly[e], b = cpoly[(e + 1) % cpoly.length];
+      if ((a[1] <= y && b[1] > y) || (b[1] <= y && a[1] > y)) xs.push(a[0] + ((y - a[1]) / (b[1] - a[1])) * (b[0] - a[0]));
+    }
+    xs.sort((p, q) => p - q);
+    for (let k = 0; k + 1 < xs.length; k += 2) {
+      const xL = Math.max(0, Math.ceil(xs[k])), xR = Math.min(W - 1, Math.floor(xs[k + 1]));
+      for (let x = xL; x <= xR; x++) {
+        const fx = (x - px0) / pw, fy = (y - py0) / ph;
+        const cxi = Math.min(G - 1, Math.max(0, Math.floor(fx * G)));
+        const czi = Math.min(G - 1, Math.max(0, Math.floor(fy * G)));
+        const cell = cells[czi * G + cxi];
+        const c = (cell === T.OOB) ? domRGB : pal[Math.min(cell, 5)];
+        put(x, y, c[0], c[1], c[2]);
+      }
     }
   }
+  // clear border stroke around the parcel outline
+  for (let e = 0; e < cpoly.length; e++) { const a = cpoly[e], b = cpoly[(e + 1) % cpoly.length]; line(a[0], a[1], b[0], b[1], BORDER); }
   ok++;
   if ((n + 1) % 50 === 0) console.log(`  …${n + 1}/${singles.length}`);
 }
+if (nopoly) console.log(`  (${nopoly} parcels had no usable svgPath)`);
 console.log(`composited ${ok} parcels (${failed} failed the gate) in ${((Date.now() - t0) / 1000).toFixed(1)}s`);
 
 mkdirSync(OUT, { recursive: true });
