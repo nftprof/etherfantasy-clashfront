@@ -129,13 +129,20 @@ export function ensureDesign(parcel) {
 // an existing row at >= the artifact's version wins.
 export function adoptArtifact(parcelId, artifact) {
   const id = String(parcelId), v = artifact?.meta?.designVersion ?? 0;
+  const gv = artifact?.meta?.genVersion ?? 0;
   const prior = getRow(id);
-  if (prior && prior.designVersion >= v) return prior;
+  // Keep the prior ONLY if it is at least as new by BOTH designVersion AND generator version.
+  // A GENERATOR bump (genVersion) must always supersede: a clean rebuild can legitimately reset
+  // designVersion to a LOWER number (an accumulated box copy at v246 vs a fresh bake at v20), and
+  // the old designVersion-only guard silently stranded the box on the pre-bump geometry (owner
+  // 2026-08-22: "the map is still the non-walkable version"). Old rows carry no genVersion ⇒ 0 ⇒
+  // any bumped artifact wins.
+  if (prior && prior.designVersion >= v && (prior.genVersion ?? 0) >= gv) return prior;
   fs.mkdirSync(pDir(id), { recursive: true });
   fs.writeFileSync(artPath(id, v), JSON.stringify(artifact));
   const idx = loadIdx();
   const row = (idx[id] = {
-    parcelId: id, designVersion: v, status: "OWNER_FROZEN",
+    parcelId: id, designVersion: v, genVersion: gv, status: "OWNER_FROZEN",
     seed: artifact.meta?.seed ?? 0, biome: "", zone: artifact.meta?.zone || "",
     sizeClass: artifact.arena?.sizeM, laneCount: artifact.laneCount,
     archetype: artifact.meta?.params?.archetype, palette: artifact.meta?.params?.palette,
