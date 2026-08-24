@@ -26,6 +26,7 @@
 (async function(){
 const q=new URLSearchParams(location.search), pid=q.get("parcel"), vv=q.get("v");
 const EXPORT=q.get("export")==="1";                    // AR terrain GLB export: strip scatter/props, LOD the ground
+const THUMB=q.get("thumb")==="1";                      // world-map thumbnail: clean top-down ortho, no HUD, transparent bg
 const GSTRIDE=EXPORT?(parseInt(q.get("stride")||"3",10)||3):1;
 if(!pid){document.getElementById("err").textContent="missing ?parcel=<id>";return;}
 let d; try{ d=await fetch(`/internal/v1/designs/${pid}${vv!=null?`?v=${vv}`:""}`).then(r=>r.json()); }catch(e){}
@@ -82,14 +83,22 @@ const R=(x,y)=>x+(y-x)*rng();
 const TINT={verdant:0xffffff,autumn:0xd9b978,volcanic:0x6a5a52,tundra:0xcdd6da,desert:0xd8c28a,swamp:0x8fa06a,sakura:0xe6c8d6}[p.palette]||0xffffff;
 
 const scene=new THREE.Scene();
-const cam=new THREE.PerspectiveCamera(parity?50:45,innerWidth/innerHeight,1,S*6);
+let cam=new THREE.PerspectiveCamera(parity?50:45,innerWidth/innerHeight,1,S*6);
 // north-up from either convention: sit the camera on the SOUTH side of the arena.
 // parity: frame off the manifest's suggested orbit radius (the game-ish view distance)
 const camR=parity?(man.camera&&man.camera.radius||S*0.62):S;
 cam.position.set(0,parity?camR*0.85:S*1.0,ZS*-(parity?camR*0.62:S*0.68)); cam.lookAt(0,0,0);
-const ren=new THREE.WebGLRenderer({antialias:true}); ren.setSize(innerWidth,innerHeight); ren.setPixelRatio(Math.min(devicePixelRatio,2));
+const ren=new THREE.WebGLRenderer({antialias:true,alpha:THUMB}); ren.setSize(innerWidth,innerHeight); ren.setPixelRatio(Math.min(devicePixelRatio,2));
+if(THUMB)ren.setClearColor(0x000000,0);                 // transparent → the world compositor clips to the parcel polygon
 document.body.appendChild(ren.domElement);
 const ctl=new THREE.OrbitControls(cam,ren.domElement); ctl.maxPolarAngle=Math.PI*0.49; ctl.target.set(0,0,0);
+if(THUMB){                                              // WORLD-MAP THUMBNAIL: straight-down orthographic, north up, no fog/HUD
+  const half=S/2;
+  cam=new THREE.OrthographicCamera(-half,half,half,-half,-S*4,S*4);
+  cam.position.set(0,S*2,0); cam.up.set(0,0,ZS>0?1:-1); cam.lookAt(0,0,0);
+  ctl.enabled=false;
+  for(const id of ["hud","hint","north","err"]){const el=document.getElementById(id);if(el)el.style.display="none";}
+}
 const MAXA=ren.capabilities.getMaxAnisotropy();
 const world=(x,z)=>new THREE.Vector3(x,0,ZS*z);
 const put=(mesh,x,z,y=0)=>{const w=world(x,z);mesh.position.set(w.x,y+hAt(x,z),w.z);scene.add(mesh);return mesh;};
@@ -904,6 +913,14 @@ if(new URLSearchParams(location.search).get('export')==='1'){
   window.__CF_EXPORT={ scene, THREE, ready:true,
     // the environment root minus helpers: cull invisible + the gold selection ring
     envObjects(){ const keep=[]; scene.traverse(o=>{ if(o.isMesh && o.visible!==false) keep.push(o); }); return keep; } };
+}
+// ---- WORLD-MAP THUMBNAIL HOOK (owner 2026-08-23): a one-time server-side headless capture of the
+// parcel's 3D scene, top-down, drives the overworld texture (castle→castle, candy→candy). Re-run when
+// a map is regenerated. Hide the floating beacons + fog so the capture is the clean environment.
+if(THUMB){
+  for(const b of beacons){ if(b.ring)b.ring.visible=false; if(b.bob)b.bob.visible=false; }
+  if(scene.fog)scene.fog=null;
+  window.__CF_THUMB={ ready:true };
 }
 const fogBase=parity&&scene.fog?{near:scene.fog.near,far:scene.fog.far,dist:220}:null;
 let _clock=0;

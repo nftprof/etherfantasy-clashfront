@@ -54,6 +54,14 @@ from code alone — render the region and LOOK, and/or run the coverage probe (p
 - `map-service/tools/world_mosaic.mjs` — the reference compositor: real-polygon fill, leaf selection
   (L3 + L2 `l3Enabled=false`), bbox-intersect view clip. Emits `<stem>.png` + a click-through
   `<stem>.json` (per-parcel rects). This is the 2D reference layer.
-- 3D-thumb pipeline (to build): headless top-down capture of each parcel's `/designer/3d?parcel=<id>`
-  scene → cache PNG → the world compositor pastes those instead of the 2D raster. Lazy for the ~293k
-  scale (render on first visit/bake; grey until then).
+- **3D-thumb pipeline (BUILT 2026-08-23):**
+  - `preview3d.html?thumb=1` — clean **top-down orthographic** capture mode: no HUD/beacons/fog,
+    transparent background (so the compositor clips to the polygon), sets `window.__CF_THUMB.ready`.
+  - `map-service/tools/capture_thumb.mjs <parcelId…>` — headless capture → transparent PNG cached at
+    `data/cf-maps/thumbs3d/<id>.v<designVersion>.png` (+ a stable `<id>.png` alias to the current
+    version). Version-idempotent: `--force` re-shoots; a new `designVersion` writes a new file.
+  - **Run it as a server pipeline, ONCE per map version, and re-run on regenerate** (owner
+    2026-08-23) — not lazy-per-view. Proven on castle / candy / a normal parcel (distinct, correct).
+  - STILL TO WIRE: (a) the world compositor pastes `thumbs3d/<id>.png` (clip to polygon) instead of
+    the 2D raster, grey where absent; (b) a batch runner over the registry's generated designs +
+    a hook so `regenerate`/save enqueues a re-capture.
