@@ -80,8 +80,14 @@ jobs:
           git fetch origin "$BR" && git checkout -B "$BR" "origin/$BR" || git checkout -B "$BR"
           # re-mirror on top of the branch tip (the pre-step rsync landed on the default checkout)
           rsync -a --include='*/' --include='*.json' --exclude='*' ../cf/data/moba-maps/ data/moba-maps/
-          git add data/moba-maps
-          if git diff --cached --quiet; then echo "✅ engine maps already up to date — nothing to push"; exit 0; fi
+          # CANONICAL RENDERER (for-map inbox 2026-08-24 "add the renderer to the map-sync pipeline"):
+          # the map authority owns the terrain renderer — ship it alongside the maps so the engine always
+          # renders CF's latest for all 20K maps (no drift). The castle KIT is built by the engine from
+          # castleGeom per docs/briefs/CASTLE-RENDER-BRIEF.md; the terrain module is the shared piece.
+          mkdir -p shared
+          cp ../cf/map-service/maps/ef_battlefield_renderer.js shared/ef_battlefield_renderer.js
+          git add data/moba-maps shared/ef_battlefield_renderer.js
+          if git diff --cached --quiet; then echo "✅ engine maps + renderer already up to date — nothing to push"; exit 0; fi
           SHA="$(git -C ../cf rev-parse --short HEAD)"
           git commit -m "maps: sync data/moba-maps from clashfront@${SHA}"
           ok=0

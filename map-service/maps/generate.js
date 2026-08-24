@@ -1494,7 +1494,7 @@ const PALACE_STYLES = { UW2: "drowned_bastion", ENT: "carnavale", EDU: "collegia
 // anchors = vertices of the solid wallRing polyline t 4.2, never independent cylinders) +
 // siege.wallRing gains t/archClearH — engines build the navmesh from THIS instead of guessing
 // (the "units running in circles around towers" fix on the map side).
-export const GEN_VERSION = 25;   // v25: wallRing.wallWalk contract (walkable top, edge-teeth merlons both edges)
+export const GEN_VERSION = 26;   // v26: wall-walk fields (surfaceY/walkWidth/wallWalk) on castleGeom.rings (engine reads these)
 
 export function generate(parcel, params = null, designVersion = 0) {
   // designVersion is MANDATORY in every artifact (MOBA contract fix 3: it pins caches, replays,
@@ -2036,8 +2036,16 @@ export function generate(parcel, params = null, designVersion = 0) {
               // carry the DOOR TYPE (PORTCULLIS raise-up / DOUBLE_LEAF swing) onto each ring gate so
               // renderers draw it from ONE source — the siege block decided it (main gate=portcullis).
               const doorOf = (sid) => (siege?.gates || []).find((x) => x.id === sid)?.door;
+              // WALL-WALK per ring, ON castleGeom (engine reads castleGeom.rings, not siege.wallRing —
+              // for-map inbox 2026-08-24): surfaceY = terrain-relative wall-walk Y = lift + h (engine adds
+              // terrainBaseY), walkWidth = clear central path, merlons = BOTH-edge teeth. One contract.
+              const _WT = 4.2, _mDepth = 1.1, _mInset = r1(_WT / 2 - 0.6), _walkW = r1(_WT - 2 * (_WT / 2 - _mInset) - _mDepth);
               const ringsWithDoors = CR.rings.map((rr) => ({
                 ...rr, gates: (rr.gates || []).map((g2) => { const d = doorOf(g2.structureId); return d ? { ...g2, door: d } : g2; }),
+                surfaceY: r1((rr.lift || 0) + rr.h),
+                walkWidth: _walkW,
+                wallWalk: { walkable: true, surfaceY: r1((rr.lift || 0) + rr.h), walkWidth: _walkW,
+                  merlons: { edge: "BOTH", w: 1.15, depth: _mDepth, h: r1(rr.h * 0.13 + 0.4), gap: 2.2, inset: _mInset } },
               }));
               return { castleGeom: {
                 tier, styleKey,
