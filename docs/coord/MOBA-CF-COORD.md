@@ -1135,3 +1135,42 @@ renderer (preview3d.html) updated to match; siege-test + all 11 estate/palace ca
 v25; castle sweep 1036/1036 green. **→ engine:** read `wallRing.wallWalk`/`gateOpenWidth`/`gates[].door`
 and build the navmesh so the wall-walk is traversable + gates open wide; siege-test.json (A1) carries
 it now on `clashfront-map-sync`. Old manifests without these fields fall back gracefully.
+
+**2026-08-24 — 🏛 MAP AUTHORITY + RENDERER PARITY (owner governance ruling). → the gameplay session.**
+Owner ruling: **CF ParcelMap authorizes ALL maps; gameplay is built ON TOP; gameplay feedback that
+needs a map change routes THROUGH the map authority — never a unilateral map/renderer fork.** Rationale
+(and the drift that proves it): parallel renderer editing put the gameplay session on the shared
+"VERSION 14" while the generator is at GEN_VERSION 25, and produced conflicting rules (outer-lip-only
+vs both-edge merlons; two wall-walk derivations). A rule can only hold across the 20K maps if it is
+enforced at GENERATION time + in ONE canonical renderer — which is exactly why maps have a single owner.
+
+**Division of ownership:**
+- **CF ParcelMap owns: the map DATA + the RULE CONTRACT** (wall-walk walkable, walkable stairs, wall
+  heights, gate openings, collision/walkability, borders/tessellation, no-obstacle-on-roads). Enforced
+  in `generate.js` as generation-time repairs + asserted by the castle-geometry sweep over every castle,
+  and shipped to the MOBA via the map-sync pipeline. This is how a rule reaches all 20K by construction.
+- **Gameplay owns: gameplay on top + the visual renderer polish** (materials, meshes, effects). It may
+  NOT change rule-bearing map geometry or fork the renderer's rule semantics — it FILES a requirement
+  ("gameplay needs X on the map") and CF folds X into the generator + canonical renderer + sweep, re-bakes,
+  and syncs. Their renderer then ADOPTS CF's (via sync), not the reverse.
+
+**Re the 3 render requirements handed over — already CF's lane, mostly shipped (GEN_VERSION 25 this week):**
+1. Wall height band — CF is authoritative at **HERO-SCALE KEEP 14 / CASTLE 16 / PALACE 18** (owner
+   2026-08-02 "walls too small for a hero"). Render THESE, not the older ~11–14. `ring.h` carries it.
+2. Wall-top clear walkway — shipped as `siege.wallRing.wallWalk { walkable, surfaceY, walkWidth,
+   merlons:{edge:"BOTH"...} }`. NOTE: CF's merlons are edge TEETH on both rims with a **clear central
+   walkway** (`walkWidth`) — this is COMPATIBLE with "units patrol the wall-walk" (the center is clear);
+   it is not the full-width merlon that blocked the walk. Keep it.
+3. Walkable stairs — shipped: `ring.stairs` (foot→top) is data; render as traversable ramps.
+
+**The formula you asked for (wall-walk Y as a function of map data):**
+`wallWalkY = terrainBaseY(at the wall) + ring.lift + ring.h`  — castles are FLAT (owner 2026-07-27:
+`mound.raise = 0`, no motte), so there is NO mound term. `ring.h` = curtain height (14/16/18);
+`ring.lift` = the nested-ward elevation (inner wards climb; outer ring lift 0). CF already emits this:
+`siege.wallRing.wallWalk.surfaceY` (= wallH) and per-ring `siege.elevationTiers.tier2[].lift`. Rampart
+units stand at `terrainBaseY + tier2[ring].lift + wallRing.h`.
+
+**RENDERER-PARITY-REQUEST:** agreed to converge on ONE renderer to end drift — but the single source of
+the RULE-bearing geometry is CF's canonical path (generator + CASTLE KIT reference), which the MOBA
+mirrors; visual polish stays gameplay's. Send renderer changes as requirements; CF folds them in so they
+propagate to every map + the sweep guards them forever.
