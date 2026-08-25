@@ -68,6 +68,12 @@ jobs:
           # 🕹→📱 Clash Lands AR terrains (glb/json/height.png/manifest) served at /clash-lands/terrains/
           mkdir -p "$HOME/ef-map-service/data/cf-maps/ar-terrains"
           cp "$GITHUB_WORKSPACE"/data/cf-maps/ar-terrains/* "$HOME"/ef-map-service/data/cf-maps/ar-terrains/ 2>/dev/null || true
+          # AERIAL 3D-THUMB MOSAIC — the committed baked continents (~0.3 MB each; raw thumbs are
+          # box-side/gitignored). /internal/v1/mosaic serves these when the box has no thumbs, so
+          # /designer shows real 3D thumbs immediately. A box capture (below) overrides with a fresh bake.
+          mkdir -p "$HOME/ef-map-service/data/cf-maps/world-mosaic"
+          cp "$GITHUB_WORKSPACE"/data/cf-maps/world-mosaic/*.png "$HOME"/ef-map-service/data/cf-maps/world-mosaic/ 2>/dev/null || true
+          cp "$GITHUB_WORKSPACE"/data/cf-maps/world-mosaic/*.json "$HOME"/ef-map-service/data/cf-maps/world-mosaic/ 2>/dev/null || true
           git -C "$GITHUB_WORKSPACE" rev-parse --short HEAD > "$HOME"/ef-map-service/BUILD
 
       - name: (re)start ef-map-service on :8150 (health-gated on /healthz)
@@ -76,3 +82,27 @@ jobs:
           # :8140 is cf-battle-api on the box — the map service binds :8150.
           MAPS_APP_DIR="$HOME/ef-map-service" MAPS_PORT=8150 \
           bash "$GITHUB_WORKSPACE"/deploy/remote-deploy-map.sh
+
+      # BEST-EFFORT 3D-THUMB CAPTURE ON THE BOX (owner 2026-08-25 "run the capture on the box").
+      # Headless top-down capture of every designed parcel → data/cf-maps/thumbs3d, then a fresh
+      # mosaic bake that overrides the committed one. Fully NON-FATAL: if the box has no Chromium the
+      # step self-skips and the shipped committed mosaic keeps serving real thumbs. Never fails deploy.
+      - name: Capture 3D thumbs + re-bake mosaic (non-fatal; needs Chromium)
+        continue-on-error: true
+        run: |
+          set +e
+          APP="$HOME/ef-map-service"
+          # locate a Chromium the way the capture tool expects (PW_CHROME override or common paths)
+          CH="${PW_CHROME:-}"
+          for c in "$CH" /opt/pw-browsers/chromium "$(command -v chromium 2>/dev/null)" "$(command -v chromium-browser 2>/dev/null)" "$(command -v google-chrome 2>/dev/null)"; do
+            if [ -n "$c" ] && [ -x "$c" ]; then CH="$c"; break; fi
+          done
+          if [ -z "$CH" ]; then echo "no Chromium on box — skipping capture; committed mosaic stays live."; exit 0; fi
+          cd "$APP" || exit 0
+          npm install --no-audit --no-fund playwright-core >/dev/null 2>&1 || { echo "playwright-core install failed — skip"; exit 0; }
+          # capture every designed parcel the running service reports, then warm each zone's mosaic.
+          PW_CHROME="$CH" MAPS_BASE="http://127.0.0.1:8150" \
+            node tools/capture_thumb.mjs --from-service --concurrency 4 --settle 1500 || echo "capture had errors (non-fatal)"
+          # force a fresh bake so /designer serves the box's own thumbs (overrides committed)
+          for Z in EDU; do curl -s -o /dev/null "http://127.0.0.1:8150/internal/v1/mosaic.png?zone=$Z&force=1" || true; done
+          echo "box capture step done."

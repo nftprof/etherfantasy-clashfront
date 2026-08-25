@@ -33,8 +33,16 @@ if (dir) {                                             // collect ids from an ar
   const d = path.resolve(ROOT, dir);
   parcels = parcels.concat(readdirSync(d).filter((f) => f.endsWith(".artifact.json")).map((f) => f.replace(".artifact.json", "")));
 }
+if (args.includes("--from-service")) {                 // enumerate the running service's designed parcels
+  try {
+    const rows = await fetch(`${BASE}/internal/v1/designs`).then((r) => r.json());
+    const ids = (rows?.rows || []).map((r) => String(r.parcelId));
+    parcels = parcels.concat(ids);
+    console.log(`--from-service: ${ids.length} designed parcels from ${BASE}/internal/v1/designs`);
+  } catch (e) { console.error(`--from-service failed: ${e.message}`); }
+}
 parcels = [...new Set(parcels)];
-if (!parcels.length) { console.error("no parcels — pass ids or --dir <artifacts>"); process.exit(1); }
+if (!parcels.length) { console.error("no parcels — pass ids, --dir <artifacts>, or --from-service"); process.exit(1); }
 console.log(`capturing ${parcels.length} thumbs @ ${SIZE}px, concurrency ${CONC} → ${path.relative(ROOT, OUT)}`);
 
 mkdirSync(OUT, { recursive: true });

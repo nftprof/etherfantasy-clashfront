@@ -58,18 +58,30 @@ function loadLeaves(zone) {
   return leaves;
 }
 
-// newest thumb mtime for the zone's parcels → cache key (so a re-shot thumb invalidates the mosaic).
-function thumbsFingerprint() {
+// newest thumb mtime + count for the zone's parcels → cache key (a re-shot thumb invalidates the
+// mosaic) + a "does the box even have thumbs?" signal.
+function thumbsStat() {
   const dir = THUMBDIR();
   let latest = 0, n = 0;
   try { for (const f of readdirSync(dir)) { if (!f.endsWith(".png")) continue; n++; const m = statSync(path.join(dir, f)).mtimeMs; if (m > latest) latest = m; } } catch { /* none */ }
-  return `${n}-${Math.round(latest)}`;
+  return { n, fp: `${n}-${Math.round(latest)}` };
+}
+// COMMITTED baked mosaic (data/cf-maps/world-mosaic/<zone>.png + .json) — I bake it locally where the
+// full thumb set lives and commit the ~0.3 MB PNG (the raw thumbs are box-side/gitignored). The live
+// box, which has NO thumbs, serves this so /designer shows real 3D thumbs immediately after deploy;
+// once the box's own capture pipeline populates thumbs, a fresh richer bake overrides it.
+function committedMosaic(zone) {
+  const base = path.join(DATA(), "cf-maps/world-mosaic", zone);
+  try { if (existsSync(`${base}.png`) && existsSync(`${base}.json`)) return { png: readFileSync(`${base}.png`), meta: JSON.parse(readFileSync(`${base}.json`, "utf8")) }; } catch { /* none */ }
+  return null;
 }
 
 // Bake (or read cache). opts: { zone, ppu, maxdim, force }. Returns { png:Buffer, meta }.
 export function bakeMosaic({ zone = "EDU", ppu = 12, maxdim = 2200, force = false } = {}) {
   zone = String(zone).toUpperCase();
-  const fp = thumbsFingerprint();
+  const { n: nThumbs, fp } = thumbsStat();
+  // No thumbs on this host (e.g. the live box) → serve the committed baked mosaic if we shipped one.
+  if (!force && nThumbs === 0) { const c = committedMosaic(zone); if (c) return { png: c.png, meta: c.meta, cached: true, committed: true }; }
   const cacheStem = path.join(CACHEDIR(), `${zone}.p${ppu}.m${maxdim}.${fp}`);
   if (!force && existsSync(`${cacheStem}.png`) && existsSync(`${cacheStem}.json`)) {
     return { png: readFileSync(`${cacheStem}.png`), meta: JSON.parse(readFileSync(`${cacheStem}.json`, "utf8")), cached: true };
@@ -131,4 +143,18 @@ export function bakeMosaic({ zone = "EDU", ppu = 12, maxdim = 2200, force = fals
   const meta = { zone, world: { minX, minY, maxX, maxY }, flipY: false, pxPerUnit: PPU, w: W, h: H, leaves: ok, thumbed: hasThumb, grey: greyN, fingerprint: fp };
   try { mkdirSync(CACHEDIR(), { recursive: true }); writeFileSync(`${cacheStem}.png`, png); writeFileSync(`${cacheStem}.json`, JSON.stringify(meta)); } catch { /* cache best-effort */ }
   return { png, meta, cached: false };
+}
+
+// CLI: bake + COMMIT a zone's mosaic (run where the full thumb set lives) →
+//   node map-service/maps/mosaic.js EDU [ppu]      → data/cf-maps/world-mosaic/EDU.png + .json
+// Re-run after regenerating a zone's maps + re-capturing its thumbs; commit the ~0.3 MB PNG.
+if (import.meta.url === `file://${process.argv[1]}`) {
+  const zone = (process.argv[2] || "EDU").toUpperCase();
+  const ppu = Number(process.argv[3] || 12);
+  const { png, meta } = bakeMosaic({ zone, ppu, force: true });
+  const outDir = path.join(DATA(), "cf-maps/world-mosaic");
+  mkdirSync(outDir, { recursive: true });
+  writeFileSync(path.join(outDir, `${zone}.png`), png);
+  writeFileSync(path.join(outDir, `${zone}.json`), JSON.stringify(meta));
+  console.log(`committed ${zone}: ${meta.w}x${meta.h}, ${meta.thumbed} thumbed / ${meta.leaves} leaves → data/cf-maps/world-mosaic/${zone}.png (${(png.length / 1048576).toFixed(2)} MB)`);
 }
