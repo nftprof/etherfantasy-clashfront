@@ -179,16 +179,21 @@ if (isMain) {
   try {
     // adoptArtifact is version-idempotent (same/older version = no-op, newer = replace), so we
     // always offer the committed artifact — a rebuilt siege map supersedes the box copy at boot.
+    // adoptArtifact is genVersion-aware (a newer generator ALWAYS wins). Adopt EVERY candidate — do
+    // NOT break on the first — so a stale committed copy can never shadow the fresh one: whichever
+    // has the highest genVersion becomes current. (Bug 2026-08-25: a v12 map-service/data copy was
+    // checked first + broke the loop → the designer seeded the old castle despite v26 in moba-maps.)
+    // moba-maps/ is the make_siege_test SOURCE OF TRUTH, so it's listed first.
     for (const p of [
-      path.join(__dirname, "data/siege-test.artifact.json"),
-      path.join(dataRoot(), "siege-test.artifact.json"),
       path.join(dataRoot(), "moba-maps/siege-test.artifact.json"),
+      path.join(__dirname, "data/moba-maps/siege-test.artifact.json"),
+      path.join(dataRoot(), "siege-test.artifact.json"),
+      path.join(__dirname, "data/siege-test.artifact.json"),
     ]) {
       try {
         const art = JSON.parse(fs.readFileSync(p, "utf8"));
         const row = reg.adoptArtifact("SIEGE-TEST-1", art);
-        console.log(`[map-service] siege-test seed: v${row.designVersion} (offered v${art?.meta?.designVersion ?? 0}) from ${p}`);
-        break;
+        console.log(`[map-service] siege-test seed: candidate gen${art?.meta?.genVersion ?? "?"} v${art?.meta?.designVersion ?? 0} from ${p} → current gen${row.genVersion ?? "?"} v${row.designVersion}`);
       } catch { /* next candidate */ }
     }
   } catch (e) { console.warn("[map-service] siege-test seed skipped:", e && e.message); }
