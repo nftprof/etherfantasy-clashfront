@@ -23,6 +23,7 @@ import { verifyToken, loginPassword } from "../lobby/auth.js";
 import { worldParcel, l3Row, l3Zone, zoneList, loadWorldField, estateList, dataRoot } from "./worldfield.js";
 import { runAudit } from "./traverse.js";
 import { worldMap } from "./worldmap.js";
+import { bakeMosaic } from "./mosaic.js";
 import { landOfWallet, walletOwnsParcel, mintedSet, PARCELS_CONTRACT, ESTATE_CONTRACT } from "./nftowners.js";
 // Land mint config (distributors + size tokens) — the registry the other session delivered.
 let _landCfg = null;
@@ -176,6 +177,23 @@ export function mapsApi(req, res) {
       }
       J(res, 200, { ok: true, ...worldMap(gen) });
     } catch (e) { J(res, 500, { ok: false, error: e.message }); }
+    return true;
+  }
+  // AERIAL 3D-THUMB MOSAIC (owner 2026-08-25) — the continent baked as one picture: real 3D map
+  //   thumbnails at true parcel positions (castle→castle), grey where ungenerated. Used as the
+  //   /designer select-map base layer + the /designer/world overview. Baked once, cached, re-baked
+  //   when a thumb is re-shot (fingerprint in mosaic.js). ?zone=EDU · .json = alignment meta only.
+  if (p === "/internal/v1/mosaic.json" || p === "/internal/v1/mosaic.png") {
+    try {
+      const u = new URL(req.url, "http://x");
+      const zone = (u.searchParams.get("zone") || "EDU").toUpperCase();
+      const ppu = Math.max(2, Math.min(40, parseFloat(u.searchParams.get("ppu") || "12")));
+      const force = u.searchParams.get("force") === "1";
+      const { png, meta } = bakeMosaic({ zone, ppu, force });
+      if (p === "/internal/v1/mosaic.json") { J(res, 200, { ok: true, ...meta }); return true; }
+      res.writeHead(200, { "content-type": "image/png", "cache-control": "public, max-age=300", "x-mosaic-thumbed": String(meta.thumbed) });
+      res.end(png);
+    } catch (e) { J(res, p.endsWith(".json") ? 200 : 500, { ok: false, error: e.message }); }
     return true;
   }
   if (p === "/internal/v1/zones") {                         // world → CONTINENT zoom: the 12 zones + counts + bbox

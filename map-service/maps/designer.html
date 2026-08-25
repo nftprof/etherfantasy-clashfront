@@ -418,6 +418,16 @@ let cST;$("cSearch").oninput=()=>{clearTimeout(cST);cST=setTimeout(loadCastles,2
 /* ============ picker: world → continent → parcel ============ */
 const STATUS_COL={undefined:"#4d5a68",SEED_V0:"#5fe9d0",AI_ITERATED:"#c08cff",OWNER_FROZEN:"#e0bd6b"};
 let zones=[],zone=null,parcels=[],view=null,selId=null,hoverId=null;
+// AERIAL 3D-THUMB MOSAIC base layer (owner 2026-08-25 "this should replace Arcadia"): the continent
+// baked server-side as one picture (real 3D thumbs where designed, grey where not), drawn UNDER the
+// interactive dots. One drawImage/frame → panning/hover stay smooth even at continent scale.
+let mosaicImg=null,mosaicMeta=null,showMosaic=true;
+function loadMosaic(z){mosaicImg=null;mosaicMeta=null;if(!z)return;const zz=z;
+  fetch("/internal/v1/mosaic.json?zone="+encodeURIComponent(zz)).then(r=>r.json()).then(m=>{
+    if(!m||!m.ok||m.zone!==zone)return;mosaicMeta=m;
+    const img=new Image();img.onload=()=>{if(mosaicMeta&&mosaicMeta.zone===zone){mosaicImg=img;drawMap();}};
+    img.src="/internal/v1/mosaic.png?zone="+encodeURIComponent(zz);
+  }).catch(()=>{});}
 let page=0,pageSize=2000,total=0,q="",mineOnly=false,designedOnly=false,me=null,admin=false,ownersKnown=false;
 const cv=$("landmap"),cx=cv.getContext("2d");
 
@@ -496,18 +506,32 @@ function drawFeatureMarks(){             // castle/POI markers OVER the dots
     cx.fillStyle="rgba(255,211,77,.9)";cx.beginPath();cx.arc(X,Y,2.5,0,7);cx.fill();}
   cx.restore();
 }
+function drawMosaicBase(){                            // the baked 3D-thumb continent, under the dots
+  if(!mosaicImg||!mosaicMeta||mosaicMeta.zone!==zone)return false;
+  const w=mosaicMeta.world;                           // zone svg coords (y-DOWN); PX() is y-UP → flip
+  const tl=PX(w.minX,w.maxY),br=PX(w.maxX,w.minY);    // screen top-left / bottom-right of the world box
+  const sxL=tl[0],syTop=tl[1],width=br[0]-tl[0],height=br[1]-tl[1];
+  if(!(width>0&&height>0))return false;
+  cx.save();cx.translate(sxL,syTop);cx.scale(1,-1);cx.imageSmoothingEnabled=true;
+  cx.drawImage(mosaicImg,0,-height,width,height);cx.restore();
+  return true;}
 function drawMap(){if(!view)return;cx.clearRect(0,0,cv.width,cv.height);
+  const mosaicOn=showMosaic&&drawMosaicBase();        // base layer first (thumbs/grey = the map itself)
   if(showFeatures&&wfOverlay&&wfOverlay.zone===zone)drawFeatures();   // geography under the parcels
   const usePoly=parcels.length<=600&&parcels[0]&&parcels[0].svgPath; // polygons only when svgPath is present + set is small
   const r=zoom>=6?3.4:(zoom>=3?2.9:2.4);          // dots grow a little as you zoom in
   for(const p of parcels){const[X,Y]=PX(p.x,p.y);
     if(X<-20||X>cv.width+20||Y<-20||Y>cv.height+20)continue;   // cull off-screen (cheap when zoomed)
     const isSel=p.parcelId===selId,isHov=p.parcelId===hoverId;const col=STATUS_COL[p.status]||STATUS_COL[undefined];const pts=usePoly?poly(p):null;
+    // Over the mosaic we DON'T repaint every parcel (that would hide the thumbs) — only outline the
+    // ones that need a highlight: your land, hover, selection. Off the mosaic, keep the classic fill.
     if(pts){cx.beginPath();for(let k=0;k<pts.length;k++){const[PXX,PYY]=PX(pts[k][0],pts[k][1]);k?cx.lineTo(PXX,PYY):cx.moveTo(PXX,PYY);}cx.closePath();
-      cx.fillStyle=col;cx.globalAlpha=p.status?0.85:0.5;cx.fill();cx.globalAlpha=1;
+      if(!mosaicOn){cx.fillStyle=col;cx.globalAlpha=p.status?0.85:0.5;cx.fill();cx.globalAlpha=1;}
       if(p.mine){cx.lineWidth=2.2;cx.strokeStyle="#fff";cx.stroke();}
-      if(isSel){cx.lineWidth=2.6;cx.strokeStyle="#ffd34d";cx.stroke();}else if(isHov){cx.lineWidth=1.6;cx.strokeStyle="#d8bbff";cx.stroke();}}
-    else{cx.beginPath();cx.arc(X,Y,isSel?7:(isHov?6:r),0,7);cx.fillStyle=col;cx.fill();
+      if(isSel){cx.lineWidth=2.6;cx.strokeStyle="#ffd34d";cx.stroke();}else if(isHov){cx.lineWidth=1.6;cx.strokeStyle=mosaicOn?"#ffffff":"#d8bbff";cx.stroke();}}
+    else{if(mosaicOn&&!isSel&&!isHov&&!p.mine)continue;  // let the mosaic speak; dots only for highlights
+      cx.beginPath();cx.arc(X,Y,isSel?7:(isHov?6:r),0,7);
+      cx.fillStyle=mosaicOn?(isSel?"#ffd34d":(p.mine?"#fff":"rgba(216,187,255,.9)")):col;cx.fill();
       if(p.mine){cx.lineWidth=2;cx.strokeStyle="#fff";cx.stroke();}
       if(isSel){cx.lineWidth=2.4;cx.strokeStyle="#ffd34d";cx.stroke();}}}
   if(showFeatures&&wfOverlay&&wfOverlay.zone===zone)drawFeatureMarks();}
@@ -544,6 +568,7 @@ async function loadParcels(){showParcelView();$("mapStat").textContent="· loadi
     for(const pp of allParcels)if(myParcels.has(pp.parcelId)){pp.mine=true;pp.minted=true;}   // on-chain overlay
     setOwnHint();
     if(allParcels.length)fitView();updZoomUI();       // fit + reset zoom ONCE per continent
+    loadMosaic(zone);                                 // bake/fetch the 3D-thumb base layer for this continent
     applyFilter();setCrumb();
     if(showFeatures)loadWorldFeatures();              // refresh the geography overlay for the new continent
   }catch(e){$("mapStat").textContent="· unavailable";$("err").textContent=e.message;}}
