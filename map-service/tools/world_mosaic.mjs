@@ -18,6 +18,7 @@ import { fileURLToPath } from "node:url";
 import { worldParcel, svgPathToPolygon } from "../maps/worldfield.js";
 import { generate } from "../maps/generate.js";
 import { encodePNG } from "../maps/png.js";
+import { decodePNG } from "../maps/png-decode.js";
 import { T } from "../maps/schema.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -45,6 +46,25 @@ const PALETTE_RGB = {
   sakura:   [[120,140,96],[172,120,140],[130,124,128],[96,130,160],[110,102,106],[168,150,130]],
 };
 const BG = [14, 18, 26];                          // dark ground behind the continent
+// --thumbs: texture each GENERATED parcel with its real 3D top-down thumbnail (castle→castle,
+// candy→candy); UNGENERATED parcels fill GREY (owner 2026-08-23 status view). No per-parcel generate.
+const THUMBS = args.includes("--thumbs");
+const THUMBDIR = path.resolve(ROOT, opt("thumbs-dir", "data/cf-maps/thumbs3d"));
+const GREY = [72, 78, 88], GREY2 = [82, 88, 98];  // ungenerated fill (slight checker so shapes read)
+const _thumbCache = new Map();
+function loadThumb(id) {
+  if (_thumbCache.has(id)) return _thumbCache.get(id);
+  let t = null;
+  try { const f = path.join(THUMBDIR, `${id}.png`); if (existsSync(f)) t = decodePNG(readFileSync(f)); } catch { t = null; }
+  _thumbCache.set(id, t); return t;
+}
+// current parcelId → thumb file id. Committed thumbs/artifacts are keyed by the OLD token id
+// (`tokenIdOld`, e.g. 6020… before the on-chain-validated id correction to 5020…); fall back to the
+// current parcelId for anything baked under the new scheme.
+function thumbFileId(s) {
+  for (const id of [s.tokenIdOld, s.parcelId]) if (id != null && existsSync(path.join(THUMBDIR, `${id}.png`))) return String(id);
+  return null;
+}
 
 // ⚠ RENDER ALL *LEAF* PARCELS — the recurring gap bug (owner 2026-08-23, "not the first time"):
 // the world is a HIERARCHY (L2 estate/parcel → optionally subdivided into L3 singles). A leaf is
@@ -76,6 +96,19 @@ if (CENTER) {
   // outside the radius still covers the view — the recurring gap bug was filtering it out by center).
   singles = leaves.filter((s) => { const [a, b, c2, d] = s.bbox; return c2 >= vx0 && a <= vx1 && d >= vy0 && b <= vy1; });
 }
+if (THUMBS && !CENTER) {
+  // frame the region around the parcels that HAVE a 3D thumb (+ 15% margin), so the real thumbs are
+  // large enough to read and grey ungenerated land surrounds the cluster (the status view).
+  const thumbed = leaves.filter((s) => thumbFileId(s));
+  if (thumbed.length) {
+    let tx0 = Infinity, ty0 = Infinity, tx1 = -Infinity, ty1 = -Infinity;
+    for (const s of thumbed) { const [a, b, c, d] = s.bbox; if (a < tx0) tx0 = a; if (b < ty0) ty0 = b; if (c > tx1) tx1 = c; if (d > ty1) ty1 = d; }
+    const mx = (tx1 - tx0) * 0.15 + 2, my = (ty1 - ty0) * 0.15 + 2;
+    tx0 -= mx; ty0 -= my; tx1 += mx; ty1 += my;
+    singles = leaves.filter((s) => { const [a, b, c, d] = s.bbox; return c >= tx0 && a <= tx1 && d >= ty0 && b <= ty1; });
+    console.log(`thumbs view: ${thumbed.length} thumbed parcels → framing ${singles.length} leaves`);
+  }
+}
 if (!singles.length) { console.error("no parcels selected"); process.exit(1); }
 const nL2 = singles.filter((s) => s.sizeClass && s.sizeClass !== "SINGLE").length;
 console.log(`${zone}: ${singles.length} parcels in view (${nL2} larger/L2 leaves by bbox-overlap)`);
@@ -104,31 +137,40 @@ const line = (x0, y0, x1, y1, c) => {             // Bresenham stroke
 const toCanvas = (zx, zy) => [(zx - minX) * PPU, (zy - minY) * PPU];
 
 const t0 = Date.now();
-let ok = 0, failed = 0, nopoly = 0;
+let ok = 0, failed = 0, nopoly = 0, hasThumb = 0, greyN = 0;
 const rects = [];
 for (let n = 0; n < singles.length; n++) {
   const s = singles[n];
   const zpoly = s.svgPath ? svgPathToPolygon(s.svgPath) : null;   // REAL parcel polygon (zone coords)
   if (!zpoly || zpoly.length < 3) { nopoly++; continue; }
-  let art;
-  try { art = generate(worldParcel(s, { investLevel: INVEST })); }
-  catch { failed++; continue; }
-  const G = art.terrain.w;
-  const cells = new Uint8Array(Buffer.from(art.terrain.cells, "base64"));
-  const pal = PALETTE_RGB[art.meta?.params?.palette] || PALETTE_RGB.verdant;
   // polygon in canvas px + its bbox (for texture mapping)
   const cpoly = zpoly.map(([zx, zy]) => toCanvas(zx, zy));
   let px0 = Infinity, py0 = Infinity, px1 = -Infinity, py1 = -Infinity;
   for (const [x, y] of cpoly) { if (x < px0) px0 = x; if (y < py0) py0 = y; if (x > px1) px1 = x; if (y > py1) py1 = y; }
   const pw = Math.max(1, px1 - px0), ph = Math.max(1, py1 - py0);
   rects.push({ id: s.parcelId, x: Math.round(px0), y: Math.round(py0), w: Math.round(pw), h: Math.round(ph) });
-  // dominant non-OOB terrain color → the fallback fill so a polygon never has holes at OOB samples
-  const counts = [0, 0, 0, 0, 0, 0];
-  for (let k = 0; k < cells.length; k++) { const c = cells[k]; if (c !== T.OOB) counts[Math.min(c, 5)]++; }
-  let dom = 0; for (let c = 1; c < 6; c++) if (counts[c] > counts[dom]) dom = c;
-  const domRGB = pal[dom];
-  // SCANLINE-FILL the real polygon (seamless with neighbours — this is what CF does), texture each
-  // pixel from the parcel's top-down thumbnail sampled over the polygon's bbox.
+  // pixel source: (thumbs mode) real 3D thumb for generated parcels, GREY for ungenerated;
+  //               (default mode) the 2D terrain raster from a fresh generate().
+  let sample;
+  if (THUMBS) {
+    const tfid = thumbFileId(s); const th = tfid ? loadThumb(tfid) : null;
+    if (th) { hasThumb++; sample = (fx, fy) => { const tx = Math.min(th.w - 1, Math.max(0, (fx * th.w) | 0)), ty = Math.min(th.h - 1, Math.max(0, (fy * th.h) | 0)), i = (ty * th.w + tx) * 4; return th.rgba[i + 3] < 100 ? null : [th.rgba[i], th.rgba[i + 1], th.rgba[i + 2]]; }; }
+    else { greyN++; sample = (fx, fy, x, y) => (((x + y) & 3) ? GREY : GREY2); }
+  } else {
+    let art;
+    try { art = generate(worldParcel(s, { investLevel: INVEST })); }
+    catch { failed++; continue; }
+    const G = art.terrain.w;
+    const cells = new Uint8Array(Buffer.from(art.terrain.cells, "base64"));
+    const pal = PALETTE_RGB[art.meta?.params?.palette] || PALETTE_RGB.verdant;
+    const counts = [0, 0, 0, 0, 0, 0];
+    for (let k = 0; k < cells.length; k++) { const c = cells[k]; if (c !== T.OOB) counts[Math.min(c, 5)]++; }
+    let dom = 0; for (let c = 1; c < 6; c++) if (counts[c] > counts[dom]) dom = c;
+    const domRGB = pal[dom];
+    sample = (fx, fy) => { const cxi = Math.min(G - 1, Math.max(0, (fx * G) | 0)), czi = Math.min(G - 1, Math.max(0, (fy * G) | 0)), cell = cells[czi * G + cxi]; return cell === T.OOB ? domRGB : pal[Math.min(cell, 5)]; };
+  }
+  ok++;
+  // SCANLINE-FILL the real polygon (seamless with neighbours — this is what CF does).
   const yA = Math.max(0, Math.floor(py0)), yB = Math.min(H - 1, Math.ceil(py1));
   for (let y = yA; y <= yB; y++) {
     const xs = [];
@@ -140,19 +182,14 @@ for (let n = 0; n < singles.length; n++) {
     for (let k = 0; k + 1 < xs.length; k += 2) {
       const xL = Math.max(0, Math.ceil(xs[k])), xR = Math.min(W - 1, Math.floor(xs[k + 1]));
       for (let x = xL; x <= xR; x++) {
-        const fx = (x - px0) / pw, fy = (y - py0) / ph;
-        const cxi = Math.min(G - 1, Math.max(0, Math.floor(fx * G)));
-        const czi = Math.min(G - 1, Math.max(0, Math.floor(fy * G)));
-        const cell = cells[czi * G + cxi];
-        const c = (cell === T.OOB) ? domRGB : pal[Math.min(cell, 5)];
+        const c = sample((x - px0) / pw, (y - py0) / ph, x, y) || GREY;
         put(x, y, c[0], c[1], c[2]);
       }
     }
   }
   // clear border stroke around the parcel outline
   for (let e = 0; e < cpoly.length; e++) { const a = cpoly[e], b = cpoly[(e + 1) % cpoly.length]; line(a[0], a[1], b[0], b[1], BORDER); }
-  ok++;
-  if ((n + 1) % 50 === 0) console.log(`  …${n + 1}/${singles.length}`);
+  if ((n + 1) % 200 === 0) console.log(`  …${n + 1}/${singles.length} (${hasThumb} thumbed, ${greyN} grey)`);
 }
 if (nopoly) console.log(`  (${nopoly} parcels had no usable svgPath)`);
 console.log(`composited ${ok} parcels (${failed} failed the gate) in ${((Date.now() - t0) / 1000).toFixed(1)}s`);
