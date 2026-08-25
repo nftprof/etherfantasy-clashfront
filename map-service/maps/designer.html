@@ -158,7 +158,8 @@
           <input id="search" placeholder="search parcel id…" style="width:200px">
           <label style="display:flex;gap:6px;align-items:center;margin:0;text-transform:none;letter-spacing:0;font-size:12.5px;color:var(--fg-dim)"><input type="checkbox" id="mineOnly" style="width:auto"> my land only</label>
           <label style="display:flex;gap:6px;align-items:center;margin:0;text-transform:none;letter-spacing:0;font-size:12.5px;color:var(--fg-dim)"><input type="checkbox" id="designedOnly" style="width:auto"> designed only</label>
-          <label style="display:flex;gap:6px;align-items:center;margin:0;text-transform:none;letter-spacing:0;font-size:12.5px;color:var(--fg-dim)"><input type="checkbox" id="featuresOverlay" style="width:auto"> 🗺 features</label>
+          <label style="display:flex;gap:6px;align-items:center;margin:0;text-transform:none;letter-spacing:0;font-size:12.5px;color:var(--fg-dim)"><input type="checkbox" id="featuresOverlay" style="width:auto" checked> 🗺 features</label>
+          <label style="display:flex;gap:6px;align-items:center;margin:0;text-transform:none;letter-spacing:0;font-size:12.5px;color:var(--fg-dim)"><input type="checkbox" id="plannerLayer" style="width:auto"> 🗺 planner</label>
         </div>
         <span class="sel" id="selChip" hidden></span>
       </div>
@@ -421,12 +422,14 @@ let zones=[],zone=null,parcels=[],view=null,selId=null,hoverId=null;
 // AERIAL 3D-THUMB MOSAIC base layer (owner 2026-08-25 "this should replace Arcadia"): the continent
 // baked server-side as one picture (real 3D thumbs where designed, grey where not), drawn UNDER the
 // interactive dots. One drawImage/frame → panning/hover stay smooth even at continent scale.
-let mosaicImg=null,mosaicMeta=null,showMosaic=true;
-function loadMosaic(z){mosaicImg=null;mosaicMeta=null;if(!z)return;const zz=z;
-  fetch("/internal/v1/mosaic.json?zone="+encodeURIComponent(zz)).then(r=>r.json()).then(m=>{
-    if(!m||!m.ok||m.zone!==zone)return;mosaicMeta=m;
-    const img=new Image();img.onload=()=>{if(mosaicMeta&&mosaicMeta.zone===zone){mosaicImg=img;drawMap();}};
-    img.src="/internal/v1/mosaic.png?zone="+encodeURIComponent(zz);
+let mosaicImg=null,mosaicMeta=null,showMosaic=true,mosaicMode="thumb";
+// mode "thumb" = the 3D-thumb land map (default); "planner" = the 2D terrain reference layer.
+function loadMosaic(z){mosaicImg=null;mosaicMeta=null;if(!z)return;const zz=z,md=mosaicMode;
+  const qs="zone="+encodeURIComponent(zz)+"&mode="+md;
+  fetch("/internal/v1/mosaic.json?"+qs).then(r=>r.json()).then(m=>{
+    if(!m||!m.ok||m.zone!==zone||mosaicMode!==md)return;mosaicMeta=m;
+    const img=new Image();img.onload=()=>{if(mosaicMeta&&mosaicMeta.zone===zone&&mosaicMode===md){mosaicImg=img;drawMap();}};
+    img.src="/internal/v1/mosaic.png?"+qs;
   }).catch(()=>{});}
 let page=0,pageSize=2000,total=0,q="",mineOnly=false,designedOnly=false,me=null,admin=false,ownersKnown=false;
 const cv=$("landmap"),cx=cv.getContext("2d");
@@ -470,7 +473,7 @@ function parsePath(d){const t=d.match(/[a-zA-Z]|-?\d*\.?\d+(?:e-?\d+)?/g);let i=
     else{num();}}
   return pts.length>2?pts:null;}
 // ---- CONTINENT FEATURE OVERLAY (owner 2026-07-25): borders/rivers/roads/ridges/castles ----
-let showFeatures=false, wfOverlay=null;
+let showFeatures=true, wfOverlay=null;   // geography overlay ON by default (owner 2026-08-25)
 async function loadWorldFeatures(){
   if(!zone){wfOverlay=null;return;}
   try{const d=await fetch("/internal/v1/worldfield?zone="+encodeURIComponent(zone),{headers:authHdr()}).then(r=>r.json());
@@ -604,6 +607,8 @@ $("mineOnly").addEventListener("change",(e)=>{mineOnly=e.target.checked;loadParc
 $("designedOnly").addEventListener("change",(e)=>{designedOnly=e.target.checked;loadParcels();});
 $("featuresOverlay").addEventListener("change",(e)=>{showFeatures=e.target.checked;
   if(showFeatures&&(!wfOverlay||wfOverlay.zone!==zone))loadWorldFeatures();else drawMap();});
+// 🗺 planner = swap the base layer between the 3D-thumb land map and the 2D terrain reference.
+$("plannerLayer").addEventListener("change",(e)=>{mosaicMode=e.target.checked?"planner":"thumb";loadMosaic(zone);});
 loadZones();
 try{const _dl=new URLSearchParams(location.search).get("parcel");if(_dl){const z={"00":"BUS","01":"CGI","02":"EDU","03":"ENT","04":"HS1","05":"HS2","06":"HS3","07":"HUB","08":"KOL","09":"UW1","10":"UW2","11":"UW3"}[_dl.slice(1,3)];if(z){zone=z;loadParcels().then(()=>selectParcel(_dl.trim()));}else selectParcel(_dl.trim());}}catch(e){}
 function markStatus(id,row){const p=parcels.find(q=>q.parcelId===id);if(p&&row){p.status=row.status;p.v=row.designVersion;p.archetype=row.archetype;p.palette=row.palette;}drawMap();}

@@ -187,9 +187,12 @@ export function mapsApi(req, res) {
     try {
       const u = new URL(req.url, "http://x");
       const zone = (u.searchParams.get("zone") || "EDU").toUpperCase();
-      const ppu = Math.max(2, Math.min(40, parseFloat(u.searchParams.get("ppu") || "12")));
+      const mode = u.searchParams.get("mode") === "planner" ? "planner" : "thumb";
       const force = u.searchParams.get("force") === "1";
-      const { png, meta } = bakeMosaic({ zone, ppu, force });
+      const opts = { zone, mode, force };
+      const ppuP = parseFloat(u.searchParams.get("ppu") || "");
+      if (ppuP) opts.ppu = Math.max(2, Math.min(60, ppuP));
+      const { png, meta } = bakeMosaic(opts);
       if (p === "/internal/v1/mosaic.json") { J(res, 200, { ok: true, ...meta }); return true; }
       res.writeHead(200, { "content-type": "image/png", "cache-control": "public, max-age=300", "x-mosaic-thumbed": String(meta.thumbed) });
       res.end(png);

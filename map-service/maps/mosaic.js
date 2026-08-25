@@ -13,7 +13,7 @@
 import { readFileSync, existsSync, writeFileSync, mkdirSync, statSync, readdirSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { svgPathToPolygon, dataRoot } from "./worldfield.js";
+import { svgPathToPolygon, dataRoot, zoneBiomeFamily } from "./worldfield.js";
 import { encodePNG } from "./png.js";
 import { decodePNG } from "./png-decode.js";
 
@@ -29,6 +29,15 @@ const CACHEDIR = () => path.join(DATA(), "cf-maps/mosaic-cache");
 const BG = [14, 18, 26];                            // dark ground behind the continent
 const BORDER = [24, 30, 42];                        // clear parcel outline ("show borders")
 const GREY = [72, 78, 88], GREY2 = [82, 88, 98];    // ungenerated fill (slight checker so shapes read)
+// biomeFamily → open-land colour, so ESTATES + the planner layer read as terrain at CONSISTENT scale
+// (owner 2026-08-25: an estate must NOT be one castle stretched across 100s of parcels — canon 22 =
+// terrain board + POI markers). A little seeded speckle keeps big fills from looking dead-flat.
+const LAND = {
+  TEMPERATE_FOREST: [70, 96, 62], TEMPERATE_GRASS: [96, 120, 72], SWAMP: [74, 88, 58],
+  VOLCANIC: [78, 62, 56], SNOW: [172, 180, 186], DESERT: [186, 162, 110], TUNDRA: [150, 160, 164],
+};
+const landColor = (zone) => LAND[zoneBiomeFamily(zone)] || [86, 110, 74];
+const speckle = (base, x, y) => { const h = (((x * 73856093) ^ (y * 19349663)) >>> 0) % 17 - 8; return [Math.max(0, base[0] + h), Math.max(0, base[1] + h), Math.max(0, base[2] + h)]; };
 
 const _thumbCache = new Map();
 function loadThumb(id) {
@@ -73,22 +82,29 @@ function thumbsStat() {
 // full thumb set lives and commit the ~0.3 MB PNG (the raw thumbs are box-side/gitignored). The live
 // box, which has NO thumbs, serves this so /designer shows real 3D thumbs immediately after deploy;
 // once the box's own capture pipeline populates thumbs, a fresh richer bake overrides it.
-function committedMosaic(zone) {
-  const base = path.join(DATA(), "cf-maps/world-mosaic", zone);
+function committedMosaic(zone, mode = "thumb") {
+  const stem = mode === "planner" ? `${zone}.planner` : zone;   // <zone>.png (thumb) / <zone>.planner.png
+  const base = path.join(DATA(), "cf-maps/world-mosaic", stem);
   try { if (existsSync(`${base}.png`) && existsSync(`${base}.json`)) return { png: readFileSync(`${base}.png`), meta: JSON.parse(readFileSync(`${base}.json`, "utf8")) }; } catch { /* none */ }
   return null;
 }
 
-// Bake (or read cache). opts: { zone, ppu, maxdim, force }. Returns { png:Buffer, meta }.
-export function bakeMosaic({ zone = "EDU", ppu = 12, maxdim = 2200, force = false } = {}) {
+// Bake (or read cache). opts: { zone, ppu, maxdim, force, mode }.
+//   mode "thumb"  (default) = singles show their 3D thumb, ESTATES show terrain (POI via overlay),
+//                             ungenerated = grey. The scale-consistent land map.
+//   mode "planner"          = EVERY parcel shows terrain colour (the 2D reference "planner" layer).
+// Higher default res than the first pass (owner 2026-08-25 "res too low") — bigger PNG, sharper.
+export function bakeMosaic({ zone = "EDU", ppu = 20, maxdim = 4096, force = false, mode = "thumb" } = {}) {
   zone = String(zone).toUpperCase();
+  mode = mode === "planner" ? "planner" : "thumb";
   const { n: nThumbs, fp } = thumbsStat();
   // No thumbs on this host (e.g. the live box) → serve the committed baked mosaic if we shipped one.
-  if (!force && nThumbs === 0) { const c = committedMosaic(zone); if (c) return { png: c.png, meta: c.meta, cached: true, committed: true }; }
-  const cacheStem = path.join(CACHEDIR(), `${zone}.p${ppu}.m${maxdim}.${fp}`);
+  if (!force && nThumbs === 0) { const c = committedMosaic(zone, mode); if (c) return { png: c.png, meta: c.meta, cached: true, committed: true }; }
+  const cacheStem = path.join(CACHEDIR(), `${zone}.${mode}.p${ppu}.m${maxdim}.${fp}`);
   if (!force && existsSync(`${cacheStem}.png`) && existsSync(`${cacheStem}.json`)) {
     return { png: readFileSync(`${cacheStem}.png`), meta: JSON.parse(readFileSync(`${cacheStem}.json`, "utf8")), cached: true };
   }
+  const LC = landColor(zone);
 
   const leaves = loadLeaves(zone);
   const singles = leaves.filter((s) => s.svgPath && s.bbox);
@@ -111,7 +127,7 @@ export function bakeMosaic({ zone = "EDU", ppu = 12, maxdim = 2200, force = fals
   };
   const toCanvas = (zx, zy) => [(zx - minX) * PPU, (zy - minY) * PPU];  // y-DOWN, matches the SVG source
 
-  let ok = 0, hasThumb = 0, greyN = 0;
+  let ok = 0, hasThumb = 0, greyN = 0, estateN = 0;
   for (const s of singles) {
     const zpoly = svgPathToPolygon(s.svgPath);
     if (!zpoly || zpoly.length < 3) continue;
@@ -120,9 +136,15 @@ export function bakeMosaic({ zone = "EDU", ppu = 12, maxdim = 2200, force = fals
     for (const [x, y] of cpoly) { if (x < px0) px0 = x; if (y < py0) py0 = y; if (x > px1) px1 = x; if (y > py1) py1 = y; }
     const pw = Math.max(1, px1 - px0), ph = Math.max(1, py1 - py0);
 
-    const tfid = thumbFileId(s); const th = tfid ? loadThumb(tfid) : null;
+    // An ESTATE (any non-SINGLE leaf) is a whole board, not one battle map — never stretch a single
+    // ±161 thumb across it (that's the "castle spans 100s of parcels" bug). It reads as TERRAIN at the
+    // same scale as everything else; its castle/gates come from the feature overlay POIs (canon 22).
+    const isEstate = s.sizeClass && s.sizeClass !== "SINGLE";
+    const tfid = mode === "thumb" && !isEstate ? thumbFileId(s) : null;
+    const th = tfid ? loadThumb(tfid) : null;
     let sample;
     if (th) { hasThumb++; sample = (fx, fy) => { const tx = Math.min(th.w - 1, Math.max(0, (fx * th.w) | 0)), ty = Math.min(th.h - 1, Math.max(0, (fy * th.h) | 0)), i = (ty * th.w + tx) * 4; return th.rgba[i + 3] < 100 ? null : [th.rgba[i], th.rgba[i + 1], th.rgba[i + 2]]; }; }
+    else if (mode === "planner" || isEstate) { if (isEstate) estateN++; sample = (fx, fy, x, y) => speckle(LC, x, y); }  // terrain
     else { greyN++; sample = (fx, fy, x, y) => (((x + y) & 3) ? GREY : GREY2); }
     ok++;
 
@@ -143,21 +165,23 @@ export function bakeMosaic({ zone = "EDU", ppu = 12, maxdim = 2200, force = fals
   }
 
   const png = encodePNG(W, H, Buffer.from(px));
-  const meta = { zone, world: { minX, minY, maxX, maxY }, flipY: false, pxPerUnit: PPU, w: W, h: H, leaves: ok, thumbed: hasThumb, grey: greyN, fingerprint: fp };
+  const meta = { zone, mode, world: { minX, minY, maxX, maxY }, flipY: false, pxPerUnit: PPU, w: W, h: H, leaves: ok, thumbed: hasThumb, estates: estateN, grey: greyN, fingerprint: fp };
   try { mkdirSync(CACHEDIR(), { recursive: true }); writeFileSync(`${cacheStem}.png`, png); writeFileSync(`${cacheStem}.json`, JSON.stringify(meta)); } catch { /* cache best-effort */ }
   return { png, meta, cached: false };
 }
 
-// CLI: bake + COMMIT a zone's mosaic (run where the full thumb set lives) →
-//   node map-service/maps/mosaic.js EDU [ppu]      → data/cf-maps/world-mosaic/EDU.png + .json
-// Re-run after regenerating a zone's maps + re-capturing its thumbs; commit the ~0.3 MB PNG.
+// CLI: bake + COMMIT a zone's mosaic layers (run where the full thumb set lives) →
+//   node map-service/maps/mosaic.js EDU            → EDU.png (thumb) + EDU.planner.png + .json each
+// Re-run after regenerating a zone's maps + re-capturing its thumbs; commit the PNGs (~0.3–1 MB).
 if (import.meta.url === `file://${process.argv[1]}`) {
   const zone = (process.argv[2] || "EDU").toUpperCase();
-  const ppu = Number(process.argv[3] || 12);
-  const { png, meta } = bakeMosaic({ zone, ppu, force: true });
   const outDir = path.join(DATA(), "cf-maps/world-mosaic");
   mkdirSync(outDir, { recursive: true });
-  writeFileSync(path.join(outDir, `${zone}.png`), png);
-  writeFileSync(path.join(outDir, `${zone}.json`), JSON.stringify(meta));
-  console.log(`committed ${zone}: ${meta.w}x${meta.h}, ${meta.thumbed} thumbed / ${meta.leaves} leaves → data/cf-maps/world-mosaic/${zone}.png (${(png.length / 1048576).toFixed(2)} MB)`);
+  for (const mode of ["thumb", "planner"]) {
+    const { png, meta } = bakeMosaic({ zone, force: true, mode });
+    const stem = mode === "planner" ? `${zone}.planner` : zone;
+    writeFileSync(path.join(outDir, `${stem}.png`), png);
+    writeFileSync(path.join(outDir, `${stem}.json`), JSON.stringify(meta));
+    console.log(`committed ${zone} [${mode}]: ${meta.w}x${meta.h}, ${meta.thumbed} thumbed / ${meta.estates} estates / ${meta.leaves} leaves → ${stem}.png (${(png.length / 1048576).toFixed(2)} MB)`);
+  }
 }
