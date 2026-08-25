@@ -14,6 +14,7 @@ import { chromium } from "playwright-core";
 import { writeFileSync, mkdirSync, existsSync, copyFileSync, readdirSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { dataRoot } from "../maps/worldfield.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "../..");
@@ -24,7 +25,10 @@ const opt = (n, d) => { const i = args.indexOf(`--${n}`); return i >= 0 ? args[i
 const SIZE = Number(opt("size", 256));
 const CONC = Math.max(1, Number(opt("concurrency", 6)));
 const SETTLE = Number(opt("settle", 1800));
-const OUT = path.resolve(ROOT, opt("out", "data/cf-maps/thumbs3d"));
+// Default OUT via dataRoot() so it lands in the SAME data dir the mosaic reads thumbs from, in both
+// the repo layout and the deployed ~/ef-map-service box layout (see mosaic.js note). An explicit
+// --out is still honoured relative to the repo root.
+const OUT = args.includes("--out") ? path.resolve(ROOT, opt("out", "")) : path.join(dataRoot(), "cf-maps/thumbs3d");
 const FORCE = args.includes("--force");
 const flagVals = new Set(["--size", "--out", "--concurrency", "--settle", "--dir"].map((f) => { const i = args.indexOf(f); return i >= 0 ? args[i + 1] : null; }).filter(Boolean));
 let parcels = args.filter((a) => !a.startsWith("--") && !flagVals.has(a));

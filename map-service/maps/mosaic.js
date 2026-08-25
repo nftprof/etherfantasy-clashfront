@@ -13,13 +13,16 @@
 import { readFileSync, existsSync, writeFileSync, mkdirSync, statSync, readdirSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { svgPathToPolygon } from "./worldfield.js";
+import { svgPathToPolygon, dataRoot } from "./worldfield.js";
 import { encodePNG } from "./png.js";
 import { decodePNG } from "./png-decode.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const ROOT = path.resolve(__dirname, "../..");
-const DATA = () => (process.env.MAPS_DATA_DIR ? path.resolve(process.env.MAPS_DATA_DIR) : path.join(ROOT, "data"));
+// Resolve data via worldfield's dataRoot() — it probes ../../data THEN ../data, so it lands on the
+// right dir in BOTH the repo layout (…/map-service/maps → repo/data) and the deployed box layout
+// (~/ef-map-service/maps → ~/ef-map-service/data). A naive path.resolve(__dirname,"../../data")
+// walks ABOVE ~/ef-map-service on the box (→ ~/data, which is empty) — that was the mosaic-blank bug.
+const DATA = () => (process.env.MAPS_DATA_DIR ? path.resolve(process.env.MAPS_DATA_DIR) : dataRoot());
 const THUMBDIR = () => (process.env.CF_THUMBS_DIR ? path.resolve(process.env.CF_THUMBS_DIR) : path.join(DATA(), "cf-maps/thumbs3d"));
 const CACHEDIR = () => path.join(DATA(), "cf-maps/mosaic-cache");
 
