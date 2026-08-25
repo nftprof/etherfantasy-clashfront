@@ -62,6 +62,28 @@ from code alone — render the region and LOOK, and/or run the coverage probe (p
     version). Version-idempotent: `--force` re-shoots; a new `designVersion` writes a new file.
   - **Run it as a server pipeline, ONCE per map version, and re-run on regenerate** (owner
     2026-08-23) — not lazy-per-view. Proven on castle / candy / a normal parcel (distinct, correct).
-  - STILL TO WIRE: (a) the world compositor pastes `thumbs3d/<id>.png` (clip to polygon) instead of
-    the 2D raster, grey where absent; (b) a batch runner over the registry's generated designs +
-    a hook so `regenerate`/save enqueues a re-capture.
+  - `capture_thumb.mjs --from-service` — enumerate the running service's designed parcels
+    (`GET /internal/v1/designs`) and capture them all; `--dir <artifacts>` and explicit ids also work.
+
+## The aerial mosaic → the `/designer` select-map (owner 2026-08-25 "this should replace Arcadia")
+
+The flat grey polygon select-map on `/designer` is REPLACED by the aerial 3D-thumb mosaic as its base
+layer (real thumbs where designed, grey where not), with the interactive dots/selection drawn on top.
+
+- `map-service/maps/mosaic.js` — `bakeMosaic({zone})` is the render core of `world_mosaic.mjs` lifted
+  into a **reusable, disk-cached** function (renders ALL leaves; cache key includes a thumb-mtime
+  fingerprint so a re-shot thumb re-bakes). CLI: `node map-service/maps/mosaic.js <ZONE>` bakes +
+  commits `data/cf-maps/world-mosaic/<ZONE>.png` (~0.3 MB).
+- `GET /internal/v1/mosaic.png|.json?zone=` — the baked continent + alignment meta (`world` bbox,
+  `pxPerUnit`, `thumbed`). `designer.html` `drawMosaicBase()` draws it under the dots, **Y-flipped**
+  to the select-map's y-up frame (the source is y-down like the SVG).
+- **Committed-mosaic fallback = how it ships.** The raw thumbs are 286 MB, box-side, gitignored — they
+  do NOT deploy. So bake the mosaic **where the thumbs live** and COMMIT the tiny PNG; `bakeMosaic`
+  serves that committed file whenever the host has no thumbs. The live box therefore shows real 3D
+  thumbs immediately; if the box later runs its own capture, a fresh bake overrides it.
+- **Deploy** (`.github/workflows/map-deploy.yml`): ships `data/cf-maps/world-mosaic/*`, then a
+  **non-fatal** post-restart step captures 3D thumbs on the box (if Chromium present) + force-rebakes.
+  No Chromium ⇒ the step self-skips and the committed mosaic keeps serving. **Re-bake contract:** after
+  regenerating a zone's maps, re-run `capture_thumb` + `node maps/mosaic.js <ZONE>` and commit the PNG.
+- STILL TO WIRE: (a) an interactive `/designer/world` overview built on the same route; (b) a
+  save/`regenerate` hook that enqueues a per-parcel re-capture + zone re-bake automatically.
