@@ -518,8 +518,32 @@ function drawMosaicBase(){                            // the baked 3D-thumb cont
   cx.save();cx.translate(sxL,syTop);cx.scale(1,-1);cx.imageSmoothingEnabled=true;
   cx.drawImage(mosaicImg,0,-height,width,height);cx.restore();
   return true;}
+// LOD: per-parcel full-res thumb, fetched + drawn CRISP (clipped to the polygon) when you zoom in —
+// the baked mosaic softens on deep zoom, so above a zoom threshold generated parcels swap to their
+// own 128px thumb (owner 2026-08-25 "ship downsized thumb subset · apply LOD as you zoom").
+const lodCache=new Map();   // parcelId → Image | null(404) | 'loading'
+let lodItems=[];            // [{id, bbox, poly}] — the parcels that HAVE a committed LOD thumb + where
+function loadLodIndex(z){lodItems=[];if(!z)return;
+  fetch("/internal/v1/thumb3d-index?zone="+encodeURIComponent(z)).then(r=>r.json()).then(d=>{
+    if(d&&d.ok){lodItems=(d.items||[]).map(it=>{let pp=null;try{pp=parsePath(it.svgPath);}catch(e){}return{id:it.id,bbox:it.bbox,poly:pp};});drawMap();}
+  }).catch(()=>{});}
+function lodThumb(pid){const v=lodCache.get(pid);
+  if(v!==undefined)return v==="loading"?null:v;
+  lodCache.set(pid,"loading");
+  const img=new Image();img.onload=()=>{lodCache.set(pid,img);drawMap();};img.onerror=()=>{lodCache.set(pid,null);};
+  img.src="/internal/v1/thumb3d/"+encodeURIComponent(pid)+".png";return null;}
+function drawLod(){if(zoom<3||!lodItems.length)return;  // only once parcels are big enough to read
+  for(const it of lodItems){if(!it.bbox)continue;
+    const tl=PX(it.bbox[0],it.bbox[3]),br=PX(it.bbox[2],it.bbox[1]);
+    const w=br[0]-tl[0],h=br[1]-tl[1];
+    if(w<26||tl[0]>cv.width||br[0]<0||tl[1]>cv.height||br[1]<0)continue;   // cull off-screen / too small
+    const img=lodThumb(it.id);if(!img)continue;
+    cx.save();
+    if(it.poly){cx.beginPath();for(let k=0;k<it.poly.length;k++){const[X,Y]=PX(it.poly[k][0],it.poly[k][1]);k?cx.lineTo(X,Y):cx.moveTo(X,Y);}cx.closePath();cx.clip();}
+    cx.translate(tl[0],tl[1]);cx.scale(1,-1);cx.imageSmoothingEnabled=true;cx.drawImage(img,0,-h,w,h);cx.restore();}}
 function drawMap(){if(!view)return;cx.clearRect(0,0,cv.width,cv.height);
   const mosaicOn=showMosaic&&drawMosaicBase();        // base layer first (thumbs/grey = the map itself)
+  if(mosaicOn&&mosaicMode==="thumb")drawLod();        // crisp per-parcel thumbs over the base when zoomed
   if(showFeatures&&wfOverlay&&wfOverlay.zone===zone)drawFeatures();   // geography under the parcels
   const usePoly=parcels.length<=600&&parcels[0]&&parcels[0].svgPath; // polygons only when svgPath is present + set is small
   const r=zoom>=6?3.4:(zoom>=3?2.9:2.4);          // dots grow a little as you zoom in
@@ -572,6 +596,7 @@ async function loadParcels(){showParcelView();$("mapStat").textContent="· loadi
     setOwnHint();
     if(allParcels.length)fitView();updZoomUI();       // fit + reset zoom ONCE per continent
     loadMosaic(zone);                                 // bake/fetch the 3D-thumb base layer for this continent
+    loadLodIndex(zone);                               // which parcels have a crisp LOD thumb (zoom-in detail)
     applyFilter();setCrumb();
     if(showFeatures)loadWorldFeatures();              // refresh the geography overlay for the new continent
   }catch(e){$("mapStat").textContent="· unavailable";$("err").textContent=e.message;}}

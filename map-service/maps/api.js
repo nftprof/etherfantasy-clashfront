@@ -199,6 +199,32 @@ export function mapsApi(req, res) {
     } catch (e) { J(res, p.endsWith(".json") ? 200 : 500, { ok: false, error: e.message }); }
     return true;
   }
+  // which parcels have a committed LOD thumb + WHERE to place them (bbox + svgPath) — the /designer map
+  //   draws these crisp on zoom-in, clipped to the polygon. Self-contained so it needs nothing from the
+  //   (light) parcels list, and works whatever the parcel's design status.
+  if (p === "/internal/v1/thumb3d-index") {
+    try {
+      const zone = ((new URL(req.url, "http://x")).searchParams.get("zone") || "EDU").toUpperCase();
+      const dir = path.join(dataRoot(), "cf-maps/thumbs3d-lod");
+      const have = fs.existsSync(dir) ? new Set(fs.readdirSync(dir).filter((f) => f.endsWith(".png")).map((f) => f.replace(/\.png$/, ""))) : new Set();
+      const items = [];
+      for (const s of l3Zone(zone)) if (have.has(String(s.parcelId)) && s.bbox && s.svgPath) items.push({ id: String(s.parcelId), bbox: s.bbox, svgPath: s.svgPath });
+      J(res, 200, { ok: true, items });
+    } catch (e) { J(res, 200, { ok: true, items: [] }); }
+    return true;
+  }
+  // LOD per-parcel thumb (owner 2026-08-25 "ship downsized thumb subset") — the small 128px thumb the
+  //   /designer map draws crisp when you zoom into a generated single parcel. Keyed by current parcelId.
+  if (p.startsWith("/internal/v1/thumb3d/")) {
+    const id = decodeURIComponent(p.slice("/internal/v1/thumb3d/".length)).replace(/\.png$/, "").replace(/[^0-9]/g, "");
+    const f = path.join(dataRoot(), "cf-maps/thumbs3d-lod", `${id}.png`);
+    fs.readFile(f, (e, buf) => {
+      if (e) { res.writeHead(404, { "cache-control": "public, max-age=600" }); return res.end(); }
+      res.writeHead(200, { "content-type": "image/png", "cache-control": "public, max-age=86400" });
+      res.end(buf);
+    });
+    return true;
+  }
   if (p === "/internal/v1/zones") {                         // world → CONTINENT zoom: the 12 zones + counts + bbox
     try { J(res, 200, { ok: true, zones: zoneList() }); } catch (e) { J(res, 500, { ok: false, error: e.message }); }
     return true;

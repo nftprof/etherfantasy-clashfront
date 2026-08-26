@@ -74,6 +74,8 @@ jobs:
           mkdir -p "$HOME/ef-map-service/data/cf-maps/world-mosaic"
           cp "$GITHUB_WORKSPACE"/data/cf-maps/world-mosaic/*.png "$HOME"/ef-map-service/data/cf-maps/world-mosaic/ 2>/dev/null || true
           cp "$GITHUB_WORKSPACE"/data/cf-maps/world-mosaic/*.json "$HOME"/ef-map-service/data/cf-maps/world-mosaic/ 2>/dev/null || true
+          # LOD per-parcel thumbs (128px, committed subset) — the crisp zoom-in detail layer.
+          rsync -a --delete "$GITHUB_WORKSPACE"/data/cf-maps/thumbs3d-lod/ "$HOME"/ef-map-service/data/cf-maps/thumbs3d-lod/ 2>/dev/null || true
           git -C "$GITHUB_WORKSPACE" rev-parse --short HEAD > "$HOME"/ef-map-service/BUILD
 
       - name: (re)start ef-map-service on :8150 (health-gated on /healthz)
