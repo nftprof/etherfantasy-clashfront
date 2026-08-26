@@ -455,7 +455,7 @@ function fitView(reset){let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;for(const p of allParc
   if(reset!==false){zoom=1;panX=0;panY=0;}}
 const BASE=(x,y)=>[x*view.s+view.ox, cv.height-(y*view.s+view.oy)];       // fit-space
 const PX=(x,y)=>{const b=BASE(x,y);return[b[0]*zoom+panX, b[1]*zoom+panY];}; // screen-space (zoom+pan)
-function setZoom(nz,cxp,cyp){nz=Math.max(1,Math.min(60,nz));const mx=cxp??cv.width/2,my=cyp??cv.height/2;
+function setZoom(nz,cxp,cyp){nz=Math.max(1,Math.min(280,nz));const mx=cxp??cv.width/2,my=cyp??cv.height/2;   // max zoom ~4.5× deeper (owner 2026-08-26: near-full-parcel preview)
   panX=mx-(mx-panX)*(nz/zoom);panY=my-(my-panY)*(nz/zoom);zoom=nz;drawMap();updZoomUI();}
 function updZoomUI(){const z=$("zLbl");if(z)z.textContent=Math.round(zoom*100)+"%";}
 // cache parsed svg polygons (M/m/L/l/h/v/z subset — the l3 paths are simple relative outlines)
@@ -522,10 +522,11 @@ function drawMosaicBase(){                            // the baked 3D-thumb cont
 // the baked mosaic softens on deep zoom, so above a zoom threshold generated parcels swap to their
 // own 128px thumb (owner 2026-08-25 "ship downsized thumb subset · apply LOD as you zoom").
 const lodCache=new Map();   // parcelId → Image | null(404) | 'loading'
-let lodItems=[];            // [{id, bbox, poly}] — the parcels that HAVE a committed LOD thumb + where
+let lodItems=[],lodLand="#5a6e46";   // [{id, bbox, poly}] + the zone's terrain colour (gap underfill)
 function loadLodIndex(z){lodItems=[];if(!z)return;
   fetch("/internal/v1/thumb3d-index?zone="+encodeURIComponent(z)).then(r=>r.json()).then(d=>{
-    if(d&&d.ok){lodItems=(d.items||[]).map(it=>{let pp=null;try{pp=parsePath(it.svgPath);}catch(e){}return{id:it.id,bbox:it.bbox,poly:pp};});drawMap();}
+    if(d&&d.ok){if(Array.isArray(d.land))lodLand="rgb("+d.land.join(",")+")";
+      lodItems=(d.items||[]).map(it=>{let pp=null;try{pp=parsePath(it.svgPath);}catch(e){}return{id:it.id,bbox:it.bbox,poly:pp};});drawMap();}
   }).catch(()=>{});}
 function lodThumb(pid){const v=lodCache.get(pid);
   if(v!==undefined)return v==="loading"?null:v;
@@ -540,6 +541,9 @@ function drawLod(){if(zoom<3||!lodItems.length)return;  // only once parcels are
     const img=lodThumb(it.id);if(!img)continue;
     cx.save();
     if(it.poly){cx.beginPath();for(let k=0;k<it.poly.length;k++){const[X,Y]=PX(it.poly[k][0],it.poly[k][1]);k?cx.lineTo(X,Y):cx.moveTo(X,Y);}cx.closePath();cx.clip();}
+    // TERRAIN underfill FIRST — the ±161 thumb has transparent margins; without this the parcel's own
+    // area would show the dark background (the "gaps" bug). Fill the whole polygon, then the thumb over.
+    cx.fillStyle=lodLand;cx.fillRect(Math.min(tl[0],br[0])-1,Math.min(tl[1],br[1])-1,Math.abs(w)+2,Math.abs(h)+2);
     cx.translate(tl[0],tl[1]);cx.scale(1,-1);cx.imageSmoothingEnabled=true;cx.drawImage(img,0,-h,w,h);cx.restore();}}
 function drawMap(){if(!view)return;cx.clearRect(0,0,cv.width,cv.height);
   const mosaicOn=showMosaic&&drawMosaicBase();        // base layer first (thumbs/grey = the map itself)

@@ -13,9 +13,38 @@
 import { readFileSync, existsSync, writeFileSync, mkdirSync, statSync, readdirSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { svgPathToPolygon, dataRoot, zoneBiomeFamily } from "./worldfield.js";
+import { svgPathToPolygon, dataRoot, zoneBiomeFamily, worldParcel } from "./worldfield.js";
 import { encodePNG } from "./png.js";
 import { decodePNG } from "./png-decode.js";
+import { generate } from "./generate.js";
+import { T } from "./schema.js";
+
+// per-palette cell colours [OPEN, FOREST, ROCK, WATER, CLIFF, ROAD] — mirrors thumb.js so the planner
+// reads identically to a parcel's own 2D terrain thumbnail.
+const PALETTE_RGB = {
+  verdant: [[86, 118, 72], [38, 72, 40], [110, 106, 98], [52, 86, 120], [90, 82, 74], [150, 132, 96]],
+  autumn: [[122, 102, 58], [122, 74, 34], [110, 100, 92], [60, 84, 110], [96, 84, 70], [152, 128, 92]],
+  volcanic: [[60, 52, 50], [70, 44, 36], [88, 80, 78], [190, 74, 30], [50, 44, 44], [110, 96, 84]],
+  tundra: [[168, 178, 182], [96, 116, 110], [140, 146, 150], [110, 140, 160], [120, 126, 132], [180, 172, 158]],
+  desert: [[188, 162, 110], [120, 124, 62], [150, 128, 96], [70, 120, 140], [140, 116, 84], [204, 182, 136]],
+  swamp: [[74, 88, 58], [44, 60, 38], [96, 98, 86], [46, 78, 92], [80, 84, 66], [128, 116, 84]],
+  ashen: [[96, 94, 92], [64, 66, 62], [118, 114, 110], [70, 80, 92], [84, 80, 78], [140, 132, 120]],
+  sakura: [[120, 140, 96], [172, 120, 140], [130, 124, 128], [96, 130, 160], [110, 102, 106], [168, 150, 130]],
+};
+// build a per-parcel 2D-terrain sampler from a fresh generate() — the DETAILED planner (forest/rock/
+// water/road per cell), same as the parcel's own natural terrain. Returns null if generation fails.
+function genSampler(s) {
+  try {
+    const art = generate(worldParcel(s, { investLevel: 1 }));
+    const G = art.terrain.w, cells = new Uint8Array(Buffer.from(art.terrain.cells, "base64"));
+    const pal = PALETTE_RGB[art.meta?.params?.palette] || PALETTE_RGB.verdant;
+    const counts = [0, 0, 0, 0, 0, 0];
+    for (let k = 0; k < cells.length; k++) { const c = cells[k]; if (c !== T.OOB) counts[Math.min(c, 5)]++; }
+    let dom = 0; for (let c = 1; c < 6; c++) if (counts[c] > counts[dom]) dom = c;
+    const domRGB = pal[dom];
+    return (fx, fy) => { const cxi = Math.min(G - 1, Math.max(0, (fx * G) | 0)), czi = Math.min(G - 1, Math.max(0, (fy * G) | 0)), cell = cells[czi * G + cxi]; return cell === T.OOB ? domRGB : pal[Math.min(cell, 5)]; };
+  } catch { return null; }
+}
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // Resolve data via worldfield's dataRoot() — it probes ../../data THEN ../data, so it lands on the
@@ -36,7 +65,7 @@ const LAND = {
   TEMPERATE_FOREST: [70, 96, 62], TEMPERATE_GRASS: [96, 120, 72], SWAMP: [74, 88, 58],
   VOLCANIC: [78, 62, 56], SNOW: [172, 180, 186], DESERT: [186, 162, 110], TUNDRA: [150, 160, 164],
 };
-const landColor = (zone) => LAND[zoneBiomeFamily(zone)] || [86, 110, 74];
+export const landColor = (zone) => LAND[zoneBiomeFamily(zone)] || [86, 110, 74];
 const speckle = (base, x, y) => { const h = (((x * 73856093) ^ (y * 19349663)) >>> 0) % 17 - 8; return [Math.max(0, base[0] + h), Math.max(0, base[1] + h), Math.max(0, base[2] + h)]; };
 
 const _thumbCache = new Map();
@@ -143,8 +172,11 @@ export function bakeMosaic({ zone = "EDU", ppu = 20, maxdim = 4096, force = fals
     const tfid = mode === "thumb" && !isEstate ? thumbFileId(s) : null;
     const th = tfid ? loadThumb(tfid) : null;
     let sample;
-    if (th) { hasThumb++; sample = (fx, fy) => { const tx = Math.min(th.w - 1, Math.max(0, (fx * th.w) | 0)), ty = Math.min(th.h - 1, Math.max(0, (fy * th.h) | 0)), i = (ty * th.w + tx) * 4; return th.rgba[i + 3] < 100 ? null : [th.rgba[i], th.rgba[i + 1], th.rgba[i + 2]]; }; }
-    else if (mode === "planner" || isEstate) { if (isEstate) estateN++; sample = (fx, fy, x, y) => speckle(LC, x, y); }  // terrain
+    // ⚠ Arena-in-a-box (WORLD-MAP-RENDERING.md trap #1): the ±161 thumb has TRANSPARENT margins, so a
+    // transparent pixel must fall back to TERRAIN — never leave the parcel's own area as background, or
+    // parcels read as rounded blobs with gaps instead of tessellating. Fill the WHOLE polygon.
+    if (th) { hasThumb++; sample = (fx, fy, x, y) => { const tx = Math.min(th.w - 1, Math.max(0, (fx * th.w) | 0)), ty = Math.min(th.h - 1, Math.max(0, (fy * th.h) | 0)), i = (ty * th.w + tx) * 4; return th.rgba[i + 3] < 100 ? speckle(LC, x, y) : [th.rgba[i], th.rgba[i + 1], th.rgba[i + 2]]; }; }
+    else if (mode === "planner" || isEstate) { if (isEstate) estateN++; const g = genSampler(s); sample = g || ((fx, fy, x, y) => speckle(LC, x, y)); }  // DETAILED generated terrain (forest/rock/water/road)
     else { greyN++; sample = (fx, fy, x, y) => (((x + y) & 3) ? GREY : GREY2); }
     ok++;
 
@@ -161,7 +193,9 @@ export function bakeMosaic({ zone = "EDU", ppu = 20, maxdim = 4096, force = fals
         for (let x = xL; x <= xR; x++) { const c = sample((x - px0) / pw, (y - py0) / ph, x, y) || GREY; put(x, y, c[0], c[1], c[2]); }
       }
     }
-    for (let e = 0; e < cpoly.length; e++) { const a = cpoly[e], b = cpoly[(e + 1) % cpoly.length]; line(a[0], a[1], b[0], b[1], BORDER); }
+    // NO baked border stroke: a 1px raster line upscales into a thick black SEAM on zoom and makes
+    // perfectly-tessellating parcels (measured polygon gap = 0) read as gaps / non-continuous land
+    // (owner 2026-08-26). Parcel outlines, if wanted, belong on the client as a crisp vector overlay.
   }
 
   const png = encodePNG(W, H, Buffer.from(px));

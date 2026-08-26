@@ -23,7 +23,7 @@ import { verifyToken, loginPassword } from "../lobby/auth.js";
 import { worldParcel, l3Row, l3Zone, zoneList, loadWorldField, estateList, dataRoot } from "./worldfield.js";
 import { runAudit } from "./traverse.js";
 import { worldMap } from "./worldmap.js";
-import { bakeMosaic } from "./mosaic.js";
+import { bakeMosaic, landColor } from "./mosaic.js";
 import { landOfWallet, walletOwnsParcel, mintedSet, PARCELS_CONTRACT, ESTATE_CONTRACT } from "./nftowners.js";
 // Land mint config (distributors + size tokens) — the registry the other session delivered.
 let _landCfg = null;
@@ -209,7 +209,7 @@ export function mapsApi(req, res) {
       const have = fs.existsSync(dir) ? new Set(fs.readdirSync(dir).filter((f) => f.endsWith(".png")).map((f) => f.replace(/\.png$/, ""))) : new Set();
       const items = [];
       for (const s of l3Zone(zone)) if (have.has(String(s.parcelId)) && s.bbox && s.svgPath) items.push({ id: String(s.parcelId), bbox: s.bbox, svgPath: s.svgPath });
-      J(res, 200, { ok: true, items });
+      J(res, 200, { ok: true, items, land: landColor(zone) });
     } catch (e) { J(res, 200, { ok: true, items: [] }); }
     return true;
   }
