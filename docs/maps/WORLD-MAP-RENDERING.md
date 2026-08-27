@@ -87,3 +87,17 @@ layer (real thumbs where designed, grey where not), with the interactive dots/se
   regenerating a zone's maps, re-run `capture_thumb` + `node maps/mosaic.js <ZONE>` and commit the PNG.
 - STILL TO WIRE: (a) an interactive `/designer/world` overview built on the same route; (b) a
   save/`regenerate` hook that enqueues a per-parcel re-capture + zone re-bake automatically.
+
+## Water-dominant main rivers (owner 2026-08-27 — naval battles)
+
+Main rivers must flow as REAL water (future naval battles + bridge/island-expansion upgrades), not
+the thin capped stripe the playability clamp produces. A world-terrain river entry may carry
+**`waterDominant: true`** — mechanically identical to `fill: true` (lake/caldera): it bypasses the
+`zoneCap` (0.26) and routes to `generate()`'s `paintFill` + the causeway/ford repair, so a crossing
+parcel comes out **mostly water with small islands + causeway "bridges"** and still fully playable
+(`worldfield.js` `isFill = fill || waterDominant`). Semantics: `fill` = a static lake/caldera disc;
+`waterDominant` = a flowing main river at honest full width. Flagged in `data/world-terrain/<ZONE>.json`
+on the widest river per zone: EDU **Arcadia Flow**, HUB **Tianhe** (true main rivers), plus the
+BUS/CGI/ENT/KOL **ocean shore bands** which were wrongly capped to a 0.26 stripe (an ocean is not a
+stripe). UW2/UW3 lakes were already `fill`. Re-render (planner mode + thumb margins) after flagging;
+the committed 3D LOD thumbs are captured pre-flag and refresh only on the next box-side capture.

@@ -342,7 +342,10 @@ export function featuresForParcel(field, parcel) {
       if (!Array.isArray(f.pts) || f.pts.length < 2) continue;
       const tier = kind === "road" ? (ROAD_TIERS[f.tier] ? f.tier : "highway") : null;
       const tierSpec = tier ? ROAD_TIERS[tier] : spec;
-      const isFill = kind === "river" && f.fill === true;    // lake/caldera disc — honest full width
+      // fill = lake/caldera disc; waterDominant = a MAIN flowing river painted at its honest full
+      // width (owner 2026-08-27: main rivers must be real water for naval battles + island/bridge
+      // upgrades). Both bypass the zoneCap and route to paintFill + the causeway/ford repair.
+      const isFill = kind === "river" && (f.fill === true || f.waterDominant === true);
       const wZone = isFill
         ? (typeof f.width === "number" ? f.width : 0.1)      // fill bypasses the zoneCap clamp
         : Math.min(typeof f.width === "number" ? f.width : 0.1, tierSpec.zoneCap);
