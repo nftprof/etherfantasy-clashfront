@@ -73,7 +73,15 @@ function loadThumb(id) {
   if (_thumbCache.has(id)) return _thumbCache.get(id);
   let t = null;
   try { const f = path.join(THUMBDIR(), `${id}.png`); if (existsSync(f)) t = decodePNG(readFileSync(f)); } catch { t = null; }
+  if (t && !t.avg) t.avg = avgOpaque(t);   // cache the average opaque colour for margin-fill
   _thumbCache.set(id, t); return t;
+}
+// average colour of a thumb's OPAQUE pixels — used to fill the inscribed-arena margin so a parcel
+// reads uniform to its polygon edge (owner 2026-08-27: no dark-forest bands between parcels).
+function avgOpaque(t) {
+  let r = 0, g = 0, b = 0, n = 0;
+  for (let i = 0; i < t.rgba.length; i += 4) if (t.rgba[i + 3] >= 100) { r += t.rgba[i]; g += t.rgba[i + 1]; b += t.rgba[i + 2]; n++; }
+  return n ? [(r / n) | 0, (g / n) | 0, (b / n) | 0] : [86, 110, 74];
 }
 // current parcelId → thumb file id. Committed thumbs are keyed by the OLD token id (`tokenIdOld`,
 // 6020… before the on-chain id correction to 5020…); fall back to the current parcelId.
@@ -175,7 +183,9 @@ export function bakeMosaic({ zone = "EDU", ppu = 20, maxdim = 4096, force = fals
     // ⚠ Arena-in-a-box (WORLD-MAP-RENDERING.md trap #1): the ±161 thumb has TRANSPARENT margins, so a
     // transparent pixel must fall back to TERRAIN — never leave the parcel's own area as background, or
     // parcels read as rounded blobs with gaps instead of tessellating. Fill the WHOLE polygon.
-    if (th) { hasThumb++; sample = (fx, fy, x, y) => { const tx = Math.min(th.w - 1, Math.max(0, (fx * th.w) | 0)), ty = Math.min(th.h - 1, Math.max(0, (fy * th.h) | 0)), i = (ty * th.w + tx) * 4; return th.rgba[i + 3] < 100 ? speckle(LC, x, y) : [th.rgba[i], th.rgba[i + 1], th.rgba[i + 2]]; }; }
+    // OVERSCAN the inscribed arena ~1.3× so its terrain reaches the parcel edges (no margin band);
+    // the average colour is only a last-resort fill for any pixel still transparent (owner 2026-08-27).
+    if (th) { hasThumb++; const marg = th.avg || LC, O = 1.3; sample = (fx, fy, x, y) => { const sfx = 0.5 + (fx - 0.5) / O, sfy = 0.5 + (fy - 0.5) / O, tx = Math.min(th.w - 1, Math.max(0, (sfx * th.w) | 0)), ty = Math.min(th.h - 1, Math.max(0, (sfy * th.h) | 0)), i = (ty * th.w + tx) * 4; return th.rgba[i + 3] < 100 ? speckle(marg, x, y) : [th.rgba[i], th.rgba[i + 1], th.rgba[i + 2]]; }; }
     else if (mode === "planner" || isEstate) { if (isEstate) estateN++; const g = genSampler(s); sample = g || ((fx, fy, x, y) => speckle(LC, x, y)); }  // DETAILED generated terrain (forest/rock/water/road)
     else { greyN++; sample = (fx, fy, x, y) => (((x + y) & 3) ? GREY : GREY2); }
     ok++;

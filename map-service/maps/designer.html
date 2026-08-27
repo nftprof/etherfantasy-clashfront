@@ -528,10 +528,13 @@ function loadLodIndex(z){lodItems=[];if(!z)return;
     if(d&&d.ok){if(Array.isArray(d.land))lodLand="rgb("+d.land.join(",")+")";
       lodItems=(d.items||[]).map(it=>{let pp=null;try{pp=parsePath(it.svgPath);}catch(e){}return{id:it.id,bbox:it.bbox,poly:pp};});drawMap();}
   }).catch(()=>{});}
+const lodAvg=new Map();     // parcelId → average thumb colour (margin underfill, blends the ring)
+function thumbAvg(pid,img){try{const c=document.createElement("canvas");c.width=c.height=1;const g=c.getContext("2d");
+  g.drawImage(img,0,0,1,1);const d=g.getImageData(0,0,1,1).data;if(d[3]>10)lodAvg.set(pid,"rgb("+d[0]+","+d[1]+","+d[2]+")");}catch(e){}}
 function lodThumb(pid){const v=lodCache.get(pid);
   if(v!==undefined)return v==="loading"?null:v;
   lodCache.set(pid,"loading");
-  const img=new Image();img.onload=()=>{lodCache.set(pid,img);drawMap();};img.onerror=()=>{lodCache.set(pid,null);};
+  const img=new Image();img.onload=()=>{lodCache.set(pid,img);thumbAvg(pid,img);drawMap();};img.onerror=()=>{lodCache.set(pid,null);};
   img.src="/internal/v1/thumb3d/"+encodeURIComponent(pid)+".png";return null;}
 function drawLod(){if(zoom<3||!lodItems.length)return;  // only once parcels are big enough to read
   for(const it of lodItems){if(!it.bbox)continue;
@@ -543,8 +546,9 @@ function drawLod(){if(zoom<3||!lodItems.length)return;  // only once parcels are
     if(it.poly){cx.beginPath();for(let k=0;k<it.poly.length;k++){const[X,Y]=PX(it.poly[k][0],it.poly[k][1]);k?cx.lineTo(X,Y):cx.moveTo(X,Y);}cx.closePath();cx.clip();}
     // TERRAIN underfill FIRST — the ±161 thumb has transparent margins; without this the parcel's own
     // area would show the dark background (the "gaps" bug). Fill the whole polygon, then the thumb over.
-    cx.fillStyle=lodLand;cx.fillRect(Math.min(tl[0],br[0])-1,Math.min(tl[1],br[1])-1,Math.abs(w)+2,Math.abs(h)+2);
-    cx.translate(tl[0],tl[1]);cx.scale(1,-1);cx.imageSmoothingEnabled=true;cx.drawImage(img,0,-h,w,h);cx.restore();}}
+    cx.fillStyle=lodAvg.get(it.id)||lodLand;cx.fillRect(Math.min(tl[0],br[0])-1,Math.min(tl[1],br[1])-1,Math.abs(w)+2,Math.abs(h)+2);
+    const O=1.3;cx.translate(tl[0],tl[1]);cx.scale(1,-1);cx.imageSmoothingEnabled=true;
+    cx.drawImage(img,w*(1-O)/2,-h-h*(O-1)/2,O*w,O*h);cx.restore();}}   // overscan → arena reaches the parcel edges
 function drawMap(){if(!view)return;cx.clearRect(0,0,cv.width,cv.height);
   const mosaicOn=showMosaic&&drawMosaicBase();        // base layer first (thumbs/grey = the map itself)
   if(mosaicOn&&mosaicMode==="thumb")drawLod();        // crisp per-parcel thumbs over the base when zoomed
