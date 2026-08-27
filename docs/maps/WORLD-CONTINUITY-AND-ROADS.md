@@ -25,6 +25,40 @@ gaps + road corridors fill but the outer frontier / ocean stays dark) with seede
 road/river network (feature overlay) threads over it. "It's OK to still have clusters of trees or
 roads yet to be built" (owner) — the wilderness fill IS that unclaimed land.
 
+## 1b. Aerial macro network BAKED INTO the mosaic (DONE 2026-08-27 — the "view from a plane")
+
+Owner 2026-08-27: *"we want it looking like an aerial map (looking down from a plane), see as much
+detail as possible… the end result should look like a full real world at this stage."* The authored
+feature field (`data/world-terrain/<ZONE>.json` — rivers, tiered roads, castles, capital POIs) is now
+**rasterised INTO the aerial mosaic** (`mosaic.js` `bakeFeatures`), not just drawn as the thin dashed
+client overlay (`drawFeatures`) that most viewers never enabled. So the baked continent reads as a
+settled world seen from above:
+- **Rivers** flow as real water at honest width (`river.width`), banked — naval-ready, continuous
+  across the whole surface (belt-and-braces with the per-parcel `waterDominant` water).
+- **Roads** paint tiered (highway/secondary/local) with a dark casing under a pale fill — the classic
+  aerial-road read — threading city→city→river. Topology is already a capital hub: **measured, every
+  castle + the capital abuts a road endpoint** ("all roads lead to Rome"); baking just makes it visible.
+- **Settlements** — each castle / capital / town POI gets a textured **urban footprint** (warm rooftop
+  blocks cut by a faint street grid), radius by fortification kind (`SETTLE_R`: PALACE/capital 3.6u …
+  GATE 1.0u). A TOWN patch, **never a whole board** (canon 22: a castle is a POI on a terrain estate).
+
+Verified by rendering EDU at three scales (capital close-up, region, full continent) — roads converge
+on the terracotta capital cluster, the Arcadia Flow + West Tributary run blue through it. Committed
+`EDU.png` + `EDU.planner.png` carry the aerial network; other zones bake it live on first view
+(deploy ships the code). **Coordinate frame:** feature coords share the parcel zone-unit space, mapped
+by the mosaic's `toCanvas` — same frame `drawFeatures` uses, so the baked layer and any client overlay
+register exactly.
+
+**Still open toward the full-world look (owner 2026-08-27):**
+- **Roads FROM the castles outward** — the field already hubs on capitals; extend the generator to
+  emit connector roads capital→river-crossing + capital→town where authored roads are sparse, using
+  real city-formation grammar (fords/bridges at rivers, ridgeline avoidance, market-square radials).
+- **Dynamic real-time aerial layer** — the map should update ~hourly and show world STATE: a besieged
+  or burning parcel blazes, a battle smokes, a freshly-taken town changes hands. This is an OVERLAY
+  driven by live sim state (siege/fire/battle flags), composited over the static aerial base — a
+  separate real-time channel, not a re-bake. Scoped next.
+- Extend the committed aerial bake to every launch zone (currently EDU; others lazy).
+
 ## 2. Road continuity (PHASE 2 — parcel-to-parcel links)
 
 Roads currently stretch WITHIN a parcel (seeded per-parcel) and don't connect to neighbours — reads
@@ -67,9 +101,12 @@ upgrades later.
 
 ## Phase order & status
 - [x] Land tessellation confirmed (no redo) · water-dominant rivers/oceans.
-- [ ] **Phase 1** — continuous between-parcel wilderness fill (mosaic bake + land mask).
-- [ ] **Phase 2** — per-parcel side-road continuity (attach to edgeCrossings) + roads-to-castle.
+- [x] **Phase 1** — continuous between-parcel wilderness fill (mosaic bake + land mask).
+- [x] **Phase 1b** — aerial macro network (rivers/roads/settlements) baked INTO the mosaic (EDU).
+- [ ] **Phase 2** — per-parcel side-road continuity (attach to edgeCrossings) + generated
+  capital→river / capital→town connector roads; roll the aerial bake to every launch zone.
 - [ ] **Phase 3** — per-zone era road/city grammar, zone by zone, references first.
+- [ ] **Phase 4** — dynamic real-time aerial overlay (siege/fire/battle state, ~hourly refresh).
 
 ## 5. Polygon vs thumbnail vs playable map — the shape mismatch (owner 2026-08-27)
 

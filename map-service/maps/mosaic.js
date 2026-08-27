@@ -13,7 +13,7 @@
 import { readFileSync, existsSync, writeFileSync, mkdirSync, statSync, readdirSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { svgPathToPolygon, dataRoot, zoneBiomeFamily, worldParcel } from "./worldfield.js";
+import { svgPathToPolygon, dataRoot, zoneBiomeFamily, worldParcel, loadWorldField } from "./worldfield.js";
 import { encodePNG } from "./png.js";
 import { decodePNG } from "./png-decode.js";
 import { generate } from "./generate.js";
@@ -86,6 +86,81 @@ function wildernessFn(LC) {
   };
 }
 
+// ── AERIAL MACRO NETWORK (owner 2026-08-27: "look like an aerial map from a plane… a full real
+// world at this stage"). The authored feature field (data/world-terrain/<ZONE>.json — rivers, roads
+// tiered highway/secondary/local, castles, capital POIs) is BAKED INTO the aerial image so the
+// continent reads as a settled world seen from above: rivers flow as real water, the road network
+// threads city→city→river, and capitals/castles read as built-up settlement footprints. Previously
+// these lived ONLY as a thin dashed client overlay (drawFeatures) that most viewers never turned on.
+// Road topology is already a capital-hub network (measured: every castle/capital abuts a road
+// endpoint — "all roads lead to Rome"); this step just makes it VISIBLE on the aerial surface.
+const RIVER_RGB = [58, 96, 150], RIVER_BANK = [70, 112, 96], MAGMA_RGB = [214, 96, 34];
+const ROAD_FILL = [176, 156, 116], ROAD_CASE = [96, 82, 60];      // pale path + dark casing = aerial road
+const URBAN = [150, 140, 126];                                     // rooftops/streets, warm grey
+// settlement footprint radius (zone-units) by fortification kind — a TOWN patch, never a whole board
+// (canon 22: a castle is a POI marker on a terrain estate, not a 100-parcel sprawl).
+const SETTLE_R = { PALACE: 3.6, GRAND_ACADEMY: 3.6, CASTLE: 2.6, KEEP: 1.7, MANOR: 1.4, GATE: 1.0, PORT: 2.8, TOWN: 2.2 };
+// stamp a filled disc (radius px) at canvas (cx,cy) using colour-fn cf(x,y) → the aerial features draw
+// as rounded continuous strokes (walk each polyline segment stamping discs at sub-pixel steps).
+function discStamp(px, W, H, cx, cy, rad, cf) {
+  const r = Math.max(0.5, rad), x0 = Math.max(0, (cx - r) | 0), x1 = Math.min(W - 1, (cx + r + 1) | 0);
+  const y0 = Math.max(0, (cy - r) | 0), y1 = Math.min(H - 1, (cy + r + 1) | 0), r2 = r * r;
+  for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) {
+    const dx = x - cx, dy = y - cy; if (dx * dx + dy * dy > r2) continue;
+    const c = cf(x, y); if (!c) continue; const i = (y * W + x) * 4; px[i] = c[0]; px[i + 1] = c[1]; px[i + 2] = c[2]; px[i + 3] = 255;
+  }
+}
+function strokePoly(px, W, H, pts, toCanvas, radPx, cf) {
+  if (!pts || pts.length < 2) return;
+  for (let s = 0; s < pts.length - 1; s++) {
+    const [ax, ay] = toCanvas(pts[s][0], pts[s][1]), [bx, by] = toCanvas(pts[s + 1][0], pts[s + 1][1]);
+    const len = Math.hypot(bx - ax, by - ay), steps = Math.max(1, Math.ceil(len / Math.max(0.6, radPx * 0.5)));
+    for (let k = 0; k <= steps; k++) { const t = k / steps; discStamp(px, W, H, ax + (bx - ax) * t, ay + (by - ay) * t, radPx, cf); }
+  }
+}
+// Bake the macro network onto an already-painted terrain buffer. Order = settlements (under) →
+// rivers (water, bridged by roads) → road casings → road fills (on top) so roads cross water/cities.
+export function bakeFeatures(px, W, H, toCanvas, PPU, zone) {
+  let field; try { field = loadWorldField(zone); } catch { return { rivers: 0, roads: 0, settles: 0 }; }
+  if (!field) return { rivers: 0, roads: 0, settles: 0 };
+  const solid = (c) => () => c;
+  // 1) settlement footprints — a textured urban patch around each castle/capital/town POI: blocks of
+  // warm rooftops (terracotta/tile/slate) cut by a faint street grid, so a town READS as built-up from
+  // the air rather than a bald grey disc. Deterministic per-pixel (no RNG in the bake).
+  let settles = 0;
+  const ROOF = [[150, 96, 74], [132, 116, 100], [150, 140, 126], [120, 104, 92]];   // tile / thatch / slate / mud
+  const urbanFn = (bx, by) => (x, y) => {
+    const street = ((x % 7) < 1 || (y % 8) < 1);                                     // orthogonal lanes
+    if (street) return [104, 94, 82];
+    const blk = ROOF[((((x / 4) | 0) * 3 + ((y / 4) | 0) * 5) >>> 0) % ROOF.length]; // 4px roof blocks
+    const h = (((x * 12289) ^ (y * 24593)) >>> 0) % 13 - 6;
+    return [Math.max(40, blk[0] + h), Math.max(40, blk[1] + h), Math.max(40, blk[2] + h)];
+  };
+  for (const place of [...(field.castles || []), ...(field.pois || [])]) {
+    if (!Array.isArray(place.at)) continue;
+    const R = (SETTLE_R[place.kind] || SETTLE_R.TOWN) * PPU, [cx, cy] = toCanvas(place.at[0], place.at[1]);
+    discStamp(px, W, H, cx, cy, R, urbanFn(cx, cy)); settles++;
+  }
+  // 2) rivers — real flowing water at honest width (naval-ready). Bank tint first, then water core.
+  let rivers = 0;
+  for (const r of field.rivers || []) {
+    if (r.fill) continue;                                       // lakes/calderas are baked as parcel water, not a line
+    const wu = Math.max(0.6, r.width || 1), wpx = wu * PPU * 0.5, water = r.magma ? MAGMA_RGB : RIVER_RGB;
+    strokePoly(px, W, H, r.pts, toCanvas, wpx + PPU * 0.35, solid(r.magma ? [150, 66, 26] : RIVER_BANK));
+    strokePoly(px, W, H, r.pts, toCanvas, wpx, solid(water)); rivers++;
+  }
+  // 3) roads — tiered widths, dark casing under a pale fill (the classic aerial-road read).
+  const RAD = { highway: 0.5, secondary: 0.33, local: 0.22 };
+  let roads = 0;
+  for (const rd of field.roads || []) {
+    const wpx = (RAD[rd.tier] || RAD.highway) * PPU; strokePoly(px, W, H, rd.pts, toCanvas, wpx + 1.4, solid(ROAD_CASE));
+  }
+  for (const rd of field.roads || []) {
+    const wpx = (RAD[rd.tier] || RAD.highway) * PPU; strokePoly(px, W, H, rd.pts, toCanvas, wpx, solid(ROAD_FILL)); roads++;
+  }
+  return { rivers, roads, settles };
+}
+
 const _thumbCache = new Map();
 function loadThumb(id) {
   if (_thumbCache.has(id)) return _thumbCache.get(id);
@@ -156,7 +231,7 @@ export function bakeMosaic({ zone = "EDU", ppu = 20, maxdim = 4096, force = fals
   // No thumbs on this host (e.g. the live box) → serve the committed baked mosaic if we shipped one.
   if (!force && nThumbs === 0) { const c = committedMosaic(zone, mode); if (c) return { png: c.png, meta: c.meta, cached: true, committed: true }; }
   let fillN = 0;
-  const cacheStem = path.join(CACHEDIR(), `${zone}.${mode}.p${ppu}.m${maxdim}.f${fillRadius}.${fp}`);
+  const cacheStem = path.join(CACHEDIR(), `${zone}.${mode}.p${ppu}.m${maxdim}.f${fillRadius}.aerial2.${fp}`);
   if (!force && existsSync(`${cacheStem}.png`) && existsSync(`${cacheStem}.json`)) {
     return { png: readFileSync(`${cacheStem}.png`), meta: JSON.parse(readFileSync(`${cacheStem}.json`, "utf8")), cached: true };
   }
@@ -248,8 +323,12 @@ export function bakeMosaic({ zone = "EDU", ppu = 20, maxdim = 4096, force = fals
     fillN = filled;
   }
 
+  // AERIAL MACRO NETWORK — bake rivers/roads/settlements on top so the continent reads as a settled
+  // world seen from a plane (owner 2026-08-27). Last, so features sit above terrain + wilderness fill.
+  const feat = bakeFeatures(px, W, H, toCanvas, PPU, zone);
+
   const png = encodePNG(W, H, Buffer.from(px));
-  const meta = { zone, mode, world: { minX, minY, maxX, maxY }, flipY: false, pxPerUnit: PPU, w: W, h: H, leaves: ok, thumbed: hasThumb, estates: estateN, grey: greyN, fill: fillN, fingerprint: fp };
+  const meta = { zone, mode, world: { minX, minY, maxX, maxY }, flipY: false, pxPerUnit: PPU, w: W, h: H, leaves: ok, thumbed: hasThumb, estates: estateN, grey: greyN, fill: fillN, features: feat, fingerprint: fp };
   try { mkdirSync(CACHEDIR(), { recursive: true }); writeFileSync(`${cacheStem}.png`, png); writeFileSync(`${cacheStem}.json`, JSON.stringify(meta)); } catch { /* cache best-effort */ }
   return { png, meta, cached: false };
 }
