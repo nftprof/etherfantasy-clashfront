@@ -15,7 +15,7 @@ import { dataRoot } from "../maps/worldfield.js";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DATA = dataRoot();
 const ZONE = (process.argv[2] || "EDU").toUpperCase();
-const SIZE = Number(process.argv[3] || 128);
+const SIZE = Number(process.argv[3] || 256);   // 256px LOD (owner 2026-08-27: sharper at max zoom)
 const SRC = path.join(DATA, "cf-maps/thumbs3d");
 const OUT = path.join(DATA, "cf-maps/thumbs3d-lod");
 

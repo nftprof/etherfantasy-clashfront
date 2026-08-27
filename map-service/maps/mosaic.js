@@ -94,7 +94,7 @@ function thumbFileId(s) {
 // ⚠ RENDER ALL *LEAF* PARCELS — the recurring gap bug (owner 2026-08-23, "not the first time"): a
 // leaf is an L3 single OR an L2 parcel never subdivided (`l3Enabled === false`). L3-only omits the
 // un-subdivided L2 leaves, which then read as black CHANNELS ("gaps"). Leaves TESSELLATE.
-function loadLeaves(zone) {
+export function loadLeaves(zone) {
   const l3Path = path.join(DATA(), `hexagon-city-source/l3/${zone}.json`);
   if (!existsSync(l3Path)) throw new Error(`no L3 data for zone ${zone}`);
   let leaves = JSON.parse(readFileSync(l3Path, "utf8")).singles.slice();
@@ -183,9 +183,10 @@ export function bakeMosaic({ zone = "EDU", ppu = 20, maxdim = 4096, force = fals
     // ⚠ Arena-in-a-box (WORLD-MAP-RENDERING.md trap #1): the ±161 thumb has TRANSPARENT margins, so a
     // transparent pixel must fall back to TERRAIN — never leave the parcel's own area as background, or
     // parcels read as rounded blobs with gaps instead of tessellating. Fill the WHOLE polygon.
-    // OVERSCAN the inscribed arena ~1.3× so its terrain reaches the parcel edges (no margin band);
-    // the average colour is only a last-resort fill for any pixel still transparent (owner 2026-08-27).
-    if (th) { hasThumb++; const marg = th.avg || LC, O = 1.3; sample = (fx, fy, x, y) => { const sfx = 0.5 + (fx - 0.5) / O, sfy = 0.5 + (fy - 0.5) / O, tx = Math.min(th.w - 1, Math.max(0, (sfx * th.w) | 0)), ty = Math.min(th.h - 1, Math.max(0, (sfy * th.h) | 0)), i = (ty * th.w + tx) * 4; return th.rgba[i + 3] < 100 ? speckle(marg, x, y) : [th.rgba[i], th.rgba[i + 1], th.rgba[i + 2]]; }; }
+    // OVERSCAN the inscribed arena ~1.3× so its terrain reaches the parcel edges (no margin band); any
+    // pixel STILL transparent (the polygon corners) fills with the parcel's own NATURAL generated
+    // terrain — decorative, non-playable, and not a flat repeating wedge (owner 2026-08-27).
+    if (th) { hasThumb++; const O = 1.3, gen = genSampler(s), marg = th.avg || LC; sample = (fx, fy, x, y) => { const sfx = 0.5 + (fx - 0.5) / O, sfy = 0.5 + (fy - 0.5) / O, tx = Math.min(th.w - 1, Math.max(0, (sfx * th.w) | 0)), ty = Math.min(th.h - 1, Math.max(0, (sfy * th.h) | 0)), i = (ty * th.w + tx) * 4; return th.rgba[i + 3] < 100 ? (gen ? gen(fx, fy) : speckle(marg, x, y)) : [th.rgba[i], th.rgba[i + 1], th.rgba[i + 2]]; }; }
     else if (mode === "planner" || isEstate) { if (isEstate) estateN++; const g = genSampler(s); sample = g || ((fx, fy, x, y) => speckle(LC, x, y)); }  // DETAILED generated terrain (forest/rock/water/road)
     else { greyN++; sample = (fx, fy, x, y) => (((x + y) & 3) ? GREY : GREY2); }
     ok++;

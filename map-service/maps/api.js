@@ -23,7 +23,7 @@ import { verifyToken, loginPassword } from "../lobby/auth.js";
 import { worldParcel, l3Row, l3Zone, zoneList, loadWorldField, estateList, dataRoot } from "./worldfield.js";
 import { runAudit } from "./traverse.js";
 import { worldMap } from "./worldmap.js";
-import { bakeMosaic, landColor } from "./mosaic.js";
+import { bakeMosaic, landColor, loadLeaves } from "./mosaic.js";
 import { landOfWallet, walletOwnsParcel, mintedSet, PARCELS_CONTRACT, ESTATE_CONTRACT } from "./nftowners.js";
 // Land mint config (distributors + size tokens) — the registry the other session delivered.
 let _landCfg = null;
@@ -197,6 +197,17 @@ export function mapsApi(req, res) {
       res.writeHead(200, { "content-type": "image/png", "cache-control": "public, max-age=300", "x-mosaic-thumbed": String(meta.thumbed) });
       res.end(png);
     } catch (e) { J(res, p.endsWith(".json") ? 200 : 500, { ok: false, error: e.message }); }
+    return true;
+  }
+  // ALL leaf-parcel outlines for a zone (bbox + svgPath) — the client draws them as a crisp vector
+  //   DIVISION overlay (owner 2026-08-27: parcels are adjacent now, hard to tell them apart). Lazy —
+  //   fetched only when the outlines layer is toggled on. ~1.7MB for a full continent.
+  if (p === "/internal/v1/parcel-outlines") {
+    try {
+      const zone = ((new URL(req.url, "http://x")).searchParams.get("zone") || "EDU").toUpperCase();
+      const items = loadLeaves(zone).filter((s) => s.svgPath && s.bbox).map((s) => ({ bbox: s.bbox, d: s.svgPath }));
+      J(res, 200, { ok: true, items });
+    } catch (e) { J(res, 200, { ok: true, items: [] }); }
     return true;
   }
   // which parcels have a committed LOD thumb + WHERE to place them (bbox + svgPath) — the /designer map

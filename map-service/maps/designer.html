@@ -160,6 +160,7 @@
           <label style="display:flex;gap:6px;align-items:center;margin:0;text-transform:none;letter-spacing:0;font-size:12.5px;color:var(--fg-dim)"><input type="checkbox" id="designedOnly" style="width:auto"> designed only</label>
           <label style="display:flex;gap:6px;align-items:center;margin:0;text-transform:none;letter-spacing:0;font-size:12.5px;color:var(--fg-dim)"><input type="checkbox" id="featuresOverlay" style="width:auto" checked> 🗺 features</label>
           <label style="display:flex;gap:6px;align-items:center;margin:0;text-transform:none;letter-spacing:0;font-size:12.5px;color:var(--fg-dim)"><input type="checkbox" id="plannerLayer" style="width:auto"> 🗺 planner</label>
+          <label style="display:flex;gap:6px;align-items:center;margin:0;text-transform:none;letter-spacing:0;font-size:12.5px;color:var(--fg-dim)"><input type="checkbox" id="outlineLayer" style="width:auto"> ▦ divisions</label>
         </div>
         <span class="sel" id="selChip" hidden></span>
       </div>
@@ -546,12 +547,27 @@ function drawLod(){if(zoom<3||!lodItems.length)return;  // only once parcels are
     if(it.poly){cx.beginPath();for(let k=0;k<it.poly.length;k++){const[X,Y]=PX(it.poly[k][0],it.poly[k][1]);k?cx.lineTo(X,Y):cx.moveTo(X,Y);}cx.closePath();cx.clip();}
     // TERRAIN underfill FIRST — the ±161 thumb has transparent margins; without this the parcel's own
     // area would show the dark background (the "gaps" bug). Fill the whole polygon, then the thumb over.
-    cx.fillStyle=lodAvg.get(it.id)||lodLand;cx.fillRect(Math.min(tl[0],br[0])-1,Math.min(tl[1],br[1])-1,Math.abs(w)+2,Math.abs(h)+2);
+    // no flat underfill — the mosaic BASE under this thumb already carries the parcel's natural
+    // terrain (incl. its margins), so transparent thumb corners show real terrain, not a flat wedge.
     const O=1.3;cx.translate(tl[0],tl[1]);cx.scale(1,-1);cx.imageSmoothingEnabled=true;
     cx.drawImage(img,w*(1-O)/2,-h-h*(O-1)/2,O*w,O*h);cx.restore();}}   // overscan → arena reaches the parcel edges
+// ▦ DIVISIONS: crisp vector outline of every leaf parcel (owner 2026-08-27 — parcels are adjacent now).
+// Lazy-loaded once per zone; drawn over the map, culled to visible + parcels big enough to read.
+let showOutlines=false,outlineItems=null,outlineZone=null;
+function loadOutlines(z){if(outlineZone===z&&outlineItems)return drawMap();outlineItems=null;outlineZone=z;
+  fetch("/internal/v1/parcel-outlines?zone="+encodeURIComponent(z)).then(r=>r.json()).then(d=>{
+    if(d&&d.ok&&outlineZone===z){outlineItems=(d.items||[]).map(it=>{let pp=null;try{pp=parsePath(it.d);}catch(e){}return{bbox:it.bbox,poly:pp};});drawMap();}}).catch(()=>{});}
+function drawOutlines(){if(!showOutlines||!outlineItems)return;
+  cx.save();cx.strokeStyle="rgba(12,14,20,.55)";cx.lineWidth=Math.max(.5,Math.min(1.6,zoom*.35));cx.lineJoin="round";
+  for(const it of outlineItems){if(!it.poly)continue;
+    const tl=PX(it.bbox[0],it.bbox[3]),br=PX(it.bbox[2],it.bbox[1]);
+    if(br[0]-tl[0]<7||tl[0]>cv.width||br[0]<0||tl[1]>cv.height||br[1]<0)continue;   // cull small/off-screen
+    cx.beginPath();for(let k=0;k<it.poly.length;k++){const[X,Y]=PX(it.poly[k][0],it.poly[k][1]);k?cx.lineTo(X,Y):cx.moveTo(X,Y);}cx.closePath();cx.stroke();}
+  cx.restore();}
 function drawMap(){if(!view)return;cx.clearRect(0,0,cv.width,cv.height);
   const mosaicOn=showMosaic&&drawMosaicBase();        // base layer first (thumbs/grey = the map itself)
   if(mosaicOn&&mosaicMode==="thumb")drawLod();        // crisp per-parcel thumbs over the base when zoomed
+  if(showOutlines)drawOutlines();                     // parcel-division outlines over the terrain
   if(showFeatures&&wfOverlay&&wfOverlay.zone===zone)drawFeatures();   // geography under the parcels
   const usePoly=parcels.length<=600&&parcels[0]&&parcels[0].svgPath; // polygons only when svgPath is present + set is small
   const r=zoom>=6?3.4:(zoom>=3?2.9:2.4);          // dots grow a little as you zoom in
@@ -642,6 +658,7 @@ $("featuresOverlay").addEventListener("change",(e)=>{showFeatures=e.target.check
   if(showFeatures&&(!wfOverlay||wfOverlay.zone!==zone))loadWorldFeatures();else drawMap();});
 // 🗺 planner = swap the base layer between the 3D-thumb land map and the 2D terrain reference.
 $("plannerLayer").addEventListener("change",(e)=>{mosaicMode=e.target.checked?"planner":"thumb";loadMosaic(zone);});
+$("outlineLayer").addEventListener("change",(e)=>{showOutlines=e.target.checked;if(showOutlines)loadOutlines(zone);else drawMap();});
 loadZones();
 try{const _dl=new URLSearchParams(location.search).get("parcel");if(_dl){const z={"00":"BUS","01":"CGI","02":"EDU","03":"ENT","04":"HS1","05":"HS2","06":"HS3","07":"HUB","08":"KOL","09":"UW1","10":"UW2","11":"UW3"}[_dl.slice(1,3)];if(z){zone=z;loadParcels().then(()=>selectParcel(_dl.trim()));}else selectParcel(_dl.trim());}}catch(e){}
 function markStatus(id,row){const p=parcels.find(q=>q.parcelId===id);if(p&&row){p.status=row.status;p.v=row.designVersion;p.archetype=row.archetype;p.palette=row.palette;}drawMap();}
