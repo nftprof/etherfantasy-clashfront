@@ -159,7 +159,7 @@
           <label style="display:flex;gap:6px;align-items:center;margin:0;text-transform:none;letter-spacing:0;font-size:12.5px;color:var(--fg-dim)"><input type="checkbox" id="mineOnly" style="width:auto"> my land only</label>
           <label style="display:flex;gap:6px;align-items:center;margin:0;text-transform:none;letter-spacing:0;font-size:12.5px;color:var(--fg-dim)"><input type="checkbox" id="designedOnly" style="width:auto"> designed only</label>
           <label style="display:flex;gap:6px;align-items:center;margin:0;text-transform:none;letter-spacing:0;font-size:12.5px;color:var(--fg-dim)"><input type="checkbox" id="featuresOverlay" style="width:auto" checked> 🗺 features</label>
-          <label style="display:flex;gap:6px;align-items:center;margin:0;text-transform:none;letter-spacing:0;font-size:12.5px;color:var(--fg-dim)"><input type="checkbox" id="plannerLayer" style="width:auto"> 🗺 planner</label>
+          <label style="display:flex;gap:6px;align-items:center;margin:0;text-transform:none;letter-spacing:0;font-size:12.5px;color:var(--fg-dim)"><input type="checkbox" id="plannerLayer" style="width:auto" checked> 🗺 terrain</label>
           <label style="display:flex;gap:6px;align-items:center;margin:0;text-transform:none;letter-spacing:0;font-size:12.5px;color:var(--fg-dim)"><input type="checkbox" id="outlineLayer" style="width:auto"> ▦ divisions</label>
         </div>
         <span class="sel" id="selChip" hidden></span>
@@ -423,7 +423,10 @@ let zones=[],zone=null,parcels=[],view=null,selId=null,hoverId=null;
 // AERIAL 3D-THUMB MOSAIC base layer (owner 2026-08-25 "this should replace Arcadia"): the continent
 // baked server-side as one picture (real 3D thumbs where designed, grey where not), drawn UNDER the
 // interactive dots. One drawImage/frame → panning/hover stay smooth even at continent scale.
-let mosaicImg=null,mosaicMeta=null,showMosaic=true,mosaicMode="thumb";
+// DEFAULT = planner (clean per-polygon generated terrain). The 3D-capture thumbs are a fixed SQUARE
+// arena that ignores the parcel polygon (owner 2026-08-27: "thumbs are a template dropped in"), so
+// they're an opt-in layer, not the map surface, until the arena is rebuilt to fill the polygon.
+let mosaicImg=null,mosaicMeta=null,showMosaic=true,mosaicMode="planner";
 // mode "thumb" = the 3D-thumb land map (default); "planner" = the 2D terrain reference layer.
 function loadMosaic(z){mosaicImg=null;mosaicMeta=null;if(!z)return;const zz=z,md=mosaicMode;
   const qs="zone="+encodeURIComponent(zz)+"&mode="+md;
