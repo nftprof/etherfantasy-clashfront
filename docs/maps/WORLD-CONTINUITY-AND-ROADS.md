@@ -70,3 +70,25 @@ upgrades later.
 - [ ] **Phase 1** — continuous between-parcel wilderness fill (mosaic bake + land mask).
 - [ ] **Phase 2** — per-parcel side-road continuity (attach to edgeCrossings) + roads-to-castle.
 - [ ] **Phase 3** — per-zone era road/city grammar, zone by zone, references first.
+
+## 5. Polygon vs thumbnail vs playable map — the shape mismatch (owner 2026-08-27)
+
+Diagnostic (one edge parcel, `scratchpad/compare` method): polygon = the true shape; **3D thumbnail
+= a full SQUARE arena that ignores the polygon**; playable map = respects the polygon (OOB outside).
+Measured OOB (non-polygon fraction of the ±161 square): **33–40% for compact parcels, up to 91% for
+slivers**.
+
+- **The playable map is NOT the bug.** Per canon 5b the parcel's irregular shape IS the battlefield
+  and the OOB surround is intentional non-playable boundary (cliff/water) — same as the clean hexes
+  in cf.etherfantasy.com. So each battle map is already built per-polygon.
+- **The 3D thumbnail IS the mismatch.** The designer 3D scene renders the whole ±161 square (OOB and
+  all), so the capture is a square that doesn't match the parcel shape → jagged at map scale.
+- **Map-view fix (DONE):** default the /designer surface to the generated PLANNER terrain, which fills
+  each TRUE polygon cleanly. 3D thumbs are now an opt-in layer, not the map surface.
+- **Thumb fix (TODO, MOBA BattleEngine RAW domain):** the 3D designer scene / capture should render
+  the BOUNDS polygon shape (OOB transparent/void) so the thumbnail matches the parcel — then thumbs
+  can return as the map surface + zoom LOD. Alternatively the capture pipeline clips each thumb to the
+  fitToArena bounds polygon before compositing. Relay to the MOBA/3D agent.
+- **genSampler mapping note:** the mosaic's terrain sampler maps polygon-bbox→whole-arena, which for
+  non-square parcels samples some OOB into the interior; a fitToArena-correct mapping would place the
+  real playable terrain exactly. Minor at map scale; fix alongside the thumb work.
