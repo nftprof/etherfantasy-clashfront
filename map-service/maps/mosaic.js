@@ -67,6 +67,24 @@ const LAND = {
 };
 export const landColor = (zone) => LAND[zoneBiomeFamily(zone)] || [86, 110, 74];
 const speckle = (base, x, y) => { const h = (((x * 73856093) ^ (y * 19349663)) >>> 0) % 17 - 8; return [Math.max(0, base[0] + h), Math.max(0, base[1] + h), Math.max(0, base[2] + h)]; };
+// WILDERNESS fill for the continuous DEFAULT LAND between parcels (owner 2026-08-27: the world is one
+// continuous land parcelled out, not islands on black). Seeded coarse forest clumps over the biome
+// open colour, so the unclaimed land reads as real wilderness — "clusters of trees, roads yet to build".
+const darker = (c, f) => [(c[0] * f) | 0, (c[1] * f) | 0, (c[2] * f) | 0];
+const _hash = (a, b) => (((a * 73856093) ^ (b * 19349663) ^ ((a * b) * 83492791)) >>> 0);
+// ORGANIC wilderness (not an axis-aligned checker — owner dislikes visible patterns): SKEWED, multi-
+// scale forest clumps in three subtle tones over the biome open colour, so unclaimed land reads as
+// natural woods/meadow rather than a grid.
+function wildernessFn(LC) {
+  const FOREST = darker(LC, 0.74), MEADOW = darker(LC, 1.08);
+  return (x, y) => {
+    const sx = x + ((y * 0.5) | 0), sy = y - ((x * 0.4) | 0);            // shear → break the grid axis
+    const big = _hash((sx / 27) | 0, (sy / 23) | 0) % 100;              // large clumps
+    const sm = _hash((sx / 9) | 0, (sy / 11) | 0) % 100;               // finer mottling within
+    const base = big < 30 ? FOREST : big < 44 ? (sm < 50 ? FOREST : LC) : big > 88 ? MEADOW : (sm < 22 ? FOREST : LC);
+    return speckle(base, x, y);
+  };
+}
 
 const _thumbCache = new Map();
 function loadThumb(id) {
@@ -131,13 +149,14 @@ function committedMosaic(zone, mode = "thumb") {
 //                             ungenerated = grey. The scale-consistent land map.
 //   mode "planner"          = EVERY parcel shows terrain colour (the 2D reference "planner" layer).
 // Higher default res than the first pass (owner 2026-08-25 "res too low") — bigger PNG, sharper.
-export function bakeMosaic({ zone = "EDU", ppu = 20, maxdim = 4096, force = false, mode = "thumb" } = {}) {
+export function bakeMosaic({ zone = "EDU", ppu = 20, maxdim = 4096, force = false, mode = "thumb", fillRadius = 3 } = {}) {
   zone = String(zone).toUpperCase();
   mode = mode === "planner" ? "planner" : "thumb";
   const { n: nThumbs, fp } = thumbsStat();
   // No thumbs on this host (e.g. the live box) → serve the committed baked mosaic if we shipped one.
   if (!force && nThumbs === 0) { const c = committedMosaic(zone, mode); if (c) return { png: c.png, meta: c.meta, cached: true, committed: true }; }
-  const cacheStem = path.join(CACHEDIR(), `${zone}.${mode}.p${ppu}.m${maxdim}.${fp}`);
+  let fillN = 0;
+  const cacheStem = path.join(CACHEDIR(), `${zone}.${mode}.p${ppu}.m${maxdim}.f${fillRadius}.${fp}`);
   if (!force && existsSync(`${cacheStem}.png`) && existsSync(`${cacheStem}.json`)) {
     return { png: readFileSync(`${cacheStem}.png`), meta: JSON.parse(readFileSync(`${cacheStem}.json`, "utf8")), cached: true };
   }
@@ -155,6 +174,7 @@ export function bakeMosaic({ zone = "EDU", ppu = 20, maxdim = 4096, force = fals
 
   const px = new Uint8Array(W * H * 4);
   for (let i = 0; i < W * H; i++) { px[i * 4] = BG[0]; px[i * 4 + 1] = BG[1]; px[i * 4 + 2] = BG[2]; px[i * 4 + 3] = 255; }
+  const mask = new Uint8Array(W * H);   // 1 where a parcel painted — the land-coverage mask for the fill
   const put = (x, y, r, g, b) => { if (x < 0 || y < 0 || x >= W || y >= H) return; const i = (y * W + x) * 4; px[i] = r; px[i + 1] = g; px[i + 2] = b; px[i + 3] = 255; };
   const line = (x0, y0, x1, y1, c) => {
     x0 = Math.round(x0); y0 = Math.round(y0); x1 = Math.round(x1); y1 = Math.round(y1);
@@ -201,7 +221,7 @@ export function bakeMosaic({ zone = "EDU", ppu = 20, maxdim = 4096, force = fals
       xs.sort((p, q) => p - q);
       for (let k = 0; k + 1 < xs.length; k += 2) {
         const xL = Math.max(0, Math.ceil(xs[k])), xR = Math.min(W - 1, Math.floor(xs[k + 1]));
-        for (let x = xL; x <= xR; x++) { const c = sample((x - px0) / pw, (y - py0) / ph, x, y) || GREY; put(x, y, c[0], c[1], c[2]); }
+        for (let x = xL; x <= xR; x++) { const c = sample((x - px0) / pw, (y - py0) / ph, x, y) || GREY; put(x, y, c[0], c[1], c[2]); mask[y * W + x] = 1; }
       }
     }
     // NO baked border stroke: a 1px raster line upscales into a thick black SEAM on zoom and makes
@@ -209,8 +229,27 @@ export function bakeMosaic({ zone = "EDU", ppu = 20, maxdim = 4096, force = fals
     // (owner 2026-08-26). Parcel outlines, if wanted, belong on the client as a crisp vector overlay.
   }
 
+  // CONTINUOUS DEFAULT LAND (owner 2026-08-27): fill the INTERNAL non-parcel space with wilderness so
+  // the continent reads as one continuous land, not islands on black. Chamfer distance-to-parcel, then
+  // fill every uncovered pixel within `fillRadius` zone-units of a parcel (internal gaps + road corridors
+  // fill; the far frontier / ocean stays dark). O(W·H), two passes.
+  if (fillRadius > 0) {
+    const INF = 1e9, dist = new Float32Array(W * H);
+    for (let i = 0; i < W * H; i++) dist[i] = mask[i] ? 0 : INF;
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const i = y * W + x; if (dist[i] === 0) continue; let d = dist[i];
+      if (x > 0) d = Math.min(d, dist[i - 1] + 1); if (y > 0) d = Math.min(d, dist[i - W] + 1);
+      if (x > 0 && y > 0) d = Math.min(d, dist[i - W - 1] + 1.4142); if (x < W - 1 && y > 0) d = Math.min(d, dist[i - W + 1] + 1.4142); dist[i] = d; }
+    for (let y = H - 1; y >= 0; y--) for (let x = W - 1; x >= 0; x--) { const i = y * W + x; let d = dist[i];
+      if (x < W - 1) d = Math.min(d, dist[i + 1] + 1); if (y < H - 1) d = Math.min(d, dist[i + W] + 1);
+      if (x < W - 1 && y < H - 1) d = Math.min(d, dist[i + W + 1] + 1.4142); if (x > 0 && y < H - 1) d = Math.min(d, dist[i + W - 1] + 1.4142); dist[i] = d; }
+    const D = fillRadius * PPU, wild = wildernessFn(LC);
+    let filled = 0;
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const i = y * W + x; if (mask[i] || dist[i] > D) continue; const c = wild(x, y); const p4 = i * 4; px[p4] = c[0]; px[p4 + 1] = c[1]; px[p4 + 2] = c[2]; filled++; }
+    fillN = filled;
+  }
+
   const png = encodePNG(W, H, Buffer.from(px));
-  const meta = { zone, mode, world: { minX, minY, maxX, maxY }, flipY: false, pxPerUnit: PPU, w: W, h: H, leaves: ok, thumbed: hasThumb, estates: estateN, grey: greyN, fingerprint: fp };
+  const meta = { zone, mode, world: { minX, minY, maxX, maxY }, flipY: false, pxPerUnit: PPU, w: W, h: H, leaves: ok, thumbed: hasThumb, estates: estateN, grey: greyN, fill: fillN, fingerprint: fp };
   try { mkdirSync(CACHEDIR(), { recursive: true }); writeFileSync(`${cacheStem}.png`, png); writeFileSync(`${cacheStem}.json`, JSON.stringify(meta)); } catch { /* cache best-effort */ }
   return { png, meta, cached: false };
 }
