@@ -152,11 +152,13 @@ export function bakeFeatures(px, W, H, toCanvas, PPU, zone, land) {
     strokePoly(px, W, H, r.pts, toCanvas, wpx + PPU * 0.35, solid(r.magma ? [150, 66, 26] : RIVER_BANK), land);
     strokePoly(px, W, H, r.pts, toCanvas, wpx, solid(water), land); rivers++;
   }
-  // 3) roads — tiered widths, dark casing under a pale fill (the classic aerial-road read).
-  const RAD = { highway: 0.5, secondary: 0.33, local: 0.22 };
+  // 3) roads — tiered widths, dark casing under a pale fill (the classic aerial-road read). Radii in
+  // zone-units (owner 2026-08-28: a highway was ~1u ≈ a whole SINGLE parcel — way too fat; a real road
+  // is a fraction of a plot). Highway ≈ 0.18u wide-ish, secondary/local progressively thinner.
+  const RAD = { highway: 0.18, secondary: 0.11, local: 0.07 };
   let roads = 0;
   for (const rd of field.roads || []) {
-    const wpx = (RAD[rd.tier] || RAD.highway) * PPU; strokePoly(px, W, H, rd.pts, toCanvas, wpx + 1.4, solid(ROAD_CASE), land);
+    const wpx = (RAD[rd.tier] || RAD.highway) * PPU; strokePoly(px, W, H, rd.pts, toCanvas, wpx + 1.0, solid(ROAD_CASE), land);
   }
   for (const rd of field.roads || []) {
     const wpx = (RAD[rd.tier] || RAD.highway) * PPU; strokePoly(px, W, H, rd.pts, toCanvas, wpx, solid(ROAD_FILL), land); roads++;
@@ -334,12 +336,17 @@ export function bakeMosaic({ zone = "EDU", ppu = 20, maxdim = 4096, force = fals
     if (x < W - 1 && y < H - 1) d = Math.min(d, dist[i + W + 1] + 1.4142); if (x > 0 && y < H - 1) d = Math.min(d, dist[i + W - 1] + 1.4142); dist[i] = d; }
   {
     const wild = wildernessFn(LC);
+    // SHALLOWS (owner 2026-08-28): a lighter water band hugging the coast that fades to deep sea — reads
+    // as real shoreline shallows/reef from the air. Exterior pixels just past the coastal land band.
+    const SH_OUT = 5 * PPU, SHALLOW = [74, 116, 142], DEEP = [16, 22, 34];
     let filled = 0;
-    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const i = y * W + x;
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const i = y * W + x, p4 = i * 4;
       if (mask[i]) continue;
-      // fill enclosed interior (sea can't reach) OR a thin coastal band on the exterior side.
-      if (exterior[i] && dist[i] > D) continue;
-      const c = wild(x, y); const p4 = i * 4; px[p4] = c[0]; px[p4 + 1] = c[1]; px[p4 + 2] = c[2]; filled++; }
+      if (exterior[i] && dist[i] > D) {                        // OPEN OCEAN: shallows near shore → deep beyond
+        if (dist[i] <= SH_OUT) { const t = Math.floor((dist[i] - D) / (SH_OUT - D) * 4) / 4; px[p4] = SHALLOW[0] + (DEEP[0] - SHALLOW[0]) * t; px[p4 + 1] = SHALLOW[1] + (DEEP[1] - SHALLOW[1]) * t; px[p4 + 2] = SHALLOW[2] + (DEEP[2] - SHALLOW[2]) * t; }   // quantized to 4 bands (keeps PNG small)
+        continue;
+      }
+      const c = wild(x, y); px[p4] = c[0]; px[p4 + 1] = c[1]; px[p4 + 2] = c[2]; filled++; }
     fillN = filled;
   }
 
@@ -377,6 +384,10 @@ export function bakeMosaic({ zone = "EDU", ppu = 20, maxdim = 4096, force = fals
   // AERIAL MACRO NETWORK — bake rivers/roads/settlements on top (clipped to LAND). Last, so features sit
   // above terrain + wilderness fill (owner 2026-08-27).
   const feat = bakeFeatures(px, W, H, toCanvas, PPU, zone, land);
+
+  // POSTERIZE (drop 2 low bits) — hillshade makes every pixel unique; this keeps the committed PNG small
+  // (visually imperceptible on a map). Alpha untouched.
+  for (let i = 0; i < px.length; i += 4) { px[i] &= 0xFC; px[i + 1] &= 0xFC; px[i + 2] &= 0xFC; }
 
   const png = encodePNG(W, H, Buffer.from(px));
   const meta = { zone, mode, world: { minX, minY, maxX, maxY }, flipY: false, pxPerUnit: PPU, w: W, h: H, leaves: ok, thumbed: hasThumb, estates: estateN, grey: greyN, fill: fillN, features: feat, fingerprint: fp };

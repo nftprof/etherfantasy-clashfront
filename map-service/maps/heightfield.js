@@ -97,7 +97,7 @@ export function hillshadeBuf(px, W, H, elev, step, { vscale = 26, ambient = 0.7,
     const dzdx = (at(x + s, y) - at(x - s, y)) * vscale, dzdy = (at(x, y + s) - at(x, y - s)) * vscale;
     const nl = Math.hypot(dzdx, dzdy, 1), nx = -dzdx / nl, ny = -dzdy / nl, nz = 1 / nl;
     let lam = nx * Lx + ny * Ly + nz * Lz; if (lam < 0) lam = 0;
-    const shade = ambient + strength * lam;
+    const shade = Math.round((ambient + strength * lam) * 24) / 24;   // quantized → far fewer unique colours (small PNG)
     const i = (y * W + x) * 4;
     let r = px[i], g = px[i + 1], b = px[i + 2];
     if (tint && h > HIGH) {                                     // bare rock → snow cap on high ground
