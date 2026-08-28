@@ -124,17 +124,18 @@ export function bakeFeatures(px, W, H, toCanvas, PPU, zone) {
   let field; try { field = loadWorldField(zone); } catch { return { rivers: 0, roads: 0, settles: 0 }; }
   if (!field) return { rivers: 0, roads: 0, settles: 0 };
   const solid = (c) => () => c;
-  // 1) settlement footprints — a textured urban patch around each castle/capital/town POI: blocks of
-  // warm rooftops (terracotta/tile/slate) cut by a faint street grid, so a town READS as built-up from
-  // the air rather than a bald grey disc. Deterministic per-pixel (no RNG in the bake).
+  // 1) settlement footprints — a textured urban patch around each castle/capital/town POI. An ORGANIC
+  // town from the air, NOT a checkerboard (owner dislikes visible patterns): irregular building blocks
+  // in muted tile/thatch/slate cut by SCATTERED lanes & courtyards, block colour from a coarse hash so
+  // block SIZES and tones vary. Deterministic per-pixel (no RNG in the bake).
   let settles = 0;
-  const ROOF = [[150, 96, 74], [132, 116, 100], [150, 140, 126], [120, 104, 92]];   // tile / thatch / slate / mud
+  const ROOF = [[140, 100, 84], [128, 114, 96], [122, 118, 116], [116, 104, 92], [146, 118, 92]]; // tile/thatch/slate/mud/clay
   const urbanFn = (bx, by) => (x, y) => {
-    const street = ((x % 7) < 1 || (y % 8) < 1);                                     // orthogonal lanes
-    if (street) return [104, 94, 82];
-    const blk = ROOF[((((x / 4) | 0) * 3 + ((y / 4) | 0) * 5) >>> 0) % ROOF.length]; // 4px roof blocks
-    const h = (((x * 12289) ^ (y * 24593)) >>> 0) % 13 - 6;
-    return [Math.max(40, blk[0] + h), Math.max(40, blk[1] + h), Math.max(40, blk[2] + h)];
+    const sx = x + ((y * 0.35) | 0), sy = y - ((x * 0.28) | 0);                       // shear → break the grid axis
+    const bxi = (sx / 6) | 0, byi = (sy / 7) | 0, hb = _hash(bxi, byi);               // ~6-7px blocks, jittered
+    if ((hb % 100) < 15) return [100, 92, 80];                                        // scattered lanes / courtyards
+    const roof = ROOF[hb % ROOF.length], j = ((_hash(x, y) % 11) - 5);
+    return [Math.max(40, roof[0] + j), Math.max(40, roof[1] + j), Math.max(40, roof[2] + j)];
   };
   for (const place of [...(field.castles || []), ...(field.pois || [])]) {
     if (!Array.isArray(place.at)) continue;
@@ -304,12 +305,25 @@ export function bakeMosaic({ zone = "EDU", ppu = 20, maxdim = 4096, force = fals
     // (owner 2026-08-26). Parcel outlines, if wanted, belong on the client as a crisp vector overlay.
   }
 
-  // CONTINUOUS DEFAULT LAND (owner 2026-08-27): fill the INTERNAL non-parcel space with wilderness so
-  // the continent reads as one continuous land, not islands on black. Chamfer distance-to-parcel, then
-  // fill every uncovered pixel within `fillRadius` zone-units of a parcel (internal gaps + road corridors
-  // fill; the far frontier / ocean stays dark). O(W·H), two passes.
-  if (fillRadius > 0) {
-    const INF = 1e9, dist = new Float32Array(W * H);
+  // CONTINUOUS DEFAULT LAND (owner 2026-08-27): the world is ONE continuous land, not islands on black.
+  // Non-parcel space that the land ENCLOSES is intentional WILD area — decorative, NON-TRAVERSIBLE
+  // backdrop (no battle ever plays off a parcel), so we fill it ourselves as wilderness to connect the
+  // world; only the true OUTER SEA / beyond-the-frontier stays dark. Two O(W·H) passes:
+  //   (a) flood the sea inward from every border BG pixel → the EXTERIOR set (open water + frontier);
+  //       any uncovered pixel the sea can't reach is land-enclosed interior ⇒ fill it.
+  //   (b) chamfer distance-to-parcel → also fill a thin coastal band (`fillRadius`) on the exterior
+  //       side, so the coastline reads as land meeting water rather than a razor-jagged parcel edge.
+  {
+    // (a) exterior flood fill (4-connected through mask==0), seeded from the image border.
+    const exterior = new Uint8Array(W * H), stack = new Int32Array(W * H);
+    let sp = 0;
+    const seed = (i) => { if (!mask[i] && !exterior[i]) { exterior[i] = 1; stack[sp++] = i; } };
+    for (let x = 0; x < W; x++) { seed(x); seed((H - 1) * W + x); }
+    for (let y = 0; y < H; y++) { seed(y * W); seed(y * W + W - 1); }
+    while (sp > 0) { const i = stack[--sp], x = i % W, y = (i / W) | 0;
+      if (x > 0) seed(i - 1); if (x < W - 1) seed(i + 1); if (y > 0) seed(i - W); if (y < H - 1) seed(i + W); }
+    // (b) distance-to-parcel for the coastal band.
+    const D = Math.max(0, fillRadius) * PPU, INF = 1e9, dist = new Float32Array(W * H);
     for (let i = 0; i < W * H; i++) dist[i] = mask[i] ? 0 : INF;
     for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const i = y * W + x; if (dist[i] === 0) continue; let d = dist[i];
       if (x > 0) d = Math.min(d, dist[i - 1] + 1); if (y > 0) d = Math.min(d, dist[i - W] + 1);
@@ -317,9 +331,13 @@ export function bakeMosaic({ zone = "EDU", ppu = 20, maxdim = 4096, force = fals
     for (let y = H - 1; y >= 0; y--) for (let x = W - 1; x >= 0; x--) { const i = y * W + x; let d = dist[i];
       if (x < W - 1) d = Math.min(d, dist[i + 1] + 1); if (y < H - 1) d = Math.min(d, dist[i + W] + 1);
       if (x < W - 1 && y < H - 1) d = Math.min(d, dist[i + W + 1] + 1.4142); if (x > 0 && y < H - 1) d = Math.min(d, dist[i + W - 1] + 1.4142); dist[i] = d; }
-    const D = fillRadius * PPU, wild = wildernessFn(LC);
+    const wild = wildernessFn(LC);
     let filled = 0;
-    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const i = y * W + x; if (mask[i] || dist[i] > D) continue; const c = wild(x, y); const p4 = i * 4; px[p4] = c[0]; px[p4 + 1] = c[1]; px[p4 + 2] = c[2]; filled++; }
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const i = y * W + x;
+      if (mask[i]) continue;
+      // fill enclosed interior (sea can't reach) OR a thin coastal band on the exterior side.
+      if (exterior[i] && dist[i] > D) continue;
+      const c = wild(x, y); const p4 = i * 4; px[p4] = c[0]; px[p4 + 1] = c[1]; px[p4 + 2] = c[2]; filled++; }
     fillN = filled;
   }
 
