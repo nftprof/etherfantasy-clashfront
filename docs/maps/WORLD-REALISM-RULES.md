@@ -1,5 +1,17 @@
 # World realism rules — the reusable rulebook for EVERY island (owner 2026-08-28)
 
+## ★ NORTH STAR (owner 2026-08-28)
+**Every area of every island is fully populated with planned detail — playable parcels AND non-playable
+wild alike — so you can take drone shots coast-to-coast, all the way around the island, and it holds up.**
+No bare filler anywhere. It's fine to load lands separately / hot-load adjacent tiles (adjacency
+preload / streaming), but the DETAIL must be planned for the whole island, not just the played parts.
+Consequences: (1) the non-playable wild is designed landscape (elevation-aware cover: rock peaks, wooded
+slopes, meadow/marsh valleys — DONE), not noise; (2) the aerial + a future 3D fly-through both derive
+from the same whole-island layers (heightfield + biome/cover + features), so a chunked streamer can page
+the island in/out with neighbours preloaded and never show an empty gap; (3) coastlines, mountains,
+forests, rivers all continue past the played parcels to the very shore.
+
+
 These rules make the overworld aerial map read as a real world. They are **zone-agnostic** — the
 pipeline (`map-service/maps/mosaic.js` + `heightfield.js`) takes a `zone` and applies all of them from
 that zone's authored feature field (`data/world-terrain/<ZONE>.json`) + parcel geometry. **To realise a
@@ -55,7 +67,7 @@ mechanics in the MOBA.
 
 ## Backlog (realism improvements, in progress — owner autonomous sprint 2026-08-28)
 Done: clip-to-land · frontier rim · shallows · elevation/hillshade · narrow roads · organic towns ·
-enclosed wild fill · water rivers. Next: river mouths/deltas · bridges & fords at road×river · ports at
+enclosed wild fill · water rivers · ELEVATION-AWARE WILD COVER (rock peaks / wooded slopes / meadow-marsh valleys — the non-playable land is designed landscape). Next: river mouths/deltas · bridges & fords at road×river · ports at
 coast · farmland rings round towns · beaches · lakes as water · biome-blended borders · gazetteer labels ·
 per-zone era palettes · heightfield→generate (non-navigable high ground) · roll the bake to all zones.
 (Full 20-item plan: `WORLD-REALISM-AUDIT.md`.)

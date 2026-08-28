@@ -76,13 +76,24 @@ const _hash = (a, b) => (((a * 73856093) ^ (b * 19349663) ^ ((a * b) * 83492791)
 // ORGANIC wilderness (not an axis-aligned checker — owner dislikes visible patterns): SKEWED, multi-
 // scale forest clumps in three subtle tones over the biome open colour, so unclaimed land reads as
 // natural woods/meadow rather than a grid.
-function wildernessFn(LC) {
-  const FOREST = darker(LC, 0.74), MEADOW = darker(LC, 1.08);
+// ELEVATION-AWARE wilderness (owner 2026-08-28: "even the unused/non-playable areas should be
+// populated" — the whole island must read as designed landscape for coast-to-coast drone shots, not
+// generic fill). `elevAt(x,y)` → 0..1 (or null) picks the natural cover by height: bare rock/scree on
+// peaks, alpine scrub + rock on high slopes, dense forest on mid-slopes, meadow/heath in the lowlands,
+// reed/marsh in the valley floors. Coherent seeded clumps, no grid.
+export function wildernessFn(LC, elevAt) {
+  const FOREST = darker(LC, 0.7), DEEPWOOD = darker(LC, 0.58), MEADOW = darker(LC, 1.12), HEATH = darker(LC, 0.92);
+  const ROCK = [112, 106, 98], SCREE = [132, 126, 116], ALPINE = [120, 132, 104], MARSH = [78, 92, 66];
   return (x, y) => {
     const sx = x + ((y * 0.5) | 0), sy = y - ((x * 0.4) | 0);            // shear → break the grid axis
     const big = _hash((sx / 27) | 0, (sy / 23) | 0) % 100;              // large clumps
     const sm = _hash((sx / 9) | 0, (sy / 11) | 0) % 100;               // finer mottling within
-    const base = big < 30 ? FOREST : big < 44 ? (sm < 50 ? FOREST : LC) : big > 88 ? MEADOW : (sm < 22 ? FOREST : LC);
+    const e = elevAt ? elevAt(x, y) : 0.4;
+    let base;
+    if (e > 0.80) base = big < 55 ? ROCK : SCREE;                        // peaks: bare rock & scree
+    else if (e > 0.62) base = big < 34 ? ROCK : (sm < 55 ? ALPINE : DEEPWOOD);   // high slopes: rock + alpine scrub + firs
+    else if (e < 0.24) base = big < 26 ? MARSH : big < 62 ? MEADOW : (sm < 40 ? HEATH : LC);  // lowland: marsh/meadow/heath
+    else base = big < 34 ? DEEPWOOD : big < 50 ? FOREST : big > 88 ? MEADOW : (sm < 30 ? FOREST : LC);  // mid: mixed woods
     return speckle(base, x, y);
   };
 }
@@ -334,8 +345,11 @@ export function bakeMosaic({ zone = "EDU", ppu = 20, maxdim = 4096, force = fals
   for (let y = H - 1; y >= 0; y--) for (let x = W - 1; x >= 0; x--) { const i = y * W + x; let d = dist[i];
     if (x < W - 1) d = Math.min(d, dist[i + 1] + 1); if (y < H - 1) d = Math.min(d, dist[i + W] + 1);
     if (x < W - 1 && y < H - 1) d = Math.min(d, dist[i + W + 1] + 1.4142); if (x > 0 && y < H - 1) d = Math.min(d, dist[i + W - 1] + 1.4142); dist[i] = d; }
+  // Continent heightfield — built ONCE, shared by the elevation-aware wilderness cover AND the hillshade.
+  let hf = null; try { hf = buildHeightfield(zone, { su: 1 }); } catch { hf = null; }
+  const elevAt = hf ? (x, y) => hf.sample(minX + x / PPU, minY + y / PPU) : null;
   {
-    const wild = wildernessFn(LC);
+    const wild = wildernessFn(LC, elevAt);
     // SHALLOWS (owner 2026-08-28): a lighter water band hugging the coast that fades to deep sea — reads
     // as real shoreline shallows/reef from the air. Exterior pixels just past the coastal land band.
     const SH_OUT = 5 * PPU, SHALLOW = [74, 116, 142], DEEP = [16, 22, 34];
@@ -363,10 +377,8 @@ export function bakeMosaic({ zone = "EDU", ppu = 20, maxdim = 4096, force = fals
   // / sinking to river valleys — while OPEN OCEAN stays flat sea (no mountain floats over water). Plus a
   // FRONTIER RIM: a rocky coastal highland just outside the shore that FRAMES the continent ("wall ridges
   // outside the map lands") instead of the land simply ending in water.
-  let hf = null;
-  if (hillshadeOn) {
+  if (hillshadeOn && hf) {
     try {
-      hf = buildHeightfield(zone, { su: 1 });
       const elev = new Float32Array(W * H);
       const RIM_OUTER = 6 * PPU, RIM_PEAK = 0.6;                 // coastal rim: reach (px) + rocky height (< snow)
       for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
