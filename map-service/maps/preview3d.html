@@ -678,6 +678,11 @@ if(CG)(function(){
         const hut=new THREE.Group();                           // PART 2: the turret hut above
         hut.add(new THREE.Mesh(new THREE.CylinderGeometry(4.5,4.9,3.6,10),wallM));
         const crown=new THREE.Mesh(new THREE.CylinderGeometry(5.4,5.4,1.6,10),wallM);crown.position.y=2.4;hut.add(crown);
+        // ARCHER PORTS (owner 2026-08-28: "some [openings] facing outside the walls for stationary
+        // archers"): dark arrow-loops on the OUTWARD face + the two flanks, at chest height in the hut —
+        // the defensive purpose of a mural tower (enfilade the wall foot + shoot the field).
+        const outAng=Math.atan2(-ZS*tnz,tnx);                  // outward (away from courtyard) bearing
+        for(const da of [0,0.7,-0.7]){const a=outAng+da,slit=new THREE.Mesh(new THREE.BoxGeometry(0.5,1.5,1.0),lam(0x14181e));slit.position.set(Math.cos(a)*4.7,0.3,-Math.sin(a)*4.7/ZS);slit.rotation.y=a;hut.add(slit);}
         const roof=new THREE.Mesh(new THREE.ConeGeometry(5.0,5.5,10),roofM);roof.position.y=5.7;hut.add(roof);
         putC(hut,p[0],p[1],H+OPEN+1.8);}
     }

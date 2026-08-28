@@ -383,7 +383,14 @@
         "width": 3.4,
         "riser": 1.5,
         "tread": 1,
-        "walkable": true
+        "walkable": true,
+        "grade": 56.7,
+        "material": "STONE",
+        "render": "STEPS",
+        "rampAlt": {
+          "material": "WOOD",
+          "maxGrade": 40
+        }
       },
       {
         "gate": 1,
@@ -402,7 +409,14 @@
         "width": 3.4,
         "riser": 1.5,
         "tread": 1,
-        "walkable": true
+        "walkable": true,
+        "grade": 56.7,
+        "material": "STONE",
+        "render": "STEPS",
+        "rampAlt": {
+          "material": "WOOD",
+          "maxGrade": 40
+        }
       },
       {
         "gate": 1,
@@ -421,7 +435,14 @@
         "width": 3.4,
         "riser": 1.5,
         "tread": 1,
-        "walkable": true
+        "walkable": true,
+        "grade": 56.9,
+        "material": "STONE",
+        "render": "STEPS",
+        "rampAlt": {
+          "material": "WOOD",
+          "maxGrade": 40
+        }
       },
       {
         "gate": 2,
@@ -440,7 +461,14 @@
         "width": 3.4,
         "riser": 1.5,
         "tread": 1,
-        "walkable": true
+        "walkable": true,
+        "grade": 56.9,
+        "material": "STONE",
+        "render": "STEPS",
+        "rampAlt": {
+          "material": "WOOD",
+          "maxGrade": 40
+        }
       },
       {
         "gate": 2,
@@ -459,7 +487,14 @@
         "width": 3.4,
         "riser": 1.5,
         "tread": 1,
-        "walkable": true
+        "walkable": true,
+        "grade": 56.7,
+        "material": "STONE",
+        "render": "STEPS",
+        "rampAlt": {
+          "material": "WOOD",
+          "maxGrade": 40
+        }
       },
       {
         "gate": 3,
@@ -478,7 +513,14 @@
         "width": 3.4,
         "riser": 1.5,
         "tread": 1,
-        "walkable": true
+        "walkable": true,
+        "grade": 56.8,
+        "material": "STONE",
+        "render": "STEPS",
+        "rampAlt": {
+          "material": "WOOD",
+          "maxGrade": 40
+        }
       },
       {
         "gate": 3,
@@ -497,7 +539,14 @@
         "width": 3.4,
         "riser": 1.5,
         "tread": 1,
-        "walkable": true
+        "walkable": true,
+        "grade": 56.8,
+        "material": "STONE",
+        "render": "STEPS",
+        "rampAlt": {
+          "material": "WOOD",
+          "maxGrade": 40
+        }
       }
     ]
   },

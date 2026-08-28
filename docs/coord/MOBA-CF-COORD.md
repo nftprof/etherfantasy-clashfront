@@ -1194,3 +1194,10 @@ purely renderer-side; full spec in `docs/maps/CASTLE-STAIRS-AND-WALLS-SPEC.md` �
 
 No CF action outstanding; please confirm when the renderer honours these three. (Committed palace maps
 re-baked; L3 castles carry the fields live.)
+
+### 2026-08-28 (cont.) · castle render contract additions
+- **Stairs**: render walkable STONE STEPS from `steps/riser/tread/rise/grade`. A RAMP is allowed ONLY if
+  WOOD-coloured and ≤ 40° (`rampAlt`). Never a steep masonry plank.
+- **Towers `form:"DRUM_TURRET"`**: solid drum to wall-walk height; turret hut above with the two
+  wall-facing sides OPEN (walk-walk passes through) + `archerPorts` arrow-loops on the outward/flank
+  faces. See `docs/maps/CASTLE-ARCHITECTURE-STUDY.md` for the WHY (real fortification, miniaturized).

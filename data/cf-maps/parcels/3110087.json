@@ -305,7 +305,14 @@
         "width": 3.4,
         "riser": 1.5,
         "tread": 0.7,
-        "walkable": true
+        "walkable": true,
+        "grade": 66.3,
+        "material": "STONE",
+        "render": "STEPS",
+        "rampAlt": {
+          "material": "WOOD",
+          "maxGrade": 40
+        }
       },
       {
         "gate": 0,
@@ -324,7 +331,14 @@
         "width": 3.4,
         "riser": 1.5,
         "tread": 0.9,
-        "walkable": true
+        "walkable": true,
+        "grade": 57.8,
+        "material": "STONE",
+        "render": "STEPS",
+        "rampAlt": {
+          "material": "WOOD",
+          "maxGrade": 40
+        }
       },
       {
         "gate": 1,
@@ -343,7 +357,14 @@
         "width": 3.4,
         "riser": 1.5,
         "tread": 0.8,
-        "walkable": true
+        "walkable": true,
+        "grade": 62.1,
+        "material": "STONE",
+        "render": "STEPS",
+        "rampAlt": {
+          "material": "WOOD",
+          "maxGrade": 40
+        }
       },
       {
         "gate": 1,
@@ -362,7 +383,14 @@
         "width": 3.4,
         "riser": 1.5,
         "tread": 0.8,
-        "walkable": true
+        "walkable": true,
+        "grade": 60.5,
+        "material": "STONE",
+        "render": "STEPS",
+        "rampAlt": {
+          "material": "WOOD",
+          "maxGrade": 40
+        }
       },
       {
         "gate": 2,
@@ -381,7 +409,14 @@
         "width": 3.4,
         "riser": 1.5,
         "tread": 0.7,
-        "walkable": true
+        "walkable": true,
+        "grade": 65.2,
+        "material": "STONE",
+        "render": "STEPS",
+        "rampAlt": {
+          "material": "WOOD",
+          "maxGrade": 40
+        }
       },
       {
         "gate": 2,
@@ -400,7 +435,14 @@
         "width": 3.4,
         "riser": 1.5,
         "tread": 1,
-        "walkable": true
+        "walkable": true,
+        "grade": 57.6,
+        "material": "STONE",
+        "render": "STEPS",
+        "rampAlt": {
+          "material": "WOOD",
+          "maxGrade": 40
+        }
       }
     ]
   },

@@ -1035,7 +1035,7 @@ function castleLayout(g, G, rng, { base, atkPt, poly, half, budgetLevel, bridge,
     // a unit can walk the ENTIRE top of the wall uninterrupted (owner 2026-08-28: "towers should have
     // holes you can walk through so you can walk along the entire top of the wall"). `wallWalkThrough`
     // + `passageW` are the contract; the renderer cuts the openings at wall-walk height only.
-    else if (ring[i].tower) out.push({ anchorId: `castle_tower_${towerN++}`, kind: "TOWER", side: "DEFENDER", blocking: "SOLID", wallWalkThrough: true, passageW: 3.2, r: 5.4, x: ring[i].x, z: ring[i].z, hpMax: 1600 + budgetLevel * 250 });
+    else if (ring[i].tower) out.push({ anchorId: `castle_tower_${towerN++}`, kind: "TOWER", side: "DEFENDER", blocking: "SOLID", form: "DRUM_TURRET", wallWalkThrough: true, passageW: 3.2, archerPorts: 3, r: 5.4, x: ring[i].x, z: ring[i].z, hpMax: 1600 + budgetLevel * 250 });
     // WALL anchors are VERTICES of the solid curtain (siege.wallRing, thickness t) — collision
     // comes from the ring POLYLINE, never from independent cylinders at the anchors.
     else out.push({ anchorId: `castle_wall_${wallN++}`, kind: "WALL", side: "DEFENDER", blocking: "WALL_RING", r: 2.1, x: ring[i].x, z: ring[i].z, hpMax: 900 + budgetLevel * 150 });
@@ -1417,6 +1417,12 @@ function concentricRings(geom, T2, poly, ground = null) {
       const runL = Math.hypot(s.top[0] - s.foot[0], s.top[1] - s.foot[1]) || 1;
       s.rise = r1(h); s.steps = Math.max(5, Math.min(12, Math.round(h / 1.5)));
       s.width = 3.4; s.riser = r1(h / s.steps); s.tread = r1(runL / s.steps); s.walkable = true;
+      // WALKABLE ACCESS CONTRACT (owner 2026-08-28: "walkable stairs; a ramp is fine too but not as
+      // steep as stairs — no more than 40°; ramps should be WOOD not brick"). Default render = STONE
+      // STEPS (walkable at this grade). A renderer MAY substitute a RAMP only if it uses WOOD and holds
+      // the grade ≤ 40° (extend the run — a ramp is gentler than the stair, never steeper).
+      s.grade = r1(Math.atan2(h, runL) * 180 / Math.PI);
+      s.material = "STONE"; s.render = "STEPS"; s.rampAlt = { material: "WOOD", maxGrade: 40 };
     }
     rings.push({ pts, h, gates, lift: 0, tier: ri, gapIn, stairs });
   }

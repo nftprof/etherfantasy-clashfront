@@ -126,3 +126,14 @@ common regressions (ramps, dead-end wall-walk, twin narrow doors) cannot recur:
 
 Re-bake: `node map-service/tools/estate_palace_maps.mjs` regenerates the 11 pre-designed palace estate
 maps through the fixed pipeline; L3 castles generate the fields live. castle-geometry test: 1036 pass.
+
+## v25 — walkable-grade access, wood ramps, tower turret + archer ports (owner 2026-08-28)
+- **Stairs carry grade + material.** Each flight adds `grade` (deg), `material:"STONE"`, `render:"STEPS"`,
+  and `rampAlt:{material:"WOOD",maxGrade:40}`. Render as walkable stone STEPS; a RAMP substitution must be
+  WOOD and ≤ 40° (extend the run — a ramp is gentler than the stair, never steeper). "No one builds wall
+  ramps but walkable stairs" — a ramp, if used, reads as timber, not masonry.
+- **Tower = DRUM_TURRET.** Anchor adds `form:"DRUM_TURRET"` + `archerPorts` (3). Solid drum to wall-walk
+  height; a turret hut ABOVE the walk with the two wall-facing sides OPEN (walk passes through,
+  `wallWalkThrough`/`passageW`) and **arrow-loops facing outward + flanks** for stationary archers. This
+  is the real mural-tower function (enfilade the wall foot + shoot the field), miniaturized. Full study:
+  `docs/maps/CASTLE-ARCHITECTURE-STUDY.md`. `preview3d.html` renders the reference.
