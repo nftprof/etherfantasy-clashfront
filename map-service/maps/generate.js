@@ -872,20 +872,33 @@ function castleLayout(g, G, rng, { base, atkPt, poly, half, budgetLevel, bridge,
       const last = runs.pop();                          // the polyline is closed — merge the wrap
       runs[0] = [last[0] - samples.length, runs[0][1]];
     }
-    for (const [s0, s1] of runs.slice(0, 5)) {          // hard cap — a wall is not a sieve
-      const mi = ((Math.round((s0 + s1) / 2) % samples.length) + samples.length) % samples.length;
-      const mid = samples[mi];
-      // GATE SPACING (v20, Grand Exchange "outer wall entirely broken"): doors ≥20u apart — two
-      // openings closer than that erase the whole wall stretch between their gatehouses.
+    // ONE WIDE DOOR CENTERED ON THE ROAD (owner 2026-08-28: "road leads to a wall with two entrances,
+    // weird — just give it ONE big enough door, ≥1.5× road width, centered on the road"). Reduce each
+    // run to its road-cell CENTROID (the true crossing centre, not a wall-index midpoint) + width (the
+    // hit-sample count ≈ road width along the wall); MERGE crossings of the SAME road (<22u apart, keep
+    // the wider); then move the nearest anchor exactly onto the centroid and give it a per-gate arch
+    // half-width of ~0.75× the road width (⇒ opening ≥ 1.5× road width), floored at the default.
+    const doors = runs.map(([s0, s1]) => {
+      let sx = 0, sz = 0, cnt = 0;
+      for (let i = s0; i <= s1; i++) { const s = samples[((i % samples.length) + samples.length) % samples.length]; sx += s[0]; sz += s[1]; cnt++; }
+      return { mid: [sx / cnt, sz / cnt], w: Math.max(1, cnt) };
+    }).sort((a, b) => b.w - a.w);
+    const merged = [];
+    for (const d of doors) { if (merged.some((m) => Math.hypot(m.mid[0] - d.mid[0], m.mid[1] - d.mid[1]) < 22)) continue; merged.push(d); }
+    for (const d of merged.slice(0, 4)) {               // hard cap — a wall is not a sieve
+      const mid = d.mid;
+      // GATE SPACING (v20): doors ≥20u apart — two openings closer than that erase the wall between.
       if (gates.some((g3) => Math.hypot(ring[g3].x - mid[0], ring[g3].z - mid[1]) < 20)) continue;
       let bi = -1, bd2 = Infinity;
       for (let i = 0; i < n; i++) {
         if (!ring[i].ok || taken.has(i)) continue;
-        const d = Math.hypot(ring[i].x - mid[0], ring[i].z - mid[1]);
-        if (d < bd2) { bd2 = d; bi = i; }
+        const dd = Math.hypot(ring[i].x - mid[0], ring[i].z - mid[1]);
+        if (dd < bd2) { bd2 = dd; bi = i; }
       }
       if (bi >= 0 && bd2 < 30) {
-        ring[bi].x = r1(mid[0]); ring[bi].z = r1(mid[1]);   // the door stands ON the road
+        ring[bi].x = r1(mid[0]); ring[bi].z = r1(mid[1]);   // the door stands ON the road, centered
+        ring[bi].gateR = Math.min(13, Math.max(5.5, r1(0.75 * d.w)));   // opening ≥ 1.5× the road width
+        ring[bi].roadGate = true;
         taken.add(bi); gates.push(bi);
       }
     }
@@ -936,7 +949,7 @@ function castleLayout(g, G, rng, { base, atkPt, poly, half, budgetLevel, bridge,
     const ox = Math.max(-half + 4, Math.min(half - 4, gp.x + ((gp.x - cx) / m) * 12));
     const oz = Math.max(-half + 4, Math.min(half - 4, gp.z + ((gp.z - cz) / m) * 12));
     carveCorridor(g, G, [[cx, cz], [gp.x, gp.z], [ox, oz]], 2.0, bridge);
-    disc(g, G, cellOf(G, gp.x), cellOf(G, gp.z), 7, false);
+    disc(g, G, cellOf(G, gp.x), cellOf(G, gp.z), Math.max(7, Math.round((gp.gateR || 5.5) / CELL_M) + 3), false);   // clear a wide-enough arch for wide road doors
   }
   // BREACH WARD (v23, engine rule 10: "a flat ward ≥25u inside the main gate — the breach fight
   // happens there"): clear an open pocket just inside the FIRST (main/attacker-facing) door so
@@ -1015,9 +1028,14 @@ function castleLayout(g, G, rng, { base, atkPt, poly, half, budgetLevel, bridge,
       // blocking contract (v22, owner "units running in circles around towers"): a GATE is a
       // DOOR — its arch is PASSABLE unless the leaf is CLOSED; engines must never place a solid
       // cylinder on a gate anchor. r = the arch half-width.
-      out.push({ anchorId: id, kind: "GATE", side: "DEFENDER", material: "WOOD", states: ["CLOSED", "OPEN", "BROKEN"], blocking: "DOOR", r: 5.5, x: ring[i].x, z: ring[i].z, hpMax: 700 + budgetLevel * 150 });
+      out.push({ anchorId: id, kind: "GATE", side: "DEFENDER", material: "WOOD", states: ["CLOSED", "OPEN", "BROKEN"], blocking: "DOOR", r: r1(ring[i].gateR || 5.5), x: ring[i].x, z: ring[i].z, hpMax: 700 + budgetLevel * 150 });
     }
-    else if (ring[i].tower) out.push({ anchorId: `castle_tower_${towerN++}`, kind: "TOWER", side: "DEFENDER", blocking: "SOLID", r: 5.4, x: ring[i].x, z: ring[i].z, hpMax: 1600 + budgetLevel * 250 });
+    // TOWER: solid drum at GROUND level (units circle it, never through), but the WALL-WALK PASSES
+    // THROUGH it at parapet height — archway doorways on the two sides facing the adjacent wall runs, so
+    // a unit can walk the ENTIRE top of the wall uninterrupted (owner 2026-08-28: "towers should have
+    // holes you can walk through so you can walk along the entire top of the wall"). `wallWalkThrough`
+    // + `passageW` are the contract; the renderer cuts the openings at wall-walk height only.
+    else if (ring[i].tower) out.push({ anchorId: `castle_tower_${towerN++}`, kind: "TOWER", side: "DEFENDER", blocking: "SOLID", wallWalkThrough: true, passageW: 3.2, r: 5.4, x: ring[i].x, z: ring[i].z, hpMax: 1600 + budgetLevel * 250 });
     // WALL anchors are VERTICES of the solid curtain (siege.wallRing, thickness t) — collision
     // comes from the ring POLYLINE, never from independent cylinders at the anchors.
     else out.push({ anchorId: `castle_wall_${wallN++}`, kind: "WALL", side: "DEFENDER", blocking: "WALL_RING", r: 2.1, x: ring[i].x, z: ring[i].z, hpMax: 900 + budgetLevel * 150 });
@@ -1390,6 +1408,16 @@ function concentricRings(geom, T2, poly, ground = null) {
     // clearance so a flight never crosses the next wall line). Renderers draw these verbatim.
     const stairs = computeStairs(pts, gates, { x: kx, z: kz },
       ri === 0 ? (geom.towers || []) : [], Math.max(4.5, gapIn - 3), ground);
+    // STEPPED-GEOMETRY CONTRACT (owner 2026-08-28: "no one builds wall RAMPS but stairs that's
+    // walkable"). Each flight carries its explicit step spec so NO renderer can draw a ramp: `rise` =
+    // wall height to climb, `steps` = tread count, `width`, `riser`, `tread`. A conformant renderer
+    // extrudes `steps` boxes rising by `riser` each — never a single sloped plank. `mode` = PERPENDICULAR
+    // (up onto the wall-walk) or PARALLEL (hugging the wall). See docs/maps/CASTLE-STAIRS-AND-WALLS-SPEC.md.
+    for (const s of stairs) {
+      const runL = Math.hypot(s.top[0] - s.foot[0], s.top[1] - s.foot[1]) || 1;
+      s.rise = r1(h); s.steps = Math.max(5, Math.min(12, Math.round(h / 1.5)));
+      s.width = 3.4; s.riser = r1(h / s.steps); s.tread = r1(runL / s.steps); s.walkable = true;
+    }
     rings.push({ pts, h, gates, lift: 0, tier: ri, gapIn, stairs });
   }
   // STAIR FOOT REACHABILITY PRUNE (v20, traverse-audit finding on the Bastion of Dominus): a

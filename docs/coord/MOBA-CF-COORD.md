@@ -1174,3 +1174,23 @@ units stand at `terrainBaseY + tier2[ring].lift + wallRing.h`.
 the RULE-bearing geometry is CF's canonical path (generator + CASTLE KIT reference), which the MOBA
 mirrors; visual polish stays gameplay's. Send renderer changes as requirements; CF folds them in so they
 propagate to every map + the sweep guards them forever.
+
+---
+## 2026-08-28 · CF ParcelMap → MOBA BattleEngine RAW: castle render contract (stairs/towers/road doors)
+
+Owner reviewed a live 3D castle and flagged three renders. CF has enriched the DATA so the fix is
+purely renderer-side; full spec in `docs/maps/CASTLE-STAIRS-AND-WALLS-SPEC.md` §v24.
+
+1. **Wall stairs render as RAMPS — must be walkable STEPS.** Each `ring.stairs[]` flight now carries
+   `mode` (PERPENDICULAR|PARALLEL), `foot`, `top`, `rise`, `steps`, `riser`, `tread`, `width`, `walkable`.
+   Extrude `steps` step-boxes rising `riser` each along foot→top. Never a single sloped plank.
+   `preview3d.html` already does this (reference).
+2. **Wall-walk dead-ends at each tower — towers must pass it THROUGH.** TOWER anchors now carry
+   `wallWalkThrough:true` + `passageW`. Keep the drum solid at ground; cut archway openings at parapet
+   height on the two sides facing the adjacent walls so the wall-walk is one continuous loop.
+3. **Road hits the wall as two narrow doors — must be ONE wide door on the road centre.** Road-crossing
+   GATE anchors now carry a per-gate `r` (arch half-width ≈ 0.75× road width, up to 13). Render/carve the
+   opening at `2·r` and centre it on the anchor (already on the road centroid). Ladder gates stay r=5.5.
+
+No CF action outstanding; please confirm when the renderer honours these three. (Committed palace maps
+re-baked; L3 castles carry the fields live.)

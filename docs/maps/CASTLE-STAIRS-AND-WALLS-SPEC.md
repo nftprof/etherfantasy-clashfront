@@ -100,3 +100,29 @@ owner's review.*
 - **Gate: read `wallRing.gateOpenWidth` + `gates[].door`** — carve the opening `gateOpenWidth` wide,
   seat flanking towers OUTSIDE it, and render PORTCULLIS (raise-up iron grid) or DOUBLE_LEAF (swing
   timber leaves) per the door type. Each renders per state: CLOSED / OPEN (raised or swung) / BROKEN.
+
+## v24 — stepped stairs, walk-through towers, one wide road door (owner 2026-08-28)
+
+Three fixes from a live 3D castle tour. The DATA now carries everything the renderer needs so the
+common regressions (ramps, dead-end wall-walk, twin narrow doors) cannot recur:
+
+1. **Stairs are STEPS, never ramps** ("no one builds wall ramps but stairs that's walkable"). Every
+   `ring.stairs[]` flight now carries an explicit stepped-geometry spec: `mode`
+   (`PERPENDICULAR` up onto the wall-walk | `PARALLEL` hugging the wall), `foot`, `top`, `rise` (wall
+   height to climb), `steps` (tread count), `riser`, `tread`, `width` (3.4), `walkable:true`. **Renderer
+   contract: extrude `steps` boxes rising by `riser` each along foot→top — NEVER a single sloped plank.**
+   (`generate.js` computeStairs + the ring push; `preview3d.html` already renders treads = reference.)
+2. **Towers pass the wall-walk THROUGH** ("towers should have holes you can walk through so you can walk
+   along the entire top of the wall"). TOWER anchors carry `wallWalkThrough:true` + `passageW` (3.2).
+   Ground level stays `blocking:"SOLID"` (units circle the drum, never through it); at parapet height the
+   renderer cuts archway doorways on the two sides facing the adjacent wall runs, so the wall-walk is one
+   continuous loop. (`generate.js` tower anchor emission.)
+3. **One wide door CENTERED on the road** ("road leads to a wall with two entrances — just give it one big
+   enough door, ≥1.5× road width, centered on the road"). The road-door pass reduces each wall-crossing to
+   its road-cell CENTROID (exact centre) + width; MERGES crossings of the same road (<22u apart, keep the
+   wider); moves the nearest anchor onto the centroid; and sets a per-gate arch half-width `gateR ≈
+   0.75× road width` (⇒ opening ≥ 1.5× road width, capped 26u), emitted as the GATE anchor's `r`. Ladder
+   gates keep the default 5.5. (`generate.js` ROAD DOORS block + gate emission + arch-clear disc.)
+
+Re-bake: `node map-service/tools/estate_palace_maps.mjs` regenerates the 11 pre-designed palace estate
+maps through the fixed pipeline; L3 castles generate the fields live. castle-geometry test: 1036 pass.
