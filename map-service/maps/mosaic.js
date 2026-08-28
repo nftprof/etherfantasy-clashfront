@@ -14,7 +14,7 @@ import { readFileSync, existsSync, writeFileSync, mkdirSync, statSync, readdirSy
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { svgPathToPolygon, dataRoot, zoneBiomeFamily, worldParcel, loadWorldField } from "./worldfield.js";
-import { buildHeightfield, hillshade } from "./heightfield.js";
+import { buildHeightfield, hillshadeBuf } from "./heightfield.js";
 import { encodePNG } from "./png.js";
 import { decodePNG } from "./png-decode.js";
 import { generate } from "./generate.js";
@@ -103,25 +103,26 @@ const URBAN = [150, 140, 126];                                     // rooftops/s
 const SETTLE_R = { PALACE: 3.6, GRAND_ACADEMY: 3.6, CASTLE: 2.6, KEEP: 1.7, MANOR: 1.4, GATE: 1.0, PORT: 2.8, TOWN: 2.2 };
 // stamp a filled disc (radius px) at canvas (cx,cy) using colour-fn cf(x,y) → the aerial features draw
 // as rounded continuous strokes (walk each polyline segment stamping discs at sub-pixel steps).
-function discStamp(px, W, H, cx, cy, rad, cf) {
+function discStamp(px, W, H, cx, cy, rad, cf, land) {
   const r = Math.max(0.5, rad), x0 = Math.max(0, (cx - r) | 0), x1 = Math.min(W - 1, (cx + r + 1) | 0);
   const y0 = Math.max(0, (cy - r) | 0), y1 = Math.min(H - 1, (cy + r + 1) | 0), r2 = r * r;
   for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) {
     const dx = x - cx, dy = y - cy; if (dx * dx + dy * dy > r2) continue;
-    const c = cf(x, y); if (!c) continue; const i = (y * W + x) * 4; px[i] = c[0]; px[i + 1] = c[1]; px[i + 2] = c[2]; px[i + 3] = 255;
+    const idx = y * W + x; if (land && !land[idx]) continue;      // never paint over open ocean
+    const c = cf(x, y); if (!c) continue; const i = idx * 4; px[i] = c[0]; px[i + 1] = c[1]; px[i + 2] = c[2]; px[i + 3] = 255;
   }
 }
-function strokePoly(px, W, H, pts, toCanvas, radPx, cf) {
+function strokePoly(px, W, H, pts, toCanvas, radPx, cf, land) {
   if (!pts || pts.length < 2) return;
   for (let s = 0; s < pts.length - 1; s++) {
     const [ax, ay] = toCanvas(pts[s][0], pts[s][1]), [bx, by] = toCanvas(pts[s + 1][0], pts[s + 1][1]);
     const len = Math.hypot(bx - ax, by - ay), steps = Math.max(1, Math.ceil(len / Math.max(0.6, radPx * 0.5)));
-    for (let k = 0; k <= steps; k++) { const t = k / steps; discStamp(px, W, H, ax + (bx - ax) * t, ay + (by - ay) * t, radPx, cf); }
+    for (let k = 0; k <= steps; k++) { const t = k / steps; discStamp(px, W, H, ax + (bx - ax) * t, ay + (by - ay) * t, radPx, cf, land); }
   }
 }
 // Bake the macro network onto an already-painted terrain buffer. Order = settlements (under) →
 // rivers (water, bridged by roads) → road casings → road fills (on top) so roads cross water/cities.
-export function bakeFeatures(px, W, H, toCanvas, PPU, zone) {
+export function bakeFeatures(px, W, H, toCanvas, PPU, zone, land) {
   let field; try { field = loadWorldField(zone); } catch { return { rivers: 0, roads: 0, settles: 0 }; }
   if (!field) return { rivers: 0, roads: 0, settles: 0 };
   const solid = (c) => () => c;
@@ -141,24 +142,24 @@ export function bakeFeatures(px, W, H, toCanvas, PPU, zone) {
   for (const place of [...(field.castles || []), ...(field.pois || [])]) {
     if (!Array.isArray(place.at)) continue;
     const R = (SETTLE_R[place.kind] || SETTLE_R.TOWN) * PPU, [cx, cy] = toCanvas(place.at[0], place.at[1]);
-    discStamp(px, W, H, cx, cy, R, urbanFn(cx, cy)); settles++;
+    discStamp(px, W, H, cx, cy, R, urbanFn(cx, cy), land); settles++;
   }
   // 2) rivers — real flowing water at honest width (naval-ready). Bank tint first, then water core.
   let rivers = 0;
   for (const r of field.rivers || []) {
     if (r.fill) continue;                                       // lakes/calderas are baked as parcel water, not a line
     const wu = Math.max(0.6, r.width || 1), wpx = wu * PPU * 0.5, water = r.magma ? MAGMA_RGB : RIVER_RGB;
-    strokePoly(px, W, H, r.pts, toCanvas, wpx + PPU * 0.35, solid(r.magma ? [150, 66, 26] : RIVER_BANK));
-    strokePoly(px, W, H, r.pts, toCanvas, wpx, solid(water)); rivers++;
+    strokePoly(px, W, H, r.pts, toCanvas, wpx + PPU * 0.35, solid(r.magma ? [150, 66, 26] : RIVER_BANK), land);
+    strokePoly(px, W, H, r.pts, toCanvas, wpx, solid(water), land); rivers++;
   }
   // 3) roads — tiered widths, dark casing under a pale fill (the classic aerial-road read).
   const RAD = { highway: 0.5, secondary: 0.33, local: 0.22 };
   let roads = 0;
   for (const rd of field.roads || []) {
-    const wpx = (RAD[rd.tier] || RAD.highway) * PPU; strokePoly(px, W, H, rd.pts, toCanvas, wpx + 1.4, solid(ROAD_CASE));
+    const wpx = (RAD[rd.tier] || RAD.highway) * PPU; strokePoly(px, W, H, rd.pts, toCanvas, wpx + 1.4, solid(ROAD_CASE), land);
   }
   for (const rd of field.roads || []) {
-    const wpx = (RAD[rd.tier] || RAD.highway) * PPU; strokePoly(px, W, H, rd.pts, toCanvas, wpx, solid(ROAD_FILL)); roads++;
+    const wpx = (RAD[rd.tier] || RAD.highway) * PPU; strokePoly(px, W, H, rd.pts, toCanvas, wpx, solid(ROAD_FILL), land); roads++;
   }
   return { rivers, roads, settles };
 }
@@ -314,24 +315,24 @@ export function bakeMosaic({ zone = "EDU", ppu = 20, maxdim = 4096, force = fals
   //       any uncovered pixel the sea can't reach is land-enclosed interior ⇒ fill it.
   //   (b) chamfer distance-to-parcel → also fill a thin coastal band (`fillRadius`) on the exterior
   //       side, so the coastline reads as land meeting water rather than a razor-jagged parcel edge.
-  {
-    // (a) exterior flood fill (4-connected through mask==0), seeded from the image border.
-    const exterior = new Uint8Array(W * H), stack = new Int32Array(W * H);
-    let sp = 0;
-    const seed = (i) => { if (!mask[i] && !exterior[i]) { exterior[i] = 1; stack[sp++] = i; } };
+  // (a) exterior flood fill (4-connected through mask==0), seeded from the image border → the open sea.
+  const exterior = new Uint8Array(W * H), stack = new Int32Array(W * H);
+  let sp = 0;
+  { const seed = (i) => { if (!mask[i] && !exterior[i]) { exterior[i] = 1; stack[sp++] = i; } };
     for (let x = 0; x < W; x++) { seed(x); seed((H - 1) * W + x); }
     for (let y = 0; y < H; y++) { seed(y * W); seed(y * W + W - 1); }
     while (sp > 0) { const i = stack[--sp], x = i % W, y = (i / W) | 0;
-      if (x > 0) seed(i - 1); if (x < W - 1) seed(i + 1); if (y > 0) seed(i - W); if (y < H - 1) seed(i + W); }
-    // (b) distance-to-parcel for the coastal band.
-    const D = Math.max(0, fillRadius) * PPU, INF = 1e9, dist = new Float32Array(W * H);
-    for (let i = 0; i < W * H; i++) dist[i] = mask[i] ? 0 : INF;
-    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const i = y * W + x; if (dist[i] === 0) continue; let d = dist[i];
-      if (x > 0) d = Math.min(d, dist[i - 1] + 1); if (y > 0) d = Math.min(d, dist[i - W] + 1);
-      if (x > 0 && y > 0) d = Math.min(d, dist[i - W - 1] + 1.4142); if (x < W - 1 && y > 0) d = Math.min(d, dist[i - W + 1] + 1.4142); dist[i] = d; }
-    for (let y = H - 1; y >= 0; y--) for (let x = W - 1; x >= 0; x--) { const i = y * W + x; let d = dist[i];
-      if (x < W - 1) d = Math.min(d, dist[i + 1] + 1); if (y < H - 1) d = Math.min(d, dist[i + W] + 1);
-      if (x < W - 1 && y < H - 1) d = Math.min(d, dist[i + W + 1] + 1.4142); if (x > 0 && y < H - 1) d = Math.min(d, dist[i + W - 1] + 1.4142); dist[i] = d; }
+      if (x > 0) seed(i - 1); if (x < W - 1) seed(i + 1); if (y > 0) seed(i - W); if (y < H - 1) seed(i + W); } }
+  // (b) distance-to-parcel (chamfer) for the coastal band + the frontier rim.
+  const D = Math.max(0, fillRadius) * PPU, INF = 1e9, dist = new Float32Array(W * H);
+  for (let i = 0; i < W * H; i++) dist[i] = mask[i] ? 0 : INF;
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const i = y * W + x; if (dist[i] === 0) continue; let d = dist[i];
+    if (x > 0) d = Math.min(d, dist[i - 1] + 1); if (y > 0) d = Math.min(d, dist[i - W] + 1);
+    if (x > 0 && y > 0) d = Math.min(d, dist[i - W - 1] + 1.4142); if (x < W - 1 && y > 0) d = Math.min(d, dist[i - W + 1] + 1.4142); dist[i] = d; }
+  for (let y = H - 1; y >= 0; y--) for (let x = W - 1; x >= 0; x--) { const i = y * W + x; let d = dist[i];
+    if (x < W - 1) d = Math.min(d, dist[i + 1] + 1); if (y < H - 1) d = Math.min(d, dist[i + W] + 1);
+    if (x < W - 1 && y < H - 1) d = Math.min(d, dist[i + W + 1] + 1.4142); if (x > 0 && y < H - 1) d = Math.min(d, dist[i + W - 1] + 1.4142); dist[i] = d; }
+  {
     const wild = wildernessFn(LC);
     let filled = 0;
     for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const i = y * W + x;
@@ -342,15 +343,40 @@ export function bakeMosaic({ zone = "EDU", ppu = 20, maxdim = 4096, force = fals
     fillN = filled;
   }
 
-  // ELEVATION (owner 2026-08-28): hillshade the composited ground with the continent heightfield so the
-  // world reads as real 3D terrain — parcels near-flat, the non-playable wild land rising to peaks /
-  // sinking to river valleys. Applied to terrain + wild fill; features draw AFTER so roads stay crisp.
-  let hf = null;
-  if (hillshadeOn) { try { hf = buildHeightfield(zone, { su: 1 }); const toZone = (x, y) => [minX + x / PPU, minY + y / PPU]; hillshade(px, W, H, toZone, hf); } catch { hf = null; } }
+  // LAND MASK — parcels + enclosed wild interior + the thin coastal band. Everything else is OPEN OCEAN.
+  // Features (roads/rivers/towns) and mountains render ONLY on land: authored road/river polylines run to
+  // the zone bbox, so WITHOUT this they'd draw dangling across open sea (owner 2026-08-28: "roads and
+  // river over the ocean for no reason"). `landReach` lets a road/coast meet the very shore, no further.
+  const landReach = Math.max(D, 2 * PPU);
+  const land = new Uint8Array(W * H);
+  for (let i = 0; i < W * H; i++) land[i] = (!exterior[i] || dist[i] <= landReach) ? 1 : 0;
 
-  // AERIAL MACRO NETWORK — bake rivers/roads/settlements on top so the continent reads as a settled
-  // world seen from a plane (owner 2026-08-27). Last, so features sit above terrain + wilderness fill.
-  const feat = bakeFeatures(px, W, H, toCanvas, PPU, zone);
+  // ELEVATION (owner 2026-08-28): a per-pixel elevation buffer, CLIPPED to the land, drives the hillshade
+  // so the world reads as real 3D terrain — parcels near-flat, the non-playable wild land rising to peaks
+  // / sinking to river valleys — while OPEN OCEAN stays flat sea (no mountain floats over water). Plus a
+  // FRONTIER RIM: a rocky coastal highland just outside the shore that FRAMES the continent ("wall ridges
+  // outside the map lands") instead of the land simply ending in water.
+  let hf = null;
+  if (hillshadeOn) {
+    try {
+      hf = buildHeightfield(zone, { su: 1 });
+      const elev = new Float32Array(W * H);
+      const RIM_OUTER = 6 * PPU, RIM_PEAK = 0.6;                 // coastal rim: reach (px) + rocky height (< snow)
+      for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+        const i = y * W + x;
+        if (exterior[i] && dist[i] > RIM_OUTER) { elev[i] = 0; continue; }   // open ocean → flat sea
+        const zx = minX + x / PPU, zy = minY + y / PPU, base = hf.sample(zx, zy);
+        if (exterior[i]) {                                      // coastal frontier: rocky rim, highest at the shore, sloping into the sea
+          elev[i] = RIM_PEAK * Math.max(0, 1 - dist[i] / RIM_OUTER);
+        } else elev[i] = base;                                  // land (parcel / wild interior) rides the feature relief
+      }
+      hillshadeBuf(px, W, H, elev, Math.max(1, Math.round(PPU)));
+    } catch { hf = null; }
+  }
+
+  // AERIAL MACRO NETWORK — bake rivers/roads/settlements on top (clipped to LAND). Last, so features sit
+  // above terrain + wilderness fill (owner 2026-08-27).
+  const feat = bakeFeatures(px, W, H, toCanvas, PPU, zone, land);
 
   const png = encodePNG(W, H, Buffer.from(px));
   const meta = { zone, mode, world: { minX, minY, maxX, maxY }, flipY: false, pxPerUnit: PPU, w: W, h: H, leaves: ok, thumbed: hasThumb, estates: estateN, grey: greyN, fill: fillN, features: feat, fingerprint: fp };

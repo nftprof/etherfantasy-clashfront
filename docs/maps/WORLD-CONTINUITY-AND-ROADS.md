@@ -59,6 +59,21 @@ register exactly.
   separate real-time channel, not a re-bake. Scoped next.
 - Extend the committed aerial bake to every launch zone (currently EDU; others lazy).
 
+## 1c. Elevation, clip-to-land & the frontier rim (owner 2026-08-28)
+
+- **Heightfield (`heightfield.js`)** — per-zone elevation from the authored field: ridges → snow-capped
+  massifs, rivers → valley floors, gentle hills between; smooth base keeps parcels near-flat, the
+  non-playable wild land carries the peaks/valleys. The mosaic hillshades from a per-pixel elevation
+  buffer (sun NW) + rock/snow tint on high ground.
+- **CLIP TO LAND (bug fix).** The authored road/river polylines run to the zone bbox, so they used to
+  draw dangling **across open ocean** (owner: *"roads and river over the ocean for no reason"*), and the
+  heightfield floated a mountain ridge in the sea. Fixed: a per-pixel **land mask** (parcels + enclosed
+  wild interior + a thin coastal band) gates ALL features + elevation. **Open ocean stays flat, clean
+  water** — roads/rivers/towns/peaks render only on land; a road or river just meets the shore and stops.
+- **FRONTIER RIM.** Instead of the land simply ending in water, a **rocky coastal highland** rises just
+  outside the shore (`RIM_PEAK` below the snow line), framing the continent — the "wall ridges outside the
+  map lands." Dial `RIM_PEAK` / `RIM_OUTER` in `mosaic.js` for a more/less prominent coastal wall.
+
 ## 2. Road continuity (PHASE 2 — parcel-to-parcel links)
 
 Roads currently stretch WITHIN a parcel (seeded per-parcel) and don't connect to neighbours — reads

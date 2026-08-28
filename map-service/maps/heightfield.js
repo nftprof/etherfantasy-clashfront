@@ -82,30 +82,26 @@ export function buildHeightfield(zone, { su = 1 } = {}) {
   return { zone, gw, gh, su, minX, minY, min: mn, max: mx, data, sample };
 }
 
-// Hillshade a per-pixel RGB buffer IN PLACE using the heightfield (sun from the NW, elevated). `toZone`
-// maps a pixel (x,y) → zone coords. `vscale` exaggerates relief. Playable/parcel ground is near-flat so
-// it barely shades; the wild peaks/valleys get the light + shadow that reads as real 3D terrain.
-export function hillshade(px, W, H, toZone, hf, { vscale = 52, ambient = 0.7, strength = 0.62, tint = true } = {}) {
-  const su = hf.su;
-  // sun direction (unit): from NW, 45° up. gradient in zone-units → surface normal → Lambert.
-  const lx = -0.6, ly = -0.6, lz = 0.53; const ll = Math.hypot(lx, ly, lz);
+// Hillshade a per-pixel RGB buffer IN PLACE from a per-PIXEL elevation buffer (0..1). Sun from the NW.
+// The elevation buffer is built by the caller so it can CLIP to the land (open ocean = 0, flat sea — no
+// features or mountains float over water). `step` = pixels between gradient samples (≈ 1 zone-unit).
+export function hillshadeBuf(px, W, H, elev, step, { vscale = 26, ambient = 0.7, strength = 0.62, tint = true } = {}) {
+  const s = Math.max(1, step | 0);
+  const lx = -0.6, ly = -0.6, lz = 0.53, ll = Math.hypot(lx, ly, lz);
   const Lx = lx / ll, Ly = ly / ll, Lz = lz / ll;
   const ROCK = [128, 122, 116], SNOW = [224, 228, 234];        // high-elevation bare rock → snow cap
-  const HIGH = 0.70, SNOWCAP = 0.90;                            // elevation thresholds for the tint
+  const HIGH = 0.70, SNOWCAP = 0.90;
+  const at = (x, y) => elev[Math.max(0, Math.min(H - 1, y)) * W + Math.max(0, Math.min(W - 1, x))];
   for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
-    const [zx, zy] = toZone(x, y);
-    const h = hf.sample(zx, zy);
-    const hL = hf.sample(zx - su, zy), hR = hf.sample(zx + su, zy), hD = hf.sample(zx, zy - su), hU = hf.sample(zx, zy + su);
-    const dzdx = (hR - hL) * vscale / (2 * su), dzdy = (hU - hD) * vscale / (2 * su);
+    const h = elev[y * W + x];
+    const dzdx = (at(x + s, y) - at(x - s, y)) * vscale, dzdy = (at(x, y + s) - at(x, y - s)) * vscale;
     const nl = Math.hypot(dzdx, dzdy, 1), nx = -dzdx / nl, ny = -dzdy / nl, nz = 1 / nl;
     let lam = nx * Lx + ny * Ly + nz * Lz; if (lam < 0) lam = 0;
-    const shade = ambient + strength * lam;       // ~0.7 (shadow) … ~1.32 (lit slope)
+    const shade = ambient + strength * lam;
     const i = (y * W + x) * 4;
     let r = px[i], g = px[i + 1], b = px[i + 2];
-    // MOUNTAIN TINT — high ground turns bare rock, the very tops snow. Makes peaks read unmistakably as
-    // mountains (owner: "non-playable area can be very high peaks"). Blends over the ground colour.
-    if (tint && h > HIGH) {
-      const tr = Math.min(1, (h - HIGH) / (1 - HIGH)) * 0.85;   // 0 at HIGH → 0.85 near the top
+    if (tint && h > HIGH) {                                     // bare rock → snow cap on high ground
+      const tr = Math.min(1, (h - HIGH) / (1 - HIGH)) * 0.85;
       r += (ROCK[0] - r) * tr; g += (ROCK[1] - g) * tr; b += (ROCK[2] - b) * tr;
       if (h > SNOWCAP) { const ts = (h - SNOWCAP) / (1 - SNOWCAP); r += (SNOW[0] - r) * ts; g += (SNOW[1] - g) * ts; b += (SNOW[2] - b) * ts; }
     }
