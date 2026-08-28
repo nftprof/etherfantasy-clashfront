@@ -1,0 +1,1 @@
+{"zone":"EDU","gw":149,"gh":150,"su":1,"minX":3,"minY":-2,"min":0.06,"max":0.97,"note":"0..255 = elevation 0(sea)..1(peak); ridges high, rivers low; parcels ride the smooth base (near-flat)."}

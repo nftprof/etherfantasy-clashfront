@@ -42,9 +42,15 @@ and not yet a *living, navigable* one (time, depth, a fly-through camera). The 2
 
 ### I. Terrain & nature (the physical ground)
 
-1. **Continent heightfield (elevation model).** The keystone missing layer. A per-zone low-res elevation
-   grid (ridges high, river valleys low, coast → 0) that the mosaic **hillshades** (sun-angle relief) and
-   that everything else obeys. Instantly reads as real terrain; unlocks 2/3/8/9. *Big; CF ParcelMap.*
+1. **Continent heightfield (elevation model). ✅ v1 DONE (2026-08-28).** `map-service/maps/heightfield.js`
+   `buildHeightfield(zone)` derives a per-zone elevation grid from the authored field — **ridges rise to
+   broad snow-capped massifs, river corridors sink to valley floors**, gentle multi-scale hills between;
+   the mosaic **hillshades** with it (sun from NW) + tints high ground rock→snow. Per owner rules: the
+   base is smooth so **parcels stay near-flat** (playable), the **non-playable wild land carries the
+   peaks/valleys**. Persisted as a real data layer (`data/world-terrain/EDU.height.png` + `.json`).
+   **v2 (next):** flatten each parcel to its mean elevation (true flat plateaus/terraces); render the sea
+   as water; and **feed the heightfield into `generate()`** so a parcel's battle-map ground elevation
+   matches the overworld — closing the aerial==battle-maps loop (see §E). *CF ParcelMap.*
 2. **Coherent hydrology.** Rivers should rise at high ground/springs, gather tributaries downhill, and
    reach a lake or the sea; add deltas/estuaries at the coast and lakes in basins. Derive/repair river
    polylines from the heightfield so water always flows downhill and connects source→sea. *Med; CF ParcelMap.*
@@ -141,6 +147,27 @@ designed early even though it's delivered incrementally.
 **Cross-team:** items touching parcel interiors (#13) and the 3D fly-through (#19) need **MOBA BattleEngine
 RAW**; world-frame/travel/lore/live-state (#14/#15/#17/#18) coordinate with **CF Overworld eco**. Log
 cross-team questions in `docs/coord/MOBA-CF-COORD.md`.
+
+## E. The architecture principle — aerial == battle maps (owner 2026-08-28)
+
+Locked direction: **build, don't make up.** The overworld aerial and the per-parcel battle maps must be
+**the same world**, not two drawings that can disagree:
+
+1. **Top-down guideline** = the authored macro field (rivers, roads, city zones) + the heightfield. This is
+   design INTENT, top-down.
+2. **Bottom-up build** = each parcel's battle map is GENERATED to realize its slice of the guideline. Roads
+   & rivers already realize (`generate.js` `paintBand` carves the field's roads→`T.ROAD`, rivers→`T.WATER`
+   into every parcel's grid); elevation realizes NEXT (generate consumes the heightfield); **cities are the
+   gap — a town must be built as real urban terrain in the battle map, not painted on the aerial.**
+3. **Realized aerial** = the mosaic of the actual battle-map terrain/thumbs. It matches the battle maps
+   *because it is made of them.* As AI regenerates a parcel, its thumb updates and the aerial stays
+   consistent automatically.
+
+**Consequence for the current bake:** the painted road/river/settlement overlay in `bakeFeatures` is
+GUIDELINE, not truth — it should be shown as a guideline layer and, on the realized surface, only ever
+*re-express what the battle maps already contain* (roads/rivers do; the settlement rooftop paint does NOT
+yet, so it's the first thing to replace with a real urban-terrain build in `generate()`). Tracking as the
+next task after heightfield-v2.
 
 ## D. Done already (the foundation this builds on)
 Aerial macro-network baked (rivers/roads/towns), continuous wild-fill of land-enclosed interior

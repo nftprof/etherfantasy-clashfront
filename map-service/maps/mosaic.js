@@ -14,6 +14,7 @@ import { readFileSync, existsSync, writeFileSync, mkdirSync, statSync, readdirSy
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { svgPathToPolygon, dataRoot, zoneBiomeFamily, worldParcel, loadWorldField } from "./worldfield.js";
+import { buildHeightfield, hillshade } from "./heightfield.js";
 import { encodePNG } from "./png.js";
 import { decodePNG } from "./png-decode.js";
 import { generate } from "./generate.js";
@@ -225,14 +226,14 @@ function committedMosaic(zone, mode = "thumb") {
 //                             ungenerated = grey. The scale-consistent land map.
 //   mode "planner"          = EVERY parcel shows terrain colour (the 2D reference "planner" layer).
 // Higher default res than the first pass (owner 2026-08-25 "res too low") — bigger PNG, sharper.
-export function bakeMosaic({ zone = "EDU", ppu = 20, maxdim = 4096, force = false, mode = "thumb", fillRadius = 3 } = {}) {
+export function bakeMosaic({ zone = "EDU", ppu = 20, maxdim = 4096, force = false, mode = "thumb", fillRadius = 3, hillshadeOn = true } = {}) {
   zone = String(zone).toUpperCase();
   mode = mode === "planner" ? "planner" : "thumb";
   const { n: nThumbs, fp } = thumbsStat();
   // No thumbs on this host (e.g. the live box) → serve the committed baked mosaic if we shipped one.
   if (!force && nThumbs === 0) { const c = committedMosaic(zone, mode); if (c) return { png: c.png, meta: c.meta, cached: true, committed: true }; }
   let fillN = 0;
-  const cacheStem = path.join(CACHEDIR(), `${zone}.${mode}.p${ppu}.m${maxdim}.f${fillRadius}.aerial2.${fp}`);
+  const cacheStem = path.join(CACHEDIR(), `${zone}.${mode}.p${ppu}.m${maxdim}.f${fillRadius}.aerial2${hillshadeOn ? ".hs1" : ""}.${fp}`);
   if (!force && existsSync(`${cacheStem}.png`) && existsSync(`${cacheStem}.json`)) {
     return { png: readFileSync(`${cacheStem}.png`), meta: JSON.parse(readFileSync(`${cacheStem}.json`, "utf8")), cached: true };
   }
@@ -340,6 +341,12 @@ export function bakeMosaic({ zone = "EDU", ppu = 20, maxdim = 4096, force = fals
       const c = wild(x, y); const p4 = i * 4; px[p4] = c[0]; px[p4 + 1] = c[1]; px[p4 + 2] = c[2]; filled++; }
     fillN = filled;
   }
+
+  // ELEVATION (owner 2026-08-28): hillshade the composited ground with the continent heightfield so the
+  // world reads as real 3D terrain — parcels near-flat, the non-playable wild land rising to peaks /
+  // sinking to river valleys. Applied to terrain + wild fill; features draw AFTER so roads stay crisp.
+  let hf = null;
+  if (hillshadeOn) { try { hf = buildHeightfield(zone, { su: 1 }); const toZone = (x, y) => [minX + x / PPU, minY + y / PPU]; hillshade(px, W, H, toZone, hf); } catch { hf = null; } }
 
   // AERIAL MACRO NETWORK — bake rivers/roads/settlements on top so the continent reads as a settled
   // world seen from a plane (owner 2026-08-27). Last, so features sit above terrain + wilderness fill.
