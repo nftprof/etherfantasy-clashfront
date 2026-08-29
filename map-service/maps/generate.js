@@ -2017,7 +2017,12 @@ export function generate(parcel, params = null, designVersion = 0) {
         // GATE OPENING WIDTH (owner 2026-08-22 "gates should be wide enough"): the clear passage a
         // consumer carves in the wall at each gate — DATA, not a per-engine guess (was ~7u/GATE_R).
         // ≈9.6 m; the flanking gatehouse towers sit OUTSIDE this so the walkway isn't pinched.
-        gateOpenWidth: GATE_OPEN_W };
+        gateOpenWidth: GATE_OPEN_W,
+        // TOWER ARCHITECTURE CONTRACT (owner 2026-08-28) — wall towers are DERIVED along the ring by the
+        // renderer; this is how to build each: a solid DRUM to wall-walk height, then a turret above with
+        // the two wall-facing sides OPEN so the wall-walk passes THROUGH (one continuous loop) + outward
+        // arrow-loops for stationary archers. See docs/maps/CASTLE-ARCHITECTURE-STUDY.md.
+        towers: { form: "DRUM_TURRET", every: 26, wallWalkThrough: true, passageW: 3.2, archerPorts: 3, roof: true } };
       // drawbridge/causeway site first — it names the MAIN gate (the grand entrance = portcullis).
       let dbAt = null;
       if (bridge.reg.length) {
@@ -2080,6 +2085,7 @@ export function generate(parcel, params = null, designVersion = 0) {
                 walkWidth: _walkW,
                 wallWalk: { walkable: true, surfaceY: r1((rr.lift || 0) + rr.h), walkWidth: _walkW,
                   merlons: { edge: "BOTH", w: 1.15, depth: _mDepth, h: r1(rr.h * 0.13 + 0.4), gap: 2.2, inset: _mInset } },
+                towers: { form: "DRUM_TURRET", every: 26, wallWalkThrough: true, passageW: 3.2, archerPorts: 3, roof: true },   // drum→walk height, turret above walk-through + outward arrow-loops (owner 2026-08-28)
               }));
               return { castleGeom: {
                 tier, styleKey,
