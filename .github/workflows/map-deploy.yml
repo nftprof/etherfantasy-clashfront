@@ -77,6 +77,19 @@ jobs:
           # LOD per-parcel thumbs (128px, committed subset) — the crisp zoom-in detail layer.
           rsync -a --delete "$GITHUB_WORKSPACE"/data/cf-maps/thumbs3d-lod/ "$HOME"/ef-map-service/data/cf-maps/thumbs3d-lod/ 2>/dev/null || true
           git -C "$GITHUB_WORKSPACE" rev-parse --short HEAD > "$HOME"/ef-map-service/BUILD
+          # ── CLOSE THE MOBA MAP LAST-MILE (owner 2026-08-29: "why are we back at the same stale-map
+          # issue again?"). Root cause: the MOBA staging game VENDORS data/moba-maps/*.json in its own
+          # client dir (CLIENT_FILES.staging.txt) and can't fetch the map service (CORS/egress). The
+          # auto-sync mirrors to the engine repo but the live box is updated by a MANUAL deploy_client.sh
+          # + an unmerged review branch → drift. The CF `cf` runner ALREADY lives on this game box, so
+          # copy the authoritative fresh maps straight into every game serving dir that exists — no
+          # manual deploy, no repo merge, no CORS. Guarded (only dirs that exist) + non-fatal.
+          for G in "$HOME/ef-moba-game" "$HOME/ef-moba-game-staging" "$HOME/ef-moba-staging" \
+                   "$HOME/ef-moba/staging" "$HOME/ef-moba" "$HOME/game" "$HOME/game-staging"; do
+            if [ -d "$G/data/moba-maps" ]; then
+              rsync -a "$GITHUB_WORKSPACE"/data/moba-maps/ "$G"/data/moba-maps/ && echo "delivered MOBA maps → $G/data/moba-maps"
+            fi
+          done
 
       - name: (re)start ef-map-service on :8150 (health-gated on /healthz)
         run: |

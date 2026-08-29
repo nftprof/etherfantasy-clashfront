@@ -1201,3 +1201,25 @@ re-baked; L3 castles carry the fields live.)
 - **Towers `form:"DRUM_TURRET"`**: solid drum to wall-walk height; turret hut above with the two
   wall-facing sides OPEN (walk-walk passes through) + `archerPorts` arrow-loops on the outward/flank
   faces. See `docs/maps/CASTLE-ARCHITECTURE-STUDY.md` for the WHY (real fortification, miniaturized).
+
+---
+## 2026-08-29 · ROOT CAUSE of the recurring stale-siege-map drift (owner: "why are we back here again?")
+
+The map DESIGN + repo delivery is correct and automated — but the LAST MILE to the live game box was never
+automatic, so the staging game (`moba.etherfantasy.com/staging/?map=siege-test`) kept running an Aug-25 map.
+Full chain, and where it broke:
+1. ✅ CF re-bakes the map (`make_siege_test.mjs` / palace bake) → committed to `data/moba-maps/`.
+2. ✅ `sync-moba-maps.yml` mirrors it into the ENGINE repo — RAN OK today, but pushes to the review branch
+   `clashfront-map-sync` (because repo var `MOBA_MAPS_BRANCH` was never set). It is NOT merged to the branch
+   the game deploys from → stale.
+3. ❌ The MOBA client VENDORS `data/moba-maps/*.json` in its own dir (`CLIENT_FILES.staging.txt`) and can't
+   fetch the map service (CORS/egress 403). The box is updated by a MANUAL `deploy_client.sh` (SSH key the
+   sandbox lacks). So even the "fetch from map service" path (map-deploy already ships maps to
+   `~/ef-map-service/data/moba-maps` served at `/internal/v1/moba-map/*`) doesn't reach the client.
+
+**FIX (this commit):** the CF `cf` runner ALREADY lives on the game box, so `map-deploy.yml` now copies the
+authoritative fresh `data/moba-maps/*` straight into every game serving dir that exists on the box
+(`~/ef-moba-game`, `~/ef-moba-game-staging`, …) — no manual deploy, no repo merge, no CORS. Guarded +
+non-fatal. **Owed to close it fully:** (a) confirm the exact staging game dir on 13.250.39.41 so the copy
+targets it; (b) the Montreal box (3.98.68.96) has no CF runner — needs a pull or the same copy in its deploy;
+(c) alternatively set `MOBA_MAPS_BRANCH` so the engine-repo sync lands on the deploy branch directly.
