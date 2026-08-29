@@ -322,7 +322,15 @@
         },
         "note": "merlons are edge teeth on BOTH edges; centre stays clear + walkable — never bar the walk"
       },
-      "gateOpenWidth": 13
+      "gateOpenWidth": 13,
+      "towers": {
+        "form": "DRUM_TURRET",
+        "every": 26,
+        "wallWalkThrough": true,
+        "passageW": 3.2,
+        "archerPorts": 3,
+        "roof": true
+      }
     },
     "gates": [
       {
