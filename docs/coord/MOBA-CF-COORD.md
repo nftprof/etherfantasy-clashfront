@@ -1223,3 +1223,16 @@ authoritative fresh `data/moba-maps/*` straight into every game serving dir that
 non-fatal. **Owed to close it fully:** (a) confirm the exact staging game dir on 13.250.39.41 so the copy
 targets it; (b) the Montreal box (3.98.68.96) has no CF runner — needs a pull or the same copy in its deploy;
 (c) alternatively set `MOBA_MAPS_BRANCH` so the engine-repo sync lands on the deploy branch directly.
+
+### 2026-08-29 (cont.) · FIX = fail-fast deploy guard (owner chose B over silent auto-copy)
+Owner: "nothing ships stale silently, but a human still runs the one-line vendor." Implemented in the
+ENGINE repo (branch `claude/map-import-clashfront-s3jmh1`), NOT a silent copy:
+- `tools/vendor-moba-maps.sh` — the ONE-LINE VENDOR: curls the authoritative maps from
+  `map.etherfantasy.com/internal/v1/moba-map/<name>` (+ `?form=artifact|manifest`) into `data/moba-maps/`.
+- `deploy_client.sh` — a **freshness GUARD** after `set -euo pipefail`: compares each vendored map's
+  `genVersion` to the CF authority; if stale (or authority unreachable) it ABORTS the deploy and prints
+  the one-line vendor fix. Conscious override: `SKIP_MAP_GUARD=1`.
+Effect: a stale MOBA map can never ship silently again; the human is forced to vendor the current CF map
+first. CF-side silent auto-copy (added earlier same day) was reverted. **Owed:** EF Moba deploy agent
+merges this branch into the deploy branch; first post-merge deploy will fail-fast until siege-test is
+vendored to genVersion 26 (current authority).
