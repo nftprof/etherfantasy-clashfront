@@ -1245,7 +1245,7 @@ Owner filmed both armies wall-grinding. Split diagnosis:
   = HONEST WALK MASK: walkable ⇔ reachable on the walls-stamped model, sealed pockets get POSTERN doors /
   carved fords, the rest is masked walk=0. All shipped artifacts (siege-test + 11 estates) now audit
   100/100 walks · 1 component · 0 isolated cells, CI-enforced forever (R-REACH-ALL, 1,276-check sweep).
-  **NB for the vendor guard: siege-test authority is now genVersion 28** (was 26 in the entry above).
+  **NB for the vendor guard: siege-test authority is now genVersion 29** (was 26 in the entry above; 28 = the honest-mask bake, 29 adds the same-day rulebook-review fixes — vendor once, after both).
 - **ENGINE half (→ EF Moba Network, OWED):** `docs/briefs/UNIT-PATHING-FALLBACK-SPEC.md` — (1) build
   collision from the artifact walk mask + structure contracts, never render meshes; (2) per-line fallback
   DIRECTIVE CHAIN (primary → nearest-reachable stand-in → lane fallback → hold+engage); (3) the
