@@ -199,3 +199,23 @@ structure's mid-level — fight ON the span, CUT the span (destructible, gate ru
 Bridges join the V2 connector contract as `kind:"BRIDGE"` (walkable span between two
 level-anchors, destructible, with the §8 edge rules — bump-offs happen on bridges most of all).
 Concept board v2 rendered for the owner (deckviz4).
+
+## 11. NAVIGATION LANGUAGES — how you MOVE in each city (owner-directed 2026-08-31)
+
+> owner: "think about how you would navigate each — Aeropolis is great; for Empyrea, the wall is
+> like a bridge to the inner wall directly in some places — walk on the top of a wall into
+> another; for Emberfall we have lots of options."
+
+| City | You navigate BY… | The siege therefore is… |
+|---|---|---|
+| **HS1 Aeropolis** | **the GROUND** — terrace by terrace up stairs and long ramps; slow, ancient, grounded | a grinding ascent under fire; hold the ramp mouths |
+| **HS3 Empyrea** | **the WALLS — the wall-top web IS the street grid.** SPUR WALLS join ring to ring: solid radial walls whose TOPS RISE so an outer wall-top walks DIRECTLY onto the taller inner wall (merloned, stepped). Elevators supplement for the garrison; the ground wards below are ceremonial/slow | capture the wall NETWORK junction by junction — fights happen ON the white web, ring-top to ring-top |
+| **HS2 Emberfall** | **machines + jumps** — elevators, dash-jumps, stepping-stone islets, spiral arms; deck shapes per §10 grammar | elevator control + edge/bridge fights over the void |
+
+**Empyrea data/engineering:** spur walls REUSE the wall-walk contract exactly — a wall polyline
+whose `wallWalk` is walkable, with a RISING surfaceY along its length (the ramped wall-top;
+grades stay gentle over long spans — the ≤40° law holds trivially). The wall-walk graph
+generalizes from per-ring loops to a CONNECTED WEB (rings + spurs); the traverse audit's WALL
+layer grows edges, and CI asserts the web is one component (every ring-top reachable from the
+outer ring-top without touching the ground). Junctions where a spur meets a ring = the
+contested crossroads of the city.
