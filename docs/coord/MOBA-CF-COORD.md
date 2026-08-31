@@ -1286,3 +1286,16 @@ structures within attack range; only water pets swim DEEP, flyers overfly both.
 `docs/briefs/MOBA-NAVAL-AIRSHIP-IMPLEMENTATION.md`** (data consumption, rendering, systems,
 acceptance scenes on siege-test / Bastion / Grand Exchange). **Vendor guard: siege-test authority
 is now genVersion 31.** Land-control vessel gating (5/10/25/100 parcels ⚙) → CF Overworld (brief §7).
+
+### 2026-08-31 (cont. 3) · SKY ZONES: identities locked, fields IN BUILD, stacked-city battle doctrine spec'd
+Owner locked the three sky identities (docs/maps/SKY-ZONES-DESIGN.md): HS1 Aeropolis = abandoned
+leafy castle-in-the-sky; HS2 Emberfall = THE EMBER-CRYSTAL EMPIRE (new biomeFamily EMBER_CRYSTAL +
+`ember` palette — red crystal gems power the imperial tech; NEVER volcanic/lava in the sky); HS3
+Empyrea = the Frozen Pinnacle. Three field-builder agents are authoring the HS macro fields now
+(uw2-pattern tools). NEW battle-map doctrine for sky cities (owner: "3 layers of LAND, 5th-Element
+but discretized"): `docs/briefs/SKY-STACKED-CITY-BATTLEMAPS.md` — V1 = three terraced height bands
+(ships with the fields, zero engine change); **V2 = TRUE stacked decks (per-deck walk masks +
+TUNNEL/RAMP/LIFT connectors-as-data + void-edge rails)** — a real engine milestone for
+EF Moba + BattleEngine RAW; the wall-walk implementation is the template. Awaiting owner answers
+(brief §5) before V2 is greenlit. Sky maps have NO naval layer (water decorative only; the void
+replaces the sea; under-deck tunnel arrival replaces the beach).
