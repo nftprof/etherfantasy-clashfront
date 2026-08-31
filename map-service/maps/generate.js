@@ -2031,7 +2031,7 @@ export function generate(parcel, params = null, designVersion = 0) {
         // renderer; this is how to build each: a solid DRUM to wall-walk height, then a turret above with
         // the two wall-facing sides OPEN so the wall-walk passes THROUGH (one continuous loop) + outward
         // arrow-loops for stationary archers. See docs/maps/CASTLE-ARCHITECTURE-STUDY.md.
-        towers: { form: "DRUM_TURRET", every: 26, wallWalkThrough: true, passageW: 3.2, archerPorts: 3, roof: true } };
+        towers: { form: "DRUM_TURRET", every: 26, wallWalkThrough: true, passageW: 3.2, archerPorts: 3, roof: true, gateClearance: 16 } };
       // drawbridge/causeway site first — it names the MAIN gate (the grand entrance = portcullis).
       let dbAt = null;
       if (bridge.reg.length) {
@@ -2094,7 +2094,7 @@ export function generate(parcel, params = null, designVersion = 0) {
                 walkWidth: _walkW,
                 wallWalk: { walkable: true, surfaceY: r1((rr.lift || 0) + rr.h), walkWidth: _walkW,
                   merlons: { edge: "BOTH", w: 1.15, depth: _mDepth, h: r1(rr.h * 0.13 + 0.4), gap: 2.2, inset: _mInset } },
-                towers: { form: "DRUM_TURRET", every: 26, wallWalkThrough: true, passageW: 3.2, archerPorts: 3, roof: true },   // drum→walk height, turret above walk-through + outward arrow-loops (owner 2026-08-28)
+                towers: { form: "DRUM_TURRET", every: 26, wallWalkThrough: true, passageW: 3.2, archerPorts: 3, roof: true, gateClearance: 16 },   // drum→walk height, turret above walk-through + outward arrow-loops; ≥16u from any gate (owner 2026-08-28/29)
               }));
               return { castleGeom: {
                 tier, styleKey,

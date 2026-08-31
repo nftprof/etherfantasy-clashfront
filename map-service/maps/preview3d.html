@@ -663,7 +663,10 @@ if(CG)(function(){
       // the turret HUT floating above an open walk-through band: two jamb walls on the inner/outer
       // faces carry it, the two along-wall faces stay OPEN as doorways for the walk.
       const before=Math.floor(run/26);run+=L;
-      if(Math.floor(run/26)>before&&!nearGate(p[0],p[1],9)&&!nearStairTop(p[0],p[1],9)){
+      // v27 (owner 2026-08-29 "you can't have an arch between a wall and a tower"): derived drum
+      // towers keep the SAME 16u gate clearance as the data layer's TOWER_GATE_MIN — a door is framed
+      // by its gatehouse, never crowded by a mid-run tower. Matches wallRing.towers.gateClearance.
+      if(Math.floor(run/26)>before&&!nearGate(p[0],p[1],16)&&!nearStairTop(p[0],p[1],9)){
         const dxa2=(q[0]-p[0]),dza2=(q[1]-p[1]),dl2=Math.hypot(dxa2,dza2)||1;
         let tnx=-dza2/dl2,tnz=dxa2/dl2;                       // across-wall normal at this tower
         if(tnx*(p[0]-cx)+tnz*(p[1]-cz)<0){tnx=-tnx;tnz=-tnz;}

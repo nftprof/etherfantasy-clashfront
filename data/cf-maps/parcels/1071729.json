@@ -187,7 +187,8 @@
         "wallWalkThrough": true,
         "passageW": 3.2,
         "archerPorts": 3,
-        "roof": true
+        "roof": true,
+        "gateClearance": 16
       }
     },
     "drawbridge": {

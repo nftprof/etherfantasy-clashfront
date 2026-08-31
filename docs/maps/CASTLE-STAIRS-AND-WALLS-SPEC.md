@@ -137,3 +137,18 @@ maps through the fixed pipeline; L3 castles generate the fields live. castle-geo
   `wallWalkThrough`/`passageW`) and **arrow-loops facing outward + flanks** for stationary archers. This
   is the real mural-tower function (enfilade the wall foot + shoot the field), miniaturized. Full study:
   `docs/maps/CASTLE-ARCHITECTURE-STUDY.md`. `preview3d.html` renders the reference.
+
+## v27 — walkable-grade stairs + the hard gate rules (owner 2026-08-29)
+- **R-GRADE:** a flight's RUN targets `rise × 1.2` (grade ≈ 39.8°) wherever the ward / wall stretch
+  affords the length — real mural stairs get LONGER on taller walls, not steeper. Tight geometry still
+  compresses (steeper but STEPPED — never a ramp; `rampAlt.maxGrade` stays 40). Measured across all 37
+  castles: median grade 53.5° → 39.9°. Next refinement: multi-segment switchback flights (two runs + a
+  landing around a wall bend) for tight wards on tall walls.
+- **R-DOOR-ON-ROAD (hard):** a road that meets the wall meets it AT a door — the door centers on the
+  road crossing (centroid, one wide door per road, ≥1.5× road width) and the approach re-carves through
+  the arch (v21). A road may be re-routed to its door; it must NEVER dead-end into blank wall.
+- **R-GATE-CLEAR (hard, owner: "you can't have an arch between a wall and a tower"):** a door is framed
+  by its GATEHOUSE, never crowded by a drum tower. Data layer: `TOWER_GATE_MIN = 16` blocks tower
+  anchors near gates (v24). NEW: renderer-DERIVED towers obey the same rule — `wallRing.towers.
+  gateClearance = 16` in the contract, and `preview3d.html` bumps its derived-tower gate clearance from
+  9u → 16u (the 9u gap was exactly the "side door in the crook of a tower" the owner flagged).
