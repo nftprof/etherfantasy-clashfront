@@ -143,6 +143,14 @@ function checkArtifact(label, art) {
         // naval-sim iter-12: no landing in the inner wards — a pad ≥45u from the keep, always.
         const kd = Math.hypot(p.x - cg.keep.at[0], p.z - cg.keep.at[1]);
         ok(kd >= 44.5, `${label}: R-PADS ${p.anchorId} inner-ward rule — ${kd.toFixed(1)}u from the keep < 45u`);
+        // wingtip law (5-min loop iter-E/F): a NORMAL+ hull's wings overhang the disc — no tower
+        // may stand inside r+9 of a full-size pad (LIGHT scout pads are exempt, compact hulls).
+        if (p.r >= 16) {
+          let minT = Infinity;
+          for (const t of (art.structures || []).filter((s2) => s2.kind === "TOWER"))
+            minT = Math.min(minT, Math.hypot(t.x - p.x, t.z - p.z));
+          ok(minT >= p.r + 9, `${label}: R-PADS ${p.anchorId} wingtip clearance — tower at ${minT.toFixed(1)}u < r+9`);
+        }
       }
     }
   }
@@ -156,6 +164,30 @@ function checkArtifact(label, art) {
     ok(s.piersOk === s.piers, `${label}: R-NAVAL ${s.piers - s.piersOk}/${s.piers} piers can't march to the heart`);
     ok(s.beachOk === s.beachWalks, `${label}: R-NAVAL ${s.beachWalks - s.beachOk}/${s.beachWalks} beach landings can't march`);
     ok(s.arrivable === 0 || s.piers >= 1, `${label}: R-NAVAL arrivable water but no PIER emitted`);
+    // pier GEOMETRY (5-min loop iter-B): root stands on walkable shore, head reaches over water —
+    // a plank pointing inland (or floating unanchored) is a broken unload point.
+    const Gp = art.terrain.w, cMp = art.terrain.cellM || 2, hp2 = (Gp * cMp) / 2;
+    const cellsP = new Uint8Array(Buffer.from(art.terrain.cells, "base64"));
+    const walkP = new Uint8Array(Buffer.from(art.terrain.walk, "base64"));
+    const waterP = art.terrain.water ? new Uint8Array(Buffer.from(art.terrain.water, "base64")) : null;
+    const idxAt = (wx, wz) => {
+      const cx = Math.max(0, Math.min(Gp - 1, Math.round((wx + hp2) / cMp - 0.5)));
+      const cz = Math.max(0, Math.min(Gp - 1, Math.round((wz + hp2) / cMp - 0.5)));
+      return cz * Gp + cx;
+    };
+    for (const pr of (art.structures || []).filter((s2) => s2.kind === "PIER")) {
+      let rootOk = false;   // root or its immediate ring is walkable shore
+      for (let dz = -1; dz <= 1; dz++) for (let dx = -1; dx <= 1; dx++)
+        if (walkP[idxAt(pr.x + dx * cMp, pr.z + dz * cMp)]) rootOk = true;
+      ok(rootOk, `${label}: R-NAVAL ${pr.anchorId} root not on walkable shore`);
+      const hx = pr.x + pr.dir[0] * pr.len, hz = pr.z + pr.dir[1] * pr.len;
+      let headWet = false;   // head or its ring over water (any grade)
+      for (let dz = -1; dz <= 1; dz++) for (let dx = -1; dx <= 1; dx++) {
+        const i2 = idxAt(hx + dx * cMp, hz + dz * cMp);
+        if ((waterP && waterP[i2] >= 1) || cellsP[i2] === T.WATER) headWet = true;
+      }
+      ok(headWet, `${label}: R-NAVAL ${pr.anchorId} head does not reach the water (dir/len broken)`);
+    }
   }
   const T2 = CASTLE_TIERS[cg.tier];
   const keep = cg.keep.at, poly = art.arena.bounds, half = art.arena.sizeM / 2;
@@ -369,5 +401,15 @@ for (const f of fs.readdirSync(artDir).filter((x) => /^\d{7}\.artifact\.json$/.t
   catch (e) { ok(false, `ESTATE ${f}: unreadable — ${e.message}`); }
 }
 
+// ---- population 3: siege-test (the MOBA contract testbed) + naval-sim determinism guard ----
+{
+  const stPath = path.join(ROOT, "data/moba-maps/siege-test.artifact.json");
+  if (fs.existsSync(stPath)) {
+    const st = JSON.parse(fs.readFileSync(stPath, "utf8"));
+    checkArtifact("SIEGE-TEST", st);
+    ok(JSON.stringify(runNavalAudit(st)) === JSON.stringify(runNavalAudit(st)),
+      "SIEGE-TEST: runNavalAudit is deterministic (same artifact ⇒ byte-identical audit)");
+  }
+}
 console.log(`\ncastle-geometry sweep: ${castles} castle parcels + ${estates} estate maps | ${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

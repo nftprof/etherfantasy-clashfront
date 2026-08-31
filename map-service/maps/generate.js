@@ -2440,7 +2440,9 @@ export function generate(parcel, params = null, designVersion = 0) {
           if (spawnZones.some((s) => Math.hypot(s.x - wx, s.z - wz) < PAD_R + 9)) continue;
           if (buildSpots.some((b) => Math.hypot(b.x - wx, b.z - wz) < PAD_BUILD_STANDOFF)) continue; // owner: never near tower-buildable ground
           if (resources.some((rs) => Math.hypot(rs.x - wx, rs.z - wz) < PAD_R + 1)) continue;
-          if (structures.some((s2) => Math.hypot(s2.x - wx, s2.z - wz) < PAD_R + 3)) continue;
+          // wingtip law (5-min loop iter-E): the seated hull's WINGS overhang the pad (span 36u >
+          // r16 disc) — towers/structures keep PAD_R+10 so nothing clips a descending wing.
+          if (structures.some((s2) => Math.hypot(s2.x - wx, s2.z - wz) < PAD_R + 10)) continue;
           const wDist = dw[gIdx(G, cx, cz)] * CELL_M;
           cands.push({ x: r1(wx), z: r1(wz), score: (wDist <= 40 ? 40 - wDist : 0) });   // near-water bonus
         }
@@ -2587,9 +2589,10 @@ export function generate(parcel, params = null, designVersion = 0) {
           if (water[ni] === 1 && dep[ni] > dep[i] + 1) { dep[ni] = dep[i] + 1; q2.push(ni); }
         }
       }
-      // best shore point: walkable land cell 8-adjacent to a waded shallow cell; short wade +
-      // near-road preferred; keep off gates/pads.
-      let best = null;
+      // shore candidates: walkable land cell 8-adjacent to a waded shallow cell; short wade +
+      // near-road preferred; a BIG sea gets MULTIPLE piers (5-min loop iter-G: one plank on a
+      // 765-cell invasion coast is a single chokepoint) — 1 per ~300 deep cells, cap 3, ≥50u apart.
+      const shoreCands = [];
       for (let i = 0; i < G * G; i++) {
         if (dep[i] >= 999 || water[i] !== 1) continue;
         const x = i % G, z = (i / G) | 0;
@@ -2603,19 +2606,38 @@ export function generate(parcel, params = null, designVersion = 0) {
             const qx = nx + rx, qz = nz + rz;
             if (inG(G, qx, qz) && g[gIdx(G, qx, qz)] === T.ROAD) roadBonus = 8;
           }
-          const score = roadBonus - dep[i];
-          if (!best || score > best.score) best = { x: r1(wx), z: r1(wz), score, wadeX: r1(worldOf(G, x)), wadeZ: r1(worldOf(G, z)) };
+          shoreCands.push({ x: r1(wx), z: r1(wz), score: roadBonus - dep[i], wadeX: r1(worldOf(G, x)), wadeZ: r1(worldOf(G, z)) });
         }
       }
-      if (!best) continue;
-      const dxp = best.wadeX - best.x, dzp = best.wadeZ - best.z, dl = Math.hypot(dxp, dzp) || 1;
+      if (!shoreCands.length) continue;
+      shoreCands.sort((a, b) => b.score - a.score || a.z - b.z || a.x - b.x);
+      const wantPiers = Math.max(1, Math.min(3, Math.floor(sN[s] / 300) + 1));
+      const chosen = [];
+      for (const c of shoreCands) {
+        if (chosen.length >= wantPiers) break;
+        if (chosen.some((c2) => Math.hypot(c2.x - c.x, c2.z - c.z) < 50)) continue;
+        chosen.push(c);
+      }
+      for (const best of chosen) {
+      // bearing: shore → the REGION'S NEAREST DEEP CELL (5-min loop iter-C; the first wade cell
+      // can lie parallel to the shore, leaving the plank head over dry land — CI caught 4).
+      let di = -1, dd2 = Infinity;
+      for (let i = 0; i < G * G; i++) {
+        if (water[i] < 2 || sail2[i] !== s) continue;
+        const wx2 = worldOf(G, i % G), wz2 = worldOf(G, (i / G) | 0);
+        const d2 = (wx2 - best.x) * (wx2 - best.x) + (wz2 - best.z) * (wz2 - best.z);
+        if (d2 < dd2) { dd2 = d2; di = i; }
+      }
+      if (di < 0) continue;
+      const dxp = worldOf(G, di % G) - best.x, dzp = worldOf(G, (di / G) | 0) - best.z, dl = Math.hypot(dxp, dzp) || 1;
       structures.push({
         anchorId: `pier_${pierN++}`, kind: "PIER", side: "NEUTRAL", blocking: "NONE",
         x: best.x, z: best.z, r: 3,
-        dir: [r1(dxp / dl), r1(dzp / dl)],                     // shore → deep bearing
-        len: r1(Math.min(22, dl + 4 * CELL_M)),                // plank reaches past the wade band (~8u rim)
+        dir: [r1(dxp / dl), r1(dzp / dl)],                     // shore → deep bearing (true)
+        len: r1(Math.min(22, dl + 2)),                         // head reaches just past the deep edge
         walkable: true,                                        // the plank IS the corridor — engines make it traversable
       });
+      }
     }
   }
 

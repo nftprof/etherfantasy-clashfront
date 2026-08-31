@@ -347,12 +347,24 @@ export function runNavalAudit(art) {
     if (wp) padsOk++;
     padTrails.push({ from: [p.x, p.z], ok: !!wp, ...(wp ? { wp } : {}) });
   }
-  // beachhead → heart (reinforce-by-sea march), sampled up to 12 spread beachheads
+  // beachhead → heart (reinforce-by-sea march) — COMPLETE coverage via ONE flood from the heart
+  // (iter-A of the 5-min loop: 12 samples → every beachhead, same cost).
   let beachWalks = 0, beachOk = 0;
-  const step = Math.max(1, Math.floor(beachheads.length / 12));
-  for (let k = 0; k < beachheads.length; k += step) {
-    const b = beachheads[k]; beachWalks++;
-    if (bfsPath(blocked, G, [b.x, b.z], home)) beachOk++;
+  {
+    const hi = nearOpen(blocked, G, gIdx(G, cellOf(G, home[0]), cellOf(G, home[1])));
+    const hr = new Uint8Array(G * G);
+    if (hi >= 0) {
+      const q = [hi]; hr[hi] = 1;
+      for (let h = 0; h < q.length; h++) { const i = q[h], x = i % G, z = (i / G) | 0;
+        for (const [dx, dz] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const nx = x + dx, nz = z + dz;
+          if (nx < 0 || nz < 0 || nx >= G || nz >= G) continue; const ni = nz * G + nx;
+          if (!blocked[ni] && !hr[ni]) { hr[ni] = 1; q.push(ni); } } }
+    }
+    for (const b of beachheads) {
+      beachWalks++;
+      const bi = nearOpen(blocked, G, gIdx(G, cellOf(G, b.x), cellOf(G, b.z)));
+      if (bi >= 0 && hr[bi]) beachOk++;
+    }
   }
   // PIER → heart (the sea unload point must march like any spawn)
   const piers = (art.structures || []).filter((s) => s.kind === "PIER");
