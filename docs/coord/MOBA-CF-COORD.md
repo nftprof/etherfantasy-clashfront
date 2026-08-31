@@ -1299,3 +1299,11 @@ TUNNEL/RAMP/LIFT connectors-as-data + void-edge rails)** — a real engine miles
 EF Moba + BattleEngine RAW; the wall-walk implementation is the template. Awaiting owner answers
 (brief §5) before V2 is greenlit. Sky maps have NO naval layer (water decorative only; the void
 replaces the sea; under-deck tunnel arrival replaces the beach).
+
+### 2026-08-31 (cont. 4) · STACKED-DECK COMBAT RULES — OWNER-LOCKED (sky battle maps V2)
+`SKY-STACKED-CITY-BATTLEMAPS.md` §8: deck gaps too large for ordinary attacks to span; attacking
+UP blocked (or ⚙ −50%/miss); attacking DOWN works layer-by-layer; TOP layer drop-attacks reach
+the LOWEST with gravity SPLASH; flash/dash skills jump layers; knockback bumps units off edges;
+falls are CAUGHT a few layers below with damage (void death only off the lowest deck / outer
+rim). Engine owns: up/down asymmetry, drop arcs + splash, dash-jump validation, fall-catch.
+Map data will carry deck-edge rail/gap spans + catch-deck per segment when V2 lands.

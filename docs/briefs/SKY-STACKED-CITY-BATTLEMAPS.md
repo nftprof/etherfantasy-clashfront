@@ -124,3 +124,31 @@ generalizes to N planes + a connector graph. The practical limits are not engine
 
 ⚙ Owner call: 7 tiers for the Spire confirmed? And does the tier-by-tier climb allow SKIPPING
 (air-drop a squad on tier 5 via flyers) or is it strictly bottom-up + lift-cutting?
+
+## 8. DECK COMBAT DOCTRINE — ✅ OWNER-LOCKED 2026-08-31 (supersedes §5 Q3; engine rules)
+
+Owner verbatim intent: "Layer by layer you can jump to with flash/dash, or even fall off / get
+bumped off… mostly you CAN'T attack upwards (or nerf by 50% / missed); you CAN attack downwards
+layer by layer; there is large enough distance to gap most attacks without walking the walls…
+the 3rd layer can drop stuff to attack the lowest, and with gravity it hits with a bit of a
+SPLASH. Falling happens — but usually catchable by a few layers below."
+
+1. **The vertical gap is a real wall:** deck spacing is LARGE enough that ordinary attacks
+   cannot span layers — you can't melee or poke across a deck boundary "without walking the
+   walls" (taking the ramps/lifts/tunnels). The gap itself is the fortification.
+2. **Attacking UP: blocked — or ⚙ nerfed −50% / high miss chance** for the few kits allowed to
+   try. Height is defense.
+3. **Attacking DOWN: works, layer by layer** — units at a deck edge can strike the deck below.
+4. **DROP ATTACKS:** the TOP layer can drop objects/ordnance all the way to the LOWEST — gravity
+   gives the impact **SPLASH (AoE)**. The top of the city is its artillery platform.
+5. **Inter-layer mobility:** flash/dash-class skills can JUMP a layer (up or down — the spicy
+   engage); knockbacks near edges BUMP units off (the vessel-deck rails/gaps physics).
+6. **Falling is usually CAUGHT:** a fall lands a few layers below with damage — not death.
+   Void death only exists off the LOWEST deck / the isle's outer rim. (Supersedes the earlier
+   "deck-to-deck damage / void death" phrasing: multi-layer falls are survivable by default.)
+
+Map-side implications (mine): deck edges need honest EDGE data (rail spans + gaps, catch-deck
+below per edge segment); drop-attack lanes = vertical sightlines the generator must keep clear
+of overhangs on the artillery rims; ramp/lift mouths remain the only walk-up paths (choke law).
+Engine-side (EF Moba + BattleEngine RAW): the up/down asymmetry, drop-attack projectile arc +
+splash, dash-jump validation, fall-catch resolution. Relayed via MOBA-CF-COORD.
