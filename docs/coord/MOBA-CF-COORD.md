@@ -1307,3 +1307,26 @@ the LOWEST with gravity SPLASH; flash/dash skills jump layers; knockback bumps u
 falls are CAUGHT a few layers below with damage (void death only off the lowest deck / outer
 rim). Engine owns: up/down asymmetry, drop arcs + splash, dash-jump validation, fall-catch.
 Map data will carry deck-edge rail/gap spans + catch-deck per segment when V2 lands.
+
+### 2026-08-31 (cont. 5) · 🔴 STAIRS STILL RENDER AS RAMPS — the gap is IN THE MOBA 3D CLIENT (owner screenshot, siege staging)
+Owner screenshot shows brick-colored wall RAMPS + solid cone-roof towers on the siege map. Diagnosis
+(re-verified today against the live authority, genVersion 31): **the map DATA is complete and has
+been since v27** — every flight in `castleGeom.rings[].stairs[]` (and `siege.stairs`) carries
+`{mode, foot, top, steps, riser, tread, width, grade, material:"STONE", render:"STEPS",
+rampAlt:{material:"WOOD", maxGrade:40}}`. Example from the shipping siege-test: steps 11 · riser
+1.5 · tread 1.1 · width 3.4 · grade 53.6°. The CF reference renderer (preview3d, "THE game
+render") draws stepped boxes from this exact data. **The MOBA 3D client still draws each flight as
+ONE sloped plank** — its legacy path; that's the entire gap. → **MOBA BattleEngine RAW owes:**
+1. STAIRS (the owner's repeat complaint): for each `ring.stairs[]` flight — unit vector u =
+   (top−foot)/|top−foot|; for k in 0..steps−1: place a box `width × riser × tread` at
+   `foot + u·(k·tread)`, elevated `(k+1)·riser` (+ ring `lift`). NEVER one sloped plank. A ramp
+   substitute is legal ONLY if `grade ≤ rampAlt.maxGrade` (40°) AND rendered WOOD — this flight
+   is 53.6°, so steps are mandatory. ~15 lines; the data does all the math.
+2. TOWERS: `DRUM_TURRET` contract (solid drum to wall-walk height, open walk-through band
+   `passageW 3.2`, turret hut with 3 archerPorts + roof) — screenshot still shows plain solid
+   cylinders + cone roofs.
+3. FRESHNESS: authority is genVersion 31; the deploy_client.sh fail-fast guard bites at your
+   next deploy — run `tools/vendor-moba-maps.sh` first (one line).
+All specs: docs/maps/CASTLE-RULES.md §V + §VII, CASTLE-STAIRS-AND-WALLS-SPEC.md, BATTLEFIELD-
+SCHEMA.md. This is the third owner sighting of the same gap (2026-08-28, -29, -31) — please
+prioritize the stairs loop; it is the smallest item with the biggest owner-visible payoff.
