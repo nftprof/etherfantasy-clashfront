@@ -791,16 +791,16 @@
           -3.3
         ],
         "top": [
-          34.2,
-          7
+          36.7,
+          11.5
         ],
         "rise": 18,
         "steps": 12,
         "width": 3.4,
         "riser": 1.5,
-        "tread": 1,
+        "tread": 1.4,
         "walkable": true,
-        "grade": 56.8,
+        "grade": 46.8,
         "material": "STONE",
         "render": "STEPS",
         "rampAlt": {
@@ -817,16 +817,16 @@
           13.1
         ],
         "top": [
-          40.9,
-          24.3
+          43.8,
+          33.7
         ],
         "rise": 18,
         "steps": 12,
         "width": 3.4,
         "riser": 1.5,
-        "tread": 1,
+        "tread": 1.8,
         "walkable": true,
-        "grade": 56.9,
+        "grade": 39.8,
         "material": "STONE",
         "render": "STEPS",
         "rampAlt": {
@@ -843,16 +843,16 @@
           71.5
         ],
         "top": [
-          6,
-          76.1
+          1.7,
+          78
         ],
         "rise": 18,
         "steps": 12,
         "width": 3.4,
         "riser": 1.5,
-        "tread": 1,
+        "tread": 1.4,
         "walkable": true,
-        "grade": 56.9,
+        "grade": 47.6,
         "material": "STONE",
         "render": "STEPS",
         "rampAlt": {
@@ -865,20 +865,20 @@
         "side": -1,
         "mode": "PARALLEL",
         "foot": [
-          17.3,
-          71.2
+          31.3,
+          52.5
         ],
         "top": [
-          24.4,
-          61.7
+          18.3,
+          69.7
         ],
         "rise": 18,
         "steps": 12,
         "width": 3.4,
         "riser": 1.5,
-        "tread": 1,
+        "tread": 1.8,
         "walkable": true,
-        "grade": 56.6,
+        "grade": 39.9,
         "material": "STONE",
         "render": "STEPS",
         "rampAlt": {
@@ -895,16 +895,16 @@
           78
         ],
         "top": [
-          -9.6,
-          74.6
+          -16.8,
+          72.5
         ],
         "rise": 18,
         "steps": 12,
         "width": 3.4,
         "riser": 1.5,
-        "tread": 1,
+        "tread": 1.6,
         "walkable": true,
-        "grade": 56.8,
+        "grade": 43,
         "material": "STONE",
         "render": "STEPS",
         "rampAlt": {
@@ -921,16 +921,16 @@
           65.7
         ],
         "top": [
-          -26.6,
-          69.4
+          -19,
+          71.8
         ],
         "rise": 18,
         "steps": 12,
         "width": 3.4,
         "riser": 1.5,
-        "tread": 1,
+        "tread": 1.6,
         "walkable": true,
-        "grade": 56.8,
+        "grade": 42.3,
         "material": "STONE",
         "render": "STEPS",
         "rampAlt": {
@@ -947,16 +947,16 @@
           49.4
         ],
         "top": [
-          -57.8,
-          38.3
+          -60.1,
+          31.5
         ],
         "rise": 18,
         "steps": 12,
         "width": 3.4,
         "riser": 1.5,
-        "tread": 1,
+        "tread": 1.6,
         "walkable": true,
-        "grade": 56.8,
+        "grade": 43.5,
         "material": "STONE",
         "render": "STEPS",
         "rampAlt": {
@@ -969,20 +969,20 @@
         "side": -1,
         "mode": "PARALLEL",
         "foot": [
-          -53.4,
-          50.1
+          -38.4,
+          65.3
         ],
         "top": [
-          -45.1,
-          58.5
+          -53.4,
+          50.1
         ],
         "rise": 18,
         "steps": 12,
         "width": 3.4,
         "riser": 1.5,
-        "tread": 1,
+        "tread": 1.8,
         "walkable": true,
-        "grade": 56.7,
+        "grade": 40.1,
         "material": "STONE",
         "render": "STEPS",
         "rampAlt": {

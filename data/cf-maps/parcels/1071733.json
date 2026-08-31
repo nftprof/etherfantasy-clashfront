@@ -298,8 +298,8 @@
           -21.5
         ],
         "top": [
-          -48.5,
-          -9.9
+          -48.6,
+          -9.7
         ],
         "rise": 16,
         "steps": 11,
@@ -307,7 +307,7 @@
         "riser": 1.5,
         "tread": 1.1,
         "walkable": true,
-        "grade": 53.6,
+        "grade": 53.1,
         "material": "STONE",
         "render": "STEPS",
         "rampAlt": {

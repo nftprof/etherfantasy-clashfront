@@ -364,8 +364,8 @@
         "side": 1,
         "mode": "PERPENDICULAR",
         "foot": [
-          -109.9,
-          -5.3
+          -107.6,
+          -4.7
         ],
         "top": [
           -119.2,
@@ -375,9 +375,9 @@
         "steps": 11,
         "width": 3.4,
         "riser": 1.5,
-        "tread": 0.9,
+        "tread": 1.1,
         "walkable": true,
-        "grade": 58.9,
+        "grade": 53.1,
         "material": "STONE",
         "render": "STEPS",
         "rampAlt": {
@@ -390,8 +390,8 @@
         "side": -1,
         "mode": "PERPENDICULAR",
         "foot": [
-          -112.5,
-          7.5
+          -110.7,
+          5.9
         ],
         "top": [
           -120,
@@ -401,9 +401,9 @@
         "steps": 11,
         "width": 3.4,
         "riser": 1.5,
-        "tread": 0.9,
+        "tread": 1.1,
         "walkable": true,
-        "grade": 59,
+        "grade": 53.1,
         "material": "STONE",
         "render": "STEPS",
         "rampAlt": {
@@ -416,8 +416,8 @@
         "side": -1,
         "mode": "PERPENDICULAR",
         "foot": [
-          -86.1,
-          -25.3
+          -85.1,
+          -23.1
         ],
         "top": [
           -90.2,
@@ -427,9 +427,9 @@
         "steps": 11,
         "width": 3.4,
         "riser": 1.5,
-        "tread": 0.9,
+        "tread": 1.1,
         "walkable": true,
-        "grade": 59,
+        "grade": 53.1,
         "material": "STONE",
         "render": "STEPS",
         "rampAlt": {
@@ -442,8 +442,8 @@
         "side": 1,
         "mode": "PERPENDICULAR",
         "foot": [
-          -65,
-          3.6
+          -67.4,
+          3.8
         ],
         "top": [
           -55.5,
@@ -453,9 +453,9 @@
         "steps": 11,
         "width": 3.4,
         "riser": 1.5,
-        "tread": 0.9,
+        "tread": 1.1,
         "walkable": true,
-        "grade": 59.1,
+        "grade": 53.2,
         "material": "STONE",
         "render": "STEPS",
         "rampAlt": {
@@ -468,8 +468,8 @@
         "side": -1,
         "mode": "PERPENDICULAR",
         "foot": [
-          -68.1,
-          -15.7
+          -70,
+          -14.2
         ],
         "top": [
           -60.4,
@@ -479,9 +479,9 @@
         "steps": 11,
         "width": 3.4,
         "riser": 1.5,
-        "tread": 0.9,
+        "tread": 1.1,
         "walkable": true,
-        "grade": 59.1,
+        "grade": 53.1,
         "material": "STONE",
         "render": "STEPS",
         "rampAlt": {
@@ -494,8 +494,8 @@
         "side": 1,
         "mode": "PERPENDICULAR",
         "foot": [
-          -70.8,
-          18.5
+          -72.1,
+          16.5
         ],
         "top": [
           -65.7,
@@ -505,9 +505,9 @@
         "steps": 11,
         "width": 3.4,
         "riser": 1.5,
-        "tread": 0.9,
+        "tread": 1.1,
         "walkable": true,
-        "grade": 59.1,
+        "grade": 53.2,
         "material": "STONE",
         "render": "STEPS",
         "rampAlt": {
@@ -520,8 +520,8 @@
         "side": -1,
         "mode": "PERPENDICULAR",
         "foot": [
-          -65,
-          9.6
+          -67.4,
+          9.3
         ],
         "top": [
           -55.5,
@@ -531,9 +531,9 @@
         "steps": 11,
         "width": 3.4,
         "riser": 1.5,
-        "tread": 0.9,
+        "tread": 1.1,
         "walkable": true,
-        "grade": 59.2,
+        "grade": 53.2,
         "material": "STONE",
         "render": "STEPS",
         "rampAlt": {

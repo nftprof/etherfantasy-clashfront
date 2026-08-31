@@ -1060,8 +1060,14 @@ function castleLayout(g, G, rng, { base, atkPt, poly, half, budgetLevel, bridge,
 // towers[] = anchor points a top may NOT land within 5u of (a drum/corner tower would swallow
 // the landing); runCap bounds the perpendicular run so an inner-ward flight never crosses the
 // NEXT ring's wall line (callers pass the ward's actual clearance).
-function computeStairs(pts, gates, base, towers = [], runCap = Infinity, ground = null) {
+function computeStairs(pts, gates, base, towers = [], runCap = Infinity, ground = null, wallH = 16) {
   const STEPS = 7, TREAD = 1.6, ALONG = 13.5, FLIGHT = STEPS * TREAD + 0.6;
+  // WALKABLE GRADE (owner 2026-08-28 "no more than 40 degrees"; v27): a flight's RUN targets
+  // wallH × 1.2 (grade ≈ 39.8°) wherever the ward / wall stretch affords the length — real mural
+  // stairs get LONGER on taller walls, not steeper. Tight spots still compress (steeper but STEPPED,
+  // never a ramp — the rampAlt contract caps ramps at 40°). Every pattern aims at GRADE_RUN first
+  // and falls back to the classic FLIGHT.
+  const GRADE_RUN = Math.max(FLIGHT, wallH * 1.2);
   // v20 (traverse audit finding, Bastion of Dominus): a flight's FOOT must stand on WALKABLE
   // ground — geometry guards alone let a stair descend into moat marsh. ground = {g, G} of the
   // final grid; 1-cell tolerance (the foot may kiss a blocked cell's edge).
@@ -1120,7 +1126,7 @@ function computeStairs(pts, gates, base, towers = [], runCap = Infinity, ground 
     cand.sort((q, w) => q.d - w.d);
     for (const c of cand) {
       if (used.has(c.i)) continue;
-      const run = Math.min(FLIGHT, c.sL - 2.4);
+      const run = Math.min(GRADE_RUN, c.sL - 2.4);     // v27: hug the wall for the full walkable-grade length when the stretch affords it
       for (const dir of side > 0 ? [1, -1] : [-1, 1]) {
         const a0 = dir > 0 ? 1.2 : c.sL - 1.2, a1 = a0 + dir * run;
         let nx = -c.dz2, nz = c.dx2;
@@ -1167,9 +1173,10 @@ function computeStairs(pts, gates, base, towers = [], runCap = Infinity, ground 
         }
         let nx2 = -best.abz / best.L, nz2 = best.abx / best.L;      // inner normal of the REAL segment
         if (nx2 * (cx - best.qx) + nz2 * (cz - best.qz) < 0) { nx2 = -nx2; nz2 = -nz2; }
-        const maxRun = Math.max(3.5, Math.min(rAvg * 1.7 - 2.7, runCap)), tread2 = Math.min(TREAD, maxRun / STEPS);
+        const maxRun = Math.max(3.5, Math.min(rAvg * 1.7 - 2.7, runCap));
+        const runW = Math.max(3.5, Math.min(maxRun, GRADE_RUN));   // v27: walkable-grade run where the ward affords it
         return { gate: gi, side, mode: "PERPENDICULAR",
-          foot: [r1(best.qx + nx2 * (2.7 + (STEPS - 1) * tread2)), r1(best.qz + nz2 * (2.7 + (STEPS - 1) * tread2))],
+          foot: [r1(best.qx + nx2 * (2.7 + runW)), r1(best.qz + nz2 * (2.7 + runW))],
           top: [r1(best.qx + nx2 * 2.7), r1(best.qz + nz2 * 2.7)] };
       };
       if (side === 1) fb.set(gi, mkPerp());
@@ -1182,8 +1189,10 @@ function computeStairs(pts, gates, base, towers = [], runCap = Infinity, ground 
         if (Math.abs(dx2 * wdx + dz2 * wdz) < 0.92) continue;
         const t0 = (gx - A[0]) * dx2 + (gzp - A[1]) * dz2;
         const dirS = Math.sign(dx2 * wdx + dz2 * wdz) * side;
-        const a0 = t0 + dirS * ALONG, a1 = t0 + dirS * (ALONG + FLIGHT);
-        if (Math.min(a0, a1) >= 1.2 && Math.max(a0, a1) <= sL - 1.2) par = { A, dx2, dz2, a0, a1 };
+        for (const runL of [GRADE_RUN, FLIGHT]) {      // v27: walkable-grade run first, classic flight as the floor
+          const a0 = t0 + dirS * ALONG, a1 = t0 + dirS * (ALONG + runL);
+          if (Math.min(a0, a1) >= 1.2 && Math.max(a0, a1) <= sL - 1.2) { par = { A, dx2, dz2, a0, a1 }; break; }
+        }
       }
       if (par) {
         let nx = -par.dz2, nz = par.dx2;
@@ -1407,7 +1416,7 @@ function concentricRings(geom, T2, poly, ground = null) {
     // (wall clearance, in-ward foot, tower-top avoidance, run capped to the ward's ACTUAL
     // clearance so a flight never crosses the next wall line). Renderers draw these verbatim.
     const stairs = computeStairs(pts, gates, { x: kx, z: kz },
-      ri === 0 ? (geom.towers || []) : [], Math.max(4.5, gapIn - 3), ground);
+      ri === 0 ? (geom.towers || []) : [], Math.max(4.5, gapIn - 3), ground, h);
     // STEPPED-GEOMETRY CONTRACT (owner 2026-08-28: "no one builds wall RAMPS but stairs that's
     // walkable"). Each flight carries its explicit step spec so NO renderer can draw a ramp: `rise` =
     // wall height to climb, `steps` = tread count, `width`, `riser`, `tread`. A conformant renderer
@@ -1528,7 +1537,7 @@ const PALACE_STYLES = { UW2: "drowned_bastion", ENT: "carnavale", EDU: "collegia
 // anchors = vertices of the solid wallRing polyline t 4.2, never independent cylinders) +
 // siege.wallRing gains t/archClearH — engines build the navmesh from THIS instead of guessing
 // (the "units running in circles around towers" fix on the map side).
-export const GEN_VERSION = 26;   // v26: wall-walk fields (surfaceY/walkWidth/wallWalk) on castleGeom.rings (engine reads these)
+export const GEN_VERSION = 27;   // v27: walkable-grade stairs (run targets rise×1.2 ≈ 40°) + DRUM_TURRET/archerPorts + wallRing.towers contract + road-centered wide doors
 
 export function generate(parcel, params = null, designVersion = 0) {
   // designVersion is MANDATORY in every artifact (MOBA contract fix 3: it pins caches, replays,
