@@ -64,8 +64,8 @@
               -18.4
             ],
             [
-              -96,
-              -29
+              -95.7,
+              -24.4
             ],
             [
               -89.9,
@@ -136,8 +136,8 @@
           -18.4
         ],
         [
-          -96,
-          -29
+          -95.7,
+          -24.4
         ],
         [
           -89.9,
@@ -159,6 +159,10 @@
         [
           -64.9,
           3.3
+        ],
+        [
+          -95.7,
+          -24.4
         ]
       ],
       "ringN": 1,
@@ -227,6 +231,22 @@
           3.3
         ],
         "hp": 1150,
+        "material": "WOOD",
+        "states": [
+          "CLOSED",
+          "OPEN",
+          "BROKEN"
+        ],
+        "door": "DOUBLE_LEAF",
+        "openWidth": 13
+      },
+      {
+        "id": "castle_gate_3p",
+        "at": [
+          -95.7,
+          -24.4
+        ],
+        "hp": 1350,
         "material": "WOOD",
         "states": [
           "CLOSED",
@@ -387,6 +407,58 @@
         "tread": 0.8,
         "walkable": true,
         "grade": 62.3,
+        "material": "STONE",
+        "render": "STEPS",
+        "rampAlt": {
+          "material": "WOOD",
+          "maxGrade": 40
+        }
+      },
+      {
+        "gate": 3,
+        "side": 1,
+        "mode": "PARALLEL",
+        "foot": [
+          -92.1,
+          -24.1
+        ],
+        "top": [
+          -87.2,
+          -35.2
+        ],
+        "rise": 16,
+        "steps": 11,
+        "width": 3.4,
+        "riser": 1.5,
+        "tread": 1.1,
+        "walkable": true,
+        "grade": 52.8,
+        "material": "STONE",
+        "render": "STEPS",
+        "rampAlt": {
+          "material": "WOOD",
+          "maxGrade": 40
+        }
+      },
+      {
+        "gate": 3,
+        "side": -1,
+        "mode": "PARALLEL",
+        "foot": [
+          -91.8,
+          -18.6
+        ],
+        "top": [
+          -89,
+          -11.7
+        ],
+        "rise": 16,
+        "steps": 11,
+        "width": 3.4,
+        "riser": 1.5,
+        "tread": 0.7,
+        "walkable": true,
+        "grade": 65,
         "material": "STONE",
         "render": "STEPS",
         "rampAlt": {
@@ -825,7 +897,7 @@
       "side": "ANY",
       "edge": "S",
       "x": -70,
-      "z": -44,
+      "z": -42,
       "canBase": true
     },
     {
@@ -1214,24 +1286,30 @@
       "r": 2.1
     },
     {
-      "anchorId": "castle_tower_3",
-      "kind": "TOWER",
+      "anchorId": "castle_wall_pd3",
+      "kind": "WALL",
       "side": "DEFENDER",
       "x": -95.4,
       "z": -18.4,
       "hpMax": 2350,
-      "blocking": "SOLID",
+      "blocking": "WALL_RING",
       "r": 5.4
     },
     {
-      "anchorId": "castle_wall_7",
-      "kind": "WALL",
+      "anchorId": "castle_gate_3p",
+      "kind": "GATE",
       "side": "DEFENDER",
-      "x": -96,
-      "z": -29,
+      "x": -95.7,
+      "z": -24.4,
+      "material": "WOOD",
+      "states": [
+        "CLOSED",
+        "OPEN",
+        "BROKEN"
+      ],
       "hpMax": 1350,
-      "blocking": "WALL_RING",
-      "r": 2.1
+      "blocking": "DOOR",
+      "r": 5.5
     },
     {
       "anchorId": "castle_wall_8",

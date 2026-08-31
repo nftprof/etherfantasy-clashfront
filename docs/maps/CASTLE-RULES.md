@@ -1,12 +1,12 @@
 # CASTLE RULES — the complete consolidated rulebook (owner request 2026-08-31)
 
 **This is the ONE document listing every castle rule in force**, consolidated from
-`CASTLE-STAIRS-AND-WALLS-SPEC.md` (v18→v27 history — that doc remains the change log),
+`CASTLE-STAIRS-AND-WALLS-SPEC.md` (v18→v28 history — that doc remains the change log),
 `CASTLE-ARCHITECTURE-STUDY.md` (the WHY — real fortification, miniaturized), `CASTLE-RENDER-BRIEF.md`,
-and the live constants in `map-service/maps/generate.js` (GEN_VERSION 27). Every number here is read
+and the live constants in `map-service/maps/generate.js` (GEN_VERSION 28). Every number here is read
 from the code, not from memory. Enforcement column: **G** = generation-time repair/construction,
 **CI** = asserted by `maps/test/castle_geometry.test.js` over all 37 world castles + 11 committed
-estates + siege-test (1084 checks), **R** = renderer contract (preview3d = reference; MOBA mirrors).
+estates + siege-test (1276 checks), **R** = renderer contract (preview3d = reference; MOBA mirrors).
 
 ## I. Site & massing
 
@@ -43,7 +43,8 @@ estates + siege-test (1084 checks), **R** = renderer contract (preview3d = refer
 | **R-AR** | Through-wall passage ONLY via arches; an arch carries a destructible WOOD gate (`states CLOSED/OPEN/BROKEN`); walls are otherwise continuous. | | G+CI |
 | **R-DOOR** | Openings are WIDE + TYPED: clear passage `gateOpenWidth = 13` (~9.6 m), flanking gatehouse towers seated OUTSIDE the passage; main/road gate = **PORTCULLIS** (raise-up), others = **DOUBLE_LEAF** (swing). | `GATE_OPEN_W=13` | G(data)+R |
 | **R-GATE** | Gate-count ladder: outer wall `ringN+1` doors (KEEP 2 / CASTLE 3 / PALACE 4, road doors count, cap 5); each ward inward one fewer (floor 2), staggered — never a straight run to the keep. | | G+CI |
-| **R-SPACE** | Doors ≥20u apart (two close openings erase the wall between). | 20u | G |
+| **R-SPACE** | Doors ≥20u apart (two close openings erase the wall between). **Postern exception (v28):** a sally door added by R-REACH-ALL may sit ≥14u from a grand door (arches 5.5+5.5 still leave ≥3u of curtain) — cramped citadels must open before they stay pretty. | 20u / postern 14u | G |
+| **R-POSTERN** | *(v28)* A wall that seals off a real ground pocket (≥25 walkable cells with no door facing it) gets a **postern door** (`castle_gate_Np`, r 5.5, DOUBLE_LEAF) at the best wall segment straddling pocket↔field — real castles have sally ports, never blank masonry facing a field. Site rules: ≥14u from doors, ≥16u from towers — but an **expendable** drum (not a gatehouse flanker, ≥16u from every door) may be DEMOTED to a wall anchor to make room. Hard cap 5 doors/ring holds; a pocket that still can't open is masked walk=0 instead (see R-REACH-ALL). | postern spacing 14u | G+CI |
 | **R-ROAD / R-PATH** | **A road that meets the wall meets it AT a door** — never blank masonry. One wide door per road crossing: crossings of the same road MERGE (<22u), the anchor moves to the road-cell CENTROID (exact centre), arch half-width ≈ 0.75× road width (opening ≥1.5× road width, cap 26u); the approach re-carves outside→arch→inside and wall-hugging road cells sweep away. Post-repair corridors get doors too. | v24 merge + v21 recarve | G+CI |
 | **R-ENTRANCE** | The attackable entrance reads at a glance (gate leaves drawn swung open in the preview; runtime states in-engine). | | R |
 | **R-BRIDGE** | The moat/water crossing (drawbridge/causeway site) names the MAIN gate; PORTCULLIS goes there. | | G |
@@ -56,6 +57,7 @@ estates + siege-test (1084 checks), **R** = renderer contract (preview3d = refer
 | **R-ST1/2/3** | A stair never intersects a wall (centerline ≥3.3u clear outside the last ~4.5u top-contact); top lands ON the walk (never in a tower drum, ≥5u from tower anchors); foot stands INSIDE its ward on walkable ground. | | G+CI |
 | **R-STD** | Stairs are PER-RING DATA — renderers draw `rings[].stairs[]` VERBATIM; no renderer-side stair derivation exists. | | G+R |
 | **R-REACH** | Every flight's foot is BFS-reachable from the courtyard (shared `traverse.js` model — generator and audit can never disagree); a ring never drops to zero stairs. | | G |
+| **R-REACH-ALL** | *(v28, owner 2026-08-31 "units running non-stop into rocks/walls")* **Walkable ⇔ reachable, walls included.** The honest-walk-mask pass floods the WALLS-STAMPED model (the exact `stampWalls` the audit + engine use) and demands ONE connected field containing all spawns + lanes: (1) sealed pockets holding resources/build-spots get a CARVED corridor; (2) river/rock-split landmasses (≥25 cells) get a ford/causeway at the banks' closest approach; (3) wall-sealed pockets get a POSTERN (R-POSTERN); (4) whatever still can't connect is masked walk=0 and stranded objects/spawns hop to the main field — no engine can ever path a unit into ground it can't reach. CI runs the full traverse audit per artifact: components=1, isolatedCells=0, 100/100 walks, all stair feet. | 4 assertions × 48 castles | G+CI |
 | **R-GRADE** | **Walkable grade (v27):** flight RUN targets `rise × 1.2` (grade ≈ 39.8°) wherever the ward/wall stretch affords it — longer on taller walls, not steeper. Tight geometry compresses but stays STEPPED. Median across the world: 39.9°. | `GRADE_RUN` | G |
 | **R-STEP** | Every flight ships its full stepped spec: `steps` (≈h/1.5, 5–12), `riser`, `tread`, `rise`, `grade`, `width`, `material:"STONE"`, `render:"STEPS"`, `walkable`. **Render as steps — NEVER a sloped plank.** | | G(data)+R |
 | **R-RAMP** | A renderer may substitute a ramp ONLY if it is **WOOD-coloured and ≤40°** (`rampAlt{material:"WOOD",maxGrade:40}`) — a ramp is gentler than the stair, never steeper, and reads as timber, not masonry. | 40° | R |

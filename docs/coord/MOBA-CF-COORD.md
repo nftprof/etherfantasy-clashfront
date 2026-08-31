@@ -1236,3 +1236,19 @@ Effect: a stale MOBA map can never ship silently again; the human is forced to v
 first. CF-side silent auto-copy (added earlier same day) was reverted. **Owed:** EF Moba deploy agent
 merges this branch into the deploy branch; first post-merge deploy will fail-fast until siege-test is
 vendored to genVersion 26 (current authority).
+
+### 2026-08-31 · STUCK UNITS ("running into rocks/walls non-stop") — map half FIXED (GEN_VERSION 28), engine half SPEC'D
+Owner filmed both armies wall-grinding. Split diagnosis:
+- **MAP half (CF ParcelMap, DONE):** the traverse audit proved the walk masks were dishonest — siege-test
+  had 3 walk components + 1,291 walkable-but-unreachable cells (a unit targeted there grinds forever);
+  Jinjiang River Citadel's whole far bank (1,244 cells) was sealed behind a gateless wall. GEN_VERSION 28
+  = HONEST WALK MASK: walkable ⇔ reachable on the walls-stamped model, sealed pockets get POSTERN doors /
+  carved fords, the rest is masked walk=0. All shipped artifacts (siege-test + 11 estates) now audit
+  100/100 walks · 1 component · 0 isolated cells, CI-enforced forever (R-REACH-ALL, 1,276-check sweep).
+  **NB for the vendor guard: siege-test authority is now genVersion 28** (was 26 in the entry above).
+- **ENGINE half (→ EF Moba Network, OWED):** `docs/briefs/UNIT-PATHING-FALLBACK-SPEC.md` — (1) build
+  collision from the artifact walk mask + structure contracts, never render meshes; (2) per-line fallback
+  DIRECTIVE CHAIN (primary → nearest-reachable stand-in → lane fallback → hold+engage); (3) the
+  anti-grind watchdog: <0.5u progress over ~1.5s under a move order ⇒ drop a level — no unit ever
+  walk-cycles into a blocker; (4) invalidate cached paths on gate/wall state changes. New map data the
+  engine should honor: POSTERN gates are ordinary GATE anchors (`castle_gate_Np`, r 5.5, DOUBLE_LEAF).

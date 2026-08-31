@@ -3723,8 +3723,8 @@
     {
       "id": "res_0",
       "kind": "GOLD_MINE",
-      "x": -62,
-      "z": -38,
+      "x": -60,
+      "z": -36,
       "richness": 0.9
     },
     {
@@ -3759,7 +3759,7 @@
   "buildSpots": [
     {
       "anchorId": "bs_ring0",
-      "x": 6,
+      "x": 4,
       "z": -14,
       "size": "M"
     },
@@ -3772,7 +3772,7 @@
     {
       "anchorId": "bs_ring2",
       "x": -28,
-      "z": 6,
+      "z": 4,
       "size": "M"
     },
     {
@@ -3910,7 +3910,7 @@
       "side": "OBJECTIVE",
       "edge": "C",
       "x": 0,
-      "z": 0
+      "z": -2
     }
   ],
   "lanes": [

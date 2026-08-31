@@ -4763,7 +4763,7 @@
     {
       "id": "res_0",
       "kind": "GOLD_MINE",
-      "x": -82,
+      "x": -80,
       "z": -30,
       "richness": 0.5
     },
@@ -4909,7 +4909,7 @@
       "id": "center",
       "side": "OBJECTIVE",
       "edge": "C",
-      "x": 0,
+      "x": -2,
       "z": 0
     }
   ],

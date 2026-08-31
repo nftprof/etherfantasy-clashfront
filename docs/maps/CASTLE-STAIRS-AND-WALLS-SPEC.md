@@ -152,3 +152,33 @@ maps through the fixed pipeline; L3 castles generate the fields live. castle-geo
   anchors near gates (v24). NEW: renderer-DERIVED towers obey the same rule — `wallRing.towers.
   gateClearance = 16` in the contract, and `preview3d.html` bumps its derived-tower gate clearance from
   9u → 16u (the 9u gap was exactly the "side door in the crook of a tower" the owner flagged).
+
+## v28 — HONEST WALK MASK + posterns (owner 2026-08-31: "units on both sides running non-stop into rocks/walls")
+- **Root cause quantified** (traverse audit, pre-fix siege-test): 3 walk components, 1,291 isolated
+  walkable cells — ground the walk mask called walkable but nothing could ever reach. A unit pathed
+  toward such a cell grinds against geometry forever. Committed estates had the same disease
+  (Jinjiang River Citadel: 93/100 walks, a 1,244-cell bank unreachable).
+- **R-REACH-ALL (the rule): walkable ⇔ reachable, on the WALLS-STAMPED model.** The generator now
+  floods the exact `stampWalls` model the audit uses (walls solid, arches open — `traverse.js` exports
+  it; one model, three consumers, zero disagreement) and repairs in order:
+  1. sealed pockets holding resources/build-spots → carve a real corridor (no mask lies);
+  2. split landmasses ≥25 cells (river/rock bands) → ford/causeway carved at the banks' closest approach;
+  3. wall-sealed field pockets → **POSTERN door** (`castle_gate_Np`, r 5.5, DOUBLE_LEAF, wood):
+     best straddling wall segment, ≥14u from doors (postern-relaxed R-SPACE — arches 5.5+5.5 keep ≥3u
+     of curtain), ≥16u from towers, with one twist: an **expendable drum** (≥16u from every door, so
+     never a gatehouse flanker) may be **demoted to a wall anchor** to clear the crook — a cramped ring
+     trades one drum for a working door. Hard cap 5 doors/ring holds.
+  4. anything still sealed → masked walk=0 + stranded objects/spawns hop to the main field.
+- **Multi-seed honesty:** the flood's MAIN component is the one holding the most spawn/lane seeds —
+  a pocket containing one stray entry spawn is still a pocket (first cut got this wrong and blessed a
+  sealed south field because one spawn stood inside it).
+- **Order fix:** props/ruin/overlay now sample AFTER the honest pass (it carves), and the v21 wall-hug
+  road sweep + sliver stabilization re-run after postern vertex moves.
+- **CI:** `castle_geometry.test.js` runs the FULL traverse audit per artifact — components=1,
+  isolatedCells=0, 100/100 walks, all stair feet reachable (+192 assertions; sweep now 1,276).
+  Results: siege-test 100/100 · 1 comp · 0 isolated; all 11 estates likewise (Jinjiang healed by a
+  postern through its gateless far-bank wall; Bastion of Dominus +1 postern, its 99-cell leftover
+  honestly masked at the door cap).
+- **Engine-side counterpart** (relayed): `docs/briefs/UNIT-PATHING-FALLBACK-SPEC.md` — collision must
+  come from the artifact walk mask + structure contracts (never render meshes), plus per-line fallback
+  directives so an unreachable primary target degrades to a reachable stand-in instead of wall-grinding.

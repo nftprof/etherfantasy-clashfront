@@ -21,7 +21,7 @@ import { makeRng } from "../sim/rng.js";
 import { clampParams, budgetFor, ARCHETYPES, PALETTES, LANDMARKS, BARRIER_KINDS, T, CELL_M, gIdx, inG, cellOf, worldOf, isBlocked, b64, pointInPoly } from "./schema.js";
 import { archetypes } from "./archetypes.js";
 import { validateAndRepair, snapOpen, snapOpenOrDrop, erode, routesToCenter } from "./validate.js";
-import { groundReachability } from "./traverse.js";
+import { groundReachability, stampWalls } from "./traverse.js";
 import { executeFeatures } from "./features.js";
 import { loadWorldField, featuresForParcel, fitToArena } from "./worldfield.js";
 import { ruinLore, RUIN_TYPES } from "./chronicle.js";
@@ -1537,7 +1537,7 @@ const PALACE_STYLES = { UW2: "drowned_bastion", ENT: "carnavale", EDU: "collegia
 // anchors = vertices of the solid wallRing polyline t 4.2, never independent cylinders) +
 // siege.wallRing gains t/archClearH — engines build the navmesh from THIS instead of guessing
 // (the "units running in circles around towers" fix on the map side).
-export const GEN_VERSION = 27;   // v27: walkable-grade stairs (run targets rise×1.2 ≈ 40°) + DRUM_TURRET/archerPorts + wallRing.towers contract + road-centered wide doors
+export const GEN_VERSION = 28;   // v28: HONEST WALK MASK (walkable ⇔ reachable, walls-stamped model) + POSTERN doors for wall-sealed field pockets (owner: units grinding into rocks/walls)
 
 export function generate(parcel, params = null, designVersion = 0) {
   // designVersion is MANDATORY in every artifact (MOBA contract fix 3: it pins caches, replays,
@@ -1967,6 +1967,269 @@ export function generate(parcel, params = null, designVersion = 0) {
   // snapping would bend the ring out of shape.
   structures.push(...castleStructures);
 
+  // 6) bake: walkability bitmask FIRST — the honest-walk pass below may still carve the grid
+  //    (corridors, postern aprons), so props/ruin sample AFTER it, from the truly final grid.
+  const walk = new Uint8Array(G * G);
+  for (let i = 0; i < g.length; i++) walk[i] = isBlocked(g, i) ? 0 : 1;
+  // HONEST WALK MASK (owner 2026-08-31: "units on both sides running non-stop into rocks/walls" —
+  // the walk audit found walkable-but-UNREACHABLE pockets, e.g. siege-test had 3 components + 1291
+  // isolated cells; a unit pathed into/targeted at one grinds against geometry forever). Walkable must
+  // mean REACHABLE: flood from every spawn zone + lane waypoint; an unreached walkable pocket either
+  // (a) holds gameplay objects (resource / build-spot) → CARVE a corridor to the main field (the same
+  // honest repair validateAndRepair uses — a real path, not a mask lie), re-flooding after each carve;
+  // any object STILL sealed (OOB-split) relocates to the nearest reached cell; then (b) every remaining
+  // unreached walkable cell is masked walk=0 — visuals untouched (a pretty sealed grove stays), but no
+  // engine can ever path a unit into it. Deterministic, no rng.
+  {
+    const cellIdx = (wx, wz) => gIdx(G, cellOf(G, wx), cellOf(G, wz));
+    const flood = () => {
+      const reach = new Uint8Array(G * G), q = [];
+      const seed = (wx, wz) => { const i = cellIdx(wx, wz); if (walk[i] && !reach[i]) { reach[i] = 1; q.push(i); } };
+      for (const s of spawnZones) seed(s.x, s.z);
+      for (const lane of lanes) for (const [wx, wz] of lane) seed(wx, wz);
+      for (let h = 0; h < q.length; h++) { const i = q[h], x = i % G, z = (i / G) | 0;
+        for (const [dx, dz] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const nx = x + dx, nz = z + dz;
+          if (!inG(G, nx, nz)) continue; const ni = gIdx(G, nx, nz);
+          if (walk[ni] && !reach[ni]) { reach[ni] = 1; q.push(ni); } } }
+      return reach;
+    };
+    let reach = flood();
+    // (a) connect sealed pockets that hold gameplay objects — carve toward the nearest reached cell.
+    for (let pass = 0; pass < 4; pass++) {
+      const sealed = [...resources, ...buildSpots].filter((o) => walk[cellIdx(o.x, o.z)] && !reach[cellIdx(o.x, o.z)]);
+      if (!sealed.length) break;
+      const o = sealed[0];
+      let bi = -1, bd = Infinity;
+      for (let i = 0; i < G * G; i++) if (reach[i]) { const x = i % G, z = (i / G) | 0;
+        const d = (x - cellOf(G, o.x)) ** 2 + (z - cellOf(G, o.z)) ** 2; if (d < bd) { bd = d; bi = i; } }
+      if (bi < 0) break;
+      carvePath(g, G, [[o.x, o.z], [worldOf(G, bi % G), worldOf(G, (bi / G) | 0)]], 1.5, false);
+      for (let i = 0; i < g.length; i++) walk[i] = isBlocked(g, i) ? 0 : 1;
+      reach = flood();
+    }
+    // (a2) GLOBAL RAW CONNECTIVITY: the field must be ONE component before walls even enter the
+    // picture. A river/rock band can split the map with spawns on one bank and the objective on
+    // the other (Jinjiang River Citadel: 1,244-cell spawn bank vs 1,366-cell castle bank, 7 dead
+    // walks) — carve a ford/causeway between every major sealed landmass (≥25 cells) and the
+    // reached field at their CLOSEST approach, re-flooding after each carve.
+    for (let pass2a = 0; pass2a < 4; pass2a++) {
+      const comp0 = new Int32Array(G * G).fill(-1); const c0N = [];
+      for (let s0 = 0; s0 < G * G; s0++) {
+        if (!walk[s0] || reach[s0] || comp0[s0] >= 0) continue;
+        const nc = c0N.length, q2 = [s0]; comp0[s0] = nc; let n = 0;
+        for (let h = 0; h < q2.length; h++) { const i = q2[h]; n++; const x = i % G, z = (i / G) | 0;
+          for (const [dx, dz] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const nx = x + dx, nz = z + dz;
+            if (!inG(G, nx, nz)) continue; const ni = gIdx(G, nx, nz);
+            if (walk[ni] && !reach[ni] && comp0[ni] < 0) { comp0[ni] = nc; q2.push(ni); } } }
+        c0N.push(n);
+      }
+      let target0 = -1;
+      for (let c = 0; c < c0N.length; c++) if (c0N[c] >= 25 && (target0 < 0 || c0N[c] > c0N[target0])) target0 = c;
+      if (target0 < 0) break;
+      // closest (pocket cell, reached cell) pair — the ford goes where the banks nearly touch.
+      let bp = -1, br = -1, bd0 = Infinity;
+      const pocketCells = [], reachCells = [];
+      for (let i = 0; i < G * G; i++) { if (comp0[i] === target0) pocketCells.push(i); else if (reach[i]) reachCells.push(i); }
+      for (const pi of pocketCells) { const px = pi % G, pz = (pi / G) | 0;
+        for (const ri of reachCells) { const rx = ri % G, rz = (ri / G) | 0;
+          const d = (px - rx) * (px - rx) + (pz - rz) * (pz - rz);
+          if (d < bd0) { bd0 = d; bp = pi; br = ri; } } }
+      if (bp < 0) break;
+      carvePath(g, G, [[worldOf(G, bp % G), worldOf(G, (bp / G) | 0)], [worldOf(G, br % G), worldOf(G, (br / G) | 0)]], 2.2, false);
+      for (let i = 0; i < g.length; i++) walk[i] = isBlocked(g, i) ? 0 : 1;
+      reach = flood();
+    }
+    // any object STILL sealed (an OOB-split pocket no carve can cross) hops to the nearest reached cell.
+    for (const o of [...resources, ...buildSpots]) {
+      if (!walk[cellIdx(o.x, o.z)] || reach[cellIdx(o.x, o.z)]) continue;
+      let bi = -1, bd = Infinity;
+      for (let i = 0; i < G * G; i++) if (reach[i]) { const x = i % G, z = (i / G) | 0;
+        const d = (x - cellOf(G, o.x)) ** 2 + (z - cellOf(G, o.z)) ** 2; if (d < bd) { bd = d; bi = i; } }
+      if (bi >= 0) { o.x = r1(worldOf(G, bi % G)); o.z = r1(worldOf(G, (bi / G) | 0)); }
+    }
+    // (b) WALLS-STAMPED model (same stampWalls the audit + v2 engine use — walls are SOLID except
+    // the arch at each gate). The raw flood above sees through walls, so ground sealed BETWEEN a
+    // curtain and the parcel edge still looked reachable (siege-test: a 1,586-cell SE field with
+    // no door facing it — units pathed there grind on the wall forever). Re-flood with walls
+    // stamped; any sealed ground pocket big enough to matter gets a POSTERN door (real castles
+    // have sally ports — never blank masonry facing a field), respecting R-SPACE (≥20u between
+    // doors) + R-GATE-TOWER (≥16u from every tower) + the 5-door cap; whatever stays sealed is
+    // masked walk=0 so no engine ever paths a unit into it.
+    if (castleParts && castleParts.geom && castleParts.geom.pts.length >= 3) {
+      const geo = castleParts.geom;
+      const T2p = CASTLE_TIERS[castle && CASTLE_TIERS[castle.kind] ? castle.kind : "KEEP"];
+      // Component labelling on the stamped grid. The MAIN component = the one holding the most
+      // flood seeds (spawns + lane waypoints — tie broken by size); a pocket holding ONE stray
+      // seed is still a pocket (the first cut of this pass flood-filled from all seeds at once,
+      // so a sealed south field with an entry spawn inside it passed as "reached" — dishonest).
+      const stampedComp = () => {
+        const blocked2 = new Uint8Array(G * G);
+        for (let i = 0; i < G * G; i++) blocked2[i] = walk[i] ? 0 : 1;
+        const CRp = concentricRings(geo, T2p, poly, { g, G });
+        stampWalls(blocked2, G, CRp.rings, (i) => !!walk[i]);
+        const comp = new Int32Array(G * G).fill(-1); const compN = [];
+        for (let s0 = 0; s0 < G * G; s0++) {
+          if (blocked2[s0] || comp[s0] >= 0) continue;
+          const nc = compN.length, q2 = [s0]; comp[s0] = nc; let n = 0;
+          for (let h = 0; h < q2.length; h++) { const i = q2[h]; n++; const x = i % G, z = (i / G) | 0;
+            for (const [dx, dz] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const nx = x + dx, nz = z + dz;
+              if (!inG(G, nx, nz)) continue; const ni = gIdx(G, nx, nz);
+              if (!blocked2[ni] && comp[ni] < 0) { comp[ni] = nc; q2.push(ni); } } }
+          compN.push(n);
+        }
+        const seedsIn = new Array(compN.length).fill(0);
+        const tally = (wx, wz) => { const c = comp[cellIdx(wx, wz)]; if (c >= 0) seedsIn[c]++; };
+        for (const s of spawnZones) tally(s.x, s.z);
+        for (const lane of lanes) for (const [wx, wz] of lane) tally(wx, wz);
+        let main = 0;
+        for (let c = 1; c < compN.length; c++)
+          if (seedsIn[c] > seedsIn[main] || (seedsIn[c] === seedsIn[main] && compN[c] > compN[main])) main = c;
+        return { blocked2, comp, compN, main };
+      };
+      for (let posternPass = 0; posternPass < 3; posternPass++) {
+        const { comp, compN, main } = stampedComp();
+        // largest sealed OPEN pocket (≥25 cells, not the main field)
+        let target = -1;
+        for (let c = 0; c < compN.length; c++)
+          if (c !== main && compN[c] >= 25 && (target < 0 || compN[c] > compN[target])) target = c;
+        if (target < 0 || (geo.gates || []).length >= 5) {
+          if (process.env.CF_DEBUG_HONEST && target >= 0)
+            console.error(`[honest] postern pass ${posternPass}: pocket ${target}(${compN[target]}) skipped — door cap ${(geo.gates || []).length}`);
+          break;
+        }
+        // postern site: walk the OUTER ring; a sample whose two normal-offset probes straddle
+        // sealed-pocket ↔ reached ground can take a door. Keep R-SPACE + R-GATE-TOWER.
+        const towers = castleParts.structures.filter((s2) => s2.kind === "TOWER");
+        const gatePts = (geo.gates || []).map((g2) => g2.at || g2);
+        let best = null;
+        const rej = { space: 0, tower: 0, straddle: 0 };
+        for (let qi = 0; qi < geo.pts.length; qi++) {
+          const A = geo.pts[qi], B = geo.pts[(qi + 1) % geo.pts.length];
+          const L = Math.hypot(B[0] - A[0], B[1] - A[1]) || 1, nx0 = -(B[1] - A[1]) / L, nz0 = (B[0] - A[0]) / L;
+          for (let k = 2; k < Math.round(L) - 2; k += 2) {
+            const x = A[0] + (B[0] - A[0]) * (k / L), z = A[1] + (B[1] - A[1]) * (k / L);
+            // R-SPACE, postern edition: 14u not 20u — a sally door may sit nearer a main gate than
+            // two grand doors may sit to each other (arch 5.5+5.5 still leaves ≥3u of curtain); a
+            // cramped river citadel's far-bank wall is ~19u from its corner gates and MUST open.
+            if (gatePts.some((gp2) => Math.hypot(gp2[0] - x, gp2[1] - z) < 14)) { rej.space++; continue; }
+            // R-GATE-TOWER (16u + margin): a tower in the crook blocks the site — UNLESS every
+            // conflicting tower is EXPENDABLE (not a gatehouse flanker of another door, i.e. ≥16u
+            // from every existing gate): then the postern may claim the spot and DEMOTE those
+            // drums to plain wall anchors (a cramped ring trades one drum for a working door).
+            const conflicting = towers.filter((t2) => Math.hypot(t2.x - x, t2.z - z) < 17);
+            if (conflicting.some((t2) => gatePts.some((gp2) => Math.hypot(gp2[0] - t2.x, gp2[1] - t2.z) < 16))) { rej.tower++; continue; }
+            // straddle probe: any target-comp cell on one side, any main-comp cell on the other —
+            // sweep several offsets so a wall hugging water/quantization still finds its pocket.
+            let sawT = 0, sawM = 0;   // bit 1 = +normal side, bit 2 = −normal side
+            for (const dd of [3.5, 4.5, 6, 8]) {
+              const iP = cellIdx(x + nx0 * dd, z + nz0 * dd), iQ = cellIdx(x - nx0 * dd, z - nz0 * dd);
+              if (comp[iP] === target) sawT |= 1; else if (comp[iP] === main) sawM |= 1;
+              if (comp[iQ] === target) sawT |= 2; else if (comp[iQ] === main) sawM |= 2;
+            }
+            if (!((sawT & 1 && sawM & 2) || (sawT & 2 && sawM & 1))) { rej.straddle++; continue; }
+            // prefer mid-segment; a site that costs tower demotions ranks far below a clean one
+            const score = compN[target] - Math.abs(k - L / 2) - conflicting.length * 1000;
+            if (!best || score > best.score) best = { x: r1(x), z: r1(z), score, demote: conflicting };
+          }
+        }
+        if (process.env.CF_DEBUG_HONEST && !best)
+          console.error(`[honest] postern pass ${posternPass}: no site for pocket ${target}(${compN[target]}) — rejected space=${rej.space} tower=${rej.tower} straddle=${rej.straddle}`);
+        if (!best) break;
+        // convert the nearest WALL anchor into the postern door (same move as the repair-road
+        // pass — MUTATE in place: the object is shared with the merged structures[] array).
+        let bi2 = -1, bd3 = Infinity;
+        for (let i = 0; i < castleParts.structures.length; i++) {
+          const s2 = castleParts.structures[i];
+          if (s2.kind !== "WALL") continue;
+          const d = Math.hypot(s2.x - best.x, s2.z - best.z);
+          if (d < bd3) { bd3 = d; bi2 = i; }
+        }
+        if (bi2 < 0 || bd3 >= 30) {
+          if (process.env.CF_DEBUG_HONEST) console.error(`[honest] postern site ${best.x},${best.z} found but no WALL anchor within 30 (nearest ${r1(bd3)})`);
+          break;
+        }
+        const s2 = castleParts.structures[bi2];
+        const pi2 = geo.pts.findIndex((p2) => p2[0] === s2.x && p2[1] === s2.z);
+        if (pi2 >= 0) { geo.pts[pi2][0] = best.x; geo.pts[pi2][1] = best.z; }
+        // demote any expendable drums in the postern's crook to plain wall anchors (R-GATE-TOWER
+        // holds by construction afterwards — the mural-drum renderer derivation auto-skips ≤16u
+        // of the new door via wallRing.towers.gateClearance).
+        for (const t2 of best.demote || []) {
+          t2.kind = "WALL"; t2.blocking = "WALL_RING";
+          t2.anchorId = String(t2.anchorId || "").replace("castle_tower_", "castle_wall_pd");
+          delete t2.form; delete t2.wallWalkThrough; delete t2.passageW; delete t2.archerPorts;
+        }
+        const gid2 = `castle_gate_${(geo.gates || []).length}p`;               // p-suffix: postern
+        s2.anchorId = gid2; s2.kind = "GATE"; s2.material = "WOOD";
+        s2.states = ["CLOSED", "OPEN", "BROKEN"]; s2.blocking = "DOOR"; s2.r = 5.5;
+        s2.x = best.x; s2.z = best.z; delete s2.form; delete s2.wallWalkThrough; delete s2.passageW; delete s2.archerPorts;
+        geo.gates.push({ at: [best.x, best.z], structureId: gid2 });
+        disc(g, G, cellOf(G, best.x), cellOf(G, best.z), 7, false);            // clear the arch apron
+        for (let i = 0; i < g.length; i++) walk[i] = isBlocked(g, i) ? 0 : 1;
+      }
+      // v21 wall-hug road sweep, postern edition: a postern moves a wall VERTEX, so the ring can
+      // newly pass beside road cells the 5b sweep already blessed — repaint any road cell hugging
+      // the final wall line away from a door (walkability identical; only the drawn path trims).
+      {
+        const gatePts4 = (geo.gates || []).map((g2) => g2.at || g2);
+        for (let q = 0; q < geo.pts.length; q++) {
+          const A = geo.pts[q], B = geo.pts[(q + 1) % geo.pts.length];
+          const L = Math.hypot(B[0] - A[0], B[1] - A[1]), steps = Math.max(1, Math.round(L));
+          for (let k = 0; k <= steps; k++) {
+            const x = A[0] + (B[0] - A[0]) * (k / steps), z = A[1] + (B[1] - A[1]) * (k / steps);
+            if (gatePts4.some((gp2) => Math.hypot(gp2[0] - x, gp2[1] - z) < 7)) continue;
+            const cx2 = cellOf(G, x), cz2 = cellOf(G, z);
+            for (let dz = -1; dz <= 1; dz++) for (let dx = -1; dx <= 1; dx++) {
+              const nx = cx2 + dx, nz = cz2 + dz;
+              if (!inG(G, nx, nz)) continue;
+              const i = gIdx(G, nx, nz);
+              if (g[i] === T.ROAD && Math.hypot(worldOf(G, nx) - x, worldOf(G, nz) - z) <= 2.6) g[i] = T.OPEN;
+            }
+          }
+        }
+      }
+      // sliver re-pass: carves/postern aprons can expose fresh 1-cell blades (engine rule 9) —
+      // same opening-only stabilization as pass 4c, then rebuild the raw mask.
+      for (let pass3 = 0; pass3 < 24; pass3++) {
+        let changed = 0;
+        for (let z2 = 1; z2 < G - 1; z2++) for (let x2 = 1; x2 < G - 1; x2++) {
+          const i = gIdx(G, x2, z2);
+          if (g[i] === T.OOB || !isBlocked(g, i)) continue;
+          const opN = !isBlocked(g, i - G) && g[i - G] !== T.OOB, opS = !isBlocked(g, i + G) && g[i + G] !== T.OOB;
+          const opW = !isBlocked(g, i - 1) && g[i - 1] !== T.OOB, opE = !isBlocked(g, i + 1) && g[i + 1] !== T.OOB;
+          if ((opN && opS) || (opW && opE)) { g[i] = T.OPEN; changed++; }
+        }
+        if (!changed) break;
+      }
+      for (let i = 0; i < g.length; i++) walk[i] = isBlocked(g, i) ? 0 : 1;
+      // final honest mask on the STAMPED model: everything outside the MAIN component goes
+      // walk=0. Cells under the wall BAND itself stay as the grid says — wall collision is the
+      // ring polyline contract (blocking:"WALL_RING"), and zeroing the band would fake 1-cell
+      // slivers in the mask. Any gameplay object or SPAWN still stranded outside the main field
+      // (postern cap hit / no legal door site) hops to the nearest main-field cell first — a
+      // spawn on masked ground would break the walkable-spawn invariant.
+      const fin = stampedComp();
+      const hopToMain = (o) => {
+        const c0 = fin.comp[cellIdx(o.x, o.z)];
+        if (c0 === fin.main) return;
+        let bi3 = -1, bd4 = Infinity;
+        for (let i = 0; i < G * G; i++) if (fin.comp[i] === fin.main) { const x = i % G, z = (i / G) | 0;
+          const d = (x - cellOf(G, o.x)) ** 2 + (z - cellOf(G, o.z)) ** 2; if (d < bd4) { bd4 = d; bi3 = i; } }
+        if (bi3 >= 0) { o.x = r1(worldOf(G, bi3 % G)); o.z = r1(worldOf(G, (bi3 / G) | 0)); }
+      };
+      for (const o of [...resources, ...buildSpots, ...spawnZones]) hopToMain(o);
+      let zeroed = 0;
+      for (let i = 0; i < G * G; i++) if (walk[i] && !fin.blocked2[i] && fin.comp[i] !== fin.main) { walk[i] = 0; zeroed++; }
+      if (process.env.CF_DEBUG_HONEST) {
+        const kc = cellIdx(geo.keepAt ? geo.keepAt[0] : 0, geo.keepAt ? geo.keepAt[1] : 0);
+        console.error(`[honest] comps=${fin.compN.length} sizes=${fin.compN.filter((n) => n >= 8).join(",")} main=${fin.main}(${fin.compN[fin.main]}) zeroed=${zeroed} gates=${(geo.gates || []).length} keepComp=${fin.comp[kc]}`);
+      }
+    } else {
+      // no castle: walkable ⇔ reachable on the raw flood.
+      for (let i = 0; i < G * G; i++) if (walk[i] && !reach[i]) walk[i] = 0;
+    }
+  }
+
   // 5c) RUIN — the seeded Chronicle layer (own rng stream — see placeRuin; décor only, so the
   //     grid/walk mask and every invariant are untouched). Avoid points come from the FINAL
   //     (snapped) spawn zones so placement is recoverable from the artifact alone: wide berth
@@ -1984,13 +2247,11 @@ export function generate(parcel, params = null, designVersion = 0) {
     ? placeOverlayDecor(g, G, wf.overlayElements)
     : { decor: [], dropped: [] };
 
-  // 6) bake: props from final grid; walkability bitmask
+  // props from the FINAL grid (after honest-walk carves/posterns — nothing stands in a new arch).
   const props = sampleProps(g, G, rng);
   if (ruin) props.unshift(ruin);
   if (landmark) props.unshift(landmark);
   if (overlay.decor.length) props.unshift(...overlay.decor);
-  const walk = new Uint8Array(G * G);
-  for (let i = 0; i < g.length; i++) walk[i] = isBlocked(g, i) ? 0 : 1;
 
   // ---- SIEGE BLOCK (standard contract — MOBA contract fix 1/2/4, 2026-07-21; the shapes that
   // lived under the test map's `_siegeTest` are now a first-class field). Emitted on EVERY parcel

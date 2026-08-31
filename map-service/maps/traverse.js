@@ -58,7 +58,9 @@ export function groundReachability(g, G, rings, home) {
 // shared wall stamping: block every wall body cell except the arch at each gate; punch the
 // arches clean afterwards (cell quantization otherwise pinches them shut). baseOpen(i) says
 // whether a cell is walkable BEFORE walls — punched cells must be real ground.
-function stampWalls(blocked, G, rings, baseOpen) {
+// EXPORTED (2026-08-31): the generator's honest-walk-mask pass floods on this exact model, so
+// generator, audit, and engine can never disagree about what a wall seals.
+export function stampWalls(blocked, G, rings, baseOpen) {
   const allGates = [];
   for (const ring of rings || []) {
     const pts = ring.pts || [], gates = (ring.gates || []).map((g2) => g2.at || g2);

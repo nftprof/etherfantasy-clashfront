@@ -28,6 +28,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { loadWorldField, worldParcel, l3Row, clearWorldFieldCache } from "../worldfield.js";
 import { generate, CASTLE_TIERS } from "../generate.js";
+import { runAudit } from "../traverse.js";
 import { T } from "../schema.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -72,6 +73,17 @@ function checkArtifact(label, art) {
     }
     ok(!gatesS.length || !towersS.length || minGT >= 15.5,
       `${label}: R-GATE-TOWER min gate↔tower ${minGT.toFixed(1)}u (${worst}) < 16u`);
+  }
+  // R-REACH-ALL (v28, owner 2026-08-31 "units running non-stop into rocks/walls"): the FULL
+  // traverse audit on the artifact — walkable ⇔ reachable, walls-stamped. One connected field,
+  // zero isolated cells, every dedicated walk + every stair foot passes. This is the guard that
+  // makes stuck-unit pockets a CI failure instead of an owner sighting.
+  {
+    const s = runAudit(art).stats;
+    ok(s.components === 1, `${label}: R-REACH-ALL ${s.components} walk components (must be 1)`);
+    ok(s.isolatedCells === 0, `${label}: R-REACH-ALL ${s.isolatedCells} isolated walkable cells`);
+    ok(s.reached === s.walks, `${label}: R-REACH-ALL ${s.walks - s.reached}/${s.walks} walks failed`);
+    ok(s.stairsOk === s.stairs, `${label}: R-REACH-ALL ${s.stairs - s.stairsOk}/${s.stairs} stair feet unreachable`);
   }
   const T2 = CASTLE_TIERS[cg.tier];
   const keep = cg.keep.at, poly = art.arena.bounds, half = art.arena.sizeM / 2;
