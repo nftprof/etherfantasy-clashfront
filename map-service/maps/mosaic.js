@@ -155,6 +155,40 @@ export function bakeFeatures(px, W, H, toCanvas, PPU, zone, land) {
     const R = (SETTLE_R[place.kind] || SETTLE_R.TOWN) * PPU, [cx, cy] = toCanvas(place.at[0], place.at[1]);
     discStamp(px, W, H, cx, cy, R, urbanFn(cx, cy), land); settles++;
   }
+  // 1b) RIDGE STROKES (owner 2026-08-31, Empyrea: "from aerial nothing seems fortified or obvious —
+  // the glacial rings where?"): hillshade alone drowns under parcel texture on pale land, so every
+  // authored ridge ALSO bakes as a bevel stroke — a wide SHADOW base + a narrow bright CREST,
+  // contrast ADAPTIVE to the land colour (dark strokes on snow, light crest on dark ground).
+  // NB `land` here is the LAND MASK (Uint8 clip), not a colour — the zone's ground colour comes
+  // from landColor(zone) (the first bake of this block read mask bytes and painted tar-black).
+  const lc = landColor(zone);
+  const lum = (lc[0] * 0.3 + lc[1] * 0.59 + lc[2] * 0.11) / 255;
+  // shadow = a COOL slope tint (blue-cast on pale land — glacial walls, not tar), crest = bright
+  const shade = lum > 0.5
+    ? [(lc[0] * 0.66) | 0, (lc[1] * 0.72) | 0, Math.min(255, (lc[2] * 0.86 + 10) | 0)]
+    : lc.map((c) => Math.max(0, (c * 0.66) | 0));
+  const crest = lc.map((c) => Math.min(255, (lum > 0.5 ? c * 1.1 + 22 : c * 1.45 + 34) | 0));
+  for (const rg of field.ridges || []) {
+    if (!rg.pts || rg.pts.length < 2) continue;
+    const wpx = Math.max(1.5, (rg.width || 6) * PPU * 0.34);
+    strokePoly(px, W, H, rg.pts, toCanvas, wpx, solid(shade), land);           // the shadowed wall body
+    strokePoly(px, W, H, rg.pts, toCanvas, wpx * 0.45, solid(crest), land);    // the sunlit crest band
+  }
+  // 1c) CASTLE FOOTPRINTS — fortification must READ from the air: concentric ring-wall glyphs by
+  // kind (PALACE 3 rings · CASTLE 2 · KEEP 1) in masonry grey over the urban patch, + a keep dot.
+  const WALL_C = lum > 0.5 ? [96, 102, 112] : [168, 172, 180];
+  const KIND_RINGS = { PALACE: 3, CASTLE: 2, KEEP: 1 };
+  for (const c of field.castles || []) {
+    if (!Array.isArray(c.at)) continue;
+    const n = KIND_RINGS[c.kind] || 1, R0 = (SETTLE_R[c.kind] || SETTLE_R.TOWN) * 0.85;
+    for (let k = 0; k < n; k++) {
+      const rr = R0 * (1 - k * 0.3), ring = [];
+      for (let a = 0; a <= 28; a++) ring.push([c.at[0] + Math.cos(a / 28 * Math.PI * 2) * rr, c.at[1] + Math.sin(a / 28 * Math.PI * 2) * rr]);
+      strokePoly(px, W, H, ring, toCanvas, Math.max(1.2, PPU * 0.09), solid(WALL_C), land);
+    }
+    const [kx, ky] = toCanvas(c.at[0], c.at[1]);
+    discStamp(px, W, H, kx, ky, Math.max(2, PPU * 0.14), solid(WALL_C), land);
+  }
   // 2) rivers — real flowing water at honest width (naval-ready). Bank tint first, then water core.
   let rivers = 0;
   for (const r of field.rivers || []) {
