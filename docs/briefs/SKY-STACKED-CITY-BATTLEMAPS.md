@@ -94,3 +94,33 @@ separate layer in `traverse.js`). V2 generalizes exactly that contract:
 - **MOBA BattleEngine RAW + EF Moba:** V2 is a real engine milestone (multi-plane collision +
   connector pathing + deck rendering/camera). Relay via MOBA-CF-COORD when V2 is greenlit —
   the wall-walk implementation is the template.
+
+## 7. N-LAYER GENERALIZATION + THE SPIRE (owner 2026-08-31: "can the tech city have 7 layers?")
+
+**The logic holds for any N** — the V2 contract is `decks[]` (a list, not a triple) and the audit
+generalizes to N planes + a connector graph. The practical limits are not engineering:
+
+- **Readability:** in command view, 4+ overlapping decks need a DECK SLIDER (show the active
+  deck, ghost the one above) — solvable, but each extra full-city deck taxes the viewer.
+- **Army mass:** an army split across 7 full decks fights 7 thin skirmishes. Broad decks want
+  to stay few so battles stay THICK.
+
+**The recommendation — both, in their right places:**
+
+1. **City-wide = 3 broad decks** (the 5th-Element read, armies stay massed).
+2. **THE SPIRE OF EMBERFALL = the 7-layer showpiece.** The imperial palace itself is a
+   **seven-tier vertical estate**: each tier a compact fighting floor (throne at the summit,
+   reactor root at the base), and the siege of it plays as the ESTATE BOARD BATTLE (decision 22)
+   **rotated vertical** — each tier = one component; attackers fight UPWARD tier by tier (or cut
+   the lifts and starve the top); a tier can open a live hero-mode match exactly like a POI
+   parcel. Zero new doctrine: the component machinery we already have, stacked instead of
+   spread. Lifts/stairs between tiers are the gates; tier edges drop to the tier below (fall
+   damage), outer edges drop to the void.
+   - Fits canon cleanly: the Ember Throne is already a PALACE estate map — the Spire becomes its
+     pre-designed interior at V2.
+   - Uniqueness: no other zone gets a Spire. Empyrea's Sanctum stays WIDE and serene (three
+     radial platforms — the anti-Spire); Aeropolis stays terraced ruin. One vertical superweapon
+     of a building, in the one city whose identity is "the war machine."
+
+⚙ Owner call: 7 tiers for the Spire confirmed? And does the tier-by-tier climb allow SKIPPING
+(air-drop a squad on tier 5 via flyers) or is it strictly bottom-up + lift-cutting?
