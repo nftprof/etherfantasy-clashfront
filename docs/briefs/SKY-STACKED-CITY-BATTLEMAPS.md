@@ -170,3 +170,32 @@ How you move between levels is each zone's signature:
   ride between two decks — it can be held, contested, or cut; classic lift-camping counterplay ⚙).
 - Concept board rendered for the owner (deckviz — Aeropolis terraces+ramp / Empyrea escalating
   walls+elevator / Emberfall floating transparent decks+elevator+drop-splash).
+
+## 10. DECK SHAPE GRAMMAR + BRIDGES — ✅ OWNER-DIRECTED 2026-08-31 ("criss-cross or concentric per level — no walls = a lot more degrees of freedom"; "be creative"; "the other two cities also get bridges, outer top to the inner of the middle one")
+
+**Emberfall deck shapes are FREE — a per-level shape grammar** (no walls constrain the plan):
+
+| shape | read | vertical interplay |
+|---|---|---|
+| `DISC` | full floor | the safety net below everything |
+| `RING` | annulus — **the middle is a VOID drop-shaft** | ordnance (and bodies) fall THROUGH the hole; the shaft is the city's artillery well |
+| `CROSS` | two crossing bars | bridge-fights over the void; intersections = the only cover |
+| `SPOKES` | 3–6 radial arms | perimeter raids, arm-cutting |
+| `SPIRAL_ARM` | a curved climbing ramp deck | the walkable ascent BETWEEN levels (deck and connector at once) |
+| `ISLETS` | stepping-stone mini-pads between decks | dash-jump routes; fall-bait |
+
+Stacking rules (generator guarantees, ⚙): decks may be **OFFSET** (not co-centered); adjacent
+decks must overlap enough for elevators + a fall-catch coverage floor (⚙ ≥60% of an upper deck's
+edge must have SOME deck below within catch range — "Emberfall is where you fall the most" is
+the identity, but most falls stay catchable per §8). Every deck one walk component; connectors
+audited like stairs.
+
+**BRIDGES for the walled cities (both):** spans from an OUTER level's top to an INNER
+structure's mid-level — fight ON the span, CUT the span (destructible, gate rules apply):
+- **Aeropolis:** ancient arched STONE bridges (aqueduct read) — outer terrace rim → citadel
+  mid-level; overgrown, some already half-fallen (abandonment).
+- **Empyrea:** clean ICE bridges — outer wall-top → middle wall-top → sanctum balcony; the
+  processional shortcuts the pilgrims used, now assault routes.
+Bridges join the V2 connector contract as `kind:"BRIDGE"` (walkable span between two
+level-anchors, destructible, with the §8 edge rules — bump-offs happen on bridges most of all).
+Concept board v2 rendered for the owner (deckviz4).
