@@ -152,3 +152,21 @@ below per edge segment); drop-attack lanes = vertical sightlines the generator m
 of overhangs on the artillery rims; ramp/lift mouths remain the only walk-up paths (choke law).
 Engine-side (EF Moba + BattleEngine RAW): the up/down asymmetry, drop-attack projectile arc +
 splash, dash-jump validation, fall-catch resolution. Relayed via MOBA-CF-COORD.
+
+## 9. CONNECTOR LANGUAGES PER ZONE — ✅ OWNER-LOCKED 2026-08-31 (+ the concept board)
+
+How you move between levels is each zone's signature:
+
+| Zone | Vertical form | Connectors |
+|---|---|---|
+| **HS1 Aeropolis** | overgrown terraces (solid ground steps) | **STAIRS + LONG RAMPS only** — ancient, no machines |
+| **HS3 Empyrea** | **taller and taller WALLS** (masonry stays; classic castle language, escalated) | stairs on the walls + **ELEVATOR platforms** (moving up-down platforms — shared HS2/HS3 tech) |
+| **HS2 Emberfall** | **NO standing walls** — the levels are **transparent FLOATING deck platforms** (wall-TOPS without the wall: the wall-walk with the wall deleted — crystal-tech holds them up) | **ELEVATOR platforms** (the common tech) + light-beam lifts; rails with honest gaps at deck edges |
+
+- The Emberfall reading is the key unification: **a floating deck IS a wall-walk without a wall**
+  — the exact existing wall-walk data contract (walkable band at height + connectors), so the
+  engine's V2 work generalizes one thing, not three.
+- The ELEVATOR is a **moving platform** connector (`kind:"LIFT"` with travel: a platform units
+  ride between two decks — it can be held, contested, or cut; classic lift-camping counterplay ⚙).
+- Concept board rendered for the owner (deckviz — Aeropolis terraces+ramp / Empyrea escalating
+  walls+elevator / Emberfall floating transparent decks+elevator+drop-splash).
