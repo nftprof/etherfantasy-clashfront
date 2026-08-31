@@ -1457,7 +1457,7 @@ function concentricRings(geom, T2, poly, ground = null) {
   return { rings, moundSteps: [] };
 }
 // §2 style keys: PALACES carry their zone's named identity; everything else = generic fieldstone
-const PALACE_STYLES = { UW2: "drowned_bastion", ENT: "carnavale", EDU: "collegiate", HUB: "vermilion", BUS: "hanseatic" };
+const PALACE_STYLES = { UW2: "drowned_bastion", ENT: "carnavale", EDU: "collegiate", HUB: "vermilion", BUS: "hanseatic", HS1: "aeropolis_terrace", HS2: "ember_bastion", HS3: "empyrean_ice" };   // sky trio 2026-08-31
 
 // Generator version — BUMP whenever generation output meaningfully changes (palette rules, terrain
 // passes, water, structures…). Stamped into meta; registry.ensureDesign auto-reseeds stale SEED_V0

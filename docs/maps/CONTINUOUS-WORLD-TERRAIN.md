@@ -69,7 +69,7 @@ roads, rivers, coast, and districts lay out from above. This is *reference*, not
 | **ENT** | Western Carnival Coast, blossom, resort marinas | **Rio de Janeiro** | coast ribbon between hills + sea; marina inlets; carnival waterfront |
 | **EDU** | Academy Highlands plateau, blossom, Grand Academy | **Kyoto** | grid basin ringed by highlands; temple/academy campus districts |
 | **HS1** | Cloud Gateway mesa, airship gateway (sky) | **Cusco / Machu Picchu** | terraced mesa; a single dock gateway; stepped districts |
-| **HS2** | Floating volcano, storm-ash (sky) | **volcanic caldera city (e.g. Reykjavík rim)** | caldera ring; lava-field roads skirting the crater |
+| **HS2** | Ember-crystal isle (sky) — SUPERSEDED 2026-08-31: NOT volcanic ("no volcano in the air") | **tiered imperial war-city** | three tier rings; crystal-field belts; military grid roads |
 | **HS3** | Sky Sanctum, frost summit, sacred (sky) | **Lhasa (Potala)** | a sacred summit citadel; pilgrim roads converging up |
 | **UW1** | Upper Caverns, fungal swamp (underworld) | **Derinkuyu / Cappadocia (underground)** | a warren of tunnels + chambers (structural, not aerial) |
 | **UW2** | Deep flooded caverns, magma veins (underworld) | **flooded cave network / cenote field** | causeways between black lakes |
@@ -97,7 +97,7 @@ governs the URBAN road pattern + where castles/fortifications sit:
 | **Olympus** (CGI) | **ULTRAMODERN luxury enclave** (Dubai Palm / Monaco) | sculpted marina fingers, gated estate drives, one grand corniche | no war-castles — the estates ARE the monuments (private citadel-villas) |
 | **Fortuna** (KOL) | **MODERN spectacle strip** (Las Vegas / Monte Carlo) | one grand strip spine + plaza stages + waterfront promenade | showpiece citadel-casino at the strip's head |
 | **Aeropolis** (HS1) | **ANCIENT terraced sky citadel** (Cusco / Machu Picchu — the castle-in-the-sky isle) | contour terraces + switchback ways up to one airship-dock gateway | summit citadel + dock gatehouse |
-| **Emberfall** (HS2) | **HIGH-MEDIEVAL tiered fortress** (Mont Saint-Michel — the Minas Tirith feel) | concentric tier rings climbing the volcano cone, one switchback gate-road | ringwall per tier; the keep crowns the cone |
+| **Emberfall** (HS2) | **EMBER-CRYSTAL IMPERIAL war-city** (Mont-Saint-Michel massing kept; volcanic skin SUPERSEDED 2026-08-31 — red crystal gems power the high-tech empire; dark military walls) | exactly three tier rings climbing to the crown, one Grand Ascent switchback | ringwall per tier; the Ember Throne crowns the summit |
 | **Empyrea** (HS3) | **FAR-FUTURE sacred summit** (Lhasa/Potala silhouette, futuristic tech skin — owner: modern tech, space/parallel-universe travel) | pilgrim ways converging up to a levitating precinct; clean radial platforms | the Sanctum — energy walls + gate pylons (sci-fi castle analog) |
 | **Ironhold** (UW1) | **DWARVEN industrial forge-city** (Derinkuyu/Cappadocia warren) | tunnels + gallery rings + great halls | gatehouse chokes at level doors |
 | **Blackmere** (UW2) | **DARK-GOTHIC drowned keep** (cenote/flooded-karst causeways, Minas-Morgul mood) | causeways between black lakes, half-sunken quarters | the Keep on its own island; causeway gates |

@@ -379,7 +379,7 @@ function checkArtifact(label, art) {
 // ---- population 1: every L3 castle parcel, generated live ----
 clearWorldFieldCache();
 let castles = 0;
-for (const zone of ["EDU", "HUB", "BUS", "ENT", "UW2", "UW3"]) {
+for (const zone of ["EDU", "HUB", "BUS", "ENT", "UW2", "UW3", "HS1", "HS2", "HS3"]) {
   let field; try { field = loadWorldField(zone); } catch { continue; }
   for (const c of field.castles || []) {
     const pid = c.heroParcels && c.heroParcels[0];

@@ -50,6 +50,11 @@ const require = createRequire(import.meta.url);
 // the five palaces (every PALACE castles[] entry across all authored world fields, 2026-07-11)
 const PALACES = [
   { id: "1101100", zone: "UW2", biome: "SWAMP", castleId: "UW2-BASTION-DOMINUS", name: "The Bastion of Dominus" },
+  // SKY TRIO (2026-08-31, fields delivered): the un-subdivided sky palaces + the Ember Throne
+  // (HS2 has no EPIC/GIANT — its imperial palace crowns a LARGE, UW3 Vault-Palace precedent).
+  { id: "1040345", zone: "HS1", biome: "TEMPERATE_GRASS", castleId: "HS1-AEROPOLIS", name: "The Aeropolis" },
+  { id: "3050435", zone: "HS2", biome: "EMBER_CRYSTAL", castleId: "HS2-PALACE-EMBERTHRONE", name: "The Ember Throne" },
+  { id: "1060463", zone: "HS3", biome: "SNOW", castleId: "HS3-SANCTUM", name: "The Sanctum of Empyrea" },
   { id: "1031491", zone: "ENT", biome: "sakura", castleId: "ENT-PALACE-MASKS", name: "The Palace of Masks" },
   { id: "1020371", zone: "EDU", biome: "TEMPERATE_FOREST", castleId: "EDU-PALACE-ACADEMY", name: "The Grand Academy" },
   { id: "1071732", zone: "HUB", biome: "TEMPERATE_GRASS", castleId: "HUB-PALACE-ZHONGDU", name: "The Vermilion Palace (Zhongdu)" },

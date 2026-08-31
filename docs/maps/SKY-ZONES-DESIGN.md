@@ -1,7 +1,6 @@
 # THE SKY ZONES — HS1 / HS2 / HS3 DESIGN (owner-directed 2026-08-31)
 
-**Status:** the three sky continents have l3 parcel data (~13.7–14.1K parcels each) and baked
-biome-tint mosaics, but **NO authored macro fields** (`data/world-terrain/` has no HS1/HS2/HS3 —
+**Status 2026-08-31 (same day): ALL THREE FIELDS BUILT** — `world_terrain_hs1/hs2/hs3.mjs` → `data/world-terrain/HS{1,2,3}.json`, castles in the CI sweep (54 castle parcels), sky palaces baked as pre-designed estate maps (The Aeropolis · The Ember Throne · The Sanctum of Empyrea), stacked-city V1 three-band terracing throughout (see `docs/briefs/SKY-STACKED-CITY-BATTLEMAPS.md`). Original gap statement kept below for history: the three sky continents had l3 parcel data and biome-tint mosaics, but **NO authored macro fields** (`data/world-terrain/` has no HS1/HS2/HS3 —
 nor UW1) — no designed coastlines, roads, cities, castles, or heroParcels. They are the last
 continents without Arcadia-grade detail. This doc locks their identities BEFORE the fields are
 built, so nothing generic ships. Owner rule: **their maps must look DISTINCT.**
