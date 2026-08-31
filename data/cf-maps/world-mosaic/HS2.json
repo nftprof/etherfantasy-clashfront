@@ -1,1 +1,1 @@
-{"zone":"HS2","mode":"thumb","world":{"minX":0,"minY":0,"maxX":118.018,"maxY":116.47},"flipY":false,"pxPerUnit":20,"w":2360,"h":2329,"leaves":13922,"thumbed":0,"estates":228,"grey":13694,"fill":1861235,"features":{"rivers":0,"roads":0,"settles":0},"fingerprint":"740-1787694625987"}
+{"zone":"HS2","mode":"thumb","world":{"minX":0,"minY":0,"maxX":118.018,"maxY":116.47},"flipY":false,"pxPerUnit":20,"w":2360,"h":2329,"leaves":13922,"thumbed":0,"estates":228,"grey":13694,"fill":1861235,"features":{"rivers":0,"roads":56,"settles":18},"fingerprint":"740-1787694625987"}
