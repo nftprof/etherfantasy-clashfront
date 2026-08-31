@@ -1271,3 +1271,18 @@ parcel-scale carrier, launches normal hulls, never lands). Full plan:
 - **→ MOBA BattleEngine RAW:** render pads as flat marked circles (apron+ring+H — preview3d is
   the reference; never a solid blob), deep-water tint, vessel reuse in battle scenes.
 - **NB vendor guard: siege-test authority is now genVersion 30** (supersedes the 29 note above).
+
+### 2026-08-31 (cont. 2) · NAVAL v31 — 20-iteration sim hardening DONE + GAME-SIDE BRIEF ISSUED
+Owner-directed hardening loop complete (`docs/reports/NAVAL-LAYER-SIM-REPORT.md`): `runNavalAudit`
+headless reinforcement sim (sail→beachhead→march, pads, piers) now CI-enforced (R-NAVAL; sweep
+1,759 checks). New data since the v30 note: **PIER anchors** (one per arrivable sail region,
+walkable plank — see schema v31), `meta.approaches` (naval entry edges), `meta.sailRegions`
+(draft NORMAL/LARGE/IMPERIAL per body), region-level OCEAN grading, pad guards (≥45u from keep,
+≥30u from buildable spots). Owner combat rulings locked (brief §6): airborne airships shootable
+by archers+flyers; vessels HP'd massive (NORMAL≈CC+, LARGE near-unkillable, IMPERIAL beyond);
+deep-water ships reachable by SIEGE range only; ONE command system; water+air pets damage
+structures within attack range; only water pets swim DEEP, flyers overfly both.
+**→ MOBA BattleEngine RAW + EF Moba: full implementation brief =
+`docs/briefs/MOBA-NAVAL-AIRSHIP-IMPLEMENTATION.md`** (data consumption, rendering, systems,
+acceptance scenes on siege-test / Bastion / Grand Exchange). **Vendor guard: siege-test authority
+is now genVersion 31.** Land-control vessel gating (5/10/25/100 parcels ⚙) → CF Overworld (brief §7).

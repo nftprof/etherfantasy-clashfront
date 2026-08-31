@@ -28,7 +28,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { loadWorldField, worldParcel, l3Row, clearWorldFieldCache } from "../worldfield.js";
 import { generate, CASTLE_TIERS } from "../generate.js";
-import { runAudit } from "../traverse.js";
+import { runAudit, runNavalAudit } from "../traverse.js";
 import { T } from "../schema.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -135,8 +135,27 @@ function checkArtifact(label, art) {
         const coreOk = cells2[ci] === T.OPEN || (p.plaza && cells2[ci] === T.ROAD);   // plaza pads sit on paving
         ok(coreOk && walk2[ci] === 1 && openN === tot,
           `${label}: R-PADS ${p.anchorId} (r${p.r}) sits on clear walkable ground (${openN}/${tot} rim)`);
+        // owner 2026-08-31: airborne airships are shootable, but NEVER let a tower-buildable spot
+        // overlook a pad — no landing into a prepared kill-box (PAD_BUILD_STANDOFF 30u).
+        let minB = Infinity;
+        for (const b of art.buildSpots || []) minB = Math.min(minB, Math.hypot(b.x - p.x, b.z - p.z));
+        ok(minB >= 29.5, `${label}: R-PADS ${p.anchorId} kill-box rule — nearest build spot ${minB.toFixed(1)}u < 30u`);
+        // naval-sim iter-12: no landing in the inner wards — a pad ≥45u from the keep, always.
+        const kd = Math.hypot(p.x - cg.keep.at[0], p.z - cg.keep.at[1]);
+        ok(kd >= 44.5, `${label}: R-PADS ${p.anchorId} inner-ward rule — ${kd.toFixed(1)}u from the keep < 45u`);
       }
     }
+  }
+  // R-NAVAL (v31, three-layer doctrine): the headless naval/air sim must be clean — every
+  // ARRIVABLE sail region lands somewhere (beachhead + pier), every pad AND pier marches to the
+  // defended heart. Dead sea content (a fleet that can arrive but never land) fails CI.
+  {
+    const s = runNavalAudit(art).stats;
+    ok(s.arrivable === s.landable, `${label}: R-NAVAL ${s.arrivable - s.landable} arrivable sail regions with NO beachhead`);
+    ok(s.padsOk === s.pads, `${label}: R-NAVAL ${s.pads - s.padsOk}/${s.pads} pads can't march to the heart`);
+    ok(s.piersOk === s.piers, `${label}: R-NAVAL ${s.piers - s.piersOk}/${s.piers} piers can't march to the heart`);
+    ok(s.beachOk === s.beachWalks, `${label}: R-NAVAL ${s.beachWalks - s.beachOk}/${s.beachWalks} beach landings can't march`);
+    ok(s.arrivable === 0 || s.piers >= 1, `${label}: R-NAVAL arrivable water but no PIER emitted`);
   }
   const T2 = CASTLE_TIERS[cg.tier];
   const keep = cg.keep.at, poly = art.arena.bounds, half = art.arena.sizeM / 2;

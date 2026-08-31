@@ -823,18 +823,6 @@
       "x": -18,
       "z": -8,
       "size": "M"
-    },
-    {
-      "anchorId": "bs_ring1",
-      "x": -30,
-      "z": 12,
-      "size": "M"
-    },
-    {
-      "anchorId": "bs_mid",
-      "x": 2,
-      "z": 4,
-      "size": "M"
     }
   ],
   "spawnZones": [

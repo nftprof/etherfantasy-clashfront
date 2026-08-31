@@ -99,7 +99,9 @@ export function simulate(art) {
   // ENEMY hazards only: a two-sided map (e.g. the MOBA arena) carries ATTACKER-side structures —
   // the attacker's own core/towers around its spawn are not a kill-box. Unsided structures stay
   // hazards (generated maps' towers/castle rings are defender content).
-  const hazards = [...(art.structures || []).filter((st) => st.side !== "ATTACKER"), ...(art.mobs || [])];
+  // v31: PIER + LANDING_PAD are flat NEUTRAL traversal markers (blocking NONE) — never a
+  // defender "unit"; counting them made a shoreline pier fail spawn.safeRadius for free.
+  const hazards = [...(art.structures || []).filter((st) => st.side !== "ATTACKER" && st.kind !== "PIER" && st.kind !== "LANDING_PAD"), ...(art.mobs || [])];
   const clearOf = (s) => { let m = Infinity; for (const hz of hazards) { const d = Math.sqrt(dist2(s.x, s.z, hz.x, hz.z)); if (d < m) m = d; } return m; };
   const atkEntries = entries.filter((s) => s.side === "ATTACKER");
   let minSafe = Infinity, worst = null;

@@ -97,7 +97,8 @@ console.log("— detail features (LLM placement DSL) —");
   const lm = a.obstacles.find((o) => o.kind === "OBELISK");
   ok(lm && Math.abs(lm.x - 0.5 * (161 * 0.92)) < 15 && Math.abs(lm.z - 0.5 * (161 * 0.92)) < 15, "landmarkAt places the landmark");
   ok(a.resources.length === 5 && a.resources.filter((r) => r.kind === "GOLD_MINE").length >= 2, "explicit resourceAt honoured, budget cap (tier-3 = 5) still enforced over 4 explicit + fill");
-  ok(a.mobs.length === 2 && a.structures.length === 2, "explicit camp/tower placements + fill respect param counts");
+  const combat = (arr) => arr.filter((s2) => s2.kind !== "PIER" && s2.kind !== "LANDING_PAD");   // v31 naval anchors are terrain-driven, not param-driven
+ok(a.mobs.length === 2 && combat(a.structures).length === 2, "explicit camp/tower placements + fill respect param counts");
   ok(JSON.stringify(generate({ parcelId: "FEAT1", investLevel: 3 }, p)) === JSON.stringify(a), "featured generation byte-identical");
   // adversarial: 12 ridges trying to wall the map — validator must still deliver pathability
   const walls = Array.from({ length: 12 }, (_, i) => ({ kind: "ridge", x1: -1, z1: -0.9 + i * 0.15, x2: 1, z2: -0.9 + i * 0.15, passes: 1 }));
@@ -219,11 +220,12 @@ console.log("— investment budgets (landowner CT → map content caps) —");
   ok(t5.resourceNodes === 8 && t5.towers === 6 && t5.mobCamps === 6 && t5.landmark === "OBELISK", "tier-5 unlocks the full map");
   const poor = generate({ parcelId: "BUD0", investLevel: 0 }, greedy);
   const rich = generate({ parcelId: "BUD5", investLevel: 5 }, greedy);
-  ok(poor.resources.length === 2 && poor.structures.length === 0 && poor.mobs.length <= 1, "tier-0 artifact is sparse");
-  ok(rich.resources.length === 8 && rich.structures.length === 6 && rich.mobs.length === 6, "tier-5 artifact = fighting in a gold mine (8 nodes, 6 towers, 6 camps)");
+  const combat2 = (arr) => arr.filter((s2) => s2.kind !== "PIER" && s2.kind !== "LANDING_PAD");
+ok(poor.resources.length === 2 && combat2(poor.structures).length === 0 && poor.mobs.length <= 1, "tier-0 artifact is sparse");
+  ok(rich.resources.length === 8 && combat2(rich.structures).length === 6 && rich.mobs.length === 6, "tier-5 artifact = fighting in a gold mine (8 nodes, 6 towers, 6 camps)");
   ok(poor.resources.every((r) => r.richness <= 0.4) && rich.resources.every((r) => r.richness <= 1), "richness respects the tier cap");
   ok(poor.meta.budget.name === "Untamed" && rich.meta.budget.name === "Golden", "tier recorded in artifact meta");
-  ok(rich.structures.every((s) => s.hpMax === 1600 + 5 * 250 && s.side === "DEFENDER") && rich.mobs.every((m) => m.count >= 4 + 5), "tier scales tower HP + camp size (allocate-contract shape)");
+  ok(combat2(rich.structures).every((s) => s.hpMax === 1600 + 5 * 250 && s.side === "DEFENDER") && rich.mobs.every((m) => m.count >= 4 + 5), "tier scales tower HP + camp size (allocate-contract shape)");
   ok(JSON.stringify(generate({ parcelId: "BUD5", investLevel: 5 }, greedy)) === JSON.stringify(rich), "budgeted generation byte-identical");
 }
 

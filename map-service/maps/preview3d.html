@@ -123,7 +123,7 @@ if(parity){
   // unless seeded… we need a marker instead") — keep them out of the module's solid placeholder
   // render and draw ghost spot-markers below. Castle towers stay real (they ARE built).
   bf=EF_BATTLEFIELD.buildBattlefield(scene,{manifest:{...man,fountains:[],...(EXPORT?{scatter:[]}:{}),...(THEMES||EXPORT?{trees:[],rocks:[]}:{})},THREE,floorsBase:"/floors/",addLights:true,addFog:true,groundStride:GSTRIDE,
-    structures:EXPORT?[]:(a.structures||[]).filter(s=>s.kind!=="WALL"&&!isCastleAnchor(s)&&s.kind!=="TOWER"&&s.kind!=="LANDING_PAD")});
+    structures:EXPORT?[]:(a.structures||[]).filter(s=>s.kind!=="WALL"&&!isCastleAnchor(s)&&s.kind!=="TOWER"&&s.kind!=="LANDING_PAD"&&s.kind!=="PIER")});
   (EXPORT?[]:(a.structures||[]).filter(s=>s.kind==="TOWER"&&!isCastleAnchor(s))).forEach(s=>{
     const col=s.side==="ATTACKER"?0x4a86e8:s.side==="DEFENDER"?0xd8534a:0xd8a340;
     const g=new THREE.Group();
@@ -460,9 +460,25 @@ for(const r of (EXPORT?[]:(a.resources||[]))){
   put(new THREE.Mesh(new THREE.BoxGeometry(0.9,0.1,s.r*0.62),hm),s.x+s.r*0.22,s.z,0.3);
   put(new THREE.Mesh(new THREE.BoxGeometry(s.r*0.44,0.1,0.9),hm),s.x,s.z,0.3);
 });
+// ⚓ PIERS (v31): timber plank from the shore anchor along `dir` for `len` — the sea unload
+// point. Low posts into the water; the plank surface is the walkable strip engines carve.
+(a.structures||[]).forEach(s=>{
+  if(s.kind!=="PIER")return;
+  const dx=(s.dir&&s.dir[0])||0, dz=(s.dir&&s.dir[1])||1, L=s.len||12;
+  const ang=Math.atan2(dx,dz);
+  const plank=new THREE.Mesh(new THREE.BoxGeometry(3,0.4,L),new THREE.MeshLambertMaterial({color:0x7a5a3a}));
+  plank.rotation.y=ang; put(plank,s.x+dx*L/2,s.z+dz*L/2,0.9);
+  for(let k=1;k<L/4;k++){
+    const post=new THREE.Mesh(new THREE.CylinderGeometry(0.22,0.26,2.6,6),new THREE.MeshLambertMaterial({color:0x54341f}));
+    put(post,s.x+dx*k*4-dz*1.2,s.z+dz*k*4+dx*1.2,-0.4);
+    const post2=new THREE.Mesh(new THREE.CylinderGeometry(0.22,0.26,2.6,6),new THREE.MeshLambertMaterial({color:0x54341f}));
+    put(post2,s.x+dx*k*4+dz*1.2,s.z+dz*k*4-dx*1.2,-0.4);
+  }
+});
 for(const s of a.structures||[]){
   if(isCastleAnchor(s))continue;              // the castle KIT owns castle_* visuals (HP stays data)
   if(s.kind==="LANDING_PAD")continue;         // drawn above (flat marker, never a tower blob)
+  if(s.kind==="PIER")continue;                // drawn above (plank, never a tower blob)
   if(parity&&s.kind!=="WALL")continue;
   if(s.kind==="WALL"||s.kind==="GATE"){
     const seg=new THREE.Mesh(new THREE.BoxGeometry(CELL*3,s.kind==="GATE"?3.6:5,CELL*1.6),new THREE.MeshLambertMaterial({map:stoneTex}));

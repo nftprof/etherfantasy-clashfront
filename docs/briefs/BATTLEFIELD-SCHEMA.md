@@ -252,3 +252,23 @@ lawns). IMPERIAL vessels never land anywhere: sea-side they hold OCEAN water, sk
 edge, launching NORMAL hulls; an imperial DECK is itself a future battlefield artifact.
 Render contract: flat marked circle (apron + ring + H) — never a solid blob; ground stays
 walkable when no vessel is seated. Reference: `preview3d.html` (renders pads in every mode).
+
+### v31 refinements (same day, naval-sim hardening — 20-iteration loop)
+- **OCEAN grade is per SAIL REGION**, not per water body: `water==3` only where the DEEP component
+  itself is edge/OOB-connected + ≥250 cells (a body touching the edge through a shallow arm no
+  carrier fits stays grade 2).
+- **`PIER` anchors** (see the v30 table's naval doctrine): `{anchorId:"pier_N", kind:"PIER",
+  blocking:"NONE", x, z, r:3, dir:[dx,dz] (shore→deep), len, walkable:true}` — ONE per arrivable
+  sail region, at its best wade corridor (roads preferred). The plank strip is walkable ground
+  over water — engines add it to collision at load.
+- **`meta.approaches`** `{naval:[edges], air:["N","S","E","W"]}` — deep entry cells (grid border or
+  OOB-adjacent) vote for their compass edge; ≥4 votes lists the edge. +z = NORTH.
+- **`meta.sailRegions`** `[{cells, edge, draft}]` — draft NORMAL / LARGE (≥60 cells, ≥30% interior)
+  / IMPERIAL (ocean-grade region).
+- **Pad placement law grew two guards** (CI): kill-box (≥30u from every buildable spot — owner:
+  airborne airships are shootable by archers/flyers, but never into a prepared tower nest) and
+  inner-ward (≥45u from the keep — no airborne coup de main past the walls; walled cities pad
+  their outer districts/plazas).
+- **CI R-NAVAL:** the headless naval sim (`runNavalAudit`) is asserted per artifact — every
+  arrivable region has a beachhead AND a pier; every pad + pier + sampled beach landing marches
+  to the defended heart.

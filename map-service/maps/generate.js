@@ -1537,7 +1537,7 @@ const PALACE_STYLES = { UW2: "drowned_bastion", ENT: "carnavale", EDU: "collegia
 // anchors = vertices of the solid wallRing polyline t 4.2, never independent cylinders) +
 // siege.wallRing gains t/archClearH — engines build the navmesh from THIS instead of guessing
 // (the "units running in circles around towers" fix on the map side).
-export const GEN_VERSION = 30;   // v30: THREE-LAYER DOCTRINE — terrain.water depth channel (SHALLOW/DEEP; deep channels where water cuts through) + LANDING_PAD anchors on estates (naval/airship arrivals). (v29: rulebook-review fixes; v28: honest walk mask + posterns)
+export const GEN_VERSION = 31;   // v31: pad↔tower kill-box rule (PAD_BUILD_STANDOFF 30u; the pad wins — conflicting build spots drop). (v30: three-layer doctrine — terrain.water + LANDING_PADs; v29: review fixes; v28: honest walk mask)
 
 export function generate(parcel, params = null, designVersion = 0) {
   // designVersion is MANDATORY in every artifact (MOBA contract fix 3: it pins caches, replays,
@@ -2335,23 +2335,42 @@ export function generate(parcel, params = null, designVersion = 0) {
       }
       wsz.push(n); wEdge.push(edge);
     }
-    // deep cells per body (for the OCEAN grade — imperial-class hulls need real sea room)
-    const wDeepN = new Array(wsz.length).fill(0);
-    for (let i = 0; i < G * G; i++)
-      if (g[i] === T.WATER && wd[i] > SH_CELLS && wsz[wcomp[i]] >= MIN_DEEP_BODY) wDeepN[wcomp[i]]++;
-    // 0 none · 1 SHALLOW · 2 DEEP (normal/large hulls) · 3 OCEAN (deep + edge-connected + ≥250
-    // deep cells — the only water an IMPERIAL carrier may occupy; it stays offshore as a
-    // map-edge floating fortress and LAUNCHES normal ships, never entering rivers).
-    for (let i = 0; i < G * G; i++) if (g[i] === T.WATER) {
-      const deep = wd[i] > SH_CELLS && wsz[wcomp[i]] >= MIN_DEEP_BODY;
-      water[i] = !deep ? 1 : (wEdge[wcomp[i]] && wDeepN[wcomp[i]] >= 250 ? 3 : 2);
+    // 0 none · 1 SHALLOW · 2 DEEP. Grade 3 (OCEAN) is assigned per SAIL REGION below — the water
+    // an IMPERIAL carrier may occupy must be judged on the DEEP cells it can actually navigate,
+    // not the whole body (a body can touch the edge through a shallow arm no carrier fits).
+    for (let i = 0; i < G * G; i++) if (g[i] === T.WATER)
+      water[i] = (wd[i] > SH_CELLS && wsz[wcomp[i]] >= MIN_DEEP_BODY) ? 2 : 1;
+    // SAIL REGIONS = components of DEEP cells. Edge-connected (grid border or OOB — the sea
+    // continues past the parcel) + ≥250 cells ⇒ OCEAN (imperial-capable): it stays offshore as a
+    // floating fortress and LAUNCHES normal hulls, never entering rivers.
+    const sr = new Int32Array(G * G).fill(-1); const srN = []; const srEdge = [];
+    for (let s0 = 0; s0 < G * G; s0++) {
+      if (water[s0] !== 2 || sr[s0] >= 0) continue;
+      const nc = srN.length, q = [s0]; sr[s0] = nc; let n = 0, edge = false;
+      for (let h = 0; h < q.length; h++) {
+        const i = q[h]; n++; const x = i % G, z = (i / G) | 0;
+        if (x === 0 || z === 0 || x === G - 1 || z === G - 1) edge = true;
+        for (const [dx, dz] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+          const nx = x + dx, nz = z + dz;
+          if (!inG(G, nx, nz)) continue; const ni = gIdx(G, nx, nz);
+          if (g[ni] === T.OOB) edge = true;
+          if (water[ni] === 2 && sr[ni] < 0) { sr[ni] = nc; q.push(ni); }
+        }
+      }
+      srN.push(n); srEdge.push(edge);
     }
+    for (let i = 0; i < G * G; i++)
+      if (water[i] === 2 && sr[i] >= 0 && srEdge[sr[i]] && srN[sr[i]] >= 250) water[i] = 3;
   }
   // AERIAL LANDING PADS — estates only (owner: "specific locations near water, or open areas —
   // think helipads, wide areas with markers; single parcels don't have these"). Count ladder ⚙
   // (proposal pending owner sign-off): SMALL/MEDIUM 1 · LARGE 2 · GIANT 3 · EPIC 4. A pad is a
   // flat OPEN walkable disc kept clear like a gate apron; near-water sites score higher.
   const landingPads = [];
+  // ⚙ owner 2026-08-31: airborne airships CAN be shot by archers/flyers — but a pad must NEVER sit
+  // near ground where an archer TOWER can be built (no landing into a prepared kill-box). Enforced
+  // twice: candidate standoff below + the post-placement buildSpot DROP (the pad wins the ground).
+  const PAD_BUILD_STANDOFF = 30;
   {
     const PAD_LADDER = { SMALL: 1, MEDIUM: 1, LARGE: 2, GIANT: 3, EPIC: 4 };
     const padWant = PAD_LADDER[String(parcel.sizeClass || "").toUpperCase()] || 0;
@@ -2369,6 +2388,11 @@ export function generate(parcel, params = null, designVersion = 0) {
         const T2c = CASTLE_TIERS[castle && CASTLE_TIERS[castle.kind] ? castle.kind : "KEEP"];
         ringsP = concentricRings(castleParts.geom, T2c, poly, { g, G }).rings.map((rr) => rr.pts);
       }
+      // owner-balance rule (naval sim iter-12: Xichuan pad 19u from the keep = airborne coup de
+      // main straight past the walls): with a castle present, every pad keeps ≥45u from the KEEP —
+      // outer districts and open field stay legal, the inner wards never host a landing.
+      const keepAtP = castleParts && castleParts.geom ? castleParts.geom.keepAt : null;
+      const keepFar = (x, z) => !keepAtP || Math.hypot(x - keepAtP[0], z - keepAtP[1]) >= 45;
       const ringDist = (x, z) => {
         if (!ringsP) return Infinity;
         let best = Infinity;
@@ -2411,9 +2435,10 @@ export function generate(parcel, params = null, designVersion = 0) {
           }
           if (!clear) continue;
           if (ringDist(wx, wz) < PAD_R + 4) continue;                                    // off every wall ring
+          if (!keepFar(wx, wz)) continue;                                                // never in the inner wards
           if (gatePtsL.some((gp) => Math.hypot(gp[0] - wx, gp[1] - wz) < PAD_R + 13)) continue; // off the gate aprons
           if (spawnZones.some((s) => Math.hypot(s.x - wx, s.z - wz) < PAD_R + 9)) continue;
-          if (buildSpots.some((b) => Math.hypot(b.x - wx, b.z - wz) < PAD_R + 3)) continue;
+          if (buildSpots.some((b) => Math.hypot(b.x - wx, b.z - wz) < PAD_BUILD_STANDOFF)) continue; // owner: never near tower-buildable ground
           if (resources.some((rs) => Math.hypot(rs.x - wx, rs.z - wz) < PAD_R + 1)) continue;
           if (structures.some((s2) => Math.hypot(s2.x - wx, s2.z - wz) < PAD_R + 3)) continue;
           const wDist = dw[gIdx(G, cx, cz)] * CELL_M;
@@ -2446,6 +2471,7 @@ export function generate(parcel, params = null, designVersion = 0) {
           }
           if (!clear) continue;
           if (ringDist(wx, wz) < PR + 2) continue;
+          if (!keepFar(wx, wz)) continue;                                                // never in the inner wards
           if (gatePtsL.some((gp) => Math.hypot(gp[0] - wx, gp[1] - wz) < PR + 6)) continue;
           if (spawnZones.some((s) => Math.hypot(s.x - wx, s.z - wz) < PR + 4)) continue;
           if (structures.some((s2) => Math.hypot(s2.x - wx, s2.z - wz) < PR + 1)) continue;
@@ -2471,6 +2497,7 @@ export function generate(parcel, params = null, designVersion = 0) {
           }
           if (!clear) continue;
           if (ringDist(wx, wz) < PR + 2) continue;
+          if (!keepFar(wx, wz)) continue;                                                // never in the inner wards
           if (gatePtsL.some((gp) => Math.hypot(gp[0] - wx, gp[1] - wz) < PR + 4)) continue;
           if (spawnZones.some((s) => Math.hypot(s.x - wx, s.z - wz) < PR + 4)) continue;
           if (structures.some((s2) => Math.hypot(s2.x - wx, s2.z - wz) < PR + 1)) continue;
@@ -2486,6 +2513,109 @@ export function generate(parcel, params = null, designVersion = 0) {
         class: p2.r >= 26 ? "HEAVY" : p2.r >= 16 ? "NORMAL" : "LIGHT",   // which vessel class seats
         ...(p2.plaza ? { plaza: true } : {}),                            // painted on paving, not grass
       }));
+      // the pad WINS the ground (owner: "never place them near areas where towers can be built"):
+      // the forgiving/plaza passes skip the standoff to find ANY seat, so any baked tower/CC build
+      // pad left inside it is DROPPED here — no archer tower ever overlooks a landing zone.
+      if (landingPads.length)
+        buildSpots = buildSpots.filter((b) =>
+          landingPads.every((p2) => Math.hypot(b.x - p2.x, b.z - p2.z) >= PAD_BUILD_STANDOFF));
+    }
+  }
+  const navalMeta = [];   // per sail-region summary → meta.sailRegions (draft class per water body)
+  // PIERS — the marked sea unload point (three-layer doctrine §3b). For every ARRIVABLE sail
+  // region (deep water ≥12 cells connected to the map edge/OOB — a fleet can reach it), find the
+  // best wade corridor to walkable land and drop a PIER anchor on the shore end, pointing at the
+  // deep: ships moor at the head, troops file down the plank instead of wading the band. Roads
+  // nearby score higher (the harbour grows where the road already goes).
+  {
+    const sail2 = new Int32Array(G * G).fill(-1); const sN = []; const sEdge = [];
+    for (let s0 = 0; s0 < G * G; s0++) {
+      if (water[s0] < 2 || sail2[s0] >= 0) continue;
+      const nc = sN.length, q = [s0]; sail2[s0] = nc; let n = 0, edge = false;
+      for (let h = 0; h < q.length; h++) {
+        const i = q[h]; n++; const x = i % G, z = (i / G) | 0;
+        if (x === 0 || z === 0 || x === G - 1 || z === G - 1) edge = true;
+        for (const [dx, dz] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+          const nx = x + dx, nz = z + dz;
+          if (!inG(G, nx, nz)) continue; const ni = gIdx(G, nx, nz);
+          if (g[ni] === T.OOB) edge = true;
+          if (water[ni] >= 2 && sail2[ni] < 0) { sail2[ni] = nc; q.push(ni); }
+        }
+      }
+      sN.push(n); sEdge.push(edge);
+    }
+    let pierN = 0;
+    // DRAFT class per region: interior deep cells (all 4 neighbors deep) proxy channel width.
+    // ≥60 cells with ≥30% interior ⇒ a LARGE hull swings; any OCEAN-grade cell ⇒ IMPERIAL water.
+    const sInterior = new Array(sN.length).fill(0), sOcean = new Array(sN.length).fill(false);
+    for (let i = 0; i < G * G; i++) {
+      if (water[i] < 2) continue;
+      const s2 = sail2[i]; if (s2 < 0) continue;
+      if (water[i] === 3) sOcean[s2] = true;
+      const x = i % G, z = (i / G) | 0;
+      let interior = true;
+      for (const [dx, dz] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+        const nx = x + dx, nz = z + dz;
+        if (!inG(G, nx, nz) || water[gIdx(G, nx, nz)] < 2) { interior = false; break; }
+      }
+      if (interior) sInterior[s2]++;
+    }
+    for (let s = 0; s < sN.length; s++) {
+      if (sN[s] < 12) continue;
+      navalMeta.push({ cells: sN[s], edge: sEdge[s],
+        draft: sOcean[s] ? "IMPERIAL" : (sN[s] >= 60 && sInterior[s] / sN[s] >= 0.3) ? "LARGE" : "NORMAL" });
+    }
+    for (let s = 0; s < sN.length; s++) {
+      if (!sEdge[s] || sN[s] < 12) continue;
+      // wade BFS from this region's deep edge through SHALLOW, tracking the entry deep cell
+      const dep = new Int16Array(G * G).fill(999); const q2 = [];
+      for (let i = 0; i < G * G; i++) {
+        if (water[i] !== 1) continue;
+        const x = i % G, z = (i / G) | 0;
+        for (const [dx, dz] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+          const nx = x + dx, nz = z + dz;
+          if (!inG(G, nx, nz)) continue;
+          if (water[gIdx(G, nx, nz)] >= 2 && sail2[gIdx(G, nx, nz)] === s) { dep[i] = 0; q2.push(i); break; }
+        }
+      }
+      for (let h = 0; h < q2.length; h++) {
+        const i = q2[h]; if (dep[i] >= 9) continue;
+        const x = i % G, z = (i / G) | 0;
+        for (const [dx, dz] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+          const nx = x + dx, nz = z + dz;
+          if (!inG(G, nx, nz)) continue; const ni = gIdx(G, nx, nz);
+          if (water[ni] === 1 && dep[ni] > dep[i] + 1) { dep[ni] = dep[i] + 1; q2.push(ni); }
+        }
+      }
+      // best shore point: walkable land cell 8-adjacent to a waded shallow cell; short wade +
+      // near-road preferred; keep off gates/pads.
+      let best = null;
+      for (let i = 0; i < G * G; i++) {
+        if (dep[i] >= 999 || water[i] !== 1) continue;
+        const x = i % G, z = (i / G) | 0;
+        for (let dz = -1; dz <= 1; dz++) for (let dx = -1; dx <= 1; dx++) {
+          const nx = x + dx, nz = z + dz;
+          if (!inG(G, nx, nz)) continue; const ni = gIdx(G, nx, nz);
+          if (!walk[ni]) continue;
+          const wx = worldOf(G, nx), wz = worldOf(G, nz);
+          let roadBonus = 0;
+          for (let rz = -3; rz <= 3; rz++) for (let rx = -3; rx <= 3; rx++) {
+            const qx = nx + rx, qz = nz + rz;
+            if (inG(G, qx, qz) && g[gIdx(G, qx, qz)] === T.ROAD) roadBonus = 8;
+          }
+          const score = roadBonus - dep[i];
+          if (!best || score > best.score) best = { x: r1(wx), z: r1(wz), score, wadeX: r1(worldOf(G, x)), wadeZ: r1(worldOf(G, z)) };
+        }
+      }
+      if (!best) continue;
+      const dxp = best.wadeX - best.x, dzp = best.wadeZ - best.z, dl = Math.hypot(dxp, dzp) || 1;
+      structures.push({
+        anchorId: `pier_${pierN++}`, kind: "PIER", side: "NEUTRAL", blocking: "NONE",
+        x: best.x, z: best.z, r: 3,
+        dir: [r1(dxp / dl), r1(dzp / dl)],                     // shore → deep bearing
+        len: r1(Math.min(22, dl + 4 * CELL_M)),                // plank reaches past the wade band (~8u rim)
+        walkable: true,                                        // the plank IS the corridor — engines make it traversable
+      });
     }
   }
 
@@ -2612,6 +2742,30 @@ export function generate(parcel, params = null, designVersion = 0) {
     meta: { seed, designVersion, genVersion: GEN_VERSION, parcelId, biome, zone, params: p, repairs: v.repairs,
             ...(theme ? { theme } : {}),
             ...(parcel.sizeClass ? { sizeClass: parcel.sizeClass } : {}),   // v30: pads ladder key
+            // v31 ARRIVAL VECTORS: edges where a fleet can enter (a 3-cell border strip holds ≥4
+            // sailable cells). AIR is always every edge — airships overfly anything; listed for
+            // explicitness. Compass: +z NORTH (schema §coords).
+            approaches: (() => {
+              // a deep cell on the grid border OR against OOB (the sea continues past the parcel
+              // shape) is an entry point; it votes for the compass edge its bearing faces.
+              const strips = { N: 0, S: 0, E: 0, W: 0 };
+              const c0 = (G - 1) / 2;
+              for (let i = 0; i < G * G; i++) {
+                if (water[i] < 2) continue;
+                const x = i % G, z = (i / G) | 0;
+                let entry = x === 0 || z === 0 || x === G - 1 || z === G - 1;
+                if (!entry) for (const [dx, dz] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+                  const nx = x + dx, nz = z + dz;
+                  if (inG(G, nx, nz) && g[gIdx(G, nx, nz)] === T.OOB) { entry = true; break; }
+                }
+                if (!entry) continue;
+                const ex = x - c0, ez = z - c0;
+                if (Math.abs(ez) >= Math.abs(ex)) strips[ez > 0 ? "N" : "S"]++;   // +z NORTH
+                else strips[ex > 0 ? "E" : "W"]++;
+              }
+              return { naval: Object.keys(strips).filter((k) => strips[k] >= 4), air: ["N", "S", "E", "W"] };
+            })(),
+            ...(navalMeta.length ? { sailRegions: navalMeta } : {}),   // v31: draft class per water body
             budget: { level: budget.level, name: budget.name },
             ...(castle ? { castle: { id: castle.id, kind: castle.kind, name: castle.name } } : {}),
             ...(castleParts ? (() => {

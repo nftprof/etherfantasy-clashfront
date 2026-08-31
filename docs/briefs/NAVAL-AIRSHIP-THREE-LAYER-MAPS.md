@@ -128,20 +128,58 @@ unchanged.
 - **N2 — fleet battles:** the SEA arena + boarding; harbour assault + blockade wiring.
 - **N3 — sky war:** airship battles proper on the HS2↔HS3 war front (waits for sky fields).
 
-## 6. Open questions for the owner (do not decide unilaterally)
+## 6. COMBAT DOCTRINE — ✅ OWNER-LOCKED 2026-08-31 (was the open-questions list)
 
-1. **Landing-pad ladder:** SMALL/MEDIUM 1 · LARGE 2 · GIANT 3 · EPIC 4 — good? And confirm LARGE+
-   estates DO have pads (the "small–medium" line read as "estates yes, singles no").
-2. **Hover-drop:** may an airship unload WITHOUT a pad (rope-drop: slow, units take fall risk,
-   ship exposed) — or is no-pad = no-landing, hard rule?
-3. **Can airships be attacked while airborne** by flying pets / archer ports, or only during
-   descent/unload?
-4. **Ship durability:** can shore units (archers/siege modules) hit ships in deep water at all, or
-   is the floating fortress truly land-immune (only navy/water-pets counter)?
-5. **Naval command mode:** does a fleet battle count against the same command-slot/fee ladder
-   (decision 16) as land battles? (Recommended: yes, one system.)
-6. **Water-pet shallow attack:** may they hit STRUCTURES (walls/towers at the waterline) or only
-   units — i.e., is a seaside wall safe from pet siege?
+1. **Airships ARE shootable while airborne** — by flyers AND archers. Counter-rule (map-side,
+   ENFORCED v31): a landing pad must NEVER sit near ground where an archer tower can be built —
+   no landing into a prepared kill-box. `PAD_BUILD_STANDOFF = 30u`: pad candidates keep the
+   standoff, and where a cramped fallback pad lands anyway, **the pad wins — conflicting baked
+   build spots are DROPPED** (CI-checked, R-PADS kill-box rule).
+2. **Vessels have HP, original-game style — struck down but MASSIVE:** a NORMAL ship ≈ CC-class
+   HP or a touch more; a LARGE ship "almost impossible to take down"; IMPERIAL beyond that. All
+   killable in principle, all HP'd (⚙ exact numbers = engine-side, proposal: NORMAL ≈ 1.2× CC ·
+   LARGE ≈ 4× · IMPERIAL ≈ 20×, raid-boss tier).
+3. **Ships in deep water can be hit from shore by SIEGE units** (their reach gets there);
+   **archers are probably too far** — the floating fortress is safe from bows, not from
+   trebuchets. Range rules, not immunity flags.
+4. **ONE command system** — naval/air battles use the same command-slot/fee ladder (decision 16)
+   as land battles.
+5. **Water pets AND air pets can damage structures** (walls/towers at the waterline or anywhere)
+   — **as long as the structure is within their attack range.** Normal range rules from the
+   water/air; no structure-immunity special case. A seaside wall is NOT safe from pet siege.
+6. **Layer traversal (owner refinement):** among pets, ONLY water pets may travel DEEP water
+   (they alone swim the deep); **flyers traverse both** (deep + shallow — they fly over). Land
+   units: land + shallow per wade rules. Ships per §water grades; imperial = OCEAN grade only.
 
 *Cross-team relay: `docs/coord/MOBA-CF-COORD.md` 2026-08-31 entry. Boats/airships themselves =
 travel-mode reuse, confirmed against the MOBA's `TRAVEL_SYSTEM.md` + `SKY_EXPANSION.md`.*
+
+## 7. VESSEL ACCESS = LAND CONTROL (owner 2026-08-31 — CF Overworld to implement, ⚙ numbers open)
+
+CF GRANTS vessel classes by how much land a player CONTROLS — "minimum number of land that a
+player needs to occupy before they get access to these units":
+
+| controlled parcels (⚙ proposal) | unlocks |
+|---|---|
+| 5 | NORMAL ship (sea marches between SEA_PORT pairs; sea reinforcement arrivals) |
+| 10 | NORMAL airship (air reinforcement to estate pads; zoneLink air travel) |
+| 25 | LARGE ship + LARGE airship (HEAVY pads / LARGE-draft waters only) |
+| 100 | IMPERIAL carrier (one at a time; OCEAN-grade waters; launches NORMAL hulls) |
+
+Losing land below a threshold: existing vessels persist but cannot be replaced when destroyed
+(⚙ alternative: they decommission after a grace period — owner to pick). Draft/pad class data on
+every map already enforces WHERE each class can act; this table only gates WHO owns them.
+Relay: CF Overworld eco owns the sim/economy wiring (`docs/02` §13 net-sink applies — vessels are
+CT sinks to build + maintain).
+
+## 8. THE 20-ITERATION SIM HARDENING (2026-08-31, owner-directed — all shipped)
+
+`runNavalAudit` (traverse.js) = the headless reinforcement sim (sail regions → wade-corridor
+beachheads → march-to-heart; pad assaults; pier files). Key fixes it forced: wade-corridor landing
+model (adjacency was physically impossible across an 8u shallow band) · piers at every arrivable
+region · region-level OCEAN grading (a carrier can't use a sea it can't reach) · OOB-aware naval
+approach edges · draft classes per body · pad inner-ward standoff (Xichuan's pad stood 19u from
+the keep — an airborne coup de main; now ≥45u everywhere) · kill-box standoff (pads repel/drop
+buildable spots within 30u) · plaza pads for street-built cities. Final battery: 364 maps swept —
+every arrivable region lands, 18/18 pads + 5/5 piers + all sampled beach landings march, zero
+problem maps; all locked in CI (R-NAVAL/R-PADS/R-LAYERS).

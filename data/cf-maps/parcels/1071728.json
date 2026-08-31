@@ -1100,27 +1100,9 @@
   ],
   "buildSpots": [
     {
-      "anchorId": "bs_ring0",
-      "x": -16,
-      "z": -18,
-      "size": "M"
-    },
-    {
-      "anchorId": "bs_ring1",
-      "x": -24,
-      "z": 0,
-      "size": "M"
-    },
-    {
       "anchorId": "bs_ring5",
       "x": -36,
       "z": -26,
-      "size": "M"
-    },
-    {
-      "anchorId": "bs_mid",
-      "x": 0,
-      "z": 2,
       "size": "M"
     }
   ],
