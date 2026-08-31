@@ -3756,44 +3756,7 @@
       "richness": 0.7
     }
   ],
-  "buildSpots": [
-    {
-      "anchorId": "bs_ring0",
-      "x": 4,
-      "z": -14,
-      "size": "M"
-    },
-    {
-      "anchorId": "bs_ring1",
-      "x": -6,
-      "z": 6,
-      "size": "M"
-    },
-    {
-      "anchorId": "bs_ring2",
-      "x": -28,
-      "z": 4,
-      "size": "M"
-    },
-    {
-      "anchorId": "bs_ring3",
-      "x": -38,
-      "z": -14,
-      "size": "M"
-    },
-    {
-      "anchorId": "bs_ring4",
-      "x": -28,
-      "z": -32,
-      "size": "M"
-    },
-    {
-      "anchorId": "bs_ring5",
-      "x": -6,
-      "z": -32,
-      "size": "M"
-    }
-  ],
+  "buildSpots": [],
   "spawnZones": [
     {
       "id": "atk_S",
@@ -4056,7 +4019,7 @@
       ],
       "hpMax": 1150,
       "blocking": "DOOR",
-      "r": 7.5
+      "r": 8.3
     },
     {
       "anchorId": "castle_wall_0",

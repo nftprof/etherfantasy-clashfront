@@ -315,7 +315,7 @@
           "OPEN",
           "BROKEN"
         ],
-        "door": "PORTCULLIS",
+        "door": "DOUBLE_LEAF",
         "openWidth": 13
       },
       {
@@ -331,7 +331,7 @@
           "OPEN",
           "BROKEN"
         ],
-        "door": "DOUBLE_LEAF",
+        "door": "PORTCULLIS",
         "openWidth": 13
       },
       {
@@ -4802,12 +4802,6 @@
       "size": "M"
     },
     {
-      "anchorId": "bs_ring3",
-      "x": -52,
-      "z": 14,
-      "size": "M"
-    },
-    {
       "anchorId": "bs_ring4",
       "x": -42,
       "z": -6,
@@ -4817,12 +4811,6 @@
       "anchorId": "bs_ring5",
       "x": -20,
       "z": -6,
-      "size": "M"
-    },
-    {
-      "anchorId": "bs_mid",
-      "x": 10,
-      "z": -10,
       "size": "M"
     }
   ],

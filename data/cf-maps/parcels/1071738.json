@@ -292,7 +292,7 @@
           "OPEN",
           "BROKEN"
         ],
-        "door": "PORTCULLIS",
+        "door": "DOUBLE_LEAF",
         "openWidth": 13
       },
       {
@@ -340,7 +340,7 @@
           "OPEN",
           "BROKEN"
         ],
-        "door": "DOUBLE_LEAF",
+        "door": "PORTCULLIS",
         "openWidth": 13
       },
       {
@@ -1863,12 +1863,6 @@
     }
   ],
   "buildSpots": [
-    {
-      "anchorId": "bs_ring4",
-      "x": 2,
-      "z": -18,
-      "size": "M"
-    },
     {
       "anchorId": "bs_ring5",
       "x": 22,

@@ -205,7 +205,7 @@
           "OPEN",
           "BROKEN"
         ],
-        "door": "PORTCULLIS",
+        "door": "DOUBLE_LEAF",
         "openWidth": 13
       },
       {
@@ -237,7 +237,7 @@
           "OPEN",
           "BROKEN"
         ],
-        "door": "DOUBLE_LEAF",
+        "door": "PORTCULLIS",
         "openWidth": 13
       },
       {
@@ -1181,7 +1181,7 @@
       ],
       "hpMax": 1150,
       "blocking": "DOOR",
-      "r": 5.5
+      "r": 7.5
     },
     {
       "anchorId": "castle_wall_1",

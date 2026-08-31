@@ -1537,7 +1537,7 @@ const PALACE_STYLES = { UW2: "drowned_bastion", ENT: "carnavale", EDU: "collegia
 // anchors = vertices of the solid wallRing polyline t 4.2, never independent cylinders) +
 // siege.wallRing gains t/archClearH — engines build the navmesh from THIS instead of guessing
 // (the "units running in circles around towers" fix on the map side).
-export const GEN_VERSION = 28;   // v28: HONEST WALK MASK (walkable ⇔ reachable, walls-stamped model) + POSTERN doors for wall-sealed field pockets (owner: units grinding into rocks/walls)
+export const GEN_VERSION = 29;   // v29: rulebook-review fixes — all-ring pad clearance, crossing-sized repair doors + post-bake arch re-measure, road-door portcullis. (v28: HONEST WALK MASK + POSTERN doors — owner: units grinding into rocks/walls)
 
 export function generate(parcel, params = null, designVersion = 0) {
   // designVersion is MANDATORY in every artifact (MOBA contract fix 3: it pins caches, replays,
@@ -1800,10 +1800,48 @@ export function generate(parcel, params = null, designVersion = 0) {
       const gid = `castle_gate_${(geo.gates || []).length}r`;        // r-suffix: repair-road door
       const nx2 = r1(mid[0]), nz2 = r1(mid[1]);
       if (pi >= 0) { geo.pts[pi][0] = nx2; geo.pts[pi][1] = nz2; }
+      // arch scales with the CROSSING (2026-08-31 rulebook review P2: repair doors shipped a fixed
+      // r 5.5 while the road they serve could be 17u wide — same 0.75× law as castleLayout's road
+      // doors). Run length along the wall = the road's crossing width (1u samples).
+      const runW2 = Math.abs(s1 - s0) + 1;
+      const gateR2 = r1(Math.max(5.5, Math.min(13, 0.75 * runW2)));
       structures2[bi] = { anchorId: gid, kind: "GATE", side: "DEFENDER", material: "WOOD",
-        states: ["CLOSED", "OPEN", "BROKEN"], blocking: "DOOR", r: 5.5, x: nx2, z: nz2, hpMax: s2.hpMax };
-      geo.gates.push({ at: [nx2, nz2], structureId: gid });
-      disc(g, G, cellOf(G, nx2), cellOf(G, nz2), 7, false);          // apron — the arch stays clear
+        states: ["CLOSED", "OPEN", "BROKEN"], blocking: "DOOR", r: gateR2, x: nx2, z: nz2, hpMax: s2.hpMax };
+      geo.gates.push({ at: [nx2, nz2], structureId: gid, gateR: gateR2 });
+      disc(g, G, cellOf(G, nx2), cellOf(G, nz2), Math.max(7, Math.round(gateR2 / CELL_M) + 3), false); // apron scales with the arch
+    }
+    // POST-BAKE ARCH RE-MEASURE (2026-08-31 rulebook review P2: 18 arches on 13 castles were
+    // narrower than 0.75× the road that actually crosses them — castleLayout sized doors from the
+    // PRE-bake network, then carves/causeways widened the crossing). Re-scan the final grid's road
+    // runs through the wall; every door WIDENS to the 0.75× law where the final road outgrew it
+    // (never narrows — a grand door on a thin path is fine).
+    {
+      const hit2 = samples.map(([x, z]) => g[gIdx(G, cellOf(G, x), cellOf(G, z))] === T.ROAD);
+      const runs2 = [];
+      let cur2 = null, gap2 = 0;
+      for (let i = 0; i < samples.length; i++) {
+        if (hit2[i]) { if (!cur2) cur2 = [i, i]; else cur2[1] = i; gap2 = 0; }
+        else if (cur2 && ++gap2 > 6) { runs2.push(cur2); cur2 = null; }
+      }
+      if (cur2) runs2.push(cur2);
+      for (const [s0, s1] of runs2) {
+        const mi = Math.round((s0 + s1) / 2) % samples.length;
+        const mid = samples[mi];
+        const want = r1(Math.max(5.5, Math.min(13, 0.75 * (Math.abs(s1 - s0) + 1))));
+        let bg = null, bd4 = Infinity;
+        for (const g2 of geo.gates || []) {
+          const at = g2.at || g2, d = Math.hypot(at[0] - mid[0], at[1] - mid[1]);
+          if (d < bd4) { bd4 = d; bg = g2; }
+        }
+        if (!bg || bd4 > 14) continue;                       // run has no door — the 5b pass handles that
+        const sg2 = bg.structureId && structures2.find((s3) => s3.anchorId === bg.structureId);
+        const have = Math.max(bg.gateR || 0, (sg2 && sg2.r) || 0, 5.5);
+        if (have >= want) continue;
+        bg.gateR = want;
+        if (sg2) sg2.r = want;
+        const at = bg.at || bg;
+        disc(g, G, cellOf(G, at[0]), cellOf(G, at[1]), Math.max(7, Math.round(want / CELL_M) + 3), false);
+      }
     }
     // v21 wall-line sweep, repair edition: repair-carved corridors/causeways crossing the wall
     // away from every door repaint to OPEN on the wall band (walkability identical — only the
@@ -1955,8 +1993,26 @@ export function generate(parcel, params = null, designVersion = 0) {
       const keepAt = castleParts.geom.keepAt;
       const PAD_WALL = MIND;                      // ≈8.8 : off the wall band (a courtyard pad may sit inside)
       const PAD_STRUCT = MIND + 5;                // ≈13.8 : clearly off any tower/gate/keep footprint
+      // ALL rings, not just the outer (2026-08-31 rulebook review P1: 16 castles had pads 0.2–8.3u
+      // from an INNER ward wall — the guard only saw geo.pts). Same concentricRings the siege block
+      // emits, so the pad clearance and the rendered walls can never disagree.
+      const T2b = CASTLE_TIERS[castle && CASTLE_TIERS[castle.kind] ? castle.kind : "KEEP"];
+      const CRb = concentricRings(castleParts.geom, T2b, poly, { g, G });
+      const anyRingDist = (x, z) => {
+        let best = Infinity;
+        for (const rr of CRb.rings) {
+          const pts = rr.pts;
+          for (let i = 0; i < pts.length; i++) {
+            const A = pts[i], B = pts[(i + 1) % pts.length];
+            const abx = B[0] - A[0], abz = B[1] - A[1], L2 = abx * abx + abz * abz || 1;
+            const t = Math.max(0, Math.min(1, ((x - A[0]) * abx + (z - A[1]) * abz) / L2));
+            best = Math.min(best, Math.hypot(x - (A[0] + abx * t), z - (A[1] + abz * t)));
+          }
+        }
+        return best;
+      };
       buildSpots = buildSpots.filter((b) => {
-        if (distRing(b.x, b.z) < PAD_WALL) return false;                                        // on the wall
+        if (anyRingDist(b.x, b.z) < PAD_WALL) return false;                                     // on ANY wall ring
         if (keepAt && Math.hypot(b.x - keepAt[0], b.z - keepAt[1]) < PAD_STRUCT + 4) return false; // the keep (bigger)
         for (const s of castleStructures) if (Math.hypot(b.x - s.x, b.z - s.z) < PAD_STRUCT) return false; // tower/gate/wall anchor
         return true;
@@ -2308,12 +2364,21 @@ export function generate(parcel, params = null, designVersion = 0) {
         out.drawbridge = { at: dbAt, material: "WOOD" };
       }
       const castleGates = structures.filter((s2) => /^castle_gate_/.test(s2.anchorId));
-      // main gate = nearest the drawbridge/road (else the first, most attacker-facing) → PORTCULLIS
-      // (raise-up). Every other gate = DOUBLE_LEAF (swing L/R). TWO DOOR TYPES (owner 2026-08-22).
+      // main gate = nearest the drawbridge; NO drawbridge → the widest ROAD door (2026-08-31
+      // rulebook review P4: the fallback ignored road gates and crowned castleGates[0], putting the
+      // portcullis on a side door while the highway ran through a DOUBLE_LEAF); no road door either
+      // → the first (most attacker-facing). PORTCULLIS (raise-up) on main, DOUBLE_LEAF elsewhere.
       let mainId = castleGates[0]?.anchorId;
       if (dbAt && castleGates.length) {
         let bd = Infinity;
         for (const s2 of castleGates) { const d2 = Math.hypot(s2.x - dbAt[0], s2.z - dbAt[1]); if (d2 < bd) { bd = d2; mainId = s2.anchorId; } }
+      } else if (castleGates.length) {
+        let bw = 0;
+        for (const s2 of castleGates) {
+          const onRoad = g[gIdx(G, cellOf(G, s2.x), cellOf(G, s2.z))] === T.ROAD ||
+            /r$/.test(s2.anchorId) || (s2.r || 5.5) > 5.5;   // road-carved, repair-road, or widened arch
+          if (onRoad && (s2.r || 5.5) > bw) { bw = s2.r || 5.5; mainId = s2.anchorId; }
+        }
       }
       out.gates = castleGates.map((s2) => ({
         id: s2.anchorId, at: [s2.x, s2.z], hp: s2.hpMax, material: "WOOD",

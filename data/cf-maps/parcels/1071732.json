@@ -730,7 +730,7 @@
           "OPEN",
           "BROKEN"
         ],
-        "door": "PORTCULLIS",
+        "door": "DOUBLE_LEAF",
         "openWidth": 13
       },
       {
@@ -762,7 +762,7 @@
           "OPEN",
           "BROKEN"
         ],
-        "door": "DOUBLE_LEAF",
+        "door": "PORTCULLIS",
         "openWidth": 13
       },
       {
@@ -2736,50 +2736,7 @@
       "richness": 0.6
     }
   ],
-  "buildSpots": [
-    {
-      "anchorId": "bs_ring0",
-      "x": 14,
-      "z": 28,
-      "size": "M"
-    },
-    {
-      "anchorId": "bs_ring1",
-      "x": 2,
-      "z": 46,
-      "size": "M"
-    },
-    {
-      "anchorId": "bs_ring2",
-      "x": -20,
-      "z": 46,
-      "size": "M"
-    },
-    {
-      "anchorId": "bs_ring3",
-      "x": -30,
-      "z": 28,
-      "size": "M"
-    },
-    {
-      "anchorId": "bs_ring4",
-      "x": -18,
-      "z": 8,
-      "size": "M"
-    },
-    {
-      "anchorId": "bs_ring5",
-      "x": 2,
-      "z": 8,
-      "size": "M"
-    },
-    {
-      "anchorId": "bs_mid",
-      "x": 0,
-      "z": 0,
-      "size": "M"
-    }
-  ],
+  "buildSpots": [],
   "spawnZones": [
     {
       "id": "atk_S",

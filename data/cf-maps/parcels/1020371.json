@@ -347,7 +347,7 @@
           "OPEN",
           "BROKEN"
         ],
-        "door": "PORTCULLIS",
+        "door": "DOUBLE_LEAF",
         "openWidth": 13
       },
       {
@@ -363,7 +363,7 @@
           "OPEN",
           "BROKEN"
         ],
-        "door": "DOUBLE_LEAF",
+        "door": "PORTCULLIS",
         "openWidth": 13
       },
       {
@@ -2769,12 +2769,6 @@
   ],
   "buildSpots": [
     {
-      "anchorId": "bs_ring1",
-      "x": -22,
-      "z": -26,
-      "size": "M"
-    },
-    {
       "anchorId": "bs_ring3",
       "x": -46,
       "z": -38,
@@ -3151,7 +3145,7 @@
       ],
       "hpMax": 1150,
       "blocking": "DOOR",
-      "r": 6
+      "r": 6.8
     },
     {
       "anchorId": "castle_wall_6",

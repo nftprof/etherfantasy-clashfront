@@ -115,8 +115,10 @@ function checkArtifact(label, art) {
   ok(ringsOK, `${label}: R-RING full nested circuits (≥12 anchors each, strictly inward)`);
   ok(gapsOK, `${label}: R-EN enclosure — no angular gap > 2.4× nominal spacing`);
   ok(insideOK, `${label}: R-RING every ring point inside the parcel polygon + arena`);
-  // R-GAP: consecutive rings never merge — per-anchor (≥8u) AND segment-level (≥7.5u anywhere on
-  // the outer polyline). Deep keep-foot dents exempt (outer local radius ≤23 / inner ≤16).
+  // R-GAP: consecutive rings never merge — per-anchor (≥8u) AND segment-level (≥9u anywhere on
+  // the outer polyline; raised from 7.5 per the 2026-08-31 rulebook review — measured world min is
+  // 9.5u, so 9 is the evidence-backed floor under the 12u generation target). Deep keep-foot dents
+  // exempt (outer local radius ≤23 / inner ≤16).
   let wardOK = true, segOK = true;
   for (let ri = 0; ri + 1 < cg.rings.length; ri++) {
     const a = cg.rings[ri].pts, b = cg.rings[ri + 1].pts;
@@ -128,11 +130,11 @@ function checkArtifact(label, art) {
       // sample the inner anchor AND its midpoint to the next inner anchor vs the outer polyline
       const k = (j + 1) % b.length;
       const mx = (b[j][0] + b[k][0]) / 2, mz = (b[j][1] + b[k][1]) / 2;
-      if (rIn > 16 && (polyD(b[j][0], b[j][1], a) < 7.5 || polyD(mx, mz, a) < 7.5)) segOK = false;
+      if (rIn > 16 && (polyD(b[j][0], b[j][1], a) < 9 || polyD(mx, mz, a) < 9)) segOK = false;
     }
   }
   ok(wardOK, `${label}: R-GAP per-anchor ward spacing ≥8u (no merged walls)`);
-  ok(segOK, `${label}: R-GAP segment-level ward clearance ≥7.5u (no wall grazes another at ANY angle)`);
+  ok(segOK, `${label}: R-GAP segment-level ward clearance ≥9u (no wall grazes another at ANY angle)`);
   ok((sg.gates || []).length >= 1, `${label}: R-AR at least one gate arch`);
   // R-GATE (v18 owner ladder + v19 road doors): outer wall ≥ min(4, N+1) doors (road crossings
   // may add more, capped 5); each ward inward one fewer, ≥2.

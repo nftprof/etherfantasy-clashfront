@@ -3626,7 +3626,7 @@
       ],
       "hpMax": 1150,
       "blocking": "DOOR",
-      "r": 5.5
+      "r": 6
     },
     {
       "anchorId": "castle_wall_4",
@@ -3708,7 +3708,7 @@
       ],
       "hpMax": 1150,
       "blocking": "DOOR",
-      "r": 5.5
+      "r": 6
     }
   ],
   "mobs": [

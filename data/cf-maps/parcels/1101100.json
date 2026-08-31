@@ -4540,38 +4540,8 @@
   ],
   "buildSpots": [
     {
-      "anchorId": "bs_ring0",
-      "x": 0,
-      "z": -8,
-      "size": "M"
-    },
-    {
-      "anchorId": "bs_ring1",
-      "x": -12,
-      "z": 10,
-      "size": "M"
-    },
-    {
-      "anchorId": "bs_ring2",
-      "x": -34,
-      "z": 10,
-      "size": "M"
-    },
-    {
-      "anchorId": "bs_ring3",
-      "x": -46,
-      "z": -12,
-      "size": "M"
-    },
-    {
       "anchorId": "bs_ring4",
       "x": -34,
-      "z": -28,
-      "size": "M"
-    },
-    {
-      "anchorId": "bs_ring5",
-      "x": -12,
       "z": -28,
       "size": "M"
     }
