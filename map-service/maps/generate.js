@@ -1930,11 +1930,17 @@ export function generate(parcel, params = null, designVersion = 0) {
           const step = (MIND - d) + (inside ? rAvg2 - dd + MIND : 0) + 0.6;
           s.x = r1(s.x + (dx / dd) * step); s.z = r1(s.z + (dz / dd) * step);   // always OUTWARD
           moved = true;
-        } else if (inside) for (const gq of gates) {       // pre-existing deep-courtyard towers:
-          const ga = gq.at || gq, gd = Math.hypot(s.x - ga[0], s.z - ga[1]);    // keep stairs clear
-          if (gd < GATE_APRON) {
+        } else for (const gq of gates) {
+          // v27 R-GATE-CLEAR (owner 2026-08-29 "you can't have an arch between a wall and a tower" —
+          // audit found the breach class was LANE towers, which skipped this check when OUTSIDE the
+          // wall): EVERY tower, courtyard or field, keeps ≥16u from every gate — same TOWER_GATE_MIN
+          // as the mural towers, so a door is only ever framed by its gatehouse. Courtyard towers
+          // additionally clear the stairs apron.
+          const ga = gq.at || gq, gd = Math.hypot(s.x - ga[0], s.z - ga[1]);
+          const need = inside ? Math.max(GATE_APRON, 16) : 16;
+          if (gd < need) {
             const vx = (s.x - ga[0]) / (gd || 1), vz = (s.z - ga[1]) / (gd || 1);
-            s.x = r1(s.x + vx * (GATE_APRON - gd + 0.5)); s.z = r1(s.z + vz * (GATE_APRON - gd + 0.5));
+            s.x = r1(s.x + vx * (need - gd + 0.5)); s.z = r1(s.z + vz * (need - gd + 0.5));
             moved = true; break;
           }
         }

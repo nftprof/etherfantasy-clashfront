@@ -59,6 +59,20 @@ const inPoly = (x, z, poly) => {
 function checkArtifact(label, art) {
   const cg = art.meta && art.meta.castleGeom, sg = art.siege;
   if (!cg || !sg || !sg.wallRing) { ok(false, `${label}: no castleGeom/siege emitted`); return; }
+  // R-GATE-TOWER (v27, owner 2026-08-29 "you can't have an arch between a wall and a tower"): EVERY
+  // tower structure — mural castle_tower_* AND lane tw* — keeps ≥16u (−0.5 rounding slack) from every
+  // gate anchor. The audit found lane towers skipped the clearance (siege-test gate_2↔tw0 = 15.7u).
+  {
+    const gatesS = (art.structures || []).filter((s) => s.kind === "GATE");
+    const towersS = (art.structures || []).filter((s) => s.kind === "TOWER");
+    let minGT = Infinity, worst = "";
+    for (const g of gatesS) for (const t of towersS) {
+      const d = Math.hypot(g.x - t.x, g.z - t.z);
+      if (d < minGT) { minGT = d; worst = `${g.anchorId}↔${t.anchorId}`; }
+    }
+    ok(!gatesS.length || !towersS.length || minGT >= 15.5,
+      `${label}: R-GATE-TOWER min gate↔tower ${minGT.toFixed(1)}u (${worst}) < 16u`);
+  }
   const T2 = CASTLE_TIERS[cg.tier];
   const keep = cg.keep.at, poly = art.arena.bounds, half = art.arena.sizeM / 2;
   // R-RING (v19 adaptive): the tier's ringN is a CEILING; the achieved outer radius affords
