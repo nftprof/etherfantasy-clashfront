@@ -61,6 +61,10 @@ const BIOME_PALETTES = {
   DESERT: ["desert"],
   SNOW: ["tundra", "ashen"],
   VOLCANIC: ["volcanic", "ashen"],
+  // HS2 Emberfall (owner 2026-08-31: "less volcanic — no volcano in the air; ember-red CRYSTAL
+  // GEMS, fire power FROM the crystals" — the same crystals power the imperial tech): dark slate
+  // ground shot through with glowing ember crystal; ashen variant keeps ridge coherence.
+  EMBER_CRYSTAL: ["ember", "ashen"],
   SWAMP: ["swamp"],
 };
 export function biomePalette(biome, seed = 0) {

@@ -68,6 +68,7 @@ const MIX = {
   sakura:   { forest: 0.80, rock: 0.12, water: 0.08, cliff: 0.00 },
   swamp:    { forest: 0.46, rock: 0.06, water: 0.48, cliff: 0.00 },
   volcanic: { forest: 0.06, rock: 0.56, water: 0.22, cliff: 0.16 },   // "water" renders as lava
+  ember:    { forest: 0.10, rock: 0.52, water: 0.14, cliff: 0.24 },   // HS2: rock = ember-red crystal outcrops, dark scarps — no lava in the sky
   ashen:    { forest: 0.14, rock: 0.50, water: 0.06, cliff: 0.30 },
   tundra:   { forest: 0.30, rock: 0.40, water: 0.08, cliff: 0.22 },
   desert:   { forest: 0.34, rock: 0.58, water: 0.08, cliff: 0.00 },   // brush + rock, rare oasis

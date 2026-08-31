@@ -80,7 +80,7 @@ const rng=()=>{_s=(_s+0x6D2B79F5)>>>0;let t=_s;t=Math.imul(t^(t>>>15),t|1);t^=t+
 const R=(x,y)=>x+(y-x)*rng();
 
 // per-palette ground tint (legacy fallback only — parity mode gets the real biome material set)
-const TINT={verdant:0xffffff,autumn:0xd9b978,volcanic:0x6a5a52,tundra:0xcdd6da,desert:0xd8c28a,swamp:0x8fa06a,sakura:0xe6c8d6}[p.palette]||0xffffff;
+const TINT={verdant:0xffffff,autumn:0xd9b978,volcanic:0x6a5a52,tundra:0xcdd6da,desert:0xd8c28a,swamp:0x8fa06a,sakura:0xe6c8d6,ember:0x9a6a66}[p.palette]||0xffffff;   // ember = slate + red-crystal cast (never lava)
 
 const scene=new THREE.Scene();
 let cam=new THREE.PerspectiveCamera(parity?50:45,innerWidth/innerHeight,1,S*6);

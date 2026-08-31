@@ -40,7 +40,7 @@ export function directivePrompt(budget = null) {
     "Reply with ONLY a single JSON object (no prose, no code fences) with these fields:\n" + lines.join("\n") +
     "\nPick the archetype/palette/landmark that best matches the directive's theme and mood. " +
     "High density = cluttered tactical map; waterLevel matters for river/marsh archetypes; " +
-    "volcanic palette renders water as lava." +
+    "volcanic palette renders water as lava; ember palette = dark military ground with ember-red CRYSTAL rocks (fire from gems, never lava)." +
     "\nOPTIONALLY add \"features\": [...] — up to 24 detail placements for precise composition. " +
     "Coords are normalized (-1..1, 0 = map center, +z = north); r/width are fractions of the map:\n" +
     '  {"kind":"riverBand","axis":"x"|"z","at":0.1-0.9,"width":0.02-0.3,"fords":1-3}  (axis "x" = river runs west-east across the map; "z" = runs south-north; "at" = where it sits, 0=south/west edge)\n' +

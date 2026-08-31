@@ -402,7 +402,7 @@ export function zoneBiomeFamily(zoneId) {
   if (!_zoneBiome) {
     _zoneBiome = new Map([["CGI", "TEMPERATE_GRASS"], ["KOL", "TEMPERATE_GRASS"], ["HUB", "TEMPERATE_GRASS"],
       ["ENT", "TEMPERATE_GRASS"], ["BUS", "SWAMP"], ["EDU", "TEMPERATE_FOREST"], ["HS1", "TEMPERATE_GRASS"],
-      ["HS2", "VOLCANIC"], ["HS3", "SNOW"], ["UW1", "SWAMP"], ["UW2", "VOLCANIC"], ["UW3", "VOLCANIC"]]);
+      ["HS2", "EMBER_CRYSTAL"], ["HS3", "SNOW"], ["UW1", "SWAMP"], ["UW2", "VOLCANIC"], ["UW3", "VOLCANIC"]]);
     try {
       const reg = JSON.parse(fs.readFileSync(path.join(dataRoot(), "zone-registry.json"), "utf8"));
       for (const z of reg.zones || []) if (z.zoneId && z.biomeFamily) _zoneBiome.set(String(z.zoneId), String(z.biomeFamily));

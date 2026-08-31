@@ -4,7 +4,7 @@
 // boundary: any out-of-schema value from an LLM/user collapses to a safe default.
 
 export const ARCHETYPES = ["openSteppe", "forestMaze", "riverCrossing", "boxCanyon", "cliffTerraces", "marshCauseways", "ridgePasses"];
-export const PALETTES = ["verdant", "autumn", "volcanic", "tundra", "desert", "swamp", "ashen", "sakura"];
+export const PALETTES = ["verdant", "autumn", "volcanic", "tundra", "desert", "swamp", "ashen", "sakura", "ember"];   // ember = HS2 Emberfall fire-crystal ground (owner 2026-08-31: crystal gems, NOT magma)
 export const LANDMARKS = ["NONE", "STANDING_STONES", "RUINED_TOWER", "CRATER_LAKE", "ANCIENT_BRIDGE", "SHIPWRECK", "GIANT_SKULL", "OBELISK"];
 
 // terrain cell codes (u8 grid; walkability derives from these — grid is the truth, props are décor)

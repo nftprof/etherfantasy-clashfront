@@ -13,6 +13,7 @@ const PALETTE_RGB = {
   desert:   [[188, 162, 110], [120, 124, 62], [150, 128, 96], [70, 120, 140], [140, 116, 84], [204, 182, 136]],
   swamp:    [[74, 88, 58],  [44, 60, 38],  [96, 98, 86],   [46, 78, 92],  [80, 84, 66],   [128, 116, 84]],   // water = murky teal (was ground-green — deltas were invisible)
   ashen:    [[96, 94, 92],  [64, 66, 62],  [118, 114, 110], [70, 80, 92], [84, 80, 78],   [140, 132, 120]],
+  ember:    [[58, 66, 54],  [42, 52, 44],  [188, 52, 48],  [48, 70, 92],  [38, 40, 42],   [104, 98, 90]],   // HS2 Emberfall: dark military-green ground, near-black walls, ROCK = ember-red CRYSTAL (owner 2026-08-31: crystals, never lava — water stays water)
   sakura:   [[120, 140, 96], [172, 120, 140], [130, 124, 128], [96, 130, 160], [110, 102, 106], [168, 150, 130]],
 };
 const MARK = { GOLD_MINE: [230, 190, 60], WOOD_GROVE: [70, 150, 60], buildSpot: [225, 225, 235], atk: [220, 80, 70], def: [90, 140, 220], landmark: [242, 230, 190], lane: [210, 190, 140] };

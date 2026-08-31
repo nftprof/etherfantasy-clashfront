@@ -64,7 +64,7 @@ const GREY = [72, 78, 88], GREY2 = [82, 88, 98];    // ungenerated fill (slight 
 // terrain board + POI markers). A little seeded speckle keeps big fills from looking dead-flat.
 const LAND = {
   TEMPERATE_FOREST: [70, 96, 62], TEMPERATE_GRASS: [96, 120, 72], SWAMP: [74, 88, 58],
-  VOLCANIC: [78, 62, 56], SNOW: [172, 180, 186], DESERT: [186, 162, 110], TUNDRA: [150, 160, 164],
+  VOLCANIC: [78, 62, 56], EMBER_CRYSTAL: [92, 58, 62], SNOW: [172, 180, 186], DESERT: [186, 162, 110], TUNDRA: [150, 160, 164],
 };
 export const landColor = (zone) => LAND[zoneBiomeFamily(zone)] || [86, 110, 74];
 const speckle = (base, x, y) => { const h = (((x * 73856093) ^ (y * 19349663)) >>> 0) % 17 - 8; return [Math.max(0, base[0] + h), Math.max(0, base[1] + h), Math.max(0, base[2] + h)]; };
