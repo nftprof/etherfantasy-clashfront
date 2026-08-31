@@ -207,3 +207,11 @@ ever tightens.
 *Method: audit script run read-only from `map-service/maps` (Node ESM, imports `worldfield.js` +
 `generate.js`); committed artifacts parsed as JSON. No map, artifact or generator file was
 modified. 49/49 castles audited, 0 generate errors, all at GEN_VERSION 27.*
+
+---
+## STATUS UPDATE (same day, after fixes)
+- ✅ Fix 1 DONE: lane towers (`tw*`) now obey the 16u gate clearance (generator relocation pass runs for
+  EVERY tower, courtyard or field) + new CI check **R-GATE-TOWER** in the castle sweep (all GATE↔TOWER
+  pairs). Estate 1071738 + siege-test re-baked clean; sweep 1084/1084.
+- ⏭ Fix 2 (steep flights on tight tall castles, worst 76.1°): requires the SWITCHBACK flight — designed
+  in `docs/briefs/STAIR-SWITCHBACK-SPEC.md`, not yet implemented (schema + both renderers).
