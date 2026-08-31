@@ -42,6 +42,9 @@ const worldField = {
 const parcel = {
   parcelId: "SIEGE-TEST-1", zone: "EDU", biomeFamily: "TEMPERATE_FOREST",
   sizeM: 322, investLevel: 3, worldField,
+  // v30: the siege TEST map doubles as the naval/airship CONTRACT TESTBED — MEDIUM class gives it
+  // one LANDING_PAD (real estates get theirs from their l2 row; plain singles get none).
+  sizeClass: "MEDIUM",
 };
 
 // designVersion tracks GEN_VERSION-5 so a generator bump supersedes the box's adopted copy

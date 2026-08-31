@@ -85,6 +85,59 @@ function checkArtifact(label, art) {
     ok(s.reached === s.walks, `${label}: R-REACH-ALL ${s.walks - s.reached}/${s.walks} walks failed`);
     ok(s.stairsOk === s.stairs, `${label}: R-REACH-ALL ${s.stairs - s.stairsOk}/${s.stairs} stair feet unreachable`);
   }
+  // R-LAYERS (v30, three-layer doctrine — NAVAL-AIRSHIP-THREE-LAYER-MAPS.md): the water depth
+  // channel is sane (depth only on WATER cells; DEEP/OCEAN never abuts land — a SHALLOW wade rim
+  // always intervenes) and LANDING_PADs obey the estate law (singles carry none; estates carry
+  // 1..ladder, each pad centered on clear, walkable OPEN ground).
+  {
+    const G2 = art.terrain.w, cellM2 = art.terrain.cellM || 2, half2 = (G2 * cellM2) / 2;
+    const cells2 = new Uint8Array(Buffer.from(art.terrain.cells, "base64"));
+    const walk2 = new Uint8Array(Buffer.from(art.terrain.walk, "base64"));
+    ok(!!art.terrain.water, `${label}: R-LAYERS terrain.water channel present`);
+    if (art.terrain.water) {
+      const w2 = new Uint8Array(Buffer.from(art.terrain.water, "base64"));
+      let stray = 0, deepTouch = 0;
+      for (let i = 0; i < G2 * G2; i++) {
+        if (w2[i] && cells2[i] !== T.WATER) stray++;
+        if (w2[i] >= 2) {
+          const x = i % G2, z = (i / G2) | 0;
+          for (const [dx, dz] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+            const nx = x + dx, nz = z + dz;
+            if (nx < 0 || nz < 0 || nx >= G2 || nz >= G2) continue;
+            const j = nz * G2 + nx;
+            if (cells2[j] !== T.WATER && cells2[j] !== T.OOB) deepTouch++;
+          }
+        }
+      }
+      ok(stray === 0, `${label}: R-LAYERS water depth only on WATER cells (${stray} stray)`);
+      ok(deepTouch === 0, `${label}: R-LAYERS deep water never abuts land — shallow rim required (${deepTouch} contacts)`);
+    }
+    const pads = (art.structures || []).filter((s) => s.kind === "LANDING_PAD");
+    const cls = String((art.meta && art.meta.sizeClass) || "").toUpperCase();
+    const LAD = { SMALL: 1, MEDIUM: 1, LARGE: 2, GIANT: 3, EPIC: 4 };
+    if (!LAD[cls]) {
+      ok(pads.length === 0, `${label}: R-PADS single parcels carry NO landing pads (${pads.length} found)`);
+    } else {
+      ok(pads.length >= 1 && pads.length <= LAD[cls],
+        `${label}: R-PADS estate pad count ${pads.length} (class ${cls} wants 1..${LAD[cls]})`);
+      const cellAt = (wx, wz) => {
+        const cx = Math.max(0, Math.min(G2 - 1, Math.round((wx + half2) / cellM2 - 0.5)));
+        const cz = Math.max(0, Math.min(G2 - 1, Math.round((wz + half2) / cellM2 - 0.5)));
+        return cz * G2 + cx;
+      };
+      for (const p of pads) {
+        let openN = 0, tot = 0;
+        for (let a = 0; a < 8; a++) {
+          const i = cellAt(p.x + Math.cos(a * Math.PI / 4) * (p.r - 2), p.z + Math.sin(a * Math.PI / 4) * (p.r - 2));
+          tot++; if ((cells2[i] === T.OPEN || cells2[i] === T.ROAD) && walk2[i]) openN++;   // forgiving pads may rim a road
+        }
+        const ci = cellAt(p.x, p.z);
+        const coreOk = cells2[ci] === T.OPEN || (p.plaza && cells2[ci] === T.ROAD);   // plaza pads sit on paving
+        ok(coreOk && walk2[ci] === 1 && openN === tot,
+          `${label}: R-PADS ${p.anchorId} (r${p.r}) sits on clear walkable ground (${openN}/${tot} rim)`);
+      }
+    }
+  }
   const T2 = CASTLE_TIERS[cg.tier];
   const keep = cg.keep.at, poly = art.arena.bounds, half = art.arena.sizeM / 2;
   // R-RING (v19 adaptive): the tier's ringN is a CEILING; the achieved outer radius affords

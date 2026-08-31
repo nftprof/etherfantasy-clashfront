@@ -84,6 +84,7 @@ function buildOne(p) {
   if (!row) throw new Error(`estate ${p.id} not in parcels-l2.json`);
   if (row.zone !== p.zone) throw new Error(`estate ${p.id} zone mismatch: ${row.zone} ≠ ${p.zone}`);
   const parcel = worldParcel(row, { investLevel: INVEST_LEVEL, biome: p.biome });
+  parcel.sizeClass = row.sizeClass;                         // v30: landing-pad ladder key (estates get pads; singles none)
   const art = generate(parcel);
   art.meta.sizeClass = row.sizeClass;                       // EPIC — carried into the A1 meta
   const a1 = toBattlefieldA1(art);

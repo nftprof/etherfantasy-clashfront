@@ -1252,3 +1252,22 @@ Owner filmed both armies wall-grinding. Split diagnosis:
   anti-grind watchdog: <0.5u progress over ~1.5s under a move order ⇒ drop a level — no unit ever
   walk-cycles into a blocker; (4) invalidate cached paths on gate/wall state changes. New map data the
   engine should honor: POSTERN gates are ordinary GATE anchors (`castle_gate_Np`, r 5.5, DOUBLE_LEAF).
+
+### 2026-08-31 (cont.) · NAVAL/AIRSHIP — THREE-LAYER MAPS: N0 map data SHIPPED (GEN_VERSION 30)
+Owner directives (same day): 3 traversal layers on every map — DEEP water (ships = floating
+fortresses), SHALLOW water (existing wade band; water pets attack from it), AIR (airships MUST land
+to act, helipad-style pads, estates only); vessel class ladder NORMAL/LARGE/IMPERIAL (imperial =
+parcel-scale carrier, launches normal hulls, never lands). Full plan:
+`docs/briefs/NAVAL-AIRSHIP-THREE-LAYER-MAPS.md`; contract: `BATTLEFIELD-SCHEMA.md` v30 addendum.
+- **Shipped (CF ParcelMap, authority genVersion 30):** `terrain.water` per-cell depth channel
+  (0/1 SHALLOW/2 DEEP/3 OCEAN — additive; walk mask untouched) + `LANDING_PAD` anchors
+  (HEAVY r26 / NORMAL r16 / LIGHT r12, `plaza` variant on street paving; ladder SM/MED 1 · L 2 ·
+  G 3 · EPIC 4; singles NONE). All 11 estates + siege-test re-baked; CI enforces sanity
+  (R-LAYERS/R-PADS). siege-test now carries `sizeClass:"MEDIUM"` + 1 NORMAL pad = the testbed.
+- **→ EF Moba (Network):** movement masks from the channel (SWIM water>0, SAIL water≥2,
+  SAIL_IMPERIAL water==3); arrival flows (fleet at deep edge → pier/beach unload; airship →
+  descend on a pad, vulnerable while unloading); VESSEL-as-unit netcode (the voyage vessel exists
+  — build/voyage/vessel.js).
+- **→ MOBA BattleEngine RAW:** render pads as flat marked circles (apron+ring+H — preview3d is
+  the reference; never a solid blob), deep-water tint, vessel reuse in battle scenes.
+- **NB vendor guard: siege-test authority is now genVersion 30** (supersedes the 29 note above).

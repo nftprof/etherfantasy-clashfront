@@ -215,3 +215,40 @@ renderer changes** — same schema, same renderer. The server (`game.ts`/`bridge
 prefers a real per-match battlefield when the match server/bridge supplies one, else loads the
 stand-in (validated at load by `apps/server/src/battlefield.ts`). Retire these files once real
 per-parcel designs flow through the registry.
+
+## v30 addendum — THE THREE-LAYER DOCTRINE (2026-08-31, owner-directed; spec: `NAVAL-AIRSHIP-THREE-LAYER-MAPS.md`)
+
+Two traversal planes join the ground plane on every map. **Additive** — a consumer that ignores
+them sees exact pre-v30 semantics.
+
+### `terrain.water` — the per-cell depth channel
+Base64 Uint8, same `w×h` grid as `cells`/`walk`:
+
+| value | grade | who operates there |
+|---|---|---|
+| 0 | none | — |
+| 1 | **SHALLOW** (~8u wade rim off every shore) | water pets wade in and ATTACK from it (the amphibious flank walls don't cover); land units per engine wade rules |
+| 2 | **DEEP** (body ≥110 cells past the rim; a river cutting the map gets a deep centerline once wider than ~2× the rim) | NORMAL/LARGE ship hulls + swimming water pets — a moored ship here is a **floating fortress** |
+| 3 | **OCEAN** (deep + map-edge/OOB-connected + ≥250 deep cells) | the only water an **IMPERIAL** carrier may occupy — it stays offshore and LAUNCHES normal hulls |
+
+Derived masks (compute, never shipped): land-walk = `walk` (unchanged — all water blocked);
+SWIM = `water>0`; SAIL = `water≥2`; SAIL_IMPERIAL = `water==3`.
+Invariants (CI, R-LAYERS): depth only on WATER cells; DEEP/OCEAN never 4-adjacent to land — a
+SHALLOW rim always intervenes (so every beach-landing crosses the wade band).
+
+### `LANDING_PAD` structure anchors — where airships may land (they MUST land to act)
+Estates only, never single parcels (owner rule). `{ anchorId:"landing_pad_N", kind:"LANDING_PAD",
+side:"NEUTRAL", blocking:"NONE", r, x, z, flat:true, markers:"HELI_RING", class, plaza? }`.
+Count ladder ⚙ (owner sign-off pending): SMALL/MEDIUM 1 · LARGE 2 · GIANT 3 · EPIC 4.
+
+| `class` | r | seats (vessel classes from MOBA `build/voyage/vessel.js`: NORMAL hull ≈16×36u, wings ≈36u span) |
+|---|---|---|
+| `HEAVY` | 26 | LARGE + NORMAL + LIGHT (GIANT/EPIC estates try one first) |
+| `NORMAL` | 16 | NORMAL hull (helideck-style wing overhang) + LIGHT |
+| `LIGHT` | 12 | scout-class only — a full hull won't seat |
+
+`plaza:true` = the pad paints on street paving (walled cities — Yong'an — have squares, not
+lawns). IMPERIAL vessels never land anywhere: sea-side they hold OCEAN water, sky-side the map
+edge, launching NORMAL hulls; an imperial DECK is itself a future battlefield artifact.
+Render contract: flat marked circle (apron + ring + H) — never a solid blob; ground stays
+walkable when no vessel is seated. Reference: `preview3d.html` (renders pads in every mode).

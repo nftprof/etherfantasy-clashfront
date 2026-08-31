@@ -1537,7 +1537,7 @@ const PALACE_STYLES = { UW2: "drowned_bastion", ENT: "carnavale", EDU: "collegia
 // anchors = vertices of the solid wallRing polyline t 4.2, never independent cylinders) +
 // siege.wallRing gains t/archClearH — engines build the navmesh from THIS instead of guessing
 // (the "units running in circles around towers" fix on the map side).
-export const GEN_VERSION = 29;   // v29: rulebook-review fixes — all-ring pad clearance, crossing-sized repair doors + post-bake arch re-measure, road-door portcullis. (v28: HONEST WALK MASK + POSTERN doors — owner: units grinding into rocks/walls)
+export const GEN_VERSION = 30;   // v30: THREE-LAYER DOCTRINE — terrain.water depth channel (SHALLOW/DEEP; deep channels where water cuts through) + LANDING_PAD anchors on estates (naval/airship arrivals). (v29: rulebook-review fixes; v28: honest walk mask + posterns)
 
 export function generate(parcel, params = null, designVersion = 0) {
   // designVersion is MANDATORY in every artifact (MOBA contract fix 3: it pins caches, replays,
@@ -2286,13 +2286,219 @@ export function generate(parcel, params = null, designVersion = 0) {
     }
   }
 
+  // 6b) THE THREE-LAYER DOCTRINE — WATER DEPTH + AERIAL LANDING PADS (owner 2026-08-31,
+  //     docs/briefs/NAVAL-AIRSHIP-THREE-LAYER-MAPS.md). Two traversal planes join the ground
+  //     plane: DEEP water (ships = floating fortresses; water pets) and AIR (airships, which must
+  //     LAND to act). Map-side: (a) every WATER cell classifies SHALLOW (the wade band — the
+  //     amphibious approach walls don't cover) or DEEP (big enough to sail; a river CUTTING
+  //     THROUGH the map gets a deep centerline automatically once wider than 2× the shallow rim);
+  //     (b) estates get marked LANDING_PAD anchors — wide flat open circles, helipad-style;
+  //     single parcels get NONE (owner rule). Purely ADDITIVE: cells/walk masks are untouched.
+  const water = new Uint8Array(G * G);
+  {
+    const SH_CELLS = 4;                        // shallow rim ≈ 8u (R-LAND wade shelf ≥6u)
+    const MIN_DEEP_BODY = 110;                 // cells — ponds stay all-shallow (no battleship in a duck pond)
+    const wd = new Int16Array(G * G).fill(32000);
+    const fr = [];
+    for (let z = 0; z < G; z++) for (let x = 0; x < G; x++) {
+      const i = gIdx(G, x, z);
+      if (g[i] !== T.WATER) continue;
+      for (const [dx, dz] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+        const nx = x + dx, nz = z + dz;
+        if (!inG(G, nx, nz)) continue;
+        const n = gIdx(G, nx, nz);
+        if (g[n] !== T.WATER && g[n] !== T.OOB) { wd[i] = 1; fr.push(i); break; }
+      }
+    }
+    for (let h = 0; h < fr.length; h++) {
+      const i = fr[h], x = i % G, z = (i / G) | 0;
+      for (const [dx, dz] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+        const nx = x + dx, nz = z + dz;
+        if (!inG(G, nx, nz)) continue;
+        const n = gIdx(G, nx, nz);
+        if (g[n] === T.WATER && wd[n] > wd[i] + 1) { wd[n] = wd[i] + 1; fr.push(n); }
+      }
+    }
+    const wcomp = new Int32Array(G * G).fill(-1); const wsz = []; const wEdge = [];
+    for (let s0 = 0; s0 < G * G; s0++) {
+      if (g[s0] !== T.WATER || wcomp[s0] >= 0) continue;
+      const nc = wsz.length, q = [s0]; wcomp[s0] = nc; let n = 0, edge = false;
+      for (let h = 0; h < q.length; h++) {
+        const i = q[h]; n++; const x = i % G, z = (i / G) | 0;
+        if (x === 0 || z === 0 || x === G - 1 || z === G - 1) edge = true;
+        for (const [dx, dz] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+          const nx = x + dx, nz = z + dz;
+          if (!inG(G, nx, nz)) continue; const ni = gIdx(G, nx, nz);
+          if (g[ni] === T.OOB) edge = true;                    // the sea continues past the parcel
+          if (g[ni] === T.WATER && wcomp[ni] < 0) { wcomp[ni] = nc; q.push(ni); }
+        }
+      }
+      wsz.push(n); wEdge.push(edge);
+    }
+    // deep cells per body (for the OCEAN grade — imperial-class hulls need real sea room)
+    const wDeepN = new Array(wsz.length).fill(0);
+    for (let i = 0; i < G * G; i++)
+      if (g[i] === T.WATER && wd[i] > SH_CELLS && wsz[wcomp[i]] >= MIN_DEEP_BODY) wDeepN[wcomp[i]]++;
+    // 0 none · 1 SHALLOW · 2 DEEP (normal/large hulls) · 3 OCEAN (deep + edge-connected + ≥250
+    // deep cells — the only water an IMPERIAL carrier may occupy; it stays offshore as a
+    // map-edge floating fortress and LAUNCHES normal ships, never entering rivers).
+    for (let i = 0; i < G * G; i++) if (g[i] === T.WATER) {
+      const deep = wd[i] > SH_CELLS && wsz[wcomp[i]] >= MIN_DEEP_BODY;
+      water[i] = !deep ? 1 : (wEdge[wcomp[i]] && wDeepN[wcomp[i]] >= 250 ? 3 : 2);
+    }
+  }
+  // AERIAL LANDING PADS — estates only (owner: "specific locations near water, or open areas —
+  // think helipads, wide areas with markers; single parcels don't have these"). Count ladder ⚙
+  // (proposal pending owner sign-off): SMALL/MEDIUM 1 · LARGE 2 · GIANT 3 · EPIC 4. A pad is a
+  // flat OPEN walkable disc kept clear like a gate apron; near-water sites score higher.
+  const landingPads = [];
+  {
+    const PAD_LADDER = { SMALL: 1, MEDIUM: 1, LARGE: 2, GIANT: 3, EPIC: 4 };
+    const padWant = PAD_LADDER[String(parcel.sizeClass || "").toUpperCase()] || 0;
+    if (padWant > 0) {
+      // Pad sizing from the REAL composed vessel (MOBA build/voyage/vessel.js): NORMAL ship/airship
+      // hull ≈ 16×36u + bow, wing span ≈ 36u → r16 (32u circle) seats the hull, helideck-style wing
+      // overhang. Vessel CLASS LADDER (owner 2026-08-31): NORMAL · LARGE (~2×) · IMPERIAL (parcel-
+      // scale carrier — NEVER lands; it holds OCEAN water / the sky edge and launches NORMAL
+      // hulls). So pads come in HEAVY r26 (LARGE hulls; GIANT/EPIC estates try one first), the r16
+      // standard, and the r12 LIGHT fallback (scout-class only) where no bigger clearing exists.
+      const big = /^(GIANT|EPIC)$/.test(String(parcel.sizeClass || "").toUpperCase());
+      const PAD_RADII = big ? [26, 16, 12] : [16, 12];
+      let ringsP = null;
+      if (castleParts && castleParts.geom && castleParts.geom.pts.length >= 3) {
+        const T2c = CASTLE_TIERS[castle && CASTLE_TIERS[castle.kind] ? castle.kind : "KEEP"];
+        ringsP = concentricRings(castleParts.geom, T2c, poly, { g, G }).rings.map((rr) => rr.pts);
+      }
+      const ringDist = (x, z) => {
+        if (!ringsP) return Infinity;
+        let best = Infinity;
+        for (const pts of ringsP) for (let i = 0; i < pts.length; i++) {
+          const A = pts[i], B = pts[(i + 1) % pts.length];
+          const abx = B[0] - A[0], abz = B[1] - A[1], L2 = abx * abx + abz * abz || 1;
+          const t = Math.max(0, Math.min(1, ((x - A[0]) * abx + (z - A[1]) * abz) / L2));
+          best = Math.min(best, Math.hypot(x - (A[0] + abx * t), z - (A[1] + abz * t)));
+        }
+        return best;
+      };
+      // land distance to water (cells, capped) — the "near water" preference
+      const dw = new Int16Array(G * G).fill(99);
+      {
+        let fr2 = [];
+        for (let i = 0; i < G * G; i++) if (g[i] === T.WATER) { dw[i] = 0; fr2.push(i); }
+        for (let d = 0; d < 24 && fr2.length; d++) {
+          const nx2 = [];
+          for (const i of fr2) { const x = i % G, z = (i / G) | 0;
+            for (const [dx, dz] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+              const bx = x + dx, bz = z + dz;
+              if (!inG(G, bx, bz)) continue; const j = gIdx(G, bx, bz);
+              if (dw[j] > d + 1) { dw[j] = d + 1; nx2.push(j); }
+            } }
+          fr2 = nx2;
+        }
+      }
+      const gatePtsL = castleParts && castleParts.geom ? (castleParts.geom.gates || []).map((g2) => g2.at || g2) : [];
+      for (const PAD_R of PAD_RADII) {
+        if (landingPads.length >= padWant) break;
+        const PAD_RC = Math.ceil(PAD_R / CELL_M);
+        const cands = [];
+        for (let cz = PAD_RC + 2; cz < G - PAD_RC - 2; cz += 3) for (let cx = PAD_RC + 2; cx < G - PAD_RC - 2; cx += 3) {
+          const wx = worldOf(G, cx), wz = worldOf(G, cz);
+          let clear = true;
+          for (let dz = -PAD_RC; clear && dz <= PAD_RC; dz++) for (let dx = -PAD_RC; dx <= PAD_RC; dx++) {
+            if (dx * dx + dz * dz > PAD_RC * PAD_RC) continue;
+            const i = gIdx(G, cx + dx, cz + dz);
+            if (g[i] !== T.OPEN || !walk[i]) { clear = false; break; }
+          }
+          if (!clear) continue;
+          if (ringDist(wx, wz) < PAD_R + 4) continue;                                    // off every wall ring
+          if (gatePtsL.some((gp) => Math.hypot(gp[0] - wx, gp[1] - wz) < PAD_R + 13)) continue; // off the gate aprons
+          if (spawnZones.some((s) => Math.hypot(s.x - wx, s.z - wz) < PAD_R + 9)) continue;
+          if (buildSpots.some((b) => Math.hypot(b.x - wx, b.z - wz) < PAD_R + 3)) continue;
+          if (resources.some((rs) => Math.hypot(rs.x - wx, rs.z - wz) < PAD_R + 1)) continue;
+          if (structures.some((s2) => Math.hypot(s2.x - wx, s2.z - wz) < PAD_R + 3)) continue;
+          const wDist = dw[gIdx(G, cx, cz)] * CELL_M;
+          cands.push({ x: r1(wx), z: r1(wz), score: (wDist <= 40 ? 40 - wDist : 0) });   // near-water bonus
+        }
+        cands.sort((a, b) => b.score - a.score || a.z - b.z || a.x - b.x);               // deterministic
+        const radCap = PAD_R >= 26 ? 1 : padWant;         // at most ONE heavy pad — variety over uniformity
+        let placedHere = 0;
+        for (const c of cands) {
+          if (landingPads.length >= padWant || placedHere >= radCap) break;
+          if (landingPads.some((p2) => Math.hypot(p2.x - c.x, p2.z - c.z) < PAD_R + 24)) continue; // spread
+          landingPads.push({ x: c.x, z: c.z, r: PAD_R }); placedHere++;
+        }
+      }
+      // FORGIVING pass — a cramped estate (narrow river-strip citadels, vault-palaces) may lack
+      // any pristine clearing, but an estate MUST field at least one pad (owner rule). Relax: the
+      // pad RIM may overlap ROAD (a marked pad painted across a track is fine — the 6u core stays
+      // pure OPEN) and the standoffs halve. Deterministic, only when the strict passes found none.
+      if (!landingPads.length) {
+        const PR = 12, PRC = Math.ceil(PR / CELL_M), CORE = Math.ceil(6 / CELL_M);
+        const cands2 = [];
+        for (let cz = PRC + 1; cz < G - PRC - 1; cz += 2) for (let cx = PRC + 1; cx < G - PRC - 1; cx += 2) {
+          const wx = worldOf(G, cx), wz = worldOf(G, cz);
+          let clear = true;
+          for (let dz = -PRC; clear && dz <= PRC; dz++) for (let dx = -PRC; dx <= PRC; dx++) {
+            const d2 = dx * dx + dz * dz;
+            if (d2 > PRC * PRC) continue;
+            const i = gIdx(G, cx + dx, cz + dz);
+            if (!walk[i] || (d2 <= CORE * CORE ? g[i] !== T.OPEN : (g[i] !== T.OPEN && g[i] !== T.ROAD))) { clear = false; break; }
+          }
+          if (!clear) continue;
+          if (ringDist(wx, wz) < PR + 2) continue;
+          if (gatePtsL.some((gp) => Math.hypot(gp[0] - wx, gp[1] - wz) < PR + 6)) continue;
+          if (spawnZones.some((s) => Math.hypot(s.x - wx, s.z - wz) < PR + 4)) continue;
+          if (structures.some((s2) => Math.hypot(s2.x - wx, s2.z - wz) < PR + 1)) continue;
+          const wDist = dw[gIdx(G, cx, cz)] * CELL_M;
+          cands2.push({ x: r1(wx), z: r1(wz), score: (wDist <= 40 ? 40 - wDist : 0) });
+        }
+        cands2.sort((a, b) => b.score - a.score || a.z - b.z || a.x - b.x);
+        if (cands2.length) landingPads.push({ x: cands2[0].x, z: cands2[0].z, r: PR });
+      }
+      // PLAZA pass — a walled CITY's walkable ground is mostly STREETS (Yong'an: 1,231 road vs
+      // 1,615 scattered open cells); its pad is a paved square. Last tier, r10: the whole disc may
+      // be any walkable OPEN/ROAD paving, minimal standoffs. An estate never ships padless.
+      if (!landingPads.length) {
+        const PR = 10, PRC = Math.ceil(PR / CELL_M);
+        const cands3 = [];
+        for (let cz = PRC + 1; cz < G - PRC - 1; cz += 2) for (let cx = PRC + 1; cx < G - PRC - 1; cx += 2) {
+          const wx = worldOf(G, cx), wz = worldOf(G, cz);
+          let clear = true;
+          for (let dz = -PRC; clear && dz <= PRC; dz++) for (let dx = -PRC; dx <= PRC; dx++) {
+            if (dx * dx + dz * dz > PRC * PRC) continue;
+            const i = gIdx(G, cx + dx, cz + dz);
+            if (!walk[i] || (g[i] !== T.OPEN && g[i] !== T.ROAD)) { clear = false; break; }
+          }
+          if (!clear) continue;
+          if (ringDist(wx, wz) < PR + 2) continue;
+          if (gatePtsL.some((gp) => Math.hypot(gp[0] - wx, gp[1] - wz) < PR + 4)) continue;
+          if (spawnZones.some((s) => Math.hypot(s.x - wx, s.z - wz) < PR + 4)) continue;
+          if (structures.some((s2) => Math.hypot(s2.x - wx, s2.z - wz) < PR + 1)) continue;
+          const wDist = dw[gIdx(G, cx, cz)] * CELL_M;
+          cands3.push({ x: r1(wx), z: r1(wz), score: (wDist <= 40 ? 40 - wDist : 0) });
+        }
+        cands3.sort((a, b) => b.score - a.score || a.z - b.z || a.x - b.x);
+        if (cands3.length) landingPads.push({ x: cands3[0].x, z: cands3[0].z, r: PR, plaza: true });
+      }
+      landingPads.forEach((p2, k) => structures.push({
+        anchorId: `landing_pad_${k}`, kind: "LANDING_PAD", side: "NEUTRAL",
+        blocking: "NONE", r: p2.r, x: p2.x, z: p2.z, flat: true, markers: "HELI_RING",
+        class: p2.r >= 26 ? "HEAVY" : p2.r >= 16 ? "NORMAL" : "LIGHT",   // which vessel class seats
+        ...(p2.plaza ? { plaza: true } : {}),                            // painted on paving, not grass
+      }));
+    }
+  }
+
   // 5c) RUIN — the seeded Chronicle layer (own rng stream — see placeRuin; décor only, so the
   //     grid/walk mask and every invariant are untouched). Avoid points come from the FINAL
   //     (snapped) spawn zones so placement is recoverable from the artifact alone: wide berth
   //     around the duel bases, a smaller one around every entry + the center objective.
   const ruin = placeRuin(g, G, {
     seed, zone, castle: !!castle,
-    avoidPts: spawnZones.map((s) => ({ x: s.x, z: s.z, d: s.side === "ATTACKER" || s.side === "DEFENDER" ? 45 : 18 })),
+    avoidPts: [
+      ...spawnZones.map((s) => ({ x: s.x, z: s.z, d: s.side === "ATTACKER" || s.side === "DEFENDER" ? 45 : 18 })),
+      ...landingPads.map((p2) => ({ x: p2.x, z: p2.z, d: 19 })),   // pads stay clear (helipad apron)
+    ],
   });
 
   // 5d) WORLD-ELEMENTS OVERLAY décor: lore elements another team authored onto this ground
@@ -2396,12 +2602,16 @@ export function generate(parcel, params = null, designVersion = 0) {
       ? { shape: "polygon", sizeM, bounds: poly }
       : { shape: "square", sizeM, bounds: [[-half, -half], [half, -half], [half, half], [-half, half]] },
     laneCount: p.laneCount,
-    terrain: { cellM: CELL_M, w: G, h: G, cells: b64(g), walk: b64(walk) },
+    // `water`: per-cell depth layer (0 none · 1 SHALLOW · 2 DEEP) — the three-layer doctrine's
+    // L−1 plane. Land-walk = `walk` (unchanged); SWIM = water>0; SAIL = water==2. Additive:
+    // consumers that don't know it see the exact pre-v30 artifact semantics.
+    terrain: { cellM: CELL_M, w: G, h: G, cells: b64(g), walk: b64(walk), water: b64(water) },
     obstacles: props,
     resources, buildSpots, spawnZones, lanes, routes, barriers, mobs, structures,
     ...(siege ? { siege } : {}),
     meta: { seed, designVersion, genVersion: GEN_VERSION, parcelId, biome, zone, params: p, repairs: v.repairs,
             ...(theme ? { theme } : {}),
+            ...(parcel.sizeClass ? { sizeClass: parcel.sizeClass } : {}),   // v30: pads ladder key
             budget: { level: budget.level, name: budget.name },
             ...(castle ? { castle: { id: castle.id, kind: castle.kind, name: castle.name } } : {}),
             ...(castleParts ? (() => {
