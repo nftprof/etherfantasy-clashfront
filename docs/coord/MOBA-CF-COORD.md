@@ -1330,3 +1330,15 @@ ONE sloped plank** — its legacy path; that's the entire gap. → **MOBA Battle
 All specs: docs/maps/CASTLE-RULES.md §V + §VII, CASTLE-STAIRS-AND-WALLS-SPEC.md, BATTLEFIELD-
 SCHEMA.md. This is the third owner sighting of the same gap (2026-08-28, -29, -31) — please
 prioritize the stairs loop; it is the smallest item with the biggest owner-visible payoff.
+
+### 2026-08-31 (cont. 6) · SPAWN CIRCLES FLOATING OVER UNEVEN GROUND — the 2026-07-21 fix, re-relayed
+Owner screenshot: MOBA start-location discs render as rigid floating circles over non-flat land —
+the exact bug CF's reference renderer fixed 2026-07-21. The fix (working code:
+`map-service/maps/preview3d.html`): (1) strip the module's flat spawn pads (`fountains: []`);
+(2) spawn/start markers = FLOATING BEACONS — grounded faint pillar (base at terrain height) + a
+bright torus ring hovering ~13u with `depthWrite:false, depthTest:false, renderOrder 6` + a bob
+animation — never clips, visible over any hill; (3) any decal that must LIE on the ground (AoE
+zones) gets DRAPED: tessellated disc geometry, per-vertex y = groundHeightAt(x,z)+0.15,
+computeVertexNormals, polygonOffset/depthWrite tweaks vs z-fighting (the `drape(geo,yoff)`
+helper). Anti-patterns: untessellated one-face discs, single-height placement, depth-tested
+overlays in dips. Rule: HUD markers FLOAT + BOB; gameplay-area decals DRAPE.
