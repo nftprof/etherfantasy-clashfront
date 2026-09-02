@@ -52,26 +52,36 @@ export function readArtifact(parcelId, version = null) {
 // palette/biome tables change (r2: ember row + tundra frost floor, 2026-09-02) so stale caches
 // on deployed boxes regenerate without touching designVersion.
 const CONV_REV = 2;
+
+// artifact → engine-ready manifest via the vendored converter, with the contract hardening
+// (MOBA fixes 1+3: designVersion + siege block attached HERE so the engine-team's vendored
+// converter stays untouched). Shared by the registry cache path and the pre-designed-estate
+// route in api.js (committed cf-maps artifacts that never enter the registry).
+export function convertArtifact(art, parcelId, v = art?.meta?.designVersion ?? 0) {
+  const convert = converter();
+  if (!convert) return { error: "converter_unavailable" };
+  let m;
+  try { m = convert(art, { parcelId: String(parcelId), designVersion: v }); }
+  catch (e) { console.error("[maps] convert:", e.message); return { error: "convert_failed", detail: e.message }; }
+  if (m && !m.error) {
+    if (m.designVersion == null) m.designVersion = v;
+    if (art.siege && !m.siege) m.siege = art.siege;
+  }
+  return m;
+}
+
 export function readManifest(parcelId, version = null) {
   const row = getRow(parcelId);
   if (!row) return null;
   const v = version ?? row.designVersion;
   const mp = path.join(pDir(parcelId), `render.v${v}.c${CONV_REV}.json`);
   try { return JSON.parse(fs.readFileSync(mp, "utf8")); } catch {}     // cache hit
-  const convert = converter();
-  if (!convert) return { error: "converter_unavailable" };
   const art = readArtifact(parcelId, v);
   if (!art) return null;
-  let m;
-  try { m = convert(art, { parcelId: String(parcelId), designVersion: v }); }
-  catch (e) { console.error("[maps] convert:", e.message); return { error: "convert_failed", detail: e.message }; }
-  // contract hardening (MOBA fixes 1+3): the manifest always carries designVersion + the siege
-  // block — attached HERE so the engine-team's vendored converter stays untouched.
+  const m = convertArtifact(art, parcelId, v);
   if (m && !m.error) {
-    if (m.designVersion == null) m.designVersion = v;
-    if (art.siege && !m.siege) m.siege = art.siege;
+    try { fs.writeFileSync(mp, JSON.stringify(m)); } catch (e) { console.error("[maps] manifest write:", e.message); }
   }
-  try { fs.writeFileSync(mp, JSON.stringify(m)); } catch (e) { console.error("[maps] manifest write:", e.message); }
   return m;
 }
 
@@ -100,6 +110,7 @@ function save(parcel, artifact, status, extra = {}) {
     seed: seedFor(id, parcel.biome || "", parcel.zone || ""),
     biome: parcel.biome || "", zone: parcel.zone || "", sizeClass: artifact.arena.sizeM,
     laneCount: artifact.laneCount, archetype: artifact.meta.params.archetype, palette: artifact.meta.params.palette,
+    fieldSha: parcel.fieldSha || null,   // world-field provenance (SEED_V0 self-heal key)
     lastGeneratedAt: Date.now(), thumbnailPath: extra.thumbnailPath || null, ...extra,
   };
   saveIdx();
@@ -111,11 +122,14 @@ export function ensureDesign(parcel) {
   const row = getRow(parcel.parcelId);
   if (row) {
     const artifact = readArtifact(parcel.parcelId);
-    // SELF-HEAL stale seeds: a SEED_V0 map is a pure function of seed+generator, carries no owner
-    // work — when the generator version moved (GEN_VERSION), regenerate as the next version so a
-    // cached registry picks up fixes (e.g. zone-coherent palettes) on first view. Owner-touched
-    // rows (AI_ITERATED / OWNER_FROZEN) are never reseeded. Old versions stay on disk (immutable).
-    if (row.status === "SEED_V0" && artifact && artifact.meta?.genVersion !== GEN_VERSION) {
+    // SELF-HEAL stale seeds: a SEED_V0 map is a pure function of seed+generator+world-field,
+    // carries no owner work — when the generator version moved (GEN_VERSION) OR the zone's world
+    // field changed since the row was seeded (fieldSha — e.g. the HS1/HS2/HS3 fields landing
+    // AFTER a box lazily seeded those parcels flat), regenerate as the next version so a cached
+    // registry picks up fixes on first view. Owner-touched rows (AI_ITERATED / OWNER_FROZEN) are
+    // never reseeded. Old versions stay on disk (immutable).
+    const fieldStale = parcel.fieldSha ? row.fieldSha !== parcel.fieldSha : false;
+    if (row.status === "SEED_V0" && artifact && (artifact.meta?.genVersion !== GEN_VERSION || fieldStale)) {
       const fresh = generate(parcel, null, (row.designVersion | 0) + 1);
       return { row: save(parcel, fresh, "SEED_V0"), artifact: fresh };
     }

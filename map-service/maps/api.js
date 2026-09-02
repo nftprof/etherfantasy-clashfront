@@ -26,6 +26,7 @@ import { worldMap } from "./worldmap.js";
 import { bakeMosaic, landColor, loadLeaves } from "./mosaic.js";
 import { landOfWallet, walletOwnsParcel, mintedSet, PARCELS_CONTRACT, ESTATE_CONTRACT } from "./nftowners.js";
 // Land mint config (distributors + size tokens) — the registry the other session delivered.
+const _estateManifests = new Map();   // committed-estate-artifact → manifest, per process (see render.json)
 let _landCfg = null;
 const landCfg = () => { if (_landCfg) return _landCfg; try { _landCfg = JSON.parse(fs.readFileSync(path.join(dataRoot(), "land-contracts.json"), "utf8")); } catch { _landCfg = {}; } return _landCfg; };
 
@@ -600,6 +601,26 @@ async function handle(req, res, p) {
         const buf = fs.readFileSync(path.join(dataRoot(), "cf-maps/manifests", safe + ".manifest.json"));
         res.writeHead(200, { "content-type": "application/json", "cache-control": "no-cache", "access-control-allow-origin": "*" });
         return res.end(buf);
+      } catch {}
+      // PRE-DESIGNED ESTATE MAPS: a committed cf-maps artifact is the AUTHORITY for its id
+      // (canon decision 5 — palaces are pre-designed, never lazily seeded). Convert it directly;
+      // never fall through to the registry, whose lazily-seeded row may predate the estate map
+      // (the live "flat empty palace" bug, 2026-09-02). Cached in-memory per process.
+      try {
+        const safe = String(parcelId).replace(/[^0-9A-Za-z_-]/g, "");
+        const ap = path.join(dataRoot(), "cf-maps/artifacts", safe + ".artifact.json");
+        if (fs.existsSync(ap)) {
+          let m = _estateManifests.get(safe);
+          if (!m) {
+            const est = JSON.parse(fs.readFileSync(ap, "utf8"));
+            m = reg.convertArtifact(est, safe);
+            if (m && !m.error) _estateManifests.set(safe, m);
+          }
+          if (m && !m.error) {
+            res.writeHead(200, { "content-type": "application/json", "cache-control": "no-cache", "access-control-allow-origin": "*" });
+            return res.end(JSON.stringify(m));
+          }
+        }
       } catch {}
     }
     const row = reg.getRow(parcelId);

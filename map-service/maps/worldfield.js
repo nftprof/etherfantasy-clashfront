@@ -14,6 +14,7 @@
 // Battle frame: +z NORTH (zone -y), center origin, world-units; widths in world-units.
 // Pure + deterministic: no Math.random / Date.now anywhere.
 import fs from "fs";
+import crypto from "crypto";
 import path from "path";
 import { fileURLToPath } from "url";
 
@@ -36,6 +37,7 @@ export function dataRoot() {
 const fieldDir = () => process.env.WORLD_TERRAIN_DIR || path.join(dataRoot(), "world-terrain");
 const elementsDir = () => process.env.WORLD_ELEMENTS_DIR || path.join(dataRoot(), "world-elements");
 const _fields = new Map();
+const _fieldSha = new Map();   // zone → sha1(field file) — see loadWorldField
 
 // ---- WORLD-ELEMENTS OVERLAY (docs/briefs/WORLD-ELEMENTS-OVERLAY.md) ----------------------------
 // The shared lore-population layer: other teams (EF Hunt first) drop POINT elements onto a zone's
@@ -111,8 +113,14 @@ export function loadWorldField(zone) {
   if (_fields.has(key)) return _fields.get(key);
   let field = null;
   try {
-    const raw = JSON.parse(fs.readFileSync(path.join(fieldDir(), `${key}.json`), "utf8"));
-    if (raw && (raw.rivers || raw.roads || raw.ridges)) field = raw;
+    const buf = fs.readFileSync(path.join(fieldDir(), `${key}.json`));
+    const raw = JSON.parse(buf.toString("utf8"));
+    if (raw && (raw.rivers || raw.roads || raw.ridges)) {
+      field = raw;
+      // field fingerprint — lets the registry self-heal SEED_V0 rows generated before this zone's
+      // field existed (or after it changed): a row's stored fieldSha ≠ current ⇒ reseed on view.
+      _fieldSha.set(key, crypto.createHash("sha1").update(buf).digest("hex").slice(0, 12));
+    }
   } catch { field = null; }
   if (field) {
     const overlay = loadOverlayElements(key, field);
@@ -121,7 +129,8 @@ export function loadWorldField(zone) {
   _fields.set(key, field);
   return field;
 }
-export function clearWorldFieldCache() { _fields.clear(); }   // tests / WORLD_TERRAIN_DIR swaps
+export function fieldFingerprint(zone) { const k = String(zone || "").toUpperCase(); if (!_fields.has(k)) loadWorldField(k); return _fieldSha.get(k) || null; }
+export function clearWorldFieldCache() { _fields.clear(); _fieldSha.clear(); }   // tests / WORLD_TERRAIN_DIR swaps
 
 // The union of every named PLACE on a zone's field, each tagged with its layer: the authored
 // pois + castles (layer "field") and every overlay element (layer = its file's <layer> segment).
@@ -392,6 +401,10 @@ export function worldParcel(snap, opts = {}) {
   const field = loadWorldField(parcel.zone);
   if (field && Array.isArray(snap.bbox))
     parcel.worldField = featuresForParcel(field, { bbox: snap.bbox, polygonZone: zonePoly, sizeM: opts.sizeM || 322, parcelId: parcel.parcelId });
+  // field provenance for the registry's SEED_V0 self-heal: a row seeded against a different
+  // (or absent) zone field regenerates on first view once the current field differs.
+  const fsha = fieldFingerprint(parcel.zone);
+  if (fsha) parcel.fieldSha = fsha;
   return parcel;
 }
 
