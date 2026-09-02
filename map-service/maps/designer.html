@@ -498,19 +498,58 @@ function drawFeatures(){                 // lines UNDER the parcel dots
     draw([r],col,wpx(0.8,2),0.82);}
   cx.setLineDash([]);cx.globalAlpha=1;cx.restore();
 }
-function drawFeatureMarks(){             // castle/POI markers OVER the dots
+// ---- PLACES LAYER (owner 2026-09-02 "mark out major POI on the maps") ----------------------
+// Every authored place gets a kind icon; MAJOR places (palaces/castles, gates, sea+air ports,
+// capitals, war fronts, story doors) carry their NAME at any zoom, with a simple occupancy grid
+// so labels never pile up — majors claim space first, minors only label what still fits.
+const POI_STYLE={ // [icon, majorRank(null=minor), ring color]
+  PALACE:["👑",1,"#ffd34d"],CASTLE:["🏰",2,"#d8bbff"],KEEP:["🗼",null,"#b9a8e0"],
+  GATE:["⛩",3,"#7fd0ff"],SEA_PORT:["⚓",3,"#6fe0d0"],AIRSHIP_PORT:["🛩",3,"#9fd6ff"],
+  CAPITAL:["🏙",2,"#ffd34d"],WAR_FRONT:["⚔",2,"#ff8a7a"],GRAND_ACADEMY:["🎓",3,"#a8e08f"],
+  UNDERWORLD_SHAFT:["🕳",2,"#c9b6ff"],SECRET_ENTRANCE:["🌀",3,"#c9b6ff"],BOSS_STAGE:["💀",3,"#ff8a7a"],
+  MINE:["⛏",null,"#e0b98f"],WAR_CAMP:["🏕",null,"#ffb08a"],PLAZA:["🏛",null,"#cfd6e0"],
+  LANDMARK:["✦",null,"#ffd34d"],MARKET:["🧺",null,"#ffd34d"],QUEST_SITE:["❗",null,"#a8e08f"],
+  STAGE:["🎭",null,"#e0a8d6"],NPC:["🧙",null,"#a8c6e0"],CAMP:["🏕",null,"#ffb08a"],
+  SHRINE:["🛕",null,"#e0d6a8"],DUNGEON_DOOR:["🚪",null,"#c9b6ff"],DRAG_LANDING:["🐉",null,"#a8e08f"],
+  ONE_WAY_CHUTE:["⬇",null,"#c9b6ff"]};
+function drawFeatureMarks(){             // place markers OVER the dots
   const F=wfOverlay;if(!F)return;
-  const ICON={PALACE:"👑",CASTLE:"🏰",KEEP:"🗼"};
+  const places=[
+    ...(F.castles||[]).map(c=>({...c,_castle:true})),
+    ...(F.pois||[]),
+  ].filter(q=>Array.isArray(q.at));
+  // majors first (rank asc), then minors — so majors always win label space
+  places.sort((a,b)=>{const ra=(POI_STYLE[a.kind]||[])[1]??9,rb=(POI_STYLE[b.kind]||[])[1]??9;return ra-rb;});
+  const taken=[];                                        // claimed label boxes [x0,y0,x1,y1]
+  const fits=(x0,y0,x1,y1)=>!taken.some(b=>x0<b[2]&&x1>b[0]&&y0<b[3]&&y1>b[1]);
   cx.save();cx.textAlign="center";cx.textBaseline="middle";
-  for(const c of F.castles||[]){if(!Array.isArray(c.at))continue;const[X,Y]=PX(c.at[0],c.at[1]);
-    if(X<-20||X>cv.width+20||Y<-20||Y>cv.height+20)continue;
-    cx.fillStyle="rgba(8,6,18,.62)";cx.beginPath();cx.arc(X,Y,10,0,7);cx.fill();
-    cx.strokeStyle="rgba(216,187,255,.7)";cx.lineWidth=1.4;cx.stroke();
-    cx.font="14px serif";cx.fillText(ICON[c.kind]||"🏰",X,Y+1);
-    if(zoom>=4&&c.name){cx.font="11px system-ui";cx.fillStyle="#e8e2ff";cx.fillText(c.name,X,Y-15);}}
-  for(const q of F.pois||[]){if(!Array.isArray(q.at))continue;const[X,Y]=PX(q.at[0],q.at[1]);
-    if(X<-10||X>cv.width+10||Y<-10||Y>cv.height+10)continue;
-    cx.fillStyle="rgba(255,211,77,.9)";cx.beginPath();cx.arc(X,Y,2.5,0,7);cx.fill();}
+  for(const q of places){
+    const st=POI_STYLE[q.kind]||["📍",null,"#ffd34d"];
+    const major=st[1]!=null;
+    const[X,Y]=PX(q.at[0],q.at[1]);
+    if(X<-24||X>cv.width+24||Y<-24||Y>cv.height+24)continue;
+    if(!major&&zoom<1.8&&!q._castle)continue;            // minors appear once you lean in
+    const R=q._castle?10:(major?9:6);
+    cx.fillStyle="rgba(8,6,18,.68)";cx.beginPath();cx.arc(X,Y,R,0,7);cx.fill();
+    cx.strokeStyle=st[2];cx.globalAlpha=major?.9:.55;cx.lineWidth=major?1.5:1;cx.stroke();cx.globalAlpha=1;
+    cx.font=(q._castle?14:(major?12:9))+"px serif";cx.fillText(st[0],X,Y+1);
+    // name label: majors always (space permitting), minors from zoom 3.5
+    const nm=q.name;if(!nm)continue;
+    if(!major&&zoom<3.5)continue;
+    cx.font=(major?"600 10.5px":"9.5px")+" system-ui";
+    const w=cx.measureText(nm).width;
+    const cand=[                                        // above → below → right → left
+      [X-w/2-3,Y-R-14,X+w/2+3,Y-R-2],
+      [X-w/2-3,Y+R+2,X+w/2+3,Y+R+14],
+      [X+R+4,Y-6,X+R+10+w,Y+6],
+      [X-R-10-w,Y-6,X-R-4,Y+6]];
+    let box=null;
+    for(const b of cand){if(b[1]>=2&&b[0]>=2&&b[2]<=cv.width-2&&fits(b[0],b[1],b[2],b[3])){box=b;break;}}
+    if(!box)continue;
+    taken.push(box);
+    cx.fillStyle="rgba(8,6,18,.72)";cx.fillRect(box[0],box[1],box[2]-box[0],box[3]-box[1]);
+    cx.fillStyle=major?"#f2ecff":"#c9c2dd";cx.fillText(nm,(box[0]+box[2])/2,(box[1]+box[3])/2+.5);
+  }
   cx.restore();
 }
 function drawMosaicBase(){                            // the baked 3D-thumb continent, under the dots

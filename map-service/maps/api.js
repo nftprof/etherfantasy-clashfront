@@ -363,7 +363,12 @@ export function mapsApi(req, res) {
         ok: true, zone,
         rivers: lines(f.rivers), roads: lines(f.roads), coast: lines(f.coast), ridges: lines(f.ridges),
         castles: (f.castles || []).map((c) => ({ id: c.id, name: c.name, kind: c.kind, at: c.at })),
-        pois: (f.pois || []).map((q) => ({ id: q.id, name: q.name, kind: q.kind, at: q.at })).filter((q) => Array.isArray(q.at)),
+        pois: [
+          ...(f.pois || []).map((q) => ({ id: q.id, name: q.name, kind: q.kind, at: q.at })),
+          // world-elements overlays (EF Hunt quest sites, markets, shrines…) — same point contract,
+          // tagged with their layer so the client can style/filter them as minor marks.
+          ...(f.overlayElements || []).map((q) => ({ id: q.id, name: q.name || null, kind: q.kind, at: q.at, layer: q.layer })),
+        ].filter((q) => Array.isArray(q.at)),
       });
     } catch (e) { J(res, 500, { ok: false, error: e.message }); }
     return true;
