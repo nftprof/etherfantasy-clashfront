@@ -49,7 +49,7 @@ console.log("— manifest + lazy generation —");
   ok((rm.headers.get("cache-control") || "").includes("immutable"), "render.json is cache-immutable");
   const man = await rm.json();
   ok(man.schema === "ef-battlefield-manifest/1" && man.height && man.biome && Array.isArray(man.trees), "manifest has height/biome/trees (engine-ready)");
-  ok(fs.existsSync(path.join(process.env.MAPS_DIR, "888001", "render.v0.json")), "manifest cached on disk next to the artifact");
+  ok(fs.existsSync(path.join(process.env.MAPS_DIR, "888001", "render.v0.c2.json")), "manifest cached on disk next to the artifact");
 }
 
 console.log("— auth + prompt + freeze —");

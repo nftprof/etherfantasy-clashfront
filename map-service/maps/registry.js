@@ -47,13 +47,16 @@ export function readArtifact(parcelId, version = null) {
   try { return JSON.parse(fs.readFileSync(artPath(parcelId, v), "utf8")); } catch { return null; }
 }
 
-// engine-ready render manifest, lazily built + cached next to the artifact (render.v{N}.json).
-// Immutable per designVersion → compute once. Returns {error} if the converter isn't available.
+// engine-ready render manifest, lazily built + cached next to the artifact (render.v{N}.c{R}.json).
+// Immutable per designVersion+CONV_REV → compute once. CONV_REV bumps when the converter's
+// palette/biome tables change (r2: ember row + tundra frost floor, 2026-09-02) so stale caches
+// on deployed boxes regenerate without touching designVersion.
+const CONV_REV = 2;
 export function readManifest(parcelId, version = null) {
   const row = getRow(parcelId);
   if (!row) return null;
   const v = version ?? row.designVersion;
-  const mp = path.join(pDir(parcelId), `render.v${v}.json`);
+  const mp = path.join(pDir(parcelId), `render.v${v}.c${CONV_REV}.json`);
   try { return JSON.parse(fs.readFileSync(mp, "utf8")); } catch {}     // cache hit
   const convert = converter();
   if (!convert) return { error: "converter_unavailable" };

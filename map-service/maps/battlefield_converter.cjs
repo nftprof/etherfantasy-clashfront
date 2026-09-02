@@ -35,11 +35,14 @@ const PALETTE = {
   jungle:   { biome:'jungle',  floor:'grass_02',  dry:0xe2ecd6, wet:0xb8c6a6, fog:0x0f1e16, water:'water', treeHSL:[0.33,0.50,0.20] },
   autumn:   { biome:'jungle',  floor:'grass_02',  dry:0xf0e2c4, wet:0xccb488, fog:0x201810, water:'water', treeHSL:[0.08,0.55,0.32] },
   desert:   { biome:'desert',  floor:'desert_01', dry:0xf2e9d2, wet:0xd8c9a8, fog:0x2a2417, water:'water', treeHSL:[0.12,0.35,0.34] },
-  tundra:   { biome:'wetland', floor:'desert_03', dry:0xdfe8ea, wet:0xb6c4c8, fog:0x1a2630, water:'ice',   treeHSL:[0.35,0.15,0.50] },
+  tundra:   { biome:'wetland', floor:'stone_04',  dry:0xf0f6fa, wet:0xc2d2da, fog:0x1a2630, water:'ice',   treeHSL:[0.35,0.15,0.50] },
   swamp:    { biome:'wetland', floor:'desert_03', dry:0xdce6d8, wet:0xb0c0ac, fog:0x10221f, water:'water', treeHSL:[0.28,0.40,0.18] },
   volcanic: { biome:'desert',  floor:'stone_03',  dry:0xd8c2b0, wet:0x9a7a68, fog:0x281410, water:'lava',  treeHSL:[0.05,0.30,0.20] },
   ashen:    { biome:'desert',  floor:'stone_04',  dry:0xcfc9c2, wet:0x9a938c, fog:0x1c1c1e, water:'lava',  treeHSL:[0.00,0.00,0.28] },
-  sakura:   { biome:'meadow',  floor:'grass_01',  dry:0xf3e2ea, wet:0xd0b8c4, fog:0x201820, water:'water', treeHSL:[0.92,0.50,0.62] }
+  sakura:   { biome:'meadow',  floor:'grass_01',  dry:0xf3e2ea, wet:0xd0b8c4, fog:0x201820, water:'water', treeHSL:[0.92,0.50,0.62] },
+  /* HS2 EMBER_CRYSTAL (owner 2026-08-31): dark military green-grey ground, near-black fog with a
+   * red cast, red-crystal foliage — never lava (water stays water). */
+  ember:    { biome:'desert',  floor:'stone_04',  dry:0x96a08c, wet:0x5c665a, fog:0x1e1216, water:'water', treeHSL:[0.99,0.55,0.40] }
 };
 const DEFAULT_PALETTE = 'verdant';
 

@@ -1342,3 +1342,20 @@ zones) gets DRAPED: tessellated disc geometry, per-vertex y = groundHeightAt(x,z
 computeVertexNormals, polygonOffset/depthWrite tweaks vs z-fighting (the `drape(geo,yoff)`
 helper). Anti-patterns: untessellated one-face discs, single-height placement, depth-tested
 overlays in dips. Rule: HUD markers FLOAT + BOB; gameplay-area decals DRAPE.
+
+### 2026-09-02 · SKY-ZONE GROUND PALETTES — battlefield_converter PALETTE table update (relay to MOBA vendored copy)
+CF's `map-service/maps/battlefield_converter.cjs` PALETTE table changed (the MOBA repo's
+`tools/battlefield_converter.cjs` is the same vendored file — apply the identical 2-row change,
+then re-vendor / redeploy so live game maps match the designer):
+1. **NEW `ember` row** (HS2 Emberfall — the palette existed in the generator since 2026-08-31 but
+   the converter had no row, so every HS2 single fell back to `verdant` green meadow):
+   `ember: { biome:'desert', floor:'stone_04', dry:0x96a08c, wet:0x5c665a, fog:0x1e1216, water:'water', treeHSL:[0.99,0.55,0.40] }`
+   — dark military green-grey stone ground, near-black red-cast fog, red-crystal foliage, never lava.
+2. **`tundra` floor swap** `desert_03` → `stone_04` with icy tints `dry:0xf0f6fa wet:0xc2d2da`
+   (water stays `'ice'`): HS3 Empyrea (and every SNOW-family map) rendered on the ORANGE desert
+   floor before — it now reads frost-grey with white/cyan frozen rivers. `stone_04` already ships
+   in both floors/ dirs; no new asset needed.
+CF side also bumped the server manifest cache key (`registry.js CONV_REV=2`,
+`render.v{N}.c2.json`) so stale cached manifests regenerate on deploy — if the MOBA lobby caches
+converted manifests anywhere, invalidate similarly. Verified in the designer: HS2 singles dark
+ember, HS3 frozen; map-service suite 30/30 green.
