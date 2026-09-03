@@ -22,6 +22,7 @@
   <a href="?map=DECK-HS2-CROWN">🔴 Emberfall Crown</a>
   <a href="?map=DECK-HS1-AEROPOLIS">🌿 Aeropolis Gardens</a>
   <a href="?map=DECK-HS3-EMPYREA">❄ Empyrea Rings</a>
+  <a href="?map=DECK-HS2-RING">🏙 The Ember Ring (lived-in)</a>
 </div>
 <div id="err">map not found</div>
 <script src="/vendor/three.min.js"></script>
@@ -160,6 +161,66 @@ for(const s of M.spawns||[]){const y=dh(s.deck),col=s.side==="ATTACKER"?0x5a8ee2
   t.rotation.x=Math.PI/2;t.position.set(s.x,y+9,s.z);t.renderOrder=6;t.userData.bob=y+9;scene.add(t);
   const p=new THREE.Mesh(new THREE.CylinderGeometry(.5,.5,9),new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:.35}));
   p.position.set(s.x,y+4.5,s.z);scene.add(p);}
+
+// ---- civic layer: buildings + props (the lived-in city — DECK-HS2-RING) --------------------
+const stoneM=new THREE.MeshLambertMaterial({color:0x4a5054});
+const mk=(mesh,x,y,z)=>{mesh.position.set(x,y,z);return mesh;};
+const plasterM=new THREE.MeshLambertMaterial({color:0x6a6f66});
+const roofM=new THREE.MeshLambertMaterial({color:0x5a4438});
+for(const b of M.buildings||[]){
+  const y=dh(b.deck),rot=((b.a||0)*Math.PI/180);
+  const g=new THREE.Group();g.position.set(b.x,y,b.z);g.rotation.y=rot;
+  if(b.kind==="HOUSE"){
+    const w=7+((b.x*7+b.z*13)%3),dp=6,h=5+((b.x*3+b.z*5)%3);
+    g.add(mk(new THREE.Mesh(new THREE.BoxGeometry(w,h,dp),plasterM),0,h/2,0));
+    const r=new THREE.Mesh(new THREE.CylinderGeometry(0,dp*0.72,3.2,4),roofM);
+    r.position.y=h+1.6;r.rotation.y=Math.PI/4;r.scale.x=w/dp;g.add(r);
+  }else if(b.kind==="MARKET"){
+    g.add(mk(new THREE.Mesh(new THREE.BoxGeometry(6.5,2.6,5),woodM),0,1.3,0));
+    const can=new THREE.Mesh(new THREE.BoxGeometry(7.5,.5,6),new THREE.MeshLambertMaterial({color:(b.x+b.z)%2?0xa8453a:0xb08a3a}));
+    can.position.y=4.4;can.rotation.z=.1;g.add(can);
+    for(const sx of[-3,3])g.add(mk(new THREE.Mesh(new THREE.BoxGeometry(.5,4.4,.5),woodM),sx,2.2,2.4));
+  }else if(b.kind==="INN"){
+    g.add(mk(new THREE.Mesh(new THREE.BoxGeometry(11,8,8),stoneM),0,4,0));
+    const r=new THREE.Mesh(new THREE.CylinderGeometry(0,7.4,4,4),roofM);r.position.y=10;r.rotation.y=Math.PI/4;r.scale.x=11/8;g.add(r);
+    const sign=new THREE.Mesh(new THREE.BoxGeometry(2.2,1.6,.3),new THREE.MeshBasicMaterial({color:PAL.glow}));
+    sign.position.set(6.2,5.5,0);g.add(sign);
+  }else if(b.kind==="WORKSHOP"){
+    g.add(mk(new THREE.Mesh(new THREE.BoxGeometry(9,5.5,7),stoneM),0,2.75,0));
+    g.add(mk(new THREE.Mesh(new THREE.CylinderGeometry(.9,1.1,9,6),stoneM),3,4.5,2));
+  }else if(b.kind==="GRANARY"){
+    g.add(mk(new THREE.Mesh(new THREE.CylinderGeometry(3.6,3.9,7,10),plasterM),0,3.5,0));
+    g.add(mk(new THREE.Mesh(new THREE.ConeGeometry(4.4,3.4,10),roofM),0,8.6,0));
+  }else if(b.kind==="WAREHOUSE"){
+    g.add(mk(new THREE.Mesh(new THREE.BoxGeometry(14,6,8),stoneM),0,3,0));
+    g.add(mk(new THREE.Mesh(new THREE.BoxGeometry(14.6,1.4,8.6),roofM),0,6.7,0));
+  }
+  scene.add(g);
+  const dg=deckGroups[M.decks.findIndex(d=>d.id===b.deck)];if(dg)dg.attach?dg.attach(g):dg.add(g);
+}
+const trunkM=new THREE.MeshLambertMaterial({color:0x5a4632});
+for(const pr of M.props||[]){
+  const y=dh(pr.deck);
+  if(pr.kind==="TREE"){
+    const t=new THREE.Mesh(new THREE.CylinderGeometry(.6,.8,3.4,5),trunkM);t.position.set(pr.x,y+1.7,pr.z);scene.add(t);
+    const fol=M.palette==="tundra"?new THREE.Mesh(new THREE.ConeGeometry(2.6,7,6),new THREE.MeshLambertMaterial({color:0x9fc6c9}))
+      :new THREE.Mesh(new THREE.SphereGeometry(3,7,6),new THREE.MeshLambertMaterial({color:M.palette==="ember"?0x6a8a52:0x5c8a48}));
+    fol.position.set(pr.x,y+(M.palette==="tundra"?6.4:5.6),pr.z);scene.add(fol);
+  }else if(pr.kind==="LAMP"){
+    const post=new THREE.Mesh(new THREE.CylinderGeometry(.28,.34,5.4,5),stoneM);post.position.set(pr.x,y+2.7,pr.z);scene.add(post);
+    const orb=new THREE.Mesh(new THREE.SphereGeometry(.85,8,6),new THREE.MeshBasicMaterial({color:PAL.glow}));
+    orb.position.set(pr.x,y+5.8,pr.z);scene.add(orb);
+    const l=new THREE.PointLight(PAL.glow,.35,26);l.position.set(pr.x,y+6,pr.z);scene.add(l);
+  }else if(pr.kind==="POND"){
+    const w=new THREE.Mesh(new THREE.CircleGeometry(pr.r||10,26),new THREE.MeshLambertMaterial({color:0x3f86d6,transparent:true,opacity:.85}));
+    w.rotation.x=-Math.PI/2;w.position.set(pr.x,y+.3,pr.z);scene.add(w);
+  }else if(pr.kind==="CISTERN"){
+    const c=new THREE.Mesh(new THREE.CylinderGeometry(3.4,3.4,3.4,10),new THREE.MeshLambertMaterial({color:0x51707c}));
+    c.position.set(pr.x,y+1.7,pr.z);scene.add(c);
+    const wat=new THREE.Mesh(new THREE.CircleGeometry(3,10),new THREE.MeshBasicMaterial({color:0x6fb6e0}));
+    wat.rotation.x=-Math.PI/2;wat.position.set(pr.x,y+3.45,pr.z);scene.add(wat);
+  }
+}
 
 // ---- HUD deck toggles ----------------------------------------------------------------------
 const dl=document.getElementById("decks");

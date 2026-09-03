@@ -143,9 +143,81 @@ function empyrea() {
   };
 }
 
-for (const m of [emberfall(), aeropolis(), empyrea()]) {
+// ---------------------------------------------------------------- DECK-HS2-RING (the lived-in city)
+// "How would a city like this actually be BUILT / what is LIVING in one like?" (owner 2026-09-03,
+// Apple-Park-ring analogy). The civic answer to the battle prototypes: ONE great habitable RING
+// deck — the whole city is a single continuous street loop (nothing is further than a quarter-ring
+// walk or one lift ride), the central void is the light well with the orchard PARK at its floor,
+// and ALL freight/power/noise lives on the UNDERWORKS deck below (you never meet a cart on the
+// promenade — Apple Park puts the same traffic underground). The ring's roof is itself the third
+// deck: gardens, cisterns and the airship pads (sky traffic docks above your head, never on your
+// street). Full doctrine + construction sequence + daily-life notes: docs/maps/SKY-CITY-LIVING.md.
+function ringhome() {
+  const R_IN = 82, R_OUT = 134, R_MID = (R_IN + R_OUT) / 2;
+  const at = (r, aDeg) => { const a = aDeg * Math.PI / 180; return [+(r * Math.cos(a)).toFixed(1), +(r * Math.sin(a)).toFixed(1)]; };
+  const d0 = grid();                                   // THE UNDERWORKS — service city + the park
+  disc(d0, 0, 0, 152);
+  const d1 = grid();                                   // THE RING — the habitable loop
+  ring(d1, 0, 0, R_IN, R_OUT, 1);
+  band(d1, -R_IN, 0, R_IN, 0, 10);                     // the park crossing (bridge over the void)
+  const d2 = grid();                                   // THE ROOF WALK — gardens + pads over the ring
+  ring(d2, 0, 0, 96, 122, 1);
+  for (const a of [0, 90, 180, 270]) { const [x, z] = at(R_MID, a); disc(d2, x, z, 15, 0); } // lift wells pierce the roof
+
+  const B = [], P = [];
+  // housing terraces line BOTH rims of the ring; the promenade stays clear between the lamp lines
+  for (let a = 8; a < 360; a += 16) { const [x, z] = at(R_OUT - 8, a); B.push({ kind: "HOUSE", deck: 1, x, z, a: a + 180 }); }
+  for (let a = 16; a < 360; a += 24) { const [x, z] = at(R_IN + 8, a); B.push({ kind: "HOUSE", deck: 1, x, z, a }); }
+  // the market quarter: the SE arc trades houses for stalls; two inns flank the E and S lift mouths
+  for (const b of B) { const ang = ((Math.atan2(b.z, b.x) * 180 / Math.PI) + 360) % 360; if (ang >= 292 && ang <= 348) b.kind = "MARKET"; }
+  { const [x, z] = at(R_OUT - 12, 12); B.push({ kind: "INN", deck: 1, x, z, a: 192 }); }
+  { const [x, z] = at(R_OUT - 12, 258); B.push({ kind: "INN", deck: 1, x, z, a: 78 }); }
+  // the underworks: workshops + granaries under the market quarter, reactors at the quadrants,
+  // warehouses along the rim freight loop
+  for (const a of [300, 320, 340]) { const [x, z] = at(R_MID, a); B.push({ kind: "WORKSHOP", deck: 0, x, z, a }); }
+  for (const a of [305, 335]) { const [x, z] = at(R_IN - 14, a); B.push({ kind: "GRANARY", deck: 0, x, z }); }
+  for (const a of [45, 135, 225]) { const [x, z] = at(R_MID, a); B.push({ kind: "WAREHOUSE", deck: 0, x, z, a }); }
+  // the PARK at the bottom of the light well: orchard rings + the pond
+  for (let a = 0; a < 360; a += 30) { const [x, z] = at(52, a + 6); P.push({ kind: "TREE", deck: 0, x, z }); }
+  for (let a = 0; a < 360; a += 45) { const [x, z] = at(30, a + 22); P.push({ kind: "TREE", deck: 0, x, z }); }
+  P.push({ kind: "POND", deck: 0, x: 0, z: 0, r: 14 });
+  // lamps pace the promenade centerline + the roof walk; cisterns catch rain on the roof
+  for (let a = 0; a < 360; a += 20) { const [x, z] = at(R_MID, a + 4); P.push({ kind: "LAMP", deck: 1, x, z }); }
+  for (let a = 0; a < 360; a += 40) { const [x, z] = at(109, a + 20); P.push({ kind: "LAMP", deck: 2, x, z }); }
+  for (const a of [70, 160, 250, 340]) { const [x, z] = at(109, a); P.push({ kind: "CISTERN", deck: 2, x, z }); }
+  for (let a = 0; a < 360; a += 40) { const [x, z] = at(109, a + 8); P.push({ kind: "TREE", deck: 2, x, z }); } // roof gardens
+
+  const L = [];                                        // the four quarter-point lifts serve ALL decks
+  for (const a of [0, 90, 180, 270]) { const [x, z] = at(R_MID, a); L.push(con("LIFT", 0, x, z, 1, x, z, 11)); }
+  return {
+    schema: "cf-deck-prototype/1", name: "DECK-HS2-RING", title: "The Ember Ring",
+    zone: "HS2", palette: "ember", sizeM: S,
+    note: "THE LIVED-IN RING CITY (Apple-Park model, docs/maps/SKY-CITY-LIVING.md) — one continuous habitable loop: houses line both rims, the market quarter SE, inns at the lift mouths; the central void is the light well with the orchard park + pond at its floor; ALL freight/power runs on the Underworks below (you never meet a cart on the promenade); the roof walk carries gardens, rain cisterns and the airship pads. Four quarter-point lifts serve every deck; grand stairs into the park; tunnel mouths at the rim.",
+    decks: [deck(0, "The Underworks & Park", 0, 0x353f38, d0), deck(1, "The Ring", 24, 0x4c5a4c, d1), deck(2, "The Roof Walk", 44, 0x59685c, d2)],
+    connectors: [
+      ...L,
+      con("STAIR", 0, 62, 0, 1, R_IN + 4, 0, 8), con("STAIR", 0, -62, 0, 1, -R_IN - 4, 0, 8),   // park grand stairs
+      con("STAIR", 1, at(R_MID, 45)[0], at(R_MID, 45)[1], 2, at(109, 45)[0], at(109, 45)[1], 7),
+      con("STAIR", 1, at(R_MID, 225)[0], at(R_MID, 225)[1], 2, at(109, 225)[0], at(109, 225)[1], 7),
+      con("TUNNEL", 0, -150, 20, 0, -136, 20, 11), con("TUNNEL", 0, 150, -20, 0, 136, -20, 11), // rim freight mouths
+    ],
+    structures: [
+      { kind: "CORE", side: "DEFENDER", deck: 2, x: at(109, 135)[0], z: at(109, 135)[1] },
+      { kind: "REACTOR", deck: 0, x: at(R_MID, 45)[0], z: at(R_MID, 45)[1] },
+      { kind: "REACTOR", deck: 0, x: at(R_MID, 135)[0], z: at(R_MID, 135)[1] },
+      { kind: "REACTOR", deck: 0, x: at(R_MID, 215)[0], z: at(R_MID, 215)[1] },
+      { kind: "TOWER", side: "DEFENDER", deck: 1, x: at(R_OUT - 6, 45)[0], z: at(R_OUT - 6, 45)[1] },
+      { kind: "TOWER", side: "DEFENDER", deck: 1, x: at(R_OUT - 6, 225)[0], z: at(R_OUT - 6, 225)[1] },
+    ],
+    pads: [{ deck: 2, x: at(109, 315)[0], z: at(109, 315)[1], r: 13 }, { deck: 2, x: at(109, 180)[0], z: at(109, 180)[1], r: 11 }],
+    spawns: [{ side: "ATTACKER", deck: 0, x: -140, z: 30 }, { side: "DEFENDER", deck: 1, x: at(R_MID, 90)[0], z: at(R_MID, 90)[1] }],
+    buildings: B, props: P,
+  };
+}
+
+for (const m of [emberfall(), aeropolis(), empyrea(), ringhome()]) {
   const f = path.join(OUT, m.name + ".json");
   writeFileSync(f, JSON.stringify(m) + "\n");
   const cells = m.decks.map((d) => Buffer.from(d.walk, "base64").reduce((a, b) => a + (b ? 1 : 0), 0));
-  console.log(`wrote ${m.name}: decks h=[${m.decks.map((d) => d.h)}] walk cells=[${cells}] connectors=${m.connectors.length}`);
+  console.log(`wrote ${m.name}: decks h=[${m.decks.map((d) => d.h)}] walk cells=[${cells}] connectors=${m.connectors.length}` + (m.buildings ? ` buildings=${m.buildings.length} props=${m.props.length}` : ""));
 }
