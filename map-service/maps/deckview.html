@@ -1,0 +1,180 @@
+<!doctype html>
+<!-- deckview.html — TRUE STACKED-DECK prototype viewer (/designer/decks?map=DECK-HS2-CROWN).
+     Renders a cf-deck-prototype/1 JSON (tools/deck_prototypes.mjs, spec: docs/briefs/
+     SKY-STACKED-CITY-BATTLEMAPS.md §3): overlapping walk decks at height, connectors
+     (RAMP/STAIR/LIFT/TUNNEL/BRIDGE), edge rails with honest gaps, structures/pads/spawns.
+     CONCEPT VIEWER for owner reaction — not the game renderer. Keys 0/1/2 toggle decks. -->
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Stacked-Deck Prototype</title>
+<style>
+  html,body{margin:0;height:100%;background:#0a0912;color:#e8e2ff;font:14px system-ui,sans-serif;overflow:hidden}
+  #hud{position:fixed;top:12px;left:12px;background:rgba(8,6,18,.82);border:1px solid rgba(160,140,220,.3);border-radius:12px;padding:10px 14px;max-width:400px;z-index:5}
+  #hud b{font-size:16px}
+  .chip{display:inline-block;margin:3px 4px 0 0;padding:2px 9px;border-radius:999px;font-size:11.5px;border:1px solid rgba(160,140,220,.35);background:rgba(255,255,255,.05);cursor:pointer;user-select:none}
+  .chip.off{opacity:.35;text-decoration:line-through}
+  #note{font-size:11.5px;color:#b9b2d5;margin-top:6px;line-height:1.45}
+  #maps{position:fixed;bottom:12px;left:12px;z-index:5}
+  #maps a{color:#c9a8ff;font-size:12px;margin-right:10px;text-decoration:none;border:1px solid rgba(160,140,220,.3);border-radius:8px;padding:4px 9px;background:rgba(8,6,18,.8)}
+  #err{position:fixed;top:40%;width:100%;text-align:center;color:#ff9a8a;display:none}
+</style></head><body>
+<div id="hud"><b id="title">loading…</b><div id="decks"></div><div id="note"></div></div>
+<div id="maps">
+  <a href="?map=DECK-HS2-CROWN">🔴 Emberfall Crown</a>
+  <a href="?map=DECK-HS1-AEROPOLIS">🌿 Aeropolis Gardens</a>
+  <a href="?map=DECK-HS3-EMPYREA">❄ Empyrea Rings</a>
+</div>
+<div id="err">map not found</div>
+<script src="/vendor/three.min.js"></script>
+<script src="/vendor/OrbitControls.js"></script>
+<script>
+(async function(){
+const q=new URLSearchParams(location.search);
+const name=(q.get("map")||"DECK-HS2-CROWN").replace(/[^A-Z0-9_-]/gi,"");
+let M=null;try{M=await fetch("/internal/v1/moba-map/"+name).then(r=>r.ok?r.json():null);}catch(e){}
+if(!M||!M.decks){document.getElementById("err").style.display="block";return;}
+document.title=M.title||M.name;
+document.getElementById("title").textContent=(M.title||M.name)+" · "+M.zone;
+document.getElementById("note").textContent=M.note||"";
+
+const PAL={ // per-city scene dressing
+  ember:  {sky0:"#241016",sky1:"#0a0709",fog:0x140a0e,hemi:0xffcdb8,ground:0x100a0c,glow:0xff3d2e,accent:0xd83c30,rail:0x525a50},
+  verdant:{sky0:"#4a6a8a",sky1:"#0e1622",fog:0x16202e,hemi:0xcfe2ff,ground:0x1a2418,glow:0x9adf7a,accent:0x7ab35c,rail:0x8a9a7a},
+  tundra: {sky0:"#5a7a96",sky1:"#101a26",fog:0x18242f,hemi:0xe2eeff,ground:0x202a34,glow:0x9fd9ff,accent:0xbfe3f2,rail:0xcfe0ea}
+}[M.palette]||{sky0:"#3a5578",sky1:"#0e1622",fog:0x111c2b,hemi:0xbfd4ff,ground:0x141a22,glow:0xffd34d,accent:0xd8bbff};
+
+const scene=new THREE.Scene();
+{const c=document.createElement("canvas");c.width=8;c.height=256;const g=c.getContext("2d");
+ const gr=g.createLinearGradient(0,0,0,256);gr.addColorStop(0,PAL.sky0);gr.addColorStop(.7,PAL.sky1);gr.addColorStop(1,PAL.sky1);
+ g.fillStyle=gr;g.fillRect(0,0,8,256);scene.background=new THREE.CanvasTexture(c);}
+scene.fog=new THREE.Fog(PAL.fog,420,1250);
+scene.add(new THREE.HemisphereLight(PAL.hemi,0x14101e,.95));
+const sun=new THREE.DirectionalLight(0xfff2dd,.85);sun.position.set(180,260,120);scene.add(sun);
+const renderer=new THREE.WebGLRenderer({antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.setSize(innerWidth,innerHeight);document.body.appendChild(renderer.domElement);
+const camera=new THREE.PerspectiveCamera(46,innerWidth/innerHeight,1,4000);
+const cam=(q.get("cam")||"").split(",").map(Number);
+camera.position.set(cam[0]||300,cam[1]||250,cam[2]||330);
+const controls=new THREE.OrbitControls(camera,renderer.domElement);
+controls.target.set(0,(M.decks[1]?M.decks[1].h:20),0);controls.maxPolarAngle=Math.PI*0.52;
+
+// THE VOID below the isle — a faint under-glow disc so "falling = death" reads
+{const g=new THREE.Mesh(new THREE.CircleGeometry(560,48),new THREE.MeshBasicMaterial({color:PAL.ground,transparent:true,opacity:.55}));
+ g.rotation.x=-Math.PI/2;g.position.y=-90;scene.add(g);}
+
+function walkGrid(d){const u=Uint8Array.from(atob(d.walk),c=>c.charCodeAt(0));return u;}
+const X=(d,i)=>-M.sizeM/2+(i+.5)*d.cell, Z=(d,j)=>-M.sizeM/2+(j+.5)*d.cell;
+
+// ---- decks: instanced slabs + edge rails with gaps near connector mouths -------------------
+const deckGroups=[];const THICK=3.2;
+const gapPts=[];for(const c of M.connectors||[]){gapPts.push([c.from.deck,c.from.x,c.from.z,c.w*1.7]);gapPts.push([c.to.deck,c.to.x,c.to.z,c.w*1.7]);}
+M.decks.forEach((d,di)=>{
+  const g=walkGrid(d),grp=new THREE.Group();grp.name="deck"+d.id;
+  const cells=[];for(let j=0;j<d.gh;j++)for(let i=0;i<d.gw;i++)if(g[j*d.gw+i])cells.push([i,j]);
+  const upper=d.id>0;
+  const mat=new THREE.MeshLambertMaterial({color:d.tone||0x556,transparent:upper,opacity:upper?.96:1});
+  const slab=new THREE.InstancedMesh(new THREE.BoxGeometry(d.cell*1.02,THICK,d.cell*1.02),mat,cells.length);
+  const m4=new THREE.Matrix4();
+  cells.forEach(([i,j],k)=>{m4.makeTranslation(X(d,i),d.h-THICK/2,Z(d,j));slab.setMatrixAt(k,m4);});
+  grp.add(slab);
+  if(upper){ // glowing edge trim + rails with honest gaps (vessel-deck physics read)
+    const edge=[];for(const[i,j]of cells){let e=false;for(const[a,b]of[[1,0],[-1,0],[0,1],[0,-1]]){const ii=i+a,jj=j+b;
+      if(ii<0||jj<0||ii>=d.gw||jj>=d.gh||!g[jj*d.gw+ii]){e=true;break;}}if(e)edge.push([i,j]);}
+    const trim=new THREE.InstancedMesh(new THREE.BoxGeometry(d.cell*1.02,.8,d.cell*1.02),
+      new THREE.MeshBasicMaterial({color:PAL.glow,transparent:true,opacity:.5}),edge.length);
+    edge.forEach(([i,j],k)=>{m4.makeTranslation(X(d,i),d.h-THICK-.2,Z(d,j));trim.setMatrixAt(k,m4);});
+    grp.add(trim);
+    const railCells=edge.filter(([i,j],k)=>{if(k%2)return false;const x=X(d,i),z=Z(d,j);
+      return !gapPts.some(([dk,gx,gz,gr])=>dk===d.id&&Math.hypot(x-gx,z-gz)<gr);});
+    const rail=new THREE.InstancedMesh(new THREE.BoxGeometry(.7,3.4,.7),
+      new THREE.MeshLambertMaterial({color:PAL.rail||PAL.accent}),railCells.length);
+    railCells.forEach(([i,j],k)=>{m4.makeTranslation(X(d,i),d.h+1.7,Z(d,j));rail.setMatrixAt(k,m4);});
+    grp.add(rail);
+  }
+  scene.add(grp);deckGroups.push(grp);
+});
+
+// ---- connectors ----------------------------------------------------------------------------
+const dh=id=>{const d=M.decks.find(x=>x.id===id);return d?d.h:0;};
+const woodM=new THREE.MeshLambertMaterial({color:0x7a6a52});
+const liftM=new THREE.MeshLambertMaterial({color:0x3a4048});
+for(const c of M.connectors||[]){
+  const y0=dh(c.from.deck),y1=dh(c.to.deck);
+  const fx=c.from.x,fz=c.from.z,tx=c.to.x,tz=c.to.z;
+  const L=Math.hypot(tx-fx,tz-fz),ang=Math.atan2(tx-fx,tz-fz);
+  if(c.kind==="LIFT"){
+    for(const[sx,sz]of[[-1,-1],[1,-1],[-1,1],[1,1]]){
+      const p=new THREE.Mesh(new THREE.BoxGeometry(1.6,y1-y0+8,1.6),liftM);
+      p.position.set(tx+sx*c.w/2,(y0+y1)/2+2,tz+sz*c.w/2);scene.add(p);}
+    const plat=new THREE.Mesh(new THREE.BoxGeometry(c.w,1.6,c.w),
+      new THREE.MeshBasicMaterial({color:PAL.glow,transparent:true,opacity:.85}));
+    plat.position.set(tx,y0+(y1-y0)*.45,tz);plat.userData.lift=[y0+2,y1-1];scene.add(plat);
+    const cage=new THREE.Mesh(new THREE.BoxGeometry(c.w+1,y1-y0,c.w+1),
+      new THREE.MeshBasicMaterial({color:PAL.glow,transparent:true,opacity:.08}));
+    cage.position.set(tx,(y0+y1)/2,tz);scene.add(cage);
+  }else if(c.kind==="STAIR"){
+    const steps=Math.max(6,Math.round((y1-y0)/1.1));
+    for(let s=0;s<steps;s++){const t=s/(steps-1);
+      const st=new THREE.Mesh(new THREE.BoxGeometry(c.w,1.2,L/steps+.6),woodM);
+      st.position.set(fx+(tx-fx)*t,y0+(y1-y0)*t+.6,fz+(tz-fz)*t);st.rotation.y=ang;scene.add(st);}
+  }else if(c.kind==="TUNNEL"){
+    const t=new THREE.Mesh(new THREE.BoxGeometry(c.w+3,9,L),new THREE.MeshLambertMaterial({color:0x2a2e33}));
+    t.position.set((fx+tx)/2,y0+4.5,(fz+tz)/2);t.rotation.y=ang;scene.add(t);
+    const hole=new THREE.Mesh(new THREE.BoxGeometry(c.w,7,2.5),new THREE.MeshBasicMaterial({color:0x08060c}));
+    hole.position.set(fx,y0+3.2,fz);hole.rotation.y=ang;scene.add(hole);
+  }else{ // RAMP / BRIDGE — one straight run, tilted
+    const run=new THREE.Mesh(new THREE.BoxGeometry(c.w,1.6,Math.hypot(L,y1-y0)+2),
+      c.kind==="BRIDGE"?new THREE.MeshLambertMaterial({color:0x8a8f96}):woodM);
+    run.position.set((fx+tx)/2,(y0+y1)/2+.8,(fz+tz)/2);
+    run.rotation.y=ang;run.rotation.x=-Math.atan2(y1-y0,L)*Math.cos(0);
+    const dir=new THREE.Vector3(tx-fx,y1-y0,tz-fz).normalize();
+    run.rotation.set(0,ang,0);run.rotateX(-Math.asin(dir.y));
+    scene.add(run);
+  }
+}
+
+// ---- structures / pads / spawns ------------------------------------------------------------
+for(const s of M.structures||[]){
+  const y=dh(s.deck);
+  if(s.kind==="CORE"){const m=new THREE.Mesh(new THREE.CylinderGeometry(6,7.5,16,8),
+      new THREE.MeshLambertMaterial({color:0x3d4854}));m.position.set(s.x,y+8,s.z);scene.add(m);
+    const gem=new THREE.Mesh(new THREE.OctahedronGeometry(4),
+      new THREE.MeshBasicMaterial({color:PAL.glow}));gem.position.set(s.x,y+20,s.z);gem.userData.spin=1;scene.add(gem);}
+  else if(s.kind==="REACTOR"){const m=new THREE.Mesh(new THREE.IcosahedronGeometry(6.5),
+      new THREE.MeshBasicMaterial({color:PAL.accent,transparent:true,opacity:.9}));
+    m.position.set(s.x,y+6.5,s.z);m.userData.spin=.4;scene.add(m);
+    const l=new THREE.PointLight(PAL.accent,.9,70);l.position.set(s.x,y+10,s.z);scene.add(l);}
+  else if(s.kind==="TOWER"){const m=new THREE.Mesh(new THREE.CylinderGeometry(2.6,3.4,13,8),
+      new THREE.MeshLambertMaterial({color:0x4a4f58}));m.position.set(s.x,y+6.5,s.z);scene.add(m);
+    const r=new THREE.Mesh(new THREE.ConeGeometry(3.6,3.5,8),new THREE.MeshLambertMaterial({color:0x6a5a48}));
+    r.position.set(s.x,y+14.5,s.z);scene.add(r);}
+  else{const m=new THREE.Mesh(new THREE.ConeGeometry(3,7,4),
+      new THREE.MeshLambertMaterial({color:0x9a93b0}));m.position.set(s.x,y+3.5,s.z);scene.add(m);}
+}
+for(const p of M.pads||[]){const y=dh(p.deck);
+  const d1=new THREE.Mesh(new THREE.CircleGeometry(p.r,28),new THREE.MeshBasicMaterial({color:0xdadfe4}));
+  d1.rotation.x=-Math.PI/2;d1.position.set(p.x,y+.25,p.z);scene.add(d1);
+  const ring=new THREE.Mesh(new THREE.RingGeometry(p.r-1.4,p.r-.4,28),new THREE.MeshBasicMaterial({color:0x8a9096}));
+  ring.rotation.x=-Math.PI/2;ring.position.set(p.x,y+.32,p.z);scene.add(ring);}
+for(const s of M.spawns||[]){const y=dh(s.deck),col=s.side==="ATTACKER"?0x5a8ee2:0xe2b23c;
+  const t=new THREE.Mesh(new THREE.TorusGeometry(6,.8,8,24),new THREE.MeshBasicMaterial({color:col,depthTest:false,transparent:true,opacity:.9}));
+  t.rotation.x=Math.PI/2;t.position.set(s.x,y+9,s.z);t.renderOrder=6;t.userData.bob=y+9;scene.add(t);
+  const p=new THREE.Mesh(new THREE.CylinderGeometry(.5,.5,9),new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:.35}));
+  p.position.set(s.x,y+4.5,s.z);scene.add(p);}
+
+// ---- HUD deck toggles ----------------------------------------------------------------------
+const dl=document.getElementById("decks");
+M.decks.forEach((d,i)=>{const c=document.createElement("span");c.className="chip";
+  c.textContent=`${d.id}·${d.name} (h${d.h})`;
+  c.onclick=()=>{const g=deckGroups[i];g.visible=!g.visible;c.classList.toggle("off",!g.visible);};
+  dl.appendChild(c);});
+addEventListener("keydown",e=>{const i="012".indexOf(e.key);if(i>=0&&deckGroups[i]){deckGroups[i].visible=!deckGroups[i].visible;dl.children[i].classList.toggle("off",!deckGroups[i].visible);}});
+addEventListener("resize",()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);});
+
+let t0=performance.now();
+(function loop(){requestAnimationFrame(loop);const t=(performance.now()-t0)/1000;
+  scene.traverse(o=>{if(o.userData.spin)o.rotation.y=t*o.userData.spin;
+    if(o.userData.bob!=null)o.position.y=o.userData.bob+Math.sin(t*2)*1.2;
+    if(o.userData.lift){const[a,b]=o.userData.lift;o.position.y=a+(b-a)*(.5+.5*Math.sin(t*.6));}});
+  controls.update();renderer.render(scene,camera);})();
+})();
+</script></body></html>

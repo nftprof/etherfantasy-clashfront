@@ -151,10 +151,12 @@ export const editDecision = ({ admin, username, owner }) =>
 // returns true if the request was ours (response handled), false to let the lobby continue
 export function mapsApi(req, res) {
   const [p] = req.url.split("?");
-  if (p === "/designer" || p === "/designer/" || p === "/designer/3d" || p === "/designer/world") {
+  if (p === "/designer" || p === "/designer/" || p === "/designer/3d" || p === "/designer/world" || p === "/designer/decks") {
     // /designer = the studio · /designer/3d?parcel= = standalone 3D preview · /designer/world =
-    // the 2D WORLD OVERVIEW (coverage map — the whole CF game map as one picture).
-    const page = p === "/designer/3d" ? "preview3d.html" : p === "/designer/world" ? "worldmap.html" : "designer.html";
+    // the 2D WORLD OVERVIEW (coverage map — the whole CF game map as one picture) ·
+    // /designer/decks?map= = the TRUE stacked-deck V2 prototype viewer (deck_prototypes.mjs).
+    const page = p === "/designer/3d" ? "preview3d.html" : p === "/designer/world" ? "worldmap.html"
+      : p === "/designer/decks" ? "deckview.html" : "designer.html";
     fs.readFile(path.join(__dirname, page), (e, buf) => {
       if (e) { res.writeHead(404); return res.end("page missing"); }
       res.writeHead(200, { "content-type": "text/html", "cache-control": "no-cache" });
