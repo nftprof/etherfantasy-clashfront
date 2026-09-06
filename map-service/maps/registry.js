@@ -51,7 +51,7 @@ export function readArtifact(parcelId, version = null) {
 // Immutable per designVersion+CONV_REV → compute once. CONV_REV bumps when the converter's
 // palette/biome tables change (r2: ember row + tundra frost floor, 2026-09-02) so stale caches
 // on deployed boxes regenerate without touching designVersion.
-const CONV_REV = 2;
+const CONV_REV = 3;
 
 // artifact → engine-ready manifest via the vendored converter, with the contract hardening
 // (MOBA fixes 1+3: designVersion + siege block attached HERE so the engine-team's vendored

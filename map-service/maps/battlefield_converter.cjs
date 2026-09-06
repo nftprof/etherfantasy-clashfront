@@ -46,6 +46,39 @@ const PALETTE = {
 };
 const DEFAULT_PALETTE = 'verdant';
 
+/* MOOD — per-map color IDENTITY the renderer keys time-of-day / weather / grade off (renderer
+ * ask #1, 2026-09-06). The MAP says the mood (semantic tokens); the RENDERER decides the actual
+ * exposure/bloom/haze numbers ("they say what is where; I say how it looks"). Per-map override:
+ * artifact meta.mood (any subset) wins over these palette defaults. key = a stable mood id. */
+const MOOD = {
+  verdant:  { key:'meadow-day',    timeOfDay:'day',      weather:'clear',    haze:'light',  light:'warm'  },
+  jungle:   { key:'jungle-humid',  timeOfDay:'day',      weather:'humid',    haze:'medium', light:'green' },
+  autumn:   { key:'autumn-gold',   timeOfDay:'lateday',  weather:'clear',    haze:'light',  light:'amber' },
+  desert:   { key:'desert-noon',   timeOfDay:'noon',     weather:'clear',    haze:'heat',   light:'harsh' },
+  tundra:   { key:'frozen-pale',   timeOfDay:'day',      weather:'snow',     haze:'medium', light:'cold'  },
+  swamp:    { key:'swamp-murk',    timeOfDay:'dusk',     weather:'fog',      haze:'heavy',  light:'sickly'},
+  volcanic: { key:'volcanic-ember',timeOfDay:'night',    weather:'ashfall',  haze:'heavy',  light:'lava'  },
+  ashen:    { key:'ashen-dead',    timeOfDay:'overcast', weather:'ashfall',  haze:'heavy',  light:'grey'  },
+  sakura:   { key:'sakura-bloom',  timeOfDay:'day',      weather:'petals',   haze:'light',  light:'rose'  },
+  ember:    { key:'ember-warlit',  timeOfDay:'night',    weather:'sparks',   haze:'medium', light:'crystal-red' },
+};
+/* SCATTER — per-biome instancing HINT: base density (0..1, scaled by the map's own params.density)
+ * + semantic prop TYPE tokens the renderer maps to its asset packs (renderer ask #3). Ground =
+ * low cover, canopy = tall. Placement of actual FOREST/ROCK cells still comes from trees[]/rocks[]
+ * in the manifest; this tells the renderer WHAT to grow and HOW THICK per biome. meta.scatterHint overrides. */
+const SCATTER = {
+  verdant:  { density:0.85, canopy:['broadleaf','oak'],        ground:['fern','wildflower','tussock'] },
+  jungle:   { density:0.95, canopy:['palm','broadleaf'],       ground:['fern','vine','shrub'] },
+  autumn:   { density:0.80, canopy:['maple','birch'],          ground:['fern','deadfall'] },
+  desert:   { density:0.30, canopy:['dead-tree'],              ground:['scrub','cactus','boulder'] },
+  tundra:   { density:0.45, canopy:['conifer','frost-pine'],   ground:['snow-rock','lichen'] },
+  swamp:    { density:0.70, canopy:['mangrove','willow'],      ground:['reed','cattail','log'] },
+  volcanic: { density:0.35, canopy:['charred-snag'],           ground:['basalt','obsidian-shard','cinder'] },
+  ashen:    { density:0.30, canopy:['ash-snag'],               ground:['ash-drift','bone','rubble'] },
+  sakura:   { density:0.80, canopy:['cherry','plum'],          ground:['petal-drift','wildflower'] },
+  ember:    { density:0.40, canopy:['crystal-spire'],          ground:['ember-crystal','dark-scarp','slag'] },
+};
+
 /* ---- small utilities (no deps) ---- */
 function b64ToU8(s){ if(!s) return new Uint8Array(0);
   if(typeof Buffer!=='undefined'){ const b=Buffer.from(String(s),'base64'); return new Uint8Array(b.buffer,b.byteOffset,b.length); }
@@ -246,6 +279,16 @@ function convert(artifact, opts){
     arena:{ shape:arena.shape||'square', sizeM, half, bounds },
     grid:{ w, h, cellM:cell },
     biome:{ key:pal.biome, palette:palKey, floor:pal.floor, dry:pal.dry, wet:pal.wet, fog:pal.fog, water:pal.water, ...(pal.bake?{bake:pal.bake}:{}), ...(pal.sky!=null?{sky:pal.sky}:{}), ...(pal.floorRepeat?{floorRepeat:pal.floorRepeat}:{}) },
+    /* renderer contract (2026-09-06): per-map MOOD identity + SCATTER hint. Palette default,
+     * artifact meta.mood/meta.scatter override (shallow-merged). Renderer keys its lighting/
+     * weather/instancing off these; the map only declares intent. */
+    mood: { ...(MOOD[palKey] || MOOD[DEFAULT_PALETTE]), ...(meta.mood && typeof meta.mood === 'object' ? meta.mood : {}) },
+    /* scatterHint (NOT `scatter` — that's the placed grass/flower/bush instance array below): the
+     * per-biome instancing HINT (density + type tokens). meta.scatterHint overrides. */
+    scatterHint: (() => { const base = SCATTER[palKey] || SCATTER[DEFAULT_PALETTE];
+      const d = (typeof params.density === 'number') ? Math.max(0, Math.min(1, params.density)) : 1;
+      const m = { ...base, density: +(base.density * (0.6 + 0.4 * d)).toFixed(2) };   /* map's own density modulates the biome base */
+      return { ...m, ...(meta.scatterHint && typeof meta.scatterHint === 'object' ? meta.scatterHint : {}) }; })(),
     ...(meta.theme?{theme:meta.theme}:{}),  /* v24: visuals-only skin key — engine maps it to an asset pack */
     height:{ w, h, hMin:+hMin.toFixed(3), hMax:+hMax.toFixed(3), data:u8ToB64(hu8) },  /* worldY = hMin + u8/255*(hMax-hMin), bilinear */
     depth:{ w, h, scale:80, data:u8ToB64(depth8) },  /* v23 rule 4: per-cell water depth (u8/80 = depth in u; 0 = land) */

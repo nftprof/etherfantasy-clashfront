@@ -272,3 +272,32 @@ walkable when no vessel is seated. Reference: `preview3d.html` (renders pads in 
 - **CI R-NAVAL:** the headless naval sim (`runNavalAudit`) is asserted per artifact — every
   arrivable region has a beachhead AND a pier; every pad + pier + sampled beach landing marches
   to the defended heart.
+
+### `mood` + `scatterHint` — renderer look contract (2026-09-06)
+
+Two additive, per-map manifest fields the renderer keys its look off. The MAP declares INTENT
+(semantic tokens); the RENDERER owns the actual lighting/exposure/instancing numbers ("they say
+what is where; I say how it looks"). Both default per palette in `battlefield_converter.cjs`
+(`MOOD` / `SCATTER` tables) and accept a per-map override from the artifact:
+`meta.mood` (shallow-merged into `mood`) and `meta.scatterHint` (into `scatterHint`).
+
+```jsonc
+"mood": {                    // per-map colour identity → time-of-day / weather / grade
+  "key": "ember-warlit",     // stable mood id
+  "timeOfDay": "night",      // day|noon|lateday|dusk|night|overcast
+  "weather": "sparks",       // clear|humid|fog|snow|ashfall|petals|sparks|heat
+  "haze": "medium",          // light|medium|heavy|heat
+  "light": "crystal-red"     // warm|cold|green|amber|harsh|sickly|lava|grey|rose|crystal-red
+},
+"scatterHint": {             // per-biome INSTANCING hint (WHAT to grow + HOW THICK)
+  "density": 0.35,           // 0..1 base × the map's own params.density (0.6+0.4·d)
+  "canopy": ["crystal-spire"],                       // tall props
+  "ground": ["ember-crystal","dark-scarp","slag"]    // low props
+}
+```
+
+**NB — `scatterHint` is NOT `scatter`.** `scatter` stays the existing placed grass/flower/bush
+INSTANCE arrays (exact positions). `scatterHint` is the per-biome density+type guidance for the
+renderer's own instancing. Cache: `CONV_REV` bumped to 3 (manifests regenerate on deploy).
+EF Hunt / MOBA note: `battlefield_converter.cjs` is vendored in the MOBA repo too — re-vendor to
+pick these up (see MOBA-CF-COORD.md 2026-09-06).

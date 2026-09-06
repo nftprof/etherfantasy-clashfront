@@ -1359,3 +1359,27 @@ CF side also bumped the server manifest cache key (`registry.js CONV_REV=2`,
 `render.v{N}.c2.json`) so stale cached manifests regenerate on deploy — if the MOBA lobby caches
 converted manifests anywhere, invalidate similarly. Verified in the designer: HS2 singles dark
 ember, HS3 frozen; map-service suite 30/30 green.
+
+### 2026-09-06 · RENDERER look-update — the three map-designer asks (from the render session, via owner)
+The renderer session filed three asks against the map-data lane. Verdicts + status:
+
+1. **`mood`/palette field per map artifact** — ✅ DONE. The manifest already carried per-map palette
+   + full colour set (dry/wet/fog/sky/water/treeHSL/floor + optional `theme`). Added an explicit
+   first-class **`mood`** object (key + timeOfDay/weather/haze/light SEMANTIC tokens; palette default,
+   `meta.mood` override) so you have ONE field to key time-of-day/weather/grade off. The map declares
+   intent; you own the numbers. Schema: BATTLEFIELD-SCHEMA.md "mood + scatterHint".
+2. **Proper UVs on the castle kit pieces** — ⚠ NOT the map-data lane. The CF designer's castle is
+   PROCEDURAL three.js primitives (Box/Cylinder in `preview3d.html`), not a GLB kit — there is no
+   mesh with UVs I author. Real castle-kit MESHES + UVs belong to whoever owns the game's 3D castle
+   assets (Models/LoRA session for the trim sheet + the MOBA 3D client that assembles the kit). The
+   map side gives you the castle COMPOSITION (which anchors/pieces where, `castle_*` structures +
+   `siege` block); UV-unwrapping the meshes those map to is an asset-pipeline task. Recommend routing
+   to the Models session (trim sheet) + MOBA BattleEngine RAW (kit meshes).
+3. **Per-biome scatter hints (density/type)** — ✅ DONE. Added **`scatterHint`** {density, canopy[],
+   ground[]} to the manifest — per-biome base density (× the map's own params.density) + semantic prop
+   TYPE tokens for your instancing. Distinct from the existing `scatter` grass/flower/bush INSTANCE
+   arrays (those keep exact positions). `meta.scatterHint` override.
+
+Shipped in `battlefield_converter.cjs` (MOOD + SCATTER tables), CONV_REV→3 (deployed manifests
+regenerate). **Re-vendor the converter** in the MOBA repo to pick up mood + scatterHint (same file
+as the 2026-09-02 ember/tundra change). Map-service suite green.
