@@ -88,6 +88,13 @@ proposed at 10 and has no canon value yet. Every CT-equivalent loss in the sheet
 
 **Meanwhile:** fees stay as they are (1 / 6 CT, canon scale).
 
+## Every ⚙ number in one place
+
+`data/living-world/placeholders.json` lists the 25 numbers the living world *proposed*, as opposed to taking them from
+canon: storm odds, soldiers per sim unit, mercenary splits, fees, threat bands, terrain shifts, the Kraken's damage and
+more. Each entry gives its value, where it lives, what it moves, how to tune it, and the test that guards it. The
+tests fail if the register and the live value ever disagree.
+
 ## Proposals waiting on canon (no decision needed now; flagged so nothing slips in silently)
 
 | Proposal | Where | Status |

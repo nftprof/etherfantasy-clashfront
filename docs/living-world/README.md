@@ -56,6 +56,7 @@ byte-compares the results, re-runs the sims and checks every invariant (≈ 1 mi
 | `guardian-eligibility.json` | Which pet species can be Wardens (Form 2) or Ascendants (Form 3), derived from the MOBA lineage + canon roster | `guardian_eligibility.mjs` |
 | `threat-bosses.json` | The named boss each region's threat peak brings (canon roster bosses ↔ zone elements) | `threat_bosses.mjs` |
 | `event-contract.json` | Engine semantics per event: shape, scope, required fields | (source; `validate_events.mjs` checks it) |
+| `placeholders.json` | The ⚙ register: every proposal number (25) with where it lives, what it moves, how to tune it, its guarding test | (source; `placeholders_check.mjs` resolves each against the live value) |
 | `perf-budget.json` | Hot-path baselines + 2× budgets (seedSingle 18 µs, board view 0.09 ms, traffic frame 0.1 ms; full singles seed 4.4 s, matrix 18 s) | `perf_budget.mjs --record` |
 | `*.sample.json`, `allocate.samples.json` | Worked samples: traffic, feed, calendar, board, stationings, mercenary market, allocate payloads | The matching tool |
 
@@ -86,6 +87,7 @@ byte-compares the results, re-runs the sims and checks every invariant (≈ 1 mi
   - `month_sim.mjs` (North Star at scale);
   - `abuse_sim.mjs` (coalition self-farming: every scheme net-negative);
   - `e2e_slice.mjs` (one fight end to end: board → allocate → real kernel → callback → resolver → influence).
+- **Register:** `placeholders_check.mjs` (every ⚙ number matches its live value).
 - **Contracts:** `validate_events.mjs` (every event vs its engine shape and scope).
 - **Live ops:** `liveops_baseline.mjs` (every baseline in its healthy band).
 - **Performance:** `perf_budget.mjs` (`--record` sets baselines; plain run gates at 2×).

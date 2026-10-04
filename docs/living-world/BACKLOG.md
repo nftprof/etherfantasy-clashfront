@@ -95,6 +95,6 @@ airships, landing spots, harbours + sea ships; seed all 20K maps; an experience,
 - [x] D54 — Estate board battles (canon decision 22): an estate fight is ONE board battle with a fixed count of HERO-MODE POI parcels (LARGE 3 / GIANT 5 / EPIC 8; castle always). Map living-world Nodes onto those hero parcels: which Nodes become hero-mode fights, which resolve on the board; check every castle estate's hero-parcel count covers its Guardian perch + castle-ring POIs
 
 ## Wave 12 (added cycle 63)
-- [ ] D59 — ⚙ placeholder register: every proposal number in the living world (storm 35 %, 10 soldiers per sim unit, ATTACK mercenary split, HERO_RADIUS, companies per post, sky/under shifts, Kraken 300 dmg, …) in one table: value, file + key, what it moves, how to tune it, the test that guards it
+- [x] D59 — ⚙ placeholder register: every proposal number in the living world (storm 35 %, 10 soldiers per sim unit, ATTACK mercenary split, HERO_RADIUS, companies per post, sky/under shifts, Kraken 300 dmg, …) in one table: value, file + key, what it moves, how to tune it, the test that guards it
 - [ ] D60 — Client hand-off spec (plan G): the shapes the client renders (board rows, feed items, journal entries, Guardian banners, ship positions, arrival markers, season beats) with sample payloads pulled from the committed samples, and which function produces each
 - [ ] D58 — Player-facing explainer copy: short i18n tips for the board, feed, journal, Guardians, mercenaries, region rights, lulls (en baseline), rendered by t(); test that every tip key renders

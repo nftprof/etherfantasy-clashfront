@@ -3,8 +3,10 @@
   "call": "§5 What is a Guardian hunt for?",
   "option": "A",
   "applied": true,
-  "testsOk": true,
-  "failing": []
+  "testsOk": false,
+  "failing": [
+   "✗ the end-to-end slice is deterministic and committed"
+  ]
  },
  "sky-under-terrain": {
   "call": "Proposal: SKY / UNDER terrain rows",

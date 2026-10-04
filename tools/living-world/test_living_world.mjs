@@ -516,4 +516,9 @@ ok(HPM.tally.perchMisplaced.length === 0 && HPM.tally.perchOnCastleParcel > 0 &&
 ok(Object.values(HPM.castles).filter((c) => c.heroParcels.length).every((c) => c.pois.every((p) => ["CASTLE_PARCEL", "HERO_PARCEL", "OWN_PARCEL"].includes(p.on))), "no living-world Node at a designated castle is stuck command-view-only: it's on a hero parcel or its own parcel battle");
 ok(HPM.tally.designated + HPM.tally.deferred === 67 && Object.values(HPM.castles).every((c) => c.heroParcels.length || c.note), "every castle is either designated or carries canon's deferral note");
 
+// D59 ⚙ placeholder register: every proposal number resolves to its live value, and names a real guarding test
+const PHc = (await import("./placeholders_check.mjs")).check(), PHR = JSON.parse(fs.readFileSync("data/living-world/placeholders.json", "utf8")), tsrc = fs.readFileSync("tools/living-world/test_living_world.mjs", "utf8");
+ok(PHc.length >= 20 && PHc.every((x) => x.ok), `every ⚙ placeholder in the register matches its live value (${PHc.length} entries)` + (PHc.some((x) => !x.ok) ? " — " + PHc.filter((x) => !x.ok).map((x) => `${x.id}: ${JSON.stringify(x.live)}`).join(", ") : ""));
+ok(PHR.entries.every((e) => e.moves && e.tune && e.guard && tsrc.includes(e.guard)), "every placeholder says what it moves, how to tune it, and names a test that guards it");
+
 console.log(fails ? `❌ living-world: ${fails} failed` : "✅ living-world: all passed"); process.exit(fails ? 1 : 0);

@@ -19,6 +19,7 @@ export const PACKS = {
   "warden-fee-x3": { call: "§5 What is a Guardian hunt for?", option: "A", apply(r) {
     const g = rd(r, "data/living-world/guardians.json"); g.forms["2"].feeCT = 3 * g.forms["2"].feeCT; wr(r, "data/living-world/guardians.json", g);
     edit(r, "docs/living-world/04-GUARDIANS.md", "| 1 CT × kind multiplier |", `| ${g.forms["2"].feeCT} CT × kind multiplier |`);
+    const ph = rd(r, "data/living-world/placeholders.json"); ph.entries.find((e) => e.id === "guardian_fee_f2").value = g.forms["2"].feeCT; wr(r, "data/living-world/placeholders.json", ph);   // keep the ⚙ register (D59) in step
     for (const s of ["stationings.mjs", "event_board.mjs", "region_feed.mjs", "allocate_payload.mjs", "balance_sheet.mjs", "ct_flow_sim.mjs", "abuse_sim.mjs"]) node(r, s);
   } },
   "sky-under-terrain": { call: "Proposal: SKY / UNDER terrain rows", option: "apply", apply(r) {
@@ -48,7 +49,8 @@ if (process.argv[1] && process.argv[1].endsWith("apply_decision.mjs")) {
       fs.rmSync(tmp, { recursive: true, force: true });
       console.log(`${id}: applied ${applied}, tests ${testsOk ? "pass" : "FAIL"} ${failing.join(" | ")}`);
     }
-    fs.writeFileSync(path.join(HERE, "docs/living-world/handoff/DECISION-PACKS.json"), JSON.stringify(out, null, 1) + "\n");
+    const dpf = path.join(HERE, "docs/living-world/handoff/DECISION-PACKS.json"), prev = fs.existsSync(dpf) ? JSON.parse(fs.readFileSync(dpf, "utf8")) : {};
+    fs.writeFileSync(dpf, JSON.stringify(Object.fromEntries(Object.keys(PACKS).filter((k) => out[k] || prev[k]).map((k) => [k, out[k] || prev[k]])), null, 1) + "\n");   // merge: a single-pack pretest keeps the others
   } else {
     const id = a[0], i = a.indexOf("--root"), root = i > 0 ? a[i + 1] : HERE;
     if (!PACKS[id]) { console.error("packs: " + Object.keys(PACKS).join(", ")); process.exit(2); }
