@@ -307,4 +307,11 @@ ok(stBad.length === 0 && STS.accepted > 0 && STS.refused > 0, `the synthetic wee
 const gcB = EB.boardAt("cf-world-1", "BUS", STS.busBusiestNoon.tick, {}), gcRows = [...gcB.live, ...gcB.upcoming].filter((e) => e.kind === "GUARDIAN_CHALLENGE");
 ok(gcRows.length === STS.busBusiestNoon.rows.length && gcRows.every((e) => e.state === "LIVE" && e.banner && e.potCT > 0), "every standing Guardian is a LIVE GUARDIAN_CHALLENGE on the board, with its banner and bounty");
 
+// D26 personal journal
+const JN = await import("./journal.mjs");
+ok(FWE.journalMinPerSession >= 1 && FWE.journalFresh >= 3 * FWG.journalFresh, `the explorer's journal has a fresh story every session (min ${FWE.journalMinPerSession}); ${FWE.journalFresh} vs the grinder's ${FWG.journalFresh}`);
+const jw = JN.journalEntry({ kind: "POI_CLEARED", k: "WILD_LAIR", won: true, nth: 1, reward: 10, at: [10, 0], home: [0, 0] }), jr = JN.journalEntry({ kind: "POI_CLEARED", k: "WILD_LAIR", won: true, nth: 3, mult: 0.3, reward: 3, at: [0, 10], home: [0, 0] });
+ok(jw.fresh && /wild lair 10 u east of home/.test(jw.text) && !jr.fresh && /3rd time today, ×0.3/.test(jr.text), "journal lines name the place and direction; repeat clears are logged honestly with their multiplier, not as fresh");
+ok(Object.keys({ BARBARIAN_CAMP_CLEARED: 1, AIRDROP_TAKEN: 1, CARAVAN_RAIDED: 1, BOUNTY_CLAIMED: 1, POI_HELD: 1, POI_CLEARED: 1 }).every((k) => { const l = JN.journalEntry({ kind: k, k: "WILD_LAIR", won: false }); return l.fresh && !/undefined|_/.test(l.text); }), "every loss reads as a story line (losing is a story, doc 06 §5)");
+
 console.log(fails ? `❌ living-world: ${fails} failed` : "✅ living-world: all passed"); process.exit(fails ? 1 : 0);

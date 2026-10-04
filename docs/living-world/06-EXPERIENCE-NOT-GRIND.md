@@ -123,8 +123,11 @@ The claims hold. The incentive points outward, grinding makes no stories, and th
 do. Three things to watch:
 
 1. **About one story a day, not one per session.** Most frontier clears sit below the feed's "newsworthy" threshold,
-   so the explorer had two quiet days. Proposal: a **personal journal** that logs every win (the region feed stays
-   curated).
+   so the explorer had two quiet days. **Fixed by the personal journal (D26, `journal.mjs`).** Every fight, won or
+   lost, becomes a private line, e.g. "Cleared the mercenary post 12 u north-west of home, and planted your banner
+   (+10)". The explorer now gets **33 fresh entries, at least one every session**; the grinder gets 9. Repeat clears
+   are logged honestly ("…again: the 3rd time today, ×0.3 reward") but don't count as fresh. The region feed stays
+   curated.
 2. **FORM3_STATION (25 held) is out of solo reach in week 1.** Holdings plateau around 10 with 10 %/day attrition.
    Read this as intended: a Form 3 Ascendant is an alliance-scale goal.
 3. **9 explorer repeat clears** came from world events landing on the same Nodes on different days. The curve priced

@@ -6,6 +6,82 @@
  "runs": [
   {
    "policy": "EXPLORER",
+   "journalFresh": 33,
+   "journalMinPerSession": 1,
+   "journal": [
+    {
+     "day": 0,
+     "hour": 12,
+     "fresh": true,
+     "text": "Lost to the bounty target 71 u north-east of home. Next time."
+    },
+    {
+     "day": 0,
+     "hour": 12,
+     "fresh": true,
+     "text": "Broke a barbarian raid 56 u north of home: 48 h of quiet for the region (+10)"
+    },
+    {
+     "day": 0,
+     "hour": 12,
+     "fresh": true,
+     "text": "Cleared the mercenary post 12 u north-west of home, and planted your banner (+10)"
+    },
+    {
+     "day": 0,
+     "hour": 20,
+     "fresh": true,
+     "text": "Lost to the bounty target 71 u north-east of home. Next time."
+    },
+    {
+     "day": 0,
+     "hour": 20,
+     "fresh": true,
+     "text": "Cleared the wild lair 12 u north-east of home, and planted your banner (+10)"
+    },
+    {
+     "day": 0,
+     "hour": 20,
+     "fresh": true,
+     "text": "Beaten back at the harbour 14 u north-west of home. They'll remember you."
+    },
+    {
+     "day": 1,
+     "hour": 12,
+     "fresh": true,
+     "text": "Cleared the harbour 14 u north-west of home, and planted your banner (+10)"
+    },
+    {
+     "day": 1,
+     "hour": 12,
+     "fresh": true,
+     "text": "Cleared the harbour 15 u north of home, and planted your banner (+10)"
+    },
+    {
+     "day": 1,
+     "hour": 12,
+     "fresh": true,
+     "text": "Cleared the harbour 15 u north of home (+10)"
+    },
+    {
+     "day": 1,
+     "hour": 20,
+     "fresh": true,
+     "text": "Cleared the wild lair 15 u east of home (+10)"
+    },
+    {
+     "day": 1,
+     "hour": 20,
+     "fresh": true,
+     "text": "Cleared the harbour 16 u south-east of home, and planted your banner (+10)"
+    },
+    {
+     "day": 1,
+     "hour": 20,
+     "fresh": true,
+     "text": "Cleared the wild lair 16 u north-east of home (+10)"
+    }
+   ],
    "fights": 42,
    "wins": 36,
    "reward": 321,
@@ -126,6 +202,82 @@
   },
   {
    "policy": "GRINDER",
+   "journalFresh": 9,
+   "journalMinPerSession": 0,
+   "journal": [
+    {
+     "day": 0,
+     "hour": 12,
+     "fresh": true,
+     "text": "Cleared the mercenary post 12 u north-west of home, and planted your banner (+10)"
+    },
+    {
+     "day": 0,
+     "hour": 12,
+     "fresh": false,
+     "text": "Cleared the mercenary post 12 u north-west of home again: the 2nd time today, ×0.6 reward (+6)"
+    },
+    {
+     "day": 0,
+     "hour": 12,
+     "fresh": false,
+     "text": "Cleared the mercenary post 12 u north-west of home again: the 3rd time today, ×0.3 reward (+3)"
+    },
+    {
+     "day": 0,
+     "hour": 20,
+     "fresh": true,
+     "text": "Beaten back at the mercenary post 12 u north-west of home. They'll remember you."
+    },
+    {
+     "day": 0,
+     "hour": 20,
+     "fresh": false,
+     "text": "Cleared the mercenary post 12 u north-west of home again: the 4th time today, ×0.1 reward (+1)"
+    },
+    {
+     "day": 0,
+     "hour": 20,
+     "fresh": false,
+     "text": "Cleared the mercenary post 12 u north-west of home again: the 5th time today, ×0.1 reward (+1)"
+    },
+    {
+     "day": 1,
+     "hour": 12,
+     "fresh": false,
+     "text": "Cleared the mercenary post 12 u north-west of home again: the 5th time today, ×0.1 reward (+1)"
+    },
+    {
+     "day": 1,
+     "hour": 12,
+     "fresh": true,
+     "text": "Beaten back at the mercenary post 12 u north-west of home. They'll remember you."
+    },
+    {
+     "day": 1,
+     "hour": 12,
+     "fresh": false,
+     "text": "Cleared the mercenary post 12 u north-west of home again: the 5th time today, ×0.1 reward (+1)"
+    },
+    {
+     "day": 1,
+     "hour": 20,
+     "fresh": false,
+     "text": "Cleared the mercenary post 12 u north-west of home again: the 5th time today, ×0.1 reward (+1)"
+    },
+    {
+     "day": 1,
+     "hour": 20,
+     "fresh": false,
+     "text": "Cleared the mercenary post 12 u north-west of home again: the 6th time today, ×0.1 reward (+1)"
+    },
+    {
+     "day": 1,
+     "hour": 20,
+     "fresh": false,
+     "text": "Cleared the mercenary post 12 u north-west of home again: the 6th time today, ×0.1 reward (+1)"
+    }
+   ],
    "fights": 42,
    "wins": 34,
    "reward": 56,

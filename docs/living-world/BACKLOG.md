@@ -58,7 +58,7 @@ airships, landing spots, harbours + sea ships; seed all 20K maps; an experience,
 - [x] D23 — Guardian stationings on the board: GUARDIAN_CHALLENGE auto-posts (doc 05) with the doc-04 wake banner / time-left text; synthetic stationings respecting cooldowns and the 1-Ascendant-per-castle-per-week limit
 
 ## Wave 5 (added cycle 40)
-- [ ] D26 — Personal journal (doc 06 §7 watch item): every win/hold/loss as a private story line (the region feed stays curated); re-run the first week → ≥ 1 journal story per session
+- [x] D26 — Personal journal (doc 06 §7 watch item): every win/hold/loss as a private story line (the region feed stays curated); re-run the first week → ≥ 1 journal story per session
 - [ ] D27 — PR #1 refresh pack: regenerate the world-elements overlay + designer icon notes against the current seeds (post D6f/D14b/D24 threats) as a ready-to-apply patch file for the cf-overworld PR branch (no push there without the owner's go)
 - [ ] D28 — Mercenary market: MERCENARY_POST hire flow (MERCENARY_DEFEND contract, MERC_BIDDING when two sides want the same company) as pure functions + escrow tests, using defences.json MERCENARIES prices
 - [ ] D29 — Season beat calendar: the weekly beats of doc 06 §3 (Ascension week per castle, storm season, region threat cycle) on one 28-day calendar; check no region has two "big beats" on the same day
