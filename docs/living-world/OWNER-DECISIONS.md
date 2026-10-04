@@ -78,7 +78,7 @@ proposed at 10 and has no canon value yet. Every CT-equivalent loss in the sheet
 | Proposal | Where | Status |
 |---|---|---|
 | New canon terms: POI kinds, Guardians, defence stakes, player events | PR **nftprof/etherfantasy-clashfront#2** | Open, waiting for review |
-| World-elements overlay + designer POI icons | PR **nftprof/etherfantasy-clashfront#1** | Open. ⚠ Its overlay notes carry the **old** threat numbers (pre-D6f); a refresh is needed before merge |
+| World-elements overlay + designer POI icons | PR **nftprof/etherfantasy-clashfront#1** | Open. ⚠ Its overlay notes carry the **old** threat numbers. The ready patch is `handoff/PR1-overlay-refresh.patch` (threat text only); apply it on the PR branch when you say go |
 | Storm season: the last 7 of every 28 days, 35 % lane closure per day | doc 07 §4c | Proposal; no canon definition of "storm season" exists yet |
 | `FeedItem` `{ id, tick, zone, kind, facts }` (the region feed) | doc 05 §5 | Proposal for the next canon PR |
 | Region rights ladder: POST_EVENTS 3, HARBOUR_RIGHTS 5, PAD_RIGHTS 10, FORM3_STATION 25 | doc 06 §5 | Living-world proposal. The vessel classes themselves stay canon (parcels 5 / 10 / 25 / 100) |

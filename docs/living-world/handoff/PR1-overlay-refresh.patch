@@ -1,0 +1,2281 @@
+diff --git a/data/world-elements/BUS.cf.json b/data/world-elements/BUS.cf.json
+index 651c3d2..4436e1b 100644
+--- a/data/world-elements/BUS.cf.json
++++ b/data/world-elements/BUS.cf.json
+@@ -15,7 +15,7 @@
+     24.12
+    ],
+    "name": "Barbarian Camp",
+-   "note": "Living-world Node of BUS-CASTLE-CAPEMEET (threat 24)",
++   "note": "Living-world Node of BUS-CASTLE-CAPEMEET (threat 49)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -26,7 +26,7 @@
+     27.05
+    ],
+    "name": "Caravan Waypoint",
+-   "note": "Living-world Node of BUS-CASTLE-CAPEMEET (threat 24)",
++   "note": "Living-world Node of BUS-CASTLE-CAPEMEET (threat 44)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -37,7 +37,7 @@
+     24.9
+    ],
+    "name": "Harbour",
+-   "note": "Living-world Node of BUS-CASTLE-CAPEMEET (threat 24) — on BUS-PORT-CAPEMEET",
++   "note": "Living-world Node of BUS-CASTLE-CAPEMEET (threat 44) — on BUS-PORT-CAPEMEET",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -48,7 +48,7 @@
+     31.15
+    ],
+    "name": "Landing Spot",
+-   "note": "Living-world Node of BUS-CASTLE-CAPEMEET (threat 24) — lands for HARBOUR 1",
++   "note": "Living-world Node of BUS-CASTLE-CAPEMEET (threat 44) — lands for HARBOUR 1",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -59,7 +59,7 @@
+     28.5
+    ],
+    "name": "Mercenary Post",
+-   "note": "Living-world Node of BUS-CASTLE-CAPEMEET (threat 24)",
++   "note": "Living-world Node of BUS-CASTLE-CAPEMEET (threat 44)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -70,7 +70,7 @@
+     127.7
+    ],
+    "name": "Caravan Waypoint",
+-   "note": "Living-world Node of BUS-CASTLE-EASTREACH (threat 24)",
++   "note": "Living-world Node of BUS-CASTLE-EASTREACH (threat 44)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -81,7 +81,7 @@
+     124.5
+    ],
+    "name": "Harbour",
+-   "note": "Living-world Node of BUS-CASTLE-EASTREACH (threat 24) — on BUS-PORT-EASTREACH",
++   "note": "Living-world Node of BUS-CASTLE-EASTREACH (threat 44) — on BUS-PORT-EASTREACH",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -92,7 +92,7 @@
+     117.82
+    ],
+    "name": "Landing Spot",
+-   "note": "Living-world Node of BUS-CASTLE-EASTREACH (threat 24) — lands for HARBOUR 1",
++   "note": "Living-world Node of BUS-CASTLE-EASTREACH (threat 44) — lands for HARBOUR 1",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -103,7 +103,7 @@
+     129.87
+    ],
+    "name": "Mercenary Post",
+-   "note": "Living-world Node of BUS-CASTLE-EASTREACH (threat 24)",
++   "note": "Living-world Node of BUS-CASTLE-EASTREACH (threat 44)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -114,7 +114,7 @@
+     116.33
+    ],
+    "name": "Lair (wolf)",
+-   "note": "Living-world Node of BUS-CASTLE-EASTREACH (threat 24)",
++   "note": "Living-world Node of BUS-CASTLE-EASTREACH (threat 44)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -125,7 +125,7 @@
+     60.91
+    ],
+    "name": "Caravan Waypoint",
+-   "note": "Living-world Node of BUS-CASTLE-MIDDLEQUAY (threat 24)",
++   "note": "Living-world Node of BUS-CASTLE-MIDDLEQUAY (threat 44)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -136,7 +136,7 @@
+     58.2
+    ],
+    "name": "Harbour",
+-   "note": "Living-world Node of BUS-CASTLE-MIDDLEQUAY (threat 24) — on BUS-PORT-MIDDLEQUAY",
++   "note": "Living-world Node of BUS-CASTLE-MIDDLEQUAY (threat 44) — on BUS-PORT-MIDDLEQUAY",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -147,7 +147,7 @@
+     51.42
+    ],
+    "name": "Landing Spot",
+-   "note": "Living-world Node of BUS-CASTLE-MIDDLEQUAY (threat 24) — lands for HARBOUR 1",
++   "note": "Living-world Node of BUS-CASTLE-MIDDLEQUAY (threat 44) — lands for HARBOUR 1",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -158,7 +158,7 @@
+     62.74
+    ],
+    "name": "Mercenary Post",
+-   "note": "Living-world Node of BUS-CASTLE-MIDDLEQUAY (threat 24)",
++   "note": "Living-world Node of BUS-CASTLE-MIDDLEQUAY (threat 44)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -169,7 +169,7 @@
+     77.94
+    ],
+    "name": "Salvage Site",
+-   "note": "Living-world Node of BUS-CASTLE-MIDDLEQUAY (threat 24)",
++   "note": "Living-world Node of BUS-CASTLE-MIDDLEQUAY (threat 44)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -180,7 +180,7 @@
+     43.26
+    ],
+    "name": "Airdrop Zone",
+-   "note": "Living-world Node of BUS-FORT-TIDEGATE (threat 24)",
++   "note": "Living-world Node of BUS-FORT-TIDEGATE (threat 44)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -191,7 +191,7 @@
+     56.66
+    ],
+    "name": "Mercenary Post",
+-   "note": "Living-world Node of BUS-FORT-TIDEGATE (threat 24)",
++   "note": "Living-world Node of BUS-FORT-TIDEGATE (threat 44)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -202,7 +202,7 @@
+     47.56
+    ],
+    "name": "Lair (bandit)",
+-   "note": "Living-world Node of BUS-FORT-TIDEGATE (threat 24)",
++   "note": "Living-world Node of BUS-FORT-TIDEGATE (threat 44)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -213,7 +213,7 @@
+     56.85
+    ],
+    "name": "Airdrop Zone",
+-   "note": "Living-world Node of BUS-KEEP-DELTALIGHT (threat 12)",
++   "note": "Living-world Node of BUS-KEEP-DELTALIGHT (threat 40)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -224,7 +224,7 @@
+     60.07
+    ],
+    "name": "Caravan Waypoint",
+-   "note": "Living-world Node of BUS-KEEP-DELTALIGHT (threat 12)",
++   "note": "Living-world Node of BUS-KEEP-DELTALIGHT (threat 40)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -235,7 +235,7 @@
+     63.89
+    ],
+    "name": "Harbour",
+-   "note": "Living-world Node of BUS-KEEP-DELTALIGHT (threat 12)",
++   "note": "Living-world Node of BUS-KEEP-DELTALIGHT (threat 40)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -246,7 +246,7 @@
+     59.31
+    ],
+    "name": "Landing Spot",
+-   "note": "Living-world Node of BUS-KEEP-DELTALIGHT (threat 12) — lands for HARBOUR 1",
++   "note": "Living-world Node of BUS-KEEP-DELTALIGHT (threat 40) — lands for HARBOUR 1",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -257,7 +257,7 @@
+     8.58
+    ],
+    "name": "Airdrop Zone",
+-   "note": "Living-world Node of BUS-KEEP-DUNEWATCH (threat 12)",
++   "note": "Living-world Node of BUS-KEEP-DUNEWATCH (threat 40)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -268,7 +268,7 @@
+     13.84
+    ],
+    "name": "Caravan Waypoint",
+-   "note": "Living-world Node of BUS-KEEP-DUNEWATCH (threat 12)",
++   "note": "Living-world Node of BUS-KEEP-DUNEWATCH (threat 40)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -279,7 +279,7 @@
+     15.22
+    ],
+    "name": "Harbour",
+-   "note": "Living-world Node of BUS-KEEP-DUNEWATCH (threat 12)",
++   "note": "Living-world Node of BUS-KEEP-DUNEWATCH (threat 40)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -290,7 +290,7 @@
+     13.77
+    ],
+    "name": "Landing Spot",
+-   "note": "Living-world Node of BUS-KEEP-DUNEWATCH (threat 12) — lands for HARBOUR 1",
++   "note": "Living-world Node of BUS-KEEP-DUNEWATCH (threat 40) — lands for HARBOUR 1",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -301,7 +301,7 @@
+     86.98
+    ],
+    "name": "Airdrop Zone",
+-   "note": "Living-world Node of BUS-KEEP-GULLSHOAL (threat 12)",
++   "note": "Living-world Node of BUS-KEEP-GULLSHOAL (threat 40)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -312,7 +312,7 @@
+     81.87
+    ],
+    "name": "Caravan Waypoint",
+-   "note": "Living-world Node of BUS-KEEP-GULLSHOAL (threat 12)",
++   "note": "Living-world Node of BUS-KEEP-GULLSHOAL (threat 40)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -323,7 +323,7 @@
+     78.65
+    ],
+    "name": "Harbour",
+-   "note": "Living-world Node of BUS-KEEP-GULLSHOAL (threat 12)",
++   "note": "Living-world Node of BUS-KEEP-GULLSHOAL (threat 40)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -334,7 +334,7 @@
+     78.91
+    ],
+    "name": "Landing Spot",
+-   "note": "Living-world Node of BUS-KEEP-GULLSHOAL (threat 12) — lands for HARBOUR 1",
++   "note": "Living-world Node of BUS-KEEP-GULLSHOAL (threat 40) — lands for HARBOUR 1",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -345,7 +345,7 @@
+     134.81
+    ],
+    "name": "Airdrop Zone",
+-   "note": "Living-world Node of BUS-KEEP-MARSHGATE (threat 12)",
++   "note": "Living-world Node of BUS-KEEP-MARSHGATE (threat 40)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -356,7 +356,7 @@
+     137.16
+    ],
+    "name": "Lair (wolf)",
+-   "note": "Living-world Node of BUS-KEEP-MARSHGATE (threat 12)",
++   "note": "Living-world Node of BUS-KEEP-MARSHGATE (threat 40)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -367,7 +367,7 @@
+     82.91
+    ],
+    "name": "Airdrop Zone",
+-   "note": "Living-world Node of BUS-PALACE-EXCHANGE (threat 36)",
++   "note": "Living-world Node of BUS-PALACE-EXCHANGE (threat 48)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -378,7 +378,7 @@
+     74.99
+    ],
+    "name": "Caravan Waypoint",
+-   "note": "Living-world Node of BUS-PALACE-EXCHANGE (threat 36)",
++   "note": "Living-world Node of BUS-PALACE-EXCHANGE (threat 48)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -389,7 +389,7 @@
+     58.16
+    ],
+    "name": "War Camp",
+-   "note": "Living-world Node of BUS-PALACE-EXCHANGE (threat 36)",
++   "note": "Living-world Node of BUS-PALACE-EXCHANGE (threat 48)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -400,7 +400,7 @@
+     89.15
+    ],
+    "name": "Lair (wolf)",
+-   "note": "Living-world Node of BUS-PALACE-EXCHANGE (threat 36)",
++   "note": "Living-world Node of BUS-PALACE-EXCHANGE (threat 48)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   }
+  ]
+diff --git a/data/world-elements/EDU.cf.json b/data/world-elements/EDU.cf.json
+index 3233485..73380b5 100644
+--- a/data/world-elements/EDU.cf.json
++++ b/data/world-elements/EDU.cf.json
+@@ -15,7 +15,7 @@
+     119.43
+    ],
+    "name": "Barbarian Camp",
+-   "note": "Living-world Node of EDU-CASTLE-SOUTHREACH (threat 26)",
++   "note": "Living-world Node of EDU-CASTLE-SOUTHREACH (threat 50)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -26,7 +26,7 @@
+     144.54
+    ],
+    "name": "Mercenary Post",
+-   "note": "Living-world Node of EDU-CASTLE-SOUTHREACH (threat 26)",
++   "note": "Living-world Node of EDU-CASTLE-SOUTHREACH (threat 45)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -37,7 +37,7 @@
+     155.73
+    ],
+    "name": "Lair (wyrm)",
+-   "note": "Living-world Node of EDU-CASTLE-SOUTHREACH (threat 26)",
++   "note": "Living-world Node of EDU-CASTLE-SOUTHREACH (threat 45)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -48,7 +48,7 @@
+     109.18
+    ],
+    "name": "Barbarian Camp",
+-   "note": "Living-world Node of EDU-CASTLE-WESTGATE (threat 26)",
++   "note": "Living-world Node of EDU-CASTLE-WESTGATE (threat 50)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -59,7 +59,7 @@
+     85.41
+    ],
+    "name": "Mercenary Post",
+-   "note": "Living-world Node of EDU-CASTLE-WESTGATE (threat 26)",
++   "note": "Living-world Node of EDU-CASTLE-WESTGATE (threat 45)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -70,7 +70,7 @@
+     85.37
+    ],
+    "name": "Lair (wolf)",
+-   "note": "Living-world Node of EDU-CASTLE-WESTGATE (threat 26)",
++   "note": "Living-world Node of EDU-CASTLE-WESTGATE (threat 45)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -81,7 +81,7 @@
+     102.86
+    ],
+    "name": "Airdrop Zone",
+-   "note": "Living-world Node of EDU-KEEP-CLIFFWATCH (threat 13)",
++   "note": "Living-world Node of EDU-KEEP-CLIFFWATCH (threat 41)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -92,7 +92,7 @@
+     140.56
+    ],
+    "name": "Barbarian Camp",
+-   "note": "Living-world Node of EDU-KEEP-CLIFFWATCH (threat 13)",
++   "note": "Living-world Node of EDU-KEEP-CLIFFWATCH (threat 46)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -103,7 +103,7 @@
+     107.89
+    ],
+    "name": "Airdrop Zone",
+-   "note": "Living-world Node of EDU-KEEP-LANTERNHILL (threat 13)",
++   "note": "Living-world Node of EDU-KEEP-LANTERNHILL (threat 41)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -114,7 +114,7 @@
+     143.74
+    ],
+    "name": "Barbarian Camp",
+-   "note": "Living-world Node of EDU-KEEP-LANTERNHILL (threat 13)",
++   "note": "Living-world Node of EDU-KEEP-LANTERNHILL (threat 46)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -125,7 +125,7 @@
+     93.77
+    ],
+    "name": "Airdrop Zone",
+-   "note": "Living-world Node of EDU-PALACE-ACADEMY (threat 39)",
++   "note": "Living-world Node of EDU-PALACE-ACADEMY (threat 49)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -136,7 +136,7 @@
+     90.61
+    ],
+    "name": "Barbarian Camp",
+-   "note": "Living-world Node of EDU-PALACE-ACADEMY (threat 39)",
++   "note": "Living-world Node of EDU-PALACE-ACADEMY (threat 54)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -147,7 +147,7 @@
+     83.45
+    ],
+    "name": "War Camp",
+-   "note": "Living-world Node of EDU-PALACE-ACADEMY (threat 39)",
++   "note": "Living-world Node of EDU-PALACE-ACADEMY (threat 49)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -158,7 +158,7 @@
+     105.65
+    ],
+    "name": "Lair (wolf)",
+-   "note": "Living-world Node of EDU-PALACE-ACADEMY (threat 39)",
++   "note": "Living-world Node of EDU-PALACE-ACADEMY (threat 49)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   }
+  ]
+diff --git a/data/world-elements/ENT.cf.json b/data/world-elements/ENT.cf.json
+index f48a21c..2b95c9e 100644
+--- a/data/world-elements/ENT.cf.json
++++ b/data/world-elements/ENT.cf.json
+@@ -15,7 +15,7 @@
+     441.82
+    ],
+    "name": "Airdrop Zone",
+-   "note": "Living-world Node of ENT-CASTLE-FESTGATE (threat 22)",
++   "note": "Living-world Node of ENT-CASTLE-FESTGATE (threat 43)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -26,7 +26,7 @@
+     426.58
+    ],
+    "name": "Mercenary Post",
+-   "note": "Living-world Node of ENT-CASTLE-FESTGATE (threat 22)",
++   "note": "Living-world Node of ENT-CASTLE-FESTGATE (threat 43)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -37,7 +37,7 @@
+     444.87
+    ],
+    "name": "Lair (wolf)",
+-   "note": "Living-world Node of ENT-CASTLE-FESTGATE (threat 22)",
++   "note": "Living-world Node of ENT-CASTLE-FESTGATE (threat 43)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -48,7 +48,7 @@
+     158.11
+    ],
+    "name": "Airdrop Zone",
+-   "note": "Living-world Node of ENT-CASTLE-RIVERGATE (threat 22)",
++   "note": "Living-world Node of ENT-CASTLE-RIVERGATE (threat 43)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -59,7 +59,7 @@
+     165.02
+    ],
+    "name": "Mercenary Post",
+-   "note": "Living-world Node of ENT-CASTLE-RIVERGATE (threat 22)",
++   "note": "Living-world Node of ENT-CASTLE-RIVERGATE (threat 43)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -70,7 +70,7 @@
+     173.44
+    ],
+    "name": "Lair (wolf)",
+-   "note": "Living-world Node of ENT-CASTLE-RIVERGATE (threat 22)",
++   "note": "Living-world Node of ENT-CASTLE-RIVERGATE (threat 43)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -81,7 +81,7 @@
+     459.03
+    ],
+    "name": "Airdrop Zone",
+-   "note": "Living-world Node of ENT-KEEP-CAMPANILE (threat 11)",
++   "note": "Living-world Node of ENT-KEEP-CAMPANILE (threat 39)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -92,7 +92,7 @@
+     480.56
+    ],
+    "name": "Lair (wolf)",
+-   "note": "Living-world Node of ENT-KEEP-CAMPANILE (threat 11)",
++   "note": "Living-world Node of ENT-KEEP-CAMPANILE (threat 39)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -103,7 +103,7 @@
+     107.51
+    ],
+    "name": "Caravan Waypoint",
+-   "note": "Living-world Node of ENT-KEEP-LANTERNSHORE (threat 11)",
++   "note": "Living-world Node of ENT-KEEP-LANTERNSHORE (threat 39)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -114,7 +114,7 @@
+     106.9
+    ],
+    "name": "Harbour",
+-   "note": "Living-world Node of ENT-KEEP-LANTERNSHORE (threat 11) — on ENT-PORT-LANTERNSHORE",
++   "note": "Living-world Node of ENT-KEEP-LANTERNSHORE (threat 39) — on ENT-PORT-LANTERNSHORE",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -125,7 +125,7 @@
+     101.56
+    ],
+    "name": "Landing Spot",
+-   "note": "Living-world Node of ENT-KEEP-LANTERNSHORE (threat 11) — lands for HARBOUR 1",
++   "note": "Living-world Node of ENT-KEEP-LANTERNSHORE (threat 39) — lands for HARBOUR 1",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -136,7 +136,7 @@
+     24.04
+    ],
+    "name": "Caravan Waypoint",
+-   "note": "Living-world Node of ENT-KEEP-PETALPORT (threat 11)",
++   "note": "Living-world Node of ENT-KEEP-PETALPORT (threat 39)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -147,7 +147,7 @@
+     20.8
+    ],
+    "name": "Harbour",
+-   "note": "Living-world Node of ENT-KEEP-PETALPORT (threat 11) — on ENT-PORT-PETALPORT",
++   "note": "Living-world Node of ENT-KEEP-PETALPORT (threat 39) — on ENT-PORT-PETALPORT",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -158,7 +158,7 @@
+     21.47
+    ],
+    "name": "Landing Spot",
+-   "note": "Living-world Node of ENT-KEEP-PETALPORT (threat 11) — lands for HARBOUR 1",
++   "note": "Living-world Node of ENT-KEEP-PETALPORT (threat 39) — lands for HARBOUR 1",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -169,7 +169,7 @@
+     379.21
+    ],
+    "name": "Airdrop Zone",
+-   "note": "Living-world Node of ENT-KEEP-SUNSTRAND (threat 11)",
++   "note": "Living-world Node of ENT-KEEP-SUNSTRAND (threat 39)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -180,7 +180,7 @@
+     410.46
+    ],
+    "name": "Barbarian Camp",
+-   "note": "Living-world Node of ENT-KEEP-SUNSTRAND (threat 11)",
++   "note": "Living-world Node of ENT-KEEP-SUNSTRAND (threat 44)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -191,7 +191,7 @@
+     425.46
+    ],
+    "name": "Airdrop Zone",
+-   "note": "Living-world Node of ENT-KEEP-TIDEWATCH (threat 11)",
++   "note": "Living-world Node of ENT-KEEP-TIDEWATCH (threat 39)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -202,7 +202,7 @@
+     450.74
+    ],
+    "name": "Barbarian Camp",
+-   "note": "Living-world Node of ENT-KEEP-TIDEWATCH (threat 11)",
++   "note": "Living-world Node of ENT-KEEP-TIDEWATCH (threat 44)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -213,7 +213,7 @@
+     463.02
+    ],
+    "name": "Airdrop Zone",
+-   "note": "Living-world Node of ENT-PALACE-MASKS (threat 33)",
++   "note": "Living-world Node of ENT-PALACE-MASKS (threat 48)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -224,7 +224,7 @@
+     446.85
+    ],
+    "name": "Caravan Waypoint",
+-   "note": "Living-world Node of ENT-PALACE-MASKS (threat 33)",
++   "note": "Living-world Node of ENT-PALACE-MASKS (threat 48)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -235,7 +235,7 @@
+     466.92
+    ],
+    "name": "War Camp",
+-   "note": "Living-world Node of ENT-PALACE-MASKS (threat 33)",
++   "note": "Living-world Node of ENT-PALACE-MASKS (threat 48)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -246,7 +246,7 @@
+     445.41
+    ],
+    "name": "Lair (bandit)",
+-   "note": "Living-world Node of ENT-PALACE-MASKS (threat 33)",
++   "note": "Living-world Node of ENT-PALACE-MASKS (threat 48)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   }
+  ]
+diff --git a/data/world-elements/HS1.cf.json b/data/world-elements/HS1.cf.json
+index fb2da91..9094e1a 100644
+--- a/data/world-elements/HS1.cf.json
++++ b/data/world-elements/HS1.cf.json
+@@ -15,7 +15,7 @@
+     63.72
+    ],
+    "name": "Airdrop Zone",
+-   "note": "Living-world Node of HS1-AEROPOLIS (threat 60)",
++   "note": "Living-world Node of HS1-AEROPOLIS (threat 52)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -26,7 +26,7 @@
+     53.75
+    ],
+    "name": "Airship Dock",
+-   "note": "Living-world Node of HS1-AEROPOLIS (threat 60)",
++   "note": "Living-world Node of HS1-AEROPOLIS (threat 52)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -37,7 +37,7 @@
+     54.14
+    ],
+    "name": "Caravan Waypoint",
+-   "note": "Living-world Node of HS1-AEROPOLIS (threat 60)",
++   "note": "Living-world Node of HS1-AEROPOLIS (threat 52)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -48,7 +48,7 @@
+     60.98
+    ],
+    "name": "Landing Spot",
+-   "note": "Living-world Node of HS1-AEROPOLIS (threat 60) — lands for AIRSHIP_DOCK 1",
++   "note": "Living-world Node of HS1-AEROPOLIS (threat 52) — lands for AIRSHIP_DOCK 1",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -59,7 +59,7 @@
+     62.2
+    ],
+    "name": "Landing Spot",
+-   "note": "Living-world Node of HS1-AEROPOLIS (threat 60) — lands for AIRSHIP_DOCK 1",
++   "note": "Living-world Node of HS1-AEROPOLIS (threat 52) — lands for AIRSHIP_DOCK 1",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -70,7 +70,7 @@
+     42.62
+    ],
+    "name": "War Camp",
+-   "note": "Living-world Node of HS1-AEROPOLIS (threat 60)",
++   "note": "Living-world Node of HS1-AEROPOLIS (threat 52)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -81,7 +81,7 @@
+     46.65
+    ],
+    "name": "Lair (harpy)",
+-   "note": "Living-world Node of HS1-AEROPOLIS (threat 60)",
++   "note": "Living-world Node of HS1-AEROPOLIS (threat 52)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -92,7 +92,7 @@
+     9.38
+    ],
+    "name": "Airship Dock",
+-   "note": "Living-world Node of HS1-CASTLE-GARDENHOLD (threat 40)",
++   "note": "Living-world Node of HS1-CASTLE-GARDENHOLD (threat 48)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -103,7 +103,7 @@
+     12.07
+    ],
+    "name": "Caravan Waypoint",
+-   "note": "Living-world Node of HS1-CASTLE-GARDENHOLD (threat 40)",
++   "note": "Living-world Node of HS1-CASTLE-GARDENHOLD (threat 48)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -114,7 +114,7 @@
+     9.55
+    ],
+    "name": "Landing Spot",
+-   "note": "Living-world Node of HS1-CASTLE-GARDENHOLD (threat 40) — lands for AIRSHIP_DOCK 1",
++   "note": "Living-world Node of HS1-CASTLE-GARDENHOLD (threat 48) — lands for AIRSHIP_DOCK 1",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -125,7 +125,7 @@
+     4.45
+    ],
+    "name": "Landing Spot",
+-   "note": "Living-world Node of HS1-CASTLE-GARDENHOLD (threat 40) — lands for AIRSHIP_DOCK 1",
++   "note": "Living-world Node of HS1-CASTLE-GARDENHOLD (threat 48) — lands for AIRSHIP_DOCK 1",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -136,7 +136,7 @@
+     11.94
+    ],
+    "name": "Mercenary Post",
+-   "note": "Living-world Node of HS1-CASTLE-GARDENHOLD (threat 40)",
++   "note": "Living-world Node of HS1-CASTLE-GARDENHOLD (threat 48)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -147,7 +147,7 @@
+     1.32
+    ],
+    "name": "Lair (harpy)",
+-   "note": "Living-world Node of HS1-CASTLE-GARDENHOLD (threat 40)",
++   "note": "Living-world Node of HS1-CASTLE-GARDENHOLD (threat 48)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -158,7 +158,7 @@
+     117.22
+    ],
+    "name": "Airship Dock",
+-   "note": "Living-world Node of HS1-CASTLE-HEAVENSGATE (threat 40)",
++   "note": "Living-world Node of HS1-CASTLE-HEAVENSGATE (threat 48)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -169,7 +169,7 @@
+     113.94
+    ],
+    "name": "Caravan Waypoint",
+-   "note": "Living-world Node of HS1-CASTLE-HEAVENSGATE (threat 40)",
++   "note": "Living-world Node of HS1-CASTLE-HEAVENSGATE (threat 48)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -180,7 +180,7 @@
+     118.72
+    ],
+    "name": "Landing Spot",
+-   "note": "Living-world Node of HS1-CASTLE-HEAVENSGATE (threat 40) — lands for AIRSHIP_DOCK 1",
++   "note": "Living-world Node of HS1-CASTLE-HEAVENSGATE (threat 48) — lands for AIRSHIP_DOCK 1",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -191,7 +191,7 @@
+     119.4
+    ],
+    "name": "Landing Spot",
+-   "note": "Living-world Node of HS1-CASTLE-HEAVENSGATE (threat 40) — lands for AIRSHIP_DOCK 1",
++   "note": "Living-world Node of HS1-CASTLE-HEAVENSGATE (threat 48) — lands for AIRSHIP_DOCK 1",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -202,7 +202,7 @@
+     103.8
+    ],
+    "name": "Mercenary Post",
+-   "note": "Living-world Node of HS1-CASTLE-HEAVENSGATE (threat 40)",
++   "note": "Living-world Node of HS1-CASTLE-HEAVENSGATE (threat 48)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -213,7 +213,7 @@
+     102.87
+    ],
+    "name": "Lair (harpy)",
+-   "note": "Living-world Node of HS1-CASTLE-HEAVENSGATE (threat 40)",
++   "note": "Living-world Node of HS1-CASTLE-HEAVENSGATE (threat 48)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -224,7 +224,7 @@
+     108.59
+    ],
+    "name": "Airship Dock",
+-   "note": "Living-world Node of HS1-CASTLE-TERRACEHALL (threat 40)",
++   "note": "Living-world Node of HS1-CASTLE-TERRACEHALL (threat 48)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -235,7 +235,7 @@
+     107.53
+    ],
+    "name": "Caravan Waypoint",
+-   "note": "Living-world Node of HS1-CASTLE-TERRACEHALL (threat 40)",
++   "note": "Living-world Node of HS1-CASTLE-TERRACEHALL (threat 48)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -246,7 +246,7 @@
+     105.73
+    ],
+    "name": "Landing Spot",
+-   "note": "Living-world Node of HS1-CASTLE-TERRACEHALL (threat 40) — lands for AIRSHIP_DOCK 1",
++   "note": "Living-world Node of HS1-CASTLE-TERRACEHALL (threat 48) — lands for AIRSHIP_DOCK 1",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -257,7 +257,7 @@
+     103.53
+    ],
+    "name": "Landing Spot",
+-   "note": "Living-world Node of HS1-CASTLE-TERRACEHALL (threat 40) — lands for AIRSHIP_DOCK 1",
++   "note": "Living-world Node of HS1-CASTLE-TERRACEHALL (threat 48) — lands for AIRSHIP_DOCK 1",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -268,7 +268,7 @@
+     104.03
+    ],
+    "name": "Mercenary Post",
+-   "note": "Living-world Node of HS1-CASTLE-TERRACEHALL (threat 40)",
++   "note": "Living-world Node of HS1-CASTLE-TERRACEHALL (threat 48)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -279,7 +279,7 @@
+     108.79
+    ],
+    "name": "Lair (harpy)",
+-   "note": "Living-world Node of HS1-CASTLE-TERRACEHALL (threat 40)",
++   "note": "Living-world Node of HS1-CASTLE-TERRACEHALL (threat 48)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -290,7 +290,7 @@
+     94.73
+    ],
+    "name": "Airdrop Zone",
+-   "note": "Living-world Node of HS1-KEEP-EMBERWATCH (threat 20)",
++   "note": "Living-world Node of HS1-KEEP-EMBERWATCH (threat 44)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -301,7 +301,7 @@
+     76.81
+    ],
+    "name": "Airship Dock",
+-   "note": "Living-world Node of HS1-KEEP-EMBERWATCH (threat 20)",
++   "note": "Living-world Node of HS1-KEEP-EMBERWATCH (threat 44)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -312,7 +312,7 @@
+     79.41
+    ],
+    "name": "Caravan Waypoint",
+-   "note": "Living-world Node of HS1-KEEP-EMBERWATCH (threat 20)",
++   "note": "Living-world Node of HS1-KEEP-EMBERWATCH (threat 44)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -323,7 +323,7 @@
+     70.08
+    ],
+    "name": "Landing Spot",
+-   "note": "Living-world Node of HS1-KEEP-EMBERWATCH (threat 20) — lands for AIRSHIP_DOCK 1",
++   "note": "Living-world Node of HS1-KEEP-EMBERWATCH (threat 44) — lands for AIRSHIP_DOCK 1",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -334,7 +334,7 @@
+     81.91
+    ],
+    "name": "Landing Spot",
+-   "note": "Living-world Node of HS1-KEEP-EMBERWATCH (threat 20) — lands for AIRSHIP_DOCK 1",
++   "note": "Living-world Node of HS1-KEEP-EMBERWATCH (threat 44) — lands for AIRSHIP_DOCK 1",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -345,7 +345,7 @@
+     33.24
+    ],
+    "name": "Airdrop Zone",
+-   "note": "Living-world Node of HS1-KEEP-EMPYREAWATCH (threat 20)",
++   "note": "Living-world Node of HS1-KEEP-EMPYREAWATCH (threat 44)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -356,7 +356,7 @@
+     19.69
+    ],
+    "name": "Airship Dock",
+-   "note": "Living-world Node of HS1-KEEP-EMPYREAWATCH (threat 20)",
++   "note": "Living-world Node of HS1-KEEP-EMPYREAWATCH (threat 44)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -367,7 +367,7 @@
+     19.9
+    ],
+    "name": "Caravan Waypoint",
+-   "note": "Living-world Node of HS1-KEEP-EMPYREAWATCH (threat 20)",
++   "note": "Living-world Node of HS1-KEEP-EMPYREAWATCH (threat 44)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -378,7 +378,7 @@
+     24
+    ],
+    "name": "Landing Spot",
+-   "note": "Living-world Node of HS1-KEEP-EMPYREAWATCH (threat 20) — lands for AIRSHIP_DOCK 1",
++   "note": "Living-world Node of HS1-KEEP-EMPYREAWATCH (threat 44) — lands for AIRSHIP_DOCK 1",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -389,7 +389,7 @@
+     12.43
+    ],
+    "name": "Landing Spot",
+-   "note": "Living-world Node of HS1-KEEP-EMPYREAWATCH (threat 20) — lands for AIRSHIP_DOCK 1",
++   "note": "Living-world Node of HS1-KEEP-EMPYREAWATCH (threat 44) — lands for AIRSHIP_DOCK 1",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -400,7 +400,7 @@
+     69.82
+    ],
+    "name": "Airdrop Zone",
+-   "note": "Living-world Node of HS1-KEEP-STAIRWATCH (threat 20)",
++   "note": "Living-world Node of HS1-KEEP-STAIRWATCH (threat 44)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -411,7 +411,7 @@
+     56.32
+    ],
+    "name": "Airship Dock",
+-   "note": "Living-world Node of HS1-KEEP-STAIRWATCH (threat 20)",
++   "note": "Living-world Node of HS1-KEEP-STAIRWATCH (threat 44)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -422,7 +422,7 @@
+     57.79
+    ],
+    "name": "Caravan Waypoint",
+-   "note": "Living-world Node of HS1-KEEP-STAIRWATCH (threat 20)",
++   "note": "Living-world Node of HS1-KEEP-STAIRWATCH (threat 44)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -433,7 +433,7 @@
+     49.76
+    ],
+    "name": "Landing Spot",
+-   "note": "Living-world Node of HS1-KEEP-STAIRWATCH (threat 20) — lands for AIRSHIP_DOCK 1",
++   "note": "Living-world Node of HS1-KEEP-STAIRWATCH (threat 44) — lands for AIRSHIP_DOCK 1",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -444,7 +444,7 @@
+     64.04
+    ],
+    "name": "Landing Spot",
+-   "note": "Living-world Node of HS1-KEEP-STAIRWATCH (threat 20) — lands for AIRSHIP_DOCK 1",
++   "note": "Living-world Node of HS1-KEEP-STAIRWATCH (threat 44) — lands for AIRSHIP_DOCK 1",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   }
+  ]
+diff --git a/data/world-elements/HS2.cf.json b/data/world-elements/HS2.cf.json
+index 991799a..e8d67b4 100644
+--- a/data/world-elements/HS2.cf.json
++++ b/data/world-elements/HS2.cf.json
+@@ -15,7 +15,7 @@
+     11.08
+    ],
+    "name": "Airdrop Zone",
+-   "note": "Living-world Node of HS2-KEEP-BULWARK (threat 20)",
++   "note": "Living-world Node of HS2-KEEP-BULWARK (threat 44)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -26,7 +26,7 @@
+     5.56
+    ],
+    "name": "Airship Dock",
+-   "note": "Living-world Node of HS2-KEEP-BULWARK (threat 20)",
++   "note": "Living-world Node of HS2-KEEP-BULWARK (threat 44)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -37,7 +37,7 @@
+     7.85
+    ],
+    "name": "Caravan Waypoint",
+-   "note": "Living-world Node of HS2-KEEP-BULWARK (threat 20)",
++   "note": "Living-world Node of HS2-KEEP-BULWARK (threat 44)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -48,7 +48,7 @@
+     -1.46
+    ],
+    "name": "Landing Spot",
+-   "note": "Living-world Node of HS2-KEEP-BULWARK (threat 20) — lands for AIRSHIP_DOCK 1",
++   "note": "Living-world Node of HS2-KEEP-BULWARK (threat 44) — lands for AIRSHIP_DOCK 1",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -59,7 +59,7 @@
+     5.18
+    ],
+    "name": "Landing Spot",
+-   "note": "Living-world Node of HS2-KEEP-BULWARK (threat 20) — lands for AIRSHIP_DOCK 1",
++   "note": "Living-world Node of HS2-KEEP-BULWARK (threat 44) — lands for AIRSHIP_DOCK 1",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -70,7 +70,7 @@
+     88.68
+    ],
+    "name": "Airdrop Zone",
+-   "note": "Living-world Node of HS2-KEEP-CINDERHOLM (threat 20)",
++   "note": "Living-world Node of HS2-KEEP-CINDERHOLM (threat 44)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -81,7 +81,7 @@
+     102.21
+    ],
+    "name": "Airship Dock",
+-   "note": "Living-world Node of HS2-KEEP-CINDERHOLM (threat 20)",
++   "note": "Living-world Node of HS2-KEEP-CINDERHOLM (threat 44)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -92,7 +92,7 @@
+     100.61
+    ],
+    "name": "Caravan Waypoint",
+-   "note": "Living-world Node of HS2-KEEP-CINDERHOLM (threat 20)",
++   "note": "Living-world Node of HS2-KEEP-CINDERHOLM (threat 44)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -103,7 +103,7 @@
+     103.15
+    ],
+    "name": "Landing Spot",
+-   "note": "Living-world Node of HS2-KEEP-CINDERHOLM (threat 20) — lands for AIRSHIP_DOCK 1",
++   "note": "Living-world Node of HS2-KEEP-CINDERHOLM (threat 44) — lands for AIRSHIP_DOCK 1",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -114,7 +114,7 @@
+     102.07
+    ],
+    "name": "Landing Spot",
+-   "note": "Living-world Node of HS2-KEEP-CINDERHOLM (threat 20) — lands for AIRSHIP_DOCK 1",
++   "note": "Living-world Node of HS2-KEEP-CINDERHOLM (threat 44) — lands for AIRSHIP_DOCK 1",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -125,7 +125,7 @@
+     93.6
+    ],
+    "name": "Airdrop Zone",
+-   "note": "Living-world Node of HS2-KEEP-PARADEWATCH (threat 20)",
++   "note": "Living-world Node of HS2-KEEP-PARADEWATCH (threat 44)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -136,7 +136,7 @@
+     83.66
+    ],
+    "name": "Airship Dock",
+-   "note": "Living-world Node of HS2-KEEP-PARADEWATCH (threat 20)",
++   "note": "Living-world Node of HS2-KEEP-PARADEWATCH (threat 44)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -147,7 +147,7 @@
+     81.72
+    ],
+    "name": "Caravan Waypoint",
+-   "note": "Living-world Node of HS2-KEEP-PARADEWATCH (threat 20)",
++   "note": "Living-world Node of HS2-KEEP-PARADEWATCH (threat 44)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -158,7 +158,7 @@
+     91.22
+    ],
+    "name": "Landing Spot",
+-   "note": "Living-world Node of HS2-KEEP-PARADEWATCH (threat 20) — lands for AIRSHIP_DOCK 1",
++   "note": "Living-world Node of HS2-KEEP-PARADEWATCH (threat 44) — lands for AIRSHIP_DOCK 1",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -169,7 +169,7 @@
+     88.94
+    ],
+    "name": "Landing Spot",
+-   "note": "Living-world Node of HS2-KEEP-PARADEWATCH (threat 20) — lands for AIRSHIP_DOCK 1",
++   "note": "Living-world Node of HS2-KEEP-PARADEWATCH (threat 44) — lands for AIRSHIP_DOCK 1",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -180,7 +180,7 @@
+     40.13
+    ],
+    "name": "Airdrop Zone",
+-   "note": "Living-world Node of HS2-KEEP-SEAMWATCH (threat 20)",
++   "note": "Living-world Node of HS2-KEEP-SEAMWATCH (threat 44)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -191,7 +191,7 @@
+     21.86
+    ],
+    "name": "Airship Dock",
+-   "note": "Living-world Node of HS2-KEEP-SEAMWATCH (threat 20)",
++   "note": "Living-world Node of HS2-KEEP-SEAMWATCH (threat 44)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -202,7 +202,7 @@
+     23.72
+    ],
+    "name": "Caravan Waypoint",
+-   "note": "Living-world Node of HS2-KEEP-SEAMWATCH (threat 20)",
++   "note": "Living-world Node of HS2-KEEP-SEAMWATCH (threat 44)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -213,7 +213,7 @@
+     25.9
+    ],
+    "name": "Landing Spot",
+-   "note": "Living-world Node of HS2-KEEP-SEAMWATCH (threat 20) — lands for AIRSHIP_DOCK 1",
++   "note": "Living-world Node of HS2-KEEP-SEAMWATCH (threat 44) — lands for AIRSHIP_DOCK 1",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -224,7 +224,7 @@
+     23.54
+    ],
+    "name": "Landing Spot",
+-   "note": "Living-world Node of HS2-KEEP-SEAMWATCH (threat 20) — lands for AIRSHIP_DOCK 1",
++   "note": "Living-world Node of HS2-KEEP-SEAMWATCH (threat 44) — lands for AIRSHIP_DOCK 1",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -235,7 +235,7 @@
+     79.65
+    ],
+    "name": "Airdrop Zone",
+-   "note": "Living-world Node of HS2-KEEP-SHARDWATCH (threat 20)",
++   "note": "Living-world Node of HS2-KEEP-SHARDWATCH (threat 44)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -246,7 +246,7 @@
+     89.44
+    ],
+    "name": "Airship Dock",
+-   "note": "Living-world Node of HS2-KEEP-SHARDWATCH (threat 20)",
++   "note": "Living-world Node of HS2-KEEP-SHARDWATCH (threat 44)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -257,7 +257,7 @@
+     92.52
+    ],
+    "name": "Caravan Waypoint",
+-   "note": "Living-world Node of HS2-KEEP-SHARDWATCH (threat 20)",
++   "note": "Living-world Node of HS2-KEEP-SHARDWATCH (threat 44)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -268,7 +268,7 @@
+     93.19
+    ],
+    "name": "Landing Spot",
+-   "note": "Living-world Node of HS2-KEEP-SHARDWATCH (threat 20) — lands for AIRSHIP_DOCK 1",
++   "note": "Living-world Node of HS2-KEEP-SHARDWATCH (threat 44) — lands for AIRSHIP_DOCK 1",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -279,7 +279,7 @@
+     85.81
+    ],
+    "name": "Landing Spot",
+-   "note": "Living-world Node of HS2-KEEP-SHARDWATCH (threat 20) — lands for AIRSHIP_DOCK 1",
++   "note": "Living-world Node of HS2-KEEP-SHARDWATCH (threat 44) — lands for AIRSHIP_DOCK 1",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -290,7 +290,7 @@
+     62.24
+    ],
+    "name": "Airdrop Zone",
+-   "note": "Living-world Node of HS2-KEEP-WESTGATE (threat 20)",
++   "note": "Living-world Node of HS2-KEEP-WESTGATE (threat 44)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -301,7 +301,7 @@
+     52.55
+    ],
+    "name": "Airship Dock",
+-   "note": "Living-world Node of HS2-KEEP-WESTGATE (threat 20)",
++   "note": "Living-world Node of HS2-KEEP-WESTGATE (threat 44)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -312,7 +312,7 @@
+     52.89
+    ],
+    "name": "Caravan Waypoint",
+-   "note": "Living-world Node of HS2-KEEP-WESTGATE (threat 20)",
++   "note": "Living-world Node of HS2-KEEP-WESTGATE (threat 44)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -323,7 +323,7 @@
+     50.82
+    ],
+    "name": "Landing Spot",
+-   "note": "Living-world Node of HS2-KEEP-WESTGATE (threat 20) — lands for AIRSHIP_DOCK 1",
++   "note": "Living-world Node of HS2-KEEP-WESTGATE (threat 44) — lands for AIRSHIP_DOCK 1",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -334,7 +334,7 @@
+     56.41
+    ],
+    "name": "Landing Spot",
+-   "note": "Living-world Node of HS2-KEEP-WESTGATE (threat 20) — lands for AIRSHIP_DOCK 1",
++   "note": "Living-world Node of HS2-KEEP-WESTGATE (threat 44) — lands for AIRSHIP_DOCK 1",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -345,7 +345,7 @@
+     60.67
+    ],
+    "name": "Airdrop Zone",
+-   "note": "Living-world Node of HS2-PALACE-EMBERTHRONE (threat 60)",
++   "note": "Living-world Node of HS2-PALACE-EMBERTHRONE (threat 52)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -356,7 +356,7 @@
+     51.93
+    ],
+    "name": "Airship Dock",
+-   "note": "Living-world Node of HS2-PALACE-EMBERTHRONE (threat 60)",
++   "note": "Living-world Node of HS2-PALACE-EMBERTHRONE (threat 52)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -367,7 +367,7 @@
+     51.39
+    ],
+    "name": "Caravan Waypoint",
+-   "note": "Living-world Node of HS2-PALACE-EMBERTHRONE (threat 60)",
++   "note": "Living-world Node of HS2-PALACE-EMBERTHRONE (threat 52)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -378,7 +378,7 @@
+     46.46
+    ],
+    "name": "Landing Spot",
+-   "note": "Living-world Node of HS2-PALACE-EMBERTHRONE (threat 60) — lands for AIRSHIP_DOCK 1",
++   "note": "Living-world Node of HS2-PALACE-EMBERTHRONE (threat 52) — lands for AIRSHIP_DOCK 1",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -389,7 +389,7 @@
+     47.54
+    ],
+    "name": "Landing Spot",
+-   "note": "Living-world Node of HS2-PALACE-EMBERTHRONE (threat 60) — lands for AIRSHIP_DOCK 1",
++   "note": "Living-world Node of HS2-PALACE-EMBERTHRONE (threat 52) — lands for AIRSHIP_DOCK 1",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -400,7 +400,7 @@
+     67.44
+    ],
+    "name": "War Camp",
+-   "note": "Living-world Node of HS2-PALACE-EMBERTHRONE (threat 60)",
++   "note": "Living-world Node of HS2-PALACE-EMBERTHRONE (threat 52)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -411,7 +411,7 @@
+     68.77
+    ],
+    "name": "Lair (harpy)",
+-   "note": "Living-world Node of HS2-PALACE-EMBERTHRONE (threat 60)",
++   "note": "Living-world Node of HS2-PALACE-EMBERTHRONE (threat 52)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   }
+  ]
+diff --git a/data/world-elements/HS3.cf.json b/data/world-elements/HS3.cf.json
+index f1d4eee..6d702a3 100644
+--- a/data/world-elements/HS3.cf.json
++++ b/data/world-elements/HS3.cf.json
+@@ -15,7 +15,7 @@
+     25.6
+    ],
+    "name": "Airdrop Zone",
+-   "note": "Living-world Node of HS3-KEEP-AURORA (threat 20)",
++   "note": "Living-world Node of HS3-KEEP-AURORA (threat 44)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -26,7 +26,7 @@
+     15.59
+    ],
+    "name": "Airship Dock",
+-   "note": "Living-world Node of HS3-KEEP-AURORA (threat 20)",
++   "note": "Living-world Node of HS3-KEEP-AURORA (threat 44)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -37,7 +37,7 @@
+     18.01
+    ],
+    "name": "Caravan Waypoint",
+-   "note": "Living-world Node of HS3-KEEP-AURORA (threat 20)",
++   "note": "Living-world Node of HS3-KEEP-AURORA (threat 44)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -48,7 +48,7 @@
+     10.41
+    ],
+    "name": "Landing Spot",
+-   "note": "Living-world Node of HS3-KEEP-AURORA (threat 20) — lands for AIRSHIP_DOCK 1",
++   "note": "Living-world Node of HS3-KEEP-AURORA (threat 44) — lands for AIRSHIP_DOCK 1",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -59,7 +59,7 @@
+     24.13
+    ],
+    "name": "Landing Spot",
+-   "note": "Living-world Node of HS3-KEEP-AURORA (threat 20) — lands for AIRSHIP_DOCK 1",
++   "note": "Living-world Node of HS3-KEEP-AURORA (threat 44) — lands for AIRSHIP_DOCK 1",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -70,7 +70,7 @@
+     42.8
+    ],
+    "name": "Airdrop Zone",
+-   "note": "Living-world Node of HS3-KEEP-DAWNSHIELD (threat 20)",
++   "note": "Living-world Node of HS3-KEEP-DAWNSHIELD (threat 44)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -81,7 +81,7 @@
+     37.66
+    ],
+    "name": "Airship Dock",
+-   "note": "Living-world Node of HS3-KEEP-DAWNSHIELD (threat 20)",
++   "note": "Living-world Node of HS3-KEEP-DAWNSHIELD (threat 44)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -92,7 +92,7 @@
+     35.55
+    ],
+    "name": "Caravan Waypoint",
+-   "note": "Living-world Node of HS3-KEEP-DAWNSHIELD (threat 20)",
++   "note": "Living-world Node of HS3-KEEP-DAWNSHIELD (threat 44)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -103,7 +103,7 @@
+     38.04
+    ],
+    "name": "Landing Spot",
+-   "note": "Living-world Node of HS3-KEEP-DAWNSHIELD (threat 20) — lands for AIRSHIP_DOCK 1",
++   "note": "Living-world Node of HS3-KEEP-DAWNSHIELD (threat 44) — lands for AIRSHIP_DOCK 1",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -114,7 +114,7 @@
+     31.17
+    ],
+    "name": "Landing Spot",
+-   "note": "Living-world Node of HS3-KEEP-DAWNSHIELD (threat 20) — lands for AIRSHIP_DOCK 1",
++   "note": "Living-world Node of HS3-KEEP-DAWNSHIELD (threat 44) — lands for AIRSHIP_DOCK 1",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -125,7 +125,7 @@
+     39.43
+    ],
+    "name": "Airdrop Zone",
+-   "note": "Living-world Node of HS3-KEEP-PILGRIMWATCH (threat 20)",
++   "note": "Living-world Node of HS3-KEEP-PILGRIMWATCH (threat 44)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -136,7 +136,7 @@
+     53.24
+    ],
+    "name": "Airship Dock",
+-   "note": "Living-world Node of HS3-KEEP-PILGRIMWATCH (threat 20)",
++   "note": "Living-world Node of HS3-KEEP-PILGRIMWATCH (threat 44)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -147,7 +147,7 @@
+     50.17
+    ],
+    "name": "Caravan Waypoint",
+-   "note": "Living-world Node of HS3-KEEP-PILGRIMWATCH (threat 20)",
++   "note": "Living-world Node of HS3-KEEP-PILGRIMWATCH (threat 44)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -158,7 +158,7 @@
+     49.96
+    ],
+    "name": "Landing Spot",
+-   "note": "Living-world Node of HS3-KEEP-PILGRIMWATCH (threat 20) — lands for AIRSHIP_DOCK 1",
++   "note": "Living-world Node of HS3-KEEP-PILGRIMWATCH (threat 44) — lands for AIRSHIP_DOCK 1",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -169,7 +169,7 @@
+     51.69
+    ],
+    "name": "Landing Spot",
+-   "note": "Living-world Node of HS3-KEEP-PILGRIMWATCH (threat 20) — lands for AIRSHIP_DOCK 1",
++   "note": "Living-world Node of HS3-KEEP-PILGRIMWATCH (threat 44) — lands for AIRSHIP_DOCK 1",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -180,7 +180,7 @@
+     28.31
+    ],
+    "name": "Airdrop Zone",
+-   "note": "Living-world Node of HS3-KEEP-SHIELDGATE (threat 20)",
++   "note": "Living-world Node of HS3-KEEP-SHIELDGATE (threat 44)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -191,7 +191,7 @@
+     31.57
+    ],
+    "name": "Airship Dock",
+-   "note": "Living-world Node of HS3-KEEP-SHIELDGATE (threat 20)",
++   "note": "Living-world Node of HS3-KEEP-SHIELDGATE (threat 44)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -202,7 +202,7 @@
+     32.03
+    ],
+    "name": "Caravan Waypoint",
+-   "note": "Living-world Node of HS3-KEEP-SHIELDGATE (threat 20)",
++   "note": "Living-world Node of HS3-KEEP-SHIELDGATE (threat 44)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -213,7 +213,7 @@
+     31.89
+    ],
+    "name": "Landing Spot",
+-   "note": "Living-world Node of HS3-KEEP-SHIELDGATE (threat 20) — lands for AIRSHIP_DOCK 1",
++   "note": "Living-world Node of HS3-KEEP-SHIELDGATE (threat 44) — lands for AIRSHIP_DOCK 1",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -224,7 +224,7 @@
+     26.54
+    ],
+    "name": "Landing Spot",
+-   "note": "Living-world Node of HS3-KEEP-SHIELDGATE (threat 20) — lands for AIRSHIP_DOCK 1",
++   "note": "Living-world Node of HS3-KEEP-SHIELDGATE (threat 44) — lands for AIRSHIP_DOCK 1",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -235,7 +235,7 @@
+     16.64
+    ],
+    "name": "Airdrop Zone",
+-   "note": "Living-world Node of HS3-SANCTUM (threat 60)",
++   "note": "Living-world Node of HS3-SANCTUM (threat 52)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -246,7 +246,7 @@
+     26.51
+    ],
+    "name": "Airship Dock",
+-   "note": "Living-world Node of HS3-SANCTUM (threat 60)",
++   "note": "Living-world Node of HS3-SANCTUM (threat 52)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -257,7 +257,7 @@
+     24.13
+    ],
+    "name": "Caravan Waypoint",
+-   "note": "Living-world Node of HS3-SANCTUM (threat 60)",
++   "note": "Living-world Node of HS3-SANCTUM (threat 52)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -268,7 +268,7 @@
+     20.73
+    ],
+    "name": "Landing Spot",
+-   "note": "Living-world Node of HS3-SANCTUM (threat 60) — lands for AIRSHIP_DOCK 1",
++   "note": "Living-world Node of HS3-SANCTUM (threat 52) — lands for AIRSHIP_DOCK 1",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -279,7 +279,7 @@
+     29.29
+    ],
+    "name": "Landing Spot",
+-   "note": "Living-world Node of HS3-SANCTUM (threat 60) — lands for AIRSHIP_DOCK 1",
++   "note": "Living-world Node of HS3-SANCTUM (threat 52) — lands for AIRSHIP_DOCK 1",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -290,7 +290,7 @@
+     27.49
+    ],
+    "name": "War Camp",
+-   "note": "Living-world Node of HS3-SANCTUM (threat 60)",
++   "note": "Living-world Node of HS3-SANCTUM (threat 52)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -301,7 +301,7 @@
+     32.66
+    ],
+    "name": "Lair (harpy)",
+-   "note": "Living-world Node of HS3-SANCTUM (threat 60)",
++   "note": "Living-world Node of HS3-SANCTUM (threat 52)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   }
+  ]
+diff --git a/data/world-elements/HUB.cf.json b/data/world-elements/HUB.cf.json
+index d6aa67b..97c495b 100644
+--- a/data/world-elements/HUB.cf.json
++++ b/data/world-elements/HUB.cf.json
+@@ -15,7 +15,7 @@
+     155.14
+    ],
+    "name": "Barbarian Camp",
+-   "note": "Living-world Node of HUB-CASTLE-DONGGUAN (threat 20)",
++   "note": "Living-world Node of HUB-CASTLE-DONGGUAN (threat 48)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -26,7 +26,7 @@
+     135.63
+    ],
+    "name": "Mercenary Post",
+-   "note": "Living-world Node of HUB-CASTLE-DONGGUAN (threat 20)",
++   "note": "Living-world Node of HUB-CASTLE-DONGGUAN (threat 43)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -37,7 +37,7 @@
+     114.53
+    ],
+    "name": "Lair (wyrm)",
+-   "note": "Living-world Node of HUB-CASTLE-DONGGUAN (threat 20)",
++   "note": "Living-world Node of HUB-CASTLE-DONGGUAN (threat 43)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -48,7 +48,7 @@
+     48.19
+    ],
+    "name": "Barbarian Camp",
+-   "note": "Living-world Node of HUB-CASTLE-JINJIANG (threat 20)",
++   "note": "Living-world Node of HUB-CASTLE-JINJIANG (threat 48)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -59,7 +59,7 @@
+     77.47
+    ],
+    "name": "Mercenary Post",
+-   "note": "Living-world Node of HUB-CASTLE-JINJIANG (threat 20)",
++   "note": "Living-world Node of HUB-CASTLE-JINJIANG (threat 43)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -70,7 +70,7 @@
+     86.93
+    ],
+    "name": "Lair (wolf)",
+-   "note": "Living-world Node of HUB-CASTLE-JINJIANG (threat 20)",
++   "note": "Living-world Node of HUB-CASTLE-JINJIANG (threat 43)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -81,7 +81,7 @@
+     172.14
+    ],
+    "name": "Airdrop Zone",
+-   "note": "Living-world Node of HUB-CASTLE-NANPING (threat 20)",
++   "note": "Living-world Node of HUB-CASTLE-NANPING (threat 43)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -92,7 +92,7 @@
+     161.26
+    ],
+    "name": "Mercenary Post",
+-   "note": "Living-world Node of HUB-CASTLE-NANPING (threat 20)",
++   "note": "Living-world Node of HUB-CASTLE-NANPING (threat 43)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -103,7 +103,7 @@
+     148.63
+    ],
+    "name": "Lair (bandit)",
+-   "note": "Living-world Node of HUB-CASTLE-NANPING (threat 20)",
++   "note": "Living-world Node of HUB-CASTLE-NANPING (threat 43)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -114,7 +114,7 @@
+     132.24
+    ],
+    "name": "Airdrop Zone",
+-   "note": "Living-world Node of HUB-CASTLE-TIEDU (threat 20)",
++   "note": "Living-world Node of HUB-CASTLE-TIEDU (threat 43)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -125,7 +125,7 @@
+     129.82
+    ],
+    "name": "Mercenary Post",
+-   "note": "Living-world Node of HUB-CASTLE-TIEDU (threat 20)",
++   "note": "Living-world Node of HUB-CASTLE-TIEDU (threat 43)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -136,7 +136,7 @@
+     134.5
+    ],
+    "name": "Lair (bandit)",
+-   "note": "Living-world Node of HUB-CASTLE-TIEDU (threat 20)",
++   "note": "Living-world Node of HUB-CASTLE-TIEDU (threat 43)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -147,7 +147,7 @@
+     100.92
+    ],
+    "name": "Airdrop Zone",
+-   "note": "Living-world Node of HUB-CASTLE-XICHUAN (threat 20)",
++   "note": "Living-world Node of HUB-CASTLE-XICHUAN (threat 43)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -158,7 +158,7 @@
+     92.42
+    ],
+    "name": "Mercenary Post",
+-   "note": "Living-world Node of HUB-CASTLE-XICHUAN (threat 20)",
++   "note": "Living-world Node of HUB-CASTLE-XICHUAN (threat 43)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -169,7 +169,7 @@
+     103.93
+    ],
+    "name": "Lair (bandit)",
+-   "note": "Living-world Node of HUB-CASTLE-XICHUAN (threat 20)",
++   "note": "Living-world Node of HUB-CASTLE-XICHUAN (threat 43)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -180,7 +180,7 @@
+     64
+    ],
+    "name": "Airship Dock",
+-   "note": "Living-world Node of HUB-CASTLE-YONGAN (threat 20) — on HUB-PORT-SKY",
++   "note": "Living-world Node of HUB-CASTLE-YONGAN (threat 43) — on HUB-PORT-SKY",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -191,7 +191,7 @@
+     66.18
+    ],
+    "name": "Caravan Waypoint",
+-   "note": "Living-world Node of HUB-CASTLE-YONGAN (threat 20)",
++   "note": "Living-world Node of HUB-CASTLE-YONGAN (threat 43)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -202,7 +202,7 @@
+     58.88
+    ],
+    "name": "Landing Spot",
+-   "note": "Living-world Node of HUB-CASTLE-YONGAN (threat 20) — lands for AIRSHIP_DOCK 1",
++   "note": "Living-world Node of HUB-CASTLE-YONGAN (threat 43) — lands for AIRSHIP_DOCK 1",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -213,7 +213,7 @@
+     59.12
+    ],
+    "name": "Landing Spot",
+-   "note": "Living-world Node of HUB-CASTLE-YONGAN (threat 20) — lands for AIRSHIP_DOCK 1",
++   "note": "Living-world Node of HUB-CASTLE-YONGAN (threat 43) — lands for AIRSHIP_DOCK 1",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -224,7 +224,7 @@
+     67.66
+    ],
+    "name": "Mercenary Post",
+-   "note": "Living-world Node of HUB-CASTLE-YONGAN (threat 20)",
++   "note": "Living-world Node of HUB-CASTLE-YONGAN (threat 43)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -235,7 +235,7 @@
+     87.5
+    ],
+    "name": "Lair (wolf)",
+-   "note": "Living-world Node of HUB-CASTLE-YONGAN (threat 20)",
++   "note": "Living-world Node of HUB-CASTLE-YONGAN (threat 43)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -246,7 +246,7 @@
+     137.24
+    ],
+    "name": "Airdrop Zone",
+-   "note": "Living-world Node of HUB-KEEP-DRAGONTAIL (threat 10)",
++   "note": "Living-world Node of HUB-KEEP-DRAGONTAIL (threat 38)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -257,7 +257,7 @@
+     123.77
+    ],
+    "name": "Barbarian Camp",
+-   "note": "Living-world Node of HUB-KEEP-DRAGONTAIL (threat 10)",
++   "note": "Living-world Node of HUB-KEEP-DRAGONTAIL (threat 43)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -268,7 +268,7 @@
+     102.25
+    ],
+    "name": "Airdrop Zone",
+-   "note": "Living-world Node of HUB-KEEP-SHAFTWATCH (threat 10)",
++   "note": "Living-world Node of HUB-KEEP-SHAFTWATCH (threat 38)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -279,7 +279,7 @@
+     84.81
+    ],
+    "name": "Barbarian Camp",
+-   "note": "Living-world Node of HUB-KEEP-SHAFTWATCH (threat 10)",
++   "note": "Living-world Node of HUB-KEEP-SHAFTWATCH (threat 43)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -290,7 +290,7 @@
+     132.76
+    ],
+    "name": "Airdrop Zone",
+-   "note": "Living-world Node of HUB-KEEP-SOUTHGATE (threat 10)",
++   "note": "Living-world Node of HUB-KEEP-SOUTHGATE (threat 38)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -301,7 +301,7 @@
+     114.06
+    ],
+    "name": "Barbarian Camp",
+-   "note": "Living-world Node of HUB-KEEP-SOUTHGATE (threat 10)",
++   "note": "Living-world Node of HUB-KEEP-SOUTHGATE (threat 43)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -312,7 +312,7 @@
+     129.11
+    ],
+    "name": "Airdrop Zone",
+-   "note": "Living-world Node of HUB-KEEP-SOUTHSLOPE (threat 10)",
++   "note": "Living-world Node of HUB-KEEP-SOUTHSLOPE (threat 38)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -323,7 +323,7 @@
+     135.3
+    ],
+    "name": "Barbarian Camp",
+-   "note": "Living-world Node of HUB-KEEP-SOUTHSLOPE (threat 10)",
++   "note": "Living-world Node of HUB-KEEP-SOUTHSLOPE (threat 43)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -334,7 +334,7 @@
+     123.28
+    ],
+    "name": "Airdrop Zone",
+-   "note": "Living-world Node of HUB-PALACE-ZHONGDU (threat 30)",
++   "note": "Living-world Node of HUB-PALACE-ZHONGDU (threat 47)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -345,7 +345,7 @@
+     110.42
+    ],
+    "name": "Barbarian Camp",
+-   "note": "Living-world Node of HUB-PALACE-ZHONGDU (threat 30)",
++   "note": "Living-world Node of HUB-PALACE-ZHONGDU (threat 52)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -356,7 +356,7 @@
+     133.69
+    ],
+    "name": "War Camp",
+-   "note": "Living-world Node of HUB-PALACE-ZHONGDU (threat 30)",
++   "note": "Living-world Node of HUB-PALACE-ZHONGDU (threat 47)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -367,7 +367,7 @@
+     130.94
+    ],
+    "name": "Lair (wyrm)",
+-   "note": "Living-world Node of HUB-PALACE-ZHONGDU (threat 30)",
++   "note": "Living-world Node of HUB-PALACE-ZHONGDU (threat 47)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   }
+  ]
+diff --git a/data/world-elements/KOL.cf.json b/data/world-elements/KOL.cf.json
+index dd655ec..a07a6d0 100644
+--- a/data/world-elements/KOL.cf.json
++++ b/data/world-elements/KOL.cf.json
+@@ -15,7 +15,7 @@
+     8.57
+    ],
+    "name": "Barbarian Camp",
+-   "note": "Living-world Node of KOL-CASTLE-FORTUNA (threat 20)",
++   "note": "Living-world Node of KOL-CASTLE-FORTUNA (threat 48)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -26,7 +26,7 @@
+     20.68
+    ],
+    "name": "Caravan Waypoint",
+-   "note": "Living-world Node of KOL-CASTLE-FORTUNA (threat 20)",
++   "note": "Living-world Node of KOL-CASTLE-FORTUNA (threat 43)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -37,7 +37,7 @@
+     19.34
+    ],
+    "name": "Harbour",
+-   "note": "Living-world Node of KOL-CASTLE-FORTUNA (threat 20)",
++   "note": "Living-world Node of KOL-CASTLE-FORTUNA (threat 43)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -48,7 +48,7 @@
+     26.82
+    ],
+    "name": "Landing Spot",
+-   "note": "Living-world Node of KOL-CASTLE-FORTUNA (threat 20) — lands for HARBOUR 1",
++   "note": "Living-world Node of KOL-CASTLE-FORTUNA (threat 43) — lands for HARBOUR 1",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -59,7 +59,7 @@
+     18.28
+    ],
+    "name": "Mercenary Post",
+-   "note": "Living-world Node of KOL-CASTLE-FORTUNA (threat 20)",
++   "note": "Living-world Node of KOL-CASTLE-FORTUNA (threat 43)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   }
+  ]
+diff --git a/data/world-elements/UW2.cf.json b/data/world-elements/UW2.cf.json
+index 72cb61c..d69b69b 100644
+--- a/data/world-elements/UW2.cf.json
++++ b/data/world-elements/UW2.cf.json
+@@ -15,7 +15,7 @@
+     86.98
+    ],
+    "name": "Barbarian Camp",
+-   "note": "Living-world Node of UW2-BASTION-DOMINUS (threat 100)",
++   "note": "Living-world Node of UW2-BASTION-DOMINUS (threat 60)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -26,7 +26,7 @@
+     73.99
+    ],
+    "name": "Vent",
+-   "note": "Living-world Node of UW2-BASTION-DOMINUS (threat 100)",
++   "note": "Living-world Node of UW2-BASTION-DOMINUS (threat 57)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -37,7 +37,7 @@
+     67.85
+    ],
+    "name": "War Camp",
+-   "note": "Living-world Node of UW2-BASTION-DOMINUS (threat 100)",
++   "note": "Living-world Node of UW2-BASTION-DOMINUS (threat 57)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -48,7 +48,7 @@
+     66.99
+    ],
+    "name": "Lair (troll)",
+-   "note": "Living-world Node of UW2-BASTION-DOMINUS (threat 100)",
++   "note": "Living-world Node of UW2-BASTION-DOMINUS (threat 57)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -59,7 +59,7 @@
+     90.24
+    ],
+    "name": "Barbarian Camp",
+-   "note": "Living-world Node of UW2-CASTLE-DEEPGATE (threat 70)",
++   "note": "Living-world Node of UW2-CASTLE-DEEPGATE (threat 58)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -70,7 +70,7 @@
+     62.93
+    ],
+    "name": "Mercenary Post",
+-   "note": "Living-world Node of UW2-CASTLE-DEEPGATE (threat 70)",
++   "note": "Living-world Node of UW2-CASTLE-DEEPGATE (threat 53)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -81,7 +81,7 @@
+     69.82
+    ],
+    "name": "Vent",
+-   "note": "Living-world Node of UW2-CASTLE-DEEPGATE (threat 70)",
++   "note": "Living-world Node of UW2-CASTLE-DEEPGATE (threat 53)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -92,7 +92,7 @@
+     73.8
+    ],
+    "name": "Barbarian Camp",
+-   "note": "Living-world Node of UW2-CASTLE-MOURNGATE (threat 70)",
++   "note": "Living-world Node of UW2-CASTLE-MOURNGATE (threat 58)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -103,7 +103,7 @@
+     72.79
+    ],
+    "name": "Mercenary Post",
+-   "note": "Living-world Node of UW2-CASTLE-MOURNGATE (threat 70)",
++   "note": "Living-world Node of UW2-CASTLE-MOURNGATE (threat 53)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -114,7 +114,7 @@
+     72.83
+    ],
+    "name": "Vent",
+-   "note": "Living-world Node of UW2-CASTLE-MOURNGATE (threat 70)",
++   "note": "Living-world Node of UW2-CASTLE-MOURNGATE (threat 53)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -125,7 +125,7 @@
+     23.34
+    ],
+    "name": "Barbarian Camp",
+-   "note": "Living-world Node of UW2-CASTLE-PALEWATER (threat 70)",
++   "note": "Living-world Node of UW2-CASTLE-PALEWATER (threat 58)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -136,7 +136,7 @@
+     22.94
+    ],
+    "name": "Mercenary Post",
+-   "note": "Living-world Node of UW2-CASTLE-PALEWATER (threat 70)",
++   "note": "Living-world Node of UW2-CASTLE-PALEWATER (threat 53)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -147,7 +147,7 @@
+     10.61
+    ],
+    "name": "Vent",
+-   "note": "Living-world Node of UW2-CASTLE-PALEWATER (threat 70)",
++   "note": "Living-world Node of UW2-CASTLE-PALEWATER (threat 53)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -158,7 +158,7 @@
+     121.79
+    ],
+    "name": "Mercenary Post",
+-   "note": "Living-world Node of UW2-KEEP-DROWNMEADOW (threat 35)",
++   "note": "Living-world Node of UW2-KEEP-DROWNMEADOW (threat 49)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -169,7 +169,7 @@
+     137.33
+    ],
+    "name": "Vent",
+-   "note": "Living-world Node of UW2-KEEP-DROWNMEADOW (threat 35)",
++   "note": "Living-world Node of UW2-KEEP-DROWNMEADOW (threat 49)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -180,7 +180,7 @@
+     74.87
+    ],
+    "name": "Mercenary Post",
+-   "note": "Living-world Node of UW2-KEEP-FERRYWATCH (threat 35)",
++   "note": "Living-world Node of UW2-KEEP-FERRYWATCH (threat 49)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -191,7 +191,7 @@
+     81.81
+    ],
+    "name": "Vent",
+-   "note": "Living-world Node of UW2-KEEP-FERRYWATCH (threat 35)",
++   "note": "Living-world Node of UW2-KEEP-FERRYWATCH (threat 49)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -202,7 +202,7 @@
+     71.34
+    ],
+    "name": "Mercenary Post",
+-   "note": "Living-world Node of UW2-KEEP-PALELANTERN (threat 35)",
++   "note": "Living-world Node of UW2-KEEP-PALELANTERN (threat 49)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -213,7 +213,7 @@
+     56.33
+    ],
+    "name": "Vent",
+-   "note": "Living-world Node of UW2-KEEP-PALELANTERN (threat 35)",
++   "note": "Living-world Node of UW2-KEEP-PALELANTERN (threat 49)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -224,7 +224,7 @@
+     115.87
+    ],
+    "name": "Mercenary Post",
+-   "note": "Living-world Node of UW2-KEEP-SUNKENCOURT (threat 35)",
++   "note": "Living-world Node of UW2-KEEP-SUNKENCOURT (threat 49)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -235,7 +235,7 @@
+     123.35
+    ],
+    "name": "Vent",
+-   "note": "Living-world Node of UW2-KEEP-SUNKENCOURT (threat 35)",
++   "note": "Living-world Node of UW2-KEEP-SUNKENCOURT (threat 49)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -246,7 +246,7 @@
+     71
+    ],
+    "name": "Mercenary Post",
+-   "note": "Living-world Node of UW2-KEEP-VIGILWATCH (threat 35)",
++   "note": "Living-world Node of UW2-KEEP-VIGILWATCH (threat 49)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -257,7 +257,7 @@
+     66.23
+    ],
+    "name": "Vent",
+-   "note": "Living-world Node of UW2-KEEP-VIGILWATCH (threat 35)",
++   "note": "Living-world Node of UW2-KEEP-VIGILWATCH (threat 49)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   }
+  ]
+diff --git a/data/world-elements/UW3.cf.json b/data/world-elements/UW3.cf.json
+index a792dff..10aa7ce 100644
+--- a/data/world-elements/UW3.cf.json
++++ b/data/world-elements/UW3.cf.json
+@@ -15,7 +15,7 @@
+     16.16
+    ],
+    "name": "Mercenary Post",
+-   "note": "Living-world Node of UW3-KEEP-COIN (threat 50)",
++   "note": "Living-world Node of UW3-KEEP-COIN (threat 52)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -26,7 +26,7 @@
+     18.98
+    ],
+    "name": "Vent",
+-   "note": "Living-world Node of UW3-KEEP-COIN (threat 50)",
++   "note": "Living-world Node of UW3-KEEP-COIN (threat 52)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -37,7 +37,7 @@
+     13.56
+    ],
+    "name": "Mercenary Post",
+-   "note": "Living-world Node of UW3-KEEP-HUNGER (threat 50)",
++   "note": "Living-world Node of UW3-KEEP-HUNGER (threat 52)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -48,7 +48,7 @@
+     8.15
+    ],
+    "name": "Vent",
+-   "note": "Living-world Node of UW3-KEEP-HUNGER (threat 50)",
++   "note": "Living-world Node of UW3-KEEP-HUNGER (threat 52)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -59,7 +59,7 @@
+     39.61
+    ],
+    "name": "Mercenary Post",
+-   "note": "Living-world Node of UW3-KEEP-MIRRORS (threat 50)",
++   "note": "Living-world Node of UW3-KEEP-MIRRORS (threat 52)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -70,7 +70,7 @@
+     48.31
+    ],
+    "name": "Vent",
+-   "note": "Living-world Node of UW3-KEEP-MIRRORS (threat 50)",
++   "note": "Living-world Node of UW3-KEEP-MIRRORS (threat 52)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -81,7 +81,7 @@
+     54.69
+    ],
+    "name": "Mercenary Post",
+-   "note": "Living-world Node of UW3-KEEP-SILK (threat 50)",
++   "note": "Living-world Node of UW3-KEEP-SILK (threat 52)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -92,7 +92,7 @@
+     45.65
+    ],
+    "name": "Vent",
+-   "note": "Living-world Node of UW3-KEEP-SILK (threat 50)",
++   "note": "Living-world Node of UW3-KEEP-SILK (threat 52)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -103,7 +103,7 @@
+     33.69
+    ],
+    "name": "Barbarian Camp",
+-   "note": "Living-world Node of UW3-PALACE-VAULTPALACE (threat 100)",
++   "note": "Living-world Node of UW3-PALACE-VAULTPALACE (threat 60)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -114,7 +114,7 @@
+     20.67
+    ],
+    "name": "Vent",
+-   "note": "Living-world Node of UW3-PALACE-VAULTPALACE (threat 100)",
++   "note": "Living-world Node of UW3-PALACE-VAULTPALACE (threat 60)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -125,7 +125,7 @@
+     -1.21
+    ],
+    "name": "War Camp",
+-   "note": "Living-world Node of UW3-PALACE-VAULTPALACE (threat 100)",
++   "note": "Living-world Node of UW3-PALACE-VAULTPALACE (threat 60)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   },
+   {
+@@ -136,7 +136,7 @@
+     40.75
+    ],
+    "name": "Lair (troll)",
+-   "note": "Living-world Node of UW3-PALACE-VAULTPALACE (threat 100)",
++   "note": "Living-world Node of UW3-PALACE-VAULTPALACE (threat 60)",
+    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+   }
+  ]

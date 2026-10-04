@@ -314,4 +314,10 @@ const jw = JN.journalEntry({ kind: "POI_CLEARED", k: "WILD_LAIR", won: true, nth
 ok(jw.fresh && /wild lair 10 u east of home/.test(jw.text) && !jr.fresh && /3rd time today, ×0.3/.test(jr.text), "journal lines name the place and direction; repeat clears are logged honestly with their multiplier, not as fresh");
 ok(Object.keys({ BARBARIAN_CAMP_CLEARED: 1, AIRDROP_TAKEN: 1, CARAVAN_RAIDED: 1, BOUNTY_CLAIMED: 1, POI_HELD: 1, POI_CLEARED: 1 }).every((k) => { const l = JN.journalEntry({ kind: k, k: "WILD_LAIR", won: false }); return l.fresh && !/undefined|_/.test(l.text); }), "every loss reads as a story line (losing is a story, doc 06 §5)");
 
+// D27 PR #1 refresh patch (threat text only; its "+" side is this branch's current overlay)
+const P1 = fs.readFileSync("docs/living-world/handoff/PR1-overlay-refresh.patch", "utf8"), p1Files = [...P1.matchAll(/^\+\+\+ b\/data\/world-elements\/(\S+)$/gm)].map((m) => m[1]);
+const p1Minus = P1.split("\n").filter((l) => /^-\s/.test(l)), p1Plus = P1.split("\n").filter((l) => /^\+\s/.test(l));
+ok(p1Files.length > 0 && p1Minus.length === p1Plus.length && p1Minus.every((l, i) => l.slice(1).replace(/threat \d+/, "threat N") === p1Plus[i].slice(1).replace(/threat \d+/, "threat N")), `the PR #1 refresh only changes threat numbers (${p1Plus.length} lines in ${p1Files.length} files)`);
+ok(P1.split(/^diff --git /m).slice(1).every((sec) => { const f = sec.match(/^\+\+\+ b\/data\/world-elements\/(\S+)$/m)[1], cur = fs.readFileSync("data/living-world/world-elements/" + f, "utf8"); return sec.split("\n").filter((l) => /^\+\s/.test(l)).every((l) => cur.includes(l.slice(1).trim())); }), "every line the patch adds is in this branch's current overlay");
+
 console.log(fails ? `❌ living-world: ${fails} failed` : "✅ living-world: all passed"); process.exit(fails ? 1 : 0);
