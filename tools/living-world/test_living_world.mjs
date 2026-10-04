@@ -195,4 +195,10 @@ ok(RW.lullUntil(CC2, "BUS") === 1000 + 48 * 60 && RW.lullUntil(CC2, "EDU") === n
 ok(!RW.raidsAllowed(CC2, "BUS", 1000 + 48 * 60 - 1) && RW.raidsAllowed(CC2, "BUS", 1000 + 48 * 60) && RW.raidsAllowed(CC2, "BUS", 99) && !RW.raidsAllowed(CC2, "BUS", 500), "raids pause inside the lull, resume at its end; a future clear doesn't silence the past");
 ok(!/Math\.random|Date\.now|new Date/.test(fs.readFileSync("tools/living-world/rewards.mjs", "utf8")), "reward functions read no clock (callers pass world ticks)");
 
+// D13 owner-decision sheet covers every open question
+const OD = fs.readFileSync("docs/living-world/OWNER-DECISIONS.md", "utf8");
+const openQs = fs.readdirSync("docs/living-world").filter((f) => /^0\d-.*\.md$/.test(f)).flatMap((f) => (fs.readFileSync("docs/living-world/" + f, "utf8").match(/❓ OPEN/g) || []).map(() => f));
+ok(openQs.length > 0 && [...new Set(openQs)].every((f) => OD.includes("doc " + f.slice(0, 2).replace(/^0/, "0"))), `every doc with a ❓ OPEN (${[...new Set(openQs)].join(", ")}) is on the owner-decision sheet`);
+ok((OD.match(/\*\*A \(recommended\)\*\*/g) || []).length === 4, "each of the 4 calls carries one recommended option");
+
 console.log(fails ? `❌ living-world: ${fails} failed` : "✅ living-world: all passed"); process.exit(fails ? 1 : 0);

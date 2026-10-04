@@ -1,0 +1,68 @@
+# Owner decisions: Living World (one page)
+
+Each open call below lists the options, a recommendation, **what changes for each answer**, and what we do
+meanwhile. Everything is built so that any answer is a data edit or a short doc change, not a rebuild.
+
+## The four calls
+
+### 1. Points vs CT: what pays for what?
+
+Sources: doc 01 §rewards ❓, doc 03 §5 ❓.
+
+| Option | Meaning | What changes |
+|---|---|---|
+| **A (recommended)** | **CT** pays for anything with a lasting world effect: defences, Guardians, mercenaries, event pots. Pentagon **Points** pay for one-off experiences: event entries, revives, cosmetic banners. Points never touch the CT ledger | Nothing in data. Doc 01, 03 and 06 lose their ❓. The future Points price list goes in `experience.json` |
+| B | CT only | Event entries and revives get CT prices, a new CT sink. Points stay MOBA-only |
+| C | Points can buy defences too | A Points → world-effect path that `LedgerEntry` can't see. ⚠ It breaks the circular-economy invariant (doc 02 canon) and the ≥ 10 % burn (Decision 17) |
+
+**Meanwhile:** everything is priced in CT, and nothing is priced in Points.
+
+### 2. Form 3 Guardians: can stand-in art be stationed?
+
+Source: doc 04 §5 ❓.
+
+| Option | Meaning | What changes |
+|---|---|---|
+| **A (recommended)** | Yes. A Form 3 stations with the MOBA stand-in (Form 2 model at 2.0×) and a "Form 3" badge, then swaps to the real art when it ships | Nothing; the numbers in `guardians.json` are form-based, not art-based |
+| B | No. Form 3 stationing waits for the real art | `guardians.json` `forms.3.enabled = false` until the art ships. Only Wardens exist at launch |
+
+Either way, which NFTs qualify is read from the pet lineage forms (`mon_lineage.json`), not chosen by hand.
+
+**Meanwhile:** the design and the sim assume Form 3 exists.
+
+### 3. Guardians vs the 12-minute floor
+
+Source: doc 04 §2b ❓. The doc-03 rule says bought defences can't make a castle last past 12 minutes against the
+floor-case attacker. The sim measures a Warden castle at **15:11** and an Ascendant castle at **18:06**
+(`reports/SIM-SAMPLE.md`).
+
+| Option | Meaning | What changes |
+|---|---|---|
+| **A (recommended)** | Guardians are exempt from the 12-min floor but capped at **~20 min**. They're time-bound (≤ 24 h / ≤ 6 h), limited to one Ascendant per castle per week, and they pay a bounty when they fall | Doc 03 gains one exemption line, and the sampler asserts F2/F3 ≤ 20 min |
+| B | Guardians must respect 12 min | Cut Warden HP 3,000 → ~1,500 and Ascendant 6,000 → ~3,000 (re-run the sampler to confirm). Form 3 then means little |
+| C | No cap | ⚠ An Ascendant plus full defences could stall a castle for 25 min or more, against the North Star (no single battle decides a war) |
+
+**Meanwhile:** option A's numbers are in `guardians.json`.
+
+### 4. Close stale MOBA PR #50?
+
+`blockchainsuperheroes/etherfantasy-browser-moba-game#50` ("Leaderboard: Season 1/2 tabs, Prize column,
+co-champion notice") is open and unchanged since 2026-09-13. Season 2 standings shipped through other PRs since.
+
+| Option | What changes |
+|---|---|
+| **A (recommended)** | Close it, noting that it was superseded by the Season 2 standings work |
+| B | Keep it: rebase onto main and re-review |
+
+**Meanwhile:** no action.
+
+## Proposals waiting on canon (no decision needed now; flagged so nothing slips in silently)
+
+| Proposal | Where | Status |
+|---|---|---|
+| New canon terms: POI kinds, Guardians, defence stakes, player events | PR **nftprof/etherfantasy-clashfront#2** | Open, waiting for review |
+| World-elements overlay + designer POI icons | PR **nftprof/etherfantasy-clashfront#1** | Open. ⚠ Its overlay notes carry the **old** threat numbers (pre-D6f); a refresh is needed before merge |
+| Storm season: the last 7 of every 28 days, 35 % lane closure per day | doc 07 §4c | Proposal; no canon definition of "storm season" exists yet |
+| `FeedItem` `{ id, tick, zone, kind, facts }` (the region feed) | doc 05 §5 | Proposal for the next canon PR |
+| Region rights ladder: POST_EVENTS 3, HARBOUR_RIGHTS 5, PAD_RIGHTS 10, FORM3_STATION 25 | doc 06 §5 | Living-world proposal. The vessel classes themselves stay canon (parcels 5 / 10 / 25 / 100) |
+| Vessel loss below a threshold: vessels persist vs decommission after grace | canon brief §7 ⚙ | Canon's own open question; the living world works with either answer |

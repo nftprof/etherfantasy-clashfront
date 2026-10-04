@@ -40,4 +40,11 @@ airships, landing spots, harbours + sea ships; seed all 20K maps; an experience,
 - [x] D10 — Region feed: deterministic headline generator from `player-events.json` + POI outcomes (doc 05/06 "something happened" stories), with sample output
 - [x] D11 — Influence ladder (doc 06 §5) as data + function: POIs held per region → unlocks (SIEGE_ME, ship 5, airship 10, Ascendant 25) + tests against vessel thresholds
 - [x] D12 — Anti-farm + lull rules as a pure reward function (×1/0.6/0.3/0.1 repeat curve, 48 h camp quiet) + tests
-- [ ] D13 — Owner-decision sheet: one page of the 4 open ❓ calls (Points vs CT, Form 3 stand-ins, Guardians vs 12-min floor, PR #50) with the proposals and what each answer changes
+- [x] D13 — Owner-decision sheet: one page of the 4 open ❓ calls (Points vs CT, Form 3 stand-ins, Guardians vs 12-min floor, PR #50) with the proposals and what each answer changes
+
+## Wave 3 (added cycle 29)
+- [ ] D17 — World events calendar: seeded per-region daily schedule of auto events (airdrops, barbarian raids, Kraken sightings, storms, Guardian wakes) — check doc 05's promise "always something on the board" (≥ N per region per day, no dead hours)
+- [ ] D15 — Defend/attack balance sheet: the CT a defender pays (stakes, mercenaries, Guardian fees) vs the units an attacker loses (sim SIM-SAMPLE losses × unit upkeep) per scenario; is either side's price obviously wrong?
+- [ ] D19 — CT flow simulation: a seeded 7-day multi-agent run of stakes / bounties / escrows / burns → prove no CT is minted, burn ≥ 10 %, escrows always settle
+- [ ] D14 — Terrain in the sim harness: forest cover (ranged −), ridge high ground (range +), water crossings (speed −) so SIM-MATRIX ground columns mean something
+- [ ] D16 — Event board at tick T: one region's live + upcoming events (player-posted + auto), filter/sort per doc 05 §2.2, sample output
