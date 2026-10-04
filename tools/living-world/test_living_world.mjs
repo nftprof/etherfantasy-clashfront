@@ -537,4 +537,10 @@ ok(TPr["tip.warden"].includes(`(${G31.forms["2"].feeCT} CT)`) && TPr["tip.ascend
 const CNP = (await import("./canon_pins.mjs")).check();
 ok(CNP.length >= 14 && CNP.every((x) => x.ok), `no canon drift across ${CNP.length} inputs (cf-overworld data/docs + the MOBA lineage)` + (CNP.some((x) => !x.ok) ? " — DRIFT: " + CNP.filter((x) => !x.ok).map((x) => `${x.id} → re-run ${x.rerun}`).join("; ") : ""));
 
+// D62 the Living World atlas (generated page)
+execFileSync("node", ["tools/living-world/atlas.mjs", "--out", "/tmp/lw_atlas.html"], { stdio: "ignore" });
+const ATL = fs.readFileSync("/tmp/lw_atlas.html", "utf8");
+ok(ATL === fs.readFileSync("docs/living-world/atlas/index.html", "utf8"), "the atlas page is regenerated from the seeds and committed");
+ok(Object.keys(RI.regions).filter((z) => z !== "CGI").every((z) => ATL.includes(`"${z}":{`)) && /<title>Living World Atlas<\/title>/.test(ATL) && !/<script src=/.test(ATL), "the atlas draws every POI region, is titled, and loads no external scripts");
+
 console.log(fails ? `❌ living-world: ${fails} failed` : "✅ living-world: all passed"); process.exit(fails ? 1 : 0);

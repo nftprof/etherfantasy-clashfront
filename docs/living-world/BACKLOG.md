@@ -101,3 +101,4 @@ airships, landing spots, harbours + sea ships; seed all 20K maps; an experience,
 
 ## Wave 13 (added cycle 67)
 - [x] D61 — Canon drift guard: content-hash pins on every canon input + a test that names what to re-run when canon moves (checked: overworld 11e8679 and MOBA 8378094, no drift)
+- [x] D62 — Living World atlas: a generated page that draws every region's castles, POIs (by kind, sized by threat), ports and sea lanes, plus its season

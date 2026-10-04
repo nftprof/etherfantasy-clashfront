@@ -10,7 +10,7 @@ Clash Front's persistent PvE layer:
 Everything is **seeded and deterministic**: the same inputs give the same bytes, with no clock and no `Math.random`.
 It's validated by the real headless battle kernel (`server/sim`).
 
-**Short on time? Read `ONE-PAGER.md`** (the whole living world on two pages).
+**Short on time? Read `ONE-PAGER.md`** (the whole living world on two pages), or open `atlas/index.html` to *see* it.
 
 **Run everything:** `node tools/living-world/test_living_world.mjs`. It rebuilds every generated file twice,
 byte-compares the results, re-runs the sims and checks every invariant (≈ 1 min).
@@ -92,6 +92,7 @@ byte-compares the results, re-runs the sims and checks every invariant (≈ 1 mi
 - **Canon drift:** `canon_pins.mjs` (`--record` after re-running the listed tools on new canon).
 - **Register:** `placeholders_check.mjs` (every ⚙ number matches its live value).
 - **Contracts:** `validate_events.mjs` (every event vs its engine shape and scope).
+- **Atlas:** `atlas.mjs` (regenerates `atlas/index.html`: every region's castles, POIs, ports and sea lanes, plus its season).
 - **Live ops:** `liveops_baseline.mjs` (every baseline in its healthy band).
 - **Performance:** `perf_budget.mjs` (`--record` sets baselines; plain run gates at 2×).
 - **Client spec:** `client_spec.mjs` (regenerates `reports/CLIENT-SPEC.md`).
