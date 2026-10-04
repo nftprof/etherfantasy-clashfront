@@ -133,3 +133,20 @@ shape**. The 373 baked maps are irregular polygons (mostly 5–7 points), not a 
 - Maps not baked yet keep the legacy ±161 lane frame. Tests check every baked map, and a sample of full payloads
   (structures, mobs, spawns), against the parcel polygon.
 
+## 7. Estate board battles and hero-mode parcels (D54)
+
+Canon decision 22 makes an estate fight **one command-view battle over the whole estate**. Only its hero-mode parcels
+can open a live 3D match: the castle parcel always, plus gates, bridge and harbour picks, to a total of LARGE 3 /
+GIANT 5 / EPIC 8 (`world-terrain` `castles[].heroParcels`). `tools/living-world/hero_parcels.mjs` →
+`data/living-world/hero-parcel-map.json` places every castle-ring Node:
+
+- **Every Guardian perch is on its castle's own parcel:** 56 of 56 designated (`heroParcels[0]`), so the Guardian
+  fight is always the estate's 3D last stand.
+- **165 Nodes sit on a hero parcel**, so they're fightable in 3D. Capemeet's harbour lands on the coast-band hero pick
+  canon made for harbours.
+- **84 Nodes lie outside their estate** (barbarian camps, wild lairs and the like). They're their **own** single-parcel
+  battles, which are 3D-capable like any lone parcel.
+- **None is stuck command-view-only.**
+- **13 castles are deferred** by canon (EPICs with no L3 subdivision yet). Their perches go on the castle parcel by
+  rule once it's designated.
+

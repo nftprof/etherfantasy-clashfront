@@ -508,4 +508,12 @@ ok(Object.keys(MF.FRAMES).filter((id) => !MF.keepLayout([0, 114.8]).every((p) =>
 const mfAll = Object.keys(MF.FRAMES).slice(0, 60).map((id) => AL.buildAllocate({ battleId: "battle_MF" + id, worldSeed: "w", poi: { id: "p" + id, lwKind: "WILD_LAIR", threat: 30, ground: "PLAIN" }, zone: "BUS", parcelId: id, attacker: { governorId: "g", armies: [] }, callbackUrl: "x" }));
 ok(mfAll.every((s) => [...s.battlefield.structures.map((t) => [t.x, t.z]), ...(s.battlefield.mobs || []).map((m) => [m.x, m.z]), ...s.battlefield.spawnZones.map((z) => [z.x, z.z])].every((p) => MF.inPoly(p, s.battlefield.arena.bounds))), "buildAllocate on baked maps keeps structures, mobs and spawns inside the parcel");
 
+// D54 estate board battles: living-world Nodes on the canon hero-mode parcels
+const hp1 = run("tools/living-world/hero_parcels.mjs", "/tmp/lw_hp_a.json");
+ok(hp1.equals(fs.readFileSync("data/living-world/hero-parcel-map.json")), "hero-parcel map is reproducible and committed");
+const HPM = JSON.parse(hp1);
+ok(HPM.tally.perchMisplaced.length === 0 && HPM.tally.perchOnCastleParcel > 0 && Object.values(HPM.castles).every((c) => !c.heroParcels.length || c.pois.filter((p) => p.lwKind === "GUARDIAN_PERCH").every((p) => p.on === "CASTLE_PARCEL")), "every Guardian perch sits on its castle's own parcel (heroParcels[0], the last stand)");
+ok(Object.values(HPM.castles).filter((c) => c.heroParcels.length).every((c) => c.pois.every((p) => ["CASTLE_PARCEL", "HERO_PARCEL", "OWN_PARCEL"].includes(p.on))), "no living-world Node at a designated castle is stuck command-view-only: it's on a hero parcel or its own parcel battle");
+ok(HPM.tally.designated + HPM.tally.deferred === 67 && Object.values(HPM.castles).every((c) => c.heroParcels.length || c.note), "every castle is either designated or carries canon's deferral note");
+
 console.log(fails ? `❌ living-world: ${fails} failed` : "✅ living-world: all passed"); process.exit(fails ? 1 : 0);

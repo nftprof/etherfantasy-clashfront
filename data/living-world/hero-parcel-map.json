@@ -1,0 +1,2857 @@
+{
+ "schema": "cf-living-world/hero-parcel-map@1",
+ "rule": "Node → nearest hero parcel within 8 u (3D window); else inside the estate bbox → BOARD (command view); else OWN_PARCEL (its own single-parcel battle); GUARDIAN_PERCH must be on heroParcels[0] (the castle parcel)",
+ "tally": {
+  "castles": 67,
+  "designated": 54,
+  "deferred": 13,
+  "pois": 325,
+  "heroPois": 165,
+  "boardPois": 0,
+  "ownParcelPois": 84,
+  "perchOnCastleParcel": 56,
+  "perchMisplaced": []
+ },
+ "castles": {
+  "BUS-CASTLE-CAPEMEET": {
+   "kind": "CASTLE",
+   "heroParcels": [
+    "20011170044",
+    "20011170228",
+    "20011170270",
+    "20011170056",
+    "20011170119"
+   ],
+   "note": null,
+   "pois": [
+    {
+     "poi": "BUS-CASTLE-CAPEMEET:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "on": "CASTLE_PARCEL",
+     "heroParcel": "20011170044",
+     "distU": 0.2
+    },
+    {
+     "poi": "BUS-CASTLE-CAPEMEET:MERCENARY_POST:1",
+     "lwKind": "MERCENARY_POST",
+     "on": "CASTLE_PARCEL",
+     "heroParcel": "20011170044",
+     "distU": 2.6
+    },
+    {
+     "poi": "BUS-CASTLE-CAPEMEET:HARBOUR:1",
+     "lwKind": "HARBOUR",
+     "on": "HERO_PARCEL",
+     "heroParcel": "20011170119",
+     "distU": 7.4
+    },
+    {
+     "poi": "BUS-CASTLE-CAPEMEET:BARBARIAN_CAMP:1",
+     "lwKind": "BARBARIAN_CAMP",
+     "on": "OWN_PARCEL",
+     "heroParcel": null,
+     "distU": 29.6
+    },
+    {
+     "poi": "BUS-CASTLE-CAPEMEET:LANDING_SPOT:1",
+     "lwKind": "LANDING_SPOT",
+     "on": "CASTLE_PARCEL",
+     "heroParcel": "20011170044",
+     "distU": 2.5
+    },
+    {
+     "poi": "BUS-CASTLE-CAPEMEET:CARAVAN_WAYPOINT:1",
+     "lwKind": "CARAVAN_WAYPOINT",
+     "on": "CASTLE_PARCEL",
+     "heroParcel": "20011170044",
+     "distU": 4.7
+    }
+   ]
+  },
+  "BUS-CASTLE-EASTREACH": {
+   "kind": "CASTLE",
+   "heroParcels": [
+    "20011500104",
+    "20011500263",
+    "20011500342",
+    "20011500212",
+    "20011500082"
+   ],
+   "note": null,
+   "pois": [
+    {
+     "poi": "BUS-CASTLE-EASTREACH:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "on": "CASTLE_PARCEL",
+     "heroParcel": "20011500104",
+     "distU": 0.2
+    },
+    {
+     "poi": "BUS-CASTLE-EASTREACH:MERCENARY_POST:1",
+     "lwKind": "MERCENARY_POST",
+     "on": "HERO_PARCEL",
+     "heroParcel": "20011500082",
+     "distU": 4.4
+    },
+    {
+     "poi": "BUS-CASTLE-EASTREACH:HARBOUR:1",
+     "lwKind": "HARBOUR",
+     "on": "OWN_PARCEL",
+     "heroParcel": null,
+     "distU": 14.4
+    },
+    {
+     "poi": "BUS-CASTLE-EASTREACH:WILD_LAIR:1",
+     "lwKind": "WILD_LAIR",
+     "on": "OWN_PARCEL",
+     "heroParcel": null,
+     "distU": 10.1
+    },
+    {
+     "poi": "BUS-CASTLE-EASTREACH:LANDING_SPOT:1",
+     "lwKind": "LANDING_SPOT",
+     "on": "OWN_PARCEL",
+     "heroParcel": null,
+     "distU": 20.2
+    },
+    {
+     "poi": "BUS-CASTLE-EASTREACH:CARAVAN_WAYPOINT:1",
+     "lwKind": "CARAVAN_WAYPOINT",
+     "on": "OWN_PARCEL",
+     "heroParcel": null,
+     "distU": 8
+    }
+   ]
+  },
+  "BUS-CASTLE-MIDDLEQUAY": {
+   "kind": "CASTLE",
+   "heroParcels": [
+    "20011730078",
+    "20011730393",
+    "20011730282",
+    "20011730175",
+    "20011730014"
+   ],
+   "note": null,
+   "pois": [
+    {
+     "poi": "BUS-CASTLE-MIDDLEQUAY:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "on": "CASTLE_PARCEL",
+     "heroParcel": "20011730078",
+     "distU": 0.1
+    },
+    {
+     "poi": "BUS-CASTLE-MIDDLEQUAY:MERCENARY_POST:1",
+     "lwKind": "MERCENARY_POST",
+     "on": "CASTLE_PARCEL",
+     "heroParcel": "20011730078",
+     "distU": 2.3
+    },
+    {
+     "poi": "BUS-CASTLE-MIDDLEQUAY:HARBOUR:1",
+     "lwKind": "HARBOUR",
+     "on": "HERO_PARCEL",
+     "heroParcel": "20011730014",
+     "distU": 1.7
+    },
+    {
+     "poi": "BUS-CASTLE-MIDDLEQUAY:SALVAGE_SITE:1",
+     "lwKind": "SALVAGE_SITE",
+     "on": "HERO_PARCEL",
+     "heroParcel": "20011730175",
+     "distU": 7.1
+    },
+    {
+     "poi": "BUS-CASTLE-MIDDLEQUAY:LANDING_SPOT:1",
+     "lwKind": "LANDING_SPOT",
+     "on": "OWN_PARCEL",
+     "heroParcel": null,
+     "distU": 9.2
+    },
+    {
+     "poi": "BUS-CASTLE-MIDDLEQUAY:CARAVAN_WAYPOINT:1",
+     "lwKind": "CARAVAN_WAYPOINT",
+     "on": "HERO_PARCEL",
+     "heroParcel": "20011730014",
+     "distU": 1.2
+    }
+   ]
+  },
+  "BUS-FORT-TIDEGATE": {
+   "kind": "CASTLE",
+   "heroParcels": [
+    "20011440099",
+    "20011440252",
+    "20011440341",
+    "20011440160",
+    "20011440232"
+   ],
+   "note": null,
+   "pois": [
+    {
+     "poi": "BUS-FORT-TIDEGATE:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "on": "CASTLE_PARCEL",
+     "heroParcel": "20011440099",
+     "distU": 0.1
+    },
+    {
+     "poi": "BUS-FORT-TIDEGATE:MERCENARY_POST:1",
+     "lwKind": "MERCENARY_POST",
+     "on": "HERO_PARCEL",
+     "heroParcel": "20011440160",
+     "distU": 4.1
+    },
+    {
+     "poi": "BUS-FORT-TIDEGATE:WILD_LAIR:1",
+     "lwKind": "WILD_LAIR",
+     "on": "HERO_PARCEL",
+     "heroParcel": "20011440341",
+     "distU": 5.5
+    },
+    {
+     "poi": "BUS-FORT-TIDEGATE:AIRDROP_ZONE:1",
+     "lwKind": "AIRDROP_ZONE",
+     "on": "OWN_PARCEL",
+     "heroParcel": null,
+     "distU": 10
+    }
+   ]
+  },
+  "BUS-KEEP-DELTALIGHT": {
+   "kind": "KEEP",
+   "heroParcels": [
+    "30009950121",
+    "30009950004",
+    "30009950193"
+   ],
+   "note": null,
+   "pois": [
+    {
+     "poi": "BUS-KEEP-DELTALIGHT:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "on": "CASTLE_PARCEL",
+     "heroParcel": "30009950121",
+     "distU": 0.2
+    },
+    {
+     "poi": "BUS-KEEP-DELTALIGHT:HARBOUR:1",
+     "lwKind": "HARBOUR",
+     "on": "OWN_PARCEL",
+     "heroParcel": null,
+     "distU": 9.1
+    },
+    {
+     "poi": "BUS-KEEP-DELTALIGHT:AIRDROP_ZONE:1",
+     "lwKind": "AIRDROP_ZONE",
+     "on": "OWN_PARCEL",
+     "heroParcel": null,
+     "distU": 9.5
+    },
+    {
+     "poi": "BUS-KEEP-DELTALIGHT:LANDING_SPOT:1",
+     "lwKind": "LANDING_SPOT",
+     "on": "HERO_PARCEL",
+     "heroParcel": "30009950193",
+     "distU": 4.4
+    },
+    {
+     "poi": "BUS-KEEP-DELTALIGHT:CARAVAN_WAYPOINT:1",
+     "lwKind": "CARAVAN_WAYPOINT",
+     "on": "HERO_PARCEL",
+     "heroParcel": "30009950193",
+     "distU": 6.1
+    }
+   ]
+  },
+  "BUS-KEEP-DUNEWATCH": {
+   "kind": "KEEP",
+   "heroParcels": [
+    "30010350134",
+    "30010350014",
+    "30010350215"
+   ],
+   "note": null,
+   "pois": [
+    {
+     "poi": "BUS-KEEP-DUNEWATCH:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "on": "CASTLE_PARCEL",
+     "heroParcel": "30010350134",
+     "distU": 0.2
+    },
+    {
+     "poi": "BUS-KEEP-DUNEWATCH:HARBOUR:1",
+     "lwKind": "HARBOUR",
+     "on": "HERO_PARCEL",
+     "heroParcel": "30010350014",
+     "distU": 3.4
+    },
+    {
+     "poi": "BUS-KEEP-DUNEWATCH:AIRDROP_ZONE:1",
+     "lwKind": "AIRDROP_ZONE",
+     "on": "OWN_PARCEL",
+     "heroParcel": null,
+     "distU": 15.6
+    },
+    {
+     "poi": "BUS-KEEP-DUNEWATCH:LANDING_SPOT:1",
+     "lwKind": "LANDING_SPOT",
+     "on": "CASTLE_PARCEL",
+     "heroParcel": "30010350134",
+     "distU": 2.6
+    },
+    {
+     "poi": "BUS-KEEP-DUNEWATCH:CARAVAN_WAYPOINT:1",
+     "lwKind": "CARAVAN_WAYPOINT",
+     "on": "HERO_PARCEL",
+     "heroParcel": "30010350014",
+     "distU": 2.3
+    }
+   ]
+  },
+  "BUS-KEEP-GULLSHOAL": {
+   "kind": "KEEP",
+   "heroParcels": [
+    "30009860125",
+    "30009860009",
+    "30009860147"
+   ],
+   "note": null,
+   "pois": [
+    {
+     "poi": "BUS-KEEP-GULLSHOAL:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "on": "CASTLE_PARCEL",
+     "heroParcel": "30009860125",
+     "distU": 0.2
+    },
+    {
+     "poi": "BUS-KEEP-GULLSHOAL:HARBOUR:1",
+     "lwKind": "HARBOUR",
+     "on": "HERO_PARCEL",
+     "heroParcel": "30009860147",
+     "distU": 3.3
+    },
+    {
+     "poi": "BUS-KEEP-GULLSHOAL:AIRDROP_ZONE:1",
+     "lwKind": "AIRDROP_ZONE",
+     "on": "HERO_PARCEL",
+     "heroParcel": "30009860009",
+     "distU": 6.4
+    },
+    {
+     "poi": "BUS-KEEP-GULLSHOAL:LANDING_SPOT:1",
+     "lwKind": "LANDING_SPOT",
+     "on": "OWN_PARCEL",
+     "heroParcel": null,
+     "distU": 10.1
+    },
+    {
+     "poi": "BUS-KEEP-GULLSHOAL:CARAVAN_WAYPOINT:1",
+     "lwKind": "CARAVAN_WAYPOINT",
+     "on": "HERO_PARCEL",
+     "heroParcel": "30009860147",
+     "distU": 0.1
+    }
+   ]
+  },
+  "BUS-KEEP-MARSHGATE": {
+   "kind": "KEEP",
+   "heroParcels": [
+    "30010650198",
+    "30010650024",
+    "30010650038"
+   ],
+   "note": null,
+   "pois": [
+    {
+     "poi": "BUS-KEEP-MARSHGATE:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "on": "CASTLE_PARCEL",
+     "heroParcel": "30010650198",
+     "distU": 0.3
+    },
+    {
+     "poi": "BUS-KEEP-MARSHGATE:WILD_LAIR:1",
+     "lwKind": "WILD_LAIR",
+     "on": "OWN_PARCEL",
+     "heroParcel": null,
+     "distU": 23.7
+    },
+    {
+     "poi": "BUS-KEEP-MARSHGATE:AIRDROP_ZONE:1",
+     "lwKind": "AIRDROP_ZONE",
+     "on": "HERO_PARCEL",
+     "heroParcel": "30010650038",
+     "distU": 4.3
+    }
+   ]
+  },
+  "BUS-PALACE-EXCHANGE": {
+   "kind": "PALACE",
+   "heroParcels": [],
+   "note": "EPIC estate 1001178 has NO L3 subdivision — hero-parcel designation DEFERRED until it is subdivided; its castle battle map arrives with the pre-designed estate map (canon decisions 4/5)",
+   "pois": [
+    {
+     "poi": "BUS-PALACE-EXCHANGE:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "on": "CASTLE_PARCEL (deferred)"
+    },
+    {
+     "poi": "BUS-PALACE-EXCHANGE:GUARDIAN_PERCH:2",
+     "lwKind": "GUARDIAN_PERCH",
+     "on": "CASTLE_PARCEL (deferred)"
+    },
+    {
+     "poi": "BUS-PALACE-EXCHANGE:WAR_CAMP:1",
+     "lwKind": "WAR_CAMP",
+     "on": "BOARD (deferred)"
+    },
+    {
+     "poi": "BUS-PALACE-EXCHANGE:WILD_LAIR:1",
+     "lwKind": "WILD_LAIR",
+     "on": "BOARD (deferred)"
+    },
+    {
+     "poi": "BUS-PALACE-EXCHANGE:CARAVAN_WAYPOINT:1",
+     "lwKind": "CARAVAN_WAYPOINT",
+     "on": "BOARD (deferred)"
+    },
+    {
+     "poi": "BUS-PALACE-EXCHANGE:AIRDROP_ZONE:1",
+     "lwKind": "AIRDROP_ZONE",
+     "on": "BOARD (deferred)"
+    }
+   ]
+  },
+  "EDU-CASTLE-SOUTHREACH": {
+   "kind": "CASTLE",
+   "heroParcels": [
+    "20203680154",
+    "20203680367",
+    "20203680256",
+    "20203680396",
+    "20203680313"
+   ],
+   "note": null,
+   "pois": [
+    {
+     "poi": "EDU-CASTLE-SOUTHREACH:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "on": "CASTLE_PARCEL",
+     "heroParcel": "20203680154",
+     "distU": 0.2
+    },
+    {
+     "poi": "EDU-CASTLE-SOUTHREACH:MERCENARY_POST:1",
+     "lwKind": "MERCENARY_POST",
+     "on": "CASTLE_PARCEL",
+     "heroParcel": "20203680154",
+     "distU": 5
+    },
+    {
+     "poi": "EDU-CASTLE-SOUTHREACH:BARBARIAN_CAMP:1",
+     "lwKind": "BARBARIAN_CAMP",
+     "on": "OWN_PARCEL",
+     "heroParcel": null,
+     "distU": 26.1
+    },
+    {
+     "poi": "EDU-CASTLE-SOUTHREACH:WILD_LAIR:1",
+     "lwKind": "WILD_LAIR",
+     "on": "OWN_PARCEL",
+     "heroParcel": null,
+     "distU": 13.4
+    }
+   ]
+  },
+  "EDU-CASTLE-WESTGATE": {
+   "kind": "CASTLE",
+   "heroParcels": [
+    "20203670103",
+    "20203670019",
+    "20203670376",
+    "20203670126",
+    "20203670000"
+   ],
+   "note": null,
+   "pois": [
+    {
+     "poi": "EDU-CASTLE-WESTGATE:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "on": "CASTLE_PARCEL",
+     "heroParcel": "20203670103",
+     "distU": 0.2
+    },
+    {
+     "poi": "EDU-CASTLE-WESTGATE:MERCENARY_POST:1",
+     "lwKind": "MERCENARY_POST",
+     "on": "HERO_PARCEL",
+     "heroParcel": "20203670126",
+     "distU": 0.8
+    },
+    {
+     "poi": "EDU-CASTLE-WESTGATE:BARBARIAN_CAMP:1",
+     "lwKind": "BARBARIAN_CAMP",
+     "on": "OWN_PARCEL",
+     "heroParcel": null,
+     "distU": 16.9
+    },
+    {
+     "poi": "EDU-CASTLE-WESTGATE:WILD_LAIR:1",
+     "lwKind": "WILD_LAIR",
+     "on": "OWN_PARCEL",
+     "heroParcel": null,
+     "distU": 10.1
+    }
+   ]
+  },
+  "EDU-KEEP-CLIFFWATCH": {
+   "kind": "KEEP",
+   "heroParcels": [
+    "30203520121",
+    "30203520157",
+    "30203520197"
+   ],
+   "note": null,
+   "pois": [
+    {
+     "poi": "EDU-KEEP-CLIFFWATCH:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "on": "CASTLE_PARCEL",
+     "heroParcel": "30203520121",
+     "distU": 0.2
+    },
+    {
+     "poi": "EDU-KEEP-CLIFFWATCH:BARBARIAN_CAMP:1",
+     "lwKind": "BARBARIAN_CAMP",
+     "on": "OWN_PARCEL",
+     "heroParcel": null,
+     "distU": 26.1
+    },
+    {
+     "poi": "EDU-KEEP-CLIFFWATCH:AIRDROP_ZONE:1",
+     "lwKind": "AIRDROP_ZONE",
+     "on": "HERO_PARCEL",
+     "heroParcel": "30203520157",
+     "distU": 6.5
+    }
+   ]
+  },
+  "EDU-KEEP-LANTERNHILL": {
+   "kind": "KEEP",
+   "heroParcels": [
+    "30203510131",
+    "30203510026",
+    "30203510182"
+   ],
+   "note": null,
+   "pois": [
+    {
+     "poi": "EDU-KEEP-LANTERNHILL:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "on": "CASTLE_PARCEL",
+     "heroParcel": "30203510131",
+     "distU": 0.2
+    },
+    {
+     "poi": "EDU-KEEP-LANTERNHILL:BARBARIAN_CAMP:1",
+     "lwKind": "BARBARIAN_CAMP",
+     "on": "OWN_PARCEL",
+     "heroParcel": null,
+     "distU": 30
+    },
+    {
+     "poi": "EDU-KEEP-LANTERNHILL:AIRDROP_ZONE:1",
+     "lwKind": "AIRDROP_ZONE",
+     "on": "OWN_PARCEL",
+     "heroParcel": null,
+     "distU": 9.8
+    }
+   ]
+  },
+  "EDU-PALACE-ACADEMY": {
+   "kind": "PALACE",
+   "heroParcels": [],
+   "note": "DEFERRED — estate 1020371 has no L3 subdivision of its own; hero parcels must be the estate's own parcels (decision 22). Position snapped onto host parcel 60202360024 (2026-07-21 off-parcel fix: original at sat in a parcel gap) so the PALACE renders; re-emit the EPIC 8 when the estate's subdivision data exists.",
+   "pois": [
+    {
+     "poi": "EDU-PALACE-ACADEMY:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "on": "CASTLE_PARCEL (deferred)"
+    },
+    {
+     "poi": "EDU-PALACE-ACADEMY:GUARDIAN_PERCH:2",
+     "lwKind": "GUARDIAN_PERCH",
+     "on": "CASTLE_PARCEL (deferred)"
+    },
+    {
+     "poi": "EDU-PALACE-ACADEMY:WAR_CAMP:1",
+     "lwKind": "WAR_CAMP",
+     "on": "BOARD (deferred)"
+    },
+    {
+     "poi": "EDU-PALACE-ACADEMY:BARBARIAN_CAMP:1",
+     "lwKind": "BARBARIAN_CAMP",
+     "on": "BOARD (deferred)"
+    },
+    {
+     "poi": "EDU-PALACE-ACADEMY:WILD_LAIR:1",
+     "lwKind": "WILD_LAIR",
+     "on": "BOARD (deferred)"
+    },
+    {
+     "poi": "EDU-PALACE-ACADEMY:AIRDROP_ZONE:1",
+     "lwKind": "AIRDROP_ZONE",
+     "on": "BOARD (deferred)"
+    }
+   ]
+  },
+  "ENT-CASTLE-FESTGATE": {
+   "kind": "CASTLE",
+   "heroParcels": [
+    "20314850240",
+    "20314850361",
+    "20314850082",
+    "20314850170",
+    "20314850154"
+   ],
+   "note": null,
+   "pois": [
+    {
+     "poi": "ENT-CASTLE-FESTGATE:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "on": "CASTLE_PARCEL",
+     "heroParcel": "20314850240",
+     "distU": 0.2
+    },
+    {
+     "poi": "ENT-CASTLE-FESTGATE:MERCENARY_POST:1",
+     "lwKind": "MERCENARY_POST",
+     "on": "HERO_PARCEL",
+     "heroParcel": "20314850361",
+     "distU": 2.9
+    },
+    {
+     "poi": "ENT-CASTLE-FESTGATE:WILD_LAIR:1",
+     "lwKind": "WILD_LAIR",
+     "on": "OWN_PARCEL",
+     "heroParcel": null,
+     "distU": 11.1
+    },
+    {
+     "poi": "ENT-CASTLE-FESTGATE:AIRDROP_ZONE:1",
+     "lwKind": "AIRDROP_ZONE",
+     "on": "OWN_PARCEL",
+     "heroParcel": null,
+     "distU": 14.9
+    }
+   ]
+  },
+  "ENT-CASTLE-RIVERGATE": {
+   "kind": "CASTLE",
+   "heroParcels": [
+    "20314880213",
+    "20314880385",
+    "20314880014",
+    "20314880329",
+    "20314880053"
+   ],
+   "note": null,
+   "pois": [
+    {
+     "poi": "ENT-CASTLE-RIVERGATE:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "on": "CASTLE_PARCEL",
+     "heroParcel": "20314880213",
+     "distU": 0.1
+    },
+    {
+     "poi": "ENT-CASTLE-RIVERGATE:MERCENARY_POST:1",
+     "lwKind": "MERCENARY_POST",
+     "on": "HERO_PARCEL",
+     "heroParcel": "20314880329",
+     "distU": 4.4
+    },
+    {
+     "poi": "ENT-CASTLE-RIVERGATE:WILD_LAIR:1",
+     "lwKind": "WILD_LAIR",
+     "on": "OWN_PARCEL",
+     "heroParcel": null,
+     "distU": 10.9
+    },
+    {
+     "poi": "ENT-CASTLE-RIVERGATE:AIRDROP_ZONE:1",
+     "lwKind": "AIRDROP_ZONE",
+     "on": "OWN_PARCEL",
+     "heroParcel": null,
+     "distU": 8.6
+    }
+   ]
+  },
+  "ENT-KEEP-CAMPANILE": {
+   "kind": "KEEP",
+   "heroParcels": [
+    "30314610147",
+    "30314610101",
+    "30314610024"
+   ],
+   "note": null,
+   "pois": [
+    {
+     "poi": "ENT-KEEP-CAMPANILE:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "on": "CASTLE_PARCEL",
+     "heroParcel": "30314610147",
+     "distU": 0.3
+    },
+    {
+     "poi": "ENT-KEEP-CAMPANILE:WILD_LAIR:1",
+     "lwKind": "WILD_LAIR",
+     "on": "OWN_PARCEL",
+     "heroParcel": null,
+     "distU": 17.8
+    },
+    {
+     "poi": "ENT-KEEP-CAMPANILE:AIRDROP_ZONE:1",
+     "lwKind": "AIRDROP_ZONE",
+     "on": "OWN_PARCEL",
+     "heroParcel": null,
+     "distU": 9.2
+    }
+   ]
+  },
+  "ENT-KEEP-LANTERNSHORE": {
+   "kind": "KEEP",
+   "heroParcels": [
+    "30314500098",
+    "30314500189",
+    "30314500185"
+   ],
+   "note": null,
+   "pois": [
+    {
+     "poi": "ENT-KEEP-LANTERNSHORE:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "on": "CASTLE_PARCEL",
+     "heroParcel": "30314500098",
+     "distU": 0.2
+    },
+    {
+     "poi": "ENT-KEEP-LANTERNSHORE:HARBOUR:1",
+     "lwKind": "HARBOUR",
+     "on": "OWN_PARCEL",
+     "heroParcel": null,
+     "distU": 10.7
+    },
+    {
+     "poi": "ENT-KEEP-LANTERNSHORE:CARAVAN_WAYPOINT:1",
+     "lwKind": "CARAVAN_WAYPOINT",
+     "on": "HERO_PARCEL",
+     "heroParcel": "30314500185",
+     "distU": 5
+    },
+    {
+     "poi": "ENT-KEEP-LANTERNSHORE:LANDING_SPOT:1",
+     "lwKind": "LANDING_SPOT",
+     "on": "OWN_PARCEL",
+     "heroParcel": null,
+     "distU": 13.9
+    }
+   ]
+  },
+  "ENT-KEEP-PETALPORT": {
+   "kind": "KEEP",
+   "heroParcels": [
+    "30314590117",
+    "30314590004",
+    "30314590170"
+   ],
+   "note": null,
+   "pois": [
+    {
+     "poi": "ENT-KEEP-PETALPORT:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "on": "CASTLE_PARCEL",
+     "heroParcel": "30314590117",
+     "distU": 0.1
+    },
+    {
+     "poi": "ENT-KEEP-PETALPORT:HARBOUR:1",
+     "lwKind": "HARBOUR",
+     "on": "OWN_PARCEL",
+     "heroParcel": null,
+     "distU": 10.3
+    },
+    {
+     "poi": "ENT-KEEP-PETALPORT:CARAVAN_WAYPOINT:1",
+     "lwKind": "CARAVAN_WAYPOINT",
+     "on": "HERO_PARCEL",
+     "heroParcel": "30314590170",
+     "distU": 4.8
+    },
+    {
+     "poi": "ENT-KEEP-PETALPORT:LANDING_SPOT:1",
+     "lwKind": "LANDING_SPOT",
+     "on": "HERO_PARCEL",
+     "heroParcel": "30314590170",
+     "distU": 6
+    }
+   ]
+  },
+  "ENT-KEEP-SUNSTRAND": {
+   "kind": "KEEP",
+   "heroParcels": [
+    "30314600114",
+    "30314600187",
+    "30314600083"
+   ],
+   "note": null,
+   "pois": [
+    {
+     "poi": "ENT-KEEP-SUNSTRAND:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "on": "CASTLE_PARCEL",
+     "heroParcel": "30314600114",
+     "distU": 0.1
+    },
+    {
+     "poi": "ENT-KEEP-SUNSTRAND:BARBARIAN_CAMP:1",
+     "lwKind": "BARBARIAN_CAMP",
+     "on": "OWN_PARCEL",
+     "heroParcel": null,
+     "distU": 20.5
+    },
+    {
+     "poi": "ENT-KEEP-SUNSTRAND:AIRDROP_ZONE:1",
+     "lwKind": "AIRDROP_ZONE",
+     "on": "OWN_PARCEL",
+     "heroParcel": null,
+     "distU": 11.8
+    }
+   ]
+  },
+  "ENT-KEEP-TIDEWATCH": {
+   "kind": "KEEP",
+   "heroParcels": [
+    "30314530132",
+    "30314530001",
+    "30314530092"
+   ],
+   "note": null,
+   "pois": [
+    {
+     "poi": "ENT-KEEP-TIDEWATCH:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "on": "CASTLE_PARCEL",
+     "heroParcel": "30314530132",
+     "distU": 0.2
+    },
+    {
+     "poi": "ENT-KEEP-TIDEWATCH:BARBARIAN_CAMP:1",
+     "lwKind": "BARBARIAN_CAMP",
+     "on": "OWN_PARCEL",
+     "heroParcel": null,
+     "distU": 30.9
+    },
+    {
+     "poi": "ENT-KEEP-TIDEWATCH:AIRDROP_ZONE:1",
+     "lwKind": "AIRDROP_ZONE",
+     "on": "HERO_PARCEL",
+     "heroParcel": "30314530001",
+     "distU": 7.7
+    }
+   ]
+  },
+  "ENT-PALACE-MASKS": {
+   "kind": "PALACE",
+   "heroParcels": [],
+   "note": "EPIC estate 1031491 has NO L3 subdivision — hero-parcel designation DEFERRED until it is subdivided; its castle battle map arrives with the pre-designed estate map (canon decisions 4/5)",
+   "pois": [
+    {
+     "poi": "ENT-PALACE-MASKS:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "on": "CASTLE_PARCEL (deferred)"
+    },
+    {
+     "poi": "ENT-PALACE-MASKS:GUARDIAN_PERCH:2",
+     "lwKind": "GUARDIAN_PERCH",
+     "on": "CASTLE_PARCEL (deferred)"
+    },
+    {
+     "poi": "ENT-PALACE-MASKS:WAR_CAMP:1",
+     "lwKind": "WAR_CAMP",
+     "on": "BOARD (deferred)"
+    },
+    {
+     "poi": "ENT-PALACE-MASKS:WILD_LAIR:1",
+     "lwKind": "WILD_LAIR",
+     "on": "BOARD (deferred)"
+    },
+    {
+     "poi": "ENT-PALACE-MASKS:AIRDROP_ZONE:1",
+     "lwKind": "AIRDROP_ZONE",
+     "on": "BOARD (deferred)"
+    },
+    {
+     "poi": "ENT-PALACE-MASKS:CARAVAN_WAYPOINT:1",
+     "lwKind": "CARAVAN_WAYPOINT",
+     "on": "BOARD (deferred)"
+    }
+   ]
+  },
+  "HS1-AEROPOLIS": {
+   "kind": "PALACE",
+   "heroParcels": [],
+   "note": "EPIC estate 1040345 has NO L3 subdivision — hero-parcel designation DEFERRED until it is subdivided; its castle battle map arrives with the pre-designed estate map (canon decisions 4/5)",
+   "pois": [
+    {
+     "poi": "HS1-AEROPOLIS:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "on": "CASTLE_PARCEL (deferred)"
+    },
+    {
+     "poi": "HS1-AEROPOLIS:GUARDIAN_PERCH:2",
+     "lwKind": "GUARDIAN_PERCH",
+     "on": "CASTLE_PARCEL (deferred)"
+    },
+    {
+     "poi": "HS1-AEROPOLIS:WAR_CAMP:1",
+     "lwKind": "WAR_CAMP",
+     "on": "BOARD (deferred)"
+    },
+    {
+     "poi": "HS1-AEROPOLIS:AIRSHIP_DOCK:1",
+     "lwKind": "AIRSHIP_DOCK",
+     "on": "BOARD (deferred)"
+    },
+    {
+     "poi": "HS1-AEROPOLIS:WILD_LAIR:1",
+     "lwKind": "WILD_LAIR",
+     "on": "BOARD (deferred)"
+    },
+    {
+     "poi": "HS1-AEROPOLIS:AIRDROP_ZONE:1",
+     "lwKind": "AIRDROP_ZONE",
+     "on": "BOARD (deferred)"
+    },
+    {
+     "poi": "HS1-AEROPOLIS:LANDING_SPOT:1",
+     "lwKind": "LANDING_SPOT",
+     "on": "BOARD (deferred)"
+    },
+    {
+     "poi": "HS1-AEROPOLIS:LANDING_SPOT:2",
+     "lwKind": "LANDING_SPOT",
+     "on": "BOARD (deferred)"
+    },
+    {
+     "poi": "HS1-AEROPOLIS:CARAVAN_WAYPOINT:1",
+     "lwKind": "CARAVAN_WAYPOINT",
+     "on": "BOARD (deferred)"
+    }
+   ]
+  },
+  "HS1-CASTLE-GARDENHOLD": {
+   "kind": "CASTLE",
+   "heroParcels": [
+    "20403390093",
+    "20403390262",
+    "20403390273",
+    "20403390035",
+    "20403390156"
+   ],
+   "note": null,
+   "pois": [
+    {
+     "poi": "HS1-CASTLE-GARDENHOLD:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "on": "CASTLE_PARCEL",
+     "heroParcel": "20403390093",
+     "distU": 0
+    },
+    {
+     "poi": "HS1-CASTLE-GARDENHOLD:MERCENARY_POST:1",
+     "lwKind": "MERCENARY_POST",
+     "on": "HERO_PARCEL",
+     "heroParcel": "20403390035",
+     "distU": 6.6
+    },
+    {
+     "poi": "HS1-CASTLE-GARDENHOLD:AIRSHIP_DOCK:1",
+     "lwKind": "AIRSHIP_DOCK",
+     "on": "HERO_PARCEL",
+     "heroParcel": "20403390262",
+     "distU": 3.9
+    },
+    {
+     "poi": "HS1-CASTLE-GARDENHOLD:WILD_LAIR:1",
+     "lwKind": "WILD_LAIR",
+     "on": "OWN_PARCEL",
+     "heroParcel": null,
+     "distU": 16.5
+    },
+    {
+     "poi": "HS1-CASTLE-GARDENHOLD:LANDING_SPOT:1",
+     "lwKind": "LANDING_SPOT",
+     "on": "HERO_PARCEL",
+     "heroParcel": "20403390262",
+     "distU": 2.9
+    },
+    {
+     "poi": "HS1-CASTLE-GARDENHOLD:LANDING_SPOT:2",
+     "lwKind": "LANDING_SPOT",
+     "on": "OWN_PARCEL",
+     "heroParcel": null,
+     "distU": 8.1
+    },
+    {
+     "poi": "HS1-CASTLE-GARDENHOLD:CARAVAN_WAYPOINT:1",
+     "lwKind": "CARAVAN_WAYPOINT",
+     "on": "HERO_PARCEL",
+     "heroParcel": "20403390262",
+     "distU": 3.9
+    }
+   ]
+  },
+  "HS1-CASTLE-HEAVENSGATE": {
+   "kind": "CASTLE",
+   "heroParcels": [
+    "20403420225",
+    "20403420335",
+    "20403420170",
+    "20403420061",
+    "20403420314"
+   ],
+   "note": null,
+   "pois": [
+    {
+     "poi": "HS1-CASTLE-HEAVENSGATE:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "on": "CASTLE_PARCEL",
+     "heroParcel": "20403420225",
+     "distU": 0
+    },
+    {
+     "poi": "HS1-CASTLE-HEAVENSGATE:MERCENARY_POST:1",
+     "lwKind": "MERCENARY_POST",
+     "on": "HERO_PARCEL",
+     "heroParcel": "20403420314",
+     "distU": 4
+    },
+    {
+     "poi": "HS1-CASTLE-HEAVENSGATE:AIRSHIP_DOCK:1",
+     "lwKind": "AIRSHIP_DOCK",
+     "on": "HERO_PARCEL",
+     "heroParcel": "20403420061",
+     "distU": 7.1
+    },
+    {
+     "poi": "HS1-CASTLE-HEAVENSGATE:WILD_LAIR:1",
+     "lwKind": "WILD_LAIR",
+     "on": "OWN_PARCEL",
+     "heroParcel": null,
+     "distU": 12.3
+    },
+    {
+     "poi": "HS1-CASTLE-HEAVENSGATE:LANDING_SPOT:1",
+     "lwKind": "LANDING_SPOT",
+     "on": "HERO_PARCEL",
+     "heroParcel": "20403420335",
+     "distU": 7.5
+    },
+    {
+     "poi": "HS1-CASTLE-HEAVENSGATE:LANDING_SPOT:2",
+     "lwKind": "LANDING_SPOT",
+     "on": "OWN_PARCEL",
+     "heroParcel": null,
+     "distU": 8.5
+    },
+    {
+     "poi": "HS1-CASTLE-HEAVENSGATE:CARAVAN_WAYPOINT:1",
+     "lwKind": "CARAVAN_WAYPOINT",
+     "on": "CASTLE_PARCEL",
+     "heroParcel": "20403420225",
+     "distU": 5.1
+    }
+   ]
+  },
+  "HS1-CASTLE-TERRACEHALL": {
+   "kind": "CASTLE",
+   "heroParcels": [
+    "20403410180",
+    "20403410001",
+    "20403410326",
+    "20403410254",
+    "20403410063"
+   ],
+   "note": null,
+   "pois": [
+    {
+     "poi": "HS1-CASTLE-TERRACEHALL:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "on": "CASTLE_PARCEL",
+     "heroParcel": "20403410180",
+     "distU": 0
+    },
+    {
+     "poi": "HS1-CASTLE-TERRACEHALL:MERCENARY_POST:1",
+     "lwKind": "MERCENARY_POST",
+     "on": "HERO_PARCEL",
+     "heroParcel": "20403410001",
+     "distU": 1.6
+    },
+    {
+     "poi": "HS1-CASTLE-TERRACEHALL:AIRSHIP_DOCK:1",
+     "lwKind": "AIRSHIP_DOCK",
+     "on": "HERO_PARCEL",
+     "heroParcel": "20403410063",
+     "distU": 4.9
+    },
+    {
+     "poi": "HS1-CASTLE-TERRACEHALL:WILD_LAIR:1",
+     "lwKind": "WILD_LAIR",
+     "on": "HERO_PARCEL",
+     "heroParcel": "20403410063",
+     "distU": 7.8
+    },
+    {
+     "poi": "HS1-CASTLE-TERRACEHALL:LANDING_SPOT:1",
+     "lwKind": "LANDING_SPOT",
+     "on": "CASTLE_PARCEL",
+     "heroParcel": "20403410180",
+     "distU": 1.5
+    },
+    {
+     "poi": "HS1-CASTLE-TERRACEHALL:LANDING_SPOT:2",
+     "lwKind": "LANDING_SPOT",
+     "on": "HERO_PARCEL",
+     "heroParcel": "20403410001",
+     "distU": 3
+    },
+    {
+     "poi": "HS1-CASTLE-TERRACEHALL:CARAVAN_WAYPOINT:1",
+     "lwKind": "CARAVAN_WAYPOINT",
+     "on": "CASTLE_PARCEL",
+     "heroParcel": "20403410180",
+     "distU": 3.3
+    }
+   ]
+  },
+  "HS1-KEEP-EMBERWATCH": {
+   "kind": "KEEP",
+   "heroParcels": [
+    "30403370144",
+    "30403370266",
+    "30403370196"
+   ],
+   "note": null,
+   "pois": [
+    {
+     "poi": "HS1-KEEP-EMBERWATCH:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "on": "CASTLE_PARCEL",
+     "heroParcel": "30403370144",
+     "distU": 0
+    },
+    {
+     "poi": "HS1-KEEP-EMBERWATCH:AIRSHIP_DOCK:1",
+     "lwKind": "AIRSHIP_DOCK",
+     "on": "HERO_PARCEL",
+     "heroParcel": "30403370266",
+     "distU": 1.8
+    },
+    {
+     "poi": "HS1-KEEP-EMBERWATCH:AIRDROP_ZONE:1",
+     "lwKind": "AIRDROP_ZONE",
+     "on": "OWN_PARCEL",
+     "heroParcel": null,
+     "distU": 16.7
+    },
+    {
+     "poi": "HS1-KEEP-EMBERWATCH:LANDING_SPOT:1",
+     "lwKind": "LANDING_SPOT",
+     "on": "OWN_PARCEL",
+     "heroParcel": null,
+     "distU": 9.5
+    },
+    {
+     "poi": "HS1-KEEP-EMBERWATCH:LANDING_SPOT:2",
+     "lwKind": "LANDING_SPOT",
+     "on": "HERO_PARCEL",
+     "heroParcel": "30403370266",
+     "distU": 3.5
+    },
+    {
+     "poi": "HS1-KEEP-EMBERWATCH:CARAVAN_WAYPOINT:1",
+     "lwKind": "CARAVAN_WAYPOINT",
+     "on": "HERO_PARCEL",
+     "heroParcel": "30403370266",
+     "distU": 2
+    }
+   ]
+  },
+  "HS1-KEEP-EMPYREAWATCH": {
+   "kind": "KEEP",
+   "heroParcels": [
+    "30403260122",
+    "30403260042",
+    "30403260187"
+   ],
+   "note": null,
+   "pois": [
+    {
+     "poi": "HS1-KEEP-EMPYREAWATCH:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "on": "CASTLE_PARCEL",
+     "heroParcel": "30403260122",
+     "distU": 0
+    },
+    {
+     "poi": "HS1-KEEP-EMPYREAWATCH:AIRSHIP_DOCK:1",
+     "lwKind": "AIRSHIP_DOCK",
+     "on": "HERO_PARCEL",
+     "heroParcel": "30403260042",
+     "distU": 7.9
+    },
+    {
+     "poi": "HS1-KEEP-EMPYREAWATCH:AIRDROP_ZONE:1",
+     "lwKind": "AIRDROP_ZONE",
+     "on": "OWN_PARCEL",
+     "heroParcel": null,
+     "distU": 8.6
+    },
+    {
+     "poi": "HS1-KEEP-EMPYREAWATCH:LANDING_SPOT:1",
+     "lwKind": "LANDING_SPOT",
+     "on": "HERO_PARCEL",
+     "heroParcel": "30403260187",
+     "distU": 4.7
+    },
+    {
+     "poi": "HS1-KEEP-EMPYREAWATCH:LANDING_SPOT:2",
+     "lwKind": "LANDING_SPOT",
+     "on": "HERO_PARCEL",
+     "heroParcel": "30403260042",
+     "distU": 6.8
+    },
+    {
+     "poi": "HS1-KEEP-EMPYREAWATCH:CARAVAN_WAYPOINT:1",
+     "lwKind": "CARAVAN_WAYPOINT",
+     "on": "CASTLE_PARCEL",
+     "heroParcel": "30403260122",
+     "distU": 5.2
+    }
+   ]
+  },
+  "HS1-KEEP-STAIRWATCH": {
+   "kind": "KEEP",
+   "heroParcels": [
+    "30403350067",
+    "30403350160",
+    "30403350198"
+   ],
+   "note": null,
+   "pois": [
+    {
+     "poi": "HS1-KEEP-STAIRWATCH:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "on": "CASTLE_PARCEL",
+     "heroParcel": "30403350067",
+     "distU": 0
+    },
+    {
+     "poi": "HS1-KEEP-STAIRWATCH:AIRSHIP_DOCK:1",
+     "lwKind": "AIRSHIP_DOCK",
+     "on": "OWN_PARCEL",
+     "heroParcel": null,
+     "distU": 9.1
+    },
+    {
+     "poi": "HS1-KEEP-STAIRWATCH:AIRDROP_ZONE:1",
+     "lwKind": "AIRDROP_ZONE",
+     "on": "OWN_PARCEL",
+     "heroParcel": null,
+     "distU": 10.3
+    },
+    {
+     "poi": "HS1-KEEP-STAIRWATCH:LANDING_SPOT:1",
+     "lwKind": "LANDING_SPOT",
+     "on": "OWN_PARCEL",
+     "heroParcel": null,
+     "distU": 16.9
+    },
+    {
+     "poi": "HS1-KEEP-STAIRWATCH:LANDING_SPOT:2",
+     "lwKind": "LANDING_SPOT",
+     "on": "CASTLE_PARCEL",
+     "heroParcel": "30403350067",
+     "distU": 7.9
+    },
+    {
+     "poi": "HS1-KEEP-STAIRWATCH:CARAVAN_WAYPOINT:1",
+     "lwKind": "CARAVAN_WAYPOINT",
+     "on": "CASTLE_PARCEL",
+     "heroParcel": "30403350067",
+     "distU": 5.5
+    }
+   ]
+  },
+  "HS2-KEEP-BULWARK": {
+   "kind": "KEEP",
+   "heroParcels": [
+    "30504480153",
+    "30504480066",
+    "30504480026"
+   ],
+   "note": null,
+   "pois": [
+    {
+     "poi": "HS2-KEEP-BULWARK:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "on": "CASTLE_PARCEL",
+     "heroParcel": "30504480153",
+     "distU": 0
+    },
+    {
+     "poi": "HS2-KEEP-BULWARK:AIRSHIP_DOCK:1",
+     "lwKind": "AIRSHIP_DOCK",
+     "on": "CASTLE_PARCEL",
+     "heroParcel": "30504480153",
+     "distU": 6.5
+    },
+    {
+     "poi": "HS2-KEEP-BULWARK:AIRDROP_ZONE:1",
+     "lwKind": "AIRDROP_ZONE",
+     "on": "OWN_PARCEL",
+     "heroParcel": null,
+     "distU": 9.3
+    },
+    {
+     "poi": "HS2-KEEP-BULWARK:LANDING_SPOT:1",
+     "lwKind": "LANDING_SPOT",
+     "on": "OWN_PARCEL",
+     "heroParcel": null,
+     "distU": 13.7
+    },
+    {
+     "poi": "HS2-KEEP-BULWARK:LANDING_SPOT:2",
+     "lwKind": "LANDING_SPOT",
+     "on": "OWN_PARCEL",
+     "heroParcel": null,
+     "distU": 10.7
+    },
+    {
+     "poi": "HS2-KEEP-BULWARK:CARAVAN_WAYPOINT:1",
+     "lwKind": "CARAVAN_WAYPOINT",
+     "on": "CASTLE_PARCEL",
+     "heroParcel": "30504480153",
+     "distU": 3.9
+    }
+   ]
+  },
+  "HS2-KEEP-CINDERHOLM": {
+   "kind": "KEEP",
+   "heroParcels": [
+    "30504380121",
+    "30504380027",
+    "30504380188"
+   ],
+   "note": null,
+   "pois": [
+    {
+     "poi": "HS2-KEEP-CINDERHOLM:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "on": "CASTLE_PARCEL",
+     "heroParcel": "30504380121",
+     "distU": 0
+    },
+    {
+     "poi": "HS2-KEEP-CINDERHOLM:AIRSHIP_DOCK:1",
+     "lwKind": "AIRSHIP_DOCK",
+     "on": "HERO_PARCEL",
+     "heroParcel": "30504380188",
+     "distU": 4.6
+    },
+    {
+     "poi": "HS2-KEEP-CINDERHOLM:AIRDROP_ZONE:1",
+     "lwKind": "AIRDROP_ZONE",
+     "on": "HERO_PARCEL",
+     "heroParcel": "30504380027",
+     "distU": 7.6
+    },
+    {
+     "poi": "HS2-KEEP-CINDERHOLM:LANDING_SPOT:1",
+     "lwKind": "LANDING_SPOT",
+     "on": "OWN_PARCEL",
+     "heroParcel": null,
+     "distU": 8.7
+    },
+    {
+     "poi": "HS2-KEEP-CINDERHOLM:LANDING_SPOT:2",
+     "lwKind": "LANDING_SPOT",
+     "on": "OWN_PARCEL",
+     "heroParcel": null,
+     "distU": 10.2
+    },
+    {
+     "poi": "HS2-KEEP-CINDERHOLM:CARAVAN_WAYPOINT:1",
+     "lwKind": "CARAVAN_WAYPOINT",
+     "on": "CASTLE_PARCEL",
+     "heroParcel": "30504380121",
+     "distU": 3.1
+    }
+   ]
+  },
+  "HS2-KEEP-PARADEWATCH": {
+   "kind": "KEEP",
+   "heroParcels": [
+    "30504390106",
+    "30504390009",
+    "30504390205"
+   ],
+   "note": null,
+   "pois": [
+    {
+     "poi": "HS2-KEEP-PARADEWATCH:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "on": "CASTLE_PARCEL",
+     "heroParcel": "30504390106",
+     "distU": 0
+    },
+    {
+     "poi": "HS2-KEEP-PARADEWATCH:AIRSHIP_DOCK:1",
+     "lwKind": "AIRSHIP_DOCK",
+     "on": "HERO_PARCEL",
+     "heroParcel": "30504390205",
+     "distU": 6.3
+    },
+    {
+     "poi": "HS2-KEEP-PARADEWATCH:AIRDROP_ZONE:1",
+     "lwKind": "AIRDROP_ZONE",
+     "on": "OWN_PARCEL",
+     "heroParcel": null,
+     "distU": 14.9
+    },
+    {
+     "poi": "HS2-KEEP-PARADEWATCH:LANDING_SPOT:1",
+     "lwKind": "LANDING_SPOT",
+     "on": "OWN_PARCEL",
+     "heroParcel": null,
+     "distU": 12.9
+    },
+    {
+     "poi": "HS2-KEEP-PARADEWATCH:LANDING_SPOT:2",
+     "lwKind": "LANDING_SPOT",
+     "on": "OWN_PARCEL",
+     "heroParcel": null,
+     "distU": 10.2
+    },
+    {
+     "poi": "HS2-KEEP-PARADEWATCH:CARAVAN_WAYPOINT:1",
+     "lwKind": "CARAVAN_WAYPOINT",
+     "on": "CASTLE_PARCEL",
+     "heroParcel": "30504390106",
+     "distU": 4.3
+    }
+   ]
+  },
+  "HS2-KEEP-SEAMWATCH": {
+   "kind": "KEEP",
+   "heroParcels": [
+    "30504490110",
+    "30504490042",
+    "30504490113"
+   ],
+   "note": null,
+   "pois": [
+    {
+     "poi": "HS2-KEEP-SEAMWATCH:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "on": "CASTLE_PARCEL",
+     "heroParcel": "30504490110",
+     "distU": 0
+    },
+    {
+     "poi": "HS2-KEEP-SEAMWATCH:AIRSHIP_DOCK:1",
+     "lwKind": "AIRSHIP_DOCK",
+     "on": "CASTLE_PARCEL",
+     "heroParcel": "30504490110",
+     "distU": 6.7
+    },
+    {
+     "poi": "HS2-KEEP-SEAMWATCH:AIRDROP_ZONE:1",
+     "lwKind": "AIRDROP_ZONE",
+     "on": "OWN_PARCEL",
+     "heroParcel": null,
+     "distU": 10.3
+    },
+    {
+     "poi": "HS2-KEEP-SEAMWATCH:LANDING_SPOT:1",
+     "lwKind": "LANDING_SPOT",
+     "on": "CASTLE_PARCEL",
+     "heroParcel": "30504490110",
+     "distU": 4.3
+    },
+    {
+     "poi": "HS2-KEEP-SEAMWATCH:LANDING_SPOT:2",
+     "lwKind": "LANDING_SPOT",
+     "on": "OWN_PARCEL",
+     "heroParcel": null,
+     "distU": 13.2
+    },
+    {
+     "poi": "HS2-KEEP-SEAMWATCH:CARAVAN_WAYPOINT:1",
+     "lwKind": "CARAVAN_WAYPOINT",
+     "on": "CASTLE_PARCEL",
+     "heroParcel": "30504490110",
+     "distU": 4
+    }
+   ]
+  },
+  "HS2-KEEP-SHARDWATCH": {
+   "kind": "KEEP",
+   "heroParcels": [
+    "30504360107",
+    "30504360000",
+    "30504360082"
+   ],
+   "note": null,
+   "pois": [
+    {
+     "poi": "HS2-KEEP-SHARDWATCH:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "on": "CASTLE_PARCEL",
+     "heroParcel": "30504360107",
+     "distU": 0
+    },
+    {
+     "poi": "HS2-KEEP-SHARDWATCH:AIRSHIP_DOCK:1",
+     "lwKind": "AIRSHIP_DOCK",
+     "on": "HERO_PARCEL",
+     "heroParcel": "30504360000",
+     "distU": 1.2
+    },
+    {
+     "poi": "HS2-KEEP-SHARDWATCH:AIRDROP_ZONE:1",
+     "lwKind": "AIRDROP_ZONE",
+     "on": "OWN_PARCEL",
+     "heroParcel": null,
+     "distU": 8.8
+    },
+    {
+     "poi": "HS2-KEEP-SHARDWATCH:LANDING_SPOT:1",
+     "lwKind": "LANDING_SPOT",
+     "on": "CASTLE_PARCEL",
+     "heroParcel": "30504360107",
+     "distU": 4.7
+    },
+    {
+     "poi": "HS2-KEEP-SHARDWATCH:LANDING_SPOT:2",
+     "lwKind": "LANDING_SPOT",
+     "on": "HERO_PARCEL",
+     "heroParcel": "30504360000",
+     "distU": 4.8
+    },
+    {
+     "poi": "HS2-KEEP-SHARDWATCH:CARAVAN_WAYPOINT:1",
+     "lwKind": "CARAVAN_WAYPOINT",
+     "on": "HERO_PARCEL",
+     "heroParcel": "30504360000",
+     "distU": 4.1
+    }
+   ]
+  },
+  "HS2-KEEP-WESTGATE": {
+   "kind": "KEEP",
+   "heroParcels": [
+    "30504410088",
+    "30504410202",
+    "30504410014"
+   ],
+   "note": null,
+   "pois": [
+    {
+     "poi": "HS2-KEEP-WESTGATE:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "on": "CASTLE_PARCEL",
+     "heroParcel": "30504410088",
+     "distU": 0
+    },
+    {
+     "poi": "HS2-KEEP-WESTGATE:AIRSHIP_DOCK:1",
+     "lwKind": "AIRSHIP_DOCK",
+     "on": "HERO_PARCEL",
+     "heroParcel": "30504410014",
+     "distU": 4.5
+    },
+    {
+     "poi": "HS2-KEEP-WESTGATE:AIRDROP_ZONE:1",
+     "lwKind": "AIRDROP_ZONE",
+     "on": "OWN_PARCEL",
+     "heroParcel": null,
+     "distU": 9.6
+    },
+    {
+     "poi": "HS2-KEEP-WESTGATE:LANDING_SPOT:1",
+     "lwKind": "LANDING_SPOT",
+     "on": "HERO_PARCEL",
+     "heroParcel": "30504410014",
+     "distU": 2.1
+    },
+    {
+     "poi": "HS2-KEEP-WESTGATE:LANDING_SPOT:2",
+     "lwKind": "LANDING_SPOT",
+     "on": "OWN_PARCEL",
+     "heroParcel": null,
+     "distU": 9.4
+    },
+    {
+     "poi": "HS2-KEEP-WESTGATE:CARAVAN_WAYPOINT:1",
+     "lwKind": "CARAVAN_WAYPOINT",
+     "on": "HERO_PARCEL",
+     "heroParcel": "30504410014",
+     "distU": 0.8
+    }
+   ]
+  },
+  "HS2-PALACE-EMBERTHRONE": {
+   "kind": "PALACE",
+   "heroParcels": [
+    "30504350016",
+    "30504350152",
+    "30504350103"
+   ],
+   "note": null,
+   "pois": [
+    {
+     "poi": "HS2-PALACE-EMBERTHRONE:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "on": "CASTLE_PARCEL",
+     "heroParcel": "30504350016",
+     "distU": 0
+    },
+    {
+     "poi": "HS2-PALACE-EMBERTHRONE:GUARDIAN_PERCH:2",
+     "lwKind": "GUARDIAN_PERCH",
+     "on": "CASTLE_PARCEL",
+     "heroParcel": "30504350016",
+     "distU": 0
+    },
+    {
+     "poi": "HS2-PALACE-EMBERTHRONE:WAR_CAMP:1",
+     "lwKind": "WAR_CAMP",
+     "on": "OWN_PARCEL",
+     "heroParcel": null,
+     "distU": 11.2
+    },
+    {
+     "poi": "HS2-PALACE-EMBERTHRONE:AIRSHIP_DOCK:1",
+     "lwKind": "AIRSHIP_DOCK",
+     "on": "OWN_PARCEL",
+     "heroParcel": null,
+     "distU": 8.1
+    },
+    {
+     "poi": "HS2-PALACE-EMBERTHRONE:WILD_LAIR:1",
+     "lwKind": "WILD_LAIR",
+     "on": "OWN_PARCEL",
+     "heroParcel": null,
+     "distU": 12.8
+    },
+    {
+     "poi": "HS2-PALACE-EMBERTHRONE:AIRDROP_ZONE:1",
+     "lwKind": "AIRDROP_ZONE",
+     "on": "HERO_PARCEL",
+     "heroParcel": "30504350152",
+     "distU": 4.7
+    },
+    {
+     "poi": "HS2-PALACE-EMBERTHRONE:LANDING_SPOT:1",
+     "lwKind": "LANDING_SPOT",
+     "on": "HERO_PARCEL",
+     "heroParcel": "30504350103",
+     "distU": 4.7
+    },
+    {
+     "poi": "HS2-PALACE-EMBERTHRONE:LANDING_SPOT:2",
+     "lwKind": "LANDING_SPOT",
+     "on": "OWN_PARCEL",
+     "heroParcel": null,
+     "distU": 14.6
+    },
+    {
+     "poi": "HS2-PALACE-EMBERTHRONE:CARAVAN_WAYPOINT:1",
+     "lwKind": "CARAVAN_WAYPOINT",
+     "on": "CASTLE_PARCEL",
+     "heroParcel": "30504350016",
+     "distU": 4.9
+    }
+   ]
+  },
+  "HS3-KEEP-AURORA": {
+   "kind": "KEEP",
+   "heroParcels": [
+    "30604620149",
+    "30604620024",
+    "30604620285"
+   ],
+   "note": null,
+   "pois": [
+    {
+     "poi": "HS3-KEEP-AURORA:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "on": "CASTLE_PARCEL",
+     "heroParcel": "30604620149",
+     "distU": 0
+    },
+    {
+     "poi": "HS3-KEEP-AURORA:AIRSHIP_DOCK:1",
+     "lwKind": "AIRSHIP_DOCK",
+     "on": "HERO_PARCEL",
+     "heroParcel": "30604620285",
+     "distU": 4.9
+    },
+    {
+     "poi": "HS3-KEEP-AURORA:AIRDROP_ZONE:1",
+     "lwKind": "AIRDROP_ZONE",
+     "on": "OWN_PARCEL",
+     "heroParcel": null,
+     "distU": 14.4
+    },
+    {
+     "poi": "HS3-KEEP-AURORA:LANDING_SPOT:1",
+     "lwKind": "LANDING_SPOT",
+     "on": "HERO_PARCEL",
+     "heroParcel": "30604620024",
+     "distU": 7.8
+    },
+    {
+     "poi": "HS3-KEEP-AURORA:LANDING_SPOT:2",
+     "lwKind": "LANDING_SPOT",
+     "on": "CASTLE_PARCEL",
+     "heroParcel": "30604620149",
+     "distU": 3.9
+    },
+    {
+     "poi": "HS3-KEEP-AURORA:CARAVAN_WAYPOINT:1",
+     "lwKind": "CARAVAN_WAYPOINT",
+     "on": "HERO_PARCEL",
+     "heroParcel": "30604620285",
+     "distU": 2.7
+    }
+   ]
+  },
+  "HS3-KEEP-DAWNSHIELD": {
+   "kind": "KEEP",
+   "heroParcels": [
+    "30604610102",
+    "30604610188",
+    "30604610029"
+   ],
+   "note": null,
+   "pois": [
+    {
+     "poi": "HS3-KEEP-DAWNSHIELD:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "on": "CASTLE_PARCEL",
+     "heroParcel": "30604610102",
+     "distU": 0
+    },
+    {
+     "poi": "HS3-KEEP-DAWNSHIELD:AIRSHIP_DOCK:1",
+     "lwKind": "AIRSHIP_DOCK",
+     "on": "HERO_PARCEL",
+     "heroParcel": "30604610029",
+     "distU": 3.1
+    },
+    {
+     "poi": "HS3-KEEP-DAWNSHIELD:AIRDROP_ZONE:1",
+     "lwKind": "AIRDROP_ZONE",
+     "on": "HERO_PARCEL",
+     "heroParcel": "30604610029",
+     "distU": 7.7
+    },
+    {
+     "poi": "HS3-KEEP-DAWNSHIELD:LANDING_SPOT:1",
+     "lwKind": "LANDING_SPOT",
+     "on": "OWN_PARCEL",
+     "heroParcel": null,
+     "distU": 8.3
+    },
+    {
+     "poi": "HS3-KEEP-DAWNSHIELD:LANDING_SPOT:2",
+     "lwKind": "LANDING_SPOT",
+     "on": "HERO_PARCEL",
+     "heroParcel": "30604610188",
+     "distU": 4.2
+    },
+    {
+     "poi": "HS3-KEEP-DAWNSHIELD:CARAVAN_WAYPOINT:1",
+     "lwKind": "CARAVAN_WAYPOINT",
+     "on": "HERO_PARCEL",
+     "heroParcel": "30604610029",
+     "distU": 2.2
+    }
+   ]
+  },
+  "HS3-KEEP-PILGRIMWATCH": {
+   "kind": "KEEP",
+   "heroParcels": [
+    "30604590122",
+    "30604590202",
+    "30604590101"
+   ],
+   "note": null,
+   "pois": [
+    {
+     "poi": "HS3-KEEP-PILGRIMWATCH:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "on": "CASTLE_PARCEL",
+     "heroParcel": "30604590122",
+     "distU": 0
+    },
+    {
+     "poi": "HS3-KEEP-PILGRIMWATCH:AIRSHIP_DOCK:1",
+     "lwKind": "AIRSHIP_DOCK",
+     "on": "OWN_PARCEL",
+     "heroParcel": null,
+     "distU": 9.3
+    },
+    {
+     "poi": "HS3-KEEP-PILGRIMWATCH:AIRDROP_ZONE:1",
+     "lwKind": "AIRDROP_ZONE",
+     "on": "HERO_PARCEL",
+     "heroParcel": "30604590202",
+     "distU": 6
+    },
+    {
+     "poi": "HS3-KEEP-PILGRIMWATCH:LANDING_SPOT:1",
+     "lwKind": "LANDING_SPOT",
+     "on": "OWN_PARCEL",
+     "heroParcel": null,
+     "distU": 10.3
+    },
+    {
+     "poi": "HS3-KEEP-PILGRIMWATCH:LANDING_SPOT:2",
+     "lwKind": "LANDING_SPOT",
+     "on": "CASTLE_PARCEL",
+     "heroParcel": "30604590122",
+     "distU": 6.2
+    },
+    {
+     "poi": "HS3-KEEP-PILGRIMWATCH:CARAVAN_WAYPOINT:1",
+     "lwKind": "CARAVAN_WAYPOINT",
+     "on": "CASTLE_PARCEL",
+     "heroParcel": "30604590122",
+     "distU": 5.6
+    }
+   ]
+  },
+  "HS3-KEEP-SHIELDGATE": {
+   "kind": "KEEP",
+   "heroParcels": [
+    "30604570104",
+    "30604570000",
+    "30604570142"
+   ],
+   "note": null,
+   "pois": [
+    {
+     "poi": "HS3-KEEP-SHIELDGATE:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "on": "CASTLE_PARCEL",
+     "heroParcel": "30604570104",
+     "distU": 0
+    },
+    {
+     "poi": "HS3-KEEP-SHIELDGATE:AIRSHIP_DOCK:1",
+     "lwKind": "AIRSHIP_DOCK",
+     "on": "HERO_PARCEL",
+     "heroParcel": "30604570000",
+     "distU": 4.9
+    },
+    {
+     "poi": "HS3-KEEP-SHIELDGATE:AIRDROP_ZONE:1",
+     "lwKind": "AIRDROP_ZONE",
+     "on": "OWN_PARCEL",
+     "heroParcel": null,
+     "distU": 13.8
+    },
+    {
+     "poi": "HS3-KEEP-SHIELDGATE:LANDING_SPOT:1",
+     "lwKind": "LANDING_SPOT",
+     "on": "CASTLE_PARCEL",
+     "heroParcel": "30604570104",
+     "distU": 2.1
+    },
+    {
+     "poi": "HS3-KEEP-SHIELDGATE:LANDING_SPOT:2",
+     "lwKind": "LANDING_SPOT",
+     "on": "OWN_PARCEL",
+     "heroParcel": null,
+     "distU": 9
+    },
+    {
+     "poi": "HS3-KEEP-SHIELDGATE:CARAVAN_WAYPOINT:1",
+     "lwKind": "CARAVAN_WAYPOINT",
+     "on": "HERO_PARCEL",
+     "heroParcel": "30604570000",
+     "distU": 3.3
+    }
+   ]
+  },
+  "HS3-SANCTUM": {
+   "kind": "PALACE",
+   "heroParcels": [],
+   "note": "EPIC estate 1060463 has NO L3 subdivision — hero-parcel designation DEFERRED until it is subdivided; its castle battle map arrives with the pre-designed estate map (canon decisions 4/5)",
+   "pois": [
+    {
+     "poi": "HS3-SANCTUM:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "on": "CASTLE_PARCEL (deferred)"
+    },
+    {
+     "poi": "HS3-SANCTUM:GUARDIAN_PERCH:2",
+     "lwKind": "GUARDIAN_PERCH",
+     "on": "CASTLE_PARCEL (deferred)"
+    },
+    {
+     "poi": "HS3-SANCTUM:WAR_CAMP:1",
+     "lwKind": "WAR_CAMP",
+     "on": "BOARD (deferred)"
+    },
+    {
+     "poi": "HS3-SANCTUM:AIRSHIP_DOCK:1",
+     "lwKind": "AIRSHIP_DOCK",
+     "on": "BOARD (deferred)"
+    },
+    {
+     "poi": "HS3-SANCTUM:WILD_LAIR:1",
+     "lwKind": "WILD_LAIR",
+     "on": "BOARD (deferred)"
+    },
+    {
+     "poi": "HS3-SANCTUM:AIRDROP_ZONE:1",
+     "lwKind": "AIRDROP_ZONE",
+     "on": "BOARD (deferred)"
+    },
+    {
+     "poi": "HS3-SANCTUM:LANDING_SPOT:1",
+     "lwKind": "LANDING_SPOT",
+     "on": "BOARD (deferred)"
+    },
+    {
+     "poi": "HS3-SANCTUM:LANDING_SPOT:2",
+     "lwKind": "LANDING_SPOT",
+     "on": "BOARD (deferred)"
+    },
+    {
+     "poi": "HS3-SANCTUM:CARAVAN_WAYPOINT:1",
+     "lwKind": "CARAVAN_WAYPOINT",
+     "on": "BOARD (deferred)"
+    }
+   ]
+  },
+  "HUB-CASTLE-DONGGUAN": {
+   "kind": "CASTLE",
+   "heroParcels": [
+    "20717190260",
+    "20717190442",
+    "20717190325",
+    "20717190362",
+    "20717190427"
+   ],
+   "note": null,
+   "pois": [
+    {
+     "poi": "HUB-CASTLE-DONGGUAN:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "on": "CASTLE_PARCEL",
+     "heroParcel": "20717190260",
+     "distU": 0.2
+    },
+    {
+     "poi": "HUB-CASTLE-DONGGUAN:MERCENARY_POST:1",
+     "lwKind": "MERCENARY_POST",
+     "on": "HERO_PARCEL",
+     "heroParcel": "20717190325",
+     "distU": 2.4
+    },
+    {
+     "poi": "HUB-CASTLE-DONGGUAN:BARBARIAN_CAMP:1",
+     "lwKind": "BARBARIAN_CAMP",
+     "on": "OWN_PARCEL",
+     "heroParcel": null,
+     "distU": 29.8
+    },
+    {
+     "poi": "HUB-CASTLE-DONGGUAN:WILD_LAIR:1",
+     "lwKind": "WILD_LAIR",
+     "on": "OWN_PARCEL",
+     "heroParcel": null,
+     "distU": 11.2
+    }
+   ]
+  },
+  "HUB-CASTLE-JINJIANG": {
+   "kind": "CASTLE",
+   "heroParcels": [],
+   "note": "EPIC estate 1071729 has NO L3 subdivision — hero-parcel designation DEFERRED until it is subdivided; its castle battle map arrives with the pre-designed estate map (canon decisions 4/5)",
+   "pois": [
+    {
+     "poi": "HUB-CASTLE-JINJIANG:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "on": "CASTLE_PARCEL (deferred)"
+    },
+    {
+     "poi": "HUB-CASTLE-JINJIANG:MERCENARY_POST:1",
+     "lwKind": "MERCENARY_POST",
+     "on": "BOARD (deferred)"
+    },
+    {
+     "poi": "HUB-CASTLE-JINJIANG:BARBARIAN_CAMP:1",
+     "lwKind": "BARBARIAN_CAMP",
+     "on": "BOARD (deferred)"
+    },
+    {
+     "poi": "HUB-CASTLE-JINJIANG:WILD_LAIR:1",
+     "lwKind": "WILD_LAIR",
+     "on": "BOARD (deferred)"
+    }
+   ]
+  },
+  "HUB-CASTLE-NANPING": {
+   "kind": "CASTLE",
+   "heroParcels": [],
+   "note": "EPIC estate 1071733 has NO L3 subdivision — hero-parcel designation DEFERRED until it is subdivided; its castle battle map arrives with the pre-designed estate map (canon decisions 4/5)",
+   "pois": [
+    {
+     "poi": "HUB-CASTLE-NANPING:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "on": "CASTLE_PARCEL (deferred)"
+    },
+    {
+     "poi": "HUB-CASTLE-NANPING:MERCENARY_POST:1",
+     "lwKind": "MERCENARY_POST",
+     "on": "BOARD (deferred)"
+    },
+    {
+     "poi": "HUB-CASTLE-NANPING:WILD_LAIR:1",
+     "lwKind": "WILD_LAIR",
+     "on": "BOARD (deferred)"
+    },
+    {
+     "poi": "HUB-CASTLE-NANPING:AIRDROP_ZONE:1",
+     "lwKind": "AIRDROP_ZONE",
+     "on": "BOARD (deferred)"
+    }
+   ]
+  },
+  "HUB-CASTLE-TIEDU": {
+   "kind": "CASTLE",
+   "heroParcels": [
+    "20716710172",
+    "20716710002",
+    "20716710082",
+    "20716710262",
+    "20716710195"
+   ],
+   "note": null,
+   "pois": [
+    {
+     "poi": "HUB-CASTLE-TIEDU:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "on": "CASTLE_PARCEL",
+     "heroParcel": "20716710172",
+     "distU": 0.2
+    },
+    {
+     "poi": "HUB-CASTLE-TIEDU:MERCENARY_POST:1",
+     "lwKind": "MERCENARY_POST",
+     "on": "CASTLE_PARCEL",
+     "heroParcel": "20716710172",
+     "distU": 4.4
+    },
+    {
+     "poi": "HUB-CASTLE-TIEDU:WILD_LAIR:1",
+     "lwKind": "WILD_LAIR",
+     "on": "OWN_PARCEL",
+     "heroParcel": null,
+     "distU": 10.4
+    },
+    {
+     "poi": "HUB-CASTLE-TIEDU:AIRDROP_ZONE:1",
+     "lwKind": "AIRDROP_ZONE",
+     "on": "HERO_PARCEL",
+     "heroParcel": "20716710002",
+     "distU": 7.8
+    }
+   ]
+  },
+  "HUB-CASTLE-XICHUAN": {
+   "kind": "CASTLE",
+   "heroParcels": [],
+   "note": "EPIC estate 1071738 has NO L3 subdivision — hero-parcel designation DEFERRED until it is subdivided; its castle battle map arrives with the pre-designed estate map (canon decisions 4/5)",
+   "pois": [
+    {
+     "poi": "HUB-CASTLE-XICHUAN:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "on": "CASTLE_PARCEL (deferred)"
+    },
+    {
+     "poi": "HUB-CASTLE-XICHUAN:MERCENARY_POST:1",
+     "lwKind": "MERCENARY_POST",
+     "on": "BOARD (deferred)"
+    },
+    {
+     "poi": "HUB-CASTLE-XICHUAN:WILD_LAIR:1",
+     "lwKind": "WILD_LAIR",
+     "on": "BOARD (deferred)"
+    },
+    {
+     "poi": "HUB-CASTLE-XICHUAN:AIRDROP_ZONE:1",
+     "lwKind": "AIRDROP_ZONE",
+     "on": "BOARD (deferred)"
+    }
+   ]
+  },
+  "HUB-CASTLE-YONGAN": {
+   "kind": "CASTLE",
+   "heroParcels": [],
+   "note": "EPIC estate 1071728 has NO L3 subdivision — hero-parcel designation DEFERRED until it is subdivided; its castle battle map arrives with the pre-designed estate map (canon decisions 4/5)",
+   "pois": [
+    {
+     "poi": "HUB-CASTLE-YONGAN:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "on": "CASTLE_PARCEL (deferred)"
+    },
+    {
+     "poi": "HUB-CASTLE-YONGAN:MERCENARY_POST:1",
+     "lwKind": "MERCENARY_POST",
+     "on": "BOARD (deferred)"
+    },
+    {
+     "poi": "HUB-CASTLE-YONGAN:AIRSHIP_DOCK:1",
+     "lwKind": "AIRSHIP_DOCK",
+     "on": "BOARD (deferred)"
+    },
+    {
+     "poi": "HUB-CASTLE-YONGAN:WILD_LAIR:1",
+     "lwKind": "WILD_LAIR",
+     "on": "BOARD (deferred)"
+    },
+    {
+     "poi": "HUB-CASTLE-YONGAN:LANDING_SPOT:1",
+     "lwKind": "LANDING_SPOT",
+     "on": "BOARD (deferred)"
+    },
+    {
+     "poi": "HUB-CASTLE-YONGAN:LANDING_SPOT:2",
+     "lwKind": "LANDING_SPOT",
+     "on": "BOARD (deferred)"
+    },
+    {
+     "poi": "HUB-CASTLE-YONGAN:CARAVAN_WAYPOINT:1",
+     "lwKind": "CARAVAN_WAYPOINT",
+     "on": "BOARD (deferred)"
+    }
+   ]
+  },
+  "HUB-KEEP-DRAGONTAIL": {
+   "kind": "KEEP",
+   "heroParcels": [
+    "30716210150",
+    "30716210071",
+    "30716210235"
+   ],
+   "note": null,
+   "pois": [
+    {
+     "poi": "HUB-KEEP-DRAGONTAIL:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "on": "CASTLE_PARCEL",
+     "heroParcel": "30716210150",
+     "distU": 0.2
+    },
+    {
+     "poi": "HUB-KEEP-DRAGONTAIL:BARBARIAN_CAMP:1",
+     "lwKind": "BARBARIAN_CAMP",
+     "on": "OWN_PARCEL",
+     "heroParcel": null,
+     "distU": 25.4
+    },
+    {
+     "poi": "HUB-KEEP-DRAGONTAIL:AIRDROP_ZONE:1",
+     "lwKind": "AIRDROP_ZONE",
+     "on": "OWN_PARCEL",
+     "heroParcel": null,
+     "distU": 8.7
+    }
+   ]
+  },
+  "HUB-KEEP-SHAFTWATCH": {
+   "kind": "KEEP",
+   "heroParcels": [],
+   "note": "LARGE estate 3071605 has NO L3 subdivision — hero-parcel designation DEFERRED until it is subdivided; its castle battle map arrives with the pre-designed estate map (canon decisions 4/5)",
+   "pois": [
+    {
+     "poi": "HUB-KEEP-SHAFTWATCH:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "on": "CASTLE_PARCEL (deferred)"
+    },
+    {
+     "poi": "HUB-KEEP-SHAFTWATCH:BARBARIAN_CAMP:1",
+     "lwKind": "BARBARIAN_CAMP",
+     "on": "BOARD (deferred)"
+    },
+    {
+     "poi": "HUB-KEEP-SHAFTWATCH:AIRDROP_ZONE:1",
+     "lwKind": "AIRDROP_ZONE",
+     "on": "BOARD (deferred)"
+    }
+   ]
+  },
+  "HUB-KEEP-SOUTHGATE": {
+   "kind": "KEEP",
+   "heroParcels": [
+    "30716650182",
+    "30716650189",
+    "30716650015"
+   ],
+   "note": null,
+   "pois": [
+    {
+     "poi": "HUB-KEEP-SOUTHGATE:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "on": "CASTLE_PARCEL",
+     "heroParcel": "30716650182",
+     "distU": 0.2
+    },
+    {
+     "poi": "HUB-KEEP-SOUTHGATE:BARBARIAN_CAMP:1",
+     "lwKind": "BARBARIAN_CAMP",
+     "on": "OWN_PARCEL",
+     "heroParcel": null,
+     "distU": 22.4
+    },
+    {
+     "poi": "HUB-KEEP-SOUTHGATE:AIRDROP_ZONE:1",
+     "lwKind": "AIRDROP_ZONE",
+     "on": "OWN_PARCEL",
+     "heroParcel": null,
+     "distU": 9.4
+    }
+   ]
+  },
+  "HUB-KEEP-SOUTHSLOPE": {
+   "kind": "KEEP",
+   "heroParcels": [
+    "30716190171",
+    "30716190028",
+    "30716190078"
+   ],
+   "note": null,
+   "pois": [
+    {
+     "poi": "HUB-KEEP-SOUTHSLOPE:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "on": "CASTLE_PARCEL",
+     "heroParcel": "30716190171",
+     "distU": 0.2
+    },
+    {
+     "poi": "HUB-KEEP-SOUTHSLOPE:BARBARIAN_CAMP:1",
+     "lwKind": "BARBARIAN_CAMP",
+     "on": "OWN_PARCEL",
+     "heroParcel": null,
+     "distU": 16.5
+    },
+    {
+     "poi": "HUB-KEEP-SOUTHSLOPE:AIRDROP_ZONE:1",
+     "lwKind": "AIRDROP_ZONE",
+     "on": "OWN_PARCEL",
+     "heroParcel": null,
+     "distU": 17.5
+    }
+   ]
+  },
+  "HUB-PALACE-ZHONGDU": {
+   "kind": "PALACE",
+   "heroParcels": [],
+   "note": "EPIC estate 1071732 has NO L3 subdivision — hero-parcel designation DEFERRED until it is subdivided; its castle battle map arrives with the pre-designed estate map (canon decisions 4/5)",
+   "pois": [
+    {
+     "poi": "HUB-PALACE-ZHONGDU:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "on": "CASTLE_PARCEL (deferred)"
+    },
+    {
+     "poi": "HUB-PALACE-ZHONGDU:GUARDIAN_PERCH:2",
+     "lwKind": "GUARDIAN_PERCH",
+     "on": "CASTLE_PARCEL (deferred)"
+    },
+    {
+     "poi": "HUB-PALACE-ZHONGDU:WAR_CAMP:1",
+     "lwKind": "WAR_CAMP",
+     "on": "BOARD (deferred)"
+    },
+    {
+     "poi": "HUB-PALACE-ZHONGDU:BARBARIAN_CAMP:1",
+     "lwKind": "BARBARIAN_CAMP",
+     "on": "BOARD (deferred)"
+    },
+    {
+     "poi": "HUB-PALACE-ZHONGDU:WILD_LAIR:1",
+     "lwKind": "WILD_LAIR",
+     "on": "BOARD (deferred)"
+    },
+    {
+     "poi": "HUB-PALACE-ZHONGDU:AIRDROP_ZONE:1",
+     "lwKind": "AIRDROP_ZONE",
+     "on": "BOARD (deferred)"
+    }
+   ]
+  },
+  "KOL-CASTLE-FORTUNA": {
+   "kind": "CASTLE",
+   "heroParcels": [],
+   "note": "KOL ships NO L2 estates / L3 parcels yet (zone-registry: l2Estates 0, l3Singles 0; zoneCode 08 exists only in the token-encoding map) — estate anchoring (§3c: the biggest estate class present takes the top role) AND hero-parcel designation (§3d) are DEFERRED until Fortuna land ships; the citadel-casino battle map arrives with the pre-designed estate map (canon decisions 4/5)",
+   "pois": [
+    {
+     "poi": "KOL-CASTLE-FORTUNA:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "on": "CASTLE_PARCEL (deferred)"
+    },
+    {
+     "poi": "KOL-CASTLE-FORTUNA:MERCENARY_POST:1",
+     "lwKind": "MERCENARY_POST",
+     "on": "BOARD (deferred)"
+    },
+    {
+     "poi": "KOL-CASTLE-FORTUNA:HARBOUR:1",
+     "lwKind": "HARBOUR",
+     "on": "BOARD (deferred)"
+    },
+    {
+     "poi": "KOL-CASTLE-FORTUNA:BARBARIAN_CAMP:1",
+     "lwKind": "BARBARIAN_CAMP",
+     "on": "BOARD (deferred)"
+    },
+    {
+     "poi": "KOL-CASTLE-FORTUNA:LANDING_SPOT:1",
+     "lwKind": "LANDING_SPOT",
+     "on": "BOARD (deferred)"
+    },
+    {
+     "poi": "KOL-CASTLE-FORTUNA:CARAVAN_WAYPOINT:1",
+     "lwKind": "CARAVAN_WAYPOINT",
+     "on": "BOARD (deferred)"
+    }
+   ]
+  },
+  "UW2-BASTION-DOMINUS": {
+   "kind": "PALACE",
+   "heroParcels": [],
+   "note": "EPIC estate 1101100 has NO L3 subdivision — hero-parcel designation DEFERRED until it is subdivided; its castle battle map arrives with the pre-designed estate map (canon decisions 4/5)",
+   "pois": [
+    {
+     "poi": "UW2-BASTION-DOMINUS:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "on": "CASTLE_PARCEL (deferred)"
+    },
+    {
+     "poi": "UW2-BASTION-DOMINUS:GUARDIAN_PERCH:2",
+     "lwKind": "GUARDIAN_PERCH",
+     "on": "CASTLE_PARCEL (deferred)"
+    },
+    {
+     "poi": "UW2-BASTION-DOMINUS:WAR_CAMP:1",
+     "lwKind": "WAR_CAMP",
+     "on": "BOARD (deferred)"
+    },
+    {
+     "poi": "UW2-BASTION-DOMINUS:VENT:1",
+     "lwKind": "VENT",
+     "on": "BOARD (deferred)"
+    },
+    {
+     "poi": "UW2-BASTION-DOMINUS:BARBARIAN_CAMP:1",
+     "lwKind": "BARBARIAN_CAMP",
+     "on": "BOARD (deferred)"
+    },
+    {
+     "poi": "UW2-BASTION-DOMINUS:WILD_LAIR:1",
+     "lwKind": "WILD_LAIR",
+     "on": "BOARD (deferred)"
+    }
+   ]
+  },
+  "UW2-CASTLE-DEEPGATE": {
+   "kind": "CASTLE",
+   "heroParcels": [
+    "21010830174",
+    "21010830113",
+    "21010830273",
+    "21010830173",
+    "21010830000"
+   ],
+   "note": null,
+   "pois": [
+    {
+     "poi": "UW2-CASTLE-DEEPGATE:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "on": "CASTLE_PARCEL",
+     "heroParcel": "21010830174",
+     "distU": 0
+    },
+    {
+     "poi": "UW2-CASTLE-DEEPGATE:MERCENARY_POST:1",
+     "lwKind": "MERCENARY_POST",
+     "on": "HERO_PARCEL",
+     "heroParcel": "21010830000",
+     "distU": 1.4
+    },
+    {
+     "poi": "UW2-CASTLE-DEEPGATE:VENT:1",
+     "lwKind": "VENT",
+     "on": "HERO_PARCEL",
+     "heroParcel": "21010830000",
+     "distU": 7.9
+    },
+    {
+     "poi": "UW2-CASTLE-DEEPGATE:BARBARIAN_CAMP:1",
+     "lwKind": "BARBARIAN_CAMP",
+     "on": "OWN_PARCEL",
+     "heroParcel": null,
+     "distU": 26.2
+    }
+   ]
+  },
+  "UW2-CASTLE-MOURNGATE": {
+   "kind": "CASTLE",
+   "heroParcels": [
+    "21010900135",
+    "21010900381",
+    "21010900187",
+    "21010900335",
+    "21010900005"
+   ],
+   "note": null,
+   "pois": [
+    {
+     "poi": "UW2-CASTLE-MOURNGATE:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "on": "CASTLE_PARCEL",
+     "heroParcel": "21010900135",
+     "distU": 0
+    },
+    {
+     "poi": "UW2-CASTLE-MOURNGATE:MERCENARY_POST:1",
+     "lwKind": "MERCENARY_POST",
+     "on": "CASTLE_PARCEL",
+     "heroParcel": "21010900135",
+     "distU": 5.7
+    },
+    {
+     "poi": "UW2-CASTLE-MOURNGATE:VENT:1",
+     "lwKind": "VENT",
+     "on": "HERO_PARCEL",
+     "heroParcel": "21010900335",
+     "distU": 5.2
+    },
+    {
+     "poi": "UW2-CASTLE-MOURNGATE:BARBARIAN_CAMP:1",
+     "lwKind": "BARBARIAN_CAMP",
+     "on": "OWN_PARCEL",
+     "heroParcel": null,
+     "distU": 22.5
+    }
+   ]
+  },
+  "UW2-CASTLE-PALEWATER": {
+   "kind": "CASTLE",
+   "heroParcels": [
+    "21010920077",
+    "21010920170",
+    "21010920150",
+    "21010920018",
+    "21010920330"
+   ],
+   "note": null,
+   "pois": [
+    {
+     "poi": "UW2-CASTLE-PALEWATER:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "on": "CASTLE_PARCEL",
+     "heroParcel": "21010920077",
+     "distU": 0
+    },
+    {
+     "poi": "UW2-CASTLE-PALEWATER:MERCENARY_POST:1",
+     "lwKind": "MERCENARY_POST",
+     "on": "HERO_PARCEL",
+     "heroParcel": "21010920150",
+     "distU": 3.9
+    },
+    {
+     "poi": "UW2-CASTLE-PALEWATER:VENT:1",
+     "lwKind": "VENT",
+     "on": "HERO_PARCEL",
+     "heroParcel": "21010920018",
+     "distU": 4.6
+    },
+    {
+     "poi": "UW2-CASTLE-PALEWATER:BARBARIAN_CAMP:1",
+     "lwKind": "BARBARIAN_CAMP",
+     "on": "OWN_PARCEL",
+     "heroParcel": null,
+     "distU": 27.1
+    }
+   ]
+  },
+  "UW2-KEEP-DROWNMEADOW": {
+   "kind": "KEEP",
+   "heroParcels": [
+    "31010570121",
+    "31010570162",
+    "31010570187"
+   ],
+   "note": null,
+   "pois": [
+    {
+     "poi": "UW2-KEEP-DROWNMEADOW:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "on": "CASTLE_PARCEL",
+     "heroParcel": "31010570121",
+     "distU": 0
+    },
+    {
+     "poi": "UW2-KEEP-DROWNMEADOW:VENT:1",
+     "lwKind": "VENT",
+     "on": "OWN_PARCEL",
+     "heroParcel": null,
+     "distU": 12
+    },
+    {
+     "poi": "UW2-KEEP-DROWNMEADOW:MERCENARY_POST:1",
+     "lwKind": "MERCENARY_POST",
+     "on": "HERO_PARCEL",
+     "heroParcel": "31010570162",
+     "distU": 2.3
+    }
+   ]
+  },
+  "UW2-KEEP-FERRYWATCH": {
+   "kind": "KEEP",
+   "heroParcels": [
+    "31010670023",
+    "31010670200",
+    "31010670106"
+   ],
+   "note": null,
+   "pois": [
+    {
+     "poi": "UW2-KEEP-FERRYWATCH:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "on": "CASTLE_PARCEL",
+     "heroParcel": "31010670023",
+     "distU": 0
+    },
+    {
+     "poi": "UW2-KEEP-FERRYWATCH:VENT:1",
+     "lwKind": "VENT",
+     "on": "HERO_PARCEL",
+     "heroParcel": "31010670106",
+     "distU": 4
+    },
+    {
+     "poi": "UW2-KEEP-FERRYWATCH:MERCENARY_POST:1",
+     "lwKind": "MERCENARY_POST",
+     "on": "HERO_PARCEL",
+     "heroParcel": "31010670200",
+     "distU": 5.3
+    }
+   ]
+  },
+  "UW2-KEEP-PALELANTERN": {
+   "kind": "KEEP",
+   "heroParcels": [
+    "31010780195",
+    "31010780086",
+    "31010780245"
+   ],
+   "note": null,
+   "pois": [
+    {
+     "poi": "UW2-KEEP-PALELANTERN:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "on": "CASTLE_PARCEL",
+     "heroParcel": "31010780195",
+     "distU": 0
+    },
+    {
+     "poi": "UW2-KEEP-PALELANTERN:VENT:1",
+     "lwKind": "VENT",
+     "on": "OWN_PARCEL",
+     "heroParcel": null,
+     "distU": 10.2
+    },
+    {
+     "poi": "UW2-KEEP-PALELANTERN:MERCENARY_POST:1",
+     "lwKind": "MERCENARY_POST",
+     "on": "CASTLE_PARCEL",
+     "heroParcel": "31010780195",
+     "distU": 6.4
+    }
+   ]
+  },
+  "UW2-KEEP-SUNKENCOURT": {
+   "kind": "KEEP",
+   "heroParcels": [
+    "31010720149",
+    "31010720113",
+    "31010720018"
+   ],
+   "note": null,
+   "pois": [
+    {
+     "poi": "UW2-KEEP-SUNKENCOURT:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "on": "CASTLE_PARCEL",
+     "heroParcel": "31010720149",
+     "distU": 0
+    },
+    {
+     "poi": "UW2-KEEP-SUNKENCOURT:VENT:1",
+     "lwKind": "VENT",
+     "on": "OWN_PARCEL",
+     "heroParcel": null,
+     "distU": 9
+    },
+    {
+     "poi": "UW2-KEEP-SUNKENCOURT:MERCENARY_POST:1",
+     "lwKind": "MERCENARY_POST",
+     "on": "CASTLE_PARCEL",
+     "heroParcel": "31010720149",
+     "distU": 5
+    }
+   ]
+  },
+  "UW2-KEEP-VIGILWATCH": {
+   "kind": "KEEP",
+   "heroParcels": [
+    "31010750155",
+    "31010750157",
+    "31010750033"
+   ],
+   "note": null,
+   "pois": [
+    {
+     "poi": "UW2-KEEP-VIGILWATCH:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "on": "CASTLE_PARCEL",
+     "heroParcel": "31010750155",
+     "distU": 0
+    },
+    {
+     "poi": "UW2-KEEP-VIGILWATCH:VENT:1",
+     "lwKind": "VENT",
+     "on": "HERO_PARCEL",
+     "heroParcel": "31010750157",
+     "distU": 7.2
+    },
+    {
+     "poi": "UW2-KEEP-VIGILWATCH:MERCENARY_POST:1",
+     "lwKind": "MERCENARY_POST",
+     "on": "CASTLE_PARCEL",
+     "heroParcel": "31010750155",
+     "distU": 5.8
+    }
+   ]
+  },
+  "UW3-KEEP-COIN": {
+   "kind": "KEEP",
+   "heroParcels": [
+    "31100860055",
+    "31100860179",
+    "31100860214"
+   ],
+   "note": null,
+   "pois": [
+    {
+     "poi": "UW3-KEEP-COIN:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "on": "CASTLE_PARCEL",
+     "heroParcel": "31100860055",
+     "distU": 0
+    },
+    {
+     "poi": "UW3-KEEP-COIN:VENT:1",
+     "lwKind": "VENT",
+     "on": "OWN_PARCEL",
+     "heroParcel": null,
+     "distU": 8.8
+    },
+    {
+     "poi": "UW3-KEEP-COIN:MERCENARY_POST:1",
+     "lwKind": "MERCENARY_POST",
+     "on": "HERO_PARCEL",
+     "heroParcel": "31100860179",
+     "distU": 6
+    }
+   ]
+  },
+  "UW3-KEEP-HUNGER": {
+   "kind": "KEEP",
+   "heroParcels": [
+    "31100840037",
+    "31100840205",
+    "31100840170"
+   ],
+   "note": null,
+   "pois": [
+    {
+     "poi": "UW3-KEEP-HUNGER:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "on": "CASTLE_PARCEL",
+     "heroParcel": "31100840037",
+     "distU": 0
+    },
+    {
+     "poi": "UW3-KEEP-HUNGER:VENT:1",
+     "lwKind": "VENT",
+     "on": "CASTLE_PARCEL",
+     "heroParcel": "31100840037",
+     "distU": 6.9
+    },
+    {
+     "poi": "UW3-KEEP-HUNGER:MERCENARY_POST:1",
+     "lwKind": "MERCENARY_POST",
+     "on": "CASTLE_PARCEL",
+     "heroParcel": "31100840037",
+     "distU": 4.3
+    }
+   ]
+  },
+  "UW3-KEEP-MIRRORS": {
+   "kind": "KEEP",
+   "heroParcels": [
+    "31100890117",
+    "31100890189",
+    "31100890014"
+   ],
+   "note": null,
+   "pois": [
+    {
+     "poi": "UW3-KEEP-MIRRORS:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "on": "CASTLE_PARCEL",
+     "heroParcel": "31100890117",
+     "distU": 0
+    },
+    {
+     "poi": "UW3-KEEP-MIRRORS:VENT:1",
+     "lwKind": "VENT",
+     "on": "HERO_PARCEL",
+     "heroParcel": "31100890014",
+     "distU": 7.7
+    },
+    {
+     "poi": "UW3-KEEP-MIRRORS:MERCENARY_POST:1",
+     "lwKind": "MERCENARY_POST",
+     "on": "HERO_PARCEL",
+     "heroParcel": "31100890189",
+     "distU": 2.1
+    }
+   ]
+  },
+  "UW3-KEEP-SILK": {
+   "kind": "KEEP",
+   "heroParcels": [
+    "31100880181",
+    "31100880014",
+    "31100880242"
+   ],
+   "note": null,
+   "pois": [
+    {
+     "poi": "UW3-KEEP-SILK:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "on": "CASTLE_PARCEL",
+     "heroParcel": "31100880181",
+     "distU": 0
+    },
+    {
+     "poi": "UW3-KEEP-SILK:VENT:1",
+     "lwKind": "VENT",
+     "on": "OWN_PARCEL",
+     "heroParcel": null,
+     "distU": 8.3
+    },
+    {
+     "poi": "UW3-KEEP-SILK:MERCENARY_POST:1",
+     "lwKind": "MERCENARY_POST",
+     "on": "HERO_PARCEL",
+     "heroParcel": "31100880242",
+     "distU": 1.1
+    }
+   ]
+  },
+  "UW3-PALACE-VAULTPALACE": {
+   "kind": "PALACE",
+   "heroParcels": [
+    "31100870136",
+    "31100870043",
+    "31100870224"
+   ],
+   "note": null,
+   "pois": [
+    {
+     "poi": "UW3-PALACE-VAULTPALACE:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "on": "CASTLE_PARCEL",
+     "heroParcel": "31100870136",
+     "distU": 0
+    },
+    {
+     "poi": "UW3-PALACE-VAULTPALACE:GUARDIAN_PERCH:2",
+     "lwKind": "GUARDIAN_PERCH",
+     "on": "CASTLE_PARCEL",
+     "heroParcel": "31100870136",
+     "distU": 0
+    },
+    {
+     "poi": "UW3-PALACE-VAULTPALACE:WAR_CAMP:1",
+     "lwKind": "WAR_CAMP",
+     "on": "OWN_PARCEL",
+     "heroParcel": null,
+     "distU": 29.6
+    },
+    {
+     "poi": "UW3-PALACE-VAULTPALACE:VENT:1",
+     "lwKind": "VENT",
+     "on": "HERO_PARCEL",
+     "heroParcel": "31100870224",
+     "distU": 7.4
+    },
+    {
+     "poi": "UW3-PALACE-VAULTPALACE:BARBARIAN_CAMP:1",
+     "lwKind": "BARBARIAN_CAMP",
+     "on": "OWN_PARCEL",
+     "heroParcel": null,
+     "distU": 29.1
+    },
+    {
+     "poi": "UW3-PALACE-VAULTPALACE:WILD_LAIR:1",
+     "lwKind": "WILD_LAIR",
+     "on": "OWN_PARCEL",
+     "heroParcel": null,
+     "distU": 23.3
+    }
+   ]
+  }
+ }
+}

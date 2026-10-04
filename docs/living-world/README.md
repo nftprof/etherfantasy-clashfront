@@ -46,6 +46,7 @@ byte-compares the results, re-runs the sims and checks every invariant (≈ 1 mi
 | `singles.summary.json`, `singles.sample.json` | 284,314 single parcels, seeded lazily (`seedSingle`); 1 % sample | `seed_singles.mjs` |
 | `world-elements/*.cf.json` | The designer overlay (249 Nodes) for cf-overworld | `export_cf_overlay.mjs` |
 | `sea-air-lanes.json` | 55 sea + 6 air lanes | `sea_air_lanes.mjs` |
+| `hero-parcel-map.json` | Every castle-ring Node on the canon hero-mode parcels (3D window), or its own parcel battle | `hero_parcels.mjs` |
 | `map-frames.json` | Every baked battle map's own bounds polygon + defender base + attacker spawn (373) | `derive_map_frames.mjs` |
 | `approaches.json` | NAVAL_APPROACH / AIR_APPROACH + pier/pad anchors per baked map | `derive_approaches.mjs` |
 | `region-influence.json` | Holdable POIs per region (23,489) | `influence.mjs` |
@@ -77,7 +78,7 @@ byte-compares the results, re-runs the sims and checks every invariant (≈ 1 mi
   - `ambient_traffic.mjs` (`shipsAt(seed, tick)`);
   - `world_calendar.mjs`, `season_beats.mjs` (+ `threat_bosses.mjs`), `event_board.mjs`, `region_feed.mjs`, `journal.mjs`;
   - `i18n.mjs` (`t(key, vars, lang)`: all copy comes from the string table);
-  - `map_frames.mjs` (anchor a fight on the real parcel shape), `allocate_payload.mjs` (the battle wire out) and `resolve_result.mjs` (the result callback back into the world).
+  - `map_frames.mjs` (anchor a fight on the real parcel shape), `hero_parcels.mjs` (Nodes on the estate's hero-mode parcels), `allocate_payload.mjs` (the battle wire out) and `resolve_result.mjs` (the result callback back into the world).
 - **Reports** (→ `docs/living-world/reports/`):
   - `balance_sheet.mjs` (CT paid vs units lost);
   - `ct_flow_sim.mjs` (ledger invariants);
