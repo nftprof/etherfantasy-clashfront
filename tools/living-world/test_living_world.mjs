@@ -57,4 +57,11 @@ ok(DF.upgrades.filter((u) => u.module === "TOWER").every((u) => u.estateOnly), "
 ok(DF.structureDamageReductionCap <= GU.forms["3"].aura.structureDmgMul + 0.2 && DF.structureDamageReductionCap < 0.5, "walls + Guardian structure-damage reduction capped below 50 %");
 ok(DF.upgrades.every((u) => doc3.includes("`" + u.module + "`")) && doc3.includes(`×${DF.rating.max}`) && doc3.includes(`${DF.breachFloor.withinSec / 60} minutes`), "doc 03 lists every module, the ×cap and the breach floor from defences.json");
 
+// player events (doc 05)
+const PE = JSON.parse(fs.readFileSync("data/living-world/player-events.json", "utf8")), doc5 = fs.readFileSync("docs/living-world/05-PLAYER-EVENTS.md", "utf8");
+ok(PE.kinds.length === 6 && PE.kinds.every((k) => doc5.includes("**" + k.pevKind + "**")), "doc 05 and player-events.json list the same 6 event kinds");
+ok(PE.rules.burnRakeMin >= 0.10 && PE.kinds.filter((k) => k.burnRake != null).every((k) => k.burnRake >= PE.rules.burnRakeMin), "every pot rake burns ≥ 10 %");
+ok(PE.rules.minNoticeSec >= 600 && PE.rules.relatedShare === "BURN" && PE.rules.relationLookbackDays >= 7, "15-min notice, related-account shares burned, ≥ 7-day relation lookback");
+ok(PE.kinds.filter((k) => k.anchor && !["CASTLE"].includes(k.anchor)).every((k) => kinds.includes(k.anchor)), "every event anchor is a real POI archetype");
+
 console.log(fails ? `❌ living-world: ${fails} failed` : "✅ living-world: all passed"); process.exit(fails ? 1 : 0);

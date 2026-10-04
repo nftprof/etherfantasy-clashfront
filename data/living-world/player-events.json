@@ -1,0 +1,81 @@
+{
+ "schema": "cf-living-world/player-events@1",
+ "note": "Player-created events (doc 05). Every pot is escrowed before an event goes live; payouts by contribution; relation-checked; rake burned.",
+ "rules": {
+  "minNoticeSec": 900,
+  "minShare": 0.05,
+  "burnRakeMin": 0.1,
+  "maxLivePerPlayer": 3,
+  "postingFeeGrowth": 1.5,
+  "relationLookbackDays": 14,
+  "relatedShare": "BURN"
+ },
+ "kinds": [
+  {
+   "pevKind": "GUARDIAN_CHALLENGE",
+   "auto": true,
+   "anchor": "GUARDIAN_PERCH",
+   "pot": "GUARDIAN_BOUNTY_ESCROW",
+   "windowH": [
+    0,
+    24
+   ]
+  },
+  {
+   "pevKind": "SIEGE_ME",
+   "auto": false,
+   "anchor": "CASTLE",
+   "pot": "DEFENCE_SPOILS_ESCROW+DARE",
+   "windowH": [
+    2,
+    24
+   ],
+   "dareMinCT": 5,
+   "withdrawPenalty": "DARE_TO_POOL"
+  },
+  {
+   "pevKind": "BOUNTY",
+   "auto": false,
+   "contract": "BOUNTY_HERO",
+   "pot": "ESCROW",
+   "windowH": [
+    1,
+    72
+   ],
+   "minCT": 5,
+   "burnRake": 0.1
+  },
+  {
+   "pevKind": "CARAVAN_RUN",
+   "auto": false,
+   "contract": "ESCORT_SUPPLY",
+   "army": "CARAVAN",
+   "pot": "ESCORT_PAY+CARGO",
+   "windowH": [
+    0,
+    12
+   ]
+  },
+  {
+   "pevKind": "SPONSORED_AIRDROP",
+   "auto": false,
+   "anchor": "AIRDROP_ZONE",
+   "pot": "CRATE",
+   "teleSec": 60,
+   "contestSec": 180,
+   "holdToClaimSec": 20,
+   "burnRake": 0.1,
+   "noticeOverride": 60
+  },
+  {
+   "pevKind": "WARBAND_CALL",
+   "auto": false,
+   "anchor": "WAR_CAMP",
+   "pot": "SHARED_SPOILS",
+   "musterMin": [
+    15,
+    60
+   ]
+  }
+ ]
+}
