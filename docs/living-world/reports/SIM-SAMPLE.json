@@ -1,0 +1,586 @@
+{
+ "schema": "cf-living-world/sim-sample@1",
+ "kernel": "server/sim (deterministic)",
+ "floorSec": 720,
+ "nPerKind": 6,
+ "rows": [
+  {
+   "k": "CALIBRATION",
+   "n": 6,
+   "breachRate": 100,
+   "medBreachSec": 97,
+   "medThreat": 0,
+   "medAttackerDeaths": 7,
+   "defenderWins": 0,
+   "flag": "TOO SOFT (falls in < 4 min)"
+  },
+  {
+   "k": "AIRSHIP_DOCK",
+   "n": 6,
+   "breachRate": 100,
+   "medBreachSec": 53,
+   "medThreat": 29,
+   "medAttackerDeaths": 1,
+   "defenderWins": 0,
+   "flag": "TOO SOFT (falls in < 4 min)"
+  },
+  {
+   "k": "BARBARIAN_CAMP",
+   "n": 6,
+   "breachRate": 100,
+   "medBreachSec": 49,
+   "medThreat": 29,
+   "medAttackerDeaths": 1,
+   "defenderWins": 0,
+   "flag": "TOO SOFT (falls in < 4 min)"
+  },
+  {
+   "k": "HARBOUR",
+   "n": 6,
+   "breachRate": 100,
+   "medBreachSec": 44,
+   "medThreat": 17,
+   "medAttackerDeaths": 0,
+   "defenderWins": 0,
+   "flag": "TOO SOFT (falls in < 4 min)"
+  },
+  {
+   "k": "MERCENARY_POST",
+   "n": 6,
+   "breachRate": 100,
+   "medBreachSec": 76,
+   "medThreat": 17,
+   "medAttackerDeaths": 4,
+   "defenderWins": 0,
+   "flag": "TOO SOFT (falls in < 4 min)"
+  },
+  {
+   "k": "SALVAGE_SITE",
+   "n": 6,
+   "breachRate": 100,
+   "medBreachSec": 60,
+   "medThreat": 34,
+   "medAttackerDeaths": 2,
+   "defenderWins": 0,
+   "flag": "TOO SOFT (falls in < 4 min)"
+  },
+  {
+   "k": "VENT",
+   "n": 6,
+   "breachRate": 100,
+   "medBreachSec": 108,
+   "medThreat": 58,
+   "medAttackerDeaths": 6,
+   "defenderWins": 0,
+   "flag": "TOO SOFT (falls in < 4 min)"
+  },
+  {
+   "k": "WAR_CAMP",
+   "n": 6,
+   "breachRate": 100,
+   "medBreachSec": 57,
+   "medThreat": 28,
+   "medAttackerDeaths": 3,
+   "defenderWins": 0,
+   "flag": "TOO SOFT (falls in < 4 min)"
+  },
+  {
+   "k": "WILD_LAIR",
+   "n": 6,
+   "breachRate": 100,
+   "medBreachSec": 61,
+   "medThreat": 39,
+   "medAttackerDeaths": 4,
+   "defenderWins": 0,
+   "flag": "TOO SOFT (falls in < 4 min)"
+  }
+ ],
+ "results": [
+  {
+   "id": "calib-3",
+   "k": "CALIBRATION",
+   "threat": 0,
+   "breached": true,
+   "sec": 97,
+   "attackerDeaths": 7,
+   "defenderWon": false
+  },
+  {
+   "id": "calib-2",
+   "k": "CALIBRATION",
+   "threat": 0,
+   "breached": true,
+   "sec": 97,
+   "attackerDeaths": 7,
+   "defenderWon": false
+  },
+  {
+   "id": "calib-0",
+   "k": "CALIBRATION",
+   "threat": 0,
+   "breached": true,
+   "sec": 97,
+   "attackerDeaths": 7,
+   "defenderWon": false
+  },
+  {
+   "id": "calib-4",
+   "k": "CALIBRATION",
+   "threat": 0,
+   "breached": true,
+   "sec": 97,
+   "attackerDeaths": 7,
+   "defenderWon": false
+  },
+  {
+   "id": "calib-5",
+   "k": "CALIBRATION",
+   "threat": 0,
+   "breached": true,
+   "sec": 97,
+   "attackerDeaths": 7,
+   "defenderWon": false
+  },
+  {
+   "id": "calib-1",
+   "k": "CALIBRATION",
+   "threat": 0,
+   "breached": true,
+   "sec": 97,
+   "attackerDeaths": 7,
+   "defenderWon": false
+  },
+  {
+   "id": "4000853#0",
+   "k": "AIRSHIP_DOCK",
+   "threat": 17,
+   "breached": true,
+   "sec": 44,
+   "attackerDeaths": 0,
+   "defenderWon": false
+  },
+  {
+   "id": "5060220#0",
+   "k": "AIRSHIP_DOCK",
+   "threat": 33,
+   "breached": true,
+   "sec": 59,
+   "attackerDeaths": 3,
+   "defenderWon": false
+  },
+  {
+   "id": "5040119#0",
+   "k": "AIRSHIP_DOCK",
+   "threat": 29,
+   "breached": true,
+   "sec": 53,
+   "attackerDeaths": 1,
+   "defenderWon": false
+  },
+  {
+   "id": "5040217#0",
+   "k": "AIRSHIP_DOCK",
+   "threat": 56,
+   "breached": true,
+   "sec": 75,
+   "attackerDeaths": 5,
+   "defenderWon": false
+  },
+  {
+   "id": "5050117#0",
+   "k": "AIRSHIP_DOCK",
+   "threat": 31,
+   "breached": true,
+   "sec": 55,
+   "attackerDeaths": 2,
+   "defenderWon": false
+  },
+  {
+   "id": "5050289#0",
+   "k": "AIRSHIP_DOCK",
+   "threat": 27,
+   "breached": true,
+   "sec": 53,
+   "attackerDeaths": 1,
+   "defenderWon": false
+  },
+  {
+   "id": "EDU-KEEP-LANTERNHILL:BARBARIAN_CAMP:1",
+   "k": "BARBARIAN_CAMP",
+   "threat": 13,
+   "breached": true,
+   "sec": 61,
+   "attackerDeaths": 3,
+   "defenderWon": false
+  },
+  {
+   "id": "2001116#1",
+   "k": "BARBARIAN_CAMP",
+   "threat": 36,
+   "breached": true,
+   "sec": 52,
+   "attackerDeaths": 1,
+   "defenderWon": false
+  },
+  {
+   "id": "5030364#0",
+   "k": "BARBARIAN_CAMP",
+   "threat": 28,
+   "breached": true,
+   "sec": 49,
+   "attackerDeaths": 1,
+   "defenderWon": false
+  },
+  {
+   "id": "5030914#0",
+   "k": "BARBARIAN_CAMP",
+   "threat": 33,
+   "breached": true,
+   "sec": 49,
+   "attackerDeaths": 1,
+   "defenderWon": false
+  },
+  {
+   "id": "5100083#0",
+   "k": "BARBARIAN_CAMP",
+   "threat": 100,
+   "breached": true,
+   "sec": 87,
+   "attackerDeaths": 6,
+   "defenderWon": false
+  },
+  {
+   "id": "4031395#0",
+   "k": "BARBARIAN_CAMP",
+   "threat": 29,
+   "breached": true,
+   "sec": 49,
+   "attackerDeaths": 1,
+   "defenderWon": false
+  },
+  {
+   "id": "5030542#0",
+   "k": "HARBOUR",
+   "threat": 17,
+   "breached": true,
+   "sec": 44,
+   "attackerDeaths": 0,
+   "defenderWon": false
+  },
+  {
+   "id": "5000154#0",
+   "k": "HARBOUR",
+   "threat": 18,
+   "breached": true,
+   "sec": 45,
+   "attackerDeaths": 0,
+   "defenderWon": false
+  },
+  {
+   "id": "5000054#0",
+   "k": "HARBOUR",
+   "threat": 18,
+   "breached": true,
+   "sec": 45,
+   "attackerDeaths": 0,
+   "defenderWon": false
+  },
+  {
+   "id": "5030500#0",
+   "k": "HARBOUR",
+   "threat": 17,
+   "breached": true,
+   "sec": 44,
+   "attackerDeaths": 0,
+   "defenderWon": false
+  },
+  {
+   "id": "ENT-KEEP-LANTERNSHORE:HARBOUR:1",
+   "k": "HARBOUR",
+   "threat": 11,
+   "breached": true,
+   "sec": 42,
+   "attackerDeaths": 0,
+   "defenderWon": false
+  },
+  {
+   "id": "5000102#0",
+   "k": "HARBOUR",
+   "threat": 15,
+   "breached": true,
+   "sec": 43,
+   "attackerDeaths": 0,
+   "defenderWon": false
+  },
+  {
+   "id": "4071376#0",
+   "k": "MERCENARY_POST",
+   "threat": 14,
+   "breached": true,
+   "sec": 74,
+   "attackerDeaths": 4,
+   "defenderWon": false
+  },
+  {
+   "id": "2001121#1",
+   "k": "MERCENARY_POST",
+   "threat": 16,
+   "breached": true,
+   "sec": 75,
+   "attackerDeaths": 4,
+   "defenderWon": false
+  },
+  {
+   "id": "5100008#0",
+   "k": "MERCENARY_POST",
+   "threat": 54,
+   "breached": true,
+   "sec": 103,
+   "attackerDeaths": 5,
+   "defenderWon": false
+  },
+  {
+   "id": "5100040#0",
+   "k": "MERCENARY_POST",
+   "threat": 50,
+   "breached": true,
+   "sec": 101,
+   "attackerDeaths": 5,
+   "defenderWon": false
+  },
+  {
+   "id": "5100185#0",
+   "k": "MERCENARY_POST",
+   "threat": 58,
+   "breached": true,
+   "sec": 105,
+   "attackerDeaths": 5,
+   "defenderWon": false
+  },
+  {
+   "id": "5000465#0",
+   "k": "MERCENARY_POST",
+   "threat": 17,
+   "breached": true,
+   "sec": 76,
+   "attackerDeaths": 4,
+   "defenderWon": false
+  },
+  {
+   "id": "5030585#0",
+   "k": "SALVAGE_SITE",
+   "threat": 31,
+   "breached": true,
+   "sec": 59,
+   "attackerDeaths": 2,
+   "defenderWon": false
+  },
+  {
+   "id": "5031089#0",
+   "k": "SALVAGE_SITE",
+   "threat": 34,
+   "breached": true,
+   "sec": 60,
+   "attackerDeaths": 2,
+   "defenderWon": false
+  },
+  {
+   "id": "5030562#0",
+   "k": "SALVAGE_SITE",
+   "threat": 36,
+   "breached": true,
+   "sec": 61,
+   "attackerDeaths": 2,
+   "defenderWon": false
+  },
+  {
+   "id": "5030616#0",
+   "k": "SALVAGE_SITE",
+   "threat": 33,
+   "breached": true,
+   "sec": 60,
+   "attackerDeaths": 2,
+   "defenderWon": false
+  },
+  {
+   "id": "5030472#0",
+   "k": "SALVAGE_SITE",
+   "threat": 38,
+   "breached": true,
+   "sec": 62,
+   "attackerDeaths": 2,
+   "defenderWon": false
+  },
+  {
+   "id": "5030956#0",
+   "k": "SALVAGE_SITE",
+   "threat": 37,
+   "breached": true,
+   "sec": 62,
+   "attackerDeaths": 2,
+   "defenderWon": false
+  },
+  {
+   "id": "5100537#0",
+   "k": "VENT",
+   "threat": 58,
+   "breached": true,
+   "sec": 108,
+   "attackerDeaths": 7,
+   "defenderWon": false
+  },
+  {
+   "id": "1101099#2",
+   "k": "VENT",
+   "threat": 45,
+   "breached": true,
+   "sec": 95,
+   "attackerDeaths": 6,
+   "defenderWon": false
+  },
+  {
+   "id": "4091142#0",
+   "k": "VENT",
+   "threat": 85,
+   "breached": true,
+   "sec": 119,
+   "attackerDeaths": 6,
+   "defenderWon": false
+  },
+  {
+   "id": "5090166#0",
+   "k": "VENT",
+   "threat": 66,
+   "breached": true,
+   "sec": 108,
+   "attackerDeaths": 6,
+   "defenderWon": false
+  },
+  {
+   "id": "5090926#0",
+   "k": "VENT",
+   "threat": 85,
+   "breached": true,
+   "sec": 119,
+   "attackerDeaths": 6,
+   "defenderWon": false
+  },
+  {
+   "id": "5100644#0",
+   "k": "VENT",
+   "threat": 48,
+   "breached": true,
+   "sec": 97,
+   "attackerDeaths": 6,
+   "defenderWon": false
+  },
+  {
+   "id": "1071722#1",
+   "k": "WAR_CAMP",
+   "threat": 17,
+   "breached": true,
+   "sec": 59,
+   "attackerDeaths": 4,
+   "defenderWon": false
+  },
+  {
+   "id": "5050025#0",
+   "k": "WAR_CAMP",
+   "threat": 30,
+   "breached": true,
+   "sec": 57,
+   "attackerDeaths": 3,
+   "defenderWon": false
+  },
+  {
+   "id": "5060082#0",
+   "k": "WAR_CAMP",
+   "threat": 28,
+   "breached": true,
+   "sec": 57,
+   "attackerDeaths": 4,
+   "defenderWon": false
+  },
+  {
+   "id": "5050001#0",
+   "k": "WAR_CAMP",
+   "threat": 30,
+   "breached": true,
+   "sec": 57,
+   "attackerDeaths": 3,
+   "defenderWon": false
+  },
+  {
+   "id": "2101085#0",
+   "k": "WAR_CAMP",
+   "threat": 60,
+   "breached": true,
+   "sec": 67,
+   "attackerDeaths": 4,
+   "defenderWon": false
+  },
+  {
+   "id": "1071726#0",
+   "k": "WAR_CAMP",
+   "threat": 14,
+   "breached": true,
+   "sec": 48,
+   "attackerDeaths": 2,
+   "defenderWon": false
+  },
+  {
+   "id": "5060072#0",
+   "k": "WILD_LAIR",
+   "threat": 66,
+   "breached": true,
+   "sec": 72,
+   "attackerDeaths": 5,
+   "defenderWon": false
+  },
+  {
+   "id": "4050407#0",
+   "k": "WILD_LAIR",
+   "threat": 28,
+   "breached": true,
+   "sec": 57,
+   "attackerDeaths": 4,
+   "defenderWon": false
+  },
+  {
+   "id": "5100490#0",
+   "k": "WILD_LAIR",
+   "threat": 60,
+   "breached": true,
+   "sec": 67,
+   "attackerDeaths": 4,
+   "defenderWon": false
+  },
+  {
+   "id": "5090490#0",
+   "k": "WILD_LAIR",
+   "threat": 69,
+   "breached": true,
+   "sec": 77,
+   "attackerDeaths": 5,
+   "defenderWon": false
+  },
+  {
+   "id": "5071178#0",
+   "k": "WILD_LAIR",
+   "threat": 16,
+   "breached": true,
+   "sec": 48,
+   "attackerDeaths": 2,
+   "defenderWon": false
+  },
+  {
+   "id": "5000556#0",
+   "k": "WILD_LAIR",
+   "threat": 39,
+   "breached": true,
+   "sec": 61,
+   "attackerDeaths": 5,
+   "defenderWon": false
+  }
+ ]
+}

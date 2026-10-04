@@ -93,4 +93,11 @@ ok(LN.counts.sea === (nSea * (nSea - 1)) / 2, `every SEA_PORT pair has a lane ($
 ok(LN.lanes.filter((l) => l.mode === "SEA").every((l) => l.krakenRisk > 0 && l.krakenRisk <= 0.25), "kraken risk in (0, 0.25] on every sea lane");
 ok(LN.lanes.filter((l) => l.mode === "AIR").every((l) => l.gated === "AEROPOLIS") && !LN.lanes.some((l) => l.mode === "AIR" && /^HS[23]/.test(l.from) && /^HS[23]/.test(l.to)), "airships go through the Aeropolis gateway; Emberfall and Empyrea are not linked (canon)");
 
+// D6 sim sampling harness: deterministic on the real kernel
+execFileSync("node", ["tools/living-world/sim_sample.mjs", "--n", "3", "--out", "/tmp/lw_sim_a.md"], { stdio: "ignore" });
+execFileSync("node", ["tools/living-world/sim_sample.mjs", "--n", "3", "--out", "/tmp/lw_sim_b.md"], { stdio: "ignore" });
+ok(fs.readFileSync("/tmp/lw_sim_a.json").equals(fs.readFileSync("/tmp/lw_sim_b.json")), "headless-sim sample is byte-identical across runs (seeded kernel)");
+const SIM = JSON.parse(fs.readFileSync("/tmp/lw_sim_a.json", "utf8"));
+ok(SIM.rows.some((r) => r.k === "CALIBRATION") && SIM.rows.filter((r) => r.k !== "CALIBRATION").every((r) => r.n === 3), "sampler covers a calibration row + every garrisoned archetype");
+
 console.log(fails ? `❌ living-world: ${fails} failed` : "✅ living-world: all passed"); process.exit(fails ? 1 : 0);
