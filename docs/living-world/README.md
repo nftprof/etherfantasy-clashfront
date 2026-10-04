@@ -10,6 +10,8 @@ Clash Front's persistent PvE layer:
 Everything is **seeded and deterministic**: the same inputs give the same bytes, with no clock and no `Math.random`.
 It's validated by the real headless battle kernel (`server/sim`).
 
+**Short on time? Read `ONE-PAGER.md`** (the whole living world on two pages).
+
 **Run everything:** `node tools/living-world/test_living_world.mjs`. It rebuilds every generated file twice,
 byte-compares the results, re-runs the sims and checks every invariant (≈ 1 min).
 

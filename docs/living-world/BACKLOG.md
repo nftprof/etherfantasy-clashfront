@@ -84,4 +84,9 @@ airships, landing spots, harbours + sea ships; seed all 20K maps; an experience,
 
 ## Wave 9 (added cycle 57)
 - [x] D46 — End-to-end slice through the REAL kernel: a calendar event on the board → a player takes it → buildAllocate → the headless battle (sim_harness, server/sim) → a v1 callback synthesised from the sim outcome → resolveResult → holder / escrows / feed / journal / influence; one command, deterministic, tested
-- [ ] D49 — Owner one-pager: the living world in 2 pages (what it is, how it's seeded for every map, the measured numbers, the open calls + their one-command packs, what's next) for the final summary and for sharing
+- [x] D49 — Owner one-pager: the living world in 2 pages (what it is, how it's seeded for every map, the measured numbers, the open calls + their one-command packs, what's next) for the final summary and for sharing
+
+## Wave 10 (added cycle 59)
+- [ ] D52 — Guardian eligibility from the canon pet roster (data/PETS_ROSTER.csv): which pets can station as Warden / Ascendant (form, battle-ready, flying → sky perches), per-element/biome fit; closes part of doc 04's ❓ on qualifying NFTs
+- [ ] D51 — Threat-peak bosses: map the canon bosses (CHARACTER_ROSTER.csv) onto regions by biome/element so each region's THREAT_PEAK (season beats) brings a named boss; feed + journal copy keys
+- [ ] D50 — Hex-battlefield fit check: every allocate payload's structures/spawns/arrivals sit inside the canon hexagon inscribed in the ±161 arena (the hex battlefields of plan A1–A3), flag what would need moving
