@@ -89,4 +89,7 @@ airships, landing spots, harbours + sea ships; seed all 20K maps; an experience,
 ## Wave 10 (added cycle 59)
 - [x] D52 — Guardian eligibility from the canon pet roster (data/PETS_ROSTER.csv): which pets can station as Warden / Ascendant (form, battle-ready, flying → sky perches), per-element/biome fit; closes part of doc 04's ❓ on qualifying NFTs
 - [x] D51 — Threat-peak bosses: map the canon bosses (CHARACTER_ROSTER.csv) onto regions by biome/element so each region's THREAT_PEAK (season beats) brings a named boss; feed + journal copy keys
-- [ ] D50 — Hex-battlefield fit check: every allocate payload's structures/spawns/arrivals sit inside the canon hexagon inscribed in the ±161 arena (the hex battlefields of plan A1–A3), flag what would need moving
+- [x] D50 — Battlefield fit check (canon 5b: the parcel's own polygon, not a regular hexagon): every allocate payload's structures/spawns/arrivals sit inside the canon hexagon inscribed in the ±161 arena (the hex battlefields of plan A1–A3), flag what would need moving
+
+## Wave 11 (added cycle 62)
+- [ ] D54 — Estate board battles (canon decision 22): an estate fight is ONE board battle with a fixed count of HERO-MODE POI parcels (LARGE 3 / GIANT 5 / EPIC 8; castle always). Map living-world Nodes onto those hero parcels: which Nodes become hero-mode fights, which resolve on the board; check every castle estate's hero-parcel count covers its Guardian perch + castle-ring POIs

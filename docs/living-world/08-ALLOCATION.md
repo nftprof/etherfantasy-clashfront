@@ -116,3 +116,20 @@ carries a `BATTLE` one.
 - The tests check the chain stays consistent: the winner comes from the kernel, the cap holds, the escrow settles
   exactly per outcome, and the feed story and post-victory choice are emitted.
 
+## 6. Fights fit the real parcel (D50)
+
+The backlog item said "hex fit", but canon decision 5b says a battlefield's bounds polygon is **the parcel's own
+shape**. The 373 baked maps are irregular polygons (mostly 5–7 points), not a fixed square or a regular hexagon.
+`derive_map_frames.mjs` → `map-frames.json` records each map's bounds, defender base and attacker spawn.
+
+- **Finding:** the payload's old fixed lane layout (keep at z 114.8) put the keep **outside the parcel on 182 of 373
+  maps**.
+- **Fix (`map_frames.mjs`):** on a baked map, `buildAllocate` now:
+  - uses the map's own bounds and attacker spawn;
+  - anchors the keep at the map's defender base, slid toward the centroid in 25 % steps until the keep ring, gates,
+    towers and spawn all sit inside.
+- **Result: all 373 maps fit at full scale.** 338 sit at the base, 34 slide 25 % and 1 slides 50 %; none has to
+  shrink.
+- Maps not baked yet keep the legacy ±161 lane frame. Tests check every baked map, and a sample of full payloads
+  (structures, mobs, spawns), against the parcel polygon.
+

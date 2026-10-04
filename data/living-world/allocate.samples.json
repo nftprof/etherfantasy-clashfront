@@ -174,14 +174,14 @@
       "id": "mob_0",
       "kind": "ALPHA",
       "x": 9,
-      "z": 105.8,
+      "z": 114.8,
       "count": 1
      },
      {
       "id": "mob_1",
       "kind": "PACK",
       "x": -9,
-      "z": 105.8,
+      "z": 114.8,
       "count": 4
      }
     ]
@@ -569,20 +569,52 @@
      "sizeM": 322,
      "bounds": [
       [
-       -161,
-       -161
+       -154.6,
+       97.9
       ],
       [
-       161,
-       -161
+       -143.4,
+       -100.3
       ],
       [
-       161,
-       161
+       -81.1,
+       -112.6
       ],
       [
-       -161,
-       161
+       -22,
+       -140.8
+      ],
+      [
+       -21.3,
+       -140.8
+      ],
+      [
+       -1.2,
+       -99.4
+      ],
+      [
+       22,
+       -61.8
+      ],
+      [
+       83.2,
+       -27.2
+      ],
+      [
+       154.6,
+       -23.3
+      ],
+      [
+       152.6,
+       106
+      ],
+      [
+       31.8,
+       140.8
+      ],
+      [
+       -84.6,
+       85.4
       ]
      ]
     },
@@ -590,11 +622,11 @@
     "obstacles": [],
     "spawnZones": [
      {
-      "id": "spawn_atk_s",
+      "id": "spawn_atk",
       "side": "ATTACKER",
-      "edge": "S",
-      "x": 0,
-      "z": -131.6
+      "edge": "MAP",
+      "x": -122,
+      "z": -88
      }
     ],
     "structures": [
@@ -602,8 +634,8 @@
       "anchorId": "anchor_core",
       "kind": "CORE",
       "side": "DEFENDER",
-      "x": 0,
-      "z": 114.8,
+      "x": -16,
+      "z": -14,
       "hp": 7344,
       "hpMax": 7344
      },
@@ -611,8 +643,8 @@
       "anchorId": "anchor_gate_0",
       "kind": "GATE",
       "side": "DEFENDER",
-      "x": -11.3,
-      "z": 103.5,
+      "x": -27.3,
+      "z": -25.3,
       "hp": 3519,
       "hpMax": 3519
      },
@@ -620,8 +652,8 @@
       "anchorId": "anchor_wall_1",
       "kind": "WALL",
       "side": "DEFENDER",
-      "x": -2.5,
-      "z": 99,
+      "x": -18.5,
+      "z": -29.8,
       "hp": 4131,
       "hpMax": 4131
      },
@@ -629,8 +661,8 @@
       "anchorId": "anchor_wall_2",
       "kind": "WALL",
       "side": "DEFENDER",
-      "x": 7.3,
-      "z": 100.5,
+      "x": -8.7,
+      "z": -28.3,
       "hp": 4131,
       "hpMax": 4131
      },
@@ -638,8 +670,8 @@
       "anchorId": "anchor_wall_3",
       "kind": "WALL",
       "side": "DEFENDER",
-      "x": 14.3,
-      "z": 107.5,
+      "x": -1.7,
+      "z": -21.3,
       "hp": 4131,
       "hpMax": 4131
      },
@@ -647,8 +679,8 @@
       "anchorId": "anchor_wall_4",
       "kind": "WALL",
       "side": "DEFENDER",
-      "x": 15.8,
-      "z": 117.3,
+      "x": -0.2,
+      "z": -11.5,
       "hp": 4131,
       "hpMax": 4131
      },
@@ -656,8 +688,8 @@
       "anchorId": "anchor_gate_5",
       "kind": "GATE",
       "side": "DEFENDER",
-      "x": 11.3,
-      "z": 126.1,
+      "x": -4.7,
+      "z": -2.7,
       "hp": 3519,
       "hpMax": 3519
      },
@@ -665,8 +697,8 @@
       "anchorId": "anchor_wall_6",
       "kind": "WALL",
       "side": "DEFENDER",
-      "x": 2.5,
-      "z": 130.6,
+      "x": -13.5,
+      "z": 1.8,
       "hp": 4131,
       "hpMax": 4131
      },
@@ -674,8 +706,8 @@
       "anchorId": "anchor_wall_7",
       "kind": "WALL",
       "side": "DEFENDER",
-      "x": -7.3,
-      "z": 129.1,
+      "x": -23.3,
+      "z": 0.3,
       "hp": 4131,
       "hpMax": 4131
      },
@@ -683,8 +715,8 @@
       "anchorId": "anchor_wall_8",
       "kind": "WALL",
       "side": "DEFENDER",
-      "x": -14.3,
-      "z": 122.1,
+      "x": -30.3,
+      "z": -6.7,
       "hp": 4131,
       "hpMax": 4131
      },
@@ -692,8 +724,8 @@
       "anchorId": "anchor_wall_9",
       "kind": "WALL",
       "side": "DEFENDER",
-      "x": -15.8,
-      "z": 112.3,
+      "x": -31.8,
+      "z": -16.5,
       "hp": 4131,
       "hpMax": 4131
      },
@@ -701,8 +733,8 @@
       "anchorId": "anchor_tower_0",
       "kind": "TOWER",
       "side": "DEFENDER",
-      "x": -15,
-      "z": 109.8,
+      "x": -31,
+      "z": -19,
       "hp": 7191,
       "hpMax": 7191
      },
@@ -710,8 +742,8 @@
       "anchorId": "anchor_tower_1",
       "kind": "TOWER",
       "side": "DEFENDER",
-      "x": -5,
-      "z": 99.8,
+      "x": -21,
+      "z": -29,
       "hp": 7191,
       "hpMax": 7191
      }
@@ -720,22 +752,22 @@
      {
       "id": "mob_0",
       "kind": "HARBOUR_MASTER",
-      "x": 9,
-      "z": 105.8,
+      "x": -7,
+      "z": -14,
       "count": 1
      },
      {
       "id": "mob_1",
       "kind": "MARINE",
-      "x": -4.5,
-      "z": 113.6,
+      "x": -20.5,
+      "z": -6.2,
       "count": 2
      },
      {
       "id": "mob_2",
       "kind": "SHIP",
-      "x": -4.5,
-      "z": 98,
+      "x": -20.5,
+      "z": -21.8,
       "count": 1
      }
     ]

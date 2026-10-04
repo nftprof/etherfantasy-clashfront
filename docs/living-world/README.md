@@ -46,6 +46,7 @@ byte-compares the results, re-runs the sims and checks every invariant (≈ 1 mi
 | `singles.summary.json`, `singles.sample.json` | 284,314 single parcels, seeded lazily (`seedSingle`); 1 % sample | `seed_singles.mjs` |
 | `world-elements/*.cf.json` | The designer overlay (249 Nodes) for cf-overworld | `export_cf_overlay.mjs` |
 | `sea-air-lanes.json` | 55 sea + 6 air lanes | `sea_air_lanes.mjs` |
+| `map-frames.json` | Every baked battle map's own bounds polygon + defender base + attacker spawn (373) | `derive_map_frames.mjs` |
 | `approaches.json` | NAVAL_APPROACH / AIR_APPROACH + pier/pad anchors per baked map | `derive_approaches.mjs` |
 | `region-influence.json` | Holdable POIs per region (23,489) | `influence.mjs` |
 | `season-beats.json` | Storm front, threat peak + lull, Ascension nights per region per 28 days | `season_beats.mjs` |
@@ -62,7 +63,7 @@ byte-compares the results, re-runs the sims and checks every invariant (≈ 1 mi
 - **Seeding:**
   - `castle_context.mjs`, `seed_castle_pois.mjs`, `seed_estates.mjs`, `seed_singles.mjs`;
   - `threat.mjs` (the banded threat curve);
-  - `export_cf_overlay.mjs`, `sea_air_lanes.mjs`, `derive_approaches.mjs`.
+  - `export_cf_overlay.mjs`, `sea_air_lanes.mjs`, `derive_approaches.mjs`, `derive_map_frames.mjs`.
 - **Battle validation:**
   - `sim_harness.mjs` (one POI battle in the real kernel);
   - `sim_sample.mjs` (per archetype + defences/Guardian scenarios);
@@ -76,7 +77,7 @@ byte-compares the results, re-runs the sims and checks every invariant (≈ 1 mi
   - `ambient_traffic.mjs` (`shipsAt(seed, tick)`);
   - `world_calendar.mjs`, `season_beats.mjs` (+ `threat_bosses.mjs`), `event_board.mjs`, `region_feed.mjs`, `journal.mjs`;
   - `i18n.mjs` (`t(key, vars, lang)`: all copy comes from the string table);
-  - `allocate_payload.mjs` (the battle wire out) and `resolve_result.mjs` (the result callback back into the world).
+  - `map_frames.mjs` (anchor a fight on the real parcel shape), `allocate_payload.mjs` (the battle wire out) and `resolve_result.mjs` (the result callback back into the world).
 - **Reports** (→ `docs/living-world/reports/`):
   - `balance_sheet.mjs` (CT paid vs units lost);
   - `ct_flow_sim.mjs` (ledger invariants);

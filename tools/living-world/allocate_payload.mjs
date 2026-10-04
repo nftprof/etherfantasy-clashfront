@@ -11,6 +11,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { fnv1a, mulberry32 } from "./seed_singles.mjs";
 import { resolveArrival } from "./arrivals.mjs";
+import { frameFor } from "./map_frames.mjs";   // D50: anchor on the real baked map when there is one
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const rd = (f) => JSON.parse(fs.readFileSync(path.join(ROOT, f), "utf8"));
 const PA = rd("data/living-world/poi-archetypes.json"), GU = rd("data/living-world/guardians.json"), DF = rd("data/living-world/defences.json"), TM = rd("data/living-world/terrain-mods.json");
@@ -44,11 +45,12 @@ export function drawDeck(poi, battleSeed, draws = 3, mapId = null) {
 
 export function buildAllocate({ battleId, worldSeed, mode = "accelerated", poi, zone, parcelId, mapId = parcelId, held = null, attacker, guardian = null, defenceRating = 1, callbackUrl }) {
   const seed = seedHex(battleId, worldSeed), tm = 0.5 + poi.threat / 50, sm = tm * DEF_MUL * defenceRating, tier = poi.tier || 1;
-  const K = { x: 0, z: FRAME.core }, structures = [];
+  const fr = frameFor(mapId), sc = fr ? fr.scale : 1;   // baked map → its own bounds + keep anchor; else the legacy ±161 lane frame
+  const K = fr ? { x: fr.K[0], z: fr.K[1] } : { x: 0, z: FRAME.core }, structures = [];
   const S = (anchorId, kind, x, z, hp) => structures.push({ anchorId, kind, side: "DEFENDER", x: r1(x), z: r1(z), hp: Math.round(hp), hpMax: Math.round(hp) });
   S("anchor_core", "CORE", K.x, K.z, 2400 * tier * sm);
-  for (let i = 0; i < 10; i++) { const a = (i / 10) * Math.PI * 2 + Math.PI * 1.25, gate = i === 0 || i === 5; S(`anchor_${gate ? "gate" : "wall"}_${i}`, gate ? "GATE" : "WALL", K.x + Math.cos(a) * 16, K.z + Math.sin(a) * 16, (gate ? 1150 : 1350) * sm); }
-  for (const [i, [dx, dz]] of [[-15, -5], [-5, -15]].entries()) S(`anchor_tower_${i}`, "TOWER", K.x + dx, K.z + dz, 2350 * sm);
+  for (let i = 0; i < 10; i++) { const a = (i / 10) * Math.PI * 2 + Math.PI * 1.25, gate = i === 0 || i === 5; S(`anchor_${gate ? "gate" : "wall"}_${i}`, gate ? "GATE" : "WALL", K.x + Math.cos(a) * 16 * sc, K.z + Math.sin(a) * 16 * sc, (gate ? 1150 : 1350) * sm); }
+  for (const [i, [dx, dz]] of [[-15, -5], [-5, -15]].entries()) S(`anchor_tower_${i}`, "TOWER", K.x + dx * sc, K.z + dz * sc, 2350 * sm);
   const garrison = ARCH[poi.lwKind].garrison;
   const wild = !held;
   const hexTerrain = TM.groundToHexTerrain[poi.ground] || "PLAINS";
@@ -68,11 +70,11 @@ export function buildAllocate({ battleId, worldSeed, mode = "accelerated", poi, 
     v: 1, battleId, seed, mode, rates: { tickHz: 30, commandSnapshotHz: 3 }, ...(mode === "live" ? { joinWindowSec: 120 } : {}),
     parcel: { parcelId, zone, kind: wild ? "WILD" : "PLAYER" },
     battlefield: {
-      arena: { shape: "polygon", sizeM: FRAME.sizeM, bounds: [[-FRAME.half, -FRAME.half], [FRAME.half, -FRAME.half], [FRAME.half, FRAME.half], [-FRAME.half, FRAME.half]] },
+      arena: { shape: "polygon", sizeM: FRAME.sizeM, bounds: fr ? fr.bounds : [[-FRAME.half, -FRAME.half], [FRAME.half, -FRAME.half], [FRAME.half, FRAME.half], [-FRAME.half, FRAME.half]] },
       laneCount: 1, obstacles: [],
-      spawnZones: [{ id: "spawn_atk_s", side: "ATTACKER", edge: "S", x: 0, z: -FRAME.spawn }],
+      spawnZones: [fr ? { id: "spawn_atk", side: "ATTACKER", edge: "MAP", x: fr.atkSpawn[0], z: fr.atkSpawn[1] } : { id: "spawn_atk_s", side: "ATTACKER", edge: "S", x: 0, z: -FRAME.spawn }],
       structures,
-      ...(wild ? { mobs: garrison.map(([kind, count], i) => ({ id: `mob_${i}`, kind, x: r1(Math.cos((i / garrison.length) * Math.PI * 2) * 9), z: r1(K.z - 9 + Math.sin((i / garrison.length) * Math.PI * 2) * 9), count })) } : {}),
+      ...(wild ? { mobs: garrison.map(([kind, count], i) => ({ id: `mob_${i}`, kind, x: r1(K.x + Math.cos((i / garrison.length) * Math.PI * 2) * 9 * sc), z: r1(K.z + Math.sin((i / garrison.length) * Math.PI * 2) * 9 * sc), count })) } : {}),
     },
     sides: {
       ATTACKER: attacker,

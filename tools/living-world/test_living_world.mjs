@@ -260,7 +260,12 @@ const al1 = run("tools/living-world/allocate_payload.mjs", "/tmp/lw_al_a.json"),
 ok(al1.equals(al2) && al1.equals(fs.readFileSync("data/living-world/allocate.samples.json")), "allocate samples are byte-identical and committed");
 const AL = await import("./allocate_payload.mjs"), ALS = Object.values(JSON.parse(al1).samples), alBrief = fs.readFileSync("/home/user/cf-overworld/docs/briefs/ALLOCATE-CALLBACK-SCHEMA.md", "utf8");
 ok(ALS.every((s) => s.v === 1 && /^battle_/.test(s.battleId) && /^[0-9a-f]{16}$/.test(s.seed) && ["live", "accelerated"].includes(s.mode) && ["WILD", "PLAYER", "ESTATE"].includes(s.parcel.kind) && s.callback.url), "every payload carries the v1 envelope (battleId, 16-hex seed, mode, parcel kind, callback)");
-ok(ALS.every((s) => s.battlefield.arena.sizeM === 322 && s.battlefield.structures.every((t) => Math.abs(t.x) <= 161 && Math.abs(t.z) <= 161 && Number.isInteger(t.hp) && t.hp === t.hpMax && ["CORE", "TOWER", "GATE", "WALL"].includes(t.kind)) && s.battlefield.structures.filter((t) => t.kind === "CORE").every((t) => t.z === 114.8) && s.battlefield.spawnZones.every((z) => Math.abs(z.z) === 131.6)), "battlefield in the canon ±161 frame: integer HP, cores at 114.8, spawns at ±131.6");
+const MF = await import("./map_frames.mjs");
+ok(ALS.every((s) => { const fr = MF.FRAMES[s.livingWorld.mapId], pts = [...s.battlefield.structures.map((t) => [t.x, t.z]), ...s.battlefield.spawnZones.map((z) => [z.x, z.z])];
+  const base = s.battlefield.arena.sizeM === 322 && s.battlefield.structures.every((t) => Number.isInteger(t.hp) && t.hp === t.hpMax && ["CORE", "TOWER", "GATE", "WALL"].includes(t.kind));
+  return base && (fr ? JSON.stringify(s.battlefield.arena.bounds) === JSON.stringify(fr.bounds) && pts.every((p) => MF.inPoly(p, fr.bounds))
+    : pts.every(([x, z]) => Math.abs(x) <= 161 && Math.abs(z) <= 161) && s.battlefield.structures.filter((t) => t.kind === "CORE").every((t) => t.z === 114.8) && s.battlefield.spawnZones.every((z) => Math.abs(z.z) === 131.6)); }),
+  "battlefields: integer HP; on a baked map the parcel's own bounds with every structure + spawn inside; otherwise the legacy ±161 lane frame (core 114.8, spawn ±131.6)");
 ok(alBrief.includes('"sizeM": 322') && alBrief.includes("±131.6") && alBrief.includes("±114.8"), "the frame constants still match the canon brief");
 ok(ALS.every((s) => [s.sides.ATTACKER, s.sides.DEFENDER].every((d) => d.armies.every((a) => a.units.every((u) => AL.UNIT_CLASS.includes(u.cls) && Number.isInteger(u.count) && u.count > 0)))), "every army unit is a canon UnitClass with an integer count");
 ok(ALS.every((s) => (s.parcel.kind === "WILD") === (s.sides.DEFENDER.governorId === null && !!s.battlefield.mobs)), "WILD ⇔ no defending governor and the garrison as mobs; held POIs field the garrison as DEFENDER units");
@@ -495,5 +500,12 @@ const TB2 = JSON.parse(tb1), ZR2 = JSON.parse(fs.readFileSync("/home/user/cf-ove
 ok(Object.keys(RI.regions).every((z) => TB2.regions[z] && !TB2.excluded.includes(TB2.regions[z].boss)) && Object.entries(TB2.regions).every(([z, r]) => { const m = r.boss.match(/_(Fire|Water)$/); return !m || zEl[z].includes(m[1]); }), "every region has a fighting-fit boss; element bosses only march on regions of their element");
 ok(Object.values(TB2.regions).every((r) => I18.has("boss." + r.boss)) && ["beat.threatPeak", "beat.lull", "beat.ascensionNight", "beat.stormFront"].every((k) => I18.has(k)), "every assigned boss and every beat has its display copy");
 ok(Object.values(JSON.parse(fs.readFileSync("data/living-world/season-beats.json", "utf8")).cycles).every((C) => Object.entries(C).every(([z, Bz]) => Bz.filter((b) => b.beat === "THREAT_PEAK").every((b) => b.boss === TB2.regions[z].boss))), "every THREAT_PEAK on the season calendar names its region's boss");
+
+// D50 every baked map can host a living-world fight (keep anchored on the real parcel shape)
+const mfBad = Object.keys(MF.FRAMES).filter((id) => { const fr = MF.frameFor(id); return fr.unfit || !MF.keepLayout(fr.K, fr.scale).every((p) => MF.inPoly(p, fr.bounds)) || !MF.inPoly(fr.atkSpawn, fr.bounds); });
+ok(Object.keys(MF.FRAMES).length >= 373 && mfBad.length === 0, `all ${Object.keys(MF.FRAMES).length} baked maps fit the anchored keep layout + attacker spawn inside the parcel's own bounds` + (mfBad.length ? " — " + mfBad.slice(0, 5).join(", ") : ""));
+ok(Object.keys(MF.FRAMES).filter((id) => !MF.keepLayout([0, 114.8]).every((p) => MF.inPoly(p, MF.FRAMES[id].bounds))).length > 100, "regression guard: the old fixed lane layout really did fall outside many real parcels (why D50 anchors)");
+const mfAll = Object.keys(MF.FRAMES).slice(0, 60).map((id) => AL.buildAllocate({ battleId: "battle_MF" + id, worldSeed: "w", poi: { id: "p" + id, lwKind: "WILD_LAIR", threat: 30, ground: "PLAIN" }, zone: "BUS", parcelId: id, attacker: { governorId: "g", armies: [] }, callbackUrl: "x" }));
+ok(mfAll.every((s) => [...s.battlefield.structures.map((t) => [t.x, t.z]), ...(s.battlefield.mobs || []).map((m) => [m.x, m.z]), ...s.battlefield.spawnZones.map((z) => [z.x, z.z])].every((p) => MF.inPoly(p, s.battlefield.arena.bounds))), "buildAllocate on baked maps keeps structures, mobs and spawns inside the parcel");
 
 console.log(fails ? `❌ living-world: ${fails} failed` : "✅ living-world: all passed"); process.exit(fails ? 1 : 0);
