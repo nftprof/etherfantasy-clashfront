@@ -30,6 +30,17 @@
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   },
   {
+   "id": "HS3-CF-KEEP-AURORA-CARAVAN_WAYPOINT-1",
+   "kind": "CARAVAN_WAYPOINT",
+   "at": [
+    75.86,
+    18.01
+   ],
+   "name": "Caravan Waypoint",
+   "note": "Living-world Node of HS3-KEEP-AURORA (threat 20)",
+   "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+  },
+  {
    "id": "HS3-CF-KEEP-AURORA-LANDING_SPOT-1",
    "kind": "LANDING_SPOT",
    "at": [
@@ -70,6 +81,17 @@
     37.66
    ],
    "name": "Airship Dock",
+   "note": "Living-world Node of HS3-KEEP-DAWNSHIELD (threat 20)",
+   "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+  },
+  {
+   "id": "HS3-CF-KEEP-DAWNSHIELD-CARAVAN_WAYPOINT-1",
+   "kind": "CARAVAN_WAYPOINT",
+   "at": [
+    64.6,
+    35.55
+   ],
+   "name": "Caravan Waypoint",
    "note": "Living-world Node of HS3-KEEP-DAWNSHIELD (threat 20)",
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   },
@@ -118,6 +140,17 @@
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   },
   {
+   "id": "HS3-CF-KEEP-PILGRIMWATCH-CARAVAN_WAYPOINT-1",
+   "kind": "CARAVAN_WAYPOINT",
+   "at": [
+    23.9,
+    50.17
+   ],
+   "name": "Caravan Waypoint",
+   "note": "Living-world Node of HS3-KEEP-PILGRIMWATCH (threat 20)",
+   "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+  },
+  {
    "id": "HS3-CF-KEEP-PILGRIMWATCH-LANDING_SPOT-1",
    "kind": "LANDING_SPOT",
    "at": [
@@ -162,6 +195,17 @@
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   },
   {
+   "id": "HS3-CF-KEEP-SHIELDGATE-CARAVAN_WAYPOINT-1",
+   "kind": "CARAVAN_WAYPOINT",
+   "at": [
+    57.06,
+    32.03
+   ],
+   "name": "Caravan Waypoint",
+   "note": "Living-world Node of HS3-KEEP-SHIELDGATE (threat 20)",
+   "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+  },
+  {
    "id": "HS3-CF-KEEP-SHIELDGATE-LANDING_SPOT-1",
    "kind": "LANDING_SPOT",
    "at": [
@@ -202,6 +246,17 @@
     26.51
    ],
    "name": "Airship Dock",
+   "note": "Living-world Node of HS3-SANCTUM (threat 60)",
+   "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+  },
+  {
+   "id": "HS3-CF-SANCTUM-CARAVAN_WAYPOINT-1",
+   "kind": "CARAVAN_WAYPOINT",
+   "at": [
+    47.12,
+    24.13
+   ],
+   "name": "Caravan Waypoint",
    "note": "Living-world Node of HS3-SANCTUM (threat 60)",
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   },

@@ -19,6 +19,17 @@
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   },
   {
+   "id": "BUS-CF-CASTLE-CAPEMEET-CARAVAN_WAYPOINT-1",
+   "kind": "CARAVAN_WAYPOINT",
+   "at": [
+    13.62,
+    27.05
+   ],
+   "name": "Caravan Waypoint",
+   "note": "Living-world Node of BUS-CASTLE-CAPEMEET (threat 24)",
+   "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+  },
+  {
    "id": "BUS-CF-CASTLE-CAPEMEET-HARBOUR-1",
    "kind": "HARBOUR",
    "at": [
@@ -49,6 +60,17 @@
    ],
    "name": "Mercenary Post",
    "note": "Living-world Node of BUS-CASTLE-CAPEMEET (threat 24)",
+   "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+  },
+  {
+   "id": "BUS-CF-CASTLE-EASTREACH-CARAVAN_WAYPOINT-1",
+   "kind": "CARAVAN_WAYPOINT",
+   "at": [
+    335.42,
+    127.7
+   ],
+   "name": "Caravan Waypoint",
+   "note": "Living-world Node of BUS-CASTLE-EASTREACH (threat 24)",
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   },
   {
@@ -93,6 +115,17 @@
    ],
    "name": "Lair (wolf)",
    "note": "Living-world Node of BUS-CASTLE-EASTREACH (threat 24)",
+   "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+  },
+  {
+   "id": "BUS-CF-CASTLE-MIDDLEQUAY-CARAVAN_WAYPOINT-1",
+   "kind": "CARAVAN_WAYPOINT",
+   "at": [
+    274.85,
+    60.91
+   ],
+   "name": "Caravan Waypoint",
+   "note": "Living-world Node of BUS-CASTLE-MIDDLEQUAY (threat 24)",
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   },
   {
@@ -184,6 +217,17 @@
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   },
   {
+   "id": "BUS-CF-KEEP-DELTALIGHT-CARAVAN_WAYPOINT-1",
+   "kind": "CARAVAN_WAYPOINT",
+   "at": [
+    225.25,
+    60.07
+   ],
+   "name": "Caravan Waypoint",
+   "note": "Living-world Node of BUS-KEEP-DELTALIGHT (threat 12)",
+   "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+  },
+  {
    "id": "BUS-CF-KEEP-DELTALIGHT-HARBOUR-1",
    "kind": "HARBOUR",
    "at": [
@@ -217,6 +261,17 @@
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   },
   {
+   "id": "BUS-CF-KEEP-DUNEWATCH-CARAVAN_WAYPOINT-1",
+   "kind": "CARAVAN_WAYPOINT",
+   "at": [
+    68.63,
+    13.84
+   ],
+   "name": "Caravan Waypoint",
+   "note": "Living-world Node of BUS-KEEP-DUNEWATCH (threat 12)",
+   "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+  },
+  {
    "id": "BUS-CF-KEEP-DUNEWATCH-HARBOUR-1",
    "kind": "HARBOUR",
    "at": [
@@ -246,6 +301,17 @@
     86.98
    ],
    "name": "Airdrop Zone",
+   "note": "Living-world Node of BUS-KEEP-GULLSHOAL (threat 12)",
+   "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+  },
+  {
+   "id": "BUS-CF-KEEP-GULLSHOAL-CARAVAN_WAYPOINT-1",
+   "kind": "CARAVAN_WAYPOINT",
+   "at": [
+    302.69,
+    81.87
+   ],
+   "name": "Caravan Waypoint",
    "note": "Living-world Node of BUS-KEEP-GULLSHOAL (threat 12)",
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   },

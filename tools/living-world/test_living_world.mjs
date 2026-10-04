@@ -30,7 +30,8 @@ ok(sa.equals(sb), "castle-pois rebuild is byte-identical (seeded PRNG, no clock)
 ok(sa.equals(fs.readFileSync("data/living-world/castle-pois.json")), "committed castle-pois.json is up to date");
 const CP = JSON.parse(sa), all = CP.byCastle.flatMap((c) => c.pois.map((p) => ({ ...p, c })));
 ok(CP.byCastle.length === 67, "every one of the 67 castles is seeded");
-ok(CP.byCastle.every((c) => c.pois.filter((p) => p.lwKind !== "LANDING_SPOT").length === PA.budgetByCastleKind[c.kind].total), "each castle gets exactly its kind's POI budget (landing spots ride along)");
+ok(CP.byCastle.every((c) => c.pois.filter((p) => !p.rideAlong).length === PA.budgetByCastleKind[c.kind].total), "each castle gets exactly its kind's POI budget (landing spots + caravan routes ride along)");
+ok(CP.byCastle.filter((c) => c.pois.some((p) => p.lwKind === "HARBOUR" || p.lwKind === "AIRSHIP_DOCK")).every((c) => c.pois.some((p) => p.lwKind === "CARAVAN_WAYPOINT")), "every castle with a harbour or airship dock has a caravan route");
 ok(new Set(all.map((p) => p.id)).size === all.length, "POI ids are unique");
 ok(all.every((p) => kinds.includes(p.lwKind) && PA.archetypes.find((a) => a.lwKind === p.lwKind).layers.includes(p.c.layer)), "every POI is a known archetype on a layer it allows");
 ok(all.filter((p) => p.lwKind === "HARBOUR").every((p) => p.c.layer === "SURFACE"), "harbours only on the surface (coast)");

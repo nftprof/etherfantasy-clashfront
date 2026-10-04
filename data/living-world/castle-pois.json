@@ -3,12 +3,12 @@
  "seedSalt": "lw1",
  "units": "zone SVG units",
  "castles": 67,
- "pois": 298,
+ "pois": 325,
  "byKind": {
   "AIRDROP_ZONE": 39,
   "AIRSHIP_DOCK": 20,
   "BARBARIAN_CAMP": 21,
-  "CARAVAN_WAYPOINT": 4,
+  "CARAVAN_WAYPOINT": 31,
   "GUARDIAN_PERCH": 76,
   "HARBOUR": 9,
   "LANDING_SPOT": 49,
@@ -112,9 +112,26 @@
      ],
      "parent": "BUS-CASTLE-CAPEMEET:HARBOUR:1",
      "arrives": "NAVAL_LANDING",
+     "rideAlong": true,
      "garrison": [],
      "threat": 24,
      "deckSeed": 1793589886
+    },
+    {
+     "id": "BUS-CASTLE-CAPEMEET:CARAVAN_WAYPOINT:1",
+     "lwKind": "CARAVAN_WAYPOINT",
+     "at": [
+      13.62,
+      27.05
+     ],
+     "route": [
+      "BUS-CASTLE-CAPEMEET",
+      "BUS-PORT-CAPEMEET"
+     ],
+     "rideAlong": true,
+     "garrison": [],
+     "threat": 24,
+     "deckSeed": 1471965302
     }
    ]
   },
@@ -212,9 +229,26 @@
      ],
      "parent": "BUS-CASTLE-EASTREACH:HARBOUR:1",
      "arrives": "NAVAL_LANDING",
+     "rideAlong": true,
      "garrison": [],
      "threat": 24,
      "deckSeed": 216635652
+    },
+    {
+     "id": "BUS-CASTLE-EASTREACH:CARAVAN_WAYPOINT:1",
+     "lwKind": "CARAVAN_WAYPOINT",
+     "at": [
+      335.42,
+      127.7
+     ],
+     "route": [
+      "BUS-CASTLE-EASTREACH",
+      "BUS-PORT-EASTREACH"
+     ],
+     "rideAlong": true,
+     "garrison": [],
+     "threat": 24,
+     "deckSeed": 4204769452
     }
    ]
   },
@@ -306,9 +340,26 @@
      ],
      "parent": "BUS-CASTLE-MIDDLEQUAY:HARBOUR:1",
      "arrives": "NAVAL_LANDING",
+     "rideAlong": true,
      "garrison": [],
      "threat": 24,
      "deckSeed": 298850677
+    },
+    {
+     "id": "BUS-CASTLE-MIDDLEQUAY:CARAVAN_WAYPOINT:1",
+     "lwKind": "CARAVAN_WAYPOINT",
+     "at": [
+      274.85,
+      60.91
+     ],
+     "route": [
+      "BUS-CASTLE-MIDDLEQUAY",
+      "BUS-PORT-MIDDLEQUAY"
+     ],
+     "rideAlong": true,
+     "garrison": [],
+     "threat": 24,
+     "deckSeed": 2547145905
     }
    ]
   },
@@ -450,9 +501,26 @@
      ],
      "parent": "BUS-KEEP-DELTALIGHT:HARBOUR:1",
      "arrives": "NAVAL_LANDING",
+     "rideAlong": true,
      "garrison": [],
      "threat": 12,
      "deckSeed": 811040397
+    },
+    {
+     "id": "BUS-KEEP-DELTALIGHT:CARAVAN_WAYPOINT:1",
+     "lwKind": "CARAVAN_WAYPOINT",
+     "at": [
+      225.25,
+      60.07
+     ],
+     "route": [
+      "BUS-KEEP-DELTALIGHT",
+      "BUS-KEEP-DELTALIGHT:HARBOUR:1"
+     ],
+     "rideAlong": true,
+     "garrison": [],
+     "threat": 12,
+     "deckSeed": 3886083529
     }
    ]
   },
@@ -522,9 +590,26 @@
      ],
      "parent": "BUS-KEEP-DUNEWATCH:HARBOUR:1",
      "arrives": "NAVAL_LANDING",
+     "rideAlong": true,
      "garrison": [],
      "threat": 12,
      "deckSeed": 3096523576
+    },
+    {
+     "id": "BUS-KEEP-DUNEWATCH:CARAVAN_WAYPOINT:1",
+     "lwKind": "CARAVAN_WAYPOINT",
+     "at": [
+      68.63,
+      13.84
+     ],
+     "route": [
+      "BUS-KEEP-DUNEWATCH",
+      "BUS-KEEP-DUNEWATCH:HARBOUR:1"
+     ],
+     "rideAlong": true,
+     "garrison": [],
+     "threat": 12,
+     "deckSeed": 438005480
     }
    ]
   },
@@ -594,9 +679,26 @@
      ],
      "parent": "BUS-KEEP-GULLSHOAL:HARBOUR:1",
      "arrives": "NAVAL_LANDING",
+     "rideAlong": true,
      "garrison": [],
      "threat": 12,
      "deckSeed": 1997867492
+    },
+    {
+     "id": "BUS-KEEP-GULLSHOAL:CARAVAN_WAYPOINT:1",
+     "lwKind": "CARAVAN_WAYPOINT",
+     "at": [
+      302.69,
+      81.87
+     ],
+     "route": [
+      "BUS-KEEP-GULLSHOAL",
+      "BUS-KEEP-GULLSHOAL:HARBOUR:1"
+     ],
+     "rideAlong": true,
+     "garrison": [],
+     "threat": 12,
+     "deckSeed": 3077112588
     }
    ]
   },
@@ -1406,6 +1508,7 @@
      ],
      "parent": "ENT-KEEP-LANTERNSHORE:HARBOUR:1",
      "arrives": "NAVAL_LANDING",
+     "rideAlong": true,
      "garrison": [],
      "threat": 11,
      "deckSeed": 3817917713
@@ -1482,6 +1585,7 @@
      ],
      "parent": "ENT-KEEP-PETALPORT:HARBOUR:1",
      "arrives": "NAVAL_LANDING",
+     "rideAlong": true,
      "garrison": [],
      "threat": 11,
      "deckSeed": 368613757
@@ -1818,6 +1922,7 @@
      ],
      "parent": "HS1-AEROPOLIS:AIRSHIP_DOCK:1",
      "arrives": "AIRSHIP_DROP",
+     "rideAlong": true,
      "garrison": [],
      "threat": 60,
      "deckSeed": 1287147865
@@ -1831,9 +1936,26 @@
      ],
      "parent": "HS1-AEROPOLIS:AIRSHIP_DOCK:1",
      "arrives": "AIRSHIP_DROP",
+     "rideAlong": true,
      "garrison": [],
      "threat": 60,
      "deckSeed": 1236815008
+    },
+    {
+     "id": "HS1-AEROPOLIS:CARAVAN_WAYPOINT:1",
+     "lwKind": "CARAVAN_WAYPOINT",
+     "at": [
+      104.91,
+      54.14
+     ],
+     "route": [
+      "HS1-AEROPOLIS",
+      "HS1-AEROPOLIS:AIRSHIP_DOCK:1"
+     ],
+     "rideAlong": true,
+     "garrison": [],
+     "threat": 60,
+     "deckSeed": 3694345709
     }
    ]
   },
@@ -1931,6 +2053,7 @@
      ],
      "parent": "HS1-CASTLE-GARDENHOLD:AIRSHIP_DOCK:1",
      "arrives": "AIRSHIP_DROP",
+     "rideAlong": true,
      "garrison": [],
      "threat": 40,
      "deckSeed": 1107125436
@@ -1944,9 +2067,26 @@
      ],
      "parent": "HS1-CASTLE-GARDENHOLD:AIRSHIP_DOCK:1",
      "arrives": "AIRSHIP_DROP",
+     "rideAlong": true,
      "garrison": [],
      "threat": 40,
      "deckSeed": 1157458293
+    },
+    {
+     "id": "HS1-CASTLE-GARDENHOLD:CARAVAN_WAYPOINT:1",
+     "lwKind": "CARAVAN_WAYPOINT",
+     "at": [
+      31.75,
+      12.07
+     ],
+     "route": [
+      "HS1-CASTLE-GARDENHOLD",
+      "HS1-CASTLE-GARDENHOLD:AIRSHIP_DOCK:1"
+     ],
+     "rideAlong": true,
+     "garrison": [],
+     "threat": 40,
+     "deckSeed": 3613989796
     }
    ]
   },
@@ -2044,6 +2184,7 @@
      ],
      "parent": "HS1-CASTLE-HEAVENSGATE:AIRSHIP_DOCK:1",
      "arrives": "AIRSHIP_DROP",
+     "rideAlong": true,
      "garrison": [],
      "threat": 40,
      "deckSeed": 351004423
@@ -2057,9 +2198,26 @@
      ],
      "parent": "HS1-CASTLE-HEAVENSGATE:AIRSHIP_DOCK:1",
      "arrives": "AIRSHIP_DROP",
+     "rideAlong": true,
      "garrison": [],
      "threat": 40,
      "deckSeed": 367782042
+    },
+    {
+     "id": "HS1-CASTLE-HEAVENSGATE:CARAVAN_WAYPOINT:1",
+     "lwKind": "CARAVAN_WAYPOINT",
+     "at": [
+      62.17,
+      113.94
+     ],
+     "route": [
+      "HS1-CASTLE-HEAVENSGATE",
+      "HS1-CASTLE-HEAVENSGATE:AIRSHIP_DOCK:1"
+     ],
+     "rideAlong": true,
+     "garrison": [],
+     "threat": 40,
+     "deckSeed": 2263055643
     }
    ]
   },
@@ -2157,6 +2315,7 @@
      ],
      "parent": "HS1-CASTLE-TERRACEHALL:AIRSHIP_DOCK:1",
      "arrives": "AIRSHIP_DROP",
+     "rideAlong": true,
      "garrison": [],
      "threat": 40,
      "deckSeed": 981537989
@@ -2170,9 +2329,26 @@
      ],
      "parent": "HS1-CASTLE-TERRACEHALL:AIRSHIP_DOCK:1",
      "arrives": "AIRSHIP_DROP",
+     "rideAlong": true,
      "garrison": [],
      "threat": 40,
      "deckSeed": 931205132
+    },
+    {
+     "id": "HS1-CASTLE-TERRACEHALL:CARAVAN_WAYPOINT:1",
+     "lwKind": "CARAVAN_WAYPOINT",
+     "at": [
+      81.48,
+      107.53
+     ],
+     "route": [
+      "HS1-CASTLE-TERRACEHALL",
+      "HS1-CASTLE-TERRACEHALL:AIRSHIP_DOCK:1"
+     ],
+     "rideAlong": true,
+     "garrison": [],
+     "threat": 40,
+     "deckSeed": 483282785
     }
    ]
   },
@@ -2242,6 +2418,7 @@
      ],
      "parent": "HS1-KEEP-EMBERWATCH:AIRSHIP_DOCK:1",
      "arrives": "AIRSHIP_DROP",
+     "rideAlong": true,
      "garrison": [],
      "threat": 20,
      "deckSeed": 1661821659
@@ -2255,9 +2432,26 @@
      ],
      "parent": "HS1-KEEP-EMBERWATCH:AIRSHIP_DOCK:1",
      "arrives": "AIRSHIP_DROP",
+     "rideAlong": true,
      "garrison": [],
      "threat": 20,
      "deckSeed": 1678599278
+    },
+    {
+     "id": "HS1-KEEP-EMBERWATCH:CARAVAN_WAYPOINT:1",
+     "lwKind": "CARAVAN_WAYPOINT",
+     "at": [
+      92.84,
+      79.41
+     ],
+     "route": [
+      "HS1-KEEP-EMBERWATCH",
+      "HS1-KEEP-EMBERWATCH:AIRSHIP_DOCK:1"
+     ],
+     "rideAlong": true,
+     "garrison": [],
+     "threat": 20,
+     "deckSeed": 2310746727
     }
    ]
   },
@@ -2327,6 +2521,7 @@
      ],
      "parent": "HS1-KEEP-EMPYREAWATCH:AIRSHIP_DOCK:1",
      "arrives": "AIRSHIP_DROP",
+     "rideAlong": true,
      "garrison": [],
      "threat": 20,
      "deckSeed": 3054097739
@@ -2340,9 +2535,26 @@
      ],
      "parent": "HS1-KEEP-EMPYREAWATCH:AIRSHIP_DOCK:1",
      "arrives": "AIRSHIP_DROP",
+     "rideAlong": true,
      "garrison": [],
      "threat": 20,
      "deckSeed": 3070875358
+    },
+    {
+     "id": "HS1-KEEP-EMPYREAWATCH:CARAVAN_WAYPOINT:1",
+     "lwKind": "CARAVAN_WAYPOINT",
+     "at": [
+      45.05,
+      19.9
+     ],
+     "route": [
+      "HS1-KEEP-EMPYREAWATCH",
+      "HS1-KEEP-EMPYREAWATCH:AIRSHIP_DOCK:1"
+     ],
+     "rideAlong": true,
+     "garrison": [],
+     "threat": 20,
+     "deckSeed": 867306039
     }
    ]
   },
@@ -2412,6 +2624,7 @@
      ],
      "parent": "HS1-KEEP-STAIRWATCH:AIRSHIP_DOCK:1",
      "arrives": "AIRSHIP_DROP",
+     "rideAlong": true,
      "garrison": [],
      "threat": 20,
      "deckSeed": 2001547233
@@ -2425,9 +2638,26 @@
      ],
      "parent": "HS1-KEEP-STAIRWATCH:AIRSHIP_DOCK:1",
      "arrives": "AIRSHIP_DROP",
+     "rideAlong": true,
      "garrison": [],
      "threat": 20,
      "deckSeed": 1951214376
+    },
+    {
+     "id": "HS1-KEEP-STAIRWATCH:CARAVAN_WAYPOINT:1",
+     "lwKind": "CARAVAN_WAYPOINT",
+     "at": [
+      46.2,
+      57.79
+     ],
+     "route": [
+      "HS1-KEEP-STAIRWATCH",
+      "HS1-KEEP-STAIRWATCH:AIRSHIP_DOCK:1"
+     ],
+     "rideAlong": true,
+     "garrison": [],
+     "threat": 20,
+     "deckSeed": 1174719701
     }
    ]
   },
@@ -2497,6 +2727,7 @@
      ],
      "parent": "HS2-KEEP-BULWARK:AIRSHIP_DOCK:1",
      "arrives": "AIRSHIP_DROP",
+     "rideAlong": true,
      "garrison": [],
      "threat": 20,
      "deckSeed": 4024252952
@@ -2510,9 +2741,26 @@
      ],
      "parent": "HS2-KEEP-BULWARK:AIRSHIP_DOCK:1",
      "arrives": "AIRSHIP_DROP",
+     "rideAlong": true,
      "garrison": [],
      "threat": 20,
      "deckSeed": 4074585809
+    },
+    {
+     "id": "HS2-KEEP-BULWARK:CARAVAN_WAYPOINT:1",
+     "lwKind": "CARAVAN_WAYPOINT",
+     "at": [
+      67.57,
+      7.85
+     ],
+     "route": [
+      "HS2-KEEP-BULWARK",
+      "HS2-KEEP-BULWARK:AIRSHIP_DOCK:1"
+     ],
+     "rideAlong": true,
+     "garrison": [],
+     "threat": 20,
+     "deckSeed": 85877192
     }
    ]
   },
@@ -2582,6 +2830,7 @@
      ],
      "parent": "HS2-KEEP-CINDERHOLM:AIRSHIP_DOCK:1",
      "arrives": "AIRSHIP_DROP",
+     "rideAlong": true,
      "garrison": [],
      "threat": 20,
      "deckSeed": 3412973203
@@ -2595,9 +2844,26 @@
      ],
      "parent": "HS2-KEEP-CINDERHOLM:AIRSHIP_DOCK:1",
      "arrives": "AIRSHIP_DROP",
+     "rideAlong": true,
      "garrison": [],
      "threat": 20,
      "deckSeed": 3429750822
+    },
+    {
+     "id": "HS2-KEEP-CINDERHOLM:CARAVAN_WAYPOINT:1",
+     "lwKind": "CARAVAN_WAYPOINT",
+     "at": [
+      32.63,
+      100.61
+     ],
+     "route": [
+      "HS2-KEEP-CINDERHOLM",
+      "HS2-KEEP-CINDERHOLM:AIRSHIP_DOCK:1"
+     ],
+     "rideAlong": true,
+     "garrison": [],
+     "threat": 20,
+     "deckSeed": 3221576511
     }
    ]
   },
@@ -2667,6 +2933,7 @@
      ],
      "parent": "HS2-KEEP-PARADEWATCH:AIRSHIP_DOCK:1",
      "arrives": "AIRSHIP_DROP",
+     "rideAlong": true,
      "garrison": [],
      "threat": 20,
      "deckSeed": 3101473520
@@ -2680,9 +2947,26 @@
      ],
      "parent": "HS2-KEEP-PARADEWATCH:AIRSHIP_DOCK:1",
      "arrives": "AIRSHIP_DROP",
+     "rideAlong": true,
      "garrison": [],
      "threat": 20,
      "deckSeed": 3151806377
+    },
+    {
+     "id": "HS2-KEEP-PARADEWATCH:CARAVAN_WAYPOINT:1",
+     "lwKind": "CARAVAN_WAYPOINT",
+     "at": [
+      53.42,
+      81.72
+     ],
+     "route": [
+      "HS2-KEEP-PARADEWATCH",
+      "HS2-KEEP-PARADEWATCH:AIRSHIP_DOCK:1"
+     ],
+     "rideAlong": true,
+     "garrison": [],
+     "threat": 20,
+     "deckSeed": 4204180192
     }
    ]
   },
@@ -2752,6 +3036,7 @@
      ],
      "parent": "HS2-KEEP-SEAMWATCH:AIRSHIP_DOCK:1",
      "arrives": "AIRSHIP_DROP",
+     "rideAlong": true,
      "garrison": [],
      "threat": 20,
      "deckSeed": 2195319723
@@ -2765,9 +3050,26 @@
      ],
      "parent": "HS2-KEEP-SEAMWATCH:AIRSHIP_DOCK:1",
      "arrives": "AIRSHIP_DROP",
+     "rideAlong": true,
      "garrison": [],
      "threat": 20,
      "deckSeed": 2212097342
+    },
+    {
+     "id": "HS2-KEEP-SEAMWATCH:CARAVAN_WAYPOINT:1",
+     "lwKind": "CARAVAN_WAYPOINT",
+     "at": [
+      22.35,
+      23.72
+     ],
+     "route": [
+      "HS2-KEEP-SEAMWATCH",
+      "HS2-KEEP-SEAMWATCH:AIRSHIP_DOCK:1"
+     ],
+     "rideAlong": true,
+     "garrison": [],
+     "threat": 20,
+     "deckSeed": 1192650519
     }
    ]
   },
@@ -2837,6 +3139,7 @@
      ],
      "parent": "HS2-KEEP-SHARDWATCH:AIRSHIP_DOCK:1",
      "arrives": "AIRSHIP_DROP",
+     "rideAlong": true,
      "garrison": [],
      "threat": 20,
      "deckSeed": 2488231715
@@ -2850,9 +3153,26 @@
      ],
      "parent": "HS2-KEEP-SHARDWATCH:AIRSHIP_DOCK:1",
      "arrives": "AIRSHIP_DROP",
+     "rideAlong": true,
      "garrison": [],
      "threat": 20,
      "deckSeed": 2505009334
+    },
+    {
+     "id": "HS2-KEEP-SHARDWATCH:CARAVAN_WAYPOINT:1",
+     "lwKind": "CARAVAN_WAYPOINT",
+     "at": [
+      98.51,
+      92.52
+     ],
+     "route": [
+      "HS2-KEEP-SHARDWATCH",
+      "HS2-KEEP-SHARDWATCH:AIRSHIP_DOCK:1"
+     ],
+     "rideAlong": true,
+     "garrison": [],
+     "threat": 20,
+     "deckSeed": 3165084975
     }
    ]
   },
@@ -2922,6 +3242,7 @@
      ],
      "parent": "HS2-KEEP-WESTGATE:AIRSHIP_DOCK:1",
      "arrives": "AIRSHIP_DROP",
+     "rideAlong": true,
      "garrison": [],
      "threat": 20,
      "deckSeed": 3536323294
@@ -2935,9 +3256,26 @@
      ],
      "parent": "HS2-KEEP-WESTGATE:AIRSHIP_DOCK:1",
      "arrives": "AIRSHIP_DROP",
+     "rideAlong": true,
      "garrison": [],
      "threat": 20,
      "deckSeed": 3519545675
+    },
+    {
+     "id": "HS2-KEEP-WESTGATE:CARAVAN_WAYPOINT:1",
+     "lwKind": "CARAVAN_WAYPOINT",
+     "at": [
+      19.12,
+      52.89
+     ],
+     "route": [
+      "HS2-KEEP-WESTGATE",
+      "HS2-KEEP-WESTGATE:AIRSHIP_DOCK:1"
+     ],
+     "rideAlong": true,
+     "garrison": [],
+     "threat": 20,
+     "deckSeed": 1491081942
     }
    ]
   },
@@ -3061,6 +3399,7 @@
      ],
      "parent": "HS2-PALACE-EMBERTHRONE:AIRSHIP_DOCK:1",
      "arrives": "AIRSHIP_DROP",
+     "rideAlong": true,
      "garrison": [],
      "threat": 60,
      "deckSeed": 2181388412
@@ -3074,9 +3413,26 @@
      ],
      "parent": "HS2-PALACE-EMBERTHRONE:AIRSHIP_DOCK:1",
      "arrives": "AIRSHIP_DROP",
+     "rideAlong": true,
      "garrison": [],
      "threat": 60,
      "deckSeed": 2231721269
+    },
+    {
+     "id": "HS2-PALACE-EMBERTHRONE:CARAVAN_WAYPOINT:1",
+     "lwKind": "CARAVAN_WAYPOINT",
+     "at": [
+      67.2,
+      51.39
+     ],
+     "route": [
+      "HS2-PALACE-EMBERTHRONE",
+      "HS2-PALACE-EMBERTHRONE:AIRSHIP_DOCK:1"
+     ],
+     "rideAlong": true,
+     "garrison": [],
+     "threat": 60,
+     "deckSeed": 1805875556
     }
    ]
   },
@@ -3146,6 +3502,7 @@
      ],
      "parent": "HS3-KEEP-AURORA:AIRSHIP_DOCK:1",
      "arrives": "AIRSHIP_DROP",
+     "rideAlong": true,
      "garrison": [],
      "threat": 20,
      "deckSeed": 2454279311
@@ -3159,9 +3516,26 @@
      ],
      "parent": "HS3-KEEP-AURORA:AIRSHIP_DOCK:1",
      "arrives": "AIRSHIP_DROP",
+     "rideAlong": true,
      "garrison": [],
      "threat": 20,
      "deckSeed": 2471056930
+    },
+    {
+     "id": "HS3-KEEP-AURORA:CARAVAN_WAYPOINT:1",
+     "lwKind": "CARAVAN_WAYPOINT",
+     "at": [
+      75.86,
+      18.01
+     ],
+     "route": [
+      "HS3-KEEP-AURORA",
+      "HS3-KEEP-AURORA:AIRSHIP_DOCK:1"
+     ],
+     "rideAlong": true,
+     "garrison": [],
+     "threat": 20,
+     "deckSeed": 1291412355
     }
    ]
   },
@@ -3231,6 +3605,7 @@
      ],
      "parent": "HS3-KEEP-DAWNSHIELD:AIRSHIP_DOCK:1",
      "arrives": "AIRSHIP_DROP",
+     "rideAlong": true,
      "garrison": [],
      "threat": 20,
      "deckSeed": 387085010
@@ -3244,9 +3619,26 @@
      ],
      "parent": "HS3-KEEP-DAWNSHIELD:AIRSHIP_DOCK:1",
      "arrives": "AIRSHIP_DROP",
+     "rideAlong": true,
      "garrison": [],
      "threat": 20,
      "deckSeed": 370307391
+    },
+    {
+     "id": "HS3-KEEP-DAWNSHIELD:CARAVAN_WAYPOINT:1",
+     "lwKind": "CARAVAN_WAYPOINT",
+     "at": [
+      64.6,
+      35.55
+     ],
+     "route": [
+      "HS3-KEEP-DAWNSHIELD",
+      "HS3-KEEP-DAWNSHIELD:AIRSHIP_DOCK:1"
+     ],
+     "rideAlong": true,
+     "garrison": [],
+     "threat": 20,
+     "deckSeed": 202389394
     }
    ]
   },
@@ -3316,6 +3708,7 @@
      ],
      "parent": "HS3-KEEP-PILGRIMWATCH:AIRSHIP_DOCK:1",
      "arrives": "AIRSHIP_DROP",
+     "rideAlong": true,
      "garrison": [],
      "threat": 20,
      "deckSeed": 3064116836
@@ -3329,9 +3722,26 @@
      ],
      "parent": "HS3-KEEP-PILGRIMWATCH:AIRSHIP_DOCK:1",
      "arrives": "AIRSHIP_DROP",
+     "rideAlong": true,
      "garrison": [],
      "threat": 20,
      "deckSeed": 3114449693
+    },
+    {
+     "id": "HS3-KEEP-PILGRIMWATCH:CARAVAN_WAYPOINT:1",
+     "lwKind": "CARAVAN_WAYPOINT",
+     "at": [
+      23.9,
+      50.17
+     ],
+     "route": [
+      "HS3-KEEP-PILGRIMWATCH",
+      "HS3-KEEP-PILGRIMWATCH:AIRSHIP_DOCK:1"
+     ],
+     "rideAlong": true,
+     "garrison": [],
+     "threat": 20,
+     "deckSeed": 1933899660
     }
    ]
   },
@@ -3401,6 +3811,7 @@
      ],
      "parent": "HS3-KEEP-SHIELDGATE:AIRSHIP_DOCK:1",
      "arrives": "AIRSHIP_DROP",
+     "rideAlong": true,
      "garrison": [],
      "threat": 20,
      "deckSeed": 2683576725
@@ -3414,9 +3825,26 @@
      ],
      "parent": "HS3-KEEP-SHIELDGATE:AIRSHIP_DOCK:1",
      "arrives": "AIRSHIP_DROP",
+     "rideAlong": true,
      "garrison": [],
      "threat": 20,
      "deckSeed": 2633243868
+    },
+    {
+     "id": "HS3-KEEP-SHIELDGATE:CARAVAN_WAYPOINT:1",
+     "lwKind": "CARAVAN_WAYPOINT",
+     "at": [
+      57.06,
+      32.03
+     ],
+     "route": [
+      "HS3-KEEP-SHIELDGATE",
+      "HS3-KEEP-SHIELDGATE:AIRSHIP_DOCK:1"
+     ],
+     "rideAlong": true,
+     "garrison": [],
+     "threat": 20,
+     "deckSeed": 2358378833
     }
    ]
   },
@@ -3540,6 +3968,7 @@
      ],
      "parent": "HS3-SANCTUM:AIRSHIP_DOCK:1",
      "arrives": "AIRSHIP_DROP",
+     "rideAlong": true,
      "garrison": [],
      "threat": 60,
      "deckSeed": 1271415574
@@ -3553,9 +3982,26 @@
      ],
      "parent": "HS3-SANCTUM:AIRSHIP_DOCK:1",
      "arrives": "AIRSHIP_DROP",
+     "rideAlong": true,
      "garrison": [],
      "threat": 60,
      "deckSeed": 1254637955
+    },
+    {
+     "id": "HS3-SANCTUM:CARAVAN_WAYPOINT:1",
+     "lwKind": "CARAVAN_WAYPOINT",
+     "at": [
+      47.12,
+      24.13
+     ],
+     "route": [
+      "HS3-SANCTUM",
+      "HS3-SANCTUM:AIRSHIP_DOCK:1"
+     ],
+     "rideAlong": true,
+     "garrison": [],
+     "threat": 60,
+     "deckSeed": 2012455438
     }
    ]
   },
@@ -4033,6 +4479,7 @@
      ],
      "parent": "HUB-CASTLE-YONGAN:AIRSHIP_DOCK:1",
      "arrives": "AIRSHIP_DROP",
+     "rideAlong": true,
      "garrison": [],
      "threat": 20,
      "deckSeed": 898206681
@@ -4046,9 +4493,26 @@
      ],
      "parent": "HUB-CASTLE-YONGAN:AIRSHIP_DOCK:1",
      "arrives": "AIRSHIP_DROP",
+     "rideAlong": true,
      "garrison": [],
      "threat": 20,
      "deckSeed": 847873824
+    },
+    {
+     "id": "HUB-CASTLE-YONGAN:CARAVAN_WAYPOINT:1",
+     "lwKind": "CARAVAN_WAYPOINT",
+     "at": [
+      301.42,
+      66.18
+     ],
+     "route": [
+      "HUB-CASTLE-YONGAN",
+      "HUB-PORT-SKY"
+     ],
+     "rideAlong": true,
+     "garrison": [],
+     "threat": 20,
+     "deckSeed": 3715997805
     }
    ]
   },
@@ -4469,9 +4933,26 @@
      ],
      "parent": "KOL-CASTLE-FORTUNA:HARBOUR:1",
      "arrives": "NAVAL_LANDING",
+     "rideAlong": true,
      "garrison": [],
      "threat": 20,
      "deckSeed": 3873886639
+    },
+    {
+     "id": "KOL-CASTLE-FORTUNA:CARAVAN_WAYPOINT:1",
+     "lwKind": "CARAVAN_WAYPOINT",
+     "at": [
+      50.65,
+      20.68
+     ],
+     "route": [
+      "KOL-CASTLE-FORTUNA",
+      "KOL-CASTLE-FORTUNA:HARBOUR:1"
+     ],
+     "rideAlong": true,
+     "garrison": [],
+     "threat": 20,
+     "deckSeed": 3740150947
     }
    ]
   },

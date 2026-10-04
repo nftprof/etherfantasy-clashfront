@@ -85,8 +85,13 @@ function seedCastle(c) {
   // 3) landing spots ride along with harbours/docks (they don't count toward the budget)
   for (const parent of pois.filter((p) => p.lwKind === "HARBOUR" || p.lwKind === "AIRSHIP_DOCK")) {
     const nSpots = parent.lwKind === "HARBOUR" ? 1 : 2;
-    for (let i = 0; i < nSpots; i++) add("LANDING_SPOT", around(rng, parent.at, ...ARCH.LANDING_SPOT.affinity.offsetU), { parent: parent.id, arrives: parent.lwKind === "HARBOUR" ? "NAVAL_LANDING" : "AIRSHIP_DROP" });
+    for (let i = 0; i < nSpots; i++) add("LANDING_SPOT", around(rng, parent.at, ...ARCH.LANDING_SPOT.affinity.offsetU), { parent: parent.id, arrives: parent.lwKind === "HARBOUR" ? "NAVAL_LANDING" : "AIRSHIP_DROP", rideAlong: true });
   }
+  // 4) caravan route ride-along (D4b): every castle with a port in reach gets its castle↔port waypoint, outside the budget
+  //    (terrain POIs used to crowd it out — 4 routes for 67 castles)
+  const dock = pois.find((p) => p.lwKind === "HARBOUR" || p.lwKind === "AIRSHIP_DOCK");
+  if (dock && !pois.some((p) => p.lwKind === "CARAVAN_WAYPOINT"))
+    add("CARAVAN_WAYPOINT", lerp(c.at, dock.at, 0.6), { route: [c.id, dock.anchorPoi || dock.id], rideAlong: true });   // castle ↔ its own harbour / dock
   return { castleId: c.id, zone: c.zone, layer: c.layer, kind: c.kind, tier, strength, pois };
 }
 
