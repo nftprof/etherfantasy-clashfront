@@ -1094,6 +1094,7 @@
      "owner": "gov_SAMPLE_HOLDER",
      "battleHp": 18000,
      "shieldsCore": true,
+     "damageShareMax": 0.2,
      "bombard": {
       "everySec": 6,
       "teleSec": 0.9

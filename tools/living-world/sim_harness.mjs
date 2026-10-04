@@ -52,7 +52,7 @@ export function runOne(poi, scen = "BASE") {
   // doc 04 Guardians on the perch (the keep): Form 2 Warden / Form 3 Ascendant, numbers from guardians.json (HP on the harness scale)
   let G = null; const F = scen === "F2" ? GU.forms["2"] : scen === "F3" ? GU.forms["3"] : null;
   if (F) { const hp = Math.round((G_HP || F.battleHp) * DEF_MUL); G = mkUnit({ kind: "wild", team: 1, slot: "GUARDIAN_F" + scen[1], x: K.x - 7, z: K.z - 7, hp, maxHp: hp, dmg: 300, range: 20, atkSpd: 1 / F.bombard.everySec, speed: 10 });
-    G.home = { x: K.x - 7, z: K.z - 7 }; G.shieldsCore = true; if (F.ascended) G.dmgTakenMul = F.ascended.damageTakenMul; w.units.set(G.uid, G); }   // doc 04 rule: the keep is shielded while the Guardian stands; it stands in front of the keep
+    G.home = { x: K.x - 7, z: K.z - 7 }; G.baseDmg = G.dmg; G.shieldsCore = true; if (F.ascended) G.dmgTakenMul = F.ascended.damageTakenMul; w.units.set(G.uid, G); }   // doc 04 rule: the keep is shielded while the Guardian stands; it stands in front of the keep
   // Ward Stones (Form 3 counterplay): each one destroyed cuts the Ascension window; all of them end it (guardians.json)
   const wards = [];
   if (F && F.ascended) for (let i = 0; i < F.ascended.wardStones.count; i++) {
@@ -63,6 +63,7 @@ export function runOne(poi, scen = "BASE") {
   // D14 canon terrain (opt-in): the attacker's mod scales the damage defenders take, the defender's mod the damage attackers take
   const [aMod, dMod] = opts.TERRAIN ? terrainMods(poi.ground) : [1, 1];
   if (aMod !== 1) for (const u of w.units.values()) if (u.team === 1 && u !== G) u.dmgTakenMul = aMod;
+  if (G) for (const u of w.units.values()) if (u.team === 1) u.dmgDealt = 0;   // D31: opt-in damage ledger on the defenders (Guardian share, doc 04 §4)
   const inputs = new Map(); let deaths = 0; const aliveNow = new Set();
   for (const u of w.units.values()) if (u.team === 0 && u.hp > 0) aliveNow.add(u.uid);
   const cap = F ? GUARDIAN_CAP_SEC : FLOOR_SEC;   // guardian scenarios run to 20 min so the tired / KO phase is visible
@@ -75,11 +76,16 @@ export function runOne(poi, scen = "BASE") {
     // the Guardian's aura: attackers near it deal reduced structure damage (rides the opt-in structMul; siege keeps its ×6 base)
     if (G && G.hp > 0) for (const u of w.units.values()) if (u.team === 0 && u.kind === "minion") { const base = u.slot === "SIEGE" ? 6 : 1; u.structMul = Math.hypot(u.x - G.x, u.z - G.z) <= F.aura.radiusU ? base * F.aura.structureDmgMul : (u.slot === "SIEGE" ? 6 : undefined); }
     if (G && F.ascended && !tired && wakeT != null && (w.t - wakeT >= F.ascended.windowSec - cut || wardsDownAt.length >= F.ascended.wardStones.count)) { tired = true; G.dmgTakenMul = 1; G.hp = Math.min(G.hp, Math.round(G.maxHp * F.ascended.tiredHpPct / 100)); }   // "the Ascendant tires"
+    // D31 doc 04 §4: the Guardian's damage share is capped (guardians.json caps.guardianDamageShareMax = 0.20). A running
+    // budget: it may deal at most cap/(1−cap) × what the rest of the defenders have dealt so far, so it holds fire when over.
+    if (G && G.hp > 0) { const others = [...w.units.values()].reduce((n, u) => n + (u.team === 1 && u !== G && u.dmgDealt != null ? u.dmgDealt : 0), 0), cap = GU.caps.guardianDamageShareMax;
+      G.dmg = G.dmgDealt + G.baseDmg <= (cap / (1 - cap)) * others ? G.baseDmg : 0; }   // fire only if the whole shot fits the budget
     if (G && gKoSec == null && !(G.hp > 0)) gKoSec = Math.round(w.t);
     for (const u of w.units.values()) if (u.team === 0) { const a = u.hp > 0 && u.state !== "dead"; if (aliveNow.has(u.uid) && !a) { deaths++; aliveNow.delete(u.uid); } else if (a) aliveNow.add(u.uid); }
   }
   const left = (slot) => [...w.units.values()].filter((u) => u.team === 1 && u.slot === slot && u.hp > 0).length;
   return { id: poi.id, k: poi.k, threat: poi.threat, breached: w.winner === 0, sec: Math.round(w.t), attackerDeaths: deaths, defenderWon: w.winner === 1,
     left: { walls: left("WALL"), gates: left("GATE"), towers: left("CASTLE_TOWER"), keepPct: Math.round(100 * Math.max(0, keep.hp) / keep.maxHp) },
-    wardsDownAt, scen, guardianWakeSec: wakeT != null ? Math.round(wakeT) : null, guardianKoSec: gKoSec, guardianHpPct: G ? Math.round(100 * Math.max(0, G.hp) / G.maxHp) : null };
+    wardsDownAt, scen, guardianWakeSec: wakeT != null ? Math.round(wakeT) : null, guardianKoSec: gKoSec, guardianHpPct: G ? Math.round(100 * Math.max(0, G.hp) / G.maxHp) : null,
+    guardianDmgShare: G ? (() => { const tot = [...w.units.values()].filter((u) => u.team === 1 && u.dmgDealt != null).reduce((n, u) => n + u.dmgDealt, 0); return tot ? Math.round((1000 * G.dmgDealt) / tot) / 1000 : 0; })() : null };
 }

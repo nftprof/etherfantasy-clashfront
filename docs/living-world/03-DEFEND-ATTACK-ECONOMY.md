@@ -94,7 +94,7 @@ Mercenaries are hired at a **`MERCENARY_POST`** POI (doc 01). The contract is es
 The sheet sets each scenario's CT paid against the attacker's units lost (canon re-training cost, at several
 soldiers-per-sim-unit ratios). Three findings:
 
-1. **Guardians are priced far below defences for the same pain:** 0.4 CT vs 57 CT per extra attacker unit lost.
+1. **Guardians are priced far below defences for the same pain:** 0.7 CT vs 57 CT per extra attacker unit lost (after the D31 damage cap).
 2. **A Guardian's bounty is tiny next to the losses it costs to win.**
 3. **Defences buy force, not time.** The full stack adds 0:36 to the breach, but makes the attacker bring 1.6× the
    army.

@@ -30,7 +30,9 @@ function hit(world, src, tgt, dmg) {
   if (tgt.kind === "core") {
     for (const o of world.units.values()) if ((o.kind === "tower" || o.shieldsCore) && o.team === tgt.team && alive(o)) return; // shielded (towers, or an opt-in Guardian)
   }
-  tgt.hp -= dmg * (tgt.dmgTakenMul != null ? tgt.dmgTakenMul : 1);   // opt-in (living-world Form 3 Guardian Ascension); absent → unchanged
+  const dealt = dmg * (tgt.dmgTakenMul != null ? tgt.dmgTakenMul : 1);   // opt-in (living-world Form 3 Guardian Ascension); absent → unchanged
+  tgt.hp -= dealt;
+  if (src.dmgDealt != null) src.dmgDealt += dealt;   // opt-in damage ledger (doc 04 §4 share cap); absent → unchanged
   if (tgt.hp <= 0) killUnit(world, src, tgt); // gold/XP/respawn/win handled centrally
 }
 

@@ -8,21 +8,21 @@ Canon reports casualties in soldiers (`BattleResult.casualties`, doc 09 §5), so
 |---|---|---|---|---|---|---|---|---|
 | Bare castle | 0 | 0 | 0 | 8:59 | 64 | 299 / 1,493 / **2,987** / 5,973 | — | — |
 | Full defence stack (every castle upgrade at max level, 7 days) | 171 | 51.3 | 68.4 | 9:35 | 67 (+3) | 313 / 1,563 / **3,127** / 6,253 | 57 | 285 |
-| + Form 2 Warden (stationing fee) | 20 | 6 | 10 | 15:11 | 109 (+45) | 509 / 2,543 / **5,087** / 10,173 | 0.4 | 3.2 |
-| + Form 3 Ascendant (stationing fee) | 120 | 36 | 60 | 18:06 | 117 (+53) | 546 / 2,730 / **5,460** / 10,920 | 2.3 | 13.2 |
+| + Form 2 Warden (stationing fee) | 20 | 6 | 10 | 13:34 | 94 (+30) | 439 / 2,193 / **4,387** / 8,773 | 0.7 | 4.4 |
+| + Form 3 Ascendant (stationing fee) | 120 | 36 | 60 | 17:16 | 97 (+33) | 453 / 2,263 / **4,527** / 9,053 | 3.6 | 14.5 |
 
 ## What the sheet says
 
-1. **Guardians are far cheaper than defences for the same pain.** A full defence stack costs the defender **57 CT per extra attacker unit lost**. A Form 2 Warden costs **0.4 CT**, which is 142.5× cheaper. A Form 3 costs 2.3 CT.
+1. **Guardians are far cheaper than defences for the same pain.** A full defence stack costs the defender **57 CT per extra attacker unit lost**. A Form 2 Warden costs **0.7 CT**, which is 81.4× cheaper. A Form 3 costs 3.6 CT.
    - Part of that is by design: a Guardian's real price is the NFT itself (scarce, with a 24 h / 72 h cooldown, one per perch, one Ascendant per castle per week).
-   - Still, a 20 CT Warden imposing +45 units of losses is the outlier.
-2. **The Guardian bounty doesn't pay for the fight it asks for.** At ×10 soldiers per unit, the attacker's extra losses against a Warden are worth **210×** the bounty they can win (41.2× for an Ascendant).
+   - Still, a 20 CT Warden imposing +30 units of losses is the outlier.
+2. **The Guardian bounty doesn't pay for the fight it asks for.** At ×10 soldiers per unit, the attacker's extra losses against a Warden are worth **140×** the bounty they can win (25.7× for an Ascendant).
    - So nobody hunts a Guardian for the bounty alone. Guardian hunts need the castle itself as the prize, or a bigger escrow.
 3. **Defences buy force, not time.** The full stack adds only 0:36 to the breach. That's doc 03's floor working as intended: a 1.5× defence-weighted attacker still breaks in under 12 min.
    - What the defender really buys is that the attacker must **bring 1.6× the army**. It's an entry price on the attacker's commitment, not on their losses (+3 units).
 
-Owner call (`OWNER-DECISIONS.md` §5). Raising the fees alone can't close finding 2: even a ×3 Warden fee leaves the bounty about 70× short. So the choice is about *what a Guardian hunt is for*:
+Owner call (`OWNER-DECISIONS.md` §5). Raising the fees alone can't close finding 2: even a ×3 Warden fee leaves the bounty about 47× short. So the choice is about *what a Guardian hunt is for*:
 
-- **A (recommended):** the prize is the castle. The bounty is a trophy, not a wage. Raise the Warden fee 20 → 60 CT (still the cheapest pain, but ~43× rather than ~143× cheaper than defences), and **say so in the feed** ("the bounty is glory; the castle is the prize").
+- **A (recommended):** the prize is the castle. The bounty is a trophy, not a wage. Raise the Warden fee 20 → 60 CT (still the cheapest pain, but ~29× rather than ~81× cheaper than defences), and **say so in the feed** ("the bounty is glory; the castle is the prize").
 - **B:** the bounty is a wage. The region pool tops up a standing Guardian's escrow to ~25 % of the expected extra attacker losses. That needs a pool source and is a CT sink decision.
 - **C:** leave as is. ⚠ Wardens stay the dominant defence purchase by two orders of magnitude.

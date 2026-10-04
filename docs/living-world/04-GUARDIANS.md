@@ -42,13 +42,13 @@ Kind multiplier: KEEP ×1, CASTLE ×1.5, PALACE ×2.
   8 minutes while the attackers were still on the walls and fell *faster* than Form 2 (14:24 vs 16:10).
 - Measured on the calibrated castle with these rules, **Ward Stones and the aura included** (D6d, N = 6):
   - the bare castle breaks at **8:59**;
-  - with a **Form 2 Warden** (3,000 HP, −20 % aura) at **15:11**, about **+6 min**;
-  - with a **Form 3 Ascendant** (6,000 HP, −30 % aura, 8 min from contact, 3 Ward Stones) at **18:06**, about
-    **+9 min**.
+  - with a **Form 2 Warden** (3,000 HP, −20 % aura) at **13:34**, about **+4.5 min**;
+  - with a **Form 3 Ascendant** (6,000 HP, −30 % aura, 8 min from contact, 3 Ward Stones) at **17:16**, about
+    **+8 min**.
   - Ward Stones sit on the approach, so attackers hit them first. The Ascendant woke at ~10:20 with one stone
     already down (−2 min).
 - Both are always beaten eventually: nothing is bought forever.
-- > ❓ OPEN: a Warden castle falls at ~15 min, past the doc-03 12-min floor for *bought defences*. Proposal:
+- > ❓ OPEN: a Warden castle falls at ~13.5 min (with the D31 damage cap), past the doc-03 12-min floor for *bought defences*. Proposal:
   > Guardians sit outside that floor (they're time-bound and pay their bounty), but never beyond ~20 min.
   > Owner call.
 
@@ -77,8 +77,9 @@ The result: defending costs CT, attacking costs units, and beating a Guardian *p
 - A Guardian affects **one battle on one parcel**. It cannot win a war: no movement, no supply, no
   war-score bonus beyond that battle's structures.
 - It is a **unit, not a hero**, but it is held to the same spirit as `HERO_IMPACT_MAX = 0.20`:
-  - its **damage contribution** is capped at **20 %** of the defending side's total in any battle (the
-    sim clamps its bombard);
+  - its **damage contribution** is capped at **20 %** of the defending side's total in any battle. The
+    harness enforces it as a running budget (D31): the Guardian holds fire whenever another shot would take it over
+    20 %. Uncapped, it dealt 30 % (Warden) and 36 % (Ascendant); capped, 19.5 % and 19.9 %;
   - Form 3's power is **staying** (survivability plus aura), never killing. The defender still needs a
     garrison.
 - **Nothing is bought forever.** Every stationing has a window, every NFT has a cooldown, and every

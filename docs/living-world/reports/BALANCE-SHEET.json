@@ -53,18 +53,18 @@
    "defenderPaidCT": 20,
    "burnedCT": 6,
    "escrowCT": 10,
-   "medBreachSec": 911,
-   "attackerUnitsLost": 109,
+   "medBreachSec": 814,
+   "attackerUnitsLost": 94,
    "lossCT": {
-    "1": 509,
-    "5": 2543,
-    "10": 5087,
-    "20": 10173
+    "1": 439,
+    "5": 2193,
+    "10": 4387,
+    "20": 8773
    },
-   "extraUnitsLost": 45,
-   "extraSec": 372,
-   "ctPerExtraUnitLost": 0.4,
-   "ctPerExtraMinute": 3.2
+   "extraUnitsLost": 30,
+   "extraSec": 275,
+   "ctPerExtraUnitLost": 0.7,
+   "ctPerExtraMinute": 4.4
   },
   {
    "scen": "F3",
@@ -72,23 +72,23 @@
    "defenderPaidCT": 120,
    "burnedCT": 36,
    "escrowCT": 60,
-   "medBreachSec": 1086,
-   "attackerUnitsLost": 117,
+   "medBreachSec": 1036,
+   "attackerUnitsLost": 97,
    "lossCT": {
-    "1": 546,
-    "5": 2730,
-    "10": 5460,
-    "20": 10920
+    "1": 453,
+    "5": 2263,
+    "10": 4527,
+    "20": 9053
    },
-   "extraUnitsLost": 53,
-   "extraSec": 547,
-   "ctPerExtraUnitLost": 2.3,
-   "ctPerExtraMinute": 13.2
+   "extraUnitsLost": 33,
+   "extraSec": 497,
+   "ctPerExtraUnitLost": 3.6,
+   "ctPerExtraMinute": 14.5
   }
  ],
  "findings": {
-  "defencesVsWarden": 142.5,
-  "wardenBountyVsLosses": 210,
-  "ascendantBountyVsLosses": 41.2
+  "defencesVsWarden": 81.4,
+  "wardenBountyVsLosses": 140,
+  "ascendantBountyVsLosses": 25.7
  }
 }

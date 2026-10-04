@@ -114,7 +114,8 @@
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
-   "guardianHpPct": null
+   "guardianHpPct": null,
+   "guardianDmgShare": null
   },
   {
    "id": "calib-2",
@@ -134,7 +135,8 @@
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
-   "guardianHpPct": null
+   "guardianHpPct": null,
+   "guardianDmgShare": null
   },
   {
    "id": "calib-0",
@@ -154,7 +156,8 @@
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
-   "guardianHpPct": null
+   "guardianHpPct": null,
+   "guardianDmgShare": null
   },
   {
    "id": "calib-4",
@@ -174,7 +177,8 @@
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
-   "guardianHpPct": null
+   "guardianHpPct": null,
+   "guardianDmgShare": null
   },
   {
    "id": "calib-5",
@@ -194,7 +198,8 @@
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
-   "guardianHpPct": null
+   "guardianHpPct": null,
+   "guardianDmgShare": null
   },
   {
    "id": "calib-1",
@@ -214,7 +219,8 @@
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
-   "guardianHpPct": null
+   "guardianHpPct": null,
+   "guardianDmgShare": null
   },
   {
    "id": "4000853#0",
@@ -234,7 +240,8 @@
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
-   "guardianHpPct": null
+   "guardianHpPct": null,
+   "guardianDmgShare": null
   },
   {
    "id": "5060220#0",
@@ -254,7 +261,8 @@
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
-   "guardianHpPct": null
+   "guardianHpPct": null,
+   "guardianDmgShare": null
   },
   {
    "id": "5040119#0",
@@ -274,7 +282,8 @@
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
-   "guardianHpPct": null
+   "guardianHpPct": null,
+   "guardianDmgShare": null
   },
   {
    "id": "5040217#0",
@@ -294,7 +303,8 @@
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
-   "guardianHpPct": null
+   "guardianHpPct": null,
+   "guardianDmgShare": null
   },
   {
    "id": "5050117#0",
@@ -314,7 +324,8 @@
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
-   "guardianHpPct": null
+   "guardianHpPct": null,
+   "guardianDmgShare": null
   },
   {
    "id": "5050289#0",
@@ -334,7 +345,8 @@
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
-   "guardianHpPct": null
+   "guardianHpPct": null,
+   "guardianDmgShare": null
   },
   {
    "id": "EDU-KEEP-LANTERNHILL:BARBARIAN_CAMP:1",
@@ -354,7 +366,8 @@
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
-   "guardianHpPct": null
+   "guardianHpPct": null,
+   "guardianDmgShare": null
   },
   {
    "id": "2001116#1",
@@ -374,7 +387,8 @@
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
-   "guardianHpPct": null
+   "guardianHpPct": null,
+   "guardianDmgShare": null
   },
   {
    "id": "5030364#0",
@@ -394,7 +408,8 @@
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
-   "guardianHpPct": null
+   "guardianHpPct": null,
+   "guardianDmgShare": null
   },
   {
    "id": "5031022#0",
@@ -414,7 +429,8 @@
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
-   "guardianHpPct": null
+   "guardianHpPct": null,
+   "guardianDmgShare": null
   },
   {
    "id": "4031406#0",
@@ -434,7 +450,8 @@
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
-   "guardianHpPct": null
+   "guardianHpPct": null,
+   "guardianDmgShare": null
   },
   {
    "id": "5030914#0",
@@ -454,7 +471,8 @@
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
-   "guardianHpPct": null
+   "guardianHpPct": null,
+   "guardianDmgShare": null
   },
   {
    "id": "5030542#0",
@@ -474,7 +492,8 @@
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
-   "guardianHpPct": null
+   "guardianHpPct": null,
+   "guardianDmgShare": null
   },
   {
    "id": "5000154#0",
@@ -494,7 +513,8 @@
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
-   "guardianHpPct": null
+   "guardianHpPct": null,
+   "guardianDmgShare": null
   },
   {
    "id": "5000054#0",
@@ -514,7 +534,8 @@
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
-   "guardianHpPct": null
+   "guardianHpPct": null,
+   "guardianDmgShare": null
   },
   {
    "id": "5030500#0",
@@ -534,7 +555,8 @@
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
-   "guardianHpPct": null
+   "guardianHpPct": null,
+   "guardianDmgShare": null
   },
   {
    "id": "ENT-KEEP-LANTERNSHORE:HARBOUR:1",
@@ -554,7 +576,8 @@
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
-   "guardianHpPct": null
+   "guardianHpPct": null,
+   "guardianDmgShare": null
   },
   {
    "id": "5000102#0",
@@ -574,7 +597,8 @@
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
-   "guardianHpPct": null
+   "guardianHpPct": null,
+   "guardianDmgShare": null
   },
   {
    "id": "4071376#0",
@@ -594,7 +618,8 @@
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
-   "guardianHpPct": null
+   "guardianHpPct": null,
+   "guardianDmgShare": null
   },
   {
    "id": "2001121#1",
@@ -614,7 +639,8 @@
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
-   "guardianHpPct": null
+   "guardianHpPct": null,
+   "guardianDmgShare": null
   },
   {
    "id": "5100008#0",
@@ -634,7 +660,8 @@
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
-   "guardianHpPct": null
+   "guardianHpPct": null,
+   "guardianDmgShare": null
   },
   {
    "id": "5100040#0",
@@ -654,7 +681,8 @@
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
-   "guardianHpPct": null
+   "guardianHpPct": null,
+   "guardianDmgShare": null
   },
   {
    "id": "5100185#0",
@@ -674,7 +702,8 @@
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
-   "guardianHpPct": null
+   "guardianHpPct": null,
+   "guardianDmgShare": null
   },
   {
    "id": "5000465#0",
@@ -694,7 +723,8 @@
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
-   "guardianHpPct": null
+   "guardianHpPct": null,
+   "guardianDmgShare": null
   },
   {
    "id": "5030585#0",
@@ -714,7 +744,8 @@
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
-   "guardianHpPct": null
+   "guardianHpPct": null,
+   "guardianDmgShare": null
   },
   {
    "id": "5031089#0",
@@ -734,7 +765,8 @@
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
-   "guardianHpPct": null
+   "guardianHpPct": null,
+   "guardianDmgShare": null
   },
   {
    "id": "5000589#0",
@@ -754,7 +786,8 @@
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
-   "guardianHpPct": null
+   "guardianHpPct": null,
+   "guardianDmgShare": null
   },
   {
    "id": "5030562#0",
@@ -774,7 +807,8 @@
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
-   "guardianHpPct": null
+   "guardianHpPct": null,
+   "guardianDmgShare": null
   },
   {
    "id": "5030616#0",
@@ -794,7 +828,8 @@
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
-   "guardianHpPct": null
+   "guardianHpPct": null,
+   "guardianDmgShare": null
   },
   {
    "id": "5030910#0",
@@ -814,7 +849,8 @@
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
-   "guardianHpPct": null
+   "guardianHpPct": null,
+   "guardianDmgShare": null
   },
   {
    "id": "5100537#0",
@@ -834,7 +870,8 @@
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
-   "guardianHpPct": null
+   "guardianHpPct": null,
+   "guardianDmgShare": null
   },
   {
    "id": "1101099#2",
@@ -854,7 +891,8 @@
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
-   "guardianHpPct": null
+   "guardianHpPct": null,
+   "guardianDmgShare": null
   },
   {
    "id": "5090166#0",
@@ -874,7 +912,8 @@
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
-   "guardianHpPct": null
+   "guardianHpPct": null,
+   "guardianDmgShare": null
   },
   {
    "id": "5090926#0",
@@ -894,7 +933,8 @@
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
-   "guardianHpPct": null
+   "guardianHpPct": null,
+   "guardianDmgShare": null
   },
   {
    "id": "5100644#0",
@@ -914,7 +954,8 @@
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
-   "guardianHpPct": null
+   "guardianHpPct": null,
+   "guardianDmgShare": null
   },
   {
    "id": "3101076#0",
@@ -934,7 +975,8 @@
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
-   "guardianHpPct": null
+   "guardianHpPct": null,
+   "guardianDmgShare": null
   },
   {
    "id": "1071722#1",
@@ -954,7 +996,8 @@
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
-   "guardianHpPct": null
+   "guardianHpPct": null,
+   "guardianDmgShare": null
   },
   {
    "id": "5050025#0",
@@ -974,7 +1017,8 @@
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
-   "guardianHpPct": null
+   "guardianHpPct": null,
+   "guardianDmgShare": null
   },
   {
    "id": "5060082#0",
@@ -994,7 +1038,8 @@
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
-   "guardianHpPct": null
+   "guardianHpPct": null,
+   "guardianDmgShare": null
   },
   {
    "id": "5050001#0",
@@ -1014,7 +1059,8 @@
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
-   "guardianHpPct": null
+   "guardianHpPct": null,
+   "guardianDmgShare": null
   },
   {
    "id": "2101085#0",
@@ -1034,7 +1080,8 @@
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
-   "guardianHpPct": null
+   "guardianHpPct": null,
+   "guardianDmgShare": null
   },
   {
    "id": "1071726#0",
@@ -1054,7 +1101,8 @@
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
-   "guardianHpPct": null
+   "guardianHpPct": null,
+   "guardianDmgShare": null
   },
   {
    "id": "5060072#0",
@@ -1074,7 +1122,8 @@
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
-   "guardianHpPct": null
+   "guardianHpPct": null,
+   "guardianDmgShare": null
   },
   {
    "id": "4050407#0",
@@ -1094,7 +1143,8 @@
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
-   "guardianHpPct": null
+   "guardianHpPct": null,
+   "guardianDmgShare": null
   },
   {
    "id": "5100490#0",
@@ -1114,7 +1164,8 @@
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
-   "guardianHpPct": null
+   "guardianHpPct": null,
+   "guardianDmgShare": null
   },
   {
    "id": "5090490#0",
@@ -1134,7 +1185,8 @@
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
-   "guardianHpPct": null
+   "guardianHpPct": null,
+   "guardianDmgShare": null
   },
   {
    "id": "5071178#0",
@@ -1154,7 +1206,8 @@
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
-   "guardianHpPct": null
+   "guardianHpPct": null,
+   "guardianDmgShare": null
   },
   {
    "id": "5000556#0",
@@ -1174,7 +1227,8 @@
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
-   "guardianHpPct": null
+   "guardianHpPct": null,
+   "guardianDmgShare": null
   }
  ],
  "scenarios": [
@@ -1196,7 +1250,8 @@
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
-   "guardianHpPct": null
+   "guardianHpPct": null,
+   "guardianDmgShare": null
   },
   {
    "id": "scen-BASE-1",
@@ -1216,7 +1271,8 @@
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
-   "guardianHpPct": null
+   "guardianHpPct": null,
+   "guardianDmgShare": null
   },
   {
    "id": "scen-BASE-2",
@@ -1236,7 +1292,8 @@
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
-   "guardianHpPct": null
+   "guardianHpPct": null,
+   "guardianDmgShare": null
   },
   {
    "id": "scen-BASE-3",
@@ -1256,7 +1313,8 @@
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
-   "guardianHpPct": null
+   "guardianHpPct": null,
+   "guardianDmgShare": null
   },
   {
    "id": "scen-BASE-4",
@@ -1276,7 +1334,8 @@
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
-   "guardianHpPct": null
+   "guardianHpPct": null,
+   "guardianDmgShare": null
   },
   {
    "id": "scen-BASE-5",
@@ -1296,7 +1355,8 @@
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
-   "guardianHpPct": null
+   "guardianHpPct": null,
+   "guardianDmgShare": null
   },
   {
    "id": "scen-DEFENDED-0",
@@ -1316,7 +1376,8 @@
    "scen": "DEFENDED",
    "guardianWakeSec": null,
    "guardianKoSec": null,
-   "guardianHpPct": null
+   "guardianHpPct": null,
+   "guardianDmgShare": null
   },
   {
    "id": "scen-DEFENDED-1",
@@ -1336,7 +1397,8 @@
    "scen": "DEFENDED",
    "guardianWakeSec": null,
    "guardianKoSec": null,
-   "guardianHpPct": null
+   "guardianHpPct": null,
+   "guardianDmgShare": null
   },
   {
    "id": "scen-DEFENDED-2",
@@ -1356,7 +1418,8 @@
    "scen": "DEFENDED",
    "guardianWakeSec": null,
    "guardianKoSec": null,
-   "guardianHpPct": null
+   "guardianHpPct": null,
+   "guardianDmgShare": null
   },
   {
    "id": "scen-DEFENDED-3",
@@ -1376,7 +1439,8 @@
    "scen": "DEFENDED",
    "guardianWakeSec": null,
    "guardianKoSec": null,
-   "guardianHpPct": null
+   "guardianHpPct": null,
+   "guardianDmgShare": null
   },
   {
    "id": "scen-DEFENDED-4",
@@ -1396,7 +1460,8 @@
    "scen": "DEFENDED",
    "guardianWakeSec": null,
    "guardianKoSec": null,
-   "guardianHpPct": null
+   "guardianHpPct": null,
+   "guardianDmgShare": null
   },
   {
    "id": "scen-DEFENDED-5",
@@ -1416,15 +1481,16 @@
    "scen": "DEFENDED",
    "guardianWakeSec": null,
    "guardianKoSec": null,
-   "guardianHpPct": null
+   "guardianHpPct": null,
+   "guardianDmgShare": null
   },
   {
    "id": "scen-F2-0",
    "k": "CALIBRATION",
    "threat": 50,
    "breached": true,
-   "sec": 911,
-   "attackerDeaths": 109,
+   "sec": 814,
+   "attackerDeaths": 94,
    "defenderWon": false,
    "left": {
     "walls": 0,
@@ -1434,17 +1500,18 @@
    },
    "wardsDownAt": [],
    "scen": "F2",
-   "guardianWakeSec": 414,
-   "guardianKoSec": 852,
-   "guardianHpPct": 0
+   "guardianWakeSec": 683,
+   "guardianKoSec": 772,
+   "guardianHpPct": 0,
+   "guardianDmgShare": 0.195
   },
   {
    "id": "scen-F2-1",
    "k": "CALIBRATION",
    "threat": 50,
    "breached": true,
-   "sec": 911,
-   "attackerDeaths": 109,
+   "sec": 814,
+   "attackerDeaths": 94,
    "defenderWon": false,
    "left": {
     "walls": 0,
@@ -1454,17 +1521,18 @@
    },
    "wardsDownAt": [],
    "scen": "F2",
-   "guardianWakeSec": 414,
-   "guardianKoSec": 852,
-   "guardianHpPct": 0
+   "guardianWakeSec": 683,
+   "guardianKoSec": 772,
+   "guardianHpPct": 0,
+   "guardianDmgShare": 0.195
   },
   {
    "id": "scen-F2-2",
    "k": "CALIBRATION",
    "threat": 50,
    "breached": true,
-   "sec": 911,
-   "attackerDeaths": 109,
+   "sec": 814,
+   "attackerDeaths": 94,
    "defenderWon": false,
    "left": {
     "walls": 0,
@@ -1474,17 +1542,18 @@
    },
    "wardsDownAt": [],
    "scen": "F2",
-   "guardianWakeSec": 414,
-   "guardianKoSec": 852,
-   "guardianHpPct": 0
+   "guardianWakeSec": 683,
+   "guardianKoSec": 772,
+   "guardianHpPct": 0,
+   "guardianDmgShare": 0.195
   },
   {
    "id": "scen-F2-3",
    "k": "CALIBRATION",
    "threat": 50,
    "breached": true,
-   "sec": 911,
-   "attackerDeaths": 109,
+   "sec": 814,
+   "attackerDeaths": 94,
    "defenderWon": false,
    "left": {
     "walls": 0,
@@ -1494,17 +1563,18 @@
    },
    "wardsDownAt": [],
    "scen": "F2",
-   "guardianWakeSec": 414,
-   "guardianKoSec": 852,
-   "guardianHpPct": 0
+   "guardianWakeSec": 683,
+   "guardianKoSec": 772,
+   "guardianHpPct": 0,
+   "guardianDmgShare": 0.195
   },
   {
    "id": "scen-F2-4",
    "k": "CALIBRATION",
    "threat": 50,
    "breached": true,
-   "sec": 911,
-   "attackerDeaths": 109,
+   "sec": 814,
+   "attackerDeaths": 94,
    "defenderWon": false,
    "left": {
     "walls": 0,
@@ -1514,17 +1584,18 @@
    },
    "wardsDownAt": [],
    "scen": "F2",
-   "guardianWakeSec": 414,
-   "guardianKoSec": 852,
-   "guardianHpPct": 0
+   "guardianWakeSec": 683,
+   "guardianKoSec": 772,
+   "guardianHpPct": 0,
+   "guardianDmgShare": 0.195
   },
   {
    "id": "scen-F2-5",
    "k": "CALIBRATION",
    "threat": 50,
    "breached": true,
-   "sec": 911,
-   "attackerDeaths": 109,
+   "sec": 814,
+   "attackerDeaths": 94,
    "defenderWon": false,
    "left": {
     "walls": 0,
@@ -1534,17 +1605,18 @@
    },
    "wardsDownAt": [],
    "scen": "F2",
-   "guardianWakeSec": 414,
-   "guardianKoSec": 852,
-   "guardianHpPct": 0
+   "guardianWakeSec": 683,
+   "guardianKoSec": 772,
+   "guardianHpPct": 0,
+   "guardianDmgShare": 0.195
   },
   {
    "id": "scen-F3-0",
    "k": "CALIBRATION",
    "threat": 50,
    "breached": true,
-   "sec": 1086,
-   "attackerDeaths": 117,
+   "sec": 1036,
+   "attackerDeaths": 97,
    "defenderWon": false,
    "left": {
     "walls": 0,
@@ -1557,16 +1629,17 @@
    ],
    "scen": "F3",
    "guardianWakeSec": 620,
-   "guardianKoSec": 1016,
-   "guardianHpPct": 0
+   "guardianKoSec": 995,
+   "guardianHpPct": 0,
+   "guardianDmgShare": 0.199
   },
   {
    "id": "scen-F3-1",
    "k": "CALIBRATION",
    "threat": 50,
    "breached": true,
-   "sec": 1086,
-   "attackerDeaths": 117,
+   "sec": 1036,
+   "attackerDeaths": 97,
    "defenderWon": false,
    "left": {
     "walls": 0,
@@ -1579,16 +1652,17 @@
    ],
    "scen": "F3",
    "guardianWakeSec": 620,
-   "guardianKoSec": 1016,
-   "guardianHpPct": 0
+   "guardianKoSec": 995,
+   "guardianHpPct": 0,
+   "guardianDmgShare": 0.199
   },
   {
    "id": "scen-F3-2",
    "k": "CALIBRATION",
    "threat": 50,
    "breached": true,
-   "sec": 1086,
-   "attackerDeaths": 117,
+   "sec": 1036,
+   "attackerDeaths": 97,
    "defenderWon": false,
    "left": {
     "walls": 0,
@@ -1601,16 +1675,17 @@
    ],
    "scen": "F3",
    "guardianWakeSec": 620,
-   "guardianKoSec": 1016,
-   "guardianHpPct": 0
+   "guardianKoSec": 995,
+   "guardianHpPct": 0,
+   "guardianDmgShare": 0.199
   },
   {
    "id": "scen-F3-3",
    "k": "CALIBRATION",
    "threat": 50,
    "breached": true,
-   "sec": 1086,
-   "attackerDeaths": 117,
+   "sec": 1036,
+   "attackerDeaths": 97,
    "defenderWon": false,
    "left": {
     "walls": 0,
@@ -1623,16 +1698,17 @@
    ],
    "scen": "F3",
    "guardianWakeSec": 620,
-   "guardianKoSec": 1016,
-   "guardianHpPct": 0
+   "guardianKoSec": 995,
+   "guardianHpPct": 0,
+   "guardianDmgShare": 0.199
   },
   {
    "id": "scen-F3-4",
    "k": "CALIBRATION",
    "threat": 50,
    "breached": true,
-   "sec": 1086,
-   "attackerDeaths": 117,
+   "sec": 1036,
+   "attackerDeaths": 97,
    "defenderWon": false,
    "left": {
     "walls": 0,
@@ -1645,16 +1721,17 @@
    ],
    "scen": "F3",
    "guardianWakeSec": 620,
-   "guardianKoSec": 1016,
-   "guardianHpPct": 0
+   "guardianKoSec": 995,
+   "guardianHpPct": 0,
+   "guardianDmgShare": 0.199
   },
   {
    "id": "scen-F3-5",
    "k": "CALIBRATION",
    "threat": 50,
    "breached": true,
-   "sec": 1086,
-   "attackerDeaths": 117,
+   "sec": 1036,
+   "attackerDeaths": 97,
    "defenderWon": false,
    "left": {
     "walls": 0,
@@ -1667,8 +1744,9 @@
    ],
    "scen": "F3",
    "guardianWakeSec": 620,
-   "guardianKoSec": 1016,
-   "guardianHpPct": 0
+   "guardianKoSec": 995,
+   "guardianHpPct": 0,
+   "guardianDmgShare": 0.199
   }
  ]
 }

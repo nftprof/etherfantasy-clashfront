@@ -364,4 +364,12 @@ ok(Object.values(TMd.proposed.groundToHexTerrain).every((t) => canonHT.includes(
 ok(MXP.terrain === "proposed" && MXP.rows.every((r) => r.verdict === "ok"), `with the proposal + its seed groundShift, every cell still lands its band (${MXP.rows.length} cells)`);
 ok(MX.terrain === true && !MX.rows.some((r) => r.medThreat !== MXP.rows.find((x) => x.k === r.k && x.ring === r.ring && x.ground === r.ground).medThreat && !["SKY", "UNDER"].includes(r.ground)), "the proposal only touches SKY / UNDER cells; the committed canon matrix is unchanged");
 
+// D31 Guardian damage-share cap (doc 04 §4)
+const g31 = JSON.parse(fs.readFileSync("docs/living-world/reports/SIM-SAMPLE.json", "utf8")).scenarios.filter((x) => x.scen === "F2" || x.scen === "F3"), G31 = JSON.parse(fs.readFileSync("data/living-world/guardians.json", "utf8"));
+ok(g31.length > 0 && g31.every((x) => x.guardianDmgShare != null && x.guardianDmgShare <= G31.caps.guardianDamageShareMax), `every Guardian run keeps its damage share ≤ ${G31.caps.guardianDamageShareMax * 100} % of the defenders' (max ${Math.max(...g31.map((x) => x.guardianDmgShare))})`);
+ok(g31.every((x) => x.breached && x.guardianKoSec != null), "capped Guardians are still always beaten eventually (nothing bought forever)");
+ok(Object.values(JSON.parse(fs.readFileSync("data/living-world/allocate.samples.json", "utf8")).samples).filter((s) => s.livingWorld.guardian).every((s) => s.livingWorld.guardian.damageShareMax === G31.caps.guardianDamageShareMax), "the allocate payload tells the engine the Guardian's damage-share cap");
+const kern = fs.readFileSync("server/sim/systems/combat.js", "utf8") + fs.readFileSync("server/sim/abilities.js", "utf8");
+ok((kern.match(/dmgDealt != null\) \w+\.dmgDealt \+= dealt/g) || []).length === 2, "the kernel's damage ledger is opt-in (only units with dmgDealt record), so stock battles are untouched");
+
 console.log(fails ? `❌ living-world: ${fails} failed` : "✅ living-world: all passed"); process.exit(fails ? 1 : 0);

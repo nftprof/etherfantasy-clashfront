@@ -33,7 +33,7 @@ Either way, which NFTs qualify is read from the pet lineage forms (`mon_lineage.
 ### 3. Guardians vs the 12-minute floor
 
 Source: doc 04 §2b ❓. The doc-03 rule says bought defences can't make a castle last past 12 minutes against the
-floor-case attacker. The sim measures a Warden castle at **15:11** and an Ascendant castle at **18:06**
+floor-case attacker. The sim measures a Warden castle at **13:34** and an Ascendant castle at **17:16** (with the D31 20 % damage cap)
 (`reports/SIM-SAMPLE.md`).
 
 | Option | Meaning | What changes |
@@ -58,15 +58,15 @@ co-champion notice") is open and unchanged since 2026-09-13. Season 2 standings 
 
 ### 5. What is a Guardian hunt *for*? (D15 balance sheet)
 
-Source: `reports/BALANCE-SHEET.md`. Per extra attacker unit lost, a Form 2 Warden costs the defender **0.4 CT**; a
+Source: `reports/BALANCE-SHEET.md`. Per extra attacker unit lost, a Form 2 Warden costs the defender **0.7 CT**; a
 full defence stack costs **57 CT**. And at 10 soldiers per sim unit, the losses an attacker takes against a Warden
-are worth **~210×** the bounty they can win. Raising fees alone can't close that gap.
+are worth **~140×** the bounty they can win. Raising fees alone can't close that gap.
 
 | Option | Meaning | What changes |
 |---|---|---|
 | **A (recommended)** | The prize is the castle; the bounty is a trophy | Warden fee 20 → 60 CT in `guardians.json`. Feed copy says "the bounty is glory; the castle is the prize". Doc 04 §3's "beating a Guardian pays" becomes "beating a Guardian *wins the castle*, and a trophy" |
 | B | The bounty is a wage | The region pool tops up a standing Guardian's escrow to ~25 % of expected attacker losses. That needs a pool source: a new CT sink decision |
-| C | Leave as is | ⚠ Wardens stay ~140× the cheapest defence purchase |
+| C | Leave as is | ⚠ Wardens stay ~80× the cheapest defence purchase |
 
 A related engine parameter needs a value: **soldiers per sim unit** (canon reports casualties in soldiers). It's
 proposed at 10 and has no canon value yet. Every CT-equivalent loss in the sheet scales with it.

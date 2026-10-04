@@ -60,7 +60,7 @@ export function buildAllocate({ battleId, worldSeed, mode = "accelerated", poi, 
   };
   if (guardian) {
     const F = GU.forms[String(guardian.form)];
-    lw.guardian = { form: guardian.form, name: F.name, nftId: guardian.nftId, owner: guardian.owner, battleHp: Math.round(F.battleHp * DEF_MUL), shieldsCore: true, bombard: F.bombard, aura: F.aura,
+    lw.guardian = { form: guardian.form, name: F.name, nftId: guardian.nftId, owner: guardian.owner, battleHp: Math.round(F.battleHp * DEF_MUL), shieldsCore: true, damageShareMax: GU.caps.guardianDamageShareMax, bombard: F.bombard, aura: F.aura,
       ...(F.ascended ? { ascended: { ...F.ascended, clockStarts: GU.rules.ascensionClockStarts } } : {}), stationEndsTick: guardian.stationEndsTick };
   }
   return {

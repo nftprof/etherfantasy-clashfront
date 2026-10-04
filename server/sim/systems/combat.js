@@ -37,7 +37,9 @@ export function combatSystem(world, dt) {
           // canon UnitClass SIEGE (docs/03 §3: ×6 ⚙ vs structures): opt-in per unit (u.structMul), so units without it — every
           // existing battle — resolve byte-identically. Structures = towers, walls/gates, cores.
           const sm = (u.structMul && (tgt.kind === "tower" || tgt.kind === "wall" || tgt.kind === "core")) ? u.structMul : 1;
-          tgt.hp -= u.dmg * sm * (tgt.dmgTakenMul != null ? tgt.dmgTakenMul : 1);   // dmgTakenMul: opt-in (Form 3 Ascension), absent → unchanged
+          const dealt = u.dmg * sm * (tgt.dmgTakenMul != null ? tgt.dmgTakenMul : 1);   // dmgTakenMul: opt-in (Form 3 Ascension), absent → unchanged
+          tgt.hp -= dealt;
+          if (u.dmgDealt != null) u.dmgDealt += dealt;   // opt-in damage ledger (living-world Guardian share cap, doc 04 §4); absent → unchanged
           if (tgt.hp <= 0) killUnit(world, u, tgt); // gold/XP/respawn/win handled centrally
         }
       }
