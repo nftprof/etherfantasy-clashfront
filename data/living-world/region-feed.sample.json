@@ -1,0 +1,441 @@
+{
+ "schema": "cf-living-world/region-feed-sample@1",
+ "note": "synthetic day 0, seed cf-world-1; placeholder warbands; outcomes drawn by PRNG (not the sim)",
+ "candidates": 64,
+ "newsworthy": 51,
+ "shown": 49,
+ "feed": {
+  "BUS": {
+   "0": [
+    {
+     "id": "cf-world-1|0|BUS-KEEP-DUNEWATCH|6",
+     "tick": 140,
+     "kind": "GUARDIAN_HELD",
+     "score": 6,
+     "icon": "🛡",
+     "text": "The Ember Oath broke on the Ascendant of Dunewatch Light"
+    },
+    {
+     "id": "cf-world-1|0|BUS-CASTLE-CAPEMEET|2",
+     "tick": 267,
+     "kind": "CARAVAN_RAIDED",
+     "score": 6,
+     "icon": "💰",
+     "text": "A caravan to Capemeet Citadel never arrived: Order of the Last Lantern took it on the road"
+    },
+    {
+     "id": "cf-world-1|0|BUS-KEEP-GULLSHOAL|7",
+     "tick": 555,
+     "kind": "CARAVAN_RAIDED",
+     "score": 6,
+     "icon": "💰",
+     "text": "Order of the Last Lantern raided a caravan bound for Gullshoal Light and took the cargo"
+    },
+    {
+     "id": "cf-world-1|0|BUS-KEEP-MARSHGATE|8",
+     "tick": 581,
+     "kind": "GUARDIAN_HELD",
+     "score": 6,
+     "icon": "🛡",
+     "text": "The Warden of Marshgate Keep held; the stake goes home to The Quiet Knives"
+    },
+    {
+     "id": "cf-world-1|0|BUS-CASTLE-MIDDLEQUAY|5",
+     "tick": 598,
+     "kind": "GUARDIAN_HELD",
+     "score": 6,
+     "icon": "🛡",
+     "text": "Ninefold Company broke on the Ascendant of Middlequay Citadel"
+    },
+    {
+     "id": "cf-world-1|0|BUS-PALACE-EXCHANGE|9",
+     "tick": 1178,
+     "kind": "GUARDIAN_HELD",
+     "score": 6,
+     "icon": "🛡",
+     "text": "Ninefold Company broke on the Warden of The Grand Exchange"
+    },
+    {
+     "id": "cf-world-1|0|BUS-CASTLE-CAPEMEET|1",
+     "tick": 1418,
+     "kind": "BARBARIAN_CAMP_CLEARED",
+     "score": 5,
+     "icon": "🔥",
+     "text": "The Ember Oath burned the barbarian camp near Capemeet Citadel: 48 h of quiet for the region"
+    },
+    {
+     "id": "cf-world-1|0|BUS-PALACE-EXCHANGE|10",
+     "tick": 833,
+     "kind": "POI_CLEARED",
+     "score": 3,
+     "icon": "⚔",
+     "text": "The wild lair at The Grand Exchange was taken by Order of the Last Lantern"
+    }
+   ]
+  },
+  "EDU": {
+   "0": [
+    {
+     "id": "cf-world-1|0|EDU-KEEP-LANTERNHILL|15",
+     "tick": 1023,
+     "kind": "GUARDIAN_OUTLASTED",
+     "score": 10.98,
+     "icon": "⌛",
+     "text": "The Ascendant of Lantern Hill Temple tired before The Ember Oath did: 30 CT"
+    },
+    {
+     "id": "cf-world-1|0|EDU-CASTLE-SOUTHREACH|11",
+     "tick": 9,
+     "kind": "GUARDIAN_HELD",
+     "score": 6,
+     "icon": "🛡",
+     "text": "Saltwind Free Lances broke on the Warden of Southreach Castle"
+    },
+    {
+     "id": "cf-world-1|0|EDU-KEEP-LANTERNHILL|16",
+     "tick": 832,
+     "kind": "AIRDROP_TAKEN",
+     "score": 5,
+     "icon": "📦",
+     "text": "Saltwind Free Lances held the Pentagon Games airdrop at Lantern Hill Temple for 20 s and took the crate"
+    },
+    {
+     "id": "cf-world-1|0|EDU-PALACE-ACADEMY|17",
+     "tick": 1273,
+     "kind": "BARBARIAN_CAMP_CLEARED",
+     "score": 5,
+     "icon": "🔥",
+     "text": "The raids stop: Order of the Last Lantern cleared the camp by The Grand Academy"
+    }
+   ]
+  },
+  "ENT": {
+   "0": [
+    {
+     "id": "cf-world-1|0|ENT-KEEP-CAMPANILE|21",
+     "tick": 260,
+     "kind": "GUARDIAN_UNBOUND",
+     "score": 13.57,
+     "icon": "🏆",
+     "text": "The Ember Oath shattered all three Ward Stones and unbound the Ascendant of The Velaria Campanile: 60 CT"
+    },
+    {
+     "id": "cf-world-1|0|ENT-CASTLE-RIVERGATE|19",
+     "tick": 199,
+     "kind": "GUARDIAN_KO",
+     "score": 11.41,
+     "icon": "🏆",
+     "text": "The Warden of Rivergate Citadel falls to Ninefold Company, who split 15 CT"
+    },
+    {
+     "id": "cf-world-1|0|ENT-KEEP-SUNSTRAND|25",
+     "tick": 93,
+     "kind": "GUARDIAN_HELD",
+     "score": 6,
+     "icon": "🛡",
+     "text": "The Ascendant of Sunstrand Watch held; the stake goes home to Order of the Last Lantern"
+    },
+    {
+     "id": "cf-world-1|0|ENT-CASTLE-FESTGATE|18",
+     "tick": 77,
+     "kind": "AIRDROP_TAKEN",
+     "score": 5,
+     "icon": "📦",
+     "text": "Ninefold Company held the guild airdrop at Festgate Citadel for 20 s and took the crate"
+    },
+    {
+     "id": "cf-world-1|0|ENT-PALACE-MASKS|27",
+     "tick": 279,
+     "kind": "AIRDROP_TAKEN",
+     "score": 5,
+     "icon": "📦",
+     "text": "Ninefold Company held the Pentagon Games airdrop at The Palace of Masks for 20 s and took the crate"
+    },
+    {
+     "id": "cf-world-1|0|ENT-CASTLE-RIVERGATE|20",
+     "tick": 478,
+     "kind": "AIRDROP_TAKEN",
+     "score": 5,
+     "icon": "📦",
+     "text": "Crate secured at Rivergate Citadel: The Ember Oath outlasted 1 rivals"
+    },
+    {
+     "id": "cf-world-1|0|ENT-KEEP-SUNSTRAND|26",
+     "tick": 941,
+     "kind": "AIRDROP_TAKEN",
+     "score": 5,
+     "icon": "📦",
+     "text": "Crate secured at Sunstrand Watch: Saltwind Free Lances outlasted 2 rivals"
+    },
+    {
+     "id": "cf-world-1|0|ENT-KEEP-PETALPORT|24",
+     "tick": 2,
+     "kind": "CARAVAN_ESCORTED",
+     "score": 4,
+     "icon": "🐫",
+     "text": "The Ember Oath brought a caravan safely into Petalport Watch"
+    }
+   ]
+  },
+  "HS1": {
+   "0": [
+    {
+     "id": "cf-world-1|0|HS1-AEROPOLIS|31",
+     "tick": 299,
+     "kind": "AIRDROP_TAKEN",
+     "score": 5,
+     "icon": "📦",
+     "text": "Ninefold Company held the guild airdrop at The Aeropolis for 20 s and took the crate"
+    },
+    {
+     "id": "cf-world-1|0|HS1-KEEP-EMBERWATCH|34",
+     "tick": 1064,
+     "kind": "AIRDROP_TAKEN",
+     "score": 5,
+     "icon": "📦",
+     "text": "Crate secured at Emberwatch Keep: Raiders of the Gullshoal outlasted 4 rivals"
+    },
+    {
+     "id": "cf-world-1|0|HS1-AEROPOLIS|32",
+     "tick": 1298,
+     "kind": "CARAVAN_ESCORTED",
+     "score": 4,
+     "icon": "🐫",
+     "text": "Escort paid: The Ember Oath saw the caravan through to The Aeropolis"
+    },
+    {
+     "id": "cf-world-1|0|HS1-AEROPOLIS|29",
+     "tick": 1435,
+     "kind": "POI_HELD",
+     "score": 4,
+     "icon": "🛡",
+     "text": "The war camp at The Aeropolis holds: Order of the Last Lantern withdrew"
+    }
+   ]
+  },
+  "HS2": {
+   "0": [
+    {
+     "id": "cf-world-1|0|HS2-KEEP-SHARDWATCH|38",
+     "tick": 56,
+     "kind": "AIRDROP_TAKEN",
+     "score": 5,
+     "icon": "📦",
+     "text": "Crate secured at Shardwatch Keep: The Quiet Knives outlasted 2 rivals"
+    },
+    {
+     "id": "cf-world-1|0|HS2-KEEP-WESTGATE|40",
+     "tick": 1147,
+     "kind": "AIRDROP_TAKEN",
+     "score": 5,
+     "icon": "📦",
+     "text": "Crate secured at Westgate Bastion: Raiders of the Gullshoal outlasted 1 rivals"
+    },
+    {
+     "id": "cf-world-1|0|HS2-KEEP-CINDERHOLM|37",
+     "tick": 90,
+     "kind": "CARAVAN_ESCORTED",
+     "score": 4,
+     "icon": "🐫",
+     "text": "Ninefold Company brought a caravan safely into Cinderholm Keep"
+    },
+    {
+     "id": "cf-world-1|0|HS2-KEEP-WESTGATE|39",
+     "tick": 364,
+     "kind": "POI_HELD",
+     "score": 4,
+     "icon": "🛡",
+     "text": "The airship dock at Westgate Bastion holds: The Ember Oath withdrew"
+    },
+    {
+     "id": "cf-world-1|0|HS2-PALACE-EMBERTHRONE|42",
+     "tick": 462,
+     "kind": "POI_HELD",
+     "score": 4,
+     "icon": "🛡",
+     "text": "The airship dock at The Ember Throne holds: Saltwind Free Lances withdrew"
+    },
+    {
+     "id": "cf-world-1|0|HS2-PALACE-EMBERTHRONE|41",
+     "tick": 146,
+     "kind": "POI_CLEARED",
+     "score": 3,
+     "icon": "⚔",
+     "text": "Saltwind Free Lances cleared the war camp at The Ember Throne"
+    }
+   ]
+  },
+  "HS3": {
+   "0": [
+    {
+     "id": "cf-world-1|0|HS3-KEEP-DAWNSHIELD|43",
+     "tick": 142,
+     "kind": "GUARDIAN_UNBOUND",
+     "score": 13.57,
+     "icon": "🏆",
+     "text": "The Ember Oath shattered all three Ward Stones and unbound the Ascendant of Dawnshield Keep: 60 CT"
+    },
+    {
+     "id": "cf-world-1|0|HS3-KEEP-DAWNSHIELD|44",
+     "tick": 355,
+     "kind": "POI_HELD",
+     "score": 4,
+     "icon": "🛡",
+     "text": "The airship dock at Dawnshield Keep holds: Ninefold Company withdrew"
+    }
+   ]
+  },
+  "HUB": {
+   "0": [
+    {
+     "id": "cf-world-1|0|HUB-CASTLE-XICHUAN|47",
+     "tick": 1224,
+     "kind": "GUARDIAN_OUTLASTED",
+     "score": 11.33,
+     "icon": "⌛",
+     "text": "The Ascendant of Xichuan Round City tired before Order of the Last Lantern did: 45 CT"
+    },
+    {
+     "id": "cf-world-1|0|HUB-KEEP-SOUTHGATE|49",
+     "tick": 1021,
+     "kind": "GUARDIAN_KO",
+     "score": 11.08,
+     "icon": "🏆",
+     "text": "The Quiet Knives broke the Warden of Southgate Watch: 10 CT bounty"
+    },
+    {
+     "id": "cf-world-1|0|HUB-PALACE-ZHONGDU|52",
+     "tick": 671,
+     "kind": "GUARDIAN_HELD",
+     "score": 6,
+     "icon": "🛡",
+     "text": "The Warden of The Vermilion Palace held; the stake goes home to Saltwind Free Lances"
+    },
+    {
+     "id": "cf-world-1|0|HUB-CASTLE-YONGAN|48",
+     "tick": 672,
+     "kind": "CARAVAN_RAIDED",
+     "score": 6,
+     "icon": "💰",
+     "text": "Raiders of the Gullshoal raided a caravan bound for Yong'an Walled City and took the cargo"
+    },
+    {
+     "id": "cf-world-1|0|HUB-PALACE-ZHONGDU|53",
+     "tick": 687,
+     "kind": "AIRDROP_TAKEN",
+     "score": 5,
+     "icon": "📦",
+     "text": "Crate secured at The Vermilion Palace: The Ember Oath outlasted 4 rivals"
+    },
+    {
+     "id": "cf-world-1|0|HUB-KEEP-SOUTHGATE|50",
+     "tick": 962,
+     "kind": "BARBARIAN_CAMP_CLEARED",
+     "score": 5,
+     "icon": "🔥",
+     "text": "The Quiet Knives burned the barbarian camp near Southgate Watch: 48 h of quiet for the region"
+    },
+    {
+     "id": "cf-world-1|0|HUB-KEEP-SOUTHSLOPE|51",
+     "tick": 1385,
+     "kind": "AIRDROP_TAKEN",
+     "score": 5,
+     "icon": "📦",
+     "text": "Crate secured at South Slope Beacon: Ninefold Company outlasted 2 rivals"
+    },
+    {
+     "id": "cf-world-1|0|HUB-CASTLE-TIEDU|46",
+     "tick": 224,
+     "kind": "POI_HELD",
+     "score": 4,
+     "icon": "🛡",
+     "text": "The wild lair at Iron Ford Bridge Fort holds: Order of the Last Lantern withdrew"
+    }
+   ]
+  },
+  "KOL": {
+   "0": [
+    {
+     "id": "cf-world-1|0|KOL-CASTLE-FORTUNA|54",
+     "tick": 409,
+     "kind": "GUARDIAN_KO",
+     "score": 11.41,
+     "icon": "🏆",
+     "text": "The Warden of The Fortuna Grand falls to Saltwind Free Lances, who split 15 CT"
+    },
+    {
+     "id": "cf-world-1|0|KOL-CASTLE-FORTUNA|56",
+     "tick": 934,
+     "kind": "CARAVAN_ESCORTED",
+     "score": 4,
+     "icon": "🐫",
+     "text": "Escort paid: Saltwind Free Lances saw the caravan through to The Fortuna Grand"
+    }
+   ]
+  },
+  "UW2": {
+   "0": [
+    {
+     "id": "cf-world-1|0|UW2-CASTLE-MOURNGATE|59",
+     "tick": 905,
+     "kind": "SIEGE_ME_BROKEN",
+     "score": 11.95,
+     "icon": "⚔",
+     "text": "Mourngate Citadel falls on a dare: The Quiet Knives split 29 CT"
+    },
+    {
+     "id": "cf-world-1|0|UW2-CASTLE-MOURNGATE|58",
+     "tick": 1009,
+     "kind": "POI_HELD",
+     "score": 4,
+     "icon": "🛡",
+     "text": "Raiders of the Gullshoal held the vent at Mourngate Citadel"
+    },
+    {
+     "id": "cf-world-1|0|UW2-BASTION-DOMINUS|57",
+     "tick": 1431,
+     "kind": "POI_CLEARED",
+     "score": 3,
+     "icon": "⚔",
+     "text": "Raiders of the Gullshoal cleared the vent at The Bastion of Dominus"
+    },
+    {
+     "id": "cf-world-1|0|UW2-KEEP-PALELANTERN|60",
+     "tick": 1439,
+     "kind": "POI_CLEARED",
+     "score": 3,
+     "icon": "⚔",
+     "text": "The Ember Oath cleared the mercenary post at Palelantern Keep"
+    }
+   ]
+  },
+  "UW3": {
+   "0": [
+    {
+     "id": "cf-world-1|0|UW3-PALACE-VAULTPALACE|63",
+     "tick": 575,
+     "kind": "GUARDIAN_KO",
+     "score": 11.64,
+     "icon": "🏆",
+     "text": "The Warden of The Vault-Palace of Luxuria falls to Raiders of the Gullshoal, who split 20 CT"
+    },
+    {
+     "id": "cf-world-1|0|UW3-KEEP-MIRRORS|61",
+     "tick": 697,
+     "kind": "POI_CLEARED",
+     "score": 3,
+     "icon": "⚔",
+     "text": "Order of the Last Lantern cleared the vent at The House of Mirrors"
+    },
+    {
+     "id": "cf-world-1|0|UW3-KEEP-SILK|62",
+     "tick": 1007,
+     "kind": "POI_CLEARED",
+     "score": 3,
+     "icon": "⚔",
+     "text": "The Quiet Knives cleared the mercenary post at The House of Silk"
+    }
+   ]
+  }
+ }
+}

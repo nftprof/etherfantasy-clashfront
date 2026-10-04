@@ -48,3 +48,29 @@ raid or escort, a sponsored airdrop. Numbers live in `data/living-world/player-e
 - **Every outcome is news.** The region feed records it, and the World Remembers monuments (doc
   `WORLD-REMEMBERS-AND-TOWNS`) can mark famous breaks.
 - **Nothing is mandatory.** Ignoring the board costs you nothing; your holdings don't decay faster.
+
+## 5. The region feed (D10)
+
+Every outcome is a *candidate* story. The feed keeps the ones that make a player say "something happened".
+Rules and templates are in `data/living-world/feed-templates.json`; the functions are in
+`tools/living-world/region_feed.mjs`.
+
+- **Newsworthy:**
+  - **Never news:** a repeat clear of the same POI (the doc 06 §4 anti-farm curve), or a routine clear below the middle
+    of its ring's threat band.
+  - **Always news:** Guardian breaks and holds, SIEGE_ME results, bounties, caravans, airdrops, camp clears, the
+    Kraken.
+- **Ranked:** kind weight (Guardian unbound 10 … storm 2) + 2 × log10(pot CT). The top **8 per region per day** are
+  shown.
+- **Written:** each kind has 1–2 headline variants, picked by `fnv1a(itemId)`, so the same outcome always reads the
+  same on every client.
+- **Sample:** `data/living-world/region-feed.sample.json` is a synthetic day 0 over the 67 castles: 64 outcomes →
+  51 newsworthy → 49 headlines across 10 regions. Outcomes are drawn by PRNG, not the sim, and the warband names are
+  placeholders. Some of BUS's headlines:
+  - 🛡 *Ninefold Company broke on the Ascendant of Middlequay Citadel*
+  - 💰 *A caravan to Capemeet Citadel never arrived: Order of the Last Lantern took it on the road*
+  - 🔥 *The Ember Oath burned the barbarian camp near Capemeet Citadel: 48 h of quiet for the region*
+- **Canon note:** there is no feed entity in `docs/08-data-models.md` yet. This sample proposes `FeedItem`
+  `{ id, tick, zone, kind, facts }` for a later canon PR. A real item is written by the battle result callback
+  (doc 09 §5) and carries player or alliance names.
+

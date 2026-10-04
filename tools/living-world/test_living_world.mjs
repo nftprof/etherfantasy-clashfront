@@ -159,4 +159,15 @@ ok(EST.every((p) => p.nodes.every((n) => inBand(p.ring, n.threat))), "every esta
 ok(JSON.parse(fs.readFileSync("data/living-world/castle-pois.json", "utf8")).byCastle.every((c) => c.pois.every((p) => inBand("CASTLE", p.threat))), "every in-castle POI's threat sits inside the RAID band");
 ok(MX.populationOutOfBand / MX.population <= 0.15, `≥ 85 % of seeded garrisoned POIs land their sim band (now ${100 - Math.round(100 * MX.populationOutOfBand / MX.population)} %)`);
 
+// D10 region feed
+const rf1 = run("tools/living-world/region_feed.mjs", "/tmp/lw_rf_a.json"), rf2 = run("tools/living-world/region_feed.mjs", "/tmp/lw_rf_b.json");
+ok(rf1.equals(rf2) && rf1.equals(fs.readFileSync("data/living-world/region-feed.sample.json")), "region-feed sample is byte-identical and committed");
+const RF = await import("./region_feed.mjs"), RFS = JSON.parse(rf1), RFH = Object.values(RFS.feed).flatMap((d) => Object.values(d).flat());
+ok(RFH.length > 0 && RFH.every((h) => !h.text.includes("?") && !/\{\w+\}/.test(h.text)), "every sample headline fills all its placeholders");
+ok(Object.values(RFS.feed).every((d) => Object.values(d).every((a) => a.length <= RF.FT.rules.perRegionPerDay)), "at most perRegionPerDay headlines per region per day");
+ok(!RF.newsworthy({ kind: "POI_CLEARED", ring: "WILD", threat: 34, repeatClear: true, facts: {} }) && !RF.newsworthy({ kind: "POI_CLEARED", ring: "WILD", threat: 24, facts: {} }) && RF.newsworthy({ kind: "POI_CLEARED", ring: "WILD", threat: 33, facts: {} }), "repeat clears and routine low-threat clears are not news (doc 06 §4)");
+ok(Object.values(RF.FT.kinds).every((k) => k.weight > 0 && k.variants.length >= 1 && k.icon), "every feed kind has a weight, an icon and a headline");
+const rfi = { id: "x|1", kind: "GUARDIAN_KO", facts: { attacker: "A", place: "P", pot: 15 } };
+ok(JSON.stringify(RF.headline(rfi)) === JSON.stringify(RF.headline({ ...rfi })), "the headline variant is a pure function of the item id");
+
 console.log(fails ? `❌ living-world: ${fails} failed` : "✅ living-world: all passed"); process.exit(fails ? 1 : 0);
