@@ -84,6 +84,12 @@ export type UnitClass = 'INFANTRY' | 'ARCHER' | 'CAVALRY' | 'SPEAR' | 'SIEGE' | 
 export type PostVictoryAction = 'PILLAGE' | 'OCCUPY';
 export type DiplomacyStance = 'WAR' | 'HOSTILE' | 'NEUTRAL' | 'TRUCE' | 'ALLIED' | 'VASSAL_OF' | 'SUZERAIN_OF';
 export type ContractType = 'MERCENARY_DEFEND' | 'MERCENARY_ATTACK' | 'BOUNTY_HERO' | 'ESCORT_SUPPLY' | 'TRADE_LEASE';
+// Living world (PROPOSED 2026-10-04 — design: etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/)
+export type LwPoiKind = 'HARBOUR' | 'AIRSHIP_DOCK' | 'LANDING_SPOT' | 'AIRDROP_ZONE' | 'BARBARIAN_CAMP' | 'MERCENARY_POST'
+  | 'CARAVAN_WAYPOINT' | 'WILD_LAIR' | 'WAR_CAMP' | 'GUARDIAN_PERCH' | 'SALVAGE_SITE' | 'VENT';
+export type GuardianForm = 'WARDEN' | 'ASCENDANT';             // NFT pet Form 2 / Form 3
+export type DefenceUpgrade = 'WALLS' | 'GATES' | 'TRAPS' | 'GRANARY' | 'PET_DEN' | 'WATCHTOWER' | 'MERCENARIES';
+export type PlayerEventKind = 'GUARDIAN_CHALLENGE' | 'SIEGE_ME' | 'BOUNTY' | 'CARAVAN_RUN' | 'SPONSORED_AIRDROP' | 'WARBAND_CALL';
 ```
 
 ---
@@ -380,6 +386,47 @@ interface Contract {
 }
 ```
 
+### Living world (PROPOSED 2026-10-04)
+A **Node** (glossary) gets a concrete shape: seeded, deterministic, re-runnable (the map pipeline's seed layer ②).
+Balance numbers live in the living-world data files (`poi-archetypes.json`, `guardians.json`, `defences.json`,
+`player-events.json`, `experience.json`). Every CT movement goes through `LedgerEntry`.
+```ts
+interface LwNode {                        // a living-world point of interest (world-elements layer 'cf' + battle-map décor)
+  id: string; lwKind: LwPoiKind; zone: string; at: [number, number];  // zone svg coords
+  parcelId?: string; castleId?: string;   // castle-ring Nodes carry their castle
+  threat: number;                         // 0–100 (doc 05 Threat Level)
+  garrison: { unit: string; count: number }[];   // ≤ 6 units total
+  deckSeed: number;                       // event deck draw = PRNG(world.seed, tick, id)
+  anchorPoi?: string;                     // e.g. the authored SEA_PORT a HARBOUR sits on
+}
+
+interface GuardianStation {               // an NFT pet stationed on a GUARDIAN_PERCH
+  id: string; nodeId: string; castleId: string;
+  petTokenId: string; form: GuardianForm;
+  startTick: number; endTick: number;     // WARDEN ≤ 24 h, ASCENDANT ≤ 6 h
+  cooldownUntilTick: number;              // per NFT: 24 h / 72 h
+  feeLedgerEntryId: string; bountyEscrowLedgerEntryId: string;   // fee split: escrow / burn / pool
+  state: 'ACTIVE' | 'KO' | 'EXPIRED';
+}
+
+interface DefenceStake {                  // a time-bound defence bought for a Territory or Node
+  id: string; targetRef: string;          // territoryId | nodeId
+  upgrade: DefenceUpgrade; level: number;
+  startTick: number; endTick: number;
+  stakeCtUnits: number; spoilsEscrowLedgerEntryId: string;     // 40 % spoils / 30 % burn / 30 % pool
+  state: 'ACTIVE' | 'BROKEN' | 'EXPIRED_HELD';
+}
+
+interface PlayerEvent {                   // a player-posted fight others join
+  id: string; kind: PlayerEventKind;
+  posterPlayerId: string; anchorRef: string;   // nodeId | territoryId | armyId
+  opensTick: number; closesTick: number;  // ≥ 15 min notice
+  potLedgerEntryId?: string;              // escrowed before going live
+  contractId?: string;                    // BOUNTY_HERO / ESCORT_SUPPLY when applicable
+  state: 'POSTED' | 'LIVE' | 'RESOLVED' | 'CANCELLED';
+}
+```
+
 ---
 
 ## 5. Invariants (must always hold)
@@ -394,6 +441,10 @@ interface Contract {
 8. **Army position is a valid hex**; a MARCHING army always has a `path` and `arrivalTick`.
 9. **A SIEGE BattleInstance** references exactly one `defenderTerritoryId`.
 10. **Only the winning governor/player may choose `PostVictoryAction`**, and only once per resolved battle.
+11. *(proposed)* **Nothing is bought forever.** Every `GuardianStation` and `DefenceStake` has an `endTick`. A Guardian's
+    damage share is ≤ `HERO_IMPACT_MAX`. Defence rating is capped (×1.6) so a defended target can always be breached.
+12. *(proposed)* **Player-event payouts skip related accounts** (poster, allies, or a shared `LedgerEntry` in the last
+    14 days). Their share is burned.
 
 ---
 
