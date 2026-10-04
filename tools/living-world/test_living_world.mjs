@@ -154,10 +154,10 @@ ok(MX.rows.every((r) => r.n >= 1 && ["ok", "SOFT", "SLOW", "HARD"].includes(r.ve
 ok(MX.population === MX.rows.reduce((n, r) => n + r.population, 0), "matrix population adds up");
 
 // D6f banded threat curve
-const TB = PA.threatBands, inBand = (ring, t) => t >= TB[ring].lo && t <= TB[ring].hi;
-ok(EST.every((p) => p.nodes.every((n) => inBand(p.ring, n.threat))), "every estate Node's threat sits inside its ring's band");
+const TB = PA.threatBands, inBand = (ring, t, ground) => t >= TB[ring].lo + ((ground && TB.groundShift[ground]) || 0) && t <= TB[ring].hi;
+ok(EST.every((p) => p.nodes.every((n) => inBand(p.ring, n.threat, p.ground))), "every estate Node's threat sits inside its ring's band (floor lowered by groundShift on defensible ground)");
 ok(JSON.parse(fs.readFileSync("data/living-world/castle-pois.json", "utf8")).byCastle.every((c) => c.pois.every((p) => inBand("CASTLE", p.threat))), "every in-castle POI's threat sits inside the RAID band");
-ok(MX.populationOutOfBand / MX.population <= 0.15, `≥ 85 % of seeded garrisoned POIs land their sim band (now ${100 - Math.round(100 * MX.populationOutOfBand / MX.population)} %)`);
+ok(MX.populationOutOfBand / MX.population <= 0.05, `≥ 95 % of seeded garrisoned POIs land their sim band (now ${100 - Math.round(100 * MX.populationOutOfBand / MX.population)} %)`);
 
 // D10 region feed
 const rf1 = run("tools/living-world/region_feed.mjs", "/tmp/lw_rf_a.json"), rf2 = run("tools/living-world/region_feed.mjs", "/tmp/lw_rf_b.json");
@@ -237,6 +237,7 @@ const TMd = JSON.parse(fs.readFileSync("data/living-world/terrain-mods.json", "u
 ok(Object.entries(TMd.canon).every(([t, [a, d]]) => new RegExp("^\\| " + t + "[^|]*\\| " + a.toFixed(2) + " \\| " + d.toFixed(2) + " \\|", "m").test(bs04)), "terrain-mods mirror the canon doc-04 table (attacker / defender per HexTerrain)");
 ok(MX.terrain === true && ["FOREST", "RIDGE", "WATER"].every((g) => MX.rows.some((r) => r.ground === g)), "the committed matrix runs with canon terrain on");
 const lair = (g) => MX.rows.find((r) => r.k === "WILD_LAIR" && r.ring === "WILD" && r.ground === g).medBreachSec;
-ok(lair("PLAIN") < lair("FOREST") && lair("FOREST") < lair("RIDGE"), "defensible ground holds longer: plain < forest < ridge (wild lairs)");
+ok(lair("PLAIN") < lair("FOREST") && lair("FOREST") < lair("RIDGE"), "defensible ground still holds longer after the groundShift: plain < forest < ridge (wild lairs)");
+ok(Object.keys(TB.groundShift).every((g) => TB.groundShift[g] < 0 && TMd.canon[TMd.groundToHexTerrain[g]][1] > 1), "groundShift only lowers threat where canon gives the defender a terrain bonus");
 
 console.log(fails ? `❌ living-world: ${fails} failed` : "✅ living-world: all passed"); process.exit(fails ? 1 : 0);

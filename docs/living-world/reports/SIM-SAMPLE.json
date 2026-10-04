@@ -58,9 +58,9 @@
    "k": "SALVAGE_SITE",
    "n": 6,
    "breachRate": 100,
-   "medBreachSec": 311,
-   "medThreat": 25,
-   "medAttackerDeaths": 37,
+   "medBreachSec": 244,
+   "medThreat": 19,
+   "medAttackerDeaths": 29,
    "defenderWins": 0,
    "flag": "ok"
   },
@@ -459,10 +459,10 @@
   {
    "id": "5030542#0",
    "k": "HARBOUR",
-   "threat": 20,
+   "threat": 14,
    "breached": true,
-   "sec": 263,
-   "attackerDeaths": 31,
+   "sec": 213,
+   "attackerDeaths": 25,
    "defenderWon": false,
    "left": {
     "walls": 0,
@@ -699,10 +699,10 @@
   {
    "id": "5030585#0",
    "k": "SALVAGE_SITE",
-   "threat": 25,
+   "threat": 19,
    "breached": true,
-   "sec": 311,
-   "attackerDeaths": 37,
+   "sec": 244,
+   "attackerDeaths": 29,
    "defenderWon": false,
    "left": {
     "walls": 0,
@@ -719,10 +719,10 @@
   {
    "id": "5031089#0",
    "k": "SALVAGE_SITE",
-   "threat": 26,
+   "threat": 20,
    "breached": true,
-   "sec": 313,
-   "attackerDeaths": 37,
+   "sec": 256,
+   "attackerDeaths": 30,
    "defenderWon": false,
    "left": {
     "walls": 0,
@@ -739,10 +739,10 @@
   {
    "id": "5000589#0",
    "k": "SALVAGE_SITE",
-   "threat": 25,
+   "threat": 19,
    "breached": true,
-   "sec": 311,
-   "attackerDeaths": 37,
+   "sec": 244,
+   "attackerDeaths": 29,
    "defenderWon": false,
    "left": {
     "walls": 0,
@@ -759,10 +759,10 @@
   {
    "id": "5030562#0",
    "k": "SALVAGE_SITE",
-   "threat": 26,
+   "threat": 20,
    "breached": true,
-   "sec": 313,
-   "attackerDeaths": 37,
+   "sec": 256,
+   "attackerDeaths": 30,
    "defenderWon": false,
    "left": {
     "walls": 0,
@@ -779,10 +779,10 @@
   {
    "id": "5030616#0",
    "k": "SALVAGE_SITE",
-   "threat": 25,
+   "threat": 19,
    "breached": true,
-   "sec": 311,
-   "attackerDeaths": 37,
+   "sec": 244,
+   "attackerDeaths": 29,
    "defenderWon": false,
    "left": {
     "walls": 0,
@@ -799,10 +799,10 @@
   {
    "id": "5030910#0",
    "k": "SALVAGE_SITE",
-   "threat": 26,
+   "threat": 20,
    "breached": true,
-   "sec": 313,
-   "attackerDeaths": 37,
+   "sec": 256,
+   "attackerDeaths": 30,
    "defenderWon": false,
    "left": {
     "walls": 0,

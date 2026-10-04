@@ -78,7 +78,7 @@ for (const e of ESTATES) {
     for (let i = 0; i < n && cands.length; i++) {
       const tot = cands.reduce((s, k) => s + W[k], 0); let x = rng() * tot, pick = cands[0];
       for (const k of cands) { x -= W[k]; if (x <= 0) { pick = k; break; } }
-      const threat = bandThreat(PA, ring, STRENGTH[e.zone], rng());   // D6f banded curve (same single rng draw as the old jitter)
+      const threat = bandThreat(PA, ring, STRENGTH[e.zone], rng(), null, ground);   // D6f banded curve (same single rng draw as the old jitter)
       const a = rng() * Math.PI * 2, rr = rng() * 0.4;
       const bw = e.bbox ? Math.min(e.bbox[2] - e.bbox[0], e.bbox[3] - e.bbox[1]) : 1;
       const node = { k: pick, at: [r2(at[0] + Math.cos(a) * rr * bw), r2(at[1] + Math.sin(a) * rr * bw)], threat };

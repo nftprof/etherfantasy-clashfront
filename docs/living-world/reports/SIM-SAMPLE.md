@@ -11,7 +11,7 @@ Model: the POI's threat scales the defending core (×0.5–×2.5) and garrison; 
 | BARBARIAN_CAMP | 6 | 100 % | 3:06 | 26 | 23 | 0 | ok |
 | HARBOUR | 6 | 100 % | 4:23 | 20 | 31 | 0 | ok |
 | MERCENARY_POST | 6 | 100 % | 4:16 | 20 | 30 | 0 | ok |
-| SALVAGE_SITE | 6 | 100 % | 5:11 | 25 | 37 | 0 | ok |
+| SALVAGE_SITE | 6 | 100 % | 4:04 | 19 | 29 | 0 | ok |
 | VENT | 6 | 100 % | 5:13 | 26 | 37 | 0 | ok |
 | WAR_CAMP | 6 | 100 % | 3:21 | 23 | 24 | 0 | ok |
 | WILD_LAIR | 6 | 100 % | 4:10 | 27 | 30 | 0 | ok |

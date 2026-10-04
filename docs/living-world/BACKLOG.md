@@ -47,5 +47,5 @@ airships, landing spots, harbours + sea ships; seed all 20K maps; an experience,
 - [x] D15 — Defend/attack balance sheet: the CT a defender pays (stakes, mercenaries, Guardian fees) vs the units an attacker loses (sim SIM-SAMPLE losses × unit upkeep) per scenario; is either side's price obviously wrong?
 - [x] D19 — CT flow simulation: a seeded 7-day multi-agent run of stakes / bounties / escrows / burns → prove no CT is minted, burn ≥ 10 %, escrows always settle
 - [x] D14 — Terrain in the sim harness: forest cover (ranged −), ridge high ground (range +), water crossings (speed −) so SIM-MATRIX ground columns mean something
-- [ ] D14b — Ground-aware threat: `threatBands.groundShift` (e.g. RIDGE / WATER −3) so defensible-ground skirmishes land in 3–6 min with canon terrain on; re-seed (placements unchanged), re-run SIM-MATRIX → ≥ 95 % in band
+- [x] D14b — Ground-aware threat: `threatBands.groundShift` (e.g. RIDGE / WATER −3) so defensible-ground skirmishes land in 3–6 min with canon terrain on; re-seed (placements unchanged), re-run SIM-MATRIX → ≥ 95 % in band
 - [ ] D16 — Event board at tick T: one region's live + upcoming events (player-posted + auto), filter/sort per doc 05 §2.2, sample output

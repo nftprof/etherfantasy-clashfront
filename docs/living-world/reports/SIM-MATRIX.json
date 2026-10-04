@@ -21,11 +21,10 @@
   }
  },
  "tally": {
-  "ok": 51,
-  "SOFT": 1,
-  "SLOW": 5
+  "ok": 56,
+  "SOFT": 1
  },
- "populationOutOfBand": 325,
+ "populationOutOfBand": 16,
  "population": 6270,
  "rows": [
   {
@@ -192,9 +191,9 @@
    "n": 4,
    "band": "SKIRMISH",
    "breachRate": 100,
-   "medBreachSec": 279,
-   "medThreat": 26,
-   "medAttackerDeaths": 36,
+   "medBreachSec": 237,
+   "medThreat": 20,
+   "medAttackerDeaths": 30,
    "verdict": "ok"
   },
   {
@@ -218,9 +217,9 @@
    "n": 4,
    "band": "SKIRMISH",
    "breachRate": 100,
-   "medBreachSec": 266,
-   "medThreat": 25,
-   "medAttackerDeaths": 35,
+   "medBreachSec": 219,
+   "medThreat": 19,
+   "medAttackerDeaths": 28,
    "verdict": "ok"
   },
   {
@@ -270,10 +269,10 @@
    "n": 4,
    "band": "SKIRMISH",
    "breachRate": 100,
-   "medBreachSec": 365,
-   "medThreat": 21,
-   "medAttackerDeaths": 44,
-   "verdict": "SLOW"
+   "medBreachSec": 293,
+   "medThreat": 15,
+   "medAttackerDeaths": 35,
+   "verdict": "ok"
   },
   {
    "k": "HARBOUR",
@@ -283,10 +282,10 @@
    "n": 4,
    "band": "SKIRMISH",
    "breachRate": 100,
-   "medBreachSec": 365,
-   "medThreat": 21,
-   "medAttackerDeaths": 44,
-   "verdict": "SLOW"
+   "medBreachSec": 293,
+   "medThreat": 15,
+   "medAttackerDeaths": 35,
+   "verdict": "ok"
   },
   {
    "k": "MERCENARY_POST",
@@ -361,9 +360,9 @@
    "n": 4,
    "band": "SKIRMISH",
    "breachRate": 100,
-   "medBreachSec": 340,
-   "medThreat": 20,
-   "medAttackerDeaths": 41,
+   "medBreachSec": 275,
+   "medThreat": 14,
+   "medAttackerDeaths": 33,
    "verdict": "ok"
   },
   {
@@ -400,9 +399,9 @@
    "n": 4,
    "band": "SKIRMISH",
    "breachRate": 100,
-   "medBreachSec": 340,
-   "medThreat": 20,
-   "medAttackerDeaths": 41,
+   "medBreachSec": 275,
+   "medThreat": 14,
+   "medAttackerDeaths": 33,
    "verdict": "ok"
   },
   {
@@ -426,10 +425,10 @@
    "n": 4,
    "band": "SKIRMISH",
    "breachRate": 100,
-   "medBreachSec": 404,
-   "medThreat": 25,
-   "medAttackerDeaths": 49,
-   "verdict": "SLOW"
+   "medBreachSec": 338,
+   "medThreat": 19,
+   "medAttackerDeaths": 41,
+   "verdict": "ok"
   },
   {
    "k": "VENT",
@@ -543,9 +542,9 @@
    "n": 1,
    "band": "SKIRMISH",
    "breachRate": 100,
-   "medBreachSec": 289,
-   "medThreat": 20,
-   "medAttackerDeaths": 35,
+   "medBreachSec": 232,
+   "medThreat": 14,
+   "medAttackerDeaths": 29,
    "verdict": "ok"
   },
   {
@@ -647,9 +646,9 @@
    "n": 4,
    "band": "SKIRMISH",
    "breachRate": 100,
-   "medBreachSec": 272,
-   "medThreat": 19,
-   "medAttackerDeaths": 33,
+   "medBreachSec": 214,
+   "medThreat": 13,
+   "medAttackerDeaths": 27,
    "verdict": "ok"
   },
   {
@@ -686,9 +685,9 @@
    "n": 4,
    "band": "SKIRMISH",
    "breachRate": 100,
-   "medBreachSec": 289,
-   "medThreat": 20,
-   "medAttackerDeaths": 35,
+   "medBreachSec": 232,
+   "medThreat": 14,
+   "medAttackerDeaths": 29,
    "verdict": "ok"
   },
   {
@@ -725,10 +724,10 @@
    "n": 4,
    "band": "SKIRMISH",
    "breachRate": 100,
-   "medBreachSec": 404,
-   "medThreat": 26,
-   "medAttackerDeaths": 51,
-   "verdict": "SLOW"
+   "medBreachSec": 289,
+   "medThreat": 20,
+   "medAttackerDeaths": 35,
+   "verdict": "ok"
   },
   {
    "k": "WILD_LAIR",
@@ -764,10 +763,10 @@
    "n": 4,
    "band": "SKIRMISH",
    "breachRate": 100,
-   "medBreachSec": 404,
-   "medThreat": 26,
-   "medAttackerDeaths": 51,
-   "verdict": "SLOW"
+   "medBreachSec": 289,
+   "medThreat": 20,
+   "medAttackerDeaths": 35,
+   "verdict": "ok"
   }
  ]
 }

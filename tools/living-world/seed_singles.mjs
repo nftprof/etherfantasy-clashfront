@@ -50,7 +50,7 @@ export function seedSingle(p, zc) {
   const tot = cands.reduce((s, k) => s + W[k], 0); let x = rng() * tot, k = cands[0];
   for (const c of cands) { x -= W[c]; if (x <= 0) { k = c; break; } }
   const ground = zc.layer !== "SURFACE" ? zc.layer : ctx.coastD <= 10 ? "WATER" : rng() < 0.6 ? "FOREST" : "PLAIN";
-  const node = { k, at: [r2(at[0]), r2(at[1])], threat: bandThreat({ threatBands: zc.threatBands }, ring, zc.strength, rng()) };
+  const node = { k, at: [r2(at[0]), r2(at[1])], threat: bandThreat({ threatBands: zc.threatBands }, ring, zc.strength, rng(), null, ground) };
   if (k === "WILD_LAIR") node.monster = zc.ARCH.WILD_LAIR.affinity.monsterByGround[ground] || "BANDIT";
   return { id: p.parcelId, ring, node };
 }

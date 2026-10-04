@@ -146,3 +146,21 @@ on (`--terrain off` gives the flat baseline).
   get a slightly lower threat so the fight still lands in band. That's the next item (D14b), still in `threatBands`
   and never per map.
 
+### 7d. Ground-aware threat (D14b): back to 56 / 57 with terrain on
+
+`threatBands.groundShift` gives **RIDGE and WATER −6 threat**: the ground where canon gives the defender ×1.10. The
+ring's floor moves down with the shift, because the wild lairs were already at the WILD floor (24) and still ran 6:15.
+The terrain makes up the difference.
+
+| Ground | Wild lair, before | Wild lair, after |
+|---|---|---|
+| Plain | 4:06 | 4:06 |
+| Ridge | 6:44 | 4:49 |
+| Water | 6:44 | 4:49 |
+
+- High ground still holds longer than open plain: plain 4:06 < forest 4:40 < ridge 4:49.
+- **Matrix with canon terrain: 56 / 57 cells ok, 0.3 % of POIs out of band** (only the 16 in-castle barbarian camps,
+  at 5:38).
+- The test floor is now ≥ 95 % in band.
+- Re-seeded estates and singles: same placements, only the threat on ridge and water parcels changed.
+

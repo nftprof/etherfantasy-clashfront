@@ -14,7 +14,8 @@
   "FRONTIER": { "band": "SKIRMISH", "lo": 18, "hi": 30 },
   "WILD": { "band": "SKIRMISH", "lo": 24, "hi": 34 },
   "mix": { "depth": 0.8, "jitter": 0.3, "base": 0.1 },
-  "castleMix": { "depth": 0.55, "tier": 0.35, "base": 0.1 }
+  "castleMix": { "depth": 0.55, "tier": 0.35, "base": 0.1 },
+  "groundShift": { "RIDGE": -6, "WATER": -6 }
  },
  "budgetByCastleKind": {
   "PALACE": {
