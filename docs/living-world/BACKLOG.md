@@ -32,3 +32,11 @@ airships, landing spots, harbours + sea ships; seed all 20K maps; an experience,
 - [x] D6b — Calibrate the sim harness: model castle structures (wall rings, gates, keep 2,400×tier, doc-03 defences) so the CALIBRATION row lands near the S2 floors; then tune archetypes
 - [x] D6c — Per-tier target bands: frontier skirmish POIs 3–6 min vs castle-tier 6–12 min; re-tune MERCENARY_POST (3:42) / HARBOUR (4:03) garrisons accordingly; add a defences (doc 03) + Guardian (doc 04) scenario to the sampler
 - [x] D6d — Model Ward Stones + Guardian aura in the sampler; per-tier target bands (frontier 3–6 min vs castle 6–12); widen the F2/F3 gap
+
+## Wave 2 (added cycle 22, after the first backlog emptied)
+- [ ] D9 — Ambient ship traffic: seeded `shipsAt(world.seed, tick)` over `sea-air-lanes.json` (merchant hulls + airships, storm-season lane closures) + determinism tests — doc 07 step 1
+- [ ] D6e — Archetype × biome sampling matrix (doc 02 §5.2): N seeded parcels per template through the sampler; flag any template outside its tier band
+- [ ] D10 — Region feed: deterministic headline generator from `player-events.json` + POI outcomes (doc 05/06 "something happened" stories), with sample output
+- [ ] D11 — Influence ladder (doc 06 §5) as data + function: POIs held per region → unlocks (SIEGE_ME, ship 5, airship 10, Ascendant 25) + tests against vessel thresholds
+- [ ] D12 — Anti-farm + lull rules as a pure reward function (×1/0.6/0.3/0.1 repeat curve, 48 h camp quiet) + tests
+- [ ] D13 — Owner-decision sheet: one page of the 4 open ❓ calls (Points vs CT, Form 3 stand-ins, Guardians vs 12-min floor, PR #50) with the proposals and what each answer changes
