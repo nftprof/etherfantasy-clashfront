@@ -1,0 +1,146 @@
+{
+ "schema": "cf-living-world/estate-pois-summary@1",
+ "byZone": {
+  "BUS": {
+   "parcels": 1187,
+   "nodes": 1282,
+   "byKind": {
+    "AIRDROP_ZONE": 408,
+    "AIRSHIP_DOCK": 15,
+    "BARBARIAN_CAMP": 8,
+    "CARAVAN_WAYPOINT": 61,
+    "HARBOUR": 77,
+    "MERCENARY_POST": 57,
+    "SALVAGE_SITE": 6,
+    "WAR_CAMP": 5,
+    "WILD_LAIR": 645
+   }
+  },
+  "EDU": {
+   "parcels": 372,
+   "nodes": 360,
+   "byKind": {
+    "AIRDROP_ZONE": 126,
+    "BARBARIAN_CAMP": 7,
+    "CARAVAN_WAYPOINT": 14,
+    "MERCENARY_POST": 6,
+    "WAR_CAMP": 3,
+    "WILD_LAIR": 204
+   }
+  },
+  "ENT": {
+   "parcels": 1492,
+   "nodes": 1451,
+   "byKind": {
+    "AIRDROP_ZONE": 345,
+    "BARBARIAN_CAMP": 22,
+    "CARAVAN_WAYPOINT": 31,
+    "HARBOUR": 50,
+    "MERCENARY_POST": 24,
+    "SALVAGE_SITE": 24,
+    "WAR_CAMP": 6,
+    "WILD_LAIR": 949
+   }
+  },
+  "HS1": {
+   "parcels": 346,
+   "nodes": 284,
+   "byKind": {
+    "AIRDROP_ZONE": 61,
+    "AIRSHIP_DOCK": 127,
+    "CARAVAN_WAYPOINT": 16,
+    "MERCENARY_POST": 14,
+    "WAR_CAMP": 3,
+    "WILD_LAIR": 63
+   }
+  },
+  "HS2": {
+   "parcels": 451,
+   "nodes": 340,
+   "byKind": {
+    "AIRDROP_ZONE": 95,
+    "AIRSHIP_DOCK": 141,
+    "CARAVAN_WAYPOINT": 27,
+    "MERCENARY_POST": 22,
+    "WAR_CAMP": 4,
+    "WILD_LAIR": 51
+   }
+  },
+  "HS3": {
+   "parcels": 464,
+   "nodes": 405,
+   "byKind": {
+    "AIRDROP_ZONE": 107,
+    "AIRSHIP_DOCK": 134,
+    "CARAVAN_WAYPOINT": 18,
+    "MERCENARY_POST": 19,
+    "WAR_CAMP": 4,
+    "WILD_LAIR": 123
+   }
+  },
+  "HUB": {
+   "parcels": 1744,
+   "nodes": 1812,
+   "byKind": {
+    "AIRDROP_ZONE": 524,
+    "AIRSHIP_DOCK": 15,
+    "BARBARIAN_CAMP": 2,
+    "CARAVAN_WAYPOINT": 67,
+    "MERCENARY_POST": 70,
+    "WAR_CAMP": 7,
+    "WILD_LAIR": 1127
+   }
+  },
+  "UW1": {
+   "parcels": 1233,
+   "nodes": 1271,
+   "byKind": {
+    "VENT": 655,
+    "WILD_LAIR": 616
+   }
+  },
+  "UW2": {
+   "parcels": 1101,
+   "nodes": 982,
+   "byKind": {
+    "AIRDROP_ZONE": 233,
+    "BARBARIAN_CAMP": 5,
+    "MERCENARY_POST": 47,
+    "VENT": 423,
+    "WAR_CAMP": 5,
+    "WILD_LAIR": 269
+   }
+  },
+  "UW3": {
+   "parcels": 92,
+   "nodes": 46,
+   "byKind": {
+    "AIRDROP_ZONE": 15,
+    "MERCENARY_POST": 7,
+    "VENT": 12,
+    "WAR_CAMP": 3,
+    "WILD_LAIR": 9
+   }
+  }
+ },
+ "byKind": {
+  "AIRDROP_ZONE": 1914,
+  "AIRSHIP_DOCK": 432,
+  "BARBARIAN_CAMP": 44,
+  "CARAVAN_WAYPOINT": 234,
+  "HARBOUR": 127,
+  "MERCENARY_POST": 266,
+  "SALVAGE_SITE": 30,
+  "VENT": 1090,
+  "WAR_CAMP": 40,
+  "WILD_LAIR": 4056
+ },
+ "byRing": {
+  "CASTLE": 793,
+  "FRONTIER": 3581,
+  "WILD": 4108
+ },
+ "parcels": 8482,
+ "nodes": 8233,
+ "droppedByGuarantee": 932
+}

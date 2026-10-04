@@ -322,7 +322,11 @@
     "flankU": [
      15,
      30
-    ]
+    ],
+    "perZoneCap": {
+     "base": 3,
+     "per": 400
+    }
    },
    "garrison": [
     [
@@ -406,7 +410,11 @@
     "UNDER"
    ],
    "affinity": {
-    "riverMax": 15
+    "riverMax": 30,
+    "anywhereInZones": [
+     "UW1",
+     "UW3"
+    ]
    },
    "garrison": [
     [

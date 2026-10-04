@@ -7,16 +7,16 @@
  "byKind": {
   "AIRDROP_ZONE": 39,
   "AIRSHIP_DOCK": 20,
-  "BARBARIAN_CAMP": 22,
+  "BARBARIAN_CAMP": 21,
   "CARAVAN_WAYPOINT": 4,
   "GUARDIAN_PERCH": 76,
   "HARBOUR": 9,
   "LANDING_SPOT": 49,
   "MERCENARY_POST": 30,
   "SALVAGE_SITE": 1,
-  "VENT": 12,
+  "VENT": 14,
   "WAR_CAMP": 9,
-  "WILD_LAIR": 27
+  "WILD_LAIR": 26
  },
  "byCastle": [
   {
@@ -4627,11 +4627,28 @@
      "deckSeed": 4062571910
     },
     {
+     "id": "UW2-CASTLE-DEEPGATE:VENT:1",
+     "lwKind": "VENT",
+     "at": [
+      99.48,
+      69.82
+     ],
+     "flow": "UW2-LK-FERRY",
+     "garrison": [
+      {
+       "unit": "ELEMENTAL",
+       "count": 2
+      }
+     ],
+     "threat": 70,
+     "deckSeed": 3484711794
+    },
+    {
      "id": "UW2-CASTLE-DEEPGATE:BARBARIAN_CAMP:1",
      "lwKind": "BARBARIAN_CAMP",
      "at": [
-      88.37,
-      86.54
+      105.82,
+      90.24
      ],
      "ridge": "UW2-RG-C1",
      "garrison": [
@@ -4646,28 +4663,6 @@
      ],
      "threat": 70,
      "deckSeed": 2558721695
-    },
-    {
-     "id": "UW2-CASTLE-DEEPGATE:WILD_LAIR:1",
-     "lwKind": "WILD_LAIR",
-     "at": [
-      105.56,
-      78.05
-     ],
-     "ground": "UNDER",
-     "monster": "TROLL",
-     "garrison": [
-      {
-       "unit": "ALPHA",
-       "count": 1
-      },
-      {
-       "unit": "PACK",
-       "count": 4
-      }
-     ],
-     "threat": 70,
-     "deckSeed": 1433932196
     }
    ]
   },
@@ -5182,25 +5177,21 @@
      "deckSeed": 3839273607
     },
     {
-     "id": "UW3-KEEP-HUNGER:BARBARIAN_CAMP:1",
-     "lwKind": "BARBARIAN_CAMP",
+     "id": "UW3-KEEP-HUNGER:VENT:1",
+     "lwKind": "VENT",
      "at": [
-      66.83,
-      -2.07
+      50.56,
+      8.15
      ],
-     "ridge": "UW3-RG-REEF-NE",
+     "flow": "UW3-FL-N",
      "garrison": [
       {
-       "unit": "CHIEFTAIN",
-       "count": 1
-      },
-      {
-       "unit": "BARBARIAN",
-       "count": 5
+       "unit": "ELEMENTAL",
+       "count": 2
       }
      ],
      "threat": 50,
-     "deckSeed": 1242714609
+     "deckSeed": 3530252240
     },
     {
      "id": "UW3-KEEP-HUNGER:MERCENARY_POST:1",

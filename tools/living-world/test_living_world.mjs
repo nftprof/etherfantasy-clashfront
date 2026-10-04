@@ -69,4 +69,20 @@ const doc2 = fs.readFileSync("docs/living-world/02-SEEDING-20K-MAPS.md", "utf8")
 ok(doc2.includes("≤ 6 Nodes per parcel") && PA.limits.perParcelMax === 6, "doc 02 density cap matches poi-archetypes limits.perParcelMax");
 ok(doc2.includes("67 castles") && CP.byCastle.length === 67, "doc 02 story tier (67 castles) matches the seeded castle set");
 
+// D5 estates (doc 02)
+execFileSync("node", ["tools/living-world/seed_estates.mjs", "--out", "/tmp/lw_est_a"], { stdio: "ignore" });
+execFileSync("node", ["tools/living-world/seed_estates.mjs", "--out", "/tmp/lw_est_b"], { stdio: "ignore" });
+const ezs = fs.readdirSync("/tmp/lw_est_a/estate-pois").sort();
+ok(ezs.every((f) => fs.readFileSync(`/tmp/lw_est_a/estate-pois/${f}`).equals(fs.readFileSync(`/tmp/lw_est_b/estate-pois/${f}`))), "estate seeding rebuild is byte-identical across all zones");
+ok(ezs.every((f) => fs.readFileSync(`/tmp/lw_est_a/estate-pois/${f}`).equals(fs.readFileSync(`data/living-world/estate-pois/${f}`))) && fs.readFileSync("/tmp/lw_est_a/estate-pois.summary.json").equals(fs.readFileSync("data/living-world/estate-pois.summary.json")), "committed estate-pois are up to date");
+const EST = ezs.flatMap((f) => JSON.parse(fs.readFileSync(`/tmp/lw_est_a/estate-pois/${f}`, "utf8")).parcels.map((p) => ({ ...p, zone: f.replace(".json", "") })));
+ok(EST.length === 8482, "all 8,482 L2 estates seeded (UW1 as untamed wild until its terrain lands)");
+ok(EST.every((p) => p.nodes.length <= PA.limits.perParcelMax), "≤ 6 Nodes per parcel");
+ok(EST.filter((p) => p.ring === "CASTLE").every((p) => p.nodes.length === 0), "the castle ring belongs to castle-pois (no estate Nodes inside 12 u)");
+ok(EST.every((p) => p.nodes.every((n) => kinds.includes(n.k) && n.threat >= 0 && n.threat <= 100)), "every estate Node is a known archetype with threat 0–100");
+const campsOk = Object.values(EST.reduce((m, p) => { (m[p.zone] ||= []).push(...p.nodes.filter((n) => n.k === "BARBARIAN_CAMP").map((n) => n.at)); return m; }, {})).every((cs) => cs.every((a, i) => cs.every((b, j) => i === j || Math.hypot(a[0] - b[0], a[1] - b[1]) >= 20)));
+ok(campsOk, "barbarian camps are ≥ 20 u apart in every zone (region guarantee)");
+const wcCap = PA.archetypes.find((a) => a.lwKind === "WAR_CAMP").affinity.perZoneCap;
+ok(Object.entries(EST.reduce((m, p) => ((m[p.zone] = (m[p.zone] || 0) + p.nodes.filter((n) => n.k === "WAR_CAMP").length), m), {})).every(([z, n]) => n <= wcCap.base + Math.floor(EST.filter((p) => p.zone === z).length / wcCap.per)), "war camps stay within the per-zone cap");
+
 console.log(fails ? `❌ living-world: ${fails} failed` : "✅ living-world: all passed"); process.exit(fails ? 1 : 0);
