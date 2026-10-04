@@ -30,4 +30,5 @@ airships, landing spots, harbours + sea ships; seed all 20K maps; an experience,
 - [ ] D5c — Tune: UW1 vent-heavy (655/1,233), barbarian camps rare (44) — revisit with sim sampling
 - [ ] D8b — Battle-map anchors: PIER / LANDING_PAD placement + NAVAL_APPROACH / AIR_APPROACH spawn classes in generate.js (designer follow-up PR)
 - [x] D6b — Calibrate the sim harness: model castle structures (wall rings, gates, keep 2,400×tier, doc-03 defences) so the CALIBRATION row lands near the S2 floors; then tune archetypes
-- [ ] D6c — Per-tier target bands: frontier skirmish POIs 3–6 min vs castle-tier 6–12 min; re-tune MERCENARY_POST (3:42) / HARBOUR (4:03) garrisons accordingly; add a defences (doc 03) + Guardian (doc 04) scenario to the sampler
+- [x] D6c — Per-tier target bands: frontier skirmish POIs 3–6 min vs castle-tier 6–12 min; re-tune MERCENARY_POST (3:42) / HARBOUR (4:03) garrisons accordingly; add a defences (doc 03) + Guardian (doc 04) scenario to the sampler
+- [ ] D6d — Model Ward Stones + Guardian aura in the sampler; per-tier target bands (frontier 3–6 min vs castle 6–12); widen the F2/F3 gap

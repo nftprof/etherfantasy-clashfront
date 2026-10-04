@@ -6,7 +6,8 @@ import { alive, dist, killUnit } from "../state.js";
 // a core is invulnerable while its team still has a standing tower (MOBA gating —
 // makes towers + minions matter and stops a lone hero from rushing the core).
 function teamHasTower(world, team) {
-  for (const o of world.units.values()) if (o.kind === "tower" && o.team === team && alive(o)) return true;
+  // towers shield the core; so does any unit flagged shieldsCore (opt-in: a living-world Guardian standing on its perch, doc 04)
+  for (const o of world.units.values()) if ((o.kind === "tower" || o.shieldsCore) && o.team === team && alive(o)) return true;
   return false;
 }
 
@@ -36,7 +37,7 @@ export function combatSystem(world, dt) {
           // canon UnitClass SIEGE (docs/03 §3: ×6 ⚙ vs structures): opt-in per unit (u.structMul), so units without it — every
           // existing battle — resolve byte-identically. Structures = towers, walls/gates, cores.
           const sm = (u.structMul && (tgt.kind === "tower" || tgt.kind === "wall" || tgt.kind === "core")) ? u.structMul : 1;
-          tgt.hp -= u.dmg * sm;
+          tgt.hp -= u.dmg * sm * (tgt.dmgTakenMul != null ? tgt.dmgTakenMul : 1);   // dmgTakenMul: opt-in (Form 3 Ascension), absent → unchanged
           if (tgt.hp <= 0) killUnit(world, u, tgt); // gold/XP/respawn/win handled centrally
         }
       }

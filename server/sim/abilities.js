@@ -28,9 +28,9 @@ const clampMap = (v) => Math.max(MAP_MIN, Math.min(MAP_MAX, v));
 function hit(world, src, tgt, dmg) {
   if (!alive(tgt) || tgt.team === src.team) return;
   if (tgt.kind === "core") {
-    for (const o of world.units.values()) if (o.kind === "tower" && o.team === tgt.team && alive(o)) return; // shielded
+    for (const o of world.units.values()) if ((o.kind === "tower" || o.shieldsCore) && o.team === tgt.team && alive(o)) return; // shielded (towers, or an opt-in Guardian)
   }
-  tgt.hp -= dmg;
+  tgt.hp -= dmg * (tgt.dmgTakenMul != null ? tgt.dmgTakenMul : 1);   // opt-in (living-world Form 3 Guardian Ascension); absent → unchanged
   if (tgt.hp <= 0) killUnit(world, src, tgt); // gold/XP/respawn/win handled centrally
 }
 

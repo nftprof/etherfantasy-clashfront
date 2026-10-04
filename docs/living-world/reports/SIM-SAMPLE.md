@@ -18,4 +18,13 @@ Model: the POI's threat scales the defending core (×0.5–×2.5) and garrison; 
 
 **Calibration:** a bare castle (threat 50, S2 structures: 8 walls 1,350 HP, 2 gates 1,150 HP, 2 castle towers 2,350 HP, keep 2,400 × tier; structure HP ×3) vs the floor-case attacker (1.5× squad, ⅓ canon SIEGE ×6 vs structures, + waves) breaches at **8:59** — inside the 6–12 min target band ✅.
 
+## Defences (doc 03) and Guardians (doc 04) on the calibration castle
+
+| Scenario | Breached (≤ 12 min; Guardian rows ≤ 25 min) | Median breach | Median attacker losses | Guardian KO'd | Median Guardian KO time | Guardian HP left at the end |
+|---|---|---|---|---|---|---|
+| Bare castle | 100 % | 8:59 | 64 | — | — | — |
+| Fully upgraded (×1.6 cap; attacker 1.5× the defence-weighted garrison) | 100 % | 9:35 | 67 | — | — | — |
+| + Form 2 Warden | 100 % | 14:42 | 106 | 6/6 | 13:45 | 0 % |
+| + Form 3 Ascendant (5 % dmg for 8 min, then tires to 40 %) | 100 % | 16:18 | 116 | 6/6 | 15:31 | 0 % |
+
 Tuning rule (doc 02 §5): an archetype out of band is re-tuned in `poi-archetypes.json` (garrison / threat curve), never per map.

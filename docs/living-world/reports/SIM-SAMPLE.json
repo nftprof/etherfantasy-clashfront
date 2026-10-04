@@ -109,7 +109,11 @@
     "gates": 0,
     "towers": 0,
     "keepPct": 0
-   }
+   },
+   "scen": "BASE",
+   "guardianWakeSec": null,
+   "guardianKoSec": null,
+   "guardianHpPct": null
   },
   {
    "id": "calib-2",
@@ -124,7 +128,11 @@
     "gates": 0,
     "towers": 0,
     "keepPct": 0
-   }
+   },
+   "scen": "BASE",
+   "guardianWakeSec": null,
+   "guardianKoSec": null,
+   "guardianHpPct": null
   },
   {
    "id": "calib-0",
@@ -139,7 +147,11 @@
     "gates": 0,
     "towers": 0,
     "keepPct": 0
-   }
+   },
+   "scen": "BASE",
+   "guardianWakeSec": null,
+   "guardianKoSec": null,
+   "guardianHpPct": null
   },
   {
    "id": "calib-4",
@@ -154,7 +166,11 @@
     "gates": 0,
     "towers": 0,
     "keepPct": 0
-   }
+   },
+   "scen": "BASE",
+   "guardianWakeSec": null,
+   "guardianKoSec": null,
+   "guardianHpPct": null
   },
   {
    "id": "calib-5",
@@ -169,7 +185,11 @@
     "gates": 0,
     "towers": 0,
     "keepPct": 0
-   }
+   },
+   "scen": "BASE",
+   "guardianWakeSec": null,
+   "guardianKoSec": null,
+   "guardianHpPct": null
   },
   {
    "id": "calib-1",
@@ -184,7 +204,11 @@
     "gates": 0,
     "towers": 0,
     "keepPct": 0
-   }
+   },
+   "scen": "BASE",
+   "guardianWakeSec": null,
+   "guardianKoSec": null,
+   "guardianHpPct": null
   },
   {
    "id": "4000853#0",
@@ -199,7 +223,11 @@
     "gates": 0,
     "towers": 0,
     "keepPct": 0
-   }
+   },
+   "scen": "BASE",
+   "guardianWakeSec": null,
+   "guardianKoSec": null,
+   "guardianHpPct": null
   },
   {
    "id": "5060220#0",
@@ -214,7 +242,11 @@
     "gates": 0,
     "towers": 0,
     "keepPct": 0
-   }
+   },
+   "scen": "BASE",
+   "guardianWakeSec": null,
+   "guardianKoSec": null,
+   "guardianHpPct": null
   },
   {
    "id": "5040119#0",
@@ -229,7 +261,11 @@
     "gates": 0,
     "towers": 0,
     "keepPct": 0
-   }
+   },
+   "scen": "BASE",
+   "guardianWakeSec": null,
+   "guardianKoSec": null,
+   "guardianHpPct": null
   },
   {
    "id": "5040217#0",
@@ -244,7 +280,11 @@
     "gates": 0,
     "towers": 0,
     "keepPct": 0
-   }
+   },
+   "scen": "BASE",
+   "guardianWakeSec": null,
+   "guardianKoSec": null,
+   "guardianHpPct": null
   },
   {
    "id": "5050117#0",
@@ -259,7 +299,11 @@
     "gates": 0,
     "towers": 0,
     "keepPct": 0
-   }
+   },
+   "scen": "BASE",
+   "guardianWakeSec": null,
+   "guardianKoSec": null,
+   "guardianHpPct": null
   },
   {
    "id": "5050289#0",
@@ -274,7 +318,11 @@
     "gates": 0,
     "towers": 0,
     "keepPct": 0
-   }
+   },
+   "scen": "BASE",
+   "guardianWakeSec": null,
+   "guardianKoSec": null,
+   "guardianHpPct": null
   },
   {
    "id": "EDU-KEEP-LANTERNHILL:BARBARIAN_CAMP:1",
@@ -289,7 +337,11 @@
     "gates": 0,
     "towers": 0,
     "keepPct": 0
-   }
+   },
+   "scen": "BASE",
+   "guardianWakeSec": null,
+   "guardianKoSec": null,
+   "guardianHpPct": null
   },
   {
    "id": "2001116#1",
@@ -304,7 +356,11 @@
     "gates": 0,
     "towers": 0,
     "keepPct": 0
-   }
+   },
+   "scen": "BASE",
+   "guardianWakeSec": null,
+   "guardianKoSec": null,
+   "guardianHpPct": null
   },
   {
    "id": "5030364#0",
@@ -319,7 +375,11 @@
     "gates": 0,
     "towers": 0,
     "keepPct": 0
-   }
+   },
+   "scen": "BASE",
+   "guardianWakeSec": null,
+   "guardianKoSec": null,
+   "guardianHpPct": null
   },
   {
    "id": "5030914#0",
@@ -334,7 +394,11 @@
     "gates": 0,
     "towers": 0,
     "keepPct": 0
-   }
+   },
+   "scen": "BASE",
+   "guardianWakeSec": null,
+   "guardianKoSec": null,
+   "guardianHpPct": null
   },
   {
    "id": "5100083#0",
@@ -349,7 +413,11 @@
     "gates": 0,
     "towers": 1,
     "keepPct": 100
-   }
+   },
+   "scen": "BASE",
+   "guardianWakeSec": null,
+   "guardianKoSec": null,
+   "guardianHpPct": null
   },
   {
    "id": "4031395#0",
@@ -364,7 +432,11 @@
     "gates": 0,
     "towers": 0,
     "keepPct": 0
-   }
+   },
+   "scen": "BASE",
+   "guardianWakeSec": null,
+   "guardianKoSec": null,
+   "guardianHpPct": null
   },
   {
    "id": "5030542#0",
@@ -379,7 +451,11 @@
     "gates": 0,
     "towers": 0,
     "keepPct": 0
-   }
+   },
+   "scen": "BASE",
+   "guardianWakeSec": null,
+   "guardianKoSec": null,
+   "guardianHpPct": null
   },
   {
    "id": "5000154#0",
@@ -394,7 +470,11 @@
     "gates": 0,
     "towers": 0,
     "keepPct": 0
-   }
+   },
+   "scen": "BASE",
+   "guardianWakeSec": null,
+   "guardianKoSec": null,
+   "guardianHpPct": null
   },
   {
    "id": "5000054#0",
@@ -409,7 +489,11 @@
     "gates": 0,
     "towers": 0,
     "keepPct": 0
-   }
+   },
+   "scen": "BASE",
+   "guardianWakeSec": null,
+   "guardianKoSec": null,
+   "guardianHpPct": null
   },
   {
    "id": "5030500#0",
@@ -424,7 +508,11 @@
     "gates": 0,
     "towers": 0,
     "keepPct": 0
-   }
+   },
+   "scen": "BASE",
+   "guardianWakeSec": null,
+   "guardianKoSec": null,
+   "guardianHpPct": null
   },
   {
    "id": "ENT-KEEP-LANTERNSHORE:HARBOUR:1",
@@ -439,7 +527,11 @@
     "gates": 0,
     "towers": 0,
     "keepPct": 0
-   }
+   },
+   "scen": "BASE",
+   "guardianWakeSec": null,
+   "guardianKoSec": null,
+   "guardianHpPct": null
   },
   {
    "id": "5000102#0",
@@ -454,7 +546,11 @@
     "gates": 0,
     "towers": 0,
     "keepPct": 0
-   }
+   },
+   "scen": "BASE",
+   "guardianWakeSec": null,
+   "guardianKoSec": null,
+   "guardianHpPct": null
   },
   {
    "id": "4071376#0",
@@ -469,7 +565,11 @@
     "gates": 0,
     "towers": 0,
     "keepPct": 0
-   }
+   },
+   "scen": "BASE",
+   "guardianWakeSec": null,
+   "guardianKoSec": null,
+   "guardianHpPct": null
   },
   {
    "id": "2001121#1",
@@ -484,7 +584,11 @@
     "gates": 0,
     "towers": 0,
     "keepPct": 0
-   }
+   },
+   "scen": "BASE",
+   "guardianWakeSec": null,
+   "guardianKoSec": null,
+   "guardianHpPct": null
   },
   {
    "id": "5100008#0",
@@ -499,7 +603,11 @@
     "gates": 0,
     "towers": 0,
     "keepPct": 0
-   }
+   },
+   "scen": "BASE",
+   "guardianWakeSec": null,
+   "guardianKoSec": null,
+   "guardianHpPct": null
   },
   {
    "id": "5100040#0",
@@ -514,7 +622,11 @@
     "gates": 0,
     "towers": 0,
     "keepPct": 0
-   }
+   },
+   "scen": "BASE",
+   "guardianWakeSec": null,
+   "guardianKoSec": null,
+   "guardianHpPct": null
   },
   {
    "id": "5100185#0",
@@ -529,7 +641,11 @@
     "gates": 0,
     "towers": 0,
     "keepPct": 0
-   }
+   },
+   "scen": "BASE",
+   "guardianWakeSec": null,
+   "guardianKoSec": null,
+   "guardianHpPct": null
   },
   {
    "id": "5000465#0",
@@ -544,7 +660,11 @@
     "gates": 0,
     "towers": 0,
     "keepPct": 0
-   }
+   },
+   "scen": "BASE",
+   "guardianWakeSec": null,
+   "guardianKoSec": null,
+   "guardianHpPct": null
   },
   {
    "id": "5030585#0",
@@ -559,7 +679,11 @@
     "gates": 0,
     "towers": 0,
     "keepPct": 0
-   }
+   },
+   "scen": "BASE",
+   "guardianWakeSec": null,
+   "guardianKoSec": null,
+   "guardianHpPct": null
   },
   {
    "id": "5031089#0",
@@ -574,7 +698,11 @@
     "gates": 0,
     "towers": 0,
     "keepPct": 0
-   }
+   },
+   "scen": "BASE",
+   "guardianWakeSec": null,
+   "guardianKoSec": null,
+   "guardianHpPct": null
   },
   {
    "id": "5030562#0",
@@ -589,7 +717,11 @@
     "gates": 0,
     "towers": 0,
     "keepPct": 0
-   }
+   },
+   "scen": "BASE",
+   "guardianWakeSec": null,
+   "guardianKoSec": null,
+   "guardianHpPct": null
   },
   {
    "id": "5030616#0",
@@ -604,7 +736,11 @@
     "gates": 0,
     "towers": 0,
     "keepPct": 0
-   }
+   },
+   "scen": "BASE",
+   "guardianWakeSec": null,
+   "guardianKoSec": null,
+   "guardianHpPct": null
   },
   {
    "id": "5030472#0",
@@ -619,7 +755,11 @@
     "gates": 0,
     "towers": 0,
     "keepPct": 0
-   }
+   },
+   "scen": "BASE",
+   "guardianWakeSec": null,
+   "guardianKoSec": null,
+   "guardianHpPct": null
   },
   {
    "id": "5030956#0",
@@ -634,7 +774,11 @@
     "gates": 0,
     "towers": 0,
     "keepPct": 0
-   }
+   },
+   "scen": "BASE",
+   "guardianWakeSec": null,
+   "guardianKoSec": null,
+   "guardianHpPct": null
   },
   {
    "id": "5100537#0",
@@ -649,7 +793,11 @@
     "gates": 0,
     "towers": 0,
     "keepPct": 0
-   }
+   },
+   "scen": "BASE",
+   "guardianWakeSec": null,
+   "guardianKoSec": null,
+   "guardianHpPct": null
   },
   {
    "id": "1101099#2",
@@ -664,7 +812,11 @@
     "gates": 0,
     "towers": 0,
     "keepPct": 0
-   }
+   },
+   "scen": "BASE",
+   "guardianWakeSec": null,
+   "guardianKoSec": null,
+   "guardianHpPct": null
   },
   {
    "id": "4091142#0",
@@ -679,7 +831,11 @@
     "gates": 0,
     "towers": 1,
     "keepPct": 100
-   }
+   },
+   "scen": "BASE",
+   "guardianWakeSec": null,
+   "guardianKoSec": null,
+   "guardianHpPct": null
   },
   {
    "id": "5090166#0",
@@ -694,7 +850,11 @@
     "gates": 0,
     "towers": 0,
     "keepPct": 0
-   }
+   },
+   "scen": "BASE",
+   "guardianWakeSec": null,
+   "guardianKoSec": null,
+   "guardianHpPct": null
   },
   {
    "id": "5090926#0",
@@ -709,7 +869,11 @@
     "gates": 0,
     "towers": 1,
     "keepPct": 100
-   }
+   },
+   "scen": "BASE",
+   "guardianWakeSec": null,
+   "guardianKoSec": null,
+   "guardianHpPct": null
   },
   {
    "id": "5100644#0",
@@ -724,7 +888,11 @@
     "gates": 0,
     "towers": 0,
     "keepPct": 0
-   }
+   },
+   "scen": "BASE",
+   "guardianWakeSec": null,
+   "guardianKoSec": null,
+   "guardianHpPct": null
   },
   {
    "id": "1071722#1",
@@ -739,7 +907,11 @@
     "gates": 0,
     "towers": 0,
     "keepPct": 0
-   }
+   },
+   "scen": "BASE",
+   "guardianWakeSec": null,
+   "guardianKoSec": null,
+   "guardianHpPct": null
   },
   {
    "id": "5050025#0",
@@ -754,7 +926,11 @@
     "gates": 0,
     "towers": 0,
     "keepPct": 0
-   }
+   },
+   "scen": "BASE",
+   "guardianWakeSec": null,
+   "guardianKoSec": null,
+   "guardianHpPct": null
   },
   {
    "id": "5060082#0",
@@ -769,7 +945,11 @@
     "gates": 0,
     "towers": 0,
     "keepPct": 0
-   }
+   },
+   "scen": "BASE",
+   "guardianWakeSec": null,
+   "guardianKoSec": null,
+   "guardianHpPct": null
   },
   {
    "id": "5050001#0",
@@ -784,7 +964,11 @@
     "gates": 0,
     "towers": 0,
     "keepPct": 0
-   }
+   },
+   "scen": "BASE",
+   "guardianWakeSec": null,
+   "guardianKoSec": null,
+   "guardianHpPct": null
   },
   {
    "id": "2101085#0",
@@ -799,7 +983,11 @@
     "gates": 0,
     "towers": 0,
     "keepPct": 0
-   }
+   },
+   "scen": "BASE",
+   "guardianWakeSec": null,
+   "guardianKoSec": null,
+   "guardianHpPct": null
   },
   {
    "id": "1071726#0",
@@ -814,7 +1002,11 @@
     "gates": 0,
     "towers": 0,
     "keepPct": 0
-   }
+   },
+   "scen": "BASE",
+   "guardianWakeSec": null,
+   "guardianKoSec": null,
+   "guardianHpPct": null
   },
   {
    "id": "5060072#0",
@@ -829,7 +1021,11 @@
     "gates": 0,
     "towers": 0,
     "keepPct": 0
-   }
+   },
+   "scen": "BASE",
+   "guardianWakeSec": null,
+   "guardianKoSec": null,
+   "guardianHpPct": null
   },
   {
    "id": "4050407#0",
@@ -844,7 +1040,11 @@
     "gates": 0,
     "towers": 0,
     "keepPct": 0
-   }
+   },
+   "scen": "BASE",
+   "guardianWakeSec": null,
+   "guardianKoSec": null,
+   "guardianHpPct": null
   },
   {
    "id": "5100490#0",
@@ -859,7 +1059,11 @@
     "gates": 0,
     "towers": 0,
     "keepPct": 0
-   }
+   },
+   "scen": "BASE",
+   "guardianWakeSec": null,
+   "guardianKoSec": null,
+   "guardianHpPct": null
   },
   {
    "id": "5090490#0",
@@ -874,7 +1078,11 @@
     "gates": 0,
     "towers": 0,
     "keepPct": 47
-   }
+   },
+   "scen": "BASE",
+   "guardianWakeSec": null,
+   "guardianKoSec": null,
+   "guardianHpPct": null
   },
   {
    "id": "5071178#0",
@@ -889,7 +1097,11 @@
     "gates": 0,
     "towers": 0,
     "keepPct": 0
-   }
+   },
+   "scen": "BASE",
+   "guardianWakeSec": null,
+   "guardianKoSec": null,
+   "guardianHpPct": null
   },
   {
    "id": "5000556#0",
@@ -904,7 +1116,469 @@
     "gates": 0,
     "towers": 0,
     "keepPct": 0
-   }
+   },
+   "scen": "BASE",
+   "guardianWakeSec": null,
+   "guardianKoSec": null,
+   "guardianHpPct": null
+  }
+ ],
+ "scenarios": [
+  {
+   "id": "scen-BASE-0",
+   "k": "CALIBRATION",
+   "threat": 50,
+   "breached": true,
+   "sec": 539,
+   "attackerDeaths": 64,
+   "defenderWon": false,
+   "left": {
+    "walls": 0,
+    "gates": 0,
+    "towers": 0,
+    "keepPct": 0
+   },
+   "scen": "BASE",
+   "guardianWakeSec": null,
+   "guardianKoSec": null,
+   "guardianHpPct": null
+  },
+  {
+   "id": "scen-BASE-1",
+   "k": "CALIBRATION",
+   "threat": 50,
+   "breached": true,
+   "sec": 539,
+   "attackerDeaths": 64,
+   "defenderWon": false,
+   "left": {
+    "walls": 0,
+    "gates": 0,
+    "towers": 0,
+    "keepPct": 0
+   },
+   "scen": "BASE",
+   "guardianWakeSec": null,
+   "guardianKoSec": null,
+   "guardianHpPct": null
+  },
+  {
+   "id": "scen-BASE-2",
+   "k": "CALIBRATION",
+   "threat": 50,
+   "breached": true,
+   "sec": 539,
+   "attackerDeaths": 64,
+   "defenderWon": false,
+   "left": {
+    "walls": 0,
+    "gates": 0,
+    "towers": 0,
+    "keepPct": 0
+   },
+   "scen": "BASE",
+   "guardianWakeSec": null,
+   "guardianKoSec": null,
+   "guardianHpPct": null
+  },
+  {
+   "id": "scen-BASE-3",
+   "k": "CALIBRATION",
+   "threat": 50,
+   "breached": true,
+   "sec": 539,
+   "attackerDeaths": 64,
+   "defenderWon": false,
+   "left": {
+    "walls": 0,
+    "gates": 0,
+    "towers": 0,
+    "keepPct": 0
+   },
+   "scen": "BASE",
+   "guardianWakeSec": null,
+   "guardianKoSec": null,
+   "guardianHpPct": null
+  },
+  {
+   "id": "scen-BASE-4",
+   "k": "CALIBRATION",
+   "threat": 50,
+   "breached": true,
+   "sec": 539,
+   "attackerDeaths": 64,
+   "defenderWon": false,
+   "left": {
+    "walls": 0,
+    "gates": 0,
+    "towers": 0,
+    "keepPct": 0
+   },
+   "scen": "BASE",
+   "guardianWakeSec": null,
+   "guardianKoSec": null,
+   "guardianHpPct": null
+  },
+  {
+   "id": "scen-BASE-5",
+   "k": "CALIBRATION",
+   "threat": 50,
+   "breached": true,
+   "sec": 539,
+   "attackerDeaths": 64,
+   "defenderWon": false,
+   "left": {
+    "walls": 0,
+    "gates": 0,
+    "towers": 0,
+    "keepPct": 0
+   },
+   "scen": "BASE",
+   "guardianWakeSec": null,
+   "guardianKoSec": null,
+   "guardianHpPct": null
+  },
+  {
+   "id": "scen-DEFENDED-0",
+   "k": "CALIBRATION",
+   "threat": 50,
+   "breached": true,
+   "sec": 575,
+   "attackerDeaths": 67,
+   "defenderWon": false,
+   "left": {
+    "walls": 0,
+    "gates": 0,
+    "towers": 0,
+    "keepPct": 0
+   },
+   "scen": "DEFENDED",
+   "guardianWakeSec": null,
+   "guardianKoSec": null,
+   "guardianHpPct": null
+  },
+  {
+   "id": "scen-DEFENDED-1",
+   "k": "CALIBRATION",
+   "threat": 50,
+   "breached": true,
+   "sec": 575,
+   "attackerDeaths": 67,
+   "defenderWon": false,
+   "left": {
+    "walls": 0,
+    "gates": 0,
+    "towers": 0,
+    "keepPct": 0
+   },
+   "scen": "DEFENDED",
+   "guardianWakeSec": null,
+   "guardianKoSec": null,
+   "guardianHpPct": null
+  },
+  {
+   "id": "scen-DEFENDED-2",
+   "k": "CALIBRATION",
+   "threat": 50,
+   "breached": true,
+   "sec": 575,
+   "attackerDeaths": 67,
+   "defenderWon": false,
+   "left": {
+    "walls": 0,
+    "gates": 0,
+    "towers": 0,
+    "keepPct": 0
+   },
+   "scen": "DEFENDED",
+   "guardianWakeSec": null,
+   "guardianKoSec": null,
+   "guardianHpPct": null
+  },
+  {
+   "id": "scen-DEFENDED-3",
+   "k": "CALIBRATION",
+   "threat": 50,
+   "breached": true,
+   "sec": 575,
+   "attackerDeaths": 67,
+   "defenderWon": false,
+   "left": {
+    "walls": 0,
+    "gates": 0,
+    "towers": 0,
+    "keepPct": 0
+   },
+   "scen": "DEFENDED",
+   "guardianWakeSec": null,
+   "guardianKoSec": null,
+   "guardianHpPct": null
+  },
+  {
+   "id": "scen-DEFENDED-4",
+   "k": "CALIBRATION",
+   "threat": 50,
+   "breached": true,
+   "sec": 575,
+   "attackerDeaths": 67,
+   "defenderWon": false,
+   "left": {
+    "walls": 0,
+    "gates": 0,
+    "towers": 0,
+    "keepPct": 0
+   },
+   "scen": "DEFENDED",
+   "guardianWakeSec": null,
+   "guardianKoSec": null,
+   "guardianHpPct": null
+  },
+  {
+   "id": "scen-DEFENDED-5",
+   "k": "CALIBRATION",
+   "threat": 50,
+   "breached": true,
+   "sec": 575,
+   "attackerDeaths": 67,
+   "defenderWon": false,
+   "left": {
+    "walls": 0,
+    "gates": 0,
+    "towers": 0,
+    "keepPct": 0
+   },
+   "scen": "DEFENDED",
+   "guardianWakeSec": null,
+   "guardianKoSec": null,
+   "guardianHpPct": null
+  },
+  {
+   "id": "scen-F2-0",
+   "k": "CALIBRATION",
+   "threat": 50,
+   "breached": true,
+   "sec": 882,
+   "attackerDeaths": 106,
+   "defenderWon": false,
+   "left": {
+    "walls": 0,
+    "gates": 0,
+    "towers": 0,
+    "keepPct": 0
+   },
+   "scen": "F2",
+   "guardianWakeSec": 385,
+   "guardianKoSec": 825,
+   "guardianHpPct": 0
+  },
+  {
+   "id": "scen-F2-1",
+   "k": "CALIBRATION",
+   "threat": 50,
+   "breached": true,
+   "sec": 882,
+   "attackerDeaths": 106,
+   "defenderWon": false,
+   "left": {
+    "walls": 0,
+    "gates": 0,
+    "towers": 0,
+    "keepPct": 0
+   },
+   "scen": "F2",
+   "guardianWakeSec": 385,
+   "guardianKoSec": 825,
+   "guardianHpPct": 0
+  },
+  {
+   "id": "scen-F2-2",
+   "k": "CALIBRATION",
+   "threat": 50,
+   "breached": true,
+   "sec": 882,
+   "attackerDeaths": 106,
+   "defenderWon": false,
+   "left": {
+    "walls": 0,
+    "gates": 0,
+    "towers": 0,
+    "keepPct": 0
+   },
+   "scen": "F2",
+   "guardianWakeSec": 385,
+   "guardianKoSec": 825,
+   "guardianHpPct": 0
+  },
+  {
+   "id": "scen-F2-3",
+   "k": "CALIBRATION",
+   "threat": 50,
+   "breached": true,
+   "sec": 882,
+   "attackerDeaths": 106,
+   "defenderWon": false,
+   "left": {
+    "walls": 0,
+    "gates": 0,
+    "towers": 0,
+    "keepPct": 0
+   },
+   "scen": "F2",
+   "guardianWakeSec": 385,
+   "guardianKoSec": 825,
+   "guardianHpPct": 0
+  },
+  {
+   "id": "scen-F2-4",
+   "k": "CALIBRATION",
+   "threat": 50,
+   "breached": true,
+   "sec": 882,
+   "attackerDeaths": 106,
+   "defenderWon": false,
+   "left": {
+    "walls": 0,
+    "gates": 0,
+    "towers": 0,
+    "keepPct": 0
+   },
+   "scen": "F2",
+   "guardianWakeSec": 385,
+   "guardianKoSec": 825,
+   "guardianHpPct": 0
+  },
+  {
+   "id": "scen-F2-5",
+   "k": "CALIBRATION",
+   "threat": 50,
+   "breached": true,
+   "sec": 882,
+   "attackerDeaths": 106,
+   "defenderWon": false,
+   "left": {
+    "walls": 0,
+    "gates": 0,
+    "towers": 0,
+    "keepPct": 0
+   },
+   "scen": "F2",
+   "guardianWakeSec": 385,
+   "guardianKoSec": 825,
+   "guardianHpPct": 0
+  },
+  {
+   "id": "scen-F3-0",
+   "k": "CALIBRATION",
+   "threat": 50,
+   "breached": true,
+   "sec": 978,
+   "attackerDeaths": 116,
+   "defenderWon": false,
+   "left": {
+    "walls": 0,
+    "gates": 0,
+    "towers": 0,
+    "keepPct": 0
+   },
+   "scen": "F3",
+   "guardianWakeSec": 385,
+   "guardianKoSec": 931,
+   "guardianHpPct": 0
+  },
+  {
+   "id": "scen-F3-1",
+   "k": "CALIBRATION",
+   "threat": 50,
+   "breached": true,
+   "sec": 978,
+   "attackerDeaths": 116,
+   "defenderWon": false,
+   "left": {
+    "walls": 0,
+    "gates": 0,
+    "towers": 0,
+    "keepPct": 0
+   },
+   "scen": "F3",
+   "guardianWakeSec": 385,
+   "guardianKoSec": 931,
+   "guardianHpPct": 0
+  },
+  {
+   "id": "scen-F3-2",
+   "k": "CALIBRATION",
+   "threat": 50,
+   "breached": true,
+   "sec": 978,
+   "attackerDeaths": 116,
+   "defenderWon": false,
+   "left": {
+    "walls": 0,
+    "gates": 0,
+    "towers": 0,
+    "keepPct": 0
+   },
+   "scen": "F3",
+   "guardianWakeSec": 385,
+   "guardianKoSec": 931,
+   "guardianHpPct": 0
+  },
+  {
+   "id": "scen-F3-3",
+   "k": "CALIBRATION",
+   "threat": 50,
+   "breached": true,
+   "sec": 978,
+   "attackerDeaths": 116,
+   "defenderWon": false,
+   "left": {
+    "walls": 0,
+    "gates": 0,
+    "towers": 0,
+    "keepPct": 0
+   },
+   "scen": "F3",
+   "guardianWakeSec": 385,
+   "guardianKoSec": 931,
+   "guardianHpPct": 0
+  },
+  {
+   "id": "scen-F3-4",
+   "k": "CALIBRATION",
+   "threat": 50,
+   "breached": true,
+   "sec": 978,
+   "attackerDeaths": 116,
+   "defenderWon": false,
+   "left": {
+    "walls": 0,
+    "gates": 0,
+    "towers": 0,
+    "keepPct": 0
+   },
+   "scen": "F3",
+   "guardianWakeSec": 385,
+   "guardianKoSec": 931,
+   "guardianHpPct": 0
+  },
+  {
+   "id": "scen-F3-5",
+   "k": "CALIBRATION",
+   "threat": 50,
+   "breached": true,
+   "sec": 978,
+   "attackerDeaths": 116,
+   "defenderWon": false,
+   "left": {
+    "walls": 0,
+    "gates": 0,
+    "towers": 0,
+    "keepPct": 0
+   },
+   "scen": "F3",
+   "guardianWakeSec": 385,
+   "guardianKoSec": 931,
+   "guardianHpPct": 0
   }
  ]
 }

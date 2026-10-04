@@ -20,8 +20,8 @@ Numbers live in `data/living-world/guardians.json`. This doc explains them; test
 | | **Form 2: Warden** | **Form 3: Ascendant** |
 |---|---|---|
 | Fantasy | A champion beast. Hard, but a good assault brings it down | An avatar. While its power holds, you **don't kill it, you outlast or unbind it** |
-| Battle HP | 6,000 × zone strength | Effectively immune: takes **5 %** damage while **Ascended** |
-| Ascended window (in battle) | n/a | **8 min** per battle, then it **tires**: Ascension ends, it drops to 40 % HP and is beatable like a Warden (S2: Dracobra "got bored") |
+| Battle HP | 3,000 × zone strength | 6,000 × zone strength, but takes only **5 %** damage while **Ascended** |
+| Ascended window (in battle) | n/a | **8 min** per battle, **counted from first contact** (it wakes when struck), then it **tires**: Ascension ends, it drops to 40 % HP and is beatable like a Warden (S2: Dracobra "got bored") |
 | Unbinding (counterplay) | n/a | Destroy **3 Ward Stones** around the keep (telegraphed, 1,200 HP each). Each one cuts the Ascended window by 2 min; all 3 end Ascension at once |
 | Offence | Bombards the nearest attacker cluster every 6 s (S2 Dracobra cadence, telegraphed 0.9 s) | Same bombard, **no stronger**. Form 3 is about *staying*, not killing |
 | Aura | Attackers within 20 u deal −20 % to structures | Attackers within 24 u deal −30 % to structures |
@@ -32,6 +32,22 @@ Numbers live in `data/living-world/guardians.json`. This doc explains them; test
 | Stationing fee (CT) | 20 CT × kind multiplier | 120 CT × kind multiplier |
 
 Kind multiplier: KEEP ×1, CASTLE ×1.5, PALACE ×2.
+
+### 2b. Two rules the headless sim forced (D6c, `reports/SIM-SAMPLE.md`)
+
+- **The keep is shielded while a Guardian stands.** Without this, attackers ignored the Guardian, took the keep and
+  won. The breach time was identical with or without a Guardian, so even Form 3 meant nothing. With it, Form 2 means
+  "kill it first" and Form 3 means "outlast or unbind it".
+- **The Ascension clock starts at first contact, not at battle start.** With a battle-start clock, Form 3 spent its
+  8 minutes while the attackers were still on the walls and fell *faster* than Form 2 (14:24 vs 16:10).
+- Measured on the calibrated castle with these rules (N = 6):
+  - the bare castle breaks at **8:59**;
+  - with a **Form 2 Warden** (3,000 HP) at **14:42**, about **+5¾ min**;
+  - with a **Form 3 Ascendant** (6,000 HP, 8 min from contact) at **16:18**, about **+7¼ min**.
+- Both are always beaten eventually: nothing is bought forever.
+- Next tuning:
+  - widen the Form 2 / Form 3 gap (Ward Stones and the aura aren't modelled yet);
+  - decide whether a Warden castle should still fall inside the 12-min floor.
 
 ## 3. Who pays what (the defend/attack trade)
 
