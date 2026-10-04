@@ -387,4 +387,10 @@ for (const sd of ["cf-world-1", "m2", "m3", "m4"]) {
 }
 ok(moBad.length === 0, "4 seeds × 400 agents × 28 days: nobody holds every region (one player ≤ 1–2, one alliance ≤ half), the whale stays < 5 % of all holdings, banners keep changing hands, wild land remains" + (moBad.length ? " — " + moBad.join("; ") : ""));
 
+// D34 the README covers every tool, data file and doc
+const RM = fs.readFileSync("docs/living-world/README.md", "utf8");
+const rmMiss = [...fs.readdirSync("tools/living-world").filter((f) => f !== "test_living_world.mjs"), ...fs.readdirSync("data/living-world").filter((f) => !f.endsWith(".sample.json") && f !== "allocate.samples.json").map((f) => f.replace(/\.json$/, ".json")), ...fs.readdirSync("docs/living-world").filter((f) => f.endsWith(".md") && f !== "README.md")]
+  .filter((f) => !RM.includes(f.replace(/\.(mjs|sh)$/, "")) && !RM.includes(f));
+ok(rmMiss.length === 0, "the living-world README mentions every tool, data file and doc" + (rmMiss.length ? " — missing: " + rmMiss.join(", ") : ""));
+
 console.log(fails ? `❌ living-world: ${fails} failed` : "✅ living-world: all passed"); process.exit(fails ? 1 : 0);

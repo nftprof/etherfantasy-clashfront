@@ -67,5 +67,5 @@ airships, landing spots, harbours + sea ships; seed all 20K maps; an experience,
 ## Wave 6 (added cycle 45)
 - [x] D31 — Guardian damage-share cap (doc 04 §4, guardians.json caps.guardianDamageShareMax 0.20): measure the Guardian's share of defender damage in the F2/F3 harness runs; clamp its bombard if it exceeds 20 %; test the invariant
 - [x] D32 — A month at scale: agent-based run (hundreds of players, all regions) over the real board/rewards/influence/stationings → banner churn, feed volume, holdings concentration (Gini); North Star check: nobody holds every region
-- [ ] D34 — Living-world README: one page mapping docs ↔ data ↔ tools ↔ tests ↔ reports, plus "how to re-seed / re-run / hand off"
+- [x] D34 — Living-world README: one page mapping docs ↔ data ↔ tools ↔ tests ↔ reports, plus "how to re-seed / re-run / hand off"
 - [ ] D35 — Performance budget: seedSingle latency per parcel, full 284 K re-seed time, matrix + test-suite wall time; record budgets and a test that fails on 2× regressions
