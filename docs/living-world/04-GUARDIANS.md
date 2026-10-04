@@ -100,3 +100,23 @@ The result: defending costs CT, attacking costs units, and beating a Guardian *p
 > ❓ OPEN: Which NFTs qualify as Form 2 / Form 3 is set by the pet lineage data (`mon_lineage.json`
 > forms). Form 3 art doesn't exist yet (EF MOBA uses Form 2 at 2.0× as a stand-in). Owner to confirm
 > whether stand-ins can be stationed.
+
+## 6. The stationing rules as code (D23)
+
+`tools/living-world/stationings.mjs` `canStation(ledger, request)` enforces §2 from `guardians.json`:
+
+| Refusal | Rule |
+|---|---|
+| `NOT_A_PERCH` | Only a real perch |
+| `TOO_LONG` | ≤ 24 h (Warden) or ≤ 6 h (Ascendant) |
+| `PERCH_TAKEN` | One Guardian per perch at a time |
+| `NFT_COOLDOWN` | 24 h or 72 h after the stationing ends |
+| `ASCENDANT_WEEKLY_LIMIT` | One Ascendant per castle per 7 days, across all its perches |
+
+- **A synthetic week over all 76 perches** (6 NFTs per region, placeholder owners): **115 accepted, 154 refused.**
+  Almost all refusals (138) are NFT cooldowns, so scarce NFTs, not perches, are the real limit. There were 8
+  perch-taken and 8 weekly-Ascendant refusals.
+- **Every accepted stationing auto-posts a `GUARDIAN_CHALLENGE`** on its region's event board (doc 05 §7). The banner
+  reads "⚠ the Ascendant of Fort Tidegate stands for 1 h 45 m: 8 min of power from first contact, 3 Ward Stones",
+  and the row shows the bounty escrow (90 CT for a CASTLE Ascendant).
+

@@ -291,4 +291,20 @@ const deckBad = [];
 for (const m of apIds) for (const k of ["HARBOUR", "AIRSHIP_DOCK"]) for (const sd of ["a", "b", "c"]) for (const e of AL.drawDeck({ id: `${m}:${k}`, lwKind: k }, sd, 3, m)) if (!ARV.resolveArrival(m, e.event, sd).eligible || (ARV.ARRIVAL_EVENTS[e.event] && !e.arrival)) deckBad.push(`${m}/${k}/${e.event}`);
 ok(deckBad.length === 0, "decks on baked maps never draw an event the map can't host, and arrival events carry their spawn" + (deckBad.length ? " — " + deckBad.slice(0, 3).join(" ") : ""));
 
+// D23 Guardian stationings (doc 04 rules) + GUARDIAN_CHALLENGE on the board
+const ST = await import("./stationings.mjs"), palace = Object.entries(ST.PERCHES).reduce((m, [id, p]) => ((m[p.castleId] ||= []).push(id), m), {});
+const twoPerch = Object.values(palace).find((ids) => ids.length >= 2), L0 = [];
+ok(ST.station(L0, { perchId: twoPerch[0], nftId: "n1", form: 2, owner: "a", start: 0, hours: 24 }).ok && ST.canStation(L0, { perchId: twoPerch[0], nftId: "n2", form: 2, owner: "b", start: 60, hours: 2 }).reason === "PERCH_TAKEN", "one Guardian per perch at a time");
+ok(ST.canStation(L0, { perchId: twoPerch[1], nftId: "n1", form: 2, owner: "a", start: 24 * 60 + 23 * 60, hours: 1 }).reason === "NFT_COOLDOWN" && ST.canStation(L0, { perchId: twoPerch[1], nftId: "n1", form: 2, owner: "a", start: 48 * 60, hours: 1 }).ok, "a Warden NFT waits its 24 h cooldown after the stationing ends");
+const L1 = []; ST.station(L1, { perchId: twoPerch[0], nftId: "a1", form: 3, owner: "a", start: 0, hours: 6 });
+ok(ST.canStation(L1, { perchId: twoPerch[1], nftId: "a2", form: 3, owner: "b", start: 3 * 1440, hours: 6 }).reason === "ASCENDANT_WEEKLY_LIMIT" && ST.canStation(L1, { perchId: twoPerch[1], nftId: "a2", form: 3, owner: "b", start: 7 * 1440 + 1, hours: 6 }).ok, "one Ascendant per castle per 7 days, across all its perches");
+ok(ST.canStation([], { perchId: twoPerch[0], nftId: "x", form: 3, owner: "a", start: 0, hours: 7 }).reason === "TOO_LONG" && ST.canStation([], { perchId: "nope", nftId: "x", form: 2, owner: "a", start: 0, hours: 1 }).reason === "NOT_A_PERCH", "stationings are capped at stationHours (F3 6 h) and only on real perches");
+const st1 = run("tools/living-world/stationings.mjs", "/tmp/lw_st_a.json"), st2 = run("tools/living-world/stationings.mjs", "/tmp/lw_st_b.json");
+ok(st1.equals(st2) && st1.equals(fs.readFileSync("data/living-world/stationings.sample.json")), "stationings sample is byte-identical and committed");
+const STS = JSON.parse(st1), stBad = [];
+for (const [z, r] of Object.entries(STS.zones)) for (const [i, s] of r.ledger.entries()) { const before = r.ledger.slice(0, i); const c = ST.canStation(before, s); if (!c.ok) stBad.push(`${z}:${s.perchId}:${c.reason}`); }
+ok(stBad.length === 0 && STS.accepted > 0 && STS.refused > 0, `the synthetic week only ever accepts lawful stationings (${STS.accepted} accepted, ${STS.refused} refused)`);
+const gcB = EB.boardAt("cf-world-1", "BUS", STS.busBusiestNoon.tick, {}), gcRows = [...gcB.live, ...gcB.upcoming].filter((e) => e.kind === "GUARDIAN_CHALLENGE");
+ok(gcRows.length === STS.busBusiestNoon.rows.length && gcRows.every((e) => e.state === "LIVE" && e.banner && e.potCT > 0), "every standing Guardian is a LIVE GUARDIAN_CHALLENGE on the board, with its banner and bounty");
+
 console.log(fails ? `❌ living-world: ${fails} failed` : "✅ living-world: all passed"); process.exit(fails ? 1 : 0);

@@ -2,7 +2,8 @@
 // D16 — the region event board (doc 05 §2.2: one list per region; filter by distance, start time, pot, type; pings near
 // your holdings). boardAt(seed, zone, tick, view) is a pure function over:
 //   · the world calendar (D17): it is seeded, so the board shows it as a forecast boardLeadMin (6 h) ahead, and
-//   · player-posted events (doc 05 §1): a deterministic synthetic set here (postsFor); live posts come from the server.
+//   · player-posted events (doc 05 §1): a deterministic synthetic set here (postsFor); live posts come from the server, and
+//   · GUARDIAN_CHALLENGE auto-posts for every standing Guardian (D23, stationings.mjs; synthetic week here).
 // It returns { live, upcoming } with each row's distance from the viewer, a ping flag (≤ pingU from a viewer holding),
 // and doc-05 notice compliance (a player post opens ≥ minNoticeSec after it was posted; airdrops 60 s).
 import fs from "node:fs";
@@ -10,6 +11,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { fnv1a, mulberry32 } from "./seed_singles.mjs";
 import { calendar } from "./world_calendar.mjs";
+import { stationingsFor, challengeRow } from "./stationings.mjs";
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const rd = (f) => JSON.parse(fs.readFileSync(path.join(ROOT, f), "utf8"));
 const PA = rd("data/living-world/poi-archetypes.json"), PE = rd("data/living-world/player-events.json");
@@ -45,6 +47,7 @@ const worldRows = (seed, zone, day) => calendar(seed, zone, day).map((e, i) => {
 
 export function boardAt(seed, zone, tick, view = {}) {
   const day = Math.floor(tick / 1440), rows = [];
+  for (const st of stationingsFor(seed, zone, day + 2).ledger) if (st.start <= tick && st.end > tick) rows.push(challengeRow(st, tick));
   for (const d of [day - 1, day, day + 1]) if (d >= 0) rows.push(...worldRows(seed, zone, d), ...postsFor(seed, zone, d));
   const me = view.at || null, holds = view.holdings || [];
   const dist = (id) => { const n = NODES[id]; return n && me ? Math.round(Math.hypot(n.at[0] - me[0], n.at[1] - me[1]) * 10) / 10 : null; };
