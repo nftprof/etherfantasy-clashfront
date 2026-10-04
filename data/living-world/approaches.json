@@ -1,0 +1,399 @@
+{
+ "schema": "cf-living-world/approaches@1",
+ "rule": "derived from artifact terrain.water / cells + LANDING_PAD / PIER anchors (see tool header)",
+ "maps": {
+  "1001178": {
+   "naval": [
+    {
+     "id": "naval_0",
+     "side": "ATTACKER",
+     "spawnClass": "NAVAL_APPROACH",
+     "x": -2,
+     "z": 124,
+     "deepCells": 10,
+     "unloadAt": "pier_0"
+    }
+   ],
+   "air": [
+    {
+     "id": "air_0",
+     "side": "ATTACKER",
+     "spawnClass": "AIR_APPROACH",
+     "x": 140,
+     "z": 110,
+     "landAt": "landing_pad_0"
+    }
+   ],
+   "piers": [
+    "pier_0"
+   ],
+   "pads": [
+    "landing_pad_0"
+   ]
+  },
+  "1020371": {
+   "naval": [],
+   "air": [
+    {
+     "id": "air_0",
+     "side": "ATTACKER",
+     "spawnClass": "AIR_APPROACH",
+     "x": -16,
+     "z": 104,
+     "landAt": "landing_pad_0"
+    },
+    {
+     "id": "air_1",
+     "side": "ATTACKER",
+     "spawnClass": "AIR_APPROACH",
+     "x": -22,
+     "z": 98,
+     "landAt": "landing_pad_1"
+    }
+   ],
+   "piers": [],
+   "pads": [
+    "landing_pad_0",
+    "landing_pad_1"
+   ]
+  },
+  "1031491": {
+   "naval": [],
+   "air": [
+    {
+     "id": "air_0",
+     "side": "ATTACKER",
+     "spawnClass": "AIR_APPROACH",
+     "x": 108,
+     "z": 22,
+     "landAt": "landing_pad_0"
+    },
+    {
+     "id": "air_1",
+     "side": "ATTACKER",
+     "spawnClass": "AIR_APPROACH",
+     "x": 150,
+     "z": -40,
+     "landAt": "landing_pad_1"
+    },
+    {
+     "id": "air_2",
+     "side": "ATTACKER",
+     "spawnClass": "AIR_APPROACH",
+     "x": -142,
+     "z": -32,
+     "landAt": "landing_pad_2"
+    },
+    {
+     "id": "air_3",
+     "side": "ATTACKER",
+     "spawnClass": "AIR_APPROACH",
+     "x": 86,
+     "z": 44,
+     "landAt": "landing_pad_3"
+    }
+   ],
+   "piers": [],
+   "pads": [
+    "landing_pad_0",
+    "landing_pad_1",
+    "landing_pad_2",
+    "landing_pad_3"
+   ]
+  },
+  "1040345": {
+   "naval": [],
+   "air": [
+    {
+     "id": "air_0",
+     "side": "ATTACKER",
+     "spawnClass": "AIR_APPROACH",
+     "x": -138,
+     "z": 30,
+     "landAt": "landing_pad_0"
+    }
+   ],
+   "piers": [],
+   "pads": [
+    "landing_pad_0"
+   ]
+  },
+  "1060463": {
+   "naval": [],
+   "air": [
+    {
+     "id": "air_0",
+     "side": "ATTACKER",
+     "spawnClass": "AIR_APPROACH",
+     "x": -36,
+     "z": -100,
+     "landAt": "landing_pad_0"
+    },
+    {
+     "id": "air_1",
+     "side": "ATTACKER",
+     "spawnClass": "AIR_APPROACH",
+     "x": -124,
+     "z": -6,
+     "landAt": "landing_pad_1"
+    },
+    {
+     "id": "air_2",
+     "side": "ATTACKER",
+     "spawnClass": "AIR_APPROACH",
+     "x": 90,
+     "z": -20,
+     "landAt": "landing_pad_2"
+    },
+    {
+     "id": "air_3",
+     "side": "ATTACKER",
+     "spawnClass": "AIR_APPROACH",
+     "x": -124,
+     "z": 22,
+     "landAt": "landing_pad_3"
+    }
+   ],
+   "piers": [],
+   "pads": [
+    "landing_pad_0",
+    "landing_pad_1",
+    "landing_pad_2",
+    "landing_pad_3"
+   ]
+  },
+  "1071728": {
+   "naval": [
+    {
+     "id": "naval_0",
+     "side": "ATTACKER",
+     "spawnClass": "NAVAL_APPROACH",
+     "x": 46,
+     "z": 0,
+     "deepCells": 4,
+     "unloadAt": "BEACH"
+    },
+    {
+     "id": "naval_1",
+     "side": "ATTACKER",
+     "spawnClass": "NAVAL_APPROACH",
+     "x": 34,
+     "z": 4,
+     "deepCells": 3,
+     "unloadAt": "BEACH"
+    }
+   ],
+   "air": [
+    {
+     "id": "air_0",
+     "side": "ATTACKER",
+     "spawnClass": "AIR_APPROACH",
+     "x": -10,
+     "z": -18,
+     "landAt": "landing_pad_0"
+    }
+   ],
+   "piers": [],
+   "pads": [
+    "landing_pad_0"
+   ]
+  },
+  "1071729": {
+   "naval": [],
+   "air": [
+    {
+     "id": "air_0",
+     "side": "ATTACKER",
+     "spawnClass": "AIR_APPROACH",
+     "x": -22,
+     "z": -62,
+     "landAt": "landing_pad_0"
+    }
+   ],
+   "piers": [],
+   "pads": [
+    "landing_pad_0"
+   ]
+  },
+  "1071732": {
+   "naval": [],
+   "air": [
+    {
+     "id": "air_0",
+     "side": "ATTACKER",
+     "spawnClass": "AIR_APPROACH",
+     "x": 2,
+     "z": -146,
+     "landAt": "landing_pad_0"
+    }
+   ],
+   "piers": [],
+   "pads": [
+    "landing_pad_0"
+   ]
+  },
+  "1071733": {
+   "naval": [],
+   "air": [
+    {
+     "id": "air_0",
+     "side": "ATTACKER",
+     "spawnClass": "AIR_APPROACH",
+     "x": -8,
+     "z": 30,
+     "landAt": "landing_pad_0"
+    }
+   ],
+   "piers": [],
+   "pads": [
+    "landing_pad_0"
+   ]
+  },
+  "1071738": {
+   "naval": [],
+   "air": [
+    {
+     "id": "air_0",
+     "side": "ATTACKER",
+     "spawnClass": "AIR_APPROACH",
+     "x": -90,
+     "z": -32,
+     "landAt": "landing_pad_0"
+    }
+   ],
+   "piers": [],
+   "pads": [
+    "landing_pad_0"
+   ]
+  },
+  "1101100": {
+   "naval": [
+    {
+     "id": "naval_0",
+     "side": "ATTACKER",
+     "spawnClass": "NAVAL_APPROACH",
+     "x": -98,
+     "z": -94,
+     "deepCells": 8,
+     "unloadAt": "pier_0"
+    },
+    {
+     "id": "naval_1",
+     "side": "ATTACKER",
+     "spawnClass": "NAVAL_APPROACH",
+     "x": 126,
+     "z": -42,
+     "deepCells": 12,
+     "unloadAt": "pier_1"
+    },
+    {
+     "id": "naval_2",
+     "side": "ATTACKER",
+     "spawnClass": "NAVAL_APPROACH",
+     "x": 62,
+     "z": 106,
+     "deepCells": 41,
+     "unloadAt": "pier_5"
+    }
+   ],
+   "air": [
+    {
+     "id": "air_0",
+     "side": "ATTACKER",
+     "spawnClass": "AIR_APPROACH",
+     "x": -114,
+     "z": -30,
+     "landAt": "landing_pad_0"
+    }
+   ],
+   "piers": [
+    "pier_0",
+    "pier_1",
+    "pier_2",
+    "pier_3",
+    "pier_4",
+    "pier_5"
+   ],
+   "pads": [
+    "landing_pad_0"
+   ]
+  },
+  "3050435": {
+   "naval": [],
+   "air": [
+    {
+     "id": "air_0",
+     "side": "ATTACKER",
+     "spawnClass": "AIR_APPROACH",
+     "x": -44,
+     "z": -92,
+     "landAt": "landing_pad_0"
+    }
+   ],
+   "piers": [],
+   "pads": [
+    "landing_pad_0"
+   ]
+  },
+  "3071605": {
+   "naval": [
+    {
+     "id": "naval_0",
+     "side": "ATTACKER",
+     "spawnClass": "NAVAL_APPROACH",
+     "x": 130,
+     "z": 0,
+     "deepCells": 5,
+     "unloadAt": "pier_0"
+    }
+   ],
+   "air": [
+    {
+     "id": "air_0",
+     "side": "ATTACKER",
+     "spawnClass": "AIR_APPROACH",
+     "x": -110,
+     "z": -96,
+     "landAt": "landing_pad_0"
+    },
+    {
+     "id": "air_1",
+     "side": "ATTACKER",
+     "spawnClass": "AIR_APPROACH",
+     "x": 70,
+     "z": -96,
+     "landAt": "landing_pad_1"
+    }
+   ],
+   "piers": [
+    "pier_0"
+   ],
+   "pads": [
+    "landing_pad_0",
+    "landing_pad_1"
+   ]
+  },
+  "3110087": {
+   "naval": [],
+   "air": [
+    {
+     "id": "air_0",
+     "side": "ATTACKER",
+     "spawnClass": "AIR_APPROACH",
+     "x": 116,
+     "z": -94,
+     "landAt": "landing_pad_0"
+    }
+   ],
+   "piers": [],
+   "pads": [
+    "landing_pad_0"
+   ]
+  }
+ },
+ "counts": {
+  "maps": 14,
+  "naval": 7,
+  "air": 22
+ }
+}

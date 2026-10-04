@@ -64,3 +64,17 @@ the telegraph. Fair surprise, never an unfair one.
 | `AIRSHIP_DOCK` (new) | Sky castles + surface airship ports | Mast + pad pair; the pad is a `LANDING_SPOT` |
 | `NAVAL_APPROACH` / `AIR_APPROACH` spawn classes (planned) | Edges touching DEEP water / sky edges | Arrival vector for fleets and airships |
 | `SEA_SHIP` prop (new, ambient) | Moored at piers; sailing along `sailRegions` | Visual only in step 1 |
+
+### 4b. Approaches derived now (D8b)
+
+`tools/living-world/derive_approaches.mjs` → `data/living-world/approaches.json`. It derives the planned
+`NAVAL_APPROACH` / `AIR_APPROACH` spawn zones **from the existing artifacts**, so no generator change is needed
+yet and no committed battle maps are rebaked.
+
+- **Naval:** each run of deep water touching the map frame becomes a fleet arrival point, unloading at the
+  nearest `PIER` or else beaching.
+- **Air:** each `LANDING_PAD` gets an entry point at the nearest frame point.
+- **Today:** 14 maps carry water or pad data → **7 naval + 22 air approaches**.
+- **Coverage grows with the map pipeline:** when the base bake gives more maps a `terrain.water` channel, re-run the
+  tool. Folding this into `generate.js` (as real `spawnZones`) is a map-team change for the next `GEN_VERSION`.
+

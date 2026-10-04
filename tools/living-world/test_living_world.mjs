@@ -123,4 +123,12 @@ const l3 = Object.fromEntries(JSON.parse(fs.readFileSync("/home/user/cf-overworl
 ok(smp.length > 0 && smp.every((r) => JSON.stringify(seedSingle(l3[r.id], zc)) === JSON.stringify({ id: r.id, ring: r.ring, node: r.node })), "seedSingle() on demand reproduces every sampled EDU parcel exactly (lazy = bulk)");
 ok(smp.filter((r) => r.ring === "CASTLE").every((r) => r.node === null), "no single carries a Node inside a castle ring");
 
+// D8b approaches (derived from the battle-map artifacts)
+const ap1 = run("tools/living-world/derive_approaches.mjs", "/tmp/lw_ap_a.json"), ap2 = run("tools/living-world/derive_approaches.mjs", "/tmp/lw_ap_b.json");
+ok(ap1.equals(ap2) && ap1.equals(fs.readFileSync("data/living-world/approaches.json")), "approach derivation is byte-identical and committed");
+const AP = JSON.parse(ap1), apMaps = Object.values(AP.maps);
+ok(apMaps.flatMap((m) => m.naval).every((n) => n.deepCells >= 3 && Math.abs(n.x) <= 161 && Math.abs(n.z) <= 161), "every NAVAL_APPROACH sits on ≥ 3 frame-touching deep cells inside the ±161 frame");
+ok(apMaps.every((m) => m.air.length === m.pads.length && m.air.every((a) => m.pads.includes(a.landAt))), "one AIR_APPROACH per LANDING_PAD, each landing on a real pad");
+ok(apMaps.flatMap((m) => m.naval).every((n) => n.unloadAt === "BEACH" || apMaps.some((m) => m.piers.includes(n.unloadAt))), "naval approaches unload at a real PIER (or beach)");
+
 console.log(fails ? `❌ living-world: ${fails} failed` : "✅ living-world: all passed"); process.exit(fails ? 1 : 0);
