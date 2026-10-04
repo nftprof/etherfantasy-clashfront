@@ -78,3 +78,25 @@ yet and no committed battle maps are rebaked.
 - **Coverage grows with the map pipeline:** when the base bake gives more maps a `terrain.water` channel, re-run the
   tool. Folding this into `generate.js` (as real `spawnZones`) is a map-team change for the next `GEN_VERSION`.
 
+### 4c. Ambient traffic (D9: step 1, ships you can SEE)
+
+`tools/living-world/ambient_traffic.mjs` exports `shipsAt(world.seed, tick)`, a pure function over
+`sea-air-lanes.json`. Any client or server computes the same fleet for the same tick, so nothing is stored or synced.
+
+- **Fleet:** 61 lanes carry **166 hulls**: one per 120 u of sea lane or 200 u of sky lane, at most 3 per lane.
+- **Movement:**
+  - each hull shuttles port ↔ port at 6 u/tick by sea (a 135 u crossing takes ≈ 23 min) or 10 u/tick by air;
+  - it moors at each end for 8 ticks (sea) or 5 ticks (air);
+  - its phase is seeded per hull, so the lanes never move in lock-step.
+- **Storm season (proposal, not yet canon):**
+  - the last 7 days of every 28-day cycle;
+  - on each storm-season day, every `stormCloses` sea lane closes with a seeded 35 % chance
+    (17–22 of the 55 sea lanes on a typical day);
+  - hulls on a closed lane wait `STORM_BOUND` at the nearer port;
+  - sky lanes never close.
+  - This is the "weekly beat" from doc 06 §3, and the same window applies the ×1.5 Kraken risk in §3 above.
+- **Positions:** same-zone lanes return world `x, z`. Cross-zone and sky lanes return progress `t` (0–1) plus
+  the two ports, and the renderer interpolates across the zone frames.
+- **Sample:** `data/living-world/ambient-traffic.sample.json` holds noon snapshots for day 0 and each storm-season
+  day.
+

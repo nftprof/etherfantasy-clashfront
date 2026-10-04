@@ -131,4 +131,17 @@ ok(apMaps.flatMap((m) => m.naval).every((n) => n.deepCells >= 3 && Math.abs(n.x)
 ok(apMaps.every((m) => m.air.length === m.pads.length && m.air.every((a) => m.pads.includes(a.landAt))), "one AIR_APPROACH per LANDING_PAD, each landing on a real pad");
 ok(apMaps.flatMap((m) => m.naval).every((n) => n.unloadAt === "BEACH" || apMaps.some((m) => m.piers.includes(n.unloadAt))), "naval approaches unload at a real PIER (or beach)");
 
+// D9 ambient traffic (pure function of world.seed + tick)
+const at1 = run("tools/living-world/ambient_traffic.mjs", "/tmp/lw_at_a.json"), at2 = run("tools/living-world/ambient_traffic.mjs", "/tmp/lw_at_b.json");
+ok(at1.equals(at2) && at1.equals(fs.readFileSync("data/living-world/ambient-traffic.sample.json")), "ambient-traffic sample is byte-identical and committed");
+ok(!/Math\.random|Date\.now|new Date/.test(fs.readFileSync("tools/living-world/ambient_traffic.mjs", "utf8")), "ambient traffic uses no clock and no Math.random");
+const AT = await import("./ambient_traffic.mjs"), atTicks = [0, 777, 1440 * 3 + 5, 1440 * 22 + 720, 1440 * 27 + 1];
+const atShips = atTicks.flatMap((t) => AT.shipsAt("cf-world-1", t));
+ok(JSON.stringify(AT.shipsAt("cf-world-1", 777)) === JSON.stringify(AT.shipsAt("cf-world-1", 777)) && JSON.stringify(AT.shipsAt("cf-world-1", 777)) !== JSON.stringify(AT.shipsAt("cf-world-2", 777)), "same (seed, tick) → same fleet; a different world seed → different traffic");
+ok(atShips.every((s) => s.t >= 0 && s.t <= 1 && (s.status !== "STORM_BOUND" || s.t === 0 || s.t === 1)), "hulls stay on their lane; storm-bound hulls wait at a port");
+ok(AT.LANES.lanes.every((l) => [0, 1440 * 10].every((t) => !AT.laneClosed("cf-world-1", t, l))), "no storm closures outside storm season");
+ok(AT.LANES.lanes.filter((l) => l.mode === "AIR").every((l) => Array.from({ length: 7 }, (_, k) => 1440 * (21 + k) + 720).every((t) => !AT.laneClosed("cf-world-1", t, l))), "sky lanes never storm-close (sea weather only)");
+const atS = JSON.parse(at1);
+ok(atS.snapshots.slice(1).every((s) => s.closedLanes > 0 && s.closedLanes < AT.LANES.counts.sea), "every storm-season day closes some sea lanes, never all");
+
 console.log(fails ? `❌ living-world: ${fails} failed` : "✅ living-world: all passed"); process.exit(fails ? 1 : 0);
