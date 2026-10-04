@@ -110,6 +110,7 @@
     "towers": 0,
     "keepPct": 0
    },
+   "wardsDownAt": [],
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
@@ -129,6 +130,7 @@
     "towers": 0,
     "keepPct": 0
    },
+   "wardsDownAt": [],
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
@@ -148,6 +150,7 @@
     "towers": 0,
     "keepPct": 0
    },
+   "wardsDownAt": [],
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
@@ -167,6 +170,7 @@
     "towers": 0,
     "keepPct": 0
    },
+   "wardsDownAt": [],
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
@@ -186,6 +190,7 @@
     "towers": 0,
     "keepPct": 0
    },
+   "wardsDownAt": [],
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
@@ -205,6 +210,7 @@
     "towers": 0,
     "keepPct": 0
    },
+   "wardsDownAt": [],
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
@@ -224,6 +230,7 @@
     "towers": 0,
     "keepPct": 0
    },
+   "wardsDownAt": [],
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
@@ -243,6 +250,7 @@
     "towers": 0,
     "keepPct": 0
    },
+   "wardsDownAt": [],
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
@@ -262,6 +270,7 @@
     "towers": 0,
     "keepPct": 0
    },
+   "wardsDownAt": [],
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
@@ -281,6 +290,7 @@
     "towers": 0,
     "keepPct": 0
    },
+   "wardsDownAt": [],
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
@@ -300,6 +310,7 @@
     "towers": 0,
     "keepPct": 0
    },
+   "wardsDownAt": [],
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
@@ -319,6 +330,7 @@
     "towers": 0,
     "keepPct": 0
    },
+   "wardsDownAt": [],
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
@@ -338,6 +350,7 @@
     "towers": 0,
     "keepPct": 0
    },
+   "wardsDownAt": [],
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
@@ -357,6 +370,7 @@
     "towers": 0,
     "keepPct": 0
    },
+   "wardsDownAt": [],
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
@@ -376,6 +390,7 @@
     "towers": 0,
     "keepPct": 0
    },
+   "wardsDownAt": [],
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
@@ -395,6 +410,7 @@
     "towers": 0,
     "keepPct": 0
    },
+   "wardsDownAt": [],
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
@@ -414,6 +430,7 @@
     "towers": 1,
     "keepPct": 100
    },
+   "wardsDownAt": [],
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
@@ -433,6 +450,7 @@
     "towers": 0,
     "keepPct": 0
    },
+   "wardsDownAt": [],
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
@@ -452,6 +470,7 @@
     "towers": 0,
     "keepPct": 0
    },
+   "wardsDownAt": [],
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
@@ -471,6 +490,7 @@
     "towers": 0,
     "keepPct": 0
    },
+   "wardsDownAt": [],
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
@@ -490,6 +510,7 @@
     "towers": 0,
     "keepPct": 0
    },
+   "wardsDownAt": [],
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
@@ -509,6 +530,7 @@
     "towers": 0,
     "keepPct": 0
    },
+   "wardsDownAt": [],
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
@@ -528,6 +550,7 @@
     "towers": 0,
     "keepPct": 0
    },
+   "wardsDownAt": [],
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
@@ -547,6 +570,7 @@
     "towers": 0,
     "keepPct": 0
    },
+   "wardsDownAt": [],
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
@@ -566,6 +590,7 @@
     "towers": 0,
     "keepPct": 0
    },
+   "wardsDownAt": [],
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
@@ -585,6 +610,7 @@
     "towers": 0,
     "keepPct": 0
    },
+   "wardsDownAt": [],
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
@@ -604,6 +630,7 @@
     "towers": 0,
     "keepPct": 0
    },
+   "wardsDownAt": [],
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
@@ -623,6 +650,7 @@
     "towers": 0,
     "keepPct": 0
    },
+   "wardsDownAt": [],
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
@@ -642,6 +670,7 @@
     "towers": 0,
     "keepPct": 0
    },
+   "wardsDownAt": [],
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
@@ -661,6 +690,7 @@
     "towers": 0,
     "keepPct": 0
    },
+   "wardsDownAt": [],
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
@@ -680,6 +710,7 @@
     "towers": 0,
     "keepPct": 0
    },
+   "wardsDownAt": [],
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
@@ -699,6 +730,7 @@
     "towers": 0,
     "keepPct": 0
    },
+   "wardsDownAt": [],
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
@@ -718,6 +750,7 @@
     "towers": 0,
     "keepPct": 0
    },
+   "wardsDownAt": [],
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
@@ -737,6 +770,7 @@
     "towers": 0,
     "keepPct": 0
    },
+   "wardsDownAt": [],
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
@@ -756,6 +790,7 @@
     "towers": 0,
     "keepPct": 0
    },
+   "wardsDownAt": [],
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
@@ -775,6 +810,7 @@
     "towers": 0,
     "keepPct": 0
    },
+   "wardsDownAt": [],
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
@@ -794,6 +830,7 @@
     "towers": 0,
     "keepPct": 0
    },
+   "wardsDownAt": [],
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
@@ -813,6 +850,7 @@
     "towers": 0,
     "keepPct": 0
    },
+   "wardsDownAt": [],
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
@@ -832,6 +870,7 @@
     "towers": 1,
     "keepPct": 100
    },
+   "wardsDownAt": [],
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
@@ -851,6 +890,7 @@
     "towers": 0,
     "keepPct": 0
    },
+   "wardsDownAt": [],
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
@@ -870,6 +910,7 @@
     "towers": 1,
     "keepPct": 100
    },
+   "wardsDownAt": [],
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
@@ -889,6 +930,7 @@
     "towers": 0,
     "keepPct": 0
    },
+   "wardsDownAt": [],
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
@@ -908,6 +950,7 @@
     "towers": 0,
     "keepPct": 0
    },
+   "wardsDownAt": [],
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
@@ -927,6 +970,7 @@
     "towers": 0,
     "keepPct": 0
    },
+   "wardsDownAt": [],
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
@@ -946,6 +990,7 @@
     "towers": 0,
     "keepPct": 0
    },
+   "wardsDownAt": [],
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
@@ -965,6 +1010,7 @@
     "towers": 0,
     "keepPct": 0
    },
+   "wardsDownAt": [],
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
@@ -984,6 +1030,7 @@
     "towers": 0,
     "keepPct": 0
    },
+   "wardsDownAt": [],
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
@@ -1003,6 +1050,7 @@
     "towers": 0,
     "keepPct": 0
    },
+   "wardsDownAt": [],
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
@@ -1022,6 +1070,7 @@
     "towers": 0,
     "keepPct": 0
    },
+   "wardsDownAt": [],
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
@@ -1041,6 +1090,7 @@
     "towers": 0,
     "keepPct": 0
    },
+   "wardsDownAt": [],
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
@@ -1060,6 +1110,7 @@
     "towers": 0,
     "keepPct": 0
    },
+   "wardsDownAt": [],
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
@@ -1079,6 +1130,7 @@
     "towers": 0,
     "keepPct": 47
    },
+   "wardsDownAt": [],
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
@@ -1098,6 +1150,7 @@
     "towers": 0,
     "keepPct": 0
    },
+   "wardsDownAt": [],
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
@@ -1117,6 +1170,7 @@
     "towers": 0,
     "keepPct": 0
    },
+   "wardsDownAt": [],
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
@@ -1138,6 +1192,7 @@
     "towers": 0,
     "keepPct": 0
    },
+   "wardsDownAt": [],
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
@@ -1157,6 +1212,7 @@
     "towers": 0,
     "keepPct": 0
    },
+   "wardsDownAt": [],
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
@@ -1176,6 +1232,7 @@
     "towers": 0,
     "keepPct": 0
    },
+   "wardsDownAt": [],
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
@@ -1195,6 +1252,7 @@
     "towers": 0,
     "keepPct": 0
    },
+   "wardsDownAt": [],
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
@@ -1214,6 +1272,7 @@
     "towers": 0,
     "keepPct": 0
    },
+   "wardsDownAt": [],
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
@@ -1233,6 +1292,7 @@
     "towers": 0,
     "keepPct": 0
    },
+   "wardsDownAt": [],
    "scen": "BASE",
    "guardianWakeSec": null,
    "guardianKoSec": null,
@@ -1252,6 +1312,7 @@
     "towers": 0,
     "keepPct": 0
    },
+   "wardsDownAt": [],
    "scen": "DEFENDED",
    "guardianWakeSec": null,
    "guardianKoSec": null,
@@ -1271,6 +1332,7 @@
     "towers": 0,
     "keepPct": 0
    },
+   "wardsDownAt": [],
    "scen": "DEFENDED",
    "guardianWakeSec": null,
    "guardianKoSec": null,
@@ -1290,6 +1352,7 @@
     "towers": 0,
     "keepPct": 0
    },
+   "wardsDownAt": [],
    "scen": "DEFENDED",
    "guardianWakeSec": null,
    "guardianKoSec": null,
@@ -1309,6 +1372,7 @@
     "towers": 0,
     "keepPct": 0
    },
+   "wardsDownAt": [],
    "scen": "DEFENDED",
    "guardianWakeSec": null,
    "guardianKoSec": null,
@@ -1328,6 +1392,7 @@
     "towers": 0,
     "keepPct": 0
    },
+   "wardsDownAt": [],
    "scen": "DEFENDED",
    "guardianWakeSec": null,
    "guardianKoSec": null,
@@ -1347,6 +1412,7 @@
     "towers": 0,
     "keepPct": 0
    },
+   "wardsDownAt": [],
    "scen": "DEFENDED",
    "guardianWakeSec": null,
    "guardianKoSec": null,
@@ -1357,8 +1423,8 @@
    "k": "CALIBRATION",
    "threat": 50,
    "breached": true,
-   "sec": 882,
-   "attackerDeaths": 106,
+   "sec": 911,
+   "attackerDeaths": 109,
    "defenderWon": false,
    "left": {
     "walls": 0,
@@ -1366,9 +1432,10 @@
     "towers": 0,
     "keepPct": 0
    },
+   "wardsDownAt": [],
    "scen": "F2",
-   "guardianWakeSec": 385,
-   "guardianKoSec": 825,
+   "guardianWakeSec": 414,
+   "guardianKoSec": 852,
    "guardianHpPct": 0
   },
   {
@@ -1376,8 +1443,8 @@
    "k": "CALIBRATION",
    "threat": 50,
    "breached": true,
-   "sec": 882,
-   "attackerDeaths": 106,
+   "sec": 911,
+   "attackerDeaths": 109,
    "defenderWon": false,
    "left": {
     "walls": 0,
@@ -1385,9 +1452,10 @@
     "towers": 0,
     "keepPct": 0
    },
+   "wardsDownAt": [],
    "scen": "F2",
-   "guardianWakeSec": 385,
-   "guardianKoSec": 825,
+   "guardianWakeSec": 414,
+   "guardianKoSec": 852,
    "guardianHpPct": 0
   },
   {
@@ -1395,8 +1463,8 @@
    "k": "CALIBRATION",
    "threat": 50,
    "breached": true,
-   "sec": 882,
-   "attackerDeaths": 106,
+   "sec": 911,
+   "attackerDeaths": 109,
    "defenderWon": false,
    "left": {
     "walls": 0,
@@ -1404,9 +1472,10 @@
     "towers": 0,
     "keepPct": 0
    },
+   "wardsDownAt": [],
    "scen": "F2",
-   "guardianWakeSec": 385,
-   "guardianKoSec": 825,
+   "guardianWakeSec": 414,
+   "guardianKoSec": 852,
    "guardianHpPct": 0
   },
   {
@@ -1414,8 +1483,8 @@
    "k": "CALIBRATION",
    "threat": 50,
    "breached": true,
-   "sec": 882,
-   "attackerDeaths": 106,
+   "sec": 911,
+   "attackerDeaths": 109,
    "defenderWon": false,
    "left": {
     "walls": 0,
@@ -1423,9 +1492,10 @@
     "towers": 0,
     "keepPct": 0
    },
+   "wardsDownAt": [],
    "scen": "F2",
-   "guardianWakeSec": 385,
-   "guardianKoSec": 825,
+   "guardianWakeSec": 414,
+   "guardianKoSec": 852,
    "guardianHpPct": 0
   },
   {
@@ -1433,8 +1503,8 @@
    "k": "CALIBRATION",
    "threat": 50,
    "breached": true,
-   "sec": 882,
-   "attackerDeaths": 106,
+   "sec": 911,
+   "attackerDeaths": 109,
    "defenderWon": false,
    "left": {
     "walls": 0,
@@ -1442,9 +1512,10 @@
     "towers": 0,
     "keepPct": 0
    },
+   "wardsDownAt": [],
    "scen": "F2",
-   "guardianWakeSec": 385,
-   "guardianKoSec": 825,
+   "guardianWakeSec": 414,
+   "guardianKoSec": 852,
    "guardianHpPct": 0
   },
   {
@@ -1452,8 +1523,8 @@
    "k": "CALIBRATION",
    "threat": 50,
    "breached": true,
-   "sec": 882,
-   "attackerDeaths": 106,
+   "sec": 911,
+   "attackerDeaths": 109,
    "defenderWon": false,
    "left": {
     "walls": 0,
@@ -1461,9 +1532,10 @@
     "towers": 0,
     "keepPct": 0
    },
+   "wardsDownAt": [],
    "scen": "F2",
-   "guardianWakeSec": 385,
-   "guardianKoSec": 825,
+   "guardianWakeSec": 414,
+   "guardianKoSec": 852,
    "guardianHpPct": 0
   },
   {
@@ -1471,8 +1543,8 @@
    "k": "CALIBRATION",
    "threat": 50,
    "breached": true,
-   "sec": 978,
-   "attackerDeaths": 116,
+   "sec": 1086,
+   "attackerDeaths": 117,
    "defenderWon": false,
    "left": {
     "walls": 0,
@@ -1480,9 +1552,12 @@
     "towers": 0,
     "keepPct": 0
    },
+   "wardsDownAt": [
+    620
+   ],
    "scen": "F3",
-   "guardianWakeSec": 385,
-   "guardianKoSec": 931,
+   "guardianWakeSec": 620,
+   "guardianKoSec": 1016,
    "guardianHpPct": 0
   },
   {
@@ -1490,8 +1565,8 @@
    "k": "CALIBRATION",
    "threat": 50,
    "breached": true,
-   "sec": 978,
-   "attackerDeaths": 116,
+   "sec": 1086,
+   "attackerDeaths": 117,
    "defenderWon": false,
    "left": {
     "walls": 0,
@@ -1499,9 +1574,12 @@
     "towers": 0,
     "keepPct": 0
    },
+   "wardsDownAt": [
+    620
+   ],
    "scen": "F3",
-   "guardianWakeSec": 385,
-   "guardianKoSec": 931,
+   "guardianWakeSec": 620,
+   "guardianKoSec": 1016,
    "guardianHpPct": 0
   },
   {
@@ -1509,8 +1587,8 @@
    "k": "CALIBRATION",
    "threat": 50,
    "breached": true,
-   "sec": 978,
-   "attackerDeaths": 116,
+   "sec": 1086,
+   "attackerDeaths": 117,
    "defenderWon": false,
    "left": {
     "walls": 0,
@@ -1518,9 +1596,12 @@
     "towers": 0,
     "keepPct": 0
    },
+   "wardsDownAt": [
+    620
+   ],
    "scen": "F3",
-   "guardianWakeSec": 385,
-   "guardianKoSec": 931,
+   "guardianWakeSec": 620,
+   "guardianKoSec": 1016,
    "guardianHpPct": 0
   },
   {
@@ -1528,8 +1609,8 @@
    "k": "CALIBRATION",
    "threat": 50,
    "breached": true,
-   "sec": 978,
-   "attackerDeaths": 116,
+   "sec": 1086,
+   "attackerDeaths": 117,
    "defenderWon": false,
    "left": {
     "walls": 0,
@@ -1537,9 +1618,12 @@
     "towers": 0,
     "keepPct": 0
    },
+   "wardsDownAt": [
+    620
+   ],
    "scen": "F3",
-   "guardianWakeSec": 385,
-   "guardianKoSec": 931,
+   "guardianWakeSec": 620,
+   "guardianKoSec": 1016,
    "guardianHpPct": 0
   },
   {
@@ -1547,8 +1631,8 @@
    "k": "CALIBRATION",
    "threat": 50,
    "breached": true,
-   "sec": 978,
-   "attackerDeaths": 116,
+   "sec": 1086,
+   "attackerDeaths": 117,
    "defenderWon": false,
    "left": {
     "walls": 0,
@@ -1556,9 +1640,12 @@
     "towers": 0,
     "keepPct": 0
    },
+   "wardsDownAt": [
+    620
+   ],
    "scen": "F3",
-   "guardianWakeSec": 385,
-   "guardianKoSec": 931,
+   "guardianWakeSec": 620,
+   "guardianKoSec": 1016,
    "guardianHpPct": 0
   },
   {
@@ -1566,8 +1653,8 @@
    "k": "CALIBRATION",
    "threat": 50,
    "breached": true,
-   "sec": 978,
-   "attackerDeaths": 116,
+   "sec": 1086,
+   "attackerDeaths": 117,
    "defenderWon": false,
    "left": {
     "walls": 0,
@@ -1575,9 +1662,12 @@
     "towers": 0,
     "keepPct": 0
    },
+   "wardsDownAt": [
+    620
+   ],
    "scen": "F3",
-   "guardianWakeSec": 385,
-   "guardianKoSec": 931,
+   "guardianWakeSec": 620,
+   "guardianKoSec": 1016,
    "guardianHpPct": 0
   }
  ]

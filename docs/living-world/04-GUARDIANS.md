@@ -40,14 +40,17 @@ Kind multiplier: KEEP ×1, CASTLE ×1.5, PALACE ×2.
   "kill it first" and Form 3 means "outlast or unbind it".
 - **The Ascension clock starts at first contact, not at battle start.** With a battle-start clock, Form 3 spent its
   8 minutes while the attackers were still on the walls and fell *faster* than Form 2 (14:24 vs 16:10).
-- Measured on the calibrated castle with these rules (N = 6):
+- Measured on the calibrated castle with these rules, **Ward Stones and the aura included** (D6d, N = 6):
   - the bare castle breaks at **8:59**;
-  - with a **Form 2 Warden** (3,000 HP) at **14:42**, about **+5¾ min**;
-  - with a **Form 3 Ascendant** (6,000 HP, 8 min from contact) at **16:18**, about **+7¼ min**.
+  - with a **Form 2 Warden** (3,000 HP, −20 % aura) at **15:11**, about **+6 min**;
+  - with a **Form 3 Ascendant** (6,000 HP, −30 % aura, 8 min from contact, 3 Ward Stones) at **18:06**, about
+    **+9 min**.
+  - Ward Stones sit on the approach, so attackers hit them first. The Ascendant woke at ~10:20 with one stone
+    already down (−2 min).
 - Both are always beaten eventually: nothing is bought forever.
-- Next tuning:
-  - widen the Form 2 / Form 3 gap (Ward Stones and the aura aren't modelled yet);
-  - decide whether a Warden castle should still fall inside the 12-min floor.
+- > ❓ OPEN: a Warden castle falls at ~15 min, past the doc-03 12-min floor for *bought defences*. Proposal:
+  > Guardians sit outside that floor (they're time-bound and pay their bounty), but never beyond ~20 min.
+  > Owner call.
 
 ## 3. Who pays what (the defend/attack trade)
 
