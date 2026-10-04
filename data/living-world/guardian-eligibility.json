@@ -1,0 +1,470 @@
+{
+ "schema": "cf-living-world/guardian-eligibility@1",
+ "sources": {
+  "lineage": "etherfantasy-browser-moba-game mon_lineage.json (upgradeChains)",
+  "roster": "cf-overworld data/PETS_ROSTER.csv"
+ },
+ "rules": "WARDEN = has Form 2; ASCENDANT = has Form 3; battle-ready only; flyers are a sky-perch fit, not a gate (only 2 flyer Wardens exist); Form 3 without art = stand-in (owner call §2)",
+ "counts": {
+  "species": 23,
+  "wardenOk": 23,
+  "ascendantOk": 9,
+  "ascendantWithArt": 0,
+  "ascendantStandIn": 9,
+  "skyWarden": 2,
+  "skyAscendant": 1,
+  "cosmeticExcluded": 0
+ },
+ "species": [
+  {
+   "name": "Baulder",
+   "rarity": "legendary",
+   "types": [
+    "Dragon"
+   ],
+   "battleReady": true,
+   "flyer": false,
+   "warden": {
+    "form": "Dredrock",
+    "art": true
+   },
+   "ascendant": {
+    "form": "Tekagon",
+    "art": false
+   },
+   "wardenOk": true,
+   "ascendantOk": true,
+   "ascendantStandIn": true,
+   "skyPerchOk": false
+  },
+  {
+   "name": "Berrball",
+   "rarity": "uncommon",
+   "types": [
+    "Mystic"
+   ],
+   "battleReady": true,
+   "flyer": true,
+   "warden": {
+    "form": "Silvyx",
+    "art": true
+   },
+   "ascendant": null,
+   "wardenOk": true,
+   "ascendantOk": false,
+   "ascendantStandIn": false,
+   "skyPerchOk": true
+  },
+  {
+   "name": "Blockid",
+   "rarity": "uncommon",
+   "types": [
+    "Combat"
+   ],
+   "battleReady": true,
+   "flyer": false,
+   "warden": {
+    "form": "Blockall",
+    "art": true
+   },
+   "ascendant": null,
+   "wardenOk": true,
+   "ascendantOk": false,
+   "ascendantStandIn": false,
+   "skyPerchOk": false
+  },
+  {
+   "name": "Cesstoid",
+   "rarity": "uncommon",
+   "types": [
+    "Neutral",
+    "Mystic"
+   ],
+   "battleReady": true,
+   "flyer": false,
+   "warden": {
+    "form": "Coronoid",
+    "art": true
+   },
+   "ascendant": null,
+   "wardenOk": true,
+   "ascendantOk": false,
+   "ascendantStandIn": false,
+   "skyPerchOk": false
+  },
+  {
+   "name": "Chulember",
+   "rarity": "uncommon",
+   "types": [
+    "Fire"
+   ],
+   "battleReady": true,
+   "flyer": false,
+   "warden": {
+    "form": "Fuenago",
+    "art": true
+   },
+   "ascendant": null,
+   "wardenOk": true,
+   "ascendantOk": false,
+   "ascendantStandIn": false,
+   "skyPerchOk": false
+  },
+  {
+   "name": "Dilloom",
+   "rarity": "uncommon",
+   "types": [
+    "Leaf",
+    "Toxin"
+   ],
+   "battleReady": true,
+   "flyer": false,
+   "warden": {
+    "form": "Dillow",
+    "art": true
+   },
+   "ascendant": {
+    "form": "Dillossus",
+    "art": false
+   },
+   "wardenOk": true,
+   "ascendantOk": true,
+   "ascendantStandIn": true,
+   "skyPerchOk": false
+  },
+  {
+   "name": "Dynamouse",
+   "rarity": "uncommon",
+   "types": [
+    "Fire"
+   ],
+   "battleReady": true,
+   "flyer": false,
+   "warden": {
+    "form": "Pyrode",
+    "art": true
+   },
+   "ascendant": {
+    "form": "Raxplode",
+    "art": false
+   },
+   "wardenOk": true,
+   "ascendantOk": true,
+   "ascendantStandIn": true,
+   "skyPerchOk": false
+  },
+  {
+   "name": "Eekape",
+   "rarity": "uncommon",
+   "types": [
+    "Phantom",
+    "Toxin"
+   ],
+   "battleReady": true,
+   "flyer": false,
+   "warden": {
+    "form": "Moldec",
+    "art": true
+   },
+   "ascendant": {
+    "form": "Dehedra",
+    "art": false
+   },
+   "wardenOk": true,
+   "ascendantOk": true,
+   "ascendantStandIn": true,
+   "skyPerchOk": false
+  },
+  {
+   "name": "Fuirrel",
+   "rarity": "common",
+   "types": [
+    "Neutral"
+   ],
+   "battleReady": true,
+   "flyer": false,
+   "warden": {
+    "form": "Squake",
+    "art": true
+   },
+   "ascendant": {
+    "form": "Qairrel",
+    "art": false
+   },
+   "wardenOk": true,
+   "ascendantOk": true,
+   "ascendantStandIn": true,
+   "skyPerchOk": false
+  },
+  {
+   "name": "Geckno",
+   "rarity": "uncommon",
+   "types": [
+    "Telepath"
+   ],
+   "battleReady": true,
+   "flyer": false,
+   "warden": {
+    "form": "Geckelic",
+    "art": true
+   },
+   "ascendant": null,
+   "wardenOk": true,
+   "ascendantOk": false,
+   "ascendantStandIn": false,
+   "skyPerchOk": false
+  },
+  {
+   "name": "Geenee",
+   "rarity": "uncommon",
+   "types": [
+    "Neutral"
+   ],
+   "battleReady": true,
+   "flyer": false,
+   "warden": {
+    "form": "Geerex",
+    "art": true
+   },
+   "ascendant": null,
+   "wardenOk": true,
+   "ascendantOk": false,
+   "ascendantStandIn": false,
+   "skyPerchOk": false
+  },
+  {
+   "name": "Lectrobe",
+   "rarity": "common",
+   "types": [
+    "Lightning",
+    "Toxin"
+   ],
+   "battleReady": true,
+   "flyer": false,
+   "warden": {
+    "form": "Wrektric",
+    "art": true
+   },
+   "ascendant": null,
+   "wardenOk": true,
+   "ascendantOk": false,
+   "ascendantStandIn": false,
+   "skyPerchOk": false
+  },
+  {
+   "name": "Lollipunch",
+   "rarity": "common",
+   "types": [
+    "Combat"
+   ],
+   "battleReady": true,
+   "flyer": false,
+   "warden": {
+    "form": "Mawverize",
+    "art": true
+   },
+   "ascendant": null,
+   "wardenOk": true,
+   "ascendantOk": false,
+   "ascendantStandIn": false,
+   "skyPerchOk": false
+  },
+  {
+   "name": "Mianari",
+   "rarity": "uncommon",
+   "types": [
+    "Lightning"
+   ],
+   "battleReady": true,
+   "flyer": false,
+   "warden": {
+    "form": "Surinari",
+    "art": true
+   },
+   "ascendant": null,
+   "wardenOk": true,
+   "ascendantOk": false,
+   "ascendantStandIn": false,
+   "skyPerchOk": false
+  },
+  {
+   "name": "Mintol",
+   "rarity": "common",
+   "types": [
+    "Leaf",
+    "Ice"
+   ],
+   "battleReady": true,
+   "flyer": false,
+   "warden": {
+    "form": "Florost",
+    "art": true
+   },
+   "ascendant": {
+    "form": "Aromerita",
+    "art": false
+   },
+   "wardenOk": true,
+   "ascendantOk": true,
+   "ascendantStandIn": true,
+   "skyPerchOk": false
+  },
+  {
+   "name": "Mirrie",
+   "rarity": "common",
+   "types": [
+    "Phantom",
+    "Iron"
+   ],
+   "battleReady": true,
+   "flyer": false,
+   "warden": {
+    "form": "Reflectre",
+    "art": true
+   },
+   "ascendant": null,
+   "wardenOk": true,
+   "ascendantOk": false,
+   "ascendantStandIn": false,
+   "skyPerchOk": false
+  },
+  {
+   "name": "Mizumi",
+   "rarity": "uncommon",
+   "types": [
+    "Neutral"
+   ],
+   "battleReady": true,
+   "flyer": false,
+   "warden": {
+    "form": "Watadzumi",
+    "art": true
+   },
+   "ascendant": null,
+   "wardenOk": true,
+   "ascendantOk": false,
+   "ascendantStandIn": false,
+   "skyPerchOk": false
+  },
+  {
+   "name": "Nageel",
+   "rarity": "uncommon",
+   "types": [
+    "Water"
+   ],
+   "battleReady": true,
+   "flyer": false,
+   "warden": {
+    "form": "Moranagi",
+    "art": true
+   },
+   "ascendant": null,
+   "wardenOk": true,
+   "ascendantOk": false,
+   "ascendantStandIn": false,
+   "skyPerchOk": false
+  },
+  {
+   "name": "Odwig",
+   "rarity": "common",
+   "types": [
+    "Leaf"
+   ],
+   "battleReady": true,
+   "flyer": false,
+   "warden": {
+    "form": "Occlusk",
+    "art": true
+   },
+   "ascendant": null,
+   "wardenOk": true,
+   "ascendantOk": false,
+   "ascendantStandIn": false,
+   "skyPerchOk": false
+  },
+  {
+   "name": "Omnom",
+   "rarity": "common",
+   "types": [
+    "Water",
+    "Mystic"
+   ],
+   "battleReady": true,
+   "flyer": true,
+   "warden": {
+    "form": "Yumee",
+    "art": true
+   },
+   "ascendant": {
+    "form": "Liscious",
+    "art": false
+   },
+   "wardenOk": true,
+   "ascendantOk": true,
+   "ascendantStandIn": true,
+   "skyPerchOk": true
+  },
+  {
+   "name": "Palytid",
+   "rarity": "uncommon",
+   "types": [
+    "Toxin"
+   ],
+   "battleReady": true,
+   "flyer": false,
+   "warden": {
+    "form": "Oculid",
+    "art": true
+   },
+   "ascendant": {
+    "form": "Aphroxid",
+    "art": false
+   },
+   "wardenOk": true,
+   "ascendantOk": true,
+   "ascendantStandIn": true,
+   "skyPerchOk": false
+  },
+  {
+   "name": "Pudde",
+   "rarity": "common",
+   "types": [
+    "Water",
+    "Telepath"
+   ],
+   "battleReady": true,
+   "flyer": false,
+   "warden": {
+    "form": "Aquary",
+    "art": true
+   },
+   "ascendant": {
+    "form": "Resurvy",
+    "art": false
+   },
+   "wardenOk": true,
+   "ascendantOk": true,
+   "ascendantStandIn": true,
+   "skyPerchOk": false
+  },
+  {
+   "name": "Tygloo",
+   "rarity": "common",
+   "types": [
+    "Ice",
+    "Neutral"
+   ],
+   "battleReady": true,
+   "flyer": false,
+   "warden": {
+    "form": "Mechloo",
+    "art": true
+   },
+   "ascendant": null,
+   "wardenOk": true,
+   "ascendantOk": false,
+   "ascendantStandIn": false,
+   "skyPerchOk": false
+  }
+ ]
+}

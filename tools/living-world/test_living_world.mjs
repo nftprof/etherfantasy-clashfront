@@ -481,4 +481,11 @@ const opNeed = [mmss(medS("BASE")), mmss(medS("DEFENDED")), mmss(medS("F2")), mm
 const opMiss = opNeed.filter((x) => !OP.includes(x));
 ok(opMiss.length === 0, "the owner one-pager quotes the current committed numbers" + (opMiss.length ? " — stale: " + opMiss.join(", ") : ""));
 
+// D52 Guardian eligibility (derived from the MOBA lineage + the canon roster)
+const ge1 = run("tools/living-world/guardian_eligibility.mjs", "/tmp/lw_ge_a.json");
+ok(ge1.equals(fs.readFileSync("data/living-world/guardian-eligibility.json")), "guardian eligibility is reproducible from the lineage + roster and committed");
+const GE = JSON.parse(ge1), LIN = JSON.parse(fs.readFileSync("/home/user/etherfantasy-browser-moba-game/mon_lineage.json", "utf8"));
+ok(GE.species.every((s) => { const c = LIN.upgradeChains.find((x) => x.name === s.name); return c && s.wardenOk === (!!c.forms[1] && s.battleReady) && s.ascendantOk === (!!c.forms[2] && s.battleReady) && s.ascendantStandIn === (!!c.forms[2] && !c.forms[2].glb); }), "every species' Warden / Ascendant eligibility and stand-in flag follow its lineage forms exactly");
+ok(GE.counts.ascendantOk > 0 && GE.counts.wardenOk >= GE.counts.ascendantOk && fs.readFileSync("docs/living-world/04-GUARDIANS.md", "utf8").includes(`**${GE.counts.wardenOk} species qualify**`) && fs.readFileSync("docs/living-world/04-GUARDIANS.md", "utf8").includes(`**${GE.counts.ascendantOk} species qualify**`), "doc 04 quotes the derived eligibility counts");
+
 console.log(fails ? `❌ living-world: ${fails} failed` : "✅ living-world: all passed"); process.exit(fails ? 1 : 0);

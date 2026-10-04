@@ -51,6 +51,7 @@ byte-compares the results, re-runs the sims and checks every invariant (≈ 1 mi
 | `season-beats.json` | Storm front, threat peak + lull, Ascension nights per region per 28 days | `season_beats.mjs` |
 | `liveops-watch.json` | The 13 post-launch metrics with baselines, bands, alerts, levers | (source; `liveops_baseline.mjs` checks it) |
 | `i18n/en.json` | Every player-facing string (feed headlines, journal lines, Guardian banners, places, directions), keyed; other languages copy and translate it | (source; `i18n.mjs` renders it) |
+| `guardian-eligibility.json` | Which pet species can be Wardens (Form 2) or Ascendants (Form 3), derived from the MOBA lineage + canon roster | `guardian_eligibility.mjs` |
 | `event-contract.json` | Engine semantics per event: shape, scope, required fields | (source; `validate_events.mjs` checks it) |
 | `perf-budget.json` | Hot-path baselines + 2× budgets (seedSingle 18 µs, board view 0.09 ms, traffic frame 0.1 ms; full singles seed 4.4 s, matrix 18 s) | `perf_budget.mjs --record` |
 | `*.sample.json`, `allocate.samples.json` | Worked samples: traffic, feed, calendar, board, stationings, mercenary market, allocate payloads | The matching tool |
@@ -68,7 +69,7 @@ byte-compares the results, re-runs the sims and checks every invariant (≈ 1 mi
 - **Game systems (pure functions):**
   - `rewards.mjs` (anti-farm, lulls);
   - `influence.mjs` (vessel + region ladders, banners);
-  - `stationings.mjs` (Guardian rules);
+  - `stationings.mjs` (Guardian rules), `guardian_eligibility.mjs` (which NFTs qualify);
   - `merc_market.mjs` (hire + MERC_BIDDING);
   - `arrivals.mjs` (naval/air arrivals);
   - `ambient_traffic.mjs` (`shipsAt(seed, tick)`);

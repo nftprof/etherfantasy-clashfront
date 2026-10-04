@@ -40,6 +40,8 @@ Source: doc 04 §5 ❓.
 | B | No. Form 3 stationing waits for the real art | `guardians.json` `forms.3.enabled = false` until the art ships. Only Wardens exist at launch |
 
 Either way, which NFTs qualify is read from the pet lineage forms (`mon_lineage.json`), not chosen by hand.
+**Measured (D52):** 23 species can be Wardens and 9 can be Ascendants, but **none of the 9 has Form 3 art**. Option B
+therefore means **no Ascendants at all** until the art ships.
 
 **Meanwhile:** the design and the sim assume Form 3 exists.
 

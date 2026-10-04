@@ -98,9 +98,17 @@ The result: defending costs CT, attacking costs units, and beating a Guardian *p
 4. **Fall**: the bounty paid is announced in the region feed ("🏆 Raiders of the Gullshoal broke the
    Warden of Tidegate — 0.75 CT bounty"). That story is a reason to come back tomorrow.
 
-> ❓ OPEN: Which NFTs qualify as Form 2 / Form 3 is set by the pet lineage data (`mon_lineage.json`
-> forms). Form 3 art doesn't exist yet (EF MOBA uses Form 2 at 2.0× as a stand-in). Owner to confirm
-> whether stand-ins can be stationed.
+**Which NFTs qualify (D52, `data/living-world/guardian-eligibility.json`).** Eligibility is derived, never
+hand-picked. It comes from the MOBA's `mon_lineage.json` upgrade chains (forms in order) joined with the canon
+`PETS_ROSTER.csv`:
+- **Warden** needs the species' Form 2, and the NFT must be battle-ready: **23 species qualify**.
+- **Ascendant** needs its Form 3: **9 species qualify** (Baulder → Tekagon, Dilloom → Dillossus, Dynamouse → Raxplode,
+  …). **None of the 9 has Form 3 art yet.**
+- **Sky perches:** only 2 Warden-eligible flyers exist (1 for the Ascendant). So flying is a *fit* for sky castles, not
+  a requirement; a flyers-only rule would leave the sky almost unguarded.
+
+> ❓ OPEN, now sharper: **without stand-ins there are zero Ascendants at launch.** The MOBA's stand-in (Form 2 at 2.0×)
+> is the only way to field one until Form 3 art ships. Owner call §2 (`OWNER-DECISIONS.md`).
 
 ## 6. The stationing rules as code (D23)
 
