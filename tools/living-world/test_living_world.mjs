@@ -64,4 +64,9 @@ ok(PE.rules.burnRakeMin >= 0.10 && PE.kinds.filter((k) => k.burnRake != null).ev
 ok(PE.rules.minNoticeSec >= 600 && PE.rules.relatedShare === "BURN" && PE.rules.relationLookbackDays >= 7, "15-min notice, related-account shares burned, ≥ 7-day relation lookback");
 ok(PE.kinds.filter((k) => k.anchor && !["CASTLE"].includes(k.anchor)).every((k) => kinds.includes(k.anchor)), "every event anchor is a real POI archetype");
 
+// doc 02 ↔ data consistency
+const doc2 = fs.readFileSync("docs/living-world/02-SEEDING-20K-MAPS.md", "utf8");
+ok(doc2.includes("≤ 6 Nodes per parcel") && PA.limits.perParcelMax === 6, "doc 02 density cap matches poi-archetypes limits.perParcelMax");
+ok(doc2.includes("67 castles") && CP.byCastle.length === 67, "doc 02 story tier (67 castles) matches the seeded castle set");
+
 console.log(fails ? `❌ living-world: ${fails} failed` : "✅ living-world: all passed"); process.exit(fails ? 1 : 0);

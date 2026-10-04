@@ -8,7 +8,7 @@ airships, landing spots, harbours + sea ships; seed all 20K maps; an experience,
 ## Design (doc-first)
 - [x] 00 — Season 2 lessons → living-world rules (`00-S2-LESSONS.md`)
 - [x] 01 — POI catalogue: types, terrain/biome affinity, garrison template, event deck, rewards
-- [ ] 02 — Seeding 20K maps: archetype templates × procedural params; determinism; validation by headless sim samples
+- [x] 02 — Seeding 20K maps: archetype templates × procedural params; determinism; validation by headless sim samples
 - [x] 03 — Defend / attack economy: defender upgrades + mercenary guards (pay), attacker pays in units lost; CT/Points flows via LedgerEntry; caps and decay
 - [x] 04 — NFT Guardians: Form 2 / Form 3 rules, durations, cooldowns, costs, counterplay, HERO_IMPACT_MAX / North Star check
 - [x] 05 — Player-created events (bounties, sieges, guardian challenges) and how other players find and join them
