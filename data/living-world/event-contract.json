@@ -1,0 +1,39 @@
+{
+ "schema": "cf-living-world/event-contract@1",
+ "note": "D44: what an engine must implement for each event in poi-archetypes events{}. Every event has one SHAPE (its engine semantics) and one SCOPE: BATTLE (inside a battle map; may appear in an allocate eventDeck), OVERWORLD (world calendar / board only; never sent to a battle), or BOTH. Common fields on every event: src, teleSec (≥ 0, the telegraph), durSec (≥ 0), who.",
+ "who": ["NEAREST", "HOLDER_ENEMY", "ANY", "CHALLENGER", "ENGAGED", "ATTACKER", "ALL", "SHIPS", "BIDDERS", "ESCORT_VS_RAIDER"],
+ "shapes": {
+  "SPAWN_WAVE": { "means": "a hostile band spawns and fights `who` for durSec", "required": { "units": "range" }, "optional": { "arrivesAt": "string", "shootDownHp": "number", "chieftainEvery": "number" } },
+  "BOSS": { "means": "a champion appears or an existing unit empowers", "required": {}, "anyOf": ["hpMul", "dmgMul", "hpBase"], "optional": { "hpMul": "number", "dmgMul": "number", "hpBase": "number", "routFleeSec": "number" } },
+  "HAZARD": { "means": "an area effect that hits both sides", "required": {}, "anyOf": ["moveMul", "rangedMul", "airMul", "dmg", "dps", "slowSec"], "optional": { "moveMul": "number", "rangedMul": "number", "airMul": "number", "dmg": "number", "dps": "number", "maxPatches": "number", "slowSec": "number" } },
+  "CONTEST": { "means": "first side to hold the spot uncontested for holdToClaimSec wins it", "required": { "holdToClaimSec": "number" }, "optional": {} },
+  "ESCAPE": { "means": "a runner tries to leave the map; catch it before escapeU", "required": { "escapeU": "number" }, "optional": {} },
+  "ESCORT": { "means": "a caravan crosses the map: escorts protect, raiders take the cargo", "required": {}, "optional": {} },
+  "TRIGGER": { "means": "a state change with no units of its own (a banner, a wake)", "required": {}, "optional": {} },
+  "MARKET": { "means": "an overworld transaction (auction), never in a battle", "required": {}, "optional": {} }
+ },
+ "events": {
+  "NAVAL_LANDING": { "shape": "SPAWN_WAVE", "scope": "BATTLE" },
+  "AIRSHIP_DROP": { "shape": "SPAWN_WAVE", "scope": "BATTLE" },
+  "BARBARIAN_RAID": { "shape": "SPAWN_WAVE", "scope": "BOTH" },
+  "SKY_RAIDERS": { "shape": "SPAWN_WAVE", "scope": "BOTH" },
+  "MUSTER": { "shape": "SPAWN_WAVE", "scope": "BATTLE" },
+  "BANDIT_TOLL": { "shape": "SPAWN_WAVE", "scope": "BATTLE" },
+  "PACK_HUNT": { "shape": "SPAWN_WAVE", "scope": "BATTLE" },
+  "CHIEFTAIN_DUEL": { "shape": "BOSS", "scope": "BATTLE" },
+  "WARLORD": { "shape": "BOSS", "scope": "BOTH" },
+  "ALPHA_ENRAGE": { "shape": "BOSS", "scope": "BATTLE" },
+  "STORM": { "shape": "HAZARD", "scope": "BOTH" },
+  "GALE": { "shape": "HAZARD", "scope": "BATTLE" },
+  "STAMPEDE": { "shape": "HAZARD", "scope": "BATTLE" },
+  "ERUPTION": { "shape": "HAZARD", "scope": "BOTH" },
+  "CAVE_IN": { "shape": "HAZARD", "scope": "BATTLE" },
+  "KRAKEN_SIGHTING": { "shape": "HAZARD", "scope": "BOTH", "note": "in battle: a telegraphed strike on SHIPS; on the overworld: a lane sighting" },
+  "SUPPLY_AIRDROP": { "shape": "CONTEST", "scope": "BOTH" },
+  "SALVAGE_RACE": { "shape": "CONTEST", "scope": "BATTLE" },
+  "SMUGGLER_RUN": { "shape": "ESCAPE", "scope": "BATTLE" },
+  "CARAVAN_RUN": { "shape": "ESCORT", "scope": "BOTH" },
+  "GUARDIAN_WAKE": { "shape": "TRIGGER", "scope": "BATTLE" },
+  "MERC_BIDDING": { "shape": "MARKET", "scope": "OVERWORLD" }
+ }
+}

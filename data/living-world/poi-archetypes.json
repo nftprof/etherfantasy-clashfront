@@ -567,10 +567,11 @@
    "escapeU": 112
   },
   "KRAKEN_SIGHTING": {
-   "src": "lore: the Kraken drags ships to Blackmere (WORLD-STATE-AND-TRAVEL)",
+   "src": "lore: the Kraken drags ships to Blackmere (WORLD-STATE-AND-TRAVEL); D44: in battle a telegraphed 300-dmg strike on each SHIP in the water (⚙ until ship HP is tuned)",
    "teleSec": 12,
    "durSec": 60,
-   "who": "SHIPS"
+   "who": "SHIPS",
+   "dmg": 300
   },
   "SKY_RAIDERS": {
    "src": "new \u2014 harpy riders strike the deck",

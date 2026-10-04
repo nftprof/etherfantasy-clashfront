@@ -61,3 +61,36 @@ opportunistically and CF can send it harmlessly.
 > ✅ **Scale finding (D36), fixed by D40:** canon `balance.json` was **re-scaled ÷100** (a line soldier is 0.02 CT; WALL module
 > 0.4 CT). The living-world CT prices were (defences 6–15 CT, Guardian fees 20 / 120 CT, the D15 sheet's 2 CT/soldier from
 > the stale doc-03 table) are on the **old scale**. D40 re-scaled them: defences anchored on the canon module costs, everything else ÷20, every ratio and split kept.
+
+## 4. The event contract (D44)
+
+`data/living-world/event-contract.json` tells an engine what each of the 22 events means. Every event has one **shape**:
+
+| Shape | Meaning | Required fields |
+|---|---|---|
+| `SPAWN_WAVE` | A hostile band | `units` |
+| `BOSS` | A champion appears, or a unit is empowered | one of `hpMul` / `dmgMul` / `hpBase` |
+| `HAZARD` | An area effect on both sides | one of `moveMul` / `rangedMul` / `airMul` / `dmg` / `dps` / `slowSec` |
+| `CONTEST` | Hold a spot to win it | `holdToClaimSec` |
+| `ESCAPE` | Catch a runner | `escapeU` |
+| `ESCORT` | A caravan crosses the map | none |
+| `TRIGGER` | A state change, e.g. a Guardian wakes | none |
+| `MARKET` | An overworld transaction | none |
+
+Every event also has a **scope**: `BATTLE`, `OVERWORLD` or `BOTH`.
+
+`tools/living-world/validate_events.mjs` checks every event against its shape:
+- common fields;
+- `who` in the enum;
+- required and typed fields;
+- no unknown fields, so typos are caught.
+
+It also checks scope: battle decks and allocate payloads never carry an `OVERWORLD` event, and the world calendar never
+carries a `BATTLE` one.
+
+**Two fixes it forced:**
+- `MERC_BIDDING` (an auction) could have been drawn into a mercenary post's battle deck. Decks now skip `OVERWORLD`
+  events.
+- `KRAKEN_SIGHTING` had no effect parameter, so an engine wouldn't have known what it does. It's now a telegraphed
+  300-damage strike on each ship (⚙).
+

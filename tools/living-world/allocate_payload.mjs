@@ -15,6 +15,7 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..")
 const rd = (f) => JSON.parse(fs.readFileSync(path.join(ROOT, f), "utf8"));
 const PA = rd("data/living-world/poi-archetypes.json"), GU = rd("data/living-world/guardians.json"), DF = rd("data/living-world/defences.json"), TM = rd("data/living-world/terrain-mods.json");
 const ARCH = Object.fromEntries(PA.archetypes.map((a) => [a.lwKind, a]));
+const EC = rd("data/living-world/event-contract.json");   // D44: OVERWORLD-scope events (MERC_BIDDING) never go to a battle
 export const FRAME = { sizeM: 322, half: 161, spawn: 131.6, core: 114.8 };   // canon ±161 arena (brief §1, CLAUDE.md 4g)
 export const UNIT_CLASS = ["INFANTRY", "ARCHER", "CAVALRY", "SPEAR", "SIEGE", "MARINE", "SHIP"];
 // a held POI's garrison → DEFENDER units: 10 soldiers per garrison unit (⚙ SOLDIERS_PER_SIM_UNIT, D15); SHIP counts hulls (canon)
@@ -28,7 +29,7 @@ function seedHex(battleId, worldSeed) { const a = fnv1a(`${worldSeed}|${battleId
 // times inside the 12-min floor; telegraph seconds from events{} so the engine can banner them.
 export function drawDeck(poi, battleSeed, draws = 3, mapId = null) {
   // D25: events the map can't host (NAVAL_LANDING without deep water, AIRSHIP_DROP without a pad) leave the deck
-  const left = ARCH[poi.lwKind].deck.filter(([e]) => !mapId || resolveArrival(mapId, e, battleSeed).eligible); if (!left.length) return [];
+  const left = ARCH[poi.lwKind].deck.filter(([e]) => EC.events[e].scope !== "OVERWORLD" && (!mapId || resolveArrival(mapId, e, battleSeed).eligible)); if (!left.length) return [];
   const r = mulberry32(fnv1a(`${battleSeed}|deck|${poi.id}`)), out = [], n = Math.min(draws, left.length);
   for (let i = 0; i < n; i++) {   // without replacement: each event at most once per battle (a Guardian wakes once)
     const tot = left.reduce((m, [, w]) => m + w, 0); let x = r() * tot, k = 0;

@@ -451,4 +451,10 @@ const DP = JSON.parse(fs.readFileSync("docs/living-world/handoff/DECISION-PACKS.
 ok(Object.keys(ADm.PACKS).every((k) => DP[k] && DP[k].applied && DP[k].testsOk), "every decision pack applied cleanly to a scratch copy and the full suite passed there");
 ok(Object.keys(ADm.PACKS).every((k) => OD.includes("`" + k + "`")), "every decision pack is listed on the owner-decision sheet");
 
+// D44 event engine contract
+const VE = await import("./validate_events.mjs"), veErr = VE.validate();
+ok(veErr.length === 0, "every event satisfies its engine contract (shape, scope, required/typed fields, no unknown fields; decks, calendar and allocate payloads respect scope)" + (veErr.length ? " — " + veErr.slice(0, 3).join("; ") : ""));
+const EC44 = JSON.parse(fs.readFileSync("data/living-world/event-contract.json", "utf8"));
+ok(["a", "b", "c", "d"].every((sd) => AL.drawDeck({ id: "x", lwKind: "MERCENARY_POST" }, sd, 3).every((e) => EC44.events[e.event].scope !== "OVERWORLD")), "overworld-only events (MERC_BIDDING) are never drawn into a battle deck");
+
 console.log(fails ? `❌ living-world: ${fails} failed` : "✅ living-world: all passed"); process.exit(fails ? 1 : 0);
