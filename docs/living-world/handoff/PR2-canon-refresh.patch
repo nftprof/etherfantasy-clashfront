@@ -1,0 +1,107 @@
+diff --git a/docs/04-battle-system.md b/docs/04-battle-system.md
+index 565397f..a4e23b3 100644
+--- a/docs/04-battle-system.md
++++ b/docs/04-battle-system.md
+@@ -276,6 +276,11 @@ Terrain modifier defaults (❓ OPEN: final table is Sim-owned, `balance.json`):
+ | MOUNTAIN | 0.90 | 1.15 |
+ | COAST/OCEAN (NAVAL) | 1.00 | 1.05 near friendly HARBOR |
+ 
++*(PROPOSED 2026-10-04, living world)* Layers with no `HexTerrain` row map onto existing ones, with no new enum values:
++SKY isles → **HILLS** (attackers land or climb onto raised platforms) and UNDER caverns → **MOUNTAIN** (tunnels and
++chokepoints). Validated by the headless sim: 57 / 57 POI cells stay in their fight-length bands when seeded threat is
++shifted down on those layers (`etherfantasy-clashfront` `docs/living-world/02-SEEDING-20K-MAPS.md` §7f).
++
+ ### Worked example (a) — stronger army, cut supply, **loses**
+ 
+ Attacker: army 12,000, **supply line cut** (raided supply train), morale 60. Defender: army 9,000,
+diff --git a/docs/08-data-models.md b/docs/08-data-models.md
+index 321dee5..2258330 100644
+--- a/docs/08-data-models.md
++++ b/docs/08-data-models.md
+@@ -90,6 +90,13 @@ export type LwPoiKind = 'HARBOUR' | 'AIRSHIP_DOCK' | 'LANDING_SPOT' | 'AIRDROP_Z
+ export type GuardianForm = 'WARDEN' | 'ASCENDANT';             // NFT pet Form 2 / Form 3
+ export type DefenceUpgrade = 'WALLS' | 'GATES' | 'TRAPS' | 'GRANARY' | 'PET_DEN' | 'WATCHTOWER' | 'MERCENARIES';
+ export type PlayerEventKind = 'GUARDIAN_CHALLENGE' | 'SIEGE_ME' | 'BOUNTY' | 'CARAVAN_RUN' | 'SPONSORED_AIRDROP' | 'WARBAND_CALL';
++export type GuardianOutcome = 'KO' | 'UNBOUND' | 'OUTLASTED' | 'HELD';        // settles the Guardian bounty escrow
++export type RegionRight = 'POST_EVENTS' | 'HARBOUR_RIGHTS' | 'PAD_RIGHTS' | 'FORM3_STATION';   // by LwNodes held in a region
++export type SeasonBeat = 'STORM_FRONT' | 'THREAT_PEAK' | 'LULL' | 'ASCENSION_NIGHT';          // per region, 28-day cycle
++export type FeedItemKind = 'GUARDIAN_KO' | 'GUARDIAN_UNBOUND' | 'GUARDIAN_OUTLASTED' | 'GUARDIAN_HELD' | 'SIEGE_ME_BROKEN'
++  | 'SIEGE_ME_HELD' | 'BOUNTY_CLAIMED' | 'CARAVAN_RAIDED' | 'CARAVAN_ESCORTED' | 'AIRDROP_TAKEN' | 'BARBARIAN_CAMP_CLEARED'
++  | 'POI_CLEARED' | 'POI_HELD' | 'KRAKEN' | 'STORM_CLOSES';
++export type ArrivalVia = 'NAVAL_APPROACH' | 'AIR_APPROACH' | 'EDGE';         // where NAVAL_LANDING / AIRSHIP_DROP enter a battle map
+ ```
+ 
+ ---
+@@ -425,7 +432,20 @@ interface PlayerEvent {                   // a player-posted fight others join
+   contractId?: string;                    // BOUNTY_HERO / ESCORT_SUPPLY when applicable
+   state: 'POSTED' | 'LIVE' | 'RESOLVED' | 'CANCELLED';
+ }
++
++interface FeedItem {                      // a region-feed story (curated: newsworthy only, top 8 per region per day)
++  id: string; tick: number; zone: string; kind: FeedItemKind;
++  battleId?: string;                      // written by the battle result callback
++  facts: Record<string, string | number>; // names, place, pot (CT) — rendered by a template chosen from fnv1a(id)
++}
++
++interface JournalEntry {                  // a player's private story line (every fight, won or lost)
++  id: string; playerId: string; tick: number;
++  text: string; fresh: boolean;           // repeat clears are logged, with their anti-farm multiplier, but not fresh
++}
+ ```
++Two progression ladders, kept apart: vessel classes follow **parcels controlled** (`NAVAL-AIRSHIP` brief §7);
++`RegionRight`s follow **LwNodes held in that region** (3 / 5 / 10 / 25, capped at a regional majority).
+ 
+ ---
+ 
+@@ -441,8 +461,9 @@ interface PlayerEvent {                   // a player-posted fight others join
+ 8. **Army position is a valid hex**; a MARCHING army always has a `path` and `arrivalTick`.
+ 9. **A SIEGE BattleInstance** references exactly one `defenderTerritoryId`.
+ 10. **Only the winning governor/player may choose `PostVictoryAction`**, and only once per resolved battle.
+-11. *(proposed)* **Nothing is bought forever.** Every `GuardianStation` and `DefenceStake` has an `endTick`. A Guardian's
+-    damage share is ≤ `HERO_IMPACT_MAX`. Defence rating is capped (×1.6) so a defended target can always be breached.
++11. *(proposed)* **Nothing is bought forever, and nothing pays a coalition to fight itself.** Every `GuardianStation` and `DefenceStake` has an `endTick`. A Guardian's
++    damage share is ≤ `HERO_IMPACT_MAX` (enforced as a running damage budget). Defence rating is capped (×1.6) so a
++    defended target can always be breached. Every pot burns ≥ 10 % (Decision 17).
+ 12. *(proposed)* **Player-event payouts skip related accounts** (poster, allies, or a shared `LedgerEntry` in the last
+     14 days). Their share is burned.
+ 
+diff --git a/docs/README.md b/docs/README.md
+index 1554246..60f8539 100644
+--- a/docs/README.md
++++ b/docs/README.md
+@@ -145,6 +145,11 @@ Single source of truth for names. All docs, code, and schemas MUST use these exa
+     refunded if it holds), 30 % burned, 30 % to the pool.
+   - *(proposed)* **Player event** — a fight a player posts for others (siege-me, bounty, caravan run, sponsored
+     airdrop, warband call, guardian challenge), escrowed before it goes live.
++  - *(proposed)* **Region rights** — what holding LwNodes in a region unlocks there (post events, harbour rights, pad
++    rights, station a Form 3), separate from the vessel classes that follow parcels controlled.
++  - *(proposed)* **Season beat** — a region's 28-day rhythm: storm front, one threat peak and its lull, a weekly
++    Ascension night. Big beats never land on adjacent days.
++  - *(proposed)* **Feed item / journal entry** — the curated region story vs. a player's private line for every fight.
+ - **Route** — a traversable connection (road / sea lane) with a movement-cost weight.
+ 
+ ### Environment (see `12-environment-and-weather.md`)
+diff --git a/docs/briefs/ALLOCATE-CALLBACK-SCHEMA.md b/docs/briefs/ALLOCATE-CALLBACK-SCHEMA.md
+index f770da3..32e3a95 100644
+--- a/docs/briefs/ALLOCATE-CALLBACK-SCHEMA.md
++++ b/docs/briefs/ALLOCATE-CALLBACK-SCHEMA.md
+@@ -135,6 +135,19 @@ base. 409 if the match already ended.
+ Receiver behavior (overworld): `200` = ack. Same battleId re-delivered ⇒ `200` without
+ reprocessing (idempotent). Sender retries with exponential backoff (2s→4s→…→cap 5 min) until ack.
+ 
++## 2b. Living-world extension `livingWorld@1` (PROPOSED 2026-10-04, additive)
++
++Both directions carry one optional block. An engine that ignores it still runs a correct canon battle.
++
++- **Allocate** `livingWorld` (POI battles only): `{ v: 1, poiId, lwKind, threat, ground, hexTerrain,
++  terrainMods: { attacker, defender }, garrisonStats, mapId, eventDeck: [{ event, atSec | trigger: 'FIRST_CONTACT',
++  teleSec, arrival?: { via: ArrivalVia, spawn, target } }], defence: { rating, ratingMax }, floorSec,
++  guardian?: { form, nftId, owner, battleHp, shieldsCore, damageShareMax: 0.2, bombard, aura, ascended?, stationEndsTick } }`.
++- **Result** `livingWorld`: `{ guardianOutcome?: GuardianOutcome }`. It settles the Guardian bounty escrow: KO /
++  UNBOUND → all to the attackers, OUTLASTED → half, HELD → untouched.
++- Builder and resolver: `etherfantasy-clashfront` `tools/living-world/allocate_payload.mjs` and `resolve_result.mjs`
++  (idempotent on `battleId`; a conflicting `matchId` is a 409; officer impact is clamped to `HERO_IMPACT_MAX`).
++
+ ## 3. HMAC provisioning & signing
+ 
+ - Header: `X-CF-Signature: v1=<hex(hmacSHA256(secret, rawRequestBody))>` + `X-CF-Key-Id: cf-hmac-1`.

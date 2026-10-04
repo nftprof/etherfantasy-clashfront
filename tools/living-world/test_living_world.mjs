@@ -437,4 +437,13 @@ ok(LW.metrics.every((m) => m.what && m.live && m.lever && Array.isArray(m.health
 const d09 = fs.readFileSync("docs/living-world/09-LIVE-OPS.md", "utf8");
 ok(LW.metrics.length === (d09.match(/^\| [A-Z][^|]+\| [^|]+\| [^|]+\| [^|]+\| [^|]+\|$/gm) || []).length - 1, "doc 09's table has one row per watched metric");
 
+// D42 PR #2 canon refresh: the proposed enums match the living-world code exactly
+const P2 = fs.readFileSync("docs/living-world/handoff/PR2-canon-refresh.patch", "utf8");
+const enumOf = (name) => { const m = P2.match(new RegExp("export type " + name + " = ([\\s\\S]*?);")); return m ? [...m[1].matchAll(/'([A-Z0-9_]+)'/g)].map((x) => x[1]).sort() : []; };
+const FTk = JSON.parse(fs.readFileSync("data/living-world/feed-templates.json", "utf8")).kinds;
+ok(JSON.stringify(enumOf("FeedItemKind")) === JSON.stringify(Object.keys(FTk).sort()), "canon FeedItemKind = the feed-templates kinds");
+ok(JSON.stringify(enumOf("RegionRight")) === JSON.stringify(EX.influenceUnlocks.map((u) => u.unlock).sort()), "canon RegionRight = the influence ladder unlocks");
+ok(JSON.stringify(enumOf("SeasonBeat")) === JSON.stringify(["ASCENSION_NIGHT", "LULL", "STORM_FRONT", "THREAT_PEAK"]) && enumOf("SeasonBeat").every((b) => fs.readFileSync("tools/living-world/season_beats.mjs", "utf8").includes(`"${b}"`)), "canon SeasonBeat = the beats the calendar emits");
+ok(JSON.stringify(enumOf("GuardianOutcome")) === JSON.stringify(["HELD", "KO", "OUTLASTED", "UNBOUND"]) && JSON.stringify(enumOf("ArrivalVia")) === JSON.stringify(["AIR_APPROACH", "EDGE", "NAVAL_APPROACH"]), "canon GuardianOutcome / ArrivalVia = what the resolver and arrivals code use");
+
 console.log(fails ? `❌ living-world: ${fails} failed` : "✅ living-world: all passed"); process.exit(fails ? 1 : 0);
