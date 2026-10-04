@@ -184,6 +184,17 @@
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   },
   {
+   "id": "HUB-CF-CASTLE-YONGAN-CARAVAN_WAYPOINT-1",
+   "kind": "CARAVAN_WAYPOINT",
+   "at": [
+    301.42,
+    66.18
+   ],
+   "name": "Caravan Waypoint",
+   "note": "Living-world Node of HUB-CASTLE-YONGAN (threat 20)",
+   "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+  },
+  {
    "id": "HUB-CF-CASTLE-YONGAN-LANDING_SPOT-1",
    "kind": "LANDING_SPOT",
    "at": [

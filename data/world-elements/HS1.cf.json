@@ -30,6 +30,17 @@
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   },
   {
+   "id": "HS1-CF-AEROPOLIS-CARAVAN_WAYPOINT-1",
+   "kind": "CARAVAN_WAYPOINT",
+   "at": [
+    104.91,
+    54.14
+   ],
+   "name": "Caravan Waypoint",
+   "note": "Living-world Node of HS1-AEROPOLIS (threat 60)",
+   "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+  },
+  {
    "id": "HS1-CF-AEROPOLIS-LANDING_SPOT-1",
    "kind": "LANDING_SPOT",
    "at": [
@@ -81,6 +92,17 @@
     9.38
    ],
    "name": "Airship Dock",
+   "note": "Living-world Node of HS1-CASTLE-GARDENHOLD (threat 40)",
+   "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+  },
+  {
+   "id": "HS1-CF-CASTLE-GARDENHOLD-CARAVAN_WAYPOINT-1",
+   "kind": "CARAVAN_WAYPOINT",
+   "at": [
+    31.75,
+    12.07
+   ],
+   "name": "Caravan Waypoint",
    "note": "Living-world Node of HS1-CASTLE-GARDENHOLD (threat 40)",
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   },
@@ -140,6 +162,17 @@
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   },
   {
+   "id": "HS1-CF-CASTLE-HEAVENSGATE-CARAVAN_WAYPOINT-1",
+   "kind": "CARAVAN_WAYPOINT",
+   "at": [
+    62.17,
+    113.94
+   ],
+   "name": "Caravan Waypoint",
+   "note": "Living-world Node of HS1-CASTLE-HEAVENSGATE (threat 40)",
+   "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+  },
+  {
    "id": "HS1-CF-CASTLE-HEAVENSGATE-LANDING_SPOT-1",
    "kind": "LANDING_SPOT",
    "at": [
@@ -191,6 +224,17 @@
     108.59
    ],
    "name": "Airship Dock",
+   "note": "Living-world Node of HS1-CASTLE-TERRACEHALL (threat 40)",
+   "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+  },
+  {
+   "id": "HS1-CF-CASTLE-TERRACEHALL-CARAVAN_WAYPOINT-1",
+   "kind": "CARAVAN_WAYPOINT",
+   "at": [
+    81.48,
+    107.53
+   ],
+   "name": "Caravan Waypoint",
    "note": "Living-world Node of HS1-CASTLE-TERRACEHALL (threat 40)",
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   },
@@ -261,6 +305,17 @@
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   },
   {
+   "id": "HS1-CF-KEEP-EMBERWATCH-CARAVAN_WAYPOINT-1",
+   "kind": "CARAVAN_WAYPOINT",
+   "at": [
+    92.84,
+    79.41
+   ],
+   "name": "Caravan Waypoint",
+   "note": "Living-world Node of HS1-KEEP-EMBERWATCH (threat 20)",
+   "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+  },
+  {
    "id": "HS1-CF-KEEP-EMBERWATCH-LANDING_SPOT-1",
    "kind": "LANDING_SPOT",
    "at": [
@@ -305,6 +360,17 @@
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   },
   {
+   "id": "HS1-CF-KEEP-EMPYREAWATCH-CARAVAN_WAYPOINT-1",
+   "kind": "CARAVAN_WAYPOINT",
+   "at": [
+    45.05,
+    19.9
+   ],
+   "name": "Caravan Waypoint",
+   "note": "Living-world Node of HS1-KEEP-EMPYREAWATCH (threat 20)",
+   "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+  },
+  {
    "id": "HS1-CF-KEEP-EMPYREAWATCH-LANDING_SPOT-1",
    "kind": "LANDING_SPOT",
    "at": [
@@ -345,6 +411,17 @@
     56.32
    ],
    "name": "Airship Dock",
+   "note": "Living-world Node of HS1-KEEP-STAIRWATCH (threat 20)",
+   "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+  },
+  {
+   "id": "HS1-CF-KEEP-STAIRWATCH-CARAVAN_WAYPOINT-1",
+   "kind": "CARAVAN_WAYPOINT",
+   "at": [
+    46.2,
+    57.79
+   ],
+   "name": "Caravan Waypoint",
    "note": "Living-world Node of HS1-KEEP-STAIRWATCH (threat 20)",
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   },

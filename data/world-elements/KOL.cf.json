@@ -19,6 +19,17 @@
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   },
   {
+   "id": "KOL-CF-CASTLE-FORTUNA-CARAVAN_WAYPOINT-1",
+   "kind": "CARAVAN_WAYPOINT",
+   "at": [
+    50.65,
+    20.68
+   ],
+   "name": "Caravan Waypoint",
+   "note": "Living-world Node of KOL-CASTLE-FORTUNA (threat 20)",
+   "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
+  },
+  {
    "id": "KOL-CF-CASTLE-FORTUNA-HARBOUR-1",
    "kind": "HARBOUR",
    "at": [
