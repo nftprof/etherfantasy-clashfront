@@ -49,7 +49,7 @@ function seedCastle(c) {
   const add = (lwKind, at, extra = {}) => {
     const A = ARCH[lwKind]; const n = pois.filter((p) => p.lwKind === lwKind).length + 1;
     pois.push({ id: `${c.id}:${lwKind}:${n}`, lwKind, at, ...extra,
-      garrison: A.garrison.map(([unit, count]) => ({ unit, count })), threat: bandThreat(PA, "CASTLE", strength, 0.5, tier),
+      garrison: A.garrison.map(([unit, count]) => ({ unit, count })), threat: bandThreat(PA, "CASTLE", strength, 0.5, tier, null, lwKind),
       deckSeed: fnv1a(`${c.id}|${lwKind}|${n}`) });
   };
   // 1) the always-list

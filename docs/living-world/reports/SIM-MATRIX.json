@@ -21,10 +21,9 @@
   }
  },
  "tally": {
-  "ok": 56,
-  "SOFT": 1
+  "ok": 57
  },
- "populationOutOfBand": 16,
+ "populationOutOfBand": 0,
  "population": 6270,
  "rows": [
   {
@@ -139,10 +138,10 @@
    "n": 4,
    "band": "RAID",
    "breachRate": 100,
-   "medBreachSec": 338,
-   "medThreat": 41,
-   "medAttackerDeaths": 43,
-   "verdict": "SOFT"
+   "medBreachSec": 381,
+   "medThreat": 46,
+   "medAttackerDeaths": 47,
+   "verdict": "ok"
   },
   {
    "k": "BARBARIAN_CAMP",
@@ -152,9 +151,9 @@
    "n": 4,
    "band": "RAID",
    "breachRate": 100,
-   "medBreachSec": 411,
-   "medThreat": 53,
-   "medAttackerDeaths": 50,
+   "medBreachSec": 516,
+   "medThreat": 58,
+   "medAttackerDeaths": 64,
    "verdict": "ok"
   },
   {

@@ -164,3 +164,13 @@ The terrain makes up the difference.
 - The test floor is now ≥ 95 % in band.
 - Re-seeded estates and singles: same placements, only the threat on ridge and water parcels changed.
 
+### 7e. The last cell (D24): 57 / 57
+
+In-castle barbarian camps fell at 5:38, under the 6-min RAID floor. `threatBands.kindShift` `CASTLE:BARBARIAN_CAMP`
++5 is a per-archetype nudge inside one ring, still in the template and never per map. With it the surface camps hold
+to **6:21**. The UNDER camps, which the band clamp now caps at 60, come down from 11:17 at a 50 % breach rate to
+**8:36** at 100 %.
+
+**The matrix now reads 57 / 57 cells in band with canon terrain on, and 0 of 6,270 seeded POIs out of band.** A test
+holds every cell there.
+

@@ -339,10 +339,10 @@
   {
    "id": "EDU-KEEP-LANTERNHILL:BARBARIAN_CAMP:1",
    "k": "BARBARIAN_CAMP",
-   "threat": 41,
+   "threat": 46,
    "breached": true,
-   "sec": 338,
-   "attackerDeaths": 43,
+   "sec": 381,
+   "attackerDeaths": 47,
    "defenderWon": false,
    "left": {
     "walls": 0,

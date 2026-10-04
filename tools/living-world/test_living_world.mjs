@@ -276,4 +276,8 @@ ok(FWG.stories === 0 && FWE.stories >= 7, "grinding the same POI makes no storie
 ok(FWE.idleSessions === 0 && FWG.idleSessions === 0, "no session in the first week had nothing to do");
 ok(FWE.unlockDay.POST_EVENTS != null && FWE.unlockDay.POST_EVENTS <= 1, "a new player can post events by day 2 (doc 06 §5 ladder step 1)");
 
+// D24 the last out-of-band cell
+ok(MX.rows.every((r) => r.verdict === "ok"), `every archetype × ring × ground cell lands its band with canon terrain on (${MX.rows.length} cells)`);
+ok(Object.keys(PA.threatBands.kindShift).every((k) => { const [ring, kind] = k.split(":"); return PA.threatBands[ring] && kinds.includes(kind); }), "kindShift keys name a real ring and archetype");
+
 console.log(fails ? `❌ living-world: ${fails} failed` : "✅ living-world: all passed"); process.exit(fails ? 1 : 0);
