@@ -58,6 +58,6 @@ opportunistically and CF can send it harmlessly.
 - **One proposed callback addition:** `livingWorld: { guardianOutcome: KO | UNBOUND | OUTLASTED | HELD }`. It's
   additive, like the request block in §2.
 
-> ⚠ **Scale finding (D36):** canon `balance.json` was **re-scaled ÷100** (a line soldier is 0.02 CT; WALL module
-> 0.4 CT). The living-world CT prices (defences 6–15 CT, Guardian fees 20 / 120 CT, the D15 sheet's 2 CT/soldier from
-> the stale doc-03 table) are on the **old scale**. Re-scaling them is the next backlog item (D40).
+> ✅ **Scale finding (D36), fixed by D40:** canon `balance.json` was **re-scaled ÷100** (a line soldier is 0.02 CT; WALL module
+> 0.4 CT). The living-world CT prices were (defences 6–15 CT, Guardian fees 20 / 120 CT, the D15 sheet's 2 CT/soldier from
+> the stale doc-03 table) are on the **old scale**. D40 re-scaled them: defences anchored on the canon module costs, everything else ÷20, every ratio and split kept.

@@ -29,7 +29,7 @@ Numbers live in `data/living-world/guardians.json`. This doc explains them; test
 | Stationing (world time) | Up to **24 h** per stationing | Up to **6 h** per stationing |
 | Cooldown per NFT | 24 h after the stationing ends or it's KO'd | **72 h** |
 | Per-castle limit | 1 Warden per perch | **1 Ascendant per castle per `SEASON_DAYS` (7 d)** |
-| Stationing fee (CT) | 20 CT × kind multiplier | 120 CT × kind multiplier |
+| Stationing fee (CT, canon scale since D40) | 1 CT × kind multiplier | 6 CT × kind multiplier |
 
 Kind multiplier: KEEP ×1, CASTLE ×1.5, PALACE ×2.
 
@@ -96,7 +96,7 @@ The result: defending costs CT, attacking costs units, and beating a Guardian *p
 3. **Tiring**: at 0:00 a banner reads "the Ascendant tires" and its HP drops to 40 %. Now it can fall.
    The fight changes shape mid-battle.
 4. **Fall**: the bounty paid is announced in the region feed ("🏆 Raiders of the Gullshoal broke the
-   Warden of Tidegate — 15 CT bounty"). That story is a reason to come back tomorrow.
+   Warden of Tidegate — 0.75 CT bounty"). That story is a reason to come back tomorrow.
 
 > ❓ OPEN: Which NFTs qualify as Form 2 / Form 3 is set by the pet lineage data (`mon_lineage.json`
 > forms). Form 3 art doesn't exist yet (EF MOBA uses Form 2 at 2.0× as a stand-in). Owner to confirm
@@ -119,5 +119,5 @@ The result: defending costs CT, attacking costs units, and beating a Guardian *p
   perch-taken and 8 weekly-Ascendant refusals.
 - **Every accepted stationing auto-posts a `GUARDIAN_CHALLENGE`** on its region's event board (doc 05 §7). The banner
   reads "⚠ the Ascendant of Fort Tidegate stands for 1 h 45 m: 8 min of power from first contact, 3 Ward Stones",
-  and the row shows the bounty escrow (90 CT for a CASTLE Ascendant).
+  and the row shows the bounty escrow (4.5 CT for a CASTLE Ascendant).
 

@@ -2,7 +2,7 @@
 // D19 — CT flow simulation (doc 02 circular economy, Decision 17 burn, doc 03/04/05 escrow rules). A seeded 7-day run
 // of N agents over a double-entry ledger (every move is one LedgerEntry {from, to, amt, reason}; integer centi-CT, so no
 // float drift). Flows: defence stakes (40 % spoils escrow / 30 % burn / 30 % pool), Guardian fees (50 / 30 / 20),
-// BOUNTY pots, SPONSORED_AIRDROP crates and SIEGE_ME dares (10 % rake burned at settlement), payouts by contribution with
+// BOUNTY pots (0.25–4 CT), SPONSORED_AIRDROP crates (1–7.5 CT) and SIEGE_ME dares (0.25–3 CT; all canon balance.json v2 scale, D40) (10 % rake burned at settlement), payouts by contribution with
 // the 5 % minimum share, and the relation check (a related claimant's share is BURNED). Invariants checked at the end:
 //   no mint (Σ balances constant) · no negative balance · every escrow settled to 0 · burn ≥ 10 % of all spend
 //   node tools/living-world/ct_flow_sim.mjs [--seed cf-world-1] [--days 7] [--agents 60] [--out docs/living-world/reports/CT-FLOW.md]
@@ -22,7 +22,7 @@ function move(from, to, amt, reason) {
   bal.set(from, get(from) - amt); bal.set(to, get(to) + amt); entries.push({ from, to, amt, reason }); byReason[reason] = (byReason[reason] || 0) + amt;
 }
 const agents = Array.from({ length: N }, (_, i) => `P:${i}`), alliance = (p) => +p.slice(2) % 8;   // 8 alliances
-for (const p of agents) bal.set(p, C(ri(300, 3000)));   // genesis balances (pre-existing CT, not minted by the sim)
+for (const p of agents) { const x = rng(); bal.set(p, C(x < 0.7 ? 5 : x < 0.95 ? 50 : 500)); }   // genesis = canon start balances (≈ 5 most / 50 casual / 500 whale, balance.json v2 scale); pre-existing CT, not minted by the sim
 const GENESIS = [...bal.values()].reduce((a, b) => a + b, 0);
 let spend = 0, burned = () => get("BURN");
 // the relation check (doc 05 §3): same alliance as the poster → the share is burned
@@ -50,9 +50,9 @@ for (let day = 0; day < DAYS; day++) {
     const r = rng(), others = () => Array.from({ length: ri(1, 4) }, () => pick(agents)).filter((x, i, a) => x !== p && a.indexOf(x) === i);
     if (r < 0.06 && get(p) >= C(fullStack)) { const esc = pay(p, C(fullStack), "DEFENCE_STAKE", [DF.stakeSplit.spoilsEscrow, DF.stakeSplit.burn]); open.push({ esc, kind: "DEFENCE", poster: p, endDay: day + 7, claimants: others() }); stats.DEFENCE++; }
     else if (r < 0.10) { const f3 = rng() < 0.25, fee = C((f3 ? GU.forms["3"].feeCT : GU.forms["2"].feeCT) * pick([1, 1.5, 2])); if (get(p) >= fee) { const esc = pay(p, fee, "GUARDIAN_FEE", [GU.feeSplit.bountyEscrow, GU.feeSplit.burn]); open.push({ esc, kind: f3 ? "F3" : "F2", poster: p, endDay: day + 1, claimants: others() }); stats.GUARDIAN++; } }
-    else if (r < 0.16) { const pot = C(ri(PE.kinds.find((k) => k.pevKind === "BOUNTY").minCT, 80)); if (get(p) >= pot) { spend += pot; const esc = `ESCROW:${entries.length}`; move(p, esc, pot, "BOUNTY_POT"); open.push({ esc, kind: "BOUNTY", poster: p, endDay: day + ri(1, 3), claimants: others() }); stats.BOUNTY++; } }
-    else if (r < 0.19) { const crate = C(ri(20, 150)); if (get(p) >= crate) { spend += crate; const esc = `ESCROW:${entries.length}`; move(p, esc, crate, "AIRDROP_CRATE"); open.push({ esc, kind: "AIRDROP", poster: p, endDay: day, claimants: others().slice(0, 1) }); stats.AIRDROP++; } }
-    else if (r < 0.22) { const dare = C(ri(PE.kinds.find((k) => k.pevKind === "SIEGE_ME").dareMinCT, 60)); if (get(p) >= dare) { spend += dare; const esc = `ESCROW:${entries.length}`; move(p, esc, dare, "SIEGE_ME_DARE"); open.push({ esc, kind: "SIEGE_ME", poster: p, endDay: day + 1, claimants: others() }); stats.SIEGE_ME++; } }
+    else if (r < 0.16) { const pot = C(PE.kinds.find((k) => k.pevKind === "BOUNTY").minCT + rng() * 3.75); if (get(p) >= pot) { spend += pot; const esc = `ESCROW:${entries.length}`; move(p, esc, pot, "BOUNTY_POT"); open.push({ esc, kind: "BOUNTY", poster: p, endDay: day + ri(1, 3), claimants: others() }); stats.BOUNTY++; } }
+    else if (r < 0.19) { const crate = C(1 + rng() * 6.5); if (get(p) >= crate) { spend += crate; const esc = `ESCROW:${entries.length}`; move(p, esc, crate, "AIRDROP_CRATE"); open.push({ esc, kind: "AIRDROP", poster: p, endDay: day, claimants: others().slice(0, 1) }); stats.AIRDROP++; } }
+    else if (r < 0.22) { const dare = C(PE.kinds.find((k) => k.pevKind === "SIEGE_ME").dareMinCT + rng() * 2.75); if (get(p) >= dare) { spend += dare; const esc = `ESCROW:${entries.length}`; move(p, esc, dare, "SIEGE_ME_DARE"); open.push({ esc, kind: "SIEGE_ME", poster: p, endDay: day + 1, claimants: others() }); stats.SIEGE_ME++; } }
   }
   // settle everything whose window ended today (and drain everything on the last day: escrows must always settle)
   for (const e of open.filter((x) => !x.done && (x.endDay <= day || day === DAYS - 1))) {

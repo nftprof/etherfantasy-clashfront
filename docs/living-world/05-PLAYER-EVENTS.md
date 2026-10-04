@@ -43,7 +43,7 @@ raid or escort, a sponsored airdrop. Numbers live in `data/living-world/player-e
 ## 4. Why it feels like an experience
 
 - **There's always something on the board**, and it's player stories, not chores: "Raiders, the
-  Ascendant of Emberthrone tires in 2 h — 240 CT bounty."
+  Ascendant of Emberthrone tires in 2 h — 6 CT bounty."
 - **Small groups can win.** Bounties and caravans are fights for 1–3 players. Sieges are for guilds.
 - **Every outcome is news.** The region feed records it, and the World Remembers monuments (doc
   `WORLD-REMEMBERS-AND-TOWNS`) can mark famous breaks.

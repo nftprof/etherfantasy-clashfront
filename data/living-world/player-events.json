@@ -30,7 +30,7 @@
     2,
     24
    ],
-   "dareMinCT": 5,
+   "dareMinCT": 0.25,
    "withdrawPenalty": "DARE_TO_POOL"
   },
   {
@@ -42,7 +42,7 @@
     1,
     72
    ],
-   "minCT": 5,
+   "minCT": 0.25,
    "burnRake": 0.1
   },
   {

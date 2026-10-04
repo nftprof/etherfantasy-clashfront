@@ -416,4 +416,11 @@ const rrRel = rrW(); rrRel.alliance.gov_SAMPLE_ATTACKER = 2;
 ok(RR.resolveResult(rrRel, rrS, rrCb("ATTACKER", "KO")).world.bal.BURN === 13000, "an attacker allied with the defender gets nothing: the escrows burn (doc 05 relation check)");
 ok(r1.effects.find((e) => e.kind === "ATTACKER_LOSSES").retrainCT === 4.8, "attacker losses are priced at canon balance.json v2 re-training cost (INFANTRY 0.02 CT, SIEGE 0.1 CT)");
 
+// D40 canon CT scale (balance.json v2, re-scaled ÷100)
+const BAL2 = JSON.parse(fs.readFileSync("/home/user/cf-overworld/packages/shared/balance.json", "utf8")), DF40 = JSON.parse(fs.readFileSync("data/living-world/defences.json", "utf8"));
+const MOD = { WALLS: "WALL", GATES: "GATE", TRAPS: "TRAP", GRANARY: "GRANARY", PET_DEN: "PET_DEN", WATCHTOWER: "TOWER" };
+ok(DF40.upgrades.filter((u) => MOD[u.id]).every((u) => u.baseCT === BAL2.build.baseCostCtUnitsByKey[MOD[u.id]] / 10000), "defence upgrade prices are the canon module costs (balance.json build.baseCostCtUnitsByKey ÷ 10,000)");
+ok(G31.forms["2"].feeCT <= 5 && G31.forms["3"].feeCT <= 50, "Guardian fees sit on the canon scale (≤ a typical 5 CT balance for a Warden, ≤ a casual 50 CT for an Ascendant)");
+ok(!/ri\(300, 3000\)/.test(fs.readFileSync("tools/living-world/ct_flow_sim.mjs", "utf8")) && JSON.parse(fs.readFileSync("docs/living-world/reports/CT-FLOW.json", "utf8")).genesisCT < 60 * 100, "the CT-flow sim starts players on canon balances (≈ 5 / 50 / 500 CT), not the old 300–3,000");
+
 console.log(fails ? `❌ living-world: ${fails} failed` : "✅ living-world: all passed"); process.exit(fails ? 1 : 0);

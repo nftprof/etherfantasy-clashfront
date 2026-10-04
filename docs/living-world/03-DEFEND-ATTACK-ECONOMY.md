@@ -41,7 +41,7 @@ Mercenaries are hired at a **`MERCENARY_POST`** POI (doc 01). The contract is es
 ### The market as code (D28, `tools/living-world/merc_market.mjs`)
 
 - **Roster:** each `MERCENARY_POST` has 2 seeded companies (⚙), e.g. "Hired Blades" or "Saltwind Lances".
-- **Prices** (from `defences.json`): level 1 = **12 CT** for +2 mercs for 24 h; level 2 = **19.2 CT** for +4 mercs for
+- **Prices** (from `defences.json`): level 1 = **0.6 CT** for +2 mercs for 24 h; level 2 = **0.96 CT** for +4 mercs for
   72 h.
 - **Hiring creates a canon `Contract`** (`MERCENARY_DEFEND` for the holder, `MERCENARY_ATTACK` for a raider) in
   state `TAKEN`. When it expires it becomes `FULFILLED` and the company is free again.
@@ -53,8 +53,15 @@ Mercenaries are hired at a **`MERCENARY_POST`** POI (doc 01). The contract is es
   ≥ +10 % and ties go to the earlier bid. Every bid is *held*, not spent: losers get theirs back in full, and only the
   winner pays, at their bid.
 - **Relation check:** you can't hire against your own alliance.
-- **Worked example** (`merc-market.sample.json`): the holder bids 19.2, the raider 21.2, the holder 24.0 and wins.
-  The raider is refunded 21.2. CT is conserved and 7.2 CT is burned.
+- **Worked example** (`merc-market.sample.json`): the holder bids 0.96, the raider 1.06, the holder 1.20 and wins.
+  The raider is refunded 1.06. CT is conserved and 0.36 CT is burned.
+
+> **Scale (D40):** every CT number in the living world is on the canon `balance.json` v2 scale (re-scaled ÷100, owner
+> 2026-07-10: 1 CT ≈ $0.02–0.10; start balances ≈ 5 / 50 / 500 CT).
+> - **Defences:** each upgrade's level-1 price *is* the canon module cost (WALL 0.4, GATE 0.5, TRAP 0.3, GRANARY 0.5,
+>   PET_DEN 0.5, TOWER 0.6 CT). A full castle stack costs ~9 CT for 7 days.
+> - **Everything else** (Guardian fees 1 / 6 CT, mercenaries 0.6 CT, bounty and dare minimums 0.25 CT) was divided by
+>   20. Every ratio and split is unchanged.
 
 ## 3. Diminishing returns: no impregnable fortress
 
@@ -73,7 +80,7 @@ Mercenaries are hired at a **`MERCENARY_POST`** POI (doc 01). The contract is es
 - **Spoils**: the defender's live spoils escrow (all active upgrades) plus the Guardian bounty (doc 04),
   split among attackers **by damage share**.
 - **The POI's hold reward** (doc 01): the harbour toll, the airship reinforcement right, and so on.
-- **Story**: the region feed calls it out ("⚔ Gullshoal raiders broke Tidegate's walls — 34 CT
+- **Story**: the region feed calls it out ("⚔ Gullshoal raiders broke Tidegate's walls — 1.7 CT
   spoils"). Players come back for stories, not for grind.
 
 ## 5. Why this isn't a grind
@@ -94,7 +101,7 @@ Mercenaries are hired at a **`MERCENARY_POST`** POI (doc 01). The contract is es
 The sheet sets each scenario's CT paid against the attacker's units lost (canon re-training cost, at several
 soldiers-per-sim-unit ratios). Three findings:
 
-1. **Guardians are priced far below defences for the same pain:** 0.7 CT vs 57 CT per extra attacker unit lost (after the D31 damage cap).
+1. **Guardians are priced far below defences for the same pain:** 0.033 CT vs 3.0 CT per extra attacker unit lost (canon scale, D40; after the D31 damage cap).
 2. **A Guardian's bounty is tiny next to the losses it costs to win.**
 3. **Defences buy force, not time.** The full stack adds 0:36 to the breach, but makes the attacker bring 1.6× the
    army.
@@ -117,6 +124,6 @@ defence stakes, Guardian fees, bounties, sponsored airdrops and SIEGE_ME dares. 
   30 % up front, even when the defence holds. That makes the living world a strong CT sink, which is good against
   inflation. If the economy owner wants defending to feel cheaper, the lever is `stakeSplit.burn` 0.3 → 0.2; the burn
   would stay above 10 %.
-- **The doc-05 relation check burned ~465 CT** of shares claimed by the poster's own alliance (out of 9,566 CT spent),
+- **The doc-05 relation check burned ~15 CT** of shares claimed by the poster's own alliance (out of 262 CT spent at canon scale, D40),
   so the self-farming defence is live in the ledger.
 

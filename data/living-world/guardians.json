@@ -1,6 +1,6 @@
 {
  "schema": "cf-living-world/guardians@1",
- "note": "NFT Guardian balance (doc 04). Single source of truth; the sim and doc read this. CT amounts are whole CT (ledger uses ct_units = CT \u00d7 10_000).",
+ "note": "NFT Guardian balance (doc 04). Single source of truth; the sim and doc read this. CT amounts are whole CT (ledger uses ct_units = CT × 10_000).",
  "perch": {
   "perKind": {
    "KEEP": 1,
@@ -33,7 +33,7 @@
     "count": 1,
     "scope": "PERCH"
    },
-   "feeCT": 20
+   "feeCT": 1
   },
   "3": {
    "name": "Ascendant",
@@ -64,7 +64,7 @@
     "scope": "CASTLE",
     "perDays": 7
    },
-   "feeCT": 120
+   "feeCT": 6
   }
  },
  "caps": {
@@ -88,5 +88,6 @@
   "keepShieldedWhileStanding": true,
   "ascensionClockStarts": "FIRST_CONTACT",
   "source": "docs/living-world/reports/SIM-SAMPLE.md (D6c)"
- }
+ },
+ "feeScale": "D40: ÷20 to canon balance.json v2 (was 20 / 120 CT)"
 }

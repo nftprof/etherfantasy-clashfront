@@ -37,7 +37,7 @@ export function postsFor(seed, zone, day) {
     const notice = K.noticeOverride != null ? K.noticeOverride / 60 : PE.rules.minNoticeSec / 60 + Math.floor(r() * 120);   // minutes
     const postedAt = day * 1440 + Math.floor(r() * 1300), opens = postedAt + Math.ceil(notice);
     const durMin = K.pevKind === "SPONSORED_AIRDROP" ? K.contestSec / 60 : K.pevKind === "WARBAND_CALL" ? K.musterMin[0] + Math.floor(r() * (K.musterMin[1] - K.musterMin[0])) : 60 * Math.max(1, K.windowH[0] + Math.floor(r() * (K.windowH[1] - K.windowH[0])));
-    out.push({ id: `${zone}|${day}|post${i}`, src: "PLAYER", kind: K.pevKind, at: ids[Math.floor(r() * ids.length)], postedAt, opens, closes: opens + durMin, potCT: K.pevKind === "WARBAND_CALL" ? 0 : 5 + Math.floor(r() * 150) });
+    out.push({ id: `${zone}|${day}|post${i}`, src: "PLAYER", kind: K.pevKind, at: ids[Math.floor(r() * ids.length)], postedAt, opens, closes: opens + durMin, potCT: K.pevKind === "WARBAND_CALL" ? 0 : Math.round((0.25 + r() * 7.5) * 100) / 100 });   // D40 canon scale: 0.25–7.75 CT
   }
   return out;
 }

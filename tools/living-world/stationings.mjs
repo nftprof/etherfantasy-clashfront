@@ -55,7 +55,7 @@ const hm = (min) => `${Math.floor(min / 60)} h ${String(min % 60).padStart(2, "0
 export function challengeRow(s, tick) {
   const P = PERCHES[s.perchId], F = GU.forms[String(s.form)], left = s.end - tick, place = NAME[P.castleId] || P.castleId;
   const banner = s.form === 3 ? `⚠ the Ascendant of ${place} stands for ${hm(left)}: 8 min of power from first contact, 3 Ward Stones` : `⚠ the Warden of ${place} stands for ${hm(left)}`;
-  return { id: `gc|${s.perchId}|${s.start}`, src: "AUTO", kind: "GUARDIAN_CHALLENGE", at: s.perchId, postedAt: s.start, opens: s.start, closes: s.end, potCT: Math.round(F.feeCT * GU.kindMultiplier[P.kind] * GU.feeSplit.bountyEscrow), form: s.form, banner };
+  return { id: `gc|${s.perchId}|${s.start}`, src: "AUTO", kind: "GUARDIAN_CHALLENGE", at: s.perchId, postedAt: s.start, opens: s.start, closes: s.end, potCT: Math.round(F.feeCT * GU.kindMultiplier[P.kind] * GU.feeSplit.bountyEscrow * 100) / 100, form: s.form, banner };
 }
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {

@@ -10,8 +10,8 @@
   }
  },
  "priceCT": {
-  "level1": 12,
-  "level2": 19.2
+  "level1": 0.6,
+  "level2": 0.96
  },
  "posts": 30,
  "rosters": {
@@ -142,15 +142,15 @@
   "steps": [
    {
     "ok": true,
-    "floor": 1920
+    "floor": 96
    },
    {
     "ok": true,
-    "floor": 2112
+    "floor": 106
    },
    {
     "ok": true,
-    "floor": 2324
+    "floor": 117
    }
   ],
   "winner": {
@@ -158,18 +158,18 @@
    "type": "MERCENARY_DEFEND",
    "posterGovernorId": "holder",
    "targetRef": "BUS-CASTLE-CAPEMEET:MERCENARY_POST:1|co0",
-   "rewardCt": 2400,
+   "rewardCt": 120,
    "state": "TAKEN",
    "takerId": "BUS-CASTLE-CAPEMEET:MERCENARY_POST:1|co0",
    "expiresAt": 4326,
    "mercs": 4
   },
   "balancesCT": {
-   "holder": 26,
+   "holder": 48.8,
    "raider": 50,
-   "ESCROW:contract_0": 9.6,
-   "BURN": 7.2,
-   "POOL": 7.2
+   "ESCROW:contract_0": 0.48,
+   "BURN": 0.36,
+   "POOL": 0.36
   },
   "conserved": true
  }

@@ -21,7 +21,7 @@
    "id": "WALLS",
    "module": "WALL",
    "levels": 3,
-   "baseCT": 10,
+   "baseCT": 0.4,
    "days": 7,
    "weight": 0.12,
    "effect": {
@@ -32,7 +32,7 @@
    "id": "GATES",
    "module": "GATE",
    "levels": 2,
-   "baseCT": 8,
+   "baseCT": 0.5,
    "days": 7,
    "weight": 0.08,
    "effect": {
@@ -48,7 +48,7 @@
    "id": "TRAPS",
    "module": "TRAP",
    "levels": 3,
-   "baseCT": 6,
+   "baseCT": 0.3,
    "days": 3,
    "weight": 0.08,
    "effect": {
@@ -66,7 +66,7 @@
    "id": "GRANARY",
    "module": "GRANARY",
    "levels": 2,
-   "baseCT": 6,
+   "baseCT": 0.5,
    "days": 7,
    "weight": 0.05,
    "effect": {
@@ -77,7 +77,7 @@
    "id": "PET_DEN",
    "module": "PET_DEN",
    "levels": 2,
-   "baseCT": 8,
+   "baseCT": 0.5,
    "days": 7,
    "weight": 0.06,
    "effect": {
@@ -91,7 +91,7 @@
    "id": "WATCHTOWER",
    "module": "TOWER",
    "levels": 1,
-   "baseCT": 15,
+   "baseCT": 0.6,
    "days": 7,
    "weight": 0.1,
    "estateOnly": true,
@@ -103,7 +103,7 @@
    "id": "MERCENARIES",
    "module": "MERCENARY_DEFEND",
    "levels": 2,
-   "baseCT": 12,
+   "baseCT": 0.6,
    "hours": [
     24,
     72
@@ -118,5 +118,10 @@
    },
    "unhiredBiddable": true
   }
- ]
+ ],
+ "scale": {
+  "ctScale": "canon balance.json v2 (RE-SCALED ÷100, 2026-07-10): 1 CT ≈ $0.02–0.10; start balances ≈ 5 / 50 / 500 CT",
+  "anchors": "baseCT = canon build.baseCostCtUnitsByKey ÷ 10,000 (WALL 0.4, GATE 0.5, TRAP 0.3, GRANARY 0.5, PET_DEN 0.5, TOWER 0.6 CT); MERCENARIES has no canon anchor: old 12 CT ÷ 20 ⚙",
+  "rescaledIn": "D40"
+ }
 }

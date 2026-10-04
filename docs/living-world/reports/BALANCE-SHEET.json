@@ -1,6 +1,6 @@
 {
  "schema": "cf-living-world/balance-sheet@1",
- "ctPerSoldier": 4.7,
+ "ctPerSoldier": 0.047,
  "ratios": [
   1,
   5,
@@ -18,10 +18,10 @@
    "medBreachSec": 539,
    "attackerUnitsLost": 64,
    "lossCT": {
-    "1": 299,
-    "5": 1493,
-    "10": 2987,
-    "20": 5973
+    "1": 2.99,
+    "5": 14.93,
+    "10": 29.87,
+    "20": 59.73
    },
    "extraUnitsLost": 0,
    "extraSec": 0,
@@ -31,64 +31,64 @@
   {
    "scen": "DEFENDED",
    "what": "Full defence stack (every castle upgrade at max level, 7 days)",
-   "defenderPaidCT": 171,
-   "burnedCT": 51.3,
-   "escrowCT": 68.4,
+   "defenderPaidCT": 9.072,
+   "burnedCT": 2.722,
+   "escrowCT": 3.629,
    "medBreachSec": 575,
    "attackerUnitsLost": 67,
    "lossCT": {
-    "1": 313,
-    "5": 1563,
-    "10": 3127,
-    "20": 6253
+    "1": 3.13,
+    "5": 15.63,
+    "10": 31.27,
+    "20": 62.53
    },
    "extraUnitsLost": 3,
    "extraSec": 36,
-   "ctPerExtraUnitLost": 57,
-   "ctPerExtraMinute": 285
+   "ctPerExtraUnitLost": 3.024,
+   "ctPerExtraMinute": 15.12
   },
   {
    "scen": "F2",
    "what": "+ Form 2 Warden (stationing fee)",
-   "defenderPaidCT": 20,
-   "burnedCT": 6,
-   "escrowCT": 10,
+   "defenderPaidCT": 1,
+   "burnedCT": 0.3,
+   "escrowCT": 0.5,
    "medBreachSec": 814,
    "attackerUnitsLost": 94,
    "lossCT": {
-    "1": 439,
-    "5": 2193,
-    "10": 4387,
-    "20": 8773
+    "1": 4.39,
+    "5": 21.93,
+    "10": 43.87,
+    "20": 87.73
    },
    "extraUnitsLost": 30,
    "extraSec": 275,
-   "ctPerExtraUnitLost": 0.7,
-   "ctPerExtraMinute": 4.4
+   "ctPerExtraUnitLost": 0.033,
+   "ctPerExtraMinute": 0.218
   },
   {
    "scen": "F3",
    "what": "+ Form 3 Ascendant (stationing fee)",
-   "defenderPaidCT": 120,
-   "burnedCT": 36,
-   "escrowCT": 60,
+   "defenderPaidCT": 6,
+   "burnedCT": 1.8,
+   "escrowCT": 3,
    "medBreachSec": 1036,
    "attackerUnitsLost": 97,
    "lossCT": {
-    "1": 453,
-    "5": 2263,
-    "10": 4527,
-    "20": 9053
+    "1": 4.53,
+    "5": 22.63,
+    "10": 45.27,
+    "20": 90.53
    },
    "extraUnitsLost": 33,
    "extraSec": 497,
-   "ctPerExtraUnitLost": 3.6,
-   "ctPerExtraMinute": 14.5
+   "ctPerExtraUnitLost": 0.182,
+   "ctPerExtraMinute": 0.724
   }
  ],
  "findings": {
-  "defencesVsWarden": 81.4,
-  "wardenBountyVsLosses": 140,
-  "ascendantBountyVsLosses": 25.7
+  "defencesVsWarden": 91.636,
+  "wardenBountyVsLosses": 28,
+  "ascendantBountyVsLosses": 5.133
  }
 }

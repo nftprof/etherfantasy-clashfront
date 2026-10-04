@@ -16,7 +16,7 @@ escalation and release. The living world applies it to a *place you come back to
 | Session | What you do | Typical length | Story you leave with |
 |---|---|---|---|
 | **Skirmish** | Clear one frontier POI (lair, salvage, airdrop) | 3–6 min | "Took the airdrop under a barbarian raid" |
-| **Raid** | Break a defended POI or a Warden castle | 10–15 min | "Broke Tidegate's walls, split 34 CT" |
+| **Raid** | Break a defended POI or a Warden castle | 10–15 min | "Broke Tidegate's walls, split 1.7 CT" |
 | **Hunt** | Answer a bounty / guardian challenge | 15–20 min | "Outlasted the Ascendant of Emberthrone" |
 | **Hold** | Defend your POI when a SIEGE_ME or raid lands | Whenever it's attacked | "Held the harbour: the stake came back" |
 | **Voyage** | Sail a lane; maybe meet the Kraken | 5–10 min | "Dragged to Blackmere — fought our way back" |
