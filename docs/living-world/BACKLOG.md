@@ -98,3 +98,6 @@ airships, landing spots, harbours + sea ships; seed all 20K maps; an experience,
 - [x] D59 — ⚙ placeholder register: every proposal number in the living world (storm 35 %, 10 soldiers per sim unit, ATTACK mercenary split, HERO_RADIUS, companies per post, sky/under shifts, Kraken 300 dmg, …) in one table: value, file + key, what it moves, how to tune it, the test that guards it
 - [x] D60 — Client hand-off spec (plan G): the shapes the client renders (board rows, feed items, journal entries, Guardian banners, ship positions, arrival markers, season beats) with sample payloads pulled from the committed samples, and which function produces each
 - [x] D58 — Player-facing explainer copy: short i18n tips for the board, feed, journal, Guardians, mercenaries, region rights, lulls (en baseline), rendered by t(); test that every tip key renders
+
+## Wave 13 (added cycle 67)
+- [x] D61 — Canon drift guard: content-hash pins on every canon input + a test that names what to re-run when canon moves (checked: overworld 11e8679 and MOBA 8378094, no drift)

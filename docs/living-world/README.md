@@ -58,6 +58,7 @@ byte-compares the results, re-runs the sims and checks every invariant (≈ 1 mi
 | `threat-bosses.json` | The named boss each region's threat peak brings (canon roster bosses ↔ zone elements) | `threat_bosses.mjs` |
 | `event-contract.json` | Engine semantics per event: shape, scope, required fields | (source; `validate_events.mjs` checks it) |
 | `placeholders.json` | The ⚙ register: every proposal number (25) with where it lives, what it moves, how to tune it, its guarding test | (source; `placeholders_check.mjs` resolves each against the live value) |
+| `canon-pins.json` | Content hashes of the 14 canon inputs (cf-overworld data + docs, MOBA lineage); a mismatch names what to re-run | `canon_pins.mjs --record` |
 | `perf-budget.json` | Hot-path baselines + 2× budgets (seedSingle 18 µs, board view 0.09 ms, traffic frame 0.1 ms; full singles seed 4.4 s, matrix 18 s) | `perf_budget.mjs --record` |
 | `*.sample.json`, `allocate.samples.json` | Worked samples: traffic, feed, calendar, board, stationings, mercenary market, allocate payloads | The matching tool |
 
@@ -88,6 +89,7 @@ byte-compares the results, re-runs the sims and checks every invariant (≈ 1 mi
   - `month_sim.mjs` (North Star at scale);
   - `abuse_sim.mjs` (coalition self-farming: every scheme net-negative);
   - `e2e_slice.mjs` (one fight end to end: board → allocate → real kernel → callback → resolver → influence).
+- **Canon drift:** `canon_pins.mjs` (`--record` after re-running the listed tools on new canon).
 - **Register:** `placeholders_check.mjs` (every ⚙ number matches its live value).
 - **Contracts:** `validate_events.mjs` (every event vs its engine shape and scope).
 - **Live ops:** `liveops_baseline.mjs` (every baseline in its healthy band).
@@ -108,6 +110,17 @@ byte-compares the results, re-runs the sims and checks every invariant (≈ 1 mi
   - rebuild the PR #1 patch with `pr1_refresh.sh`.
 - **Kernel changes** (`server/sim`) must stay **opt-in** (`structMul`, `dmgTakenMul`, `shieldsCore`, `dmgDealt`), so
   `node server/test/goldenmaster.js` stays deterministic and stock battles stay byte-identical.
+
+## When canon moves
+
+Other sessions push to the overworld branch and the MOBA repo. `node tools/living-world/canon_pins.mjs` re-hashes the
+14 canon inputs. If one changed:
+1. Re-run the tools it names.
+2. Run the tests.
+3. Re-pin with `--record`.
+
+The tests fail on drift, so a canon update can't silently invalidate the seeds or reports. As of 2026-10-04 21:35
+UTC, the overworld tip `11e8679` and MOBA `8378094` match the pins.
 
 ## Branches
 

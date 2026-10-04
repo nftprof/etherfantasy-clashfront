@@ -1,0 +1,20 @@
+{
+ "schema": "cf-living-world/canon-pins@1",
+ "note": "content hashes of every canon input; on a mismatch re-run the named tools, then --record",
+ "pins": {
+  "zone-registry": "ddf19f8326bc30a3",
+  "world-terrain": "94cf85dd3ba69d0c",
+  "parcels-l2": "14c175d7472928bf",
+  "parcels-l3": "1a42f72a33697a64",
+  "battle-maps": "fc52de3fca5ea9df",
+  "pets-roster": "686348d6342342b1",
+  "character-roster": "1496091ea0ce4668",
+  "balance": "cce76138f82b221a",
+  "data-models": "fffc97ec70c0e436",
+  "battle-system": "56a14ec17d02e111",
+  "military": "f4a1dc653dfc19d1",
+  "allocate-brief": "c968a9f0919d8c9e",
+  "naval-brief": "83f9d6dbea8f4baf",
+  "moba-lineage": "9e648642c67203ce"
+ }
+}

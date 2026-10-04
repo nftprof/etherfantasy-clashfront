@@ -533,4 +533,8 @@ const TP = await import("./tips.mjs"), TPr = TP.tips(), TPv = TP.tipVars();
 ok(Object.keys(TPr).length >= 10 && Object.values(TPr).every((x) => !x.includes("?") && !/\{\w+\}/.test(x)), `every help tip renders fully (${Object.keys(TPr).length} tips)`);
 ok(TPr["tip.warden"].includes(`(${G31.forms["2"].feeCT} CT)`) && TPr["tip.ascendant"].includes(`${G31.forms["3"].ascended.windowSec / 60} min`) && TPr["tip.lull"].includes(`${EX.lullHours.BARBARIAN_CAMP} h`) && TPr["tip.regionRights"].includes(`Hold ${EX.influenceUnlocks[0].poisHeld} places`), "tips quote the live numbers (fees, windows, lull, ladder), so they can't contradict the game");
 
+// D61 canon drift guard: every canon input still matches the hash this work was built on
+const CNP = (await import("./canon_pins.mjs")).check();
+ok(CNP.length >= 14 && CNP.every((x) => x.ok), `no canon drift across ${CNP.length} inputs (cf-overworld data/docs + the MOBA lineage)` + (CNP.some((x) => !x.ok) ? " — DRIFT: " + CNP.filter((x) => !x.ok).map((x) => `${x.id} → re-run ${x.rerun}`).join("; ") : ""));
+
 console.log(fails ? `❌ living-world: ${fails} failed` : "✅ living-world: all passed"); process.exit(fails ? 1 : 0);
