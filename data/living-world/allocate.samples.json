@@ -244,6 +244,7 @@
      "dmg": 38,
      "leashed": true
     },
+    "mapId": "2001158",
     "eventDeck": [
      {
       "event": "ALPHA_ENRAGE",
@@ -520,11 +521,15 @@
      "dmg": 47,
      "leashed": true
     },
+    "mapId": "BUS-CASTLE-CAPEMEET",
     "eventDeck": [
      {
       "event": "NAVAL_LANDING",
       "atSec": 146,
-      "teleSec": 8
+      "teleSec": 8,
+      "arrival": {
+       "via": "EDGE"
+      }
      },
      {
       "event": "STORM",
@@ -539,6 +544,293 @@
     ],
     "defence": {
      "rating": 1.3,
+     "ratingMax": 1.6
+    },
+    "floorSec": 720
+   }
+  },
+  "HARBOUR_ON_A_BAKED_COAST_MAP": {
+   "v": 1,
+   "battleId": "battle_SAMPLE0000000000000000004",
+   "seed": "2160eac51e60e60c",
+   "mode": "accelerated",
+   "rates": {
+    "tickHz": 30,
+    "commandSnapshotHz": 3
+   },
+   "parcel": {
+    "parcelId": "1001178",
+    "zone": "BUS",
+    "kind": "WILD"
+   },
+   "battlefield": {
+    "arena": {
+     "shape": "polygon",
+     "sizeM": 322,
+     "bounds": [
+      [
+       -161,
+       -161
+      ],
+      [
+       161,
+       -161
+      ],
+      [
+       161,
+       161
+      ],
+      [
+       -161,
+       161
+      ]
+     ]
+    },
+    "laneCount": 1,
+    "obstacles": [],
+    "spawnZones": [
+     {
+      "id": "spawn_atk_s",
+      "side": "ATTACKER",
+      "edge": "S",
+      "x": 0,
+      "z": -131.6
+     }
+    ],
+    "structures": [
+     {
+      "anchorId": "anchor_core",
+      "kind": "CORE",
+      "side": "DEFENDER",
+      "x": 0,
+      "z": 114.8,
+      "hp": 7344,
+      "hpMax": 7344
+     },
+     {
+      "anchorId": "anchor_gate_0",
+      "kind": "GATE",
+      "side": "DEFENDER",
+      "x": -11.3,
+      "z": 103.5,
+      "hp": 3519,
+      "hpMax": 3519
+     },
+     {
+      "anchorId": "anchor_wall_1",
+      "kind": "WALL",
+      "side": "DEFENDER",
+      "x": -2.5,
+      "z": 99,
+      "hp": 4131,
+      "hpMax": 4131
+     },
+     {
+      "anchorId": "anchor_wall_2",
+      "kind": "WALL",
+      "side": "DEFENDER",
+      "x": 7.3,
+      "z": 100.5,
+      "hp": 4131,
+      "hpMax": 4131
+     },
+     {
+      "anchorId": "anchor_wall_3",
+      "kind": "WALL",
+      "side": "DEFENDER",
+      "x": 14.3,
+      "z": 107.5,
+      "hp": 4131,
+      "hpMax": 4131
+     },
+     {
+      "anchorId": "anchor_wall_4",
+      "kind": "WALL",
+      "side": "DEFENDER",
+      "x": 15.8,
+      "z": 117.3,
+      "hp": 4131,
+      "hpMax": 4131
+     },
+     {
+      "anchorId": "anchor_gate_5",
+      "kind": "GATE",
+      "side": "DEFENDER",
+      "x": 11.3,
+      "z": 126.1,
+      "hp": 3519,
+      "hpMax": 3519
+     },
+     {
+      "anchorId": "anchor_wall_6",
+      "kind": "WALL",
+      "side": "DEFENDER",
+      "x": 2.5,
+      "z": 130.6,
+      "hp": 4131,
+      "hpMax": 4131
+     },
+     {
+      "anchorId": "anchor_wall_7",
+      "kind": "WALL",
+      "side": "DEFENDER",
+      "x": -7.3,
+      "z": 129.1,
+      "hp": 4131,
+      "hpMax": 4131
+     },
+     {
+      "anchorId": "anchor_wall_8",
+      "kind": "WALL",
+      "side": "DEFENDER",
+      "x": -14.3,
+      "z": 122.1,
+      "hp": 4131,
+      "hpMax": 4131
+     },
+     {
+      "anchorId": "anchor_wall_9",
+      "kind": "WALL",
+      "side": "DEFENDER",
+      "x": -15.8,
+      "z": 112.3,
+      "hp": 4131,
+      "hpMax": 4131
+     },
+     {
+      "anchorId": "anchor_tower_0",
+      "kind": "TOWER",
+      "side": "DEFENDER",
+      "x": -15,
+      "z": 109.8,
+      "hp": 7191,
+      "hpMax": 7191
+     },
+     {
+      "anchorId": "anchor_tower_1",
+      "kind": "TOWER",
+      "side": "DEFENDER",
+      "x": -5,
+      "z": 99.8,
+      "hp": 7191,
+      "hpMax": 7191
+     }
+    ],
+    "mobs": [
+     {
+      "id": "mob_0",
+      "kind": "HARBOUR_MASTER",
+      "x": 9,
+      "z": 105.8,
+      "count": 1
+     },
+     {
+      "id": "mob_1",
+      "kind": "MARINE",
+      "x": -4.5,
+      "z": 113.6,
+      "count": 2
+     },
+     {
+      "id": "mob_2",
+      "kind": "SHIP",
+      "x": -4.5,
+      "z": 98,
+      "count": 1
+     }
+    ]
+   },
+   "sides": {
+    "ATTACKER": {
+     "governorId": "gov_SAMPLE_ATTACKER",
+     "armies": [
+      {
+       "armyId": "army_SAMPLE_A",
+       "units": [
+        {
+         "cls": "INFANTRY",
+         "count": 400
+        },
+        {
+         "cls": "SIEGE",
+         "count": 60
+        }
+       ],
+       "officers": [
+        {
+         "masterId": "master_sample",
+         "name": "Sample",
+         "level": 10,
+         "revives": 2
+        }
+       ],
+       "provisions": {
+        "food": 4000,
+        "gold": 800,
+        "wood": 600
+       },
+       "entryEdge": "S"
+      }
+     ]
+    },
+    "DEFENDER": {
+     "governorId": null,
+     "armies": []
+    }
+   },
+   "callback": {
+    "url": "https://cf.etherfantasy.com/internal/battle-result",
+    "keyId": "cf-hmac-1"
+   },
+   "livingWorld": {
+    "v": 1,
+    "poiId": "1001178:HARBOUR:sample",
+    "lwKind": "HARBOUR",
+    "threat": 26,
+    "ground": "WATER",
+    "hexTerrain": "RIVER",
+    "terrainMods": {
+     "attacker": 0.9,
+     "defender": 1.1
+    },
+    "garrisonStats": {
+     "hp": 714,
+     "dmg": 40,
+     "leashed": true
+    },
+    "mapId": "1001178",
+    "eventDeck": [
+     {
+      "event": "NAVAL_LANDING",
+      "atSec": 185,
+      "teleSec": 8,
+      "arrival": {
+       "via": "NAVAL_APPROACH",
+       "spawn": {
+        "approachId": "naval_0",
+        "x": -2,
+        "z": 124
+       },
+       "target": {
+        "anchorId": "pier_0",
+        "x": 16,
+        "z": 122
+       }
+      }
+     },
+     {
+      "event": "SMUGGLER_RUN",
+      "atSec": 417,
+      "teleSec": 4
+     },
+     {
+      "event": "KRAKEN_SIGHTING",
+      "atSec": 564,
+      "teleSec": 12
+     }
+    ],
+    "defence": {
+     "rating": 1,
      "ratingMax": 1.6
     },
     "floorSec": 720
@@ -782,6 +1074,7 @@
      "dmg": 47,
      "leashed": true
     },
+    "mapId": "BUS-CASTLE-CAPEMEET",
     "eventDeck": [
      {
       "event": "GUARDIAN_WAKE",

@@ -10,6 +10,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { fnv1a, mulberry32 } from "./seed_singles.mjs";
+import { resolveArrival } from "./arrivals.mjs";
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const rd = (f) => JSON.parse(fs.readFileSync(path.join(ROOT, f), "utf8"));
 const PA = rd("data/living-world/poi-archetypes.json"), GU = rd("data/living-world/guardians.json"), DF = rd("data/living-world/defences.json"), TM = rd("data/living-world/terrain-mods.json");
@@ -25,20 +26,22 @@ function seedHex(battleId, worldSeed) { const a = fnv1a(`${worldSeed}|${battleId
 
 // The seeded event deck for THIS battle (doc 02 layer ③): up to `draws` weighted draws (no repeats) from the deck, at seeded
 // times inside the 12-min floor; telegraph seconds from events{} so the engine can banner them.
-export function drawDeck(poi, battleSeed, draws = 3) {
-  const left = ARCH[poi.lwKind].deck.slice(); if (!left.length) return [];
+export function drawDeck(poi, battleSeed, draws = 3, mapId = null) {
+  // D25: events the map can't host (NAVAL_LANDING without deep water, AIRSHIP_DROP without a pad) leave the deck
+  const left = ARCH[poi.lwKind].deck.filter(([e]) => !mapId || resolveArrival(mapId, e, battleSeed).eligible); if (!left.length) return [];
   const r = mulberry32(fnv1a(`${battleSeed}|deck|${poi.id}`)), out = [], n = Math.min(draws, left.length);
   for (let i = 0; i < n; i++) {   // without replacement: each event at most once per battle (a Guardian wakes once)
     const tot = left.reduce((m, [, w]) => m + w, 0); let x = r() * tot, k = 0;
     for (; k < left.length - 1; k++) { x -= left[k][1]; if (x <= 0) break; }
     const [ev] = left.splice(k, 1)[0];
     const atSec = 60 + Math.floor(((i + r()) / n) * 540);   // one per slice of 1:00–10:00
-    out.push(ev === "GUARDIAN_WAKE" ? { event: ev, trigger: GU.rules.ascensionClockStarts, teleSec: PA.events[ev].teleSec } : { event: ev, atSec, teleSec: PA.events[ev].teleSec });   // doc 04: the Guardian wakes when struck
+    const arr = mapId ? resolveArrival(mapId, ev, battleSeed) : { eligible: true }, arrival = arr.via ? { arrival: { via: arr.via, ...(arr.spawn ? { spawn: arr.spawn, target: arr.target } : {}) } } : {};
+    out.push(ev === "GUARDIAN_WAKE" ? { event: ev, trigger: GU.rules.ascensionClockStarts, teleSec: PA.events[ev].teleSec } : { event: ev, atSec, teleSec: PA.events[ev].teleSec, ...arrival });   // doc 04: the Guardian wakes when struck
   }
   return out;
 }
 
-export function buildAllocate({ battleId, worldSeed, mode = "accelerated", poi, zone, parcelId, held = null, attacker, guardian = null, defenceRating = 1, callbackUrl }) {
+export function buildAllocate({ battleId, worldSeed, mode = "accelerated", poi, zone, parcelId, mapId = parcelId, held = null, attacker, guardian = null, defenceRating = 1, callbackUrl }) {
   const seed = seedHex(battleId, worldSeed), tm = 0.5 + poi.threat / 50, sm = tm * DEF_MUL * defenceRating, tier = poi.tier || 1;
   const K = { x: 0, z: FRAME.core }, structures = [];
   const S = (anchorId, kind, x, z, hp) => structures.push({ anchorId, kind, side: "DEFENDER", x: r1(x), z: r1(z), hp: Math.round(hp), hpMax: Math.round(hp) });
@@ -51,7 +54,7 @@ export function buildAllocate({ battleId, worldSeed, mode = "accelerated", poi, 
   const lw = {
     v: 1, poiId: poi.id, lwKind: poi.lwKind, threat: poi.threat, ground: poi.ground || null, hexTerrain, terrainMods: { attacker: TM.canon[hexTerrain][0], defender: TM.canon[hexTerrain][1] },
     garrisonStats: { hp: Math.round(700 * tm), dmg: Math.round(40 * Math.sqrt(tm)), leashed: true },
-    eventDeck: drawDeck(poi, seed),
+    mapId, eventDeck: drawDeck(poi, seed, 3, mapId),
     defence: { rating: defenceRating, ratingMax: DF.rating.max },
     floorSec: 720,
   };
@@ -89,6 +92,7 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.a
   const samples = {
     WILD_LAIR_ON_A_RIDGE: buildAllocate({ battleId: "battle_SAMPLE0000000000000000001", worldSeed: "cf-world-1", poi: { id: `${ridge.id}#${lairI}`, lwKind: "WILD_LAIR", threat: lair.threat, ground: "RIDGE" }, zone: "BUS", parcelId: ridge.id, attacker: atk, callbackUrl: cb }),
     HELD_HARBOUR_LIVE: buildAllocate({ battleId: "battle_SAMPLE0000000000000000002", worldSeed: "cf-world-1", mode: "live", poi: { id: harbour.id, lwKind: "HARBOUR", threat: harbour.threat, ground: "WATER", tier: castle.tier }, zone: "BUS", parcelId: castle.castleId, held: { governorId: "gov_SAMPLE_HOLDER", armyId: "army_SAMPLE_GARRISON" }, attacker: atk, defenceRating: 1.3, callbackUrl: cb }),
+    HARBOUR_ON_A_BAKED_COAST_MAP: buildAllocate({ battleId: "battle_SAMPLE0000000000000000004", worldSeed: "cf-world-1", poi: { id: "1001178:HARBOUR:sample", lwKind: "HARBOUR", threat: 26, ground: "WATER" }, zone: "BUS", parcelId: "1001178", attacker: atk, callbackUrl: cb }),
     CASTLE_POI_WITH_ASCENDANT: buildAllocate({ battleId: "battle_SAMPLE0000000000000000003", worldSeed: "cf-world-1", poi: { id: perchPoi.id, lwKind: perchPoi.lwKind, threat: perchPoi.threat, ground: castle.layer, tier: castle.tier }, zone: "BUS", parcelId: castle.castleId, held: { governorId: "gov_SAMPLE_HOLDER", armyId: "army_SAMPLE_GARRISON" }, attacker: atk, guardian: { form: 3, nftId: "pet_SAMPLE_F3", owner: "gov_SAMPLE_HOLDER", stationEndsTick: 360 }, defenceRating: 1.6, callbackUrl: cb }),
   };
   fs.writeFileSync(out, JSON.stringify({ schema: "cf-living-world/allocate-samples@1", contract: "cf-overworld docs/briefs/ALLOCATE-CALLBACK-SCHEMA.md §1 (v1) + additive livingWorld@1", samples }, null, 1) + "\n");

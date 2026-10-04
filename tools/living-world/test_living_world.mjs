@@ -280,4 +280,15 @@ ok(FWE.unlockDay.POST_EVENTS != null && FWE.unlockDay.POST_EVENTS <= 1, "a new p
 ok(MX.rows.every((r) => r.verdict === "ok"), `every archetype × ring × ground cell lands its band with canon terrain on (${MX.rows.length} cells)`);
 ok(Object.keys(PA.threatBands.kindShift).every((k) => { const [ring, kind] = k.split(":"); return PA.threatBands[ring] && kinds.includes(kind); }), "kindShift keys name a real ring and archetype");
 
+// D25 arrival events land at the derived approaches
+const ARV = await import("./arrivals.mjs"), apIds = Object.keys(ARV.AP.maps);
+const inFrame = (p) => Math.abs(p.x) <= 161 && Math.abs(p.z) <= 161;
+ok(apIds.every((m) => ["NAVAL_LANDING", "AIRSHIP_DROP"].every((ev) => { const r = ARV.resolveArrival(m, ev, "s1"); return !r.eligible || (inFrame(r.spawn) && inFrame(r.target) && (r.target.anchorId === "BEACH" || ARV.AP.maps[m].anchors[r.target.anchorId])); })), "every resolved arrival spawns at an approach and targets a real PIER / LANDING_PAD (or the beach) inside the ±161 frame");
+const padOnly = apIds.find((m) => !ARV.AP.maps[m].naval.length && ARV.AP.maps[m].air.length);
+ok(padOnly && !ARV.resolveArrival(padOnly, "NAVAL_LANDING", "s1").eligible && ARV.resolveArrival(padOnly, "AIRSHIP_DROP", "s1").eligible, `a baked map with a pad but no deep water (${padOnly}) can host an airship drop but not a naval landing`);
+ok(ARV.resolveArrival("not-baked-yet", "NAVAL_LANDING", "s1").via === "EDGE" && ARV.resolveArrival(apIds[0], "STORM", "s1").eligible && !ARV.resolveArrival(apIds[0], "STORM", "s1").via, "unbaked maps fall back to an edge arrival; non-arrival events are untouched");
+const deckBad = [];
+for (const m of apIds) for (const k of ["HARBOUR", "AIRSHIP_DOCK"]) for (const sd of ["a", "b", "c"]) for (const e of AL.drawDeck({ id: `${m}:${k}`, lwKind: k }, sd, 3, m)) if (!ARV.resolveArrival(m, e.event, sd).eligible || (ARV.ARRIVAL_EVENTS[e.event] && !e.arrival)) deckBad.push(`${m}/${k}/${e.event}`);
+ok(deckBad.length === 0, "decks on baked maps never draw an event the map can't host, and arrival events carry their spawn" + (deckBad.length ? " — " + deckBad.slice(0, 3).join(" ") : ""));
+
 console.log(fails ? `❌ living-world: ${fails} failed` : "✅ living-world: all passed"); process.exit(fails ? 1 : 0);

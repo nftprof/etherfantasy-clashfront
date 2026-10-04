@@ -100,3 +100,19 @@ yet and no committed battle maps are rebaked.
 - **Sample:** `data/living-world/ambient-traffic.sample.json` holds noon snapshots for day 0 and each storm-season
   day.
 
+### 4d. Arrivals land at the approaches (D25)
+
+`tools/living-world/arrivals.mjs` `resolveArrival(mapId, event, battleSeed)` ties step 2 to real map data:
+
+- **NAVAL_LANDING:** the fleet appears at a seeded `NAVAL_APPROACH` and sails for its `PIER`. With no pier, it beaches
+  24 u inland.
+- **AIRSHIP_DROP:** the airship enters at an `AIR_APPROACH` and lands on its `LANDING_PAD`.
+- **A baked map that can't host the event** (no deep water, or no pad) removes it from the battle's deck. A harbour
+  on a dry map never "lands a fleet".
+- **A map not baked yet** gets `via: "EDGE"`, the engine's edge-arrival fallback, so nothing breaks while the 20K bake
+  catches up.
+
+The allocate payload (doc 08) now carries `livingWorld.mapId`, and each arrival event's `arrival { via, spawn,
+target }`. Sample `HARBOUR_ON_A_BAKED_COAST_MAP` (map 1001178): the fleet appears at (−2, 124) and unloads at
+`pier_0` (16, 122).
+

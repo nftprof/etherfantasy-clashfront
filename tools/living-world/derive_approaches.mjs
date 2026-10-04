@@ -49,7 +49,7 @@ for (const f of fs.readdirSync(DIR).filter((f) => f.endsWith(".artifact.json")).
     return { id: `air_${k}`, side: "ATTACKER", spawnClass: "AIR_APPROACH", x: r1(best.X), z: r1(best.Z), landAt: p.anchorId };
   });
   nNaval += naval.length; nAir += air.length;
-  out.maps[id] = { naval, air, piers: piers.map((p) => p.anchorId), pads: pads.map((p) => p.anchorId) };
+  out.maps[id] = { naval, air, piers: piers.map((p) => p.anchorId), pads: pads.map((p) => p.anchorId), anchors: Object.fromEntries([...piers, ...pads].map((p) => [p.anchorId, [p.x, p.z]])) };   // D25: arrival targets
 }
 out.counts = { maps: Object.keys(out.maps).length, naval: nNaval, air: nAir };
 fs.writeFileSync(OUT, JSON.stringify(out, null, 1) + "\n");

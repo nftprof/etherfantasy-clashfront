@@ -29,7 +29,17 @@
    ],
    "pads": [
     "landing_pad_0"
-   ]
+   ],
+   "anchors": {
+    "pier_0": [
+     16,
+     122
+    ],
+    "landing_pad_0": [
+     136,
+     94
+    ]
+   }
   },
   "1020371": {
    "naval": [],
@@ -55,7 +65,17 @@
    "pads": [
     "landing_pad_0",
     "landing_pad_1"
-   ]
+   ],
+   "anchors": {
+    "landing_pad_0": [
+     24,
+     78
+    ],
+    "landing_pad_1": [
+     -12,
+     90
+    ]
+   }
   },
   "1031491": {
    "naval": [],
@@ -99,7 +119,25 @@
     "landing_pad_1",
     "landing_pad_2",
     "landing_pad_3"
-   ]
+   ],
+   "anchors": {
+    "landing_pad_0": [
+     58,
+     -26
+    ],
+    "landing_pad_1": [
+     132,
+     -36
+    ],
+    "landing_pad_2": [
+     -120,
+     -24
+    ],
+    "landing_pad_3": [
+     66,
+     24
+    ]
+   }
   },
   "1040345": {
    "naval": [],
@@ -116,7 +154,13 @@
    "piers": [],
    "pads": [
     "landing_pad_0"
-   ]
+   ],
+   "anchors": {
+    "landing_pad_0": [
+     -122,
+     38
+    ]
+   }
   },
   "1060463": {
    "naval": [],
@@ -160,7 +204,25 @@
     "landing_pad_1",
     "landing_pad_2",
     "landing_pad_3"
-   ]
+   ],
+   "anchors": {
+    "landing_pad_0": [
+     -62,
+     -62
+    ],
+    "landing_pad_1": [
+     -90,
+     -6
+    ],
+    "landing_pad_2": [
+     84,
+     -6
+    ],
+    "landing_pad_3": [
+     -72,
+     30
+    ]
+   }
   },
   "1071728": {
    "naval": [
@@ -196,7 +258,13 @@
    "piers": [],
    "pads": [
     "landing_pad_0"
-   ]
+   ],
+   "anchors": {
+    "landing_pad_0": [
+     -16,
+     0
+    ]
+   }
   },
   "1071729": {
    "naval": [],
@@ -213,7 +281,13 @@
    "piers": [],
    "pads": [
     "landing_pad_0"
-   ]
+   ],
+   "anchors": {
+    "landing_pad_0": [
+     2,
+     -62
+    ]
+   }
   },
   "1071732": {
    "naval": [],
@@ -230,7 +304,13 @@
    "piers": [],
    "pads": [
     "landing_pad_0"
-   ]
+   ],
+   "anchors": {
+    "landing_pad_0": [
+     6,
+     -134
+    ]
+   }
   },
   "1071733": {
    "naval": [],
@@ -247,7 +327,13 @@
    "piers": [],
    "pads": [
     "landing_pad_0"
-   ]
+   ],
+   "anchors": {
+    "landing_pad_0": [
+     -2,
+     18
+    ]
+   }
   },
   "1071738": {
    "naval": [],
@@ -264,7 +350,13 @@
    "piers": [],
    "pads": [
     "landing_pad_0"
-   ]
+   ],
+   "anchors": {
+    "landing_pad_0": [
+     -90,
+     -18
+    ]
+   }
   },
   "1101100": {
    "naval": [
@@ -316,7 +408,37 @@
    ],
    "pads": [
     "landing_pad_0"
-   ]
+   ],
+   "anchors": {
+    "pier_0": [
+     -106,
+     -78
+    ],
+    "pier_1": [
+     108,
+     -46
+    ],
+    "pier_2": [
+     62,
+     -24
+    ],
+    "pier_3": [
+     96,
+     18
+    ],
+    "pier_4": [
+     30,
+     70
+    ],
+    "pier_5": [
+     76,
+     98
+    ],
+    "landing_pad_0": [
+     -90,
+     -42
+    ]
+   }
   },
   "3050435": {
    "naval": [],
@@ -333,7 +455,13 @@
    "piers": [],
    "pads": [
     "landing_pad_0"
-   ]
+   ],
+   "anchors": {
+    "landing_pad_0": [
+     -14,
+     -92
+    ]
+   }
   },
   "3071605": {
    "naval": [
@@ -371,7 +499,21 @@
    "pads": [
     "landing_pad_0",
     "landing_pad_1"
-   ]
+   ],
+   "anchors": {
+    "pier_0": [
+     84,
+     -2
+    ],
+    "landing_pad_0": [
+     -110,
+     -68
+    ],
+    "landing_pad_1": [
+     70,
+     -68
+    ]
+   }
   },
   "3110087": {
    "naval": [],
@@ -388,7 +530,13 @@
    "piers": [],
    "pads": [
     "landing_pad_0"
-   ]
+   ],
+   "anchors": {
+    "landing_pad_0": [
+     98,
+     -102
+    ]
+   }
   }
  },
  "counts": {
