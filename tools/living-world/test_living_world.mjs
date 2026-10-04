@@ -111,4 +111,16 @@ ok(EX.influenceUnlocks.map((u) => u.poisHeld).join() === "3,5,10,25", "influence
 const simR = JSON.parse(fs.readFileSync("docs/living-world/reports/SIM-SAMPLE.json", "utf8")).rows;
 ok(simR.filter((r) => r.k !== "CALIBRATION" && r.medBreachSec != null).every((r) => r.medBreachSec >= EX.sessions.SKIRMISH[0] * 60 * 0.5 && r.medBreachSec <= 720), "sampled POI fights fit the session shapes (between a half-skirmish and 12 min)");
 
+// D5b singles (lazy, 284 K)
+execFileSync("node", ["tools/living-world/seed_singles.mjs", "--out", "/tmp"], { stdio: "ignore" });
+ok(fs.readFileSync("/tmp/singles.summary.json").equals(fs.readFileSync("data/living-world/singles.summary.json")) && fs.readFileSync("/tmp/singles.sample.json").equals(fs.readFileSync("data/living-world/singles.sample.json")), "singles rebuild matches the committed summary + 1 % sample byte-for-byte");
+const SS = JSON.parse(fs.readFileSync("data/living-world/singles.summary.json", "utf8"));
+ok(SS.parcels === 284314, "all 284,314 L3 singles pass through the lazy seed function");
+ok(SS.nodes / SS.parcels < 0.15, `singles stay sparse frontier (${(100 * SS.nodes / SS.parcels).toFixed(1)} % carry a Node)`);
+const { seedSingle, zoneContext } = await import("./seed_singles.mjs");
+const zc = zoneContext("/home/user/cf-overworld/data", "EDU", PA), smp = JSON.parse(fs.readFileSync("data/living-world/singles.sample.json", "utf8")).parcels.filter((p) => p.zone === "EDU");
+const l3 = Object.fromEntries(JSON.parse(fs.readFileSync("/home/user/cf-overworld/data/hexagon-city-source/l3/EDU.json", "utf8")).singles.map((p) => [p.parcelId, p]));
+ok(smp.length > 0 && smp.every((r) => JSON.stringify(seedSingle(l3[r.id], zc)) === JSON.stringify({ id: r.id, ring: r.ring, node: r.node })), "seedSingle() on demand reproduces every sampled EDU parcel exactly (lazy = bulk)");
+ok(smp.filter((r) => r.ring === "CASTLE").every((r) => r.node === null), "no single carries a Node inside a castle ring");
+
 console.log(fails ? `❌ living-world: ${fails} failed` : "✅ living-world: all passed"); process.exit(fails ? 1 : 0);

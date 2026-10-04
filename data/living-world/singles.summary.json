@@ -1,0 +1,110 @@
+{
+ "schema": "cf-living-world/singles-summary@1",
+ "lazy": "seedSingle(parcel, zoneContext) — tools/living-world/seed_singles.mjs",
+ "parcels": 284314,
+ "nodes": 24646,
+ "byRing": {
+  "CASTLE": 35094,
+  "FRONTIER": 120306,
+  "WILD": 128914
+ },
+ "byKind": {
+  "AIRDROP_ZONE": 5932,
+  "CARAVAN_WAYPOINT": 1257,
+  "SALVAGE_SITE": 49,
+  "VENT": 2298,
+  "WILD_LAIR": 15110
+ },
+ "byZone": {
+  "BUS": {
+   "parcels": 70467,
+   "nodes": 6333,
+   "byKind": {
+    "AIRDROP_ZONE": 2116,
+    "CARAVAN_WAYPOINT": 384,
+    "SALVAGE_SITE": 9,
+    "WILD_LAIR": 3824
+   }
+  },
+  "EDU": {
+   "parcels": 13663,
+   "nodes": 1110,
+   "byKind": {
+    "AIRDROP_ZONE": 284,
+    "CARAVAN_WAYPOINT": 46,
+    "WILD_LAIR": 780
+   }
+  },
+  "ENT": {
+   "parcels": 38284,
+   "nodes": 3286,
+   "byKind": {
+    "AIRDROP_ZONE": 650,
+    "CARAVAN_WAYPOINT": 121,
+    "SALVAGE_SITE": 40,
+    "WILD_LAIR": 2475
+   }
+  },
+  "HS1": {
+   "parcels": 14071,
+   "nodes": 1170,
+   "byKind": {
+    "AIRDROP_ZONE": 367,
+    "CARAVAN_WAYPOINT": 107,
+    "WILD_LAIR": 696
+   }
+  },
+  "HS2": {
+   "parcels": 13694,
+   "nodes": 1153,
+   "byKind": {
+    "AIRDROP_ZONE": 463,
+    "CARAVAN_WAYPOINT": 155,
+    "WILD_LAIR": 535
+   }
+  },
+  "HS3": {
+   "parcels": 11873,
+   "nodes": 970,
+   "byKind": {
+    "AIRDROP_ZONE": 380,
+    "CARAVAN_WAYPOINT": 79,
+    "WILD_LAIR": 511
+   }
+  },
+  "HUB": {
+   "parcels": 58745,
+   "nodes": 5395,
+   "byKind": {
+    "AIRDROP_ZONE": 1672,
+    "CARAVAN_WAYPOINT": 365,
+    "WILD_LAIR": 3358
+   }
+  },
+  "UW1": {
+   "parcels": 28915,
+   "nodes": 2285,
+   "byKind": {
+    "VENT": 870,
+    "WILD_LAIR": 1415
+   },
+   "terrainMissing": true
+  },
+  "UW2": {
+   "parcels": 29777,
+   "nodes": 2682,
+   "byKind": {
+    "VENT": 1291,
+    "WILD_LAIR": 1391
+   }
+  },
+  "UW3": {
+   "parcels": 4825,
+   "nodes": 262,
+   "byKind": {
+    "VENT": 137,
+    "WILD_LAIR": 125
+   }
+  }
+ }
+}
