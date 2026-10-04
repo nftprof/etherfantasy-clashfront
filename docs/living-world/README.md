@@ -79,7 +79,7 @@ byte-compares the results, re-runs the sims and checks every invariant (≈ 1 mi
   - `arrivals.mjs` (naval/air arrivals);
   - `ambient_traffic.mjs` (`shipsAt(seed, tick)`);
   - `world_calendar.mjs`, `season_beats.mjs` (+ `threat_bosses.mjs`), `event_board.mjs`, `region_feed.mjs`, `journal.mjs`;
-  - `i18n.mjs` (`t(key, vars, lang)`: all copy comes from the string table);
+  - `i18n.mjs` (`t(key, vars, lang)`: all copy comes from the string table), `tips.mjs` (help tips with live numbers);
   - `map_frames.mjs` (anchor a fight on the real parcel shape), `hero_parcels.mjs` (Nodes on the estate's hero-mode parcels), `allocate_payload.mjs` (the battle wire out) and `resolve_result.mjs` (the result callback back into the world).
 - **Reports** (→ `docs/living-world/reports/`):
   - `balance_sheet.mjs` (CT paid vs units lost);

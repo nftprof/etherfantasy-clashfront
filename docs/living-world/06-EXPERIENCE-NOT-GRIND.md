@@ -117,6 +117,14 @@ power there:
 - **Losing is a story, not a reset.** A broken castle refunds nothing, but nothing is deleted. Pets are
   KO'd, never lost (doc 05 canon). Your monument stays.
 
+### Help tips (D58)
+
+There are 12 short player tips in `i18n/en.json` `tip.*`, covering the board, feed, journal, anti-farm, lulls, Wardens,
+Ascendants, mercenaries, region rights, vessels, storms and defences. `tools/living-world/tips.mjs` fills every number
+from the live data: fees, windows, thresholds, the lull, and the anti-farm curve. A tip can't contradict the game, and
+a retune updates its tip automatically. Example: "🔥 Burn a barbarian camp and its raids stop for 48 h across the
+region."
+
 ## 6. What we will NOT build
 
 - Energy or stamina bars, daily chests, login calendars.

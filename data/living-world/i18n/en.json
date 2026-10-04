@@ -83,5 +83,17 @@
  "beat.threatPeak": "⚔ {boss} marches on {region}: the threat peaks today. Hold the line, or answer the call.",
  "beat.lull": "The dust settles over {region}: two days of quiet.",
  "beat.ascensionNight": "✦ Ascension night in {region}: a Form 3 Guardian rises.",
- "beat.stormFront": "🌩 Storm season reaches {region}: sea lanes may close."
+ "beat.stormFront": "🌩 Storm season reaches {region}: sea lanes may close.",
+ "tip.board": "📋 The board shows what's happening in this region: world events up to {leadH} h ahead, plus fights other players post. 🔔 marks anything within {pingU} u of your land.",
+ "tip.feed": "📰 The region feed tells the region's biggest stories, at most {perDay} a day. Breaking a Guardian or a dared castle will get you in it.",
+ "tip.journal": "📔 Your journal records every fight you take, won or lost. Clearing somewhere new is a fresh story; clearing the same place again only adds a line.",
+ "tip.antiFarm": "🔁 Clearing the same place again within {window} h pays less each time (×{m2}, ×{m3}, then ×{m4}). Somewhere new always pays in full.",
+ "tip.lull": "🔥 Burn a barbarian camp and its raids stop for {lullH} h across the region.",
+ "tip.warden": "🛡 Station a Form 2 pet as a Warden on your castle's perch for up to {wardenH} h ({wardenFee} CT). While it stands, your keep can't be hit. It can be beaten, and if it is, its bounty goes to whoever beat it.",
+ "tip.ascendant": "✦ A Form 3 pet stands as an Ascendant for up to {ascH} h ({ascFee} CT). For {ascMin} min from the first blow it takes only {ascPct} % damage, then it tires. Breaking its {wards} Ward Stones ends that early. One Ascendant per castle per week.",
+ "tip.mercs": "⚔ Hire mercenaries at a post: +{m1} guards for {h1} h ({p1} CT), or +{m2g} for {h2} h ({p2} CT). Unhired companies can be bought by your enemies too.",
+ "tip.regionRights": "🏴 Hold {r1} places in a region to post events there, {r2} to dock your ships at its harbours, {r3} to land airships on your pads, and {r4} to station an Ascendant.",
+ "tip.vessels": "⛵ Ships and airships come from land you control: a ship at {v1} parcels, an airship at {v2}, large ones at {v3}, and an Imperial carrier at {v4}.",
+ "tip.storm": "🌩 Storm season is the last {stormDays} days of every {cycleDays}. Some sea lanes close each day, and the Kraken stirs.",
+ "tip.defence": "🏰 Defences make attackers bring a bigger army, up to ×{ratingMax}. They never make a castle unbreakable. If yours holds, its spoils come back to you."
 }

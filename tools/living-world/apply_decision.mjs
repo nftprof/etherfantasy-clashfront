@@ -20,7 +20,7 @@ export const PACKS = {
     const g = rd(r, "data/living-world/guardians.json"); g.forms["2"].feeCT = 3 * g.forms["2"].feeCT; wr(r, "data/living-world/guardians.json", g);
     edit(r, "docs/living-world/04-GUARDIANS.md", "| 1 CT × kind multiplier |", `| ${g.forms["2"].feeCT} CT × kind multiplier |`);
     const ph = rd(r, "data/living-world/placeholders.json"); ph.entries.find((e) => e.id === "guardian_fee_f2").value = g.forms["2"].feeCT; wr(r, "data/living-world/placeholders.json", ph);   // keep the ⚙ register (D59) in step
-    for (const s of ["stationings.mjs", "event_board.mjs", "region_feed.mjs", "allocate_payload.mjs", "balance_sheet.mjs", "ct_flow_sim.mjs", "abuse_sim.mjs", "e2e_slice.mjs"]) node(r, s);   // e2e: the bounty escrows follow the fee
+    for (const s of ["stationings.mjs", "event_board.mjs", "region_feed.mjs", "allocate_payload.mjs", "balance_sheet.mjs", "ct_flow_sim.mjs", "abuse_sim.mjs", "e2e_slice.mjs", "client_spec.mjs"]) node(r, s);   // e2e: the bounty escrows follow the fee
   } },
   "sky-under-terrain": { call: "Proposal: SKY / UNDER terrain rows", option: "apply", apply(r) {
     const t = rd(r, "data/living-world/terrain-mods.json"); Object.assign(t.groundToHexTerrain, t.proposed.groundToHexTerrain); t.appliedFromProposal = "D41 sky-under-terrain"; wr(r, "data/living-world/terrain-mods.json", t);

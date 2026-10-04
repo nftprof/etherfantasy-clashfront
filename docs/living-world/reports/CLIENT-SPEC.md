@@ -258,6 +258,26 @@ Sample:
 }
 ```
 
+## Help tip (i18n tip.*, numbers bound to live data)
+
+Producer: `tips.mjs tips(lang) → { key: text }` (12 samples merged)
+
+```ts
+type help_tip = {
+  key: string
+  text: string
+}
+```
+
+Sample:
+
+```json
+{
+ "key": "tip.antiFarm",
+ "text": "🔁 Clearing the same place again within 24 h pays less each time (×0.6, ×0.3, then ×0.1). Somewhere new always pays in full."
+}
+```
+
 ## Battle result screen (effects)
 
 Producer: `resolve_result.mjs resolveResult(world, alloc, callback) → effects[]` (8 samples merged)

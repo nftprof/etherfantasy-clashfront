@@ -528,4 +528,9 @@ ok(fs.readFileSync("/tmp/lw_cs_a.md").equals(fs.readFileSync("docs/living-world/
 const CSm = await import("./client_spec.mjs"), CSs = CSm.surfaces();
 ok(CSs.length >= 9 && CSs.every((x) => x.values.length > 0), "every client surface in the spec has at least one real sample");
 
+// D58 player-facing help tips, bound to live data
+const TP = await import("./tips.mjs"), TPr = TP.tips(), TPv = TP.tipVars();
+ok(Object.keys(TPr).length >= 10 && Object.values(TPr).every((x) => !x.includes("?") && !/\{\w+\}/.test(x)), `every help tip renders fully (${Object.keys(TPr).length} tips)`);
+ok(TPr["tip.warden"].includes(`(${G31.forms["2"].feeCT} CT)`) && TPr["tip.ascendant"].includes(`${G31.forms["3"].ascended.windowSec / 60} min`) && TPr["tip.lull"].includes(`${EX.lullHours.BARBARIAN_CAMP} h`) && TPr["tip.regionRights"].includes(`Hold ${EX.influenceUnlocks[0].poisHeld} places`), "tips quote the live numbers (fees, windows, lull, ladder), so they can't contradict the game");
+
 console.log(fails ? `❌ living-world: ${fails} failed` : "✅ living-world: all passed"); process.exit(fails ? 1 : 0);

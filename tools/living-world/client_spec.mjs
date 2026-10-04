@@ -12,6 +12,7 @@ import { resolveArrival } from "./arrivals.mjs";
 import { beats } from "./season_beats.mjs";
 import { regionInfluence } from "./influence.mjs";
 import { t } from "./i18n.mjs";
+import { tips } from "./tips.mjs";
 const OUT = (() => { const i = process.argv.indexOf("--out"); return i > 0 ? process.argv[i + 1] : "docs/living-world/reports/CLIENT-SPEC.md"; })();
 const E2E = JSON.parse(fs.readFileSync("docs/living-world/reports/E2E.json", "utf8"));
 
@@ -45,6 +46,7 @@ export function surfaces() {
     { id: "arrival", title: "Arrival marker (naval landing / airship drop)", fn: "arrivals.mjs resolveArrival(mapId, event, battleSeed)", values: arr },
     { id: "season_beat", title: "Season beat (calendar strip + banner)", fn: "season_beats.mjs beats(seed, cycle)[zone] + i18n beat.* copy", values: sb },
     { id: "influence", title: "Region influence panel", fn: "influence.mjs regionInfluence(held, regionTotal)", values: [regionInfluence(4, 4629), regionInfluence(12, 4629)] },
+    { id: "help_tip", title: "Help tip (i18n tip.*, numbers bound to live data)", fn: "tips.mjs tips(lang) → { key: text }", values: Object.entries(tips()).map(([key, text]) => ({ key, text })) },
     { id: "battle_result", title: "Battle result screen (effects)", fn: "resolve_result.mjs resolveResult(world, alloc, callback) → effects[]", values: E2E.fights.flatMap((f) => f.resolved.effects) },
   ];
 }
