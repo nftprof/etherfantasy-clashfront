@@ -1,0 +1,122 @@
+{
+ "schema": "cf-living-world/defences@1",
+ "note": "Defend/attack economy balance (doc 03). Defence spend is a stake: spoils escrow (to the breaker, refunded if the defence holds) / burn / pool.",
+ "stakeSplit": {
+  "spoilsEscrow": 0.4,
+  "burn": 0.3,
+  "pool": 0.3
+ },
+ "rating": {
+  "max": 1.6,
+  "levelCostGrowth": 1.6,
+  "weightDecayPerLevel": 0.25
+ },
+ "breachFloor": {
+  "attackerRatio": 1.5,
+  "withinSec": 720
+ },
+ "structureDamageReductionCap": 0.45,
+ "upgrades": [
+  {
+   "id": "WALLS",
+   "module": "WALL",
+   "levels": 3,
+   "baseCT": 10,
+   "days": 7,
+   "weight": 0.12,
+   "effect": {
+    "wallHpPctPerLevel": 25
+   }
+  },
+  {
+   "id": "GATES",
+   "module": "GATE",
+   "levels": 2,
+   "baseCT": 8,
+   "days": 7,
+   "weight": 0.08,
+   "effect": {
+    "doorSec": [
+     10,
+     14,
+     18
+    ],
+    "gateHpPctPerLevel": 30
+   }
+  },
+  {
+   "id": "TRAPS",
+   "module": "TRAP",
+   "levels": 3,
+   "baseCT": 6,
+   "days": 3,
+   "weight": 0.08,
+   "effect": {
+    "traps": [
+     2,
+     4,
+     6
+    ],
+    "teleSec": 0.9,
+    "dmg": 180,
+    "rootSec": 2
+   }
+  },
+  {
+   "id": "GRANARY",
+   "module": "GRANARY",
+   "levels": 2,
+   "baseCT": 6,
+   "days": 7,
+   "weight": 0.05,
+   "effect": {
+    "foodClockMinPerLevel": 5
+   }
+  },
+  {
+   "id": "PET_DEN",
+   "module": "PET_DEN",
+   "levels": 2,
+   "baseCT": 8,
+   "days": 7,
+   "weight": 0.06,
+   "effect": {
+    "pets": [
+     1,
+     2
+    ]
+   }
+  },
+  {
+   "id": "WATCHTOWER",
+   "module": "TOWER",
+   "levels": 1,
+   "baseCT": 15,
+   "days": 7,
+   "weight": 0.1,
+   "estateOnly": true,
+   "effect": {
+    "towers": 1
+   }
+  },
+  {
+   "id": "MERCENARIES",
+   "module": "MERCENARY_DEFEND",
+   "levels": 2,
+   "baseCT": 12,
+   "hours": [
+    24,
+    72
+   ],
+   "weight": 0.1,
+   "hiredAt": "MERCENARY_POST",
+   "effect": {
+    "mercs": [
+     2,
+     4
+    ]
+   },
+   "unhiredBiddable": true
+  }
+ ]
+}

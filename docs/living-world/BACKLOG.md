@@ -9,7 +9,7 @@ airships, landing spots, harbours + sea ships; seed all 20K maps; an experience,
 - [x] 00 — Season 2 lessons → living-world rules (`00-S2-LESSONS.md`)
 - [x] 01 — POI catalogue: types, terrain/biome affinity, garrison template, event deck, rewards
 - [ ] 02 — Seeding 20K maps: archetype templates × procedural params; determinism; validation by headless sim samples
-- [ ] 03 — Defend / attack economy: defender upgrades + mercenary guards (pay), attacker pays in units lost; CT/Points flows via LedgerEntry; caps and decay
+- [x] 03 — Defend / attack economy: defender upgrades + mercenary guards (pay), attacker pays in units lost; CT/Points flows via LedgerEntry; caps and decay
 - [x] 04 — NFT Guardians: Form 2 / Form 3 rules, durations, cooldowns, costs, counterplay, HERO_IMPACT_MAX / North Star check
 - [ ] 05 — Player-created events (bounties, sieges, guardian challenges) and how other players find and join them
 - [ ] 06 — Experience, not grind: session shapes, lulls, rewards cadence, anti-farming
@@ -23,6 +23,6 @@ airships, landing spots, harbours + sea ships; seed all 20K maps; an experience,
 - [x] D4 — Seed every castle → `data/living-world/castle-pois.json` + tests (determinism, coverage, bounds)
 - [ ] D5 — Scale to all maps: per-terrain seeding over the full parcel set, plus a summary report
 - [ ] D6 — Headless sim samples: run N seeded POIs through `server/sim`, report win/hold-time spread
-- [~] D7 — Guardian + defence balance table (`guardians.json` ✅, `defences.json` pending) + tests
+- [x] D7 — Guardian + defence balance tables (`guardians.json`, `defences.json`) + tests
 - [ ] D8 — Map designer: POI types (airship dock, landing spot, harbour, sea ship lane) — PR
 - [ ] D4b — Rebalance: caravan waypoints are thin (4) — every castle with a port gets a caravan route; salvage only 1

@@ -47,4 +47,14 @@ ok(F3.stationHours < F2.stationHours && F3.cooldownHours > F2.cooldownHours, "Fo
 ok(F3.ascended.windowSec > 0 && F3.ascended.wardStones.count * F3.ascended.wardStones.cutSecEach <= F3.ascended.windowSec, "Form 3 Ascension is bounded and fully unbindable by its Ward Stones");
 ok(doc4.includes(`${F3.ascended.windowSec / 60} min`) && doc4.includes(`${F2.stationHours} h`) && doc4.includes(`${F3.stationHours} h`) && doc4.includes(`${F3.cooldownHours} h`) && doc4.includes(`${F2.feeCT} CT`) && doc4.includes(`${F3.feeCT} CT`), "doc 04 quotes the same windows, cooldowns and fees as guardians.json");
 
+// D7b defences (doc 03)
+const DF = JSON.parse(fs.readFileSync("data/living-world/defences.json", "utf8")), doc3 = fs.readFileSync("docs/living-world/03-DEFEND-ATTACK-ECONOMY.md", "utf8");
+ok(Math.abs(DF.stakeSplit.spoilsEscrow + DF.stakeSplit.burn + DF.stakeSplit.pool - 1) < 1e-9 && DF.stakeSplit.burn >= 0.10, "defence stake split sums to 100 % and burns ≥ 10 %");
+const maxRating = 1 + DF.upgrades.reduce((s, u) => { let w = u.weight, t = 0; for (let l = 0; l < u.levels; l++) { t += w; w *= 1 - DF.rating.weightDecayPerLevel; } return s + t; }, 0);
+ok(maxRating > DF.rating.max, `the ×${DF.rating.max} cap binds: a fully upgraded castle would otherwise reach ×${maxRating.toFixed(2)} (no impregnable fortress)`);
+ok(DF.upgrades.every((u) => (u.days || (u.hours && u.hours.length))), "every upgrade is time-bound (decays)");
+ok(DF.upgrades.filter((u) => u.module === "TOWER").every((u) => u.estateOnly), "towers stay estate-only (canon §7b rule 2b)");
+ok(DF.structureDamageReductionCap <= GU.forms["3"].aura.structureDmgMul + 0.2 && DF.structureDamageReductionCap < 0.5, "walls + Guardian structure-damage reduction capped below 50 %");
+ok(DF.upgrades.every((u) => doc3.includes("`" + u.module + "`")) && doc3.includes(`×${DF.rating.max}`) && doc3.includes(`${DF.breachFloor.withinSec / 60} minutes`), "doc 03 lists every module, the ×cap and the breach floor from defences.json");
+
 console.log(fails ? `❌ living-world: ${fails} failed` : "✅ living-world: all passed"); process.exit(fails ? 1 : 0);
