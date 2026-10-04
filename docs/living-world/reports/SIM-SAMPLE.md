@@ -6,16 +6,16 @@ Model: the POI's threat scales the defending core (×0.5–×2.5) and garrison; 
 
 | Archetype | n | Breached ≤ 12 min | Median breach | Median threat | Median attacker losses | Defender wins | Verdict |
 |---|---|---|---|---|---|---|---|
-| CALIBRATION | 6 | 100 % | 1:37 | 0 | 7 | 0 | TOO SOFT (falls in < 4 min) |
-| AIRSHIP_DOCK | 6 | 100 % | 0:53 | 29 | 1 | 0 | TOO SOFT (falls in < 4 min) |
-| BARBARIAN_CAMP | 6 | 100 % | 0:49 | 29 | 1 | 0 | TOO SOFT (falls in < 4 min) |
-| HARBOUR | 6 | 100 % | 0:44 | 17 | 0 | 0 | TOO SOFT (falls in < 4 min) |
-| MERCENARY_POST | 6 | 100 % | 1:16 | 17 | 4 | 0 | TOO SOFT (falls in < 4 min) |
-| SALVAGE_SITE | 6 | 100 % | 1:00 | 34 | 2 | 0 | TOO SOFT (falls in < 4 min) |
-| VENT | 6 | 100 % | 1:48 | 58 | 6 | 0 | TOO SOFT (falls in < 4 min) |
-| WAR_CAMP | 6 | 100 % | 0:57 | 28 | 3 | 0 | TOO SOFT (falls in < 4 min) |
-| WILD_LAIR | 6 | 100 % | 1:01 | 39 | 4 | 0 | TOO SOFT (falls in < 4 min) |
+| CALIBRATION | 6 | 100 % | 8:59 | 50 | 64 | 0 | ok |
+| AIRSHIP_DOCK | 6 | 100 % | 5:55 | 29 | 42 | 0 | ok |
+| BARBARIAN_CAMP | 6 | 83 % | 3:22 | 29 | 24 | 0 | ok |
+| HARBOUR | 6 | 100 % | 4:03 | 17 | 29 | 0 | ok |
+| MERCENARY_POST | 6 | 100 % | 3:42 | 17 | 26 | 0 | TOO SOFT (falls in < 4 min) |
+| SALVAGE_SITE | 6 | 100 % | 6:23 | 34 | 45 | 0 | ok |
+| VENT | 6 | 67 % | 8:29 | 58 | 72 | 0 | ok |
+| WAR_CAMP | 6 | 100 % | 4:13 | 28 | 30 | 0 | ok |
+| WILD_LAIR | 6 | 83 % | 5:57 | 39 | 42 | 0 | ok |
 
-**Status: harness NOT yet calibrated.** The CALIBRATION row (threat 0, no garrison) also falls in under 2 minutes: the stock lane kernel's 5,000-HP core with no walls/gates is far softer than an S2 keep (wall rings 1,350 HP, gates, keep 2,400 × tier). Verdicts below are about the *harness*, not the templates, until D6b models the castle structures (walls, gates, the doc-03 defences) and the calibration row lands near the S2 floors.
+**Calibration:** a bare castle (threat 50, S2 structures: 8 walls 1,350 HP, 2 gates 1,150 HP, 2 castle towers 2,350 HP, keep 2,400 × tier; structure HP ×3) vs the floor-case attacker (1.5× squad, ⅓ canon SIEGE ×6 vs structures, + waves) breaches at **8:59** — inside the 6–12 min target band ✅.
 
 Tuning rule (doc 02 §5): an archetype out of band is re-tuned in `poi-archetypes.json` (garrison / threat curve), never per map.

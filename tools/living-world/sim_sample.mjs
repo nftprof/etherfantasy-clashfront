@@ -9,6 +9,7 @@ import fs from "node:fs";
 import { makeWorld, mkUnit } from "../../server/sim/state.js";
 import { step } from "../../server/sim/step.js";
 const args = Object.fromEntries(process.argv.slice(2).reduce((a, v, i, all) => (v.startsWith("--") ? a.concat([[v.slice(2), all[i + 1]]]) : a), []));
+const SQUAD_MUL = +(args.squadMul || 1.5), ONLY = args.only || null, DEF_MUL = +(args.defMul || 3);   // DEF_MUL: structure-HP calibration (D6b sweep: ×3 → a bare threat-50 castle breaches at ~9 min, mid 6–12 band)
 const N = +(args.n || 6), OUT = args.out || "docs/living-world/reports/SIM-SAMPLE.md", JOUT = OUT.replace(/\.md$/, ".json");
 const PA = JSON.parse(fs.readFileSync("data/living-world/poi-archetypes.json", "utf8"));
 const CP = JSON.parse(fs.readFileSync("data/living-world/castle-pois.json", "utf8"));
@@ -23,18 +24,32 @@ function runOne(poi) {
   const seed = fnv1a(poi.id + "|sim1");
   const w = makeWorld(seed, []);
   const tm = 0.5 + poi.threat / 50;                                   // threat 0..100 → defender ×0.5..×2.5
-  for (const u of w.units.values()) if (u.kind === "core" && u.team === 1) { u.hp = u.maxHp = Math.round(5000 * tm); }
+  // S2 CASTLE STRUCTURES (D6b calibration): the stock lane core is replaced by an S2 keep — 2,400 × tier HP — inside a
+  // ring of 8 walls (1,350 HP) with 2 gates (1,150 HP) and 2 castle towers (2,350 HP, shooting). Attackers fight the
+  // NEAREST enemy, so the ring takes the first hits (a gate-less approximation of the wall-walk).
+  const tier = poi.tier || 1, K = { x: 86, z: 86 }, sm = tm * DEF_MUL;
+  for (const u of [...w.units.values()]) if (u.team === 1 && (u.kind === "core" || u.kind === "tower")) w.units.delete(u.uid);
+  const keep = mkUnit({ kind: "core", team: 1, x: K.x, z: K.z, hp: Math.round(2400 * tier * sm), maxHp: Math.round(2400 * tier * sm), dmg: 0, range: 0, speed: 0 }); w.units.set(keep.uid, keep);
+  for (let i = 0; i < 10; i++) {
+    const a = (i / 10) * Math.PI * 2 + Math.PI * 1.25, gate = i === 0 || i === 5, x = K.x + Math.cos(a) * 16, z = K.z + Math.sin(a) * 16;
+    const hp = Math.round((gate ? 1150 : 1350) * sm);
+    const st = mkUnit({ kind: "wall", team: 1, x, z, hp, maxHp: hp, dmg: 0, range: 0, atkSpd: 1, speed: 0 });   // walls block, they don't shield the keep (only towers do) st.slot = gate ? "GATE" : "WALL"; w.units.set(st.uid, st);
+  }
+  for (const [dx, dz] of [[-15, -5], [-5, -15]]) { const hp = Math.round(2350 * sm); const t = mkUnit({ kind: "tower", team: 1, x: K.x + dx, z: K.z + dz, hp, maxHp: hp, dmg: 95, range: 24, atkSpd: 0.8, speed: 0 }); t.slot = "CASTLE_TOWER"; w.units.set(t.uid, t); }
   let gi = 0;
   for (const [unit, count] of ARCH[poi.k].garrison) for (let i = 0; i < count; i++, gi++) {
-    const a = (gi / 6) * Math.PI * 2, x = 100 - 14 + Math.cos(a) * 9, z = 100 - 14 + Math.sin(a) * 9;
+    const a = (gi / 6) * Math.PI * 2, x = K.x + Math.cos(a) * 9, z = K.z + Math.sin(a) * 9;   // garrison inside the walls
     const g = mkUnit({ kind: "wild", team: 1, slot: unit, x, z, hp: Math.round(700 * tm), maxHp: Math.round(700 * tm), dmg: Math.round(40 * Math.sqrt(tm)), range: 7, atkSpd: 0.8, speed: 18 });
     g.home = { x, z }; w.units.set(g.uid, g);
   }
   // a POI garrison HOLDS — no defending hero bot, no defending minion waves (those would push and kill the attacker's core)
   for (const u of [...w.units.values()]) if (u.team === 1 && u.kind === "hero") w.units.delete(u.uid);
   // the doc-03 floor case: the attacker brings an assault squad of 1.5 × the garrison
-  const gN = ARCH[poi.k].garrison.reduce((n, [, c]) => n + c, 0), squad = Math.ceil(1.5 * gN);
-  for (let i = 0; i < squad; i++) { const m = mkUnit({ kind: "minion", team: 0, x: -100 + 6 + (i % 3) * 3, z: -100 + 6 + Math.floor(i / 3) * 3, hp: 700, maxHp: 700, dmg: 40, range: 6, atkSpd: 0.9, speed: 16 }); w.units.set(m.uid, m); }
+  const gN = ARCH[poi.k].garrison.reduce((n, [, c]) => n + c, 0), squad = Math.ceil(SQUAD_MUL * Math.max(gN, 4));   // ≥ 4 so a bare castle still faces the floor-case squad
+  for (let i = 0; i < squad; i++) {
+    const siege = i % 3 === 2;   // a third of the floor-case squad is canon SIEGE (×6 vs structures, fragile)
+    const m = mkUnit({ kind: "minion", team: 0, x: -100 + 6 + (i % 3) * 3, z: -100 + 6 + Math.floor(i / 3) * 3, hp: siege ? 400 : 700, maxHp: siege ? 400 : 700, dmg: siege ? 30 : 40, range: siege ? 9 : 6, atkSpd: siege ? 0.5 : 0.9, speed: siege ? 11 : 16 });
+    if (siege) { m.structMul = 6; m.slot = "SIEGE"; } w.units.set(m.uid, m); }
   const inputs = new Map(); let deaths = 0; const aliveNow = new Set();
   for (const u of w.units.values()) if (u.team === 0 && u.hp > 0) aliveNow.add(u.uid);
   while (w.winner == null && w.t < FLOOR_SEC) {
@@ -42,14 +57,16 @@ function runOne(poi) {
     for (const u of [...w.units.values()]) if (u.team === 1 && u.kind === "minion") w.units.delete(u.uid);
     for (const u of w.units.values()) if (u.team === 0) { const a = u.hp > 0 && u.state !== "dead"; if (aliveNow.has(u.uid) && !a) { deaths++; aliveNow.delete(u.uid); } else if (a) aliveNow.add(u.uid); }
   }
-  return { id: poi.id, k: poi.k, threat: poi.threat, breached: w.winner === 0, sec: Math.round(w.t), attackerDeaths: deaths, defenderWon: w.winner === 1 };
+  const left = (slot) => [...w.units.values()].filter((u) => u.team === 1 && u.slot === slot && u.hp > 0).length;
+  return { id: poi.id, k: poi.k, threat: poi.threat, breached: w.winner === 0, sec: Math.round(w.t), attackerDeaths: deaths, defenderWon: w.winner === 1,
+    left: { walls: left("WALL"), gates: left("GATE"), towers: left("CASTLE_TOWER"), keepPct: Math.round(100 * Math.max(0, keep.hp) / keep.maxHp) } };
 }
 
 const kindsWithGarrison = PA.archetypes.filter((a) => a.garrison.length).map((a) => a.lwKind).sort();
 const results = [];
 ARCH.CALIBRATION = { garrison: [] };   // threat 0, no garrison: the bare-structure baseline
-kindsWithGarrison.unshift("CALIBRATION"); for (let i = 0; i < N; i++) pool.push({ id: "calib-" + i, k: "CALIBRATION", threat: 0 });
-for (const k of kindsWithGarrison) {
+kindsWithGarrison.unshift("CALIBRATION"); for (let i = 0; i < N; i++) pool.push({ id: "calib-" + i, k: "CALIBRATION", threat: 50 });   // a typical castle-band threat
+for (const k of kindsWithGarrison.filter((k) => !ONLY || k === ONLY)) {
   const cands = pool.filter((p) => p.k === k).sort((a, b) => fnv1a(a.id + "|pick") - fnv1a(b.id + "|pick")).slice(0, N);
   for (const p of cands) results.push(runOne(p));
 }
@@ -66,7 +83,8 @@ const md = ["# Headless-sim sample — POI templates vs the 12-minute breach flo
   "Model: the POI's threat scales the defending core (×0.5–×2.5) and garrison; garrison units hold ground (leashed); neutral camps act as third-party barbarians; the attacker is the stock bot hero + minion waves (≈ an even-strength attacker, i.e. *weaker* than the doc-03 1.5× floor case).", "",
   "| Archetype | n | Breached ≤ 12 min | Median breach | Median threat | Median attacker losses | Defender wins | Verdict |", "|---|---|---|---|---|---|---|---|",
   ...rows.map((r) => `| ${r.k} | ${r.n} | ${r.breachRate} % | ${r.medBreachSec != null ? Math.floor(r.medBreachSec / 60) + ":" + String(r.medBreachSec % 60).padStart(2, "0") : "—"} | ${r.medThreat} | ${r.medAttackerDeaths} | ${r.defenderWins} | ${r.flag} |`), "",
-  "**Status: harness NOT yet calibrated.** The CALIBRATION row (threat 0, no garrison) also falls in under 2 minutes: the stock lane kernel's 5,000-HP core with no walls/gates is far softer than an S2 keep (wall rings 1,350 HP, gates, keep 2,400 × tier). Verdicts below are about the *harness*, not the templates, until D6b models the castle structures (walls, gates, the doc-03 defences) and the calibration row lands near the S2 floors.", "",
+  (() => { const c = rows.find((r) => r.k === "CALIBRATION"); const ok = c && c.breachRate === 100 && c.medBreachSec >= 360 && c.medBreachSec <= 720;
+    return `**Calibration:** a bare castle (threat 50, S2 structures: 8 walls 1,350 HP, 2 gates 1,150 HP, 2 castle towers 2,350 HP, keep 2,400 × tier; structure HP ×${DEF_MUL}) vs the floor-case attacker (1.5× squad, ⅓ canon SIEGE ×6 vs structures, + waves) breaches at **${c && c.medBreachSec != null ? Math.floor(c.medBreachSec / 60) + ":" + String(c.medBreachSec % 60).padStart(2, "0") : "—"}** — ${ok ? "inside the 6–12 min target band ✅" : "OUTSIDE the 6–12 min target band ❌"}.`; })(), "",
   "Tuning rule (doc 02 §5): an archetype out of band is re-tuned in `poi-archetypes.json` (garrison / threat curve), never per map.", ""].join("\n");
 fs.writeFileSync(OUT, md);
 console.log(md);

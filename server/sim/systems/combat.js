@@ -33,7 +33,10 @@ export function combatSystem(world, dt) {
           tgt.shielded = true;            // can't hurt the core until its towers fall
         } else {
           if (tgt.kind === "core") tgt.shielded = false;
-          tgt.hp -= u.dmg;
+          // canon UnitClass SIEGE (docs/03 §3: ×6 ⚙ vs structures): opt-in per unit (u.structMul), so units without it — every
+          // existing battle — resolve byte-identically. Structures = towers, walls/gates, cores.
+          const sm = (u.structMul && (tgt.kind === "tower" || tgt.kind === "wall" || tgt.kind === "core")) ? u.structMul : 1;
+          tgt.hp -= u.dmg * sm;
           if (tgt.hp <= 0) killUnit(world, u, tgt); // gold/XP/respawn/win handled centrally
         }
       }
