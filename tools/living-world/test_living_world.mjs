@@ -488,4 +488,12 @@ const GE = JSON.parse(ge1), LIN = JSON.parse(fs.readFileSync("/home/user/etherfa
 ok(GE.species.every((s) => { const c = LIN.upgradeChains.find((x) => x.name === s.name); return c && s.wardenOk === (!!c.forms[1] && s.battleReady) && s.ascendantOk === (!!c.forms[2] && s.battleReady) && s.ascendantStandIn === (!!c.forms[2] && !c.forms[2].glb); }), "every species' Warden / Ascendant eligibility and stand-in flag follow its lineage forms exactly");
 ok(GE.counts.ascendantOk > 0 && GE.counts.wardenOk >= GE.counts.ascendantOk && fs.readFileSync("docs/living-world/04-GUARDIANS.md", "utf8").includes(`**${GE.counts.wardenOk} species qualify**`) && fs.readFileSync("docs/living-world/04-GUARDIANS.md", "utf8").includes(`**${GE.counts.ascendantOk} species qualify**`), "doc 04 quotes the derived eligibility counts");
 
+// D51 threat-peak bosses (canon roster bosses ↔ zone elements)
+const tb1 = run("tools/living-world/threat_bosses.mjs", "/tmp/lw_tb_a.json");
+ok(tb1.equals(fs.readFileSync("data/living-world/threat-bosses.json")), "threat-boss assignment is reproducible and committed");
+const TB2 = JSON.parse(tb1), ZR2 = JSON.parse(fs.readFileSync("/home/user/cf-overworld/data/zone-registry.json", "utf8")).zones, zEl = Object.fromEntries(ZR2.map((z) => [z.zoneId, z.primaryElements || []]));
+ok(Object.keys(RI.regions).every((z) => TB2.regions[z] && !TB2.excluded.includes(TB2.regions[z].boss)) && Object.entries(TB2.regions).every(([z, r]) => { const m = r.boss.match(/_(Fire|Water)$/); return !m || zEl[z].includes(m[1]); }), "every region has a fighting-fit boss; element bosses only march on regions of their element");
+ok(Object.values(TB2.regions).every((r) => I18.has("boss." + r.boss)) && ["beat.threatPeak", "beat.lull", "beat.ascensionNight", "beat.stormFront"].every((k) => I18.has(k)), "every assigned boss and every beat has its display copy");
+ok(Object.values(JSON.parse(fs.readFileSync("data/living-world/season-beats.json", "utf8")).cycles).every((C) => Object.entries(C).every(([z, Bz]) => Bz.filter((b) => b.beat === "THREAT_PEAK").every((b) => b.boss === TB2.regions[z].boss))), "every THREAT_PEAK on the season calendar names its region's boss");
+
 console.log(fails ? `❌ living-world: ${fails} failed` : "✅ living-world: all passed"); process.exit(fails ? 1 : 0);

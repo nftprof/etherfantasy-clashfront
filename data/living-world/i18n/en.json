@@ -69,5 +69,19 @@
  "dir.7": "south-east",
  "time.hm": "{h} h {mm} m",
  "banner.ascendant": "⚠ the Ascendant of {place} stands for {left}: 8 min of power from first contact, 3 Ward Stones",
- "banner.warden": "⚠ the Warden of {place} stands for {left}"
+ "banner.warden": "⚠ the Warden of {place} stands for {left}",
+ "boss.Centaur_Warrior_Fire": "the Ember Centaur",
+ "boss.Centaur_Warrior_Water": "the Tide Centaur",
+ "boss.Sunwon_Magician_Fire": "Sunwon the Flame-Magus",
+ "boss.Zouwan_Warrior_Fire": "Zouwan the Ashblade",
+ "boss.World_1": "the Old Colossus",
+ "boss.World_2": "the Iron Behemoth",
+ "boss.World_3": "the Frost Titan",
+ "boss.World_4": "the Wild King",
+ "boss.Raid_LeeKoon": "Lee Koon the Raid-Lord",
+ "boss._note": "placeholder display names derived from the roster asset names; the lore team names them for real",
+ "beat.threatPeak": "⚔ {boss} marches on {region}: the threat peaks today. Hold the line, or answer the call.",
+ "beat.lull": "The dust settles over {region}: two days of quiet.",
+ "beat.ascensionNight": "✦ Ascension night in {region}: a Form 3 Guardian rises.",
+ "beat.stormFront": "🌩 Storm season reaches {region}: sea lanes may close."
 }

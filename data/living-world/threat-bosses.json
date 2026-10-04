@@ -1,0 +1,56 @@
+{
+ "schema": "cf-living-world/threat-bosses@1",
+ "source": "cf-overworld data/CHARACTER_ROSTER.csv (Boss) + zone-registry primaryElements",
+ "excluded": [
+  "Elemental"
+ ],
+ "unused": [
+  "Zouwan_Warrior_Fire"
+ ],
+ "regions": {
+  "BUS": {
+   "boss": "Centaur_Warrior_Water",
+   "why": "Water boss ↔ BUS primaryElements [\"Water\",\"Grass\"]"
+  },
+  "EDU": {
+   "boss": "World_1",
+   "why": "generic world boss (no element match)"
+  },
+  "ENT": {
+   "boss": "Centaur_Warrior_Water",
+   "why": "Water boss ↔ ENT primaryElements [\"Wind\",\"Water\",\"Grass\"]"
+  },
+  "HS1": {
+   "boss": "World_2",
+   "why": "generic world boss (no element match)"
+  },
+  "HS2": {
+   "boss": "Centaur_Warrior_Fire",
+   "why": "Fire boss ↔ HS2 primaryElements [\"Fire\",\"Electric\"]"
+  },
+  "HS3": {
+   "boss": "World_3",
+   "why": "generic world boss (no element match)"
+  },
+  "HUB": {
+   "boss": "World_4",
+   "why": "generic world boss (no element match)"
+  },
+  "KOL": {
+   "boss": "World_1",
+   "why": "generic world boss (no element match)"
+  },
+  "UW1": {
+   "boss": "World_2",
+   "why": "generic world boss (no element match)"
+  },
+  "UW2": {
+   "boss": "Sunwon_Magician_Fire",
+   "why": "Fire boss ↔ UW2 primaryElements [\"Water\",\"Fire\",\"Dark\"]"
+  },
+  "UW3": {
+   "boss": "Raid_LeeKoon",
+   "why": "RAID boss → strongest region (×5)"
+  }
+ }
+}

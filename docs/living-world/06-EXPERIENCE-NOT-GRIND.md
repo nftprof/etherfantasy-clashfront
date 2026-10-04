@@ -47,6 +47,13 @@ in 6–12 (16 with a Guardian).
     Tests hold this over 6 cycles.
   - Cycle 0 for BUS: `____A_______A____A___S_A_P··` (A = Ascension night, S = storm front, P = threat peak,
     · = lull).
+  - **Every threat peak has a named boss** (D51, `threat-bosses.json`), assigned from the canon roster's bosses:
+    - element bosses march on regions of their element: the Tide Centaur on BUS and ENT, the Ember Centaur on HS2,
+      Sunwon on UW2;
+    - the raid boss Lee Koon anchors the strongest region (UW3, ×5);
+    - the generic world bosses fill the rest;
+    - the static `Elemental` (0 animation clips) is excluded, and Zouwan is a spare;
+    - display names are placeholder i18n keys until the lore team names them.
 
 ## 4. Anti-farm: why repeating the same fight is pointless
 

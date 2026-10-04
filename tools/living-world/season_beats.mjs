@@ -12,6 +12,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { fnv1a, mulberry32 } from "./seed_singles.mjs";
 import { REGIONS } from "./world_calendar.mjs";
+const BOSSES = JSON.parse(fs.readFileSync(path.join(path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../.."), "data/living-world/threat-bosses.json"), "utf8")).regions;   // D51: who marches on each THREAT_PEAK
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 export const CYCLE = { days: 28, stormFrontDay: 21, lullDays: 2, maxPeaksPerDay: 2, big: ["STORM_FRONT", "THREAT_PEAK", "ASCENSION_NIGHT"] };
 const PERCH_ZONES = new Set(JSON.parse(fs.readFileSync(path.join(ROOT, "data/living-world/castle-pois.json"), "utf8")).byCastle.filter((c) => c.pois.some((p) => p.lwKind === "GUARDIAN_PERCH")).map((c) => c.zone));
@@ -27,7 +28,7 @@ export function beats(seed, cycle = 0) {
     for (let k = 0; k < CYCLE.days; k++) {   // first fit from a seeded start: a free day, under the per-day peak cap, whose lull is clear too
       const d = (start + k) % CYCLE.days, lull = Array.from({ length: CYCLE.lullDays }, (_, i) => d + 1 + i).filter((x) => x < CYCLE.days);
       if (busy.has(d) || nearBig(d) || (peaksOn[d] || 0) >= CYCLE.maxPeaksPerDay || lull.some((x) => busy.has(x) || big.has(x + 1))) continue;
-      B.push({ day: d, beat: "THREAT_PEAK" }); busy.add(d); big.add(d); peaksOn[d] = (peaksOn[d] || 0) + 1;
+      B.push({ day: d, beat: "THREAT_PEAK", boss: BOSSES[z] ? BOSSES[z].boss : null }); busy.add(d); big.add(d); peaksOn[d] = (peaksOn[d] || 0) + 1;
       for (const x of lull) { B.push({ day: x, beat: "LULL" }); busy.add(x); }
       break;
     }
