@@ -38,4 +38,13 @@ ok(CP.byCastle.filter((c) => c.layer === "SKY").every((c) => c.pois.some((p) => 
 ok(all.filter((p) => p.lwKind === "LANDING_SPOT").every((p) => all.some((q) => q.id === p.parent)), "every landing spot hangs off a harbour or dock");
 ok(all.every((p) => p.garrison.reduce((n, g) => n + g.count, 0) <= PA.limits.garrisonMax && p.threat >= 0 && p.threat <= 100), "garrisons ≤ 6 units, threat 0–100");
 
+// D7a guardians (doc 04)
+const GU = JSON.parse(fs.readFileSync("data/living-world/guardians.json", "utf8")), F2 = GU.forms["2"], F3 = GU.forms["3"];
+const doc4 = fs.readFileSync("docs/living-world/04-GUARDIANS.md", "utf8");
+ok(Math.abs(GU.feeSplit.bountyEscrow + GU.feeSplit.burn + GU.feeSplit.landYieldPool - 1) < 1e-9 && GU.feeSplit.burn >= 0.10, "guardian fee split sums to 100 % and burns ≥ 10 % (Decision 17)");
+ok(GU.caps.guardianDamageShareMax <= 0.20, "guardian damage share ≤ HERO_IMPACT_MAX (0.20)");
+ok(F3.stationHours < F2.stationHours && F3.cooldownHours > F2.cooldownHours, "Form 3 is shorter-lived and slower to return than Form 2 (nothing is bought forever)");
+ok(F3.ascended.windowSec > 0 && F3.ascended.wardStones.count * F3.ascended.wardStones.cutSecEach <= F3.ascended.windowSec, "Form 3 Ascension is bounded and fully unbindable by its Ward Stones");
+ok(doc4.includes(`${F3.ascended.windowSec / 60} min`) && doc4.includes(`${F2.stationHours} h`) && doc4.includes(`${F3.stationHours} h`) && doc4.includes(`${F3.cooldownHours} h`) && doc4.includes(`${F2.feeCT} CT`) && doc4.includes(`${F3.feeCT} CT`), "doc 04 quotes the same windows, cooldowns and fees as guardians.json");
+
 console.log(fails ? `❌ living-world: ${fails} failed` : "✅ living-world: all passed"); process.exit(fails ? 1 : 0);

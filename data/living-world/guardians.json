@@ -1,0 +1,87 @@
+{
+ "schema": "cf-living-world/guardians@1",
+ "note": "NFT Guardian balance (doc 04). Single source of truth; the sim and doc read this. CT amounts are whole CT (ledger uses ct_units = CT \u00d7 10_000).",
+ "perch": {
+  "perKind": {
+   "KEEP": 1,
+   "CASTLE": 1,
+   "PALACE": 2
+  }
+ },
+ "kindMultiplier": {
+  "KEEP": 1,
+  "CASTLE": 1.5,
+  "PALACE": 2
+ },
+ "forms": {
+  "2": {
+   "name": "Warden",
+   "battleHp": 6000,
+   "hpScalesWithZoneStrength": true,
+   "ascended": null,
+   "bombard": {
+    "everySec": 6,
+    "teleSec": 0.9
+   },
+   "aura": {
+    "radiusU": 20,
+    "structureDmgMul": 0.8
+   },
+   "stationHours": 24,
+   "cooldownHours": 24,
+   "perCastleLimit": {
+    "count": 1,
+    "scope": "PERCH"
+   },
+   "feeCT": 20
+  },
+  "3": {
+   "name": "Ascendant",
+   "battleHp": 6000,
+   "hpScalesWithZoneStrength": true,
+   "ascended": {
+    "windowSec": 480,
+    "damageTakenMul": 0.05,
+    "tiredHpPct": 40,
+    "wardStones": {
+     "count": 3,
+     "hp": 1200,
+     "cutSecEach": 120
+    }
+   },
+   "bombard": {
+    "everySec": 6,
+    "teleSec": 0.9
+   },
+   "aura": {
+    "radiusU": 24,
+    "structureDmgMul": 0.7
+   },
+   "stationHours": 6,
+   "cooldownHours": 72,
+   "perCastleLimit": {
+    "count": 1,
+    "scope": "CASTLE",
+    "perDays": 7
+   },
+   "feeCT": 120
+  }
+ },
+ "caps": {
+  "guardianDamageShareMax": 0.2
+ },
+ "feeSplit": {
+  "bountyEscrow": 0.5,
+  "burn": 0.3,
+  "landYieldPool": 0.2
+ },
+ "bounty": {
+  "onKO": 1.0,
+  "onUnbind": 1.0,
+  "onOutlast": 0.5,
+  "onExpireUnbroken": "REFUND_ESCROW_TO_DEFENDER"
+ },
+ "wake": {
+  "teleSec": 10
+ }
+}
