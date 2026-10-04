@@ -511,7 +511,11 @@ const POI_STYLE={ // [icon, majorRank(null=minor), ring color]
   LANDMARK:["✦",null,"#ffd34d"],MARKET:["🧺",null,"#ffd34d"],QUEST_SITE:["❗",null,"#a8e08f"],
   STAGE:["🎭",null,"#e0a8d6"],NPC:["🧙",null,"#a8c6e0"],CAMP:["🏕",null,"#ffb08a"],
   SHRINE:["🛕",null,"#e0d6a8"],DUNGEON_DOOR:["🚪",null,"#c9b6ff"],DRAG_LANDING:["🐉",null,"#a8e08f"],
-  ONE_WAY_CHUTE:["⬇",null,"#c9b6ff"]};
+  ONE_WAY_CHUTE:["⬇",null,"#c9b6ff"],
+  // CF living-world Nodes (data/world-elements/<ZONE>.cf.json — owner 2026-10-04: airships, landing spots, harbours + ships, events)
+  HARBOUR:["⛵",null,"#6fe0d0"],AIRSHIP_DOCK:["🎈",null,"#9fd6ff"],LANDING_SPOT:["🪂",null,"#9fd6ff"],AIRDROP_ZONE:["📦",null,"#ffd34d"],
+  BARBARIAN_CAMP:["🪓",null,"#ff8a7a"],MERCENARY_POST:["🗡",null,"#e0d6a8"],CARAVAN_WAYPOINT:["🐪",null,"#e0b98f"],WILD_LAIR:["🐾",null,"#a8e08f"],
+  SALVAGE_SITE:["⚱",null,"#cfd6e0"],VENT:["🌋",null,"#ff8a7a"],GUARDIAN_PERCH:["🛡",null,"#ffd34d"]};
 function drawFeatureMarks(){             // place markers OVER the dots
   const F=wfOverlay;if(!F)return;
   const places=[

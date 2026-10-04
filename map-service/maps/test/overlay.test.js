@@ -61,17 +61,18 @@ console.log("— loader merge (the committed hunt starter sets) —");
   clearWorldFieldCache();
   const ent = loadWorldField("ENT");
   const els = ent.overlayElements || [];
-  ok(els.length === 5 && els.every((e) => e.layer === "hunt"), "ENT: 5 hunt elements merged, all tagged layer 'hunt'");
+  const huntEls = els.filter((e) => e.layer === "hunt");   // other layers (e.g. CF's .cf.json events layer) may also merge
+  ok(huntEls.length === 5 && els.every((e) => ["hunt", "cf"].includes(e.layer)), "ENT: 5 hunt elements merged and tagged layer 'hunt' (other layers keep their own tag)");
   ok(els.every((e) => e.id && e.kind && Array.isArray(e.at)), "ENT: every element carries id/kind/at");
   ok(!(ent.pois || []).some((p) => String(p.id).includes("HUNT")), "ENT: overlay never mixed into field pois[] (field stays frozen canon)");
   const places = allPlaces(ent);
-  ok(places.length === (ent.pois?.length || 0) + (ent.castles?.length || 0) + 5, "allPlaces = pois + castles + overlay");
+  ok(places.length === (ent.pois?.length || 0) + (ent.castles?.length || 0) + els.length, "allPlaces = pois + castles + overlay (every layer)");
   ok(places.filter((p) => p.layer === "field").length === (ent.pois?.length || 0) + (ent.castles?.length || 0), "allPlaces tags pois+castles layer 'field'");
   const uw2 = loadWorldField("UW2");
-  ok((uw2.overlayElements || []).length === 5, "UW2: 5 hunt elements merged (stair camp, bowl shrine, banquet door, undertow, sluice)");
-  const edu = loadWorldField("EDU");
-  ok(edu.overlayElements === undefined, "EDU (no overlay files): field.overlayElements absent");
-  ok(allPlaces(edu).every((p) => p.layer === "field"), "EDU allPlaces: only field-layer places");
+  ok((uw2.overlayElements || []).filter((e) => e.layer === "hunt").length === 5, "UW2: 5 hunt elements merged (stair camp, bowl shrine, banquet door, undertow, sluice)");
+  const cgi = loadWorldField("CGI");   // CGI has a field and no overlay file (no castles → no CF events layer)
+  ok(cgi.overlayElements === undefined, "CGI (no overlay files): field.overlayElements absent");
+  ok(allPlaces(cgi).every((p) => p.layer === "field"), "CGI allPlaces: only field-layer places");
 }
 
 console.log("— loader validation: id collision / geometry ban / off-field / missing keys —");
