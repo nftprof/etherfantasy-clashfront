@@ -1,0 +1,5451 @@
+{
+ "schema": "cf-living-world/castle-pois@1",
+ "seedSalt": "lw1",
+ "units": "zone SVG units",
+ "castles": 67,
+ "pois": 298,
+ "byKind": {
+  "AIRDROP_ZONE": 39,
+  "AIRSHIP_DOCK": 20,
+  "BARBARIAN_CAMP": 22,
+  "CARAVAN_WAYPOINT": 4,
+  "GUARDIAN_PERCH": 76,
+  "HARBOUR": 9,
+  "LANDING_SPOT": 49,
+  "MERCENARY_POST": 30,
+  "SALVAGE_SITE": 1,
+  "VENT": 12,
+  "WAR_CAMP": 9,
+  "WILD_LAIR": 27
+ },
+ "byCastle": [
+  {
+   "castleId": "BUS-CASTLE-CAPEMEET",
+   "zone": "BUS",
+   "layer": "SURFACE",
+   "kind": "CASTLE",
+   "tier": 2,
+   "strength": 1.2,
+   "pois": [
+    {
+     "id": "BUS-CASTLE-CAPEMEET:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "at": [
+      17.1,
+      30.27
+     ],
+     "inCastle": true,
+     "garrison": [],
+     "threat": 24,
+     "deckSeed": 44820246
+    },
+    {
+     "id": "BUS-CASTLE-CAPEMEET:MERCENARY_POST:1",
+     "lwKind": "MERCENARY_POST",
+     "at": [
+      15.19,
+      28.5
+     ],
+     "onRoad": "BUS-MT15",
+     "garrison": [
+      {
+       "unit": "MERC_CAPTAIN",
+       "count": 1
+      }
+     ],
+     "threat": 24,
+     "deckSeed": 2909048497
+    },
+    {
+     "id": "BUS-CASTLE-CAPEMEET:HARBOUR:1",
+     "lwKind": "HARBOUR",
+     "at": [
+      11.3,
+      24.9
+     ],
+     "anchorPoi": "BUS-PORT-CAPEMEET",
+     "ships": 2,
+     "garrison": [
+      {
+       "unit": "HARBOUR_MASTER",
+       "count": 1
+      },
+      {
+       "unit": "MARINE",
+       "count": 2
+      },
+      {
+       "unit": "SHIP",
+       "count": 1
+      }
+     ],
+     "threat": 24,
+     "deckSeed": 627488267
+    },
+    {
+     "id": "BUS-CASTLE-CAPEMEET:BARBARIAN_CAMP:1",
+     "lwKind": "BARBARIAN_CAMP",
+     "at": [
+      -11.75,
+      24.12
+     ],
+     "ridge": "BUS-RG1",
+     "garrison": [
+      {
+       "unit": "CHIEFTAIN",
+       "count": 1
+      },
+      {
+       "unit": "BARBARIAN",
+       "count": 5
+      }
+     ],
+     "threat": 24,
+     "deckSeed": 108949792
+    },
+    {
+     "id": "BUS-CASTLE-CAPEMEET:LANDING_SPOT:1",
+     "lwKind": "LANDING_SPOT",
+     "at": [
+      14.86,
+      31.15
+     ],
+     "parent": "BUS-CASTLE-CAPEMEET:HARBOUR:1",
+     "arrives": "NAVAL_LANDING",
+     "garrison": [],
+     "threat": 24,
+     "deckSeed": 1793589886
+    }
+   ]
+  },
+  {
+   "castleId": "BUS-CASTLE-EASTREACH",
+   "zone": "BUS",
+   "layer": "SURFACE",
+   "kind": "CASTLE",
+   "tier": 2,
+   "strength": 1.2,
+   "pois": [
+    {
+     "id": "BUS-CASTLE-EASTREACH:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "at": [
+      326.46,
+      132.51
+     ],
+     "inCastle": true,
+     "garrison": [],
+     "threat": 24,
+     "deckSeed": 1501036404
+    },
+    {
+     "id": "BUS-CASTLE-EASTREACH:MERCENARY_POST:1",
+     "lwKind": "MERCENARY_POST",
+     "at": [
+      331.39,
+      129.87
+     ],
+     "onRoad": "BUS-MT25",
+     "garrison": [
+      {
+       "unit": "MERC_CAPTAIN",
+       "count": 1
+      }
+     ],
+     "threat": 24,
+     "deckSeed": 258104227
+    },
+    {
+     "id": "BUS-CASTLE-EASTREACH:HARBOUR:1",
+     "lwKind": "HARBOUR",
+     "at": [
+      341.4,
+      124.5
+     ],
+     "anchorPoi": "BUS-PORT-EASTREACH",
+     "ships": 2,
+     "garrison": [
+      {
+       "unit": "HARBOUR_MASTER",
+       "count": 1
+      },
+      {
+       "unit": "MARINE",
+       "count": 2
+      },
+      {
+       "unit": "SHIP",
+       "count": 1
+      }
+     ],
+     "threat": 24,
+     "deckSeed": 506150021
+    },
+    {
+     "id": "BUS-CASTLE-EASTREACH:WILD_LAIR:1",
+     "lwKind": "WILD_LAIR",
+     "at": [
+      322.21,
+      116.33
+     ],
+     "ground": "FOREST",
+     "monster": "WOLF",
+     "garrison": [
+      {
+       "unit": "ALPHA",
+       "count": 1
+      },
+      {
+       "unit": "PACK",
+       "count": 4
+      }
+     ],
+     "threat": 24,
+     "deckSeed": 2088731075
+    },
+    {
+     "id": "BUS-CASTLE-EASTREACH:LANDING_SPOT:1",
+     "lwKind": "LANDING_SPOT",
+     "at": [
+      344.8,
+      117.82
+     ],
+     "parent": "BUS-CASTLE-EASTREACH:HARBOUR:1",
+     "arrives": "NAVAL_LANDING",
+     "garrison": [],
+     "threat": 24,
+     "deckSeed": 216635652
+    }
+   ]
+  },
+  {
+   "castleId": "BUS-CASTLE-MIDDLEQUAY",
+   "zone": "BUS",
+   "layer": "SURFACE",
+   "kind": "CASTLE",
+   "tier": 2,
+   "strength": 1.2,
+   "pois": [
+    {
+     "id": "BUS-CASTLE-MIDDLEQUAY:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "at": [
+      273.42,
+      64.98
+     ],
+     "inCastle": true,
+     "garrison": [],
+     "threat": 24,
+     "deckSeed": 3389343177
+    },
+    {
+     "id": "BUS-CASTLE-MIDDLEQUAY:MERCENARY_POST:1",
+     "lwKind": "MERCENARY_POST",
+     "at": [
+      274.21,
+      62.74
+     ],
+     "onRoad": "BUS-MT05",
+     "garrison": [
+      {
+       "unit": "MERC_CAPTAIN",
+       "count": 1
+      }
+     ],
+     "threat": 24,
+     "deckSeed": 2587355758
+    },
+    {
+     "id": "BUS-CASTLE-MIDDLEQUAY:HARBOUR:1",
+     "lwKind": "HARBOUR",
+     "at": [
+      275.8,
+      58.2
+     ],
+     "anchorPoi": "BUS-PORT-MIDDLEQUAY",
+     "ships": 2,
+     "garrison": [
+      {
+       "unit": "HARBOUR_MASTER",
+       "count": 1
+      },
+      {
+       "unit": "MARINE",
+       "count": 2
+      },
+      {
+       "unit": "SHIP",
+       "count": 1
+      }
+     ],
+     "threat": 24,
+     "deckSeed": 761368010
+    },
+    {
+     "id": "BUS-CASTLE-MIDDLEQUAY:SALVAGE_SITE:1",
+     "lwKind": "SALVAGE_SITE",
+     "at": [
+      270.98,
+      77.94
+     ],
+     "garrison": [
+      {
+       "unit": "SCAVENGER",
+       "count": 3
+      }
+     ],
+     "threat": 24,
+     "deckSeed": 1897660256
+    },
+    {
+     "id": "BUS-CASTLE-MIDDLEQUAY:LANDING_SPOT:1",
+     "lwKind": "LANDING_SPOT",
+     "at": [
+      279.01,
+      51.42
+     ],
+     "parent": "BUS-CASTLE-MIDDLEQUAY:HARBOUR:1",
+     "arrives": "NAVAL_LANDING",
+     "garrison": [],
+     "threat": 24,
+     "deckSeed": 298850677
+    }
+   ]
+  },
+  {
+   "castleId": "BUS-FORT-TIDEGATE",
+   "zone": "BUS",
+   "layer": "SURFACE",
+   "kind": "CASTLE",
+   "tier": 2,
+   "strength": 1.2,
+   "pois": [
+    {
+     "id": "BUS-FORT-TIDEGATE:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "at": [
+      159.99,
+      59.15
+     ],
+     "inCastle": true,
+     "garrison": [],
+     "threat": 24,
+     "deckSeed": 3475323778
+    },
+    {
+     "id": "BUS-FORT-TIDEGATE:MERCENARY_POST:1",
+     "lwKind": "MERCENARY_POST",
+     "at": [
+      167.13,
+      56.66
+     ],
+     "onRoad": "BUS-SEC035",
+     "garrison": [
+      {
+       "unit": "MERC_CAPTAIN",
+       "count": 1
+      }
+     ],
+     "threat": 24,
+     "deckSeed": 2513905461
+    },
+    {
+     "id": "BUS-FORT-TIDEGATE:WILD_LAIR:1",
+     "lwKind": "WILD_LAIR",
+     "at": [
+      154.88,
+      47.56
+     ],
+     "ground": "PLAIN",
+     "monster": "BANDIT",
+     "garrison": [
+      {
+       "unit": "ALPHA",
+       "count": 1
+      },
+      {
+       "unit": "PACK",
+       "count": 4
+      }
+     ],
+     "threat": 24,
+     "deckSeed": 427394553
+    },
+    {
+     "id": "BUS-FORT-TIDEGATE:AIRDROP_ZONE:1",
+     "lwKind": "AIRDROP_ZONE",
+     "at": [
+      153.57,
+      43.26
+     ],
+     "garrison": [],
+     "threat": 24,
+     "deckSeed": 4253000978
+    }
+   ]
+  },
+  {
+   "castleId": "BUS-KEEP-DELTALIGHT",
+   "zone": "BUS",
+   "layer": "SURFACE",
+   "kind": "KEEP",
+   "tier": 1,
+   "strength": 1.2,
+   "pois": [
+    {
+     "id": "BUS-KEEP-DELTALIGHT:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "at": [
+      227.57,
+      54.34
+     ],
+     "inCastle": true,
+     "garrison": [],
+     "threat": 12,
+     "deckSeed": 1333118497
+    },
+    {
+     "id": "BUS-KEEP-DELTALIGHT:HARBOUR:1",
+     "lwKind": "HARBOUR",
+     "at": [
+      223.71,
+      63.89
+     ],
+     "anchorPoi": null,
+     "ships": 1,
+     "garrison": [
+      {
+       "unit": "HARBOUR_MASTER",
+       "count": 1
+      },
+      {
+       "unit": "MARINE",
+       "count": 2
+      },
+      {
+       "unit": "SHIP",
+       "count": 1
+      }
+     ],
+     "threat": 12,
+     "deckSeed": 2846475218
+    },
+    {
+     "id": "BUS-KEEP-DELTALIGHT:AIRDROP_ZONE:1",
+     "lwKind": "AIRDROP_ZONE",
+     "at": [
+      242.72,
+      56.85
+     ],
+     "garrison": [],
+     "threat": 12,
+     "deckSeed": 1354174585
+    },
+    {
+     "id": "BUS-KEEP-DELTALIGHT:LANDING_SPOT:1",
+     "lwKind": "LANDING_SPOT",
+     "at": [
+      221.93,
+      59.31
+     ],
+     "parent": "BUS-KEEP-DELTALIGHT:HARBOUR:1",
+     "arrives": "NAVAL_LANDING",
+     "garrison": [],
+     "threat": 12,
+     "deckSeed": 811040397
+    }
+   ]
+  },
+  {
+   "castleId": "BUS-KEEP-DUNEWATCH",
+   "zone": "BUS",
+   "layer": "SURFACE",
+   "kind": "KEEP",
+   "tier": 1,
+   "strength": 1.2,
+   "pois": [
+    {
+     "id": "BUS-KEEP-DUNEWATCH:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "at": [
+      65.32,
+      11.77
+     ],
+     "inCastle": true,
+     "garrison": [],
+     "threat": 12,
+     "deckSeed": 158666760
+    },
+    {
+     "id": "BUS-KEEP-DUNEWATCH:HARBOUR:1",
+     "lwKind": "HARBOUR",
+     "at": [
+      70.83,
+      15.22
+     ],
+     "anchorPoi": null,
+     "ships": 1,
+     "garrison": [
+      {
+       "unit": "HARBOUR_MASTER",
+       "count": 1
+      },
+      {
+       "unit": "MARINE",
+       "count": 2
+      },
+      {
+       "unit": "SHIP",
+       "count": 1
+      }
+     ],
+     "threat": 12,
+     "deckSeed": 136804737
+    },
+    {
+     "id": "BUS-KEEP-DUNEWATCH:AIRDROP_ZONE:1",
+     "lwKind": "AIRDROP_ZONE",
+     "at": [
+      81.3,
+      8.58
+     ],
+     "garrison": [],
+     "threat": 12,
+     "deckSeed": 4051236300
+    },
+    {
+     "id": "BUS-KEEP-DUNEWATCH:LANDING_SPOT:1",
+     "lwKind": "LANDING_SPOT",
+     "at": [
+      63.35,
+      13.77
+     ],
+     "parent": "BUS-KEEP-DUNEWATCH:HARBOUR:1",
+     "arrives": "NAVAL_LANDING",
+     "garrison": [],
+     "threat": 12,
+     "deckSeed": 3096523576
+    }
+   ]
+  },
+  {
+   "castleId": "BUS-KEEP-GULLSHOAL",
+   "zone": "BUS",
+   "layer": "SURFACE",
+   "kind": "KEEP",
+   "tier": 1,
+   "strength": 1.2,
+   "pois": [
+    {
+     "id": "BUS-KEEP-GULLSHOAL:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "at": [
+      303.83,
+      86.69
+     ],
+     "inCastle": true,
+     "garrison": [],
+     "threat": 12,
+     "deckSeed": 4214538196
+    },
+    {
+     "id": "BUS-KEEP-GULLSHOAL:HARBOUR:1",
+     "lwKind": "HARBOUR",
+     "at": [
+      301.93,
+      78.65
+     ],
+     "anchorPoi": null,
+     "ships": 1,
+     "garrison": [
+      {
+       "unit": "HARBOUR_MASTER",
+       "count": 1
+      },
+      {
+       "unit": "MARINE",
+       "count": 2
+      },
+      {
+       "unit": "SHIP",
+       "count": 1
+      }
+     ],
+     "threat": 12,
+     "deckSeed": 4205158181
+    },
+    {
+     "id": "BUS-KEEP-GULLSHOAL:AIRDROP_ZONE:1",
+     "lwKind": "AIRDROP_ZONE",
+     "at": [
+      315.24,
+      86.98
+     ],
+     "garrison": [],
+     "threat": 12,
+     "deckSeed": 3938255352
+    },
+    {
+     "id": "BUS-KEEP-GULLSHOAL:LANDING_SPOT:1",
+     "lwKind": "LANDING_SPOT",
+     "at": [
+      292.98,
+      78.91
+     ],
+     "parent": "BUS-KEEP-GULLSHOAL:HARBOUR:1",
+     "arrives": "NAVAL_LANDING",
+     "garrison": [],
+     "threat": 12,
+     "deckSeed": 1997867492
+    }
+   ]
+  },
+  {
+   "castleId": "BUS-KEEP-MARSHGATE",
+   "zone": "BUS",
+   "layer": "SURFACE",
+   "kind": "KEEP",
+   "tier": 1,
+   "strength": 1.2,
+   "pois": [
+    {
+     "id": "BUS-KEEP-MARSHGATE:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "at": [
+      170.63,
+      127.15
+     ],
+     "inCastle": true,
+     "garrison": [],
+     "threat": 12,
+     "deckSeed": 1308233127
+    },
+    {
+     "id": "BUS-KEEP-MARSHGATE:WILD_LAIR:1",
+     "lwKind": "WILD_LAIR",
+     "at": [
+      149.34,
+      137.16
+     ],
+     "ground": "FOREST",
+     "monster": "WOLF",
+     "garrison": [
+      {
+       "unit": "ALPHA",
+       "count": 1
+      },
+      {
+       "unit": "PACK",
+       "count": 4
+      }
+     ],
+     "threat": 12,
+     "deckSeed": 1907481266
+    },
+    {
+     "id": "BUS-KEEP-MARSHGATE:AIRDROP_ZONE:1",
+     "lwKind": "AIRDROP_ZONE",
+     "at": [
+      180.08,
+      134.81
+     ],
+     "garrison": [],
+     "threat": 12,
+     "deckSeed": 1288905027
+    }
+   ]
+  },
+  {
+   "castleId": "BUS-PALACE-EXCHANGE",
+   "zone": "BUS",
+   "layer": "SURFACE",
+   "kind": "PALACE",
+   "tier": 3,
+   "strength": 1.2,
+   "pois": [
+    {
+     "id": "BUS-PALACE-EXCHANGE:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "at": [
+      129.57,
+      79.78
+     ],
+     "inCastle": true,
+     "garrison": [],
+     "threat": 36,
+     "deckSeed": 3145560113
+    },
+    {
+     "id": "BUS-PALACE-EXCHANGE:GUARDIAN_PERCH:2",
+     "lwKind": "GUARDIAN_PERCH",
+     "at": [
+      129.57,
+      79.78
+     ],
+     "inCastle": true,
+     "garrison": [],
+     "threat": 36,
+     "deckSeed": 3095227256
+    },
+    {
+     "id": "BUS-PALACE-EXCHANGE:WAR_CAMP:1",
+     "lwKind": "WAR_CAMP",
+     "at": [
+      121.44,
+      58.16
+     ],
+     "garrison": [
+      {
+       "unit": "FIELD_OFFICER",
+       "count": 1
+      },
+      {
+       "unit": "SOLDIER",
+       "count": 4
+      }
+     ],
+     "threat": 36,
+     "deckSeed": 3730545003
+    },
+    {
+     "id": "BUS-PALACE-EXCHANGE:WILD_LAIR:1",
+     "lwKind": "WILD_LAIR",
+     "at": [
+      113.74,
+      89.15
+     ],
+     "ground": "FOREST",
+     "monster": "WOLF",
+     "garrison": [
+      {
+       "unit": "ALPHA",
+       "count": 1
+      },
+      {
+       "unit": "PACK",
+       "count": 4
+      }
+     ],
+     "threat": 36,
+     "deckSeed": 4214625732
+    },
+    {
+     "id": "BUS-PALACE-EXCHANGE:CARAVAN_WAYPOINT:1",
+     "lwKind": "CARAVAN_WAYPOINT",
+     "at": [
+      134.81,
+      74.99
+     ],
+     "route": [
+      "BUS-PALACE-EXCHANGE",
+      "BUS-HARBOUR"
+     ],
+     "garrison": [],
+     "threat": 36,
+     "deckSeed": 217150297
+    },
+    {
+     "id": "BUS-PALACE-EXCHANGE:AIRDROP_ZONE:1",
+     "lwKind": "AIRDROP_ZONE",
+     "at": [
+      115.75,
+      82.91
+     ],
+     "garrison": [],
+     "threat": 36,
+     "deckSeed": 3972979209
+    }
+   ]
+  },
+  {
+   "castleId": "EDU-CASTLE-SOUTHREACH",
+   "zone": "EDU",
+   "layer": "SURFACE",
+   "kind": "CASTLE",
+   "tier": 2,
+   "strength": 1.3,
+   "pois": [
+    {
+     "id": "EDU-CASTLE-SOUTHREACH:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "at": [
+      57.32,
+      140.07
+     ],
+     "inCastle": true,
+     "garrison": [],
+     "threat": 26,
+     "deckSeed": 166054040
+    },
+    {
+     "id": "EDU-CASTLE-SOUTHREACH:MERCENARY_POST:1",
+     "lwKind": "MERCENARY_POST",
+     "at": [
+      55.46,
+      144.54
+     ],
+     "onRoad": "EDU-SEC04",
+     "garrison": [
+      {
+       "unit": "MERC_CAPTAIN",
+       "count": 1
+      }
+     ],
+     "threat": 26,
+     "deckSeed": 3972170735
+    },
+    {
+     "id": "EDU-CASTLE-SOUTHREACH:BARBARIAN_CAMP:1",
+     "lwKind": "BARBARIAN_CAMP",
+     "at": [
+      79.22,
+      119.43
+     ],
+     "ridge": "EDU-RG2",
+     "garrison": [
+      {
+       "unit": "CHIEFTAIN",
+       "count": 1
+      },
+      {
+       "unit": "BARBARIAN",
+       "count": 5
+      }
+     ],
+     "threat": 26,
+     "deckSeed": 3990940318
+    },
+    {
+     "id": "EDU-CASTLE-SOUTHREACH:WILD_LAIR:1",
+     "lwKind": "WILD_LAIR",
+     "at": [
+      61.68,
+      155.73
+     ],
+     "ground": "RIDGE",
+     "monster": "WYRM",
+     "garrison": [
+      {
+       "unit": "ALPHA",
+       "count": 1
+      },
+      {
+       "unit": "PACK",
+       "count": 4
+      }
+     ],
+     "threat": 26,
+     "deckSeed": 913411559
+    }
+   ]
+  },
+  {
+   "castleId": "EDU-CASTLE-WESTGATE",
+   "zone": "EDU",
+   "layer": "SURFACE",
+   "kind": "CASTLE",
+   "tier": 2,
+   "strength": 1.3,
+   "pois": [
+    {
+     "id": "EDU-CASTLE-WESTGATE:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "at": [
+      120.28,
+      90.91
+     ],
+     "inCastle": true,
+     "garrison": [],
+     "threat": 26,
+     "deckSeed": 1753164248
+    },
+    {
+     "id": "EDU-CASTLE-WESTGATE:MERCENARY_POST:1",
+     "lwKind": "MERCENARY_POST",
+     "at": [
+      121.58,
+      85.41
+     ],
+     "onRoad": "EDU-JK-GATE",
+     "garrison": [
+      {
+       "unit": "MERC_CAPTAIN",
+       "count": 1
+      }
+     ],
+     "threat": 26,
+     "deckSeed": 1109647151
+    },
+    {
+     "id": "EDU-CASTLE-WESTGATE:BARBARIAN_CAMP:1",
+     "lwKind": "BARBARIAN_CAMP",
+     "at": [
+      141.14,
+      109.18
+     ],
+     "ridge": "EDU-RG1",
+     "garrison": [
+      {
+       "unit": "CHIEFTAIN",
+       "count": 1
+      },
+      {
+       "unit": "BARBARIAN",
+       "count": 5
+      }
+     ],
+     "threat": 26,
+     "deckSeed": 2864784094
+    },
+    {
+     "id": "EDU-CASTLE-WESTGATE:WILD_LAIR:1",
+     "lwKind": "WILD_LAIR",
+     "at": [
+      131.26,
+      85.37
+     ],
+     "ground": "FOREST",
+     "monster": "WOLF",
+     "garrison": [
+      {
+       "unit": "ALPHA",
+       "count": 1
+      },
+      {
+       "unit": "PACK",
+       "count": 4
+      }
+     ],
+     "threat": 26,
+     "deckSeed": 3130736167
+    }
+   ]
+  },
+  {
+   "castleId": "EDU-KEEP-CLIFFWATCH",
+   "zone": "EDU",
+   "layer": "SURFACE",
+   "kind": "KEEP",
+   "tier": 1,
+   "strength": 1.3,
+   "pois": [
+    {
+     "id": "EDU-KEEP-CLIFFWATCH:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "at": [
+      141.54,
+      113.75
+     ],
+     "inCastle": true,
+     "garrison": [],
+     "threat": 13,
+     "deckSeed": 1703687694
+    },
+    {
+     "id": "EDU-KEEP-CLIFFWATCH:BARBARIAN_CAMP:1",
+     "lwKind": "BARBARIAN_CAMP",
+     "at": [
+      131.32,
+      140.56
+     ],
+     "ridge": "EDU-RG1",
+     "garrison": [
+      {
+       "unit": "CHIEFTAIN",
+       "count": 1
+      },
+      {
+       "unit": "BARBARIAN",
+       "count": 5
+      }
+     ],
+     "threat": 13,
+     "deckSeed": 1571938488
+    },
+    {
+     "id": "EDU-KEEP-CLIFFWATCH:AIRDROP_ZONE:1",
+     "lwKind": "AIRDROP_ZONE",
+     "at": [
+      138.49,
+      102.86
+     ],
+     "garrison": [],
+     "threat": 13,
+     "deckSeed": 921742590
+    }
+   ]
+  },
+  {
+   "castleId": "EDU-KEEP-LANTERNHILL",
+   "zone": "EDU",
+   "layer": "SURFACE",
+   "kind": "KEEP",
+   "tier": 1,
+   "strength": 1.3,
+   "pois": [
+    {
+     "id": "EDU-KEEP-LANTERNHILL:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "at": [
+      134.11,
+      122.7
+     ],
+     "inCastle": true,
+     "garrison": [],
+     "threat": 13,
+     "deckSeed": 2522393588
+    },
+    {
+     "id": "EDU-KEEP-LANTERNHILL:BARBARIAN_CAMP:1",
+     "lwKind": "BARBARIAN_CAMP",
+     "at": [
+      157.39,
+      143.74
+     ],
+     "ridge": "EDU-RG1",
+     "garrison": [
+      {
+       "unit": "CHIEFTAIN",
+       "count": 1
+      },
+      {
+       "unit": "BARBARIAN",
+       "count": 5
+      }
+     ],
+     "threat": 13,
+     "deckSeed": 2615395106
+    },
+    {
+     "id": "EDU-KEEP-LANTERNHILL:AIRDROP_ZONE:1",
+     "lwKind": "AIRDROP_ZONE",
+     "at": [
+      133.37,
+      107.89
+     ],
+     "garrison": [],
+     "threat": 13,
+     "deckSeed": 260235416
+    }
+   ]
+  },
+  {
+   "castleId": "EDU-PALACE-ACADEMY",
+   "zone": "EDU",
+   "layer": "SURFACE",
+   "kind": "PALACE",
+   "tier": 3,
+   "strength": 1.3,
+   "pois": [
+    {
+     "id": "EDU-PALACE-ACADEMY:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "at": [
+      123.56,
+      84.98
+     ],
+     "inCastle": true,
+     "garrison": [],
+     "threat": 39,
+     "deckSeed": 3004557468
+    },
+    {
+     "id": "EDU-PALACE-ACADEMY:GUARDIAN_PERCH:2",
+     "lwKind": "GUARDIAN_PERCH",
+     "at": [
+      123.56,
+      84.98
+     ],
+     "inCastle": true,
+     "garrison": [],
+     "threat": 39,
+     "deckSeed": 3054890325
+    },
+    {
+     "id": "EDU-PALACE-ACADEMY:WAR_CAMP:1",
+     "lwKind": "WAR_CAMP",
+     "at": [
+      98.17,
+      83.45
+     ],
+     "garrison": [
+      {
+       "unit": "FIELD_OFFICER",
+       "count": 1
+      },
+      {
+       "unit": "SOLDIER",
+       "count": 4
+      }
+     ],
+     "threat": 39,
+     "deckSeed": 2152790114
+    },
+    {
+     "id": "EDU-PALACE-ACADEMY:BARBARIAN_CAMP:1",
+     "lwKind": "BARBARIAN_CAMP",
+     "at": [
+      149.91,
+      90.61
+     ],
+     "ridge": "EDU-RG1",
+     "garrison": [
+      {
+       "unit": "CHIEFTAIN",
+       "count": 1
+      },
+      {
+       "unit": "BARBARIAN",
+       "count": 5
+      }
+     ],
+     "threat": 39,
+     "deckSeed": 1435509930
+    },
+    {
+     "id": "EDU-PALACE-ACADEMY:WILD_LAIR:1",
+     "lwKind": "WILD_LAIR",
+     "at": [
+      118.85,
+      105.65
+     ],
+     "ground": "FOREST",
+     "monster": "WOLF",
+     "garrison": [
+      {
+       "unit": "ALPHA",
+       "count": 1
+      },
+      {
+       "unit": "PACK",
+       "count": 4
+      }
+     ],
+     "threat": 39,
+     "deckSeed": 3008316459
+    },
+    {
+     "id": "EDU-PALACE-ACADEMY:AIRDROP_ZONE:1",
+     "lwKind": "AIRDROP_ZONE",
+     "at": [
+      117.89,
+      93.77
+     ],
+     "garrison": [],
+     "threat": 39,
+     "deckSeed": 1891336064
+    }
+   ]
+  },
+  {
+   "castleId": "ENT-CASTLE-FESTGATE",
+   "zone": "ENT",
+   "layer": "SURFACE",
+   "kind": "CASTLE",
+   "tier": 2,
+   "strength": 1.1,
+   "pois": [
+    {
+     "id": "ENT-CASTLE-FESTGATE:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "at": [
+      206.21,
+      430.23
+     ],
+     "inCastle": true,
+     "garrison": [],
+     "threat": 22,
+     "deckSeed": 1984915772
+    },
+    {
+     "id": "ENT-CASTLE-FESTGATE:MERCENARY_POST:1",
+     "lwKind": "MERCENARY_POST",
+     "at": [
+      201.52,
+      426.58
+     ],
+     "onRoad": "ENT-SEC001",
+     "garrison": [
+      {
+       "unit": "MERC_CAPTAIN",
+       "count": 1
+      }
+     ],
+     "threat": 22,
+     "deckSeed": 3433432283
+    },
+    {
+     "id": "ENT-CASTLE-FESTGATE:WILD_LAIR:1",
+     "lwKind": "WILD_LAIR",
+     "at": [
+      217.9,
+      444.87
+     ],
+     "ground": "FOREST",
+     "monster": "WOLF",
+     "garrison": [
+      {
+       "unit": "ALPHA",
+       "count": 1
+      },
+      {
+       "unit": "PACK",
+       "count": 4
+      }
+     ],
+     "threat": 22,
+     "deckSeed": 3382364427
+    },
+    {
+     "id": "ENT-CASTLE-FESTGATE:AIRDROP_ZONE:1",
+     "lwKind": "AIRDROP_ZONE",
+     "at": [
+      193.47,
+      441.82
+     ],
+     "garrison": [],
+     "threat": 22,
+     "deckSeed": 959996832
+    }
+   ]
+  },
+  {
+   "castleId": "ENT-CASTLE-RIVERGATE",
+   "zone": "ENT",
+   "layer": "SURFACE",
+   "kind": "CASTLE",
+   "tier": 2,
+   "strength": 1.1,
+   "pois": [
+    {
+     "id": "ENT-CASTLE-RIVERGATE:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "at": [
+      72,
+      160.31
+     ],
+     "inCastle": true,
+     "garrison": [],
+     "threat": 22,
+     "deckSeed": 2567424004
+    },
+    {
+     "id": "ENT-CASTLE-RIVERGATE:MERCENARY_POST:1",
+     "lwKind": "MERCENARY_POST",
+     "at": [
+      71.45,
+      165.02
+     ],
+     "onRoad": "ENT-SEC019",
+     "garrison": [
+      {
+       "unit": "MERC_CAPTAIN",
+       "count": 1
+      }
+     ],
+     "threat": 22,
+     "deckSeed": 2758340211
+    },
+    {
+     "id": "ENT-CASTLE-RIVERGATE:WILD_LAIR:1",
+     "lwKind": "WILD_LAIR",
+     "at": [
+      70.75,
+      173.44
+     ],
+     "ground": "FOREST",
+     "monster": "WOLF",
+     "garrison": [
+      {
+       "unit": "ALPHA",
+       "count": 1
+      },
+      {
+       "unit": "PACK",
+       "count": 4
+      }
+     ],
+     "threat": 22,
+     "deckSeed": 725428083
+    },
+    {
+     "id": "ENT-CASTLE-RIVERGATE:AIRDROP_ZONE:1",
+     "lwKind": "AIRDROP_ZONE",
+     "at": [
+      87.52,
+      158.11
+     ],
+     "garrison": [],
+     "threat": 22,
+     "deckSeed": 217912360
+    }
+   ]
+  },
+  {
+   "castleId": "ENT-KEEP-CAMPANILE",
+   "zone": "ENT",
+   "layer": "SURFACE",
+   "kind": "KEEP",
+   "tier": 1,
+   "strength": 1.1,
+   "pois": [
+    {
+     "id": "ENT-KEEP-CAMPANILE:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "at": [
+      81.06,
+      463.47
+     ],
+     "inCastle": true,
+     "garrison": [],
+     "threat": 11,
+     "deckSeed": 2095017198
+    },
+    {
+     "id": "ENT-KEEP-CAMPANILE:WILD_LAIR:1",
+     "lwKind": "WILD_LAIR",
+     "at": [
+      76.09,
+      480.56
+     ],
+     "ground": "FOREST",
+     "monster": "WOLF",
+     "garrison": [
+      {
+       "unit": "ALPHA",
+       "count": 1
+      },
+      {
+       "unit": "PACK",
+       "count": 4
+      }
+     ],
+     "threat": 11,
+     "deckSeed": 4138874421
+    },
+    {
+     "id": "ENT-KEEP-CAMPANILE:AIRDROP_ZONE:1",
+     "lwKind": "AIRDROP_ZONE",
+     "at": [
+      92.22,
+      459.03
+     ],
+     "garrison": [],
+     "threat": 11,
+     "deckSeed": 4095110494
+    }
+   ]
+  },
+  {
+   "castleId": "ENT-KEEP-LANTERNSHORE",
+   "zone": "ENT",
+   "layer": "SURFACE",
+   "kind": "KEEP",
+   "tier": 1,
+   "strength": 1.1,
+   "pois": [
+    {
+     "id": "ENT-KEEP-LANTERNSHORE:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "at": [
+      21.3,
+      108.42
+     ],
+     "inCastle": true,
+     "garrison": [],
+     "threat": 11,
+     "deckSeed": 1927780517
+    },
+    {
+     "id": "ENT-KEEP-LANTERNSHORE:HARBOUR:1",
+     "lwKind": "HARBOUR",
+     "at": [
+      7,
+      106.9
+     ],
+     "anchorPoi": "ENT-PORT-LANTERNSHORE",
+     "ships": 1,
+     "garrison": [
+      {
+       "unit": "HARBOUR_MASTER",
+       "count": 1
+      },
+      {
+       "unit": "MARINE",
+       "count": 2
+      },
+      {
+       "unit": "SHIP",
+       "count": 1
+      }
+     ],
+     "threat": 11,
+     "deckSeed": 3115971534
+    },
+    {
+     "id": "ENT-KEEP-LANTERNSHORE:CARAVAN_WAYPOINT:1",
+     "lwKind": "CARAVAN_WAYPOINT",
+     "at": [
+      12.72,
+      107.51
+     ],
+     "route": [
+      "ENT-KEEP-LANTERNSHORE",
+      "ENT-PORT-LANTERNSHORE"
+     ],
+     "garrison": [],
+     "threat": 11,
+     "deckSeed": 1637612325
+    },
+    {
+     "id": "ENT-KEEP-LANTERNSHORE:LANDING_SPOT:1",
+     "lwKind": "LANDING_SPOT",
+     "at": [
+      4.19,
+      101.56
+     ],
+     "parent": "ENT-KEEP-LANTERNSHORE:HARBOUR:1",
+     "arrives": "NAVAL_LANDING",
+     "garrison": [],
+     "threat": 11,
+     "deckSeed": 3817917713
+    }
+   ]
+  },
+  {
+   "castleId": "ENT-KEEP-PETALPORT",
+   "zone": "ENT",
+   "layer": "SURFACE",
+   "kind": "KEEP",
+   "tier": 1,
+   "strength": 1.1,
+   "pois": [
+    {
+     "id": "ENT-KEEP-PETALPORT:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "at": [
+      30.02,
+      28.89
+     ],
+     "inCastle": true,
+     "garrison": [],
+     "threat": 11,
+     "deckSeed": 1429686577
+    },
+    {
+     "id": "ENT-KEEP-PETALPORT:HARBOUR:1",
+     "lwKind": "HARBOUR",
+     "at": [
+      18.8,
+      20.8
+     ],
+     "anchorPoi": "ENT-PORT-PETALPORT",
+     "ships": 1,
+     "garrison": [
+      {
+       "unit": "HARBOUR_MASTER",
+       "count": 1
+      },
+      {
+       "unit": "MARINE",
+       "count": 2
+      },
+      {
+       "unit": "SHIP",
+       "count": 1
+      }
+     ],
+     "threat": 11,
+     "deckSeed": 770123458
+    },
+    {
+     "id": "ENT-KEEP-PETALPORT:CARAVAN_WAYPOINT:1",
+     "lwKind": "CARAVAN_WAYPOINT",
+     "at": [
+      23.29,
+      24.04
+     ],
+     "route": [
+      "ENT-KEEP-PETALPORT",
+      "ENT-PORT-PETALPORT"
+     ],
+     "garrison": [],
+     "threat": 11,
+     "deckSeed": 1570075737
+    },
+    {
+     "id": "ENT-KEEP-PETALPORT:LANDING_SPOT:1",
+     "lwKind": "LANDING_SPOT",
+     "at": [
+      25.05,
+      21.47
+     ],
+     "parent": "ENT-KEEP-PETALPORT:HARBOUR:1",
+     "arrives": "NAVAL_LANDING",
+     "garrison": [],
+     "threat": 11,
+     "deckSeed": 368613757
+    }
+   ]
+  },
+  {
+   "castleId": "ENT-KEEP-SUNSTRAND",
+   "zone": "ENT",
+   "layer": "SURFACE",
+   "kind": "KEEP",
+   "tier": 1,
+   "strength": 1.1,
+   "pois": [
+    {
+     "id": "ENT-KEEP-SUNSTRAND:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "at": [
+      46.35,
+      385.86
+     ],
+     "inCastle": true,
+     "garrison": [],
+     "threat": 11,
+     "deckSeed": 3922653678
+    },
+    {
+     "id": "ENT-KEEP-SUNSTRAND:BARBARIAN_CAMP:1",
+     "lwKind": "BARBARIAN_CAMP",
+     "at": [
+      40.55,
+      410.46
+     ],
+     "ridge": "ENT-RG4",
+     "garrison": [
+      {
+       "unit": "CHIEFTAIN",
+       "count": 1
+      },
+      {
+       "unit": "BARBARIAN",
+       "count": 5
+      }
+     ],
+     "threat": 11,
+     "deckSeed": 966987672
+    },
+    {
+     "id": "ENT-KEEP-SUNSTRAND:AIRDROP_ZONE:1",
+     "lwKind": "AIRDROP_ZONE",
+     "at": [
+      56.22,
+      379.21
+     ],
+     "garrison": [],
+     "threat": 11,
+     "deckSeed": 371665502
+    }
+   ]
+  },
+  {
+   "castleId": "ENT-KEEP-TIDEWATCH",
+   "zone": "ENT",
+   "layer": "SURFACE",
+   "kind": "KEEP",
+   "tier": 1,
+   "strength": 1.1,
+   "pois": [
+    {
+     "id": "ENT-KEEP-TIDEWATCH:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "at": [
+      44.94,
+      416.18
+     ],
+     "inCastle": true,
+     "garrison": [],
+     "threat": 11,
+     "deckSeed": 1370554025
+    },
+    {
+     "id": "ENT-KEEP-TIDEWATCH:BARBARIAN_CAMP:1",
+     "lwKind": "BARBARIAN_CAMP",
+     "at": [
+      45.85,
+      450.74
+     ],
+     "ridge": "ENT-RG4",
+     "garrison": [
+      {
+       "unit": "CHIEFTAIN",
+       "count": 1
+      },
+      {
+       "unit": "BARBARIAN",
+       "count": 5
+      }
+     ],
+     "threat": 11,
+     "deckSeed": 3229510263
+    },
+    {
+     "id": "ENT-KEEP-TIDEWATCH:AIRDROP_ZONE:1",
+     "lwKind": "AIRDROP_ZONE",
+     "at": [
+      52.29,
+      425.46
+     ],
+     "garrison": [],
+     "threat": 11,
+     "deckSeed": 2147174561
+    }
+   ]
+  },
+  {
+   "castleId": "ENT-PALACE-MASKS",
+   "zone": "ENT",
+   "layer": "SURFACE",
+   "kind": "PALACE",
+   "tier": 3,
+   "strength": 1.1,
+   "pois": [
+    {
+     "id": "ENT-PALACE-MASKS:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "at": [
+      53.82,
+      450.91
+     ],
+     "inCastle": true,
+     "garrison": [],
+     "threat": 33,
+     "deckSeed": 1983567696
+    },
+    {
+     "id": "ENT-PALACE-MASKS:GUARDIAN_PERCH:2",
+     "lwKind": "GUARDIAN_PERCH",
+     "at": [
+      53.82,
+      450.91
+     ],
+     "inCastle": true,
+     "garrison": [],
+     "threat": 33,
+     "deckSeed": 2033900553
+    },
+    {
+     "id": "ENT-PALACE-MASKS:WAR_CAMP:1",
+     "lwKind": "WAR_CAMP",
+     "at": [
+      58.77,
+      466.92
+     ],
+     "garrison": [
+      {
+       "unit": "FIELD_OFFICER",
+       "count": 1
+      },
+      {
+       "unit": "SOLDIER",
+       "count": 4
+      }
+     ],
+     "threat": 33,
+     "deckSeed": 2629537294
+    },
+    {
+     "id": "ENT-PALACE-MASKS:WILD_LAIR:1",
+     "lwKind": "WILD_LAIR",
+     "at": [
+      67.79,
+      445.41
+     ],
+     "ground": "PLAIN",
+     "monster": "BANDIT",
+     "garrison": [
+      {
+       "unit": "ALPHA",
+       "count": 1
+      },
+      {
+       "unit": "PACK",
+       "count": 4
+      }
+     ],
+     "threat": 33,
+     "deckSeed": 837380351
+    },
+    {
+     "id": "ENT-PALACE-MASKS:AIRDROP_ZONE:1",
+     "lwKind": "AIRDROP_ZONE",
+     "at": [
+      48.29,
+      463.02
+     ],
+     "garrison": [],
+     "threat": 33,
+     "deckSeed": 1701876404
+    },
+    {
+     "id": "ENT-PALACE-MASKS:CARAVAN_WAYPOINT:1",
+     "lwKind": "CARAVAN_WAYPOINT",
+     "at": [
+      62.62,
+      446.85
+     ],
+     "route": [
+      "ENT-PALACE-MASKS",
+      null
+     ],
+     "garrison": [],
+     "threat": 33,
+     "deckSeed": 2281196528
+    }
+   ]
+  },
+  {
+   "castleId": "HS1-AEROPOLIS",
+   "zone": "HS1",
+   "layer": "SKY",
+   "kind": "PALACE",
+   "tier": 3,
+   "strength": 2,
+   "pois": [
+    {
+     "id": "HS1-AEROPOLIS:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "at": [
+      101.87,
+      54.72
+     ],
+     "inCastle": true,
+     "garrison": [],
+     "threat": 60,
+     "deckSeed": 971646541
+    },
+    {
+     "id": "HS1-AEROPOLIS:GUARDIAN_PERCH:2",
+     "lwKind": "GUARDIAN_PERCH",
+     "at": [
+      101.87,
+      54.72
+     ],
+     "inCastle": true,
+     "garrison": [],
+     "threat": 60,
+     "deckSeed": 921313684
+    },
+    {
+     "id": "HS1-AEROPOLIS:WAR_CAMP:1",
+     "lwKind": "WAR_CAMP",
+     "at": [
+      123.02,
+      42.62
+     ],
+     "garrison": [
+      {
+       "unit": "FIELD_OFFICER",
+       "count": 1
+      },
+      {
+       "unit": "SOLDIER",
+       "count": 4
+      }
+     ],
+     "threat": 60,
+     "deckSeed": 2074823759
+    },
+    {
+     "id": "HS1-AEROPOLIS:AIRSHIP_DOCK:1",
+     "lwKind": "AIRSHIP_DOCK",
+     "at": [
+      106.93,
+      53.75
+     ],
+     "anchorPoi": null,
+     "airships": 3,
+     "garrison": [
+      {
+       "unit": "DOCKWARDEN",
+       "count": 1
+      },
+      {
+       "unit": "SKIRMISHER",
+       "count": 2
+      },
+      {
+       "unit": "AIRSHIP",
+       "count": 1
+      }
+     ],
+     "threat": 60,
+     "deckSeed": 3936973273
+    },
+    {
+     "id": "HS1-AEROPOLIS:WILD_LAIR:1",
+     "lwKind": "WILD_LAIR",
+     "at": [
+      89.54,
+      46.65
+     ],
+     "ground": "SKY",
+     "monster": "HARPY",
+     "garrison": [
+      {
+       "unit": "ALPHA",
+       "count": 1
+      },
+      {
+       "unit": "PACK",
+       "count": 4
+      }
+     ],
+     "threat": 60,
+     "deckSeed": 587282416
+    },
+    {
+     "id": "HS1-AEROPOLIS:AIRDROP_ZONE:1",
+     "lwKind": "AIRDROP_ZONE",
+     "at": [
+      87.48,
+      63.72
+     ],
+     "garrison": [],
+     "threat": 60,
+     "deckSeed": 3659854357
+    },
+    {
+     "id": "HS1-AEROPOLIS:LANDING_SPOT:1",
+     "lwKind": "LANDING_SPOT",
+     "at": [
+      105.94,
+      60.98
+     ],
+     "parent": "HS1-AEROPOLIS:AIRSHIP_DOCK:1",
+     "arrives": "AIRSHIP_DROP",
+     "garrison": [],
+     "threat": 60,
+     "deckSeed": 1287147865
+    },
+    {
+     "id": "HS1-AEROPOLIS:LANDING_SPOT:2",
+     "lwKind": "LANDING_SPOT",
+     "at": [
+      107.87,
+      62.2
+     ],
+     "parent": "HS1-AEROPOLIS:AIRSHIP_DOCK:1",
+     "arrives": "AIRSHIP_DROP",
+     "garrison": [],
+     "threat": 60,
+     "deckSeed": 1236815008
+    }
+   ]
+  },
+  {
+   "castleId": "HS1-CASTLE-GARDENHOLD",
+   "zone": "HS1",
+   "layer": "SKY",
+   "kind": "CASTLE",
+   "tier": 2,
+   "strength": 2,
+   "pois": [
+    {
+     "id": "HS1-CASTLE-GARDENHOLD:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "at": [
+      30.09,
+      16.1
+     ],
+     "inCastle": true,
+     "garrison": [],
+     "threat": 40,
+     "deckSeed": 3617330412
+    },
+    {
+     "id": "HS1-CASTLE-GARDENHOLD:MERCENARY_POST:1",
+     "lwKind": "MERCENARY_POST",
+     "at": [
+      24.82,
+      11.94
+     ],
+     "onRoad": "HS1-AP01",
+     "garrison": [
+      {
+       "unit": "MERC_CAPTAIN",
+       "count": 1
+      }
+     ],
+     "threat": 40,
+     "deckSeed": 4175341963
+    },
+    {
+     "id": "HS1-CASTLE-GARDENHOLD:AIRSHIP_DOCK:1",
+     "lwKind": "AIRSHIP_DOCK",
+     "at": [
+      32.85,
+      9.38
+     ],
+     "anchorPoi": null,
+     "airships": 2,
+     "garrison": [
+      {
+       "unit": "DOCKWARDEN",
+       "count": 1
+      },
+      {
+       "unit": "SKIRMISHER",
+       "count": 2
+      },
+      {
+       "unit": "AIRSHIP",
+       "count": 1
+      }
+     ],
+     "threat": 40,
+     "deckSeed": 1860723036
+    },
+    {
+     "id": "HS1-CASTLE-GARDENHOLD:WILD_LAIR:1",
+     "lwKind": "WILD_LAIR",
+     "at": [
+      48.18,
+      1.32
+     ],
+     "ground": "SKY",
+     "monster": "HARPY",
+     "garrison": [
+      {
+       "unit": "ALPHA",
+       "count": 1
+      },
+      {
+       "unit": "PACK",
+       "count": 4
+      }
+     ],
+     "threat": 40,
+     "deckSeed": 4103913115
+    },
+    {
+     "id": "HS1-CASTLE-GARDENHOLD:LANDING_SPOT:1",
+     "lwKind": "LANDING_SPOT",
+     "at": [
+      37.16,
+      9.55
+     ],
+     "parent": "HS1-CASTLE-GARDENHOLD:AIRSHIP_DOCK:1",
+     "arrives": "AIRSHIP_DROP",
+     "garrison": [],
+     "threat": 40,
+     "deckSeed": 1107125436
+    },
+    {
+     "id": "HS1-CASTLE-GARDENHOLD:LANDING_SPOT:2",
+     "lwKind": "LANDING_SPOT",
+     "at": [
+      32.82,
+      4.45
+     ],
+     "parent": "HS1-CASTLE-GARDENHOLD:AIRSHIP_DOCK:1",
+     "arrives": "AIRSHIP_DROP",
+     "garrison": [],
+     "threat": 40,
+     "deckSeed": 1157458293
+    }
+   ]
+  },
+  {
+   "castleId": "HS1-CASTLE-HEAVENSGATE",
+   "zone": "HS1",
+   "layer": "SKY",
+   "kind": "CASTLE",
+   "tier": 2,
+   "strength": 2,
+   "pois": [
+    {
+     "id": "HS1-CASTLE-HEAVENSGATE:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "at": [
+      60.8,
+      109.01
+     ],
+     "inCastle": true,
+     "garrison": [],
+     "threat": 40,
+     "deckSeed": 732929531
+    },
+    {
+     "id": "HS1-CASTLE-HEAVENSGATE:MERCENARY_POST:1",
+     "lwKind": "MERCENARY_POST",
+     "at": [
+      57.96,
+      103.8
+     ],
+     "onRoad": "HS1-DQ-LANDING",
+     "garrison": [
+      {
+       "unit": "MERC_CAPTAIN",
+       "count": 1
+      }
+     ],
+     "threat": 40,
+     "deckSeed": 2348124804
+    },
+    {
+     "id": "HS1-CASTLE-HEAVENSGATE:AIRSHIP_DOCK:1",
+     "lwKind": "AIRSHIP_DOCK",
+     "at": [
+      63.08,
+      117.22
+     ],
+     "anchorPoi": null,
+     "airships": 2,
+     "garrison": [
+      {
+       "unit": "DOCKWARDEN",
+       "count": 1
+      },
+      {
+       "unit": "SKIRMISHER",
+       "count": 2
+      },
+      {
+       "unit": "AIRSHIP",
+       "count": 1
+      }
+     ],
+     "threat": 40,
+     "deckSeed": 3371858463
+    },
+    {
+     "id": "HS1-CASTLE-HEAVENSGATE:WILD_LAIR:1",
+     "lwKind": "WILD_LAIR",
+     "at": [
+      76.15,
+      102.87
+     ],
+     "ground": "SKY",
+     "monster": "HARPY",
+     "garrison": [
+      {
+       "unit": "ALPHA",
+       "count": 1
+      },
+      {
+       "unit": "PACK",
+       "count": 4
+      }
+     ],
+     "threat": 40,
+     "deckSeed": 729464198
+    },
+    {
+     "id": "HS1-CASTLE-HEAVENSGATE:LANDING_SPOT:1",
+     "lwKind": "LANDING_SPOT",
+     "at": [
+      58.56,
+      118.72
+     ],
+     "parent": "HS1-CASTLE-HEAVENSGATE:AIRSHIP_DOCK:1",
+     "arrives": "AIRSHIP_DROP",
+     "garrison": [],
+     "threat": 40,
+     "deckSeed": 351004423
+    },
+    {
+     "id": "HS1-CASTLE-HEAVENSGATE:LANDING_SPOT:2",
+     "lwKind": "LANDING_SPOT",
+     "at": [
+      59.58,
+      119.4
+     ],
+     "parent": "HS1-CASTLE-HEAVENSGATE:AIRSHIP_DOCK:1",
+     "arrives": "AIRSHIP_DROP",
+     "garrison": [],
+     "threat": 40,
+     "deckSeed": 367782042
+    }
+   ]
+  },
+  {
+   "castleId": "HS1-CASTLE-TERRACEHALL",
+   "zone": "HS1",
+   "layer": "SKY",
+   "kind": "CASTLE",
+   "tier": 2,
+   "strength": 2,
+   "pois": [
+    {
+     "id": "HS1-CASTLE-TERRACEHALL:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "at": [
+      78.55,
+      105.93
+     ],
+     "inCastle": true,
+     "garrison": [],
+     "threat": 40,
+     "deckSeed": 1721875321
+    },
+    {
+     "id": "HS1-CASTLE-TERRACEHALL:MERCENARY_POST:1",
+     "lwKind": "MERCENARY_POST",
+     "at": [
+      83,
+      104.03
+     ],
+     "onRoad": "HS1-SEC002",
+     "garrison": [
+      {
+       "unit": "MERC_CAPTAIN",
+       "count": 1
+      }
+     ],
+     "threat": 40,
+     "deckSeed": 323862302
+    },
+    {
+     "id": "HS1-CASTLE-TERRACEHALL:AIRSHIP_DOCK:1",
+     "lwKind": "AIRSHIP_DOCK",
+     "at": [
+      83.43,
+      108.59
+     ],
+     "anchorPoi": null,
+     "airships": 2,
+     "garrison": [
+      {
+       "unit": "DOCKWARDEN",
+       "count": 1
+      },
+      {
+       "unit": "SKIRMISHER",
+       "count": 2
+      },
+      {
+       "unit": "AIRSHIP",
+       "count": 1
+      }
+     ],
+     "threat": 40,
+     "deckSeed": 2679470221
+    },
+    {
+     "id": "HS1-CASTLE-TERRACEHALL:WILD_LAIR:1",
+     "lwKind": "WILD_LAIR",
+     "at": [
+      95.3,
+      108.79
+     ],
+     "ground": "SKY",
+     "monster": "HARPY",
+     "garrison": [
+      {
+       "unit": "ALPHA",
+       "count": 1
+      },
+      {
+       "unit": "PACK",
+       "count": 4
+      }
+     ],
+     "threat": 40,
+     "deckSeed": 4263370220
+    },
+    {
+     "id": "HS1-CASTLE-TERRACEHALL:LANDING_SPOT:1",
+     "lwKind": "LANDING_SPOT",
+     "at": [
+      77.03,
+      105.73
+     ],
+     "parent": "HS1-CASTLE-TERRACEHALL:AIRSHIP_DOCK:1",
+     "arrives": "AIRSHIP_DROP",
+     "garrison": [],
+     "threat": 40,
+     "deckSeed": 981537989
+    },
+    {
+     "id": "HS1-CASTLE-TERRACEHALL:LANDING_SPOT:2",
+     "lwKind": "LANDING_SPOT",
+     "at": [
+      80.69,
+      103.53
+     ],
+     "parent": "HS1-CASTLE-TERRACEHALL:AIRSHIP_DOCK:1",
+     "arrives": "AIRSHIP_DROP",
+     "garrison": [],
+     "threat": 40,
+     "deckSeed": 931205132
+    }
+   ]
+  },
+  {
+   "castleId": "HS1-KEEP-EMBERWATCH",
+   "zone": "HS1",
+   "layer": "SKY",
+   "kind": "KEEP",
+   "tier": 1,
+   "strength": 2,
+   "pois": [
+    {
+     "id": "HS1-KEEP-EMBERWATCH:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "at": [
+      94.6,
+      83.31
+     ],
+     "inCastle": true,
+     "garrison": [],
+     "threat": 20,
+     "deckSeed": 3532872351
+    },
+    {
+     "id": "HS1-KEEP-EMBERWATCH:AIRSHIP_DOCK:1",
+     "lwKind": "AIRSHIP_DOCK",
+     "at": [
+      91.67,
+      76.81
+     ],
+     "anchorPoi": null,
+     "airships": 1,
+     "garrison": [
+      {
+       "unit": "DOCKWARDEN",
+       "count": 1
+      },
+      {
+       "unit": "SKIRMISHER",
+       "count": 2
+      },
+      {
+       "unit": "AIRSHIP",
+       "count": 1
+      }
+     ],
+     "threat": 20,
+     "deckSeed": 3589436203
+    },
+    {
+     "id": "HS1-KEEP-EMBERWATCH:AIRDROP_ZONE:1",
+     "lwKind": "AIRDROP_ZONE",
+     "at": [
+      82.48,
+      94.73
+     ],
+     "garrison": [],
+     "threat": 20,
+     "deckSeed": 1308879579
+    },
+    {
+     "id": "HS1-KEEP-EMBERWATCH:LANDING_SPOT:1",
+     "lwKind": "LANDING_SPOT",
+     "at": [
+      86.71,
+      70.08
+     ],
+     "parent": "HS1-KEEP-EMBERWATCH:AIRSHIP_DOCK:1",
+     "arrives": "AIRSHIP_DROP",
+     "garrison": [],
+     "threat": 20,
+     "deckSeed": 1661821659
+    },
+    {
+     "id": "HS1-KEEP-EMBERWATCH:LANDING_SPOT:2",
+     "lwKind": "LANDING_SPOT",
+     "at": [
+      90.46,
+      81.91
+     ],
+     "parent": "HS1-KEEP-EMBERWATCH:AIRSHIP_DOCK:1",
+     "arrives": "AIRSHIP_DROP",
+     "garrison": [],
+     "threat": 20,
+     "deckSeed": 1678599278
+    }
+   ]
+  },
+  {
+   "castleId": "HS1-KEEP-EMPYREAWATCH",
+   "zone": "HS1",
+   "layer": "SKY",
+   "kind": "KEEP",
+   "tier": 1,
+   "strength": 2,
+   "pois": [
+    {
+     "id": "HS1-KEEP-EMPYREAWATCH:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "at": [
+      39.9,
+      20.21
+     ],
+     "inCastle": true,
+     "garrison": [],
+     "threat": 20,
+     "deckSeed": 572905967
+    },
+    {
+     "id": "HS1-KEEP-EMPYREAWATCH:AIRSHIP_DOCK:1",
+     "lwKind": "AIRSHIP_DOCK",
+     "at": [
+      48.49,
+      19.69
+     ],
+     "anchorPoi": null,
+     "airships": 1,
+     "garrison": [
+      {
+       "unit": "DOCKWARDEN",
+       "count": 1
+      },
+      {
+       "unit": "SKIRMISHER",
+       "count": 2
+      },
+      {
+       "unit": "AIRSHIP",
+       "count": 1
+      }
+     ],
+     "threat": 20,
+     "deckSeed": 977827099
+    },
+    {
+     "id": "HS1-KEEP-EMPYREAWATCH:AIRDROP_ZONE:1",
+     "lwKind": "AIRDROP_ZONE",
+     "at": [
+      36.33,
+      33.24
+     ],
+     "garrison": [],
+     "threat": 20,
+     "deckSeed": 3232514603
+    },
+    {
+     "id": "HS1-KEEP-EMPYREAWATCH:LANDING_SPOT:1",
+     "lwKind": "LANDING_SPOT",
+     "at": [
+      43.73,
+      24
+     ],
+     "parent": "HS1-KEEP-EMPYREAWATCH:AIRSHIP_DOCK:1",
+     "arrives": "AIRSHIP_DROP",
+     "garrison": [],
+     "threat": 20,
+     "deckSeed": 3054097739
+    },
+    {
+     "id": "HS1-KEEP-EMPYREAWATCH:LANDING_SPOT:2",
+     "lwKind": "LANDING_SPOT",
+     "at": [
+      48.59,
+      12.43
+     ],
+     "parent": "HS1-KEEP-EMPYREAWATCH:AIRSHIP_DOCK:1",
+     "arrives": "AIRSHIP_DROP",
+     "garrison": [],
+     "threat": 20,
+     "deckSeed": 3070875358
+    }
+   ]
+  },
+  {
+   "castleId": "HS1-KEEP-STAIRWATCH",
+   "zone": "HS1",
+   "layer": "SKY",
+   "kind": "KEEP",
+   "tier": 1,
+   "strength": 2,
+   "pois": [
+    {
+     "id": "HS1-KEEP-STAIRWATCH:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "at": [
+      51.2,
+      60
+     ],
+     "inCastle": true,
+     "garrison": [],
+     "threat": 20,
+     "deckSeed": 1538084693
+    },
+    {
+     "id": "HS1-KEEP-STAIRWATCH:AIRSHIP_DOCK:1",
+     "lwKind": "AIRSHIP_DOCK",
+     "at": [
+      42.86,
+      56.32
+     ],
+     "anchorPoi": null,
+     "airships": 1,
+     "garrison": [
+      {
+       "unit": "DOCKWARDEN",
+       "count": 1
+      },
+      {
+       "unit": "SKIRMISHER",
+       "count": 2
+      },
+      {
+       "unit": "AIRSHIP",
+       "count": 1
+      }
+     ],
+     "threat": 20,
+     "deckSeed": 4231059233
+    },
+    {
+     "id": "HS1-KEEP-STAIRWATCH:AIRDROP_ZONE:1",
+     "lwKind": "AIRDROP_ZONE",
+     "at": [
+      47.97,
+      69.82
+     ],
+     "garrison": [],
+     "threat": 20,
+     "deckSeed": 3400497981
+    },
+    {
+     "id": "HS1-KEEP-STAIRWATCH:LANDING_SPOT:1",
+     "lwKind": "LANDING_SPOT",
+     "at": [
+      37.22,
+      49.76
+     ],
+     "parent": "HS1-KEEP-STAIRWATCH:AIRSHIP_DOCK:1",
+     "arrives": "AIRSHIP_DROP",
+     "garrison": [],
+     "threat": 20,
+     "deckSeed": 2001547233
+    },
+    {
+     "id": "HS1-KEEP-STAIRWATCH:LANDING_SPOT:2",
+     "lwKind": "LANDING_SPOT",
+     "at": [
+      44.39,
+      64.04
+     ],
+     "parent": "HS1-KEEP-STAIRWATCH:AIRSHIP_DOCK:1",
+     "arrives": "AIRSHIP_DROP",
+     "garrison": [],
+     "threat": 20,
+     "deckSeed": 1951214376
+    }
+   ]
+  },
+  {
+   "castleId": "HS2-KEEP-BULWARK",
+   "zone": "HS2",
+   "layer": "SKY",
+   "kind": "KEEP",
+   "tier": 1,
+   "strength": 2,
+   "pois": [
+    {
+     "id": "HS2-KEEP-BULWARK:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "at": [
+      69.39,
+      11.28
+     ],
+     "inCastle": true,
+     "garrison": [],
+     "threat": 20,
+     "deckSeed": 3786925032
+    },
+    {
+     "id": "HS2-KEEP-BULWARK:AIRSHIP_DOCK:1",
+     "lwKind": "AIRSHIP_DOCK",
+     "at": [
+      66.35,
+      5.56
+     ],
+     "anchorPoi": null,
+     "airships": 1,
+     "garrison": [
+      {
+       "unit": "DOCKWARDEN",
+       "count": 1
+      },
+      {
+       "unit": "SKIRMISHER",
+       "count": 2
+      },
+      {
+       "unit": "AIRSHIP",
+       "count": 1
+      }
+     ],
+     "threat": 20,
+     "deckSeed": 627887920
+    },
+    {
+     "id": "HS2-KEEP-BULWARK:AIRDROP_ZONE:1",
+     "lwKind": "AIRDROP_ZONE",
+     "at": [
+      85.69,
+      11.08
+     ],
+     "garrison": [],
+     "threat": 20,
+     "deckSeed": 2586546476
+    },
+    {
+     "id": "HS2-KEEP-BULWARK:LANDING_SPOT:1",
+     "lwKind": "LANDING_SPOT",
+     "at": [
+      64.39,
+      -1.46
+     ],
+     "parent": "HS2-KEEP-BULWARK:AIRSHIP_DOCK:1",
+     "arrives": "AIRSHIP_DROP",
+     "garrison": [],
+     "threat": 20,
+     "deckSeed": 4024252952
+    },
+    {
+     "id": "HS2-KEEP-BULWARK:LANDING_SPOT:2",
+     "lwKind": "LANDING_SPOT",
+     "at": [
+      60.64,
+      5.18
+     ],
+     "parent": "HS2-KEEP-BULWARK:AIRSHIP_DOCK:1",
+     "arrives": "AIRSHIP_DROP",
+     "garrison": [],
+     "threat": 20,
+     "deckSeed": 4074585809
+    }
+   ]
+  },
+  {
+   "castleId": "HS2-KEEP-CINDERHOLM",
+   "zone": "HS2",
+   "layer": "SKY",
+   "kind": "KEEP",
+   "tier": 1,
+   "strength": 2,
+   "pois": [
+    {
+     "id": "HS2-KEEP-CINDERHOLM:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "at": [
+      34.52,
+      98.21
+     ],
+     "inCastle": true,
+     "garrison": [],
+     "threat": 20,
+     "deckSeed": 625591671
+    },
+    {
+     "id": "HS2-KEEP-CINDERHOLM:AIRSHIP_DOCK:1",
+     "lwKind": "AIRSHIP_DOCK",
+     "at": [
+      31.37,
+      102.21
+     ],
+     "anchorPoi": null,
+     "airships": 1,
+     "garrison": [
+      {
+       "unit": "DOCKWARDEN",
+       "count": 1
+      },
+      {
+       "unit": "SKIRMISHER",
+       "count": 2
+      },
+      {
+       "unit": "AIRSHIP",
+       "count": 1
+      }
+     ],
+     "threat": 20,
+     "deckSeed": 1527016355
+    },
+    {
+     "id": "HS2-KEEP-CINDERHOLM:AIRDROP_ZONE:1",
+     "lwKind": "AIRDROP_ZONE",
+     "at": [
+      39.45,
+      88.68
+     ],
+     "garrison": [],
+     "threat": 20,
+     "deckSeed": 1816131091
+    },
+    {
+     "id": "HS2-KEEP-CINDERHOLM:LANDING_SPOT:1",
+     "lwKind": "LANDING_SPOT",
+     "at": [
+      25.01,
+      103.15
+     ],
+     "parent": "HS2-KEEP-CINDERHOLM:AIRSHIP_DOCK:1",
+     "arrives": "AIRSHIP_DROP",
+     "garrison": [],
+     "threat": 20,
+     "deckSeed": 3412973203
+    },
+    {
+     "id": "HS2-KEEP-CINDERHOLM:LANDING_SPOT:2",
+     "lwKind": "LANDING_SPOT",
+     "at": [
+      22.51,
+      102.07
+     ],
+     "parent": "HS2-KEEP-CINDERHOLM:AIRSHIP_DOCK:1",
+     "arrives": "AIRSHIP_DROP",
+     "garrison": [],
+     "threat": 20,
+     "deckSeed": 3429750822
+    }
+   ]
+  },
+  {
+   "castleId": "HS2-KEEP-PARADEWATCH",
+   "zone": "HS2",
+   "layer": "SKY",
+   "kind": "KEEP",
+   "tier": 1,
+   "strength": 2,
+   "pois": [
+    {
+     "id": "HS2-KEEP-PARADEWATCH:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "at": [
+      56.63,
+      78.8
+     ],
+     "inCastle": true,
+     "garrison": [],
+     "threat": 20,
+     "deckSeed": 2740363584
+    },
+    {
+     "id": "HS2-KEEP-PARADEWATCH:AIRSHIP_DOCK:1",
+     "lwKind": "AIRSHIP_DOCK",
+     "at": [
+      51.28,
+      83.66
+     ],
+     "anchorPoi": null,
+     "airships": 1,
+     "garrison": [
+      {
+       "unit": "DOCKWARDEN",
+       "count": 1
+      },
+      {
+       "unit": "SKIRMISHER",
+       "count": 2
+      },
+      {
+       "unit": "AIRSHIP",
+       "count": 1
+      }
+     ],
+     "threat": 20,
+     "deckSeed": 2162342888
+    },
+    {
+     "id": "HS2-KEEP-PARADEWATCH:AIRDROP_ZONE:1",
+     "lwKind": "AIRDROP_ZONE",
+     "at": [
+      54.99,
+      93.6
+     ],
+     "garrison": [],
+     "threat": 20,
+     "deckSeed": 2513810532
+    },
+    {
+     "id": "HS2-KEEP-PARADEWATCH:LANDING_SPOT:1",
+     "lwKind": "LANDING_SPOT",
+     "at": [
+      53.25,
+      91.22
+     ],
+     "parent": "HS2-KEEP-PARADEWATCH:AIRSHIP_DOCK:1",
+     "arrives": "AIRSHIP_DROP",
+     "garrison": [],
+     "threat": 20,
+     "deckSeed": 3101473520
+    },
+    {
+     "id": "HS2-KEEP-PARADEWATCH:LANDING_SPOT:2",
+     "lwKind": "LANDING_SPOT",
+     "at": [
+      55.7,
+      88.94
+     ],
+     "parent": "HS2-KEEP-PARADEWATCH:AIRSHIP_DOCK:1",
+     "arrives": "AIRSHIP_DROP",
+     "garrison": [],
+     "threat": 20,
+     "deckSeed": 3151806377
+    }
+   ]
+  },
+  {
+   "castleId": "HS2-KEEP-SEAMWATCH",
+   "zone": "HS2",
+   "layer": "SKY",
+   "kind": "KEEP",
+   "tier": 1,
+   "strength": 2,
+   "pois": [
+    {
+     "id": "HS2-KEEP-SEAMWATCH:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "at": [
+      25.28,
+      26.51
+     ],
+     "inCastle": true,
+     "garrison": [],
+     "threat": 20,
+     "deckSeed": 3398926031
+    },
+    {
+     "id": "HS2-KEEP-SEAMWATCH:AIRSHIP_DOCK:1",
+     "lwKind": "AIRSHIP_DOCK",
+     "at": [
+      20.4,
+      21.86
+     ],
+     "anchorPoi": null,
+     "airships": 1,
+     "garrison": [
+      {
+       "unit": "DOCKWARDEN",
+       "count": 1
+      },
+      {
+       "unit": "SKIRMISHER",
+       "count": 2
+      },
+      {
+       "unit": "AIRSHIP",
+       "count": 1
+      }
+     ],
+     "threat": 20,
+     "deckSeed": 1557854331
+    },
+    {
+     "id": "HS2-KEEP-SEAMWATCH:AIRDROP_ZONE:1",
+     "lwKind": "AIRDROP_ZONE",
+     "at": [
+      25.66,
+      40.13
+     ],
+     "garrison": [],
+     "threat": 20,
+     "deckSeed": 3589632011
+    },
+    {
+     "id": "HS2-KEEP-SEAMWATCH:LANDING_SPOT:1",
+     "lwKind": "LANDING_SPOT",
+     "at": [
+      21.06,
+      25.9
+     ],
+     "parent": "HS2-KEEP-SEAMWATCH:AIRSHIP_DOCK:1",
+     "arrives": "AIRSHIP_DROP",
+     "garrison": [],
+     "threat": 20,
+     "deckSeed": 2195319723
+    },
+    {
+     "id": "HS2-KEEP-SEAMWATCH:LANDING_SPOT:2",
+     "lwKind": "LANDING_SPOT",
+     "at": [
+      12.44,
+      23.54
+     ],
+     "parent": "HS2-KEEP-SEAMWATCH:AIRSHIP_DOCK:1",
+     "arrives": "AIRSHIP_DROP",
+     "garrison": [],
+     "threat": 20,
+     "deckSeed": 2212097342
+    }
+   ]
+  },
+  {
+   "castleId": "HS2-KEEP-SHARDWATCH",
+   "zone": "HS2",
+   "layer": "SKY",
+   "kind": "KEEP",
+   "tier": 1,
+   "strength": 2,
+   "pois": [
+    {
+     "id": "HS2-KEEP-SHARDWATCH:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "at": [
+      98.07,
+      97.13
+     ],
+     "inCastle": true,
+     "garrison": [],
+     "threat": 20,
+     "deckSeed": 2253626087
+    },
+    {
+     "id": "HS2-KEEP-SHARDWATCH:AIRSHIP_DOCK:1",
+     "lwKind": "AIRSHIP_DOCK",
+     "at": [
+      98.8,
+      89.44
+     ],
+     "anchorPoi": null,
+     "airships": 1,
+     "garrison": [
+      {
+       "unit": "DOCKWARDEN",
+       "count": 1
+      },
+      {
+       "unit": "SKIRMISHER",
+       "count": 2
+      },
+      {
+       "unit": "AIRSHIP",
+       "count": 1
+      }
+     ],
+     "threat": 20,
+     "deckSeed": 2142380211
+    },
+    {
+     "id": "HS2-KEEP-SHARDWATCH:AIRDROP_ZONE:1",
+     "lwKind": "AIRDROP_ZONE",
+     "at": [
+      98.81,
+      79.65
+     ],
+     "garrison": [],
+     "threat": 20,
+     "deckSeed": 4177329027
+    },
+    {
+     "id": "HS2-KEEP-SHARDWATCH:LANDING_SPOT:1",
+     "lwKind": "LANDING_SPOT",
+     "at": [
+      95.42,
+      93.19
+     ],
+     "parent": "HS2-KEEP-SHARDWATCH:AIRSHIP_DOCK:1",
+     "arrives": "AIRSHIP_DROP",
+     "garrison": [],
+     "threat": 20,
+     "deckSeed": 2488231715
+    },
+    {
+     "id": "HS2-KEEP-SHARDWATCH:LANDING_SPOT:2",
+     "lwKind": "LANDING_SPOT",
+     "at": [
+      94.15,
+      85.81
+     ],
+     "parent": "HS2-KEEP-SHARDWATCH:AIRSHIP_DOCK:1",
+     "arrives": "AIRSHIP_DROP",
+     "garrison": [],
+     "threat": 20,
+     "deckSeed": 2505009334
+    }
+   ]
+  },
+  {
+   "castleId": "HS2-KEEP-WESTGATE",
+   "zone": "HS2",
+   "layer": "SKY",
+   "kind": "KEEP",
+   "tier": 1,
+   "strength": 2,
+   "pois": [
+    {
+     "id": "HS2-KEEP-WESTGATE:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "at": [
+      13.47,
+      53.39
+     ],
+     "inCastle": true,
+     "garrison": [],
+     "threat": 20,
+     "deckSeed": 3161655158
+    },
+    {
+     "id": "HS2-KEEP-WESTGATE:AIRSHIP_DOCK:1",
+     "lwKind": "AIRSHIP_DOCK",
+     "at": [
+      22.88,
+      52.55
+     ],
+     "anchorPoi": null,
+     "airships": 1,
+     "garrison": [
+      {
+       "unit": "DOCKWARDEN",
+       "count": 1
+      },
+      {
+       "unit": "SKIRMISHER",
+       "count": 2
+      },
+      {
+       "unit": "AIRSHIP",
+       "count": 1
+      }
+     ],
+     "threat": 20,
+     "deckSeed": 2361140606
+    },
+    {
+     "id": "HS2-KEEP-WESTGATE:AIRDROP_ZONE:1",
+     "lwKind": "AIRDROP_ZONE",
+     "at": [
+      3.64,
+      62.24
+     ],
+     "garrison": [],
+     "threat": 20,
+     "deckSeed": 2934192230
+    },
+    {
+     "id": "HS2-KEEP-WESTGATE:LANDING_SPOT:1",
+     "lwKind": "LANDING_SPOT",
+     "at": [
+      17.4,
+      50.82
+     ],
+     "parent": "HS2-KEEP-WESTGATE:AIRSHIP_DOCK:1",
+     "arrives": "AIRSHIP_DROP",
+     "garrison": [],
+     "threat": 20,
+     "deckSeed": 3536323294
+    },
+    {
+     "id": "HS2-KEEP-WESTGATE:LANDING_SPOT:2",
+     "lwKind": "LANDING_SPOT",
+     "at": [
+      27.04,
+      56.41
+     ],
+     "parent": "HS2-KEEP-WESTGATE:AIRSHIP_DOCK:1",
+     "arrives": "AIRSHIP_DROP",
+     "garrison": [],
+     "threat": 20,
+     "deckSeed": 3519545675
+    }
+   ]
+  },
+  {
+   "castleId": "HS2-PALACE-EMBERTHRONE",
+   "zone": "HS2",
+   "layer": "SKY",
+   "kind": "PALACE",
+   "tier": 3,
+   "strength": 2,
+   "pois": [
+    {
+     "id": "HS2-PALACE-EMBERTHRONE:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "at": [
+      62.39,
+      50.58
+     ],
+     "inCastle": true,
+     "garrison": [],
+     "threat": 60,
+     "deckSeed": 3253562796
+    },
+    {
+     "id": "HS2-PALACE-EMBERTHRONE:GUARDIAN_PERCH:2",
+     "lwKind": "GUARDIAN_PERCH",
+     "at": [
+      62.39,
+      50.58
+     ],
+     "inCastle": true,
+     "garrison": [],
+     "threat": 60,
+     "deckSeed": 3303895653
+    },
+    {
+     "id": "HS2-PALACE-EMBERTHRONE:WAR_CAMP:1",
+     "lwKind": "WAR_CAMP",
+     "at": [
+      60.44,
+      67.44
+     ],
+     "garrison": [
+      {
+       "unit": "FIELD_OFFICER",
+       "count": 1
+      },
+      {
+       "unit": "SOLDIER",
+       "count": 4
+      }
+     ],
+     "threat": 60,
+     "deckSeed": 1326254930
+    },
+    {
+     "id": "HS2-PALACE-EMBERTHRONE:AIRSHIP_DOCK:1",
+     "lwKind": "AIRSHIP_DOCK",
+     "at": [
+      70.41,
+      51.93
+     ],
+     "anchorPoi": null,
+     "airships": 3,
+     "garrison": [
+      {
+       "unit": "DOCKWARDEN",
+       "count": 1
+      },
+      {
+       "unit": "SKIRMISHER",
+       "count": 2
+      },
+      {
+       "unit": "AIRSHIP",
+       "count": 1
+      }
+     ],
+     "threat": 60,
+     "deckSeed": 2715333148
+    },
+    {
+     "id": "HS2-PALACE-EMBERTHRONE:WILD_LAIR:1",
+     "lwKind": "WILD_LAIR",
+     "at": [
+      63.76,
+      68.77
+     ],
+     "ground": "SKY",
+     "monster": "HARPY",
+     "garrison": [
+      {
+       "unit": "ALPHA",
+       "count": 1
+      },
+      {
+       "unit": "PACK",
+       "count": 4
+      }
+     ],
+     "threat": 60,
+     "deckSeed": 2239670363
+    },
+    {
+     "id": "HS2-PALACE-EMBERTHRONE:AIRDROP_ZONE:1",
+     "lwKind": "AIRDROP_ZONE",
+     "at": [
+      62.74,
+      60.67
+     ],
+     "garrison": [],
+     "threat": 60,
+     "deckSeed": 2552325904
+    },
+    {
+     "id": "HS2-PALACE-EMBERTHRONE:LANDING_SPOT:1",
+     "lwKind": "LANDING_SPOT",
+     "at": [
+      68.09,
+      46.46
+     ],
+     "parent": "HS2-PALACE-EMBERTHRONE:AIRSHIP_DOCK:1",
+     "arrives": "AIRSHIP_DROP",
+     "garrison": [],
+     "threat": 60,
+     "deckSeed": 2181388412
+    },
+    {
+     "id": "HS2-PALACE-EMBERTHRONE:LANDING_SPOT:2",
+     "lwKind": "LANDING_SPOT",
+     "at": [
+      77.92,
+      47.54
+     ],
+     "parent": "HS2-PALACE-EMBERTHRONE:AIRSHIP_DOCK:1",
+     "arrives": "AIRSHIP_DROP",
+     "garrison": [],
+     "threat": 60,
+     "deckSeed": 2231721269
+    }
+   ]
+  },
+  {
+   "castleId": "HS3-KEEP-AURORA",
+   "zone": "HS3",
+   "layer": "SKY",
+   "kind": "KEEP",
+   "tier": 1,
+   "strength": 2,
+   "pois": [
+    {
+     "id": "HS3-KEEP-AURORA:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "at": [
+      79.03,
+      21.63
+     ],
+     "inCastle": true,
+     "garrison": [],
+     "threat": 20,
+     "deckSeed": 3780225891
+    },
+    {
+     "id": "HS3-KEEP-AURORA:AIRSHIP_DOCK:1",
+     "lwKind": "AIRSHIP_DOCK",
+     "at": [
+      73.74,
+      15.59
+     ],
+     "anchorPoi": null,
+     "airships": 1,
+     "garrison": [
+      {
+       "unit": "DOCKWARDEN",
+       "count": 1
+      },
+      {
+       "unit": "SKIRMISHER",
+       "count": 2
+      },
+      {
+       "unit": "AIRSHIP",
+       "count": 1
+      }
+     ],
+     "threat": 20,
+     "deckSeed": 3776611495
+    },
+    {
+     "id": "HS3-KEEP-AURORA:AIRDROP_ZONE:1",
+     "lwKind": "AIRDROP_ZONE",
+     "at": [
+      94.9,
+      25.6
+     ],
+     "garrison": [],
+     "threat": 20,
+     "deckSeed": 1023935695
+    },
+    {
+     "id": "HS3-KEEP-AURORA:LANDING_SPOT:1",
+     "lwKind": "LANDING_SPOT",
+     "at": [
+      79.57,
+      10.41
+     ],
+     "parent": "HS3-KEEP-AURORA:AIRSHIP_DOCK:1",
+     "arrives": "AIRSHIP_DROP",
+     "garrison": [],
+     "threat": 20,
+     "deckSeed": 2454279311
+    },
+    {
+     "id": "HS3-KEEP-AURORA:LANDING_SPOT:2",
+     "lwKind": "LANDING_SPOT",
+     "at": [
+      76.02,
+      24.13
+     ],
+     "parent": "HS3-KEEP-AURORA:AIRSHIP_DOCK:1",
+     "arrives": "AIRSHIP_DROP",
+     "garrison": [],
+     "threat": 20,
+     "deckSeed": 2471056930
+    }
+   ]
+  },
+  {
+   "castleId": "HS3-KEEP-DAWNSHIELD",
+   "zone": "HS3",
+   "layer": "SKY",
+   "kind": "KEEP",
+   "tier": 1,
+   "strength": 2,
+   "pois": [
+    {
+     "id": "HS3-KEEP-DAWNSHIELD:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "at": [
+      64.7,
+      32.39
+     ],
+     "inCastle": true,
+     "garrison": [],
+     "threat": 20,
+     "deckSeed": 1911184618
+    },
+    {
+     "id": "HS3-KEEP-DAWNSHIELD:AIRSHIP_DOCK:1",
+     "lwKind": "AIRSHIP_DOCK",
+     "at": [
+      64.53,
+      37.66
+     ],
+     "anchorPoi": null,
+     "airships": 1,
+     "garrison": [
+      {
+       "unit": "DOCKWARDEN",
+       "count": 1
+      },
+      {
+       "unit": "SKIRMISHER",
+       "count": 2
+      },
+      {
+       "unit": "AIRSHIP",
+       "count": 1
+      }
+     ],
+     "threat": 20,
+     "deckSeed": 370837050
+    },
+    {
+     "id": "HS3-KEEP-DAWNSHIELD:AIRDROP_ZONE:1",
+     "lwKind": "AIRDROP_ZONE",
+     "at": [
+      69.34,
+      42.8
+     ],
+     "garrison": [],
+     "threat": 20,
+     "deckSeed": 883128698
+    },
+    {
+     "id": "HS3-KEEP-DAWNSHIELD:LANDING_SPOT:1",
+     "lwKind": "LANDING_SPOT",
+     "at": [
+      58.62,
+      38.04
+     ],
+     "parent": "HS3-KEEP-DAWNSHIELD:AIRSHIP_DOCK:1",
+     "arrives": "AIRSHIP_DROP",
+     "garrison": [],
+     "threat": 20,
+     "deckSeed": 387085010
+    },
+    {
+     "id": "HS3-KEEP-DAWNSHIELD:LANDING_SPOT:2",
+     "lwKind": "LANDING_SPOT",
+     "at": [
+      59.58,
+      31.17
+     ],
+     "parent": "HS3-KEEP-DAWNSHIELD:AIRSHIP_DOCK:1",
+     "arrives": "AIRSHIP_DROP",
+     "garrison": [],
+     "threat": 20,
+     "deckSeed": 370307391
+    }
+   ]
+  },
+  {
+   "castleId": "HS3-KEEP-PILGRIMWATCH",
+   "zone": "HS3",
+   "layer": "SKY",
+   "kind": "KEEP",
+   "tier": 1,
+   "strength": 2,
+   "pois": [
+    {
+     "id": "HS3-KEEP-PILGRIMWATCH:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "at": [
+      20.74,
+      45.56
+     ],
+     "inCastle": true,
+     "garrison": [],
+     "threat": 20,
+     "deckSeed": 3917840468
+    },
+    {
+     "id": "HS3-KEEP-PILGRIMWATCH:AIRSHIP_DOCK:1",
+     "lwKind": "AIRSHIP_DOCK",
+     "at": [
+      26,
+      53.24
+     ],
+     "anchorPoi": null,
+     "airships": 1,
+     "garrison": [
+      {
+       "unit": "DOCKWARDEN",
+       "count": 1
+      },
+      {
+       "unit": "SKIRMISHER",
+       "count": 2
+      },
+      {
+       "unit": "AIRSHIP",
+       "count": 1
+      }
+     ],
+     "threat": 20,
+     "deckSeed": 1855853060
+    },
+    {
+     "id": "HS3-KEEP-PILGRIMWATCH:AIRDROP_ZONE:1",
+     "lwKind": "AIRDROP_ZONE",
+     "at": [
+      12.46,
+      39.43
+     ],
+     "garrison": [],
+     "threat": 20,
+     "deckSeed": 709537400
+    },
+    {
+     "id": "HS3-KEEP-PILGRIMWATCH:LANDING_SPOT:1",
+     "lwKind": "LANDING_SPOT",
+     "at": [
+      30.06,
+      49.96
+     ],
+     "parent": "HS3-KEEP-PILGRIMWATCH:AIRSHIP_DOCK:1",
+     "arrives": "AIRSHIP_DROP",
+     "garrison": [],
+     "threat": 20,
+     "deckSeed": 3064116836
+    },
+    {
+     "id": "HS3-KEEP-PILGRIMWATCH:LANDING_SPOT:2",
+     "lwKind": "LANDING_SPOT",
+     "at": [
+      20.01,
+      51.69
+     ],
+     "parent": "HS3-KEEP-PILGRIMWATCH:AIRSHIP_DOCK:1",
+     "arrives": "AIRSHIP_DROP",
+     "garrison": [],
+     "threat": 20,
+     "deckSeed": 3114449693
+    }
+   ]
+  },
+  {
+   "castleId": "HS3-KEEP-SHIELDGATE",
+   "zone": "HS3",
+   "layer": "SKY",
+   "kind": "KEEP",
+   "tier": 1,
+   "strength": 2,
+   "pois": [
+    {
+     "id": "HS3-KEEP-SHIELDGATE:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "at": [
+      52.24,
+      32.72
+     ],
+     "inCastle": true,
+     "garrison": [],
+     "threat": 20,
+     "deckSeed": 172219497
+    },
+    {
+     "id": "HS3-KEEP-SHIELDGATE:AIRSHIP_DOCK:1",
+     "lwKind": "AIRSHIP_DOCK",
+     "at": [
+      60.27,
+      31.57
+     ],
+     "anchorPoi": null,
+     "airships": 1,
+     "garrison": [
+      {
+       "unit": "DOCKWARDEN",
+       "count": 1
+      },
+      {
+       "unit": "SKIRMISHER",
+       "count": 2
+      },
+      {
+       "unit": "AIRSHIP",
+       "count": 1
+      }
+     ],
+     "threat": 20,
+     "deckSeed": 3292808157
+    },
+    {
+     "id": "HS3-KEEP-SHIELDGATE:AIRDROP_ZONE:1",
+     "lwKind": "AIRDROP_ZONE",
+     "at": [
+      37.35,
+      28.31
+     ],
+     "garrison": [],
+     "threat": 20,
+     "deckSeed": 2449146209
+    },
+    {
+     "id": "HS3-KEEP-SHIELDGATE:LANDING_SPOT:1",
+     "lwKind": "LANDING_SPOT",
+     "at": [
+      54.19,
+      31.89
+     ],
+     "parent": "HS3-KEEP-SHIELDGATE:AIRSHIP_DOCK:1",
+     "arrives": "AIRSHIP_DROP",
+     "garrison": [],
+     "threat": 20,
+     "deckSeed": 2683576725
+    },
+    {
+     "id": "HS3-KEEP-SHIELDGATE:LANDING_SPOT:2",
+     "lwKind": "LANDING_SPOT",
+     "at": [
+      59.12,
+      26.54
+     ],
+     "parent": "HS3-KEEP-SHIELDGATE:AIRSHIP_DOCK:1",
+     "arrives": "AIRSHIP_DROP",
+     "garrison": [],
+     "threat": 20,
+     "deckSeed": 2633243868
+    }
+   ]
+  },
+  {
+   "castleId": "HS3-SANCTUM",
+   "zone": "HS3",
+   "layer": "SKY",
+   "kind": "PALACE",
+   "tier": 3,
+   "strength": 2,
+   "pois": [
+    {
+     "id": "HS3-SANCTUM:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "at": [
+      45.52,
+      20.55
+     ],
+     "inCastle": true,
+     "garrison": [],
+     "threat": 60,
+     "deckSeed": 823293070
+    },
+    {
+     "id": "HS3-SANCTUM:GUARDIAN_PERCH:2",
+     "lwKind": "GUARDIAN_PERCH",
+     "at": [
+      45.52,
+      20.55
+     ],
+     "inCastle": true,
+     "garrison": [],
+     "threat": 60,
+     "deckSeed": 806515451
+    },
+    {
+     "id": "HS3-SANCTUM:WAR_CAMP:1",
+     "lwKind": "WAR_CAMP",
+     "at": [
+      66.3,
+      27.49
+     ],
+     "garrison": [
+      {
+       "unit": "FIELD_OFFICER",
+       "count": 1
+      },
+      {
+       "unit": "SOLDIER",
+       "count": 4
+      }
+     ],
+     "threat": 60,
+     "deckSeed": 159350236
+    },
+    {
+     "id": "HS3-SANCTUM:AIRSHIP_DOCK:1",
+     "lwKind": "AIRSHIP_DOCK",
+     "at": [
+      48.19,
+      26.51
+     ],
+     "anchorPoi": null,
+     "airships": 3,
+     "garrison": [
+      {
+       "unit": "DOCKWARDEN",
+       "count": 1
+      },
+      {
+       "unit": "SKIRMISHER",
+       "count": 2
+      },
+      {
+       "unit": "AIRSHIP",
+       "count": 1
+      }
+     ],
+     "threat": 60,
+     "deckSeed": 2000636054
+    },
+    {
+     "id": "HS3-SANCTUM:WILD_LAIR:1",
+     "lwKind": "WILD_LAIR",
+     "at": [
+      43.43,
+      32.66
+     ],
+     "ground": "SKY",
+     "monster": "HARPY",
+     "garrison": [
+      {
+       "unit": "ALPHA",
+       "count": 1
+      },
+      {
+       "unit": "PACK",
+       "count": 4
+      }
+     ],
+     "threat": 60,
+     "deckSeed": 3593075605
+    },
+    {
+     "id": "HS3-SANCTUM:AIRDROP_ZONE:1",
+     "lwKind": "AIRDROP_ZONE",
+     "at": [
+      55.82,
+      16.64
+     ],
+     "garrison": [],
+     "threat": 60,
+     "deckSeed": 921446270
+    },
+    {
+     "id": "HS3-SANCTUM:LANDING_SPOT:1",
+     "lwKind": "LANDING_SPOT",
+     "at": [
+      42.88,
+      20.73
+     ],
+     "parent": "HS3-SANCTUM:AIRSHIP_DOCK:1",
+     "arrives": "AIRSHIP_DROP",
+     "garrison": [],
+     "threat": 60,
+     "deckSeed": 1271415574
+    },
+    {
+     "id": "HS3-SANCTUM:LANDING_SPOT:2",
+     "lwKind": "LANDING_SPOT",
+     "at": [
+      42.92,
+      29.29
+     ],
+     "parent": "HS3-SANCTUM:AIRSHIP_DOCK:1",
+     "arrives": "AIRSHIP_DROP",
+     "garrison": [],
+     "threat": 60,
+     "deckSeed": 1254637955
+    }
+   ]
+  },
+  {
+   "castleId": "HUB-CASTLE-DONGGUAN",
+   "zone": "HUB",
+   "layer": "SURFACE",
+   "kind": "CASTLE",
+   "tier": 2,
+   "strength": 1,
+   "pois": [
+    {
+     "id": "HUB-CASTLE-DONGGUAN:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "at": [
+      200.44,
+      128.97
+     ],
+     "inCastle": true,
+     "garrison": [],
+     "threat": 20,
+     "deckSeed": 2192290070
+    },
+    {
+     "id": "HUB-CASTLE-DONGGUAN:MERCENARY_POST:1",
+     "lwKind": "MERCENARY_POST",
+     "at": [
+      199.48,
+      135.63
+     ],
+     "onRoad": "HUB-SEC047",
+     "garrison": [
+      {
+       "unit": "MERC_CAPTAIN",
+       "count": 1
+      }
+     ],
+     "threat": 20,
+     "deckSeed": 761551025
+    },
+    {
+     "id": "HUB-CASTLE-DONGGUAN:BARBARIAN_CAMP:1",
+     "lwKind": "BARBARIAN_CAMP",
+     "at": [
+      223.07,
+      155.14
+     ],
+     "ridge": "HUB-RG3",
+     "garrison": [
+      {
+       "unit": "CHIEFTAIN",
+       "count": 1
+      },
+      {
+       "unit": "BARBARIAN",
+       "count": 5
+      }
+     ],
+     "threat": 20,
+     "deckSeed": 2256419616
+    },
+    {
+     "id": "HUB-CASTLE-DONGGUAN:WILD_LAIR:1",
+     "lwKind": "WILD_LAIR",
+     "at": [
+      192.3,
+      114.53
+     ],
+     "ground": "RIDGE",
+     "monster": "WYRM",
+     "garrison": [
+      {
+       "unit": "ALPHA",
+       "count": 1
+      },
+      {
+       "unit": "PACK",
+       "count": 4
+      }
+     ],
+     "threat": 20,
+     "deckSeed": 3161291389
+    }
+   ]
+  },
+  {
+   "castleId": "HUB-CASTLE-JINJIANG",
+   "zone": "HUB",
+   "layer": "SURFACE",
+   "kind": "CASTLE",
+   "tier": 2,
+   "strength": 1,
+   "pois": [
+    {
+     "id": "HUB-CASTLE-JINJIANG:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "at": [
+      163.7,
+      71.8
+     ],
+     "inCastle": true,
+     "garrison": [],
+     "threat": 20,
+     "deckSeed": 1276886625
+    },
+    {
+     "id": "HUB-CASTLE-JINJIANG:MERCENARY_POST:1",
+     "lwKind": "MERCENARY_POST",
+     "at": [
+      169.22,
+      77.47
+     ],
+     "onRoad": "HUB-MT05",
+     "garrison": [
+      {
+       "unit": "MERC_CAPTAIN",
+       "count": 1
+      }
+     ],
+     "threat": 20,
+     "deckSeed": 1218461590
+    },
+    {
+     "id": "HUB-CASTLE-JINJIANG:BARBARIAN_CAMP:1",
+     "lwKind": "BARBARIAN_CAMP",
+     "at": [
+      148.26,
+      48.19
+     ],
+     "ridge": "HUB-RG2",
+     "garrison": [
+      {
+       "unit": "CHIEFTAIN",
+       "count": 1
+      },
+      {
+       "unit": "BARBARIAN",
+       "count": 5
+      }
+     ],
+     "threat": 20,
+     "deckSeed": 244390351
+    },
+    {
+     "id": "HUB-CASTLE-JINJIANG:WILD_LAIR:1",
+     "lwKind": "WILD_LAIR",
+     "at": [
+      154.63,
+      86.93
+     ],
+     "ground": "FOREST",
+     "monster": "WOLF",
+     "garrison": [
+      {
+       "unit": "ALPHA",
+       "count": 1
+      },
+      {
+       "unit": "PACK",
+       "count": 4
+      }
+     ],
+     "threat": 20,
+     "deckSeed": 4086897556
+    }
+   ]
+  },
+  {
+   "castleId": "HUB-CASTLE-NANPING",
+   "zone": "HUB",
+   "layer": "SURFACE",
+   "kind": "CASTLE",
+   "tier": 2,
+   "strength": 1,
+   "pois": [
+    {
+     "id": "HUB-CASTLE-NANPING:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "at": [
+      246.84,
+      160.4
+     ],
+     "inCastle": true,
+     "garrison": [],
+     "threat": 20,
+     "deckSeed": 1086147042
+    },
+    {
+     "id": "HUB-CASTLE-NANPING:MERCENARY_POST:1",
+     "lwKind": "MERCENARY_POST",
+     "at": [
+      250.79,
+      161.26
+     ],
+     "onRoad": "HUB-MT15",
+     "garrison": [
+      {
+       "unit": "MERC_CAPTAIN",
+       "count": 1
+      }
+     ],
+     "threat": 20,
+     "deckSeed": 3690426133
+    },
+    {
+     "id": "HUB-CASTLE-NANPING:WILD_LAIR:1",
+     "lwKind": "WILD_LAIR",
+     "at": [
+      238.48,
+      148.63
+     ],
+     "ground": "PLAIN",
+     "monster": "BANDIT",
+     "garrison": [
+      {
+       "unit": "ALPHA",
+       "count": 1
+      },
+      {
+       "unit": "PACK",
+       "count": 4
+      }
+     ],
+     "threat": 20,
+     "deckSeed": 1465176217
+    },
+    {
+     "id": "HUB-CASTLE-NANPING:AIRDROP_ZONE:1",
+     "lwKind": "AIRDROP_ZONE",
+     "at": [
+      256.1,
+      172.14
+     ],
+     "garrison": [],
+     "threat": 20,
+     "deckSeed": 3969643250
+    }
+   ]
+  },
+  {
+   "castleId": "HUB-CASTLE-TIEDU",
+   "zone": "HUB",
+   "layer": "SURFACE",
+   "kind": "CASTLE",
+   "tier": 2,
+   "strength": 1,
+   "pois": [
+    {
+     "id": "HUB-CASTLE-TIEDU:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "at": [
+      134.98,
+      130.25
+     ],
+     "inCastle": true,
+     "garrison": [],
+     "threat": 20,
+     "deckSeed": 3277364450
+    },
+    {
+     "id": "HUB-CASTLE-TIEDU:MERCENARY_POST:1",
+     "lwKind": "MERCENARY_POST",
+     "at": [
+      139.51,
+      129.82
+     ],
+     "onRoad": "HUB-SEC004",
+     "garrison": [
+      {
+       "unit": "MERC_CAPTAIN",
+       "count": 1
+      }
+     ],
+     "threat": 20,
+     "deckSeed": 1586676245
+    },
+    {
+     "id": "HUB-CASTLE-TIEDU:WILD_LAIR:1",
+     "lwKind": "WILD_LAIR",
+     "at": [
+      150.99,
+      134.5
+     ],
+     "ground": "PLAIN",
+     "monster": "BANDIT",
+     "garrison": [
+      {
+       "unit": "ALPHA",
+       "count": 1
+      },
+      {
+       "unit": "PACK",
+       "count": 4
+      }
+     ],
+     "threat": 20,
+     "deckSeed": 2198471065
+    },
+    {
+     "id": "HUB-CASTLE-TIEDU:AIRDROP_ZONE:1",
+     "lwKind": "AIRDROP_ZONE",
+     "at": [
+      144.87,
+      132.24
+     ],
+     "garrison": [],
+     "threat": 20,
+     "deckSeed": 1911836146
+    }
+   ]
+  },
+  {
+   "castleId": "HUB-CASTLE-XICHUAN",
+   "zone": "HUB",
+   "layer": "SURFACE",
+   "kind": "CASTLE",
+   "tier": 2,
+   "strength": 1,
+   "pois": [
+    {
+     "id": "HUB-CASTLE-XICHUAN:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "at": [
+      47.91,
+      85.48
+     ],
+     "inCastle": true,
+     "garrison": [],
+     "threat": 20,
+     "deckSeed": 3700941845
+    },
+    {
+     "id": "HUB-CASTLE-XICHUAN:MERCENARY_POST:1",
+     "lwKind": "MERCENARY_POST",
+     "at": [
+      49.15,
+      92.42
+     ],
+     "onRoad": "HUB-AP01",
+     "garrison": [
+      {
+       "unit": "MERC_CAPTAIN",
+       "count": 1
+      }
+     ],
+     "threat": 20,
+     "deckSeed": 1407194034
+    },
+    {
+     "id": "HUB-CASTLE-XICHUAN:WILD_LAIR:1",
+     "lwKind": "WILD_LAIR",
+     "at": [
+      57.51,
+      103.93
+     ],
+     "ground": "PLAIN",
+     "monster": "BANDIT",
+     "garrison": [
+      {
+       "unit": "ALPHA",
+       "count": 1
+      },
+      {
+       "unit": "PACK",
+       "count": 4
+      }
+     ],
+     "threat": 20,
+     "deckSeed": 683038776
+    },
+    {
+     "id": "HUB-CASTLE-XICHUAN:AIRDROP_ZONE:1",
+     "lwKind": "AIRDROP_ZONE",
+     "at": [
+      41.71,
+      100.92
+     ],
+     "garrison": [],
+     "threat": 20,
+     "deckSeed": 652261629
+    }
+   ]
+  },
+  {
+   "castleId": "HUB-CASTLE-YONGAN",
+   "zone": "HUB",
+   "layer": "SURFACE",
+   "kind": "CASTLE",
+   "tier": 2,
+   "strength": 1,
+   "pois": [
+    {
+     "id": "HUB-CASTLE-YONGAN:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "at": [
+      296.64,
+      69.46
+     ],
+     "inCastle": true,
+     "garrison": [],
+     "threat": 20,
+     "deckSeed": 3801883853
+    },
+    {
+     "id": "HUB-CASTLE-YONGAN:MERCENARY_POST:1",
+     "lwKind": "MERCENARY_POST",
+     "at": [
+      299.27,
+      67.66
+     ],
+     "onRoad": "HUB-MT12",
+     "garrison": [
+      {
+       "unit": "MERC_CAPTAIN",
+       "count": 1
+      }
+     ],
+     "threat": 20,
+     "deckSeed": 479318778
+    },
+    {
+     "id": "HUB-CASTLE-YONGAN:AIRSHIP_DOCK:1",
+     "lwKind": "AIRSHIP_DOCK",
+     "at": [
+      304.6,
+      64
+     ],
+     "anchorPoi": "HUB-PORT-SKY",
+     "airships": 2,
+     "garrison": [
+      {
+       "unit": "DOCKWARDEN",
+       "count": 1
+      },
+      {
+       "unit": "SKIRMISHER",
+       "count": 2
+      },
+      {
+       "unit": "AIRSHIP",
+       "count": 1
+      }
+     ],
+     "threat": 20,
+     "deckSeed": 3548032089
+    },
+    {
+     "id": "HUB-CASTLE-YONGAN:WILD_LAIR:1",
+     "lwKind": "WILD_LAIR",
+     "at": [
+      298.25,
+      87.5
+     ],
+     "ground": "FOREST",
+     "monster": "WOLF",
+     "garrison": [
+      {
+       "unit": "ALPHA",
+       "count": 1
+      },
+      {
+       "unit": "PACK",
+       "count": 4
+      }
+     ],
+     "threat": 20,
+     "deckSeed": 4191541104
+    },
+    {
+     "id": "HUB-CASTLE-YONGAN:LANDING_SPOT:1",
+     "lwKind": "LANDING_SPOT",
+     "at": [
+      299.36,
+      58.88
+     ],
+     "parent": "HUB-CASTLE-YONGAN:AIRSHIP_DOCK:1",
+     "arrives": "AIRSHIP_DROP",
+     "garrison": [],
+     "threat": 20,
+     "deckSeed": 898206681
+    },
+    {
+     "id": "HUB-CASTLE-YONGAN:LANDING_SPOT:2",
+     "lwKind": "LANDING_SPOT",
+     "at": [
+      303.17,
+      59.12
+     ],
+     "parent": "HUB-CASTLE-YONGAN:AIRSHIP_DOCK:1",
+     "arrives": "AIRSHIP_DROP",
+     "garrison": [],
+     "threat": 20,
+     "deckSeed": 847873824
+    }
+   ]
+  },
+  {
+   "castleId": "HUB-KEEP-DRAGONTAIL",
+   "zone": "HUB",
+   "layer": "SURFACE",
+   "kind": "KEEP",
+   "tier": 1,
+   "strength": 1,
+   "pois": [
+    {
+     "id": "HUB-KEEP-DRAGONTAIL:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "at": [
+      188.44,
+      144.65
+     ],
+     "inCastle": true,
+     "garrison": [],
+     "threat": 10,
+     "deckSeed": 1581639411
+    },
+    {
+     "id": "HUB-KEEP-DRAGONTAIL:BARBARIAN_CAMP:1",
+     "lwKind": "BARBARIAN_CAMP",
+     "at": [
+      206.13,
+      123.77
+     ],
+     "ridge": "HUB-RG3",
+     "garrison": [
+      {
+       "unit": "CHIEFTAIN",
+       "count": 1
+      },
+      {
+       "unit": "BARBARIAN",
+       "count": 5
+      }
+     ],
+     "threat": 10,
+     "deckSeed": 4283044117
+    },
+    {
+     "id": "HUB-KEEP-DRAGONTAIL:AIRDROP_ZONE:1",
+     "lwKind": "AIRDROP_ZONE",
+     "at": [
+      195.84,
+      137.24
+     ],
+     "garrison": [],
+     "threat": 10,
+     "deckSeed": 3290670751
+    }
+   ]
+  },
+  {
+   "castleId": "HUB-KEEP-SHAFTWATCH",
+   "zone": "HUB",
+   "layer": "SURFACE",
+   "kind": "KEEP",
+   "tier": 1,
+   "strength": 1,
+   "pois": [
+    {
+     "id": "HUB-KEEP-SHAFTWATCH:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "at": [
+      172.41,
+      113.08
+     ],
+     "inCastle": true,
+     "garrison": [],
+     "threat": 10,
+     "deckSeed": 535839069
+    },
+    {
+     "id": "HUB-KEEP-SHAFTWATCH:BARBARIAN_CAMP:1",
+     "lwKind": "BARBARIAN_CAMP",
+     "at": [
+      187.28,
+      84.81
+     ],
+     "ridge": "HUB-RG1",
+     "garrison": [
+      {
+       "unit": "CHIEFTAIN",
+       "count": 1
+      },
+      {
+       "unit": "BARBARIAN",
+       "count": 5
+      }
+     ],
+     "threat": 10,
+     "deckSeed": 3821416547
+    },
+    {
+     "id": "HUB-KEEP-SHAFTWATCH:AIRDROP_ZONE:1",
+     "lwKind": "AIRDROP_ZONE",
+     "at": [
+      175.05,
+      102.25
+     ],
+     "garrison": [],
+     "threat": 10,
+     "deckSeed": 211441381
+    }
+   ]
+  },
+  {
+   "castleId": "HUB-KEEP-SOUTHGATE",
+   "zone": "HUB",
+   "layer": "SURFACE",
+   "kind": "KEEP",
+   "tier": 1,
+   "strength": 1,
+   "pois": [
+    {
+     "id": "HUB-KEEP-SOUTHGATE:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "at": [
+      165.16,
+      129.62
+     ],
+     "inCastle": true,
+     "garrison": [],
+     "threat": 10,
+     "deckSeed": 429923128
+    },
+    {
+     "id": "HUB-KEEP-SOUTHGATE:BARBARIAN_CAMP:1",
+     "lwKind": "BARBARIAN_CAMP",
+     "at": [
+      188.69,
+      114.06
+     ],
+     "ridge": "HUB-RG1",
+     "garrison": [
+      {
+       "unit": "CHIEFTAIN",
+       "count": 1
+      },
+      {
+       "unit": "BARBARIAN",
+       "count": 5
+      }
+     ],
+     "threat": 10,
+     "deckSeed": 4051123006
+    },
+    {
+     "id": "HUB-KEEP-SOUTHGATE:AIRDROP_ZONE:1",
+     "lwKind": "AIRDROP_ZONE",
+     "at": [
+      177.23,
+      132.76
+     ],
+     "garrison": [],
+     "threat": 10,
+     "deckSeed": 1118081340
+    }
+   ]
+  },
+  {
+   "castleId": "HUB-KEEP-SOUTHSLOPE",
+   "zone": "HUB",
+   "layer": "SURFACE",
+   "kind": "KEEP",
+   "tier": 1,
+   "strength": 1,
+   "pois": [
+    {
+     "id": "HUB-KEEP-SOUTHSLOPE:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "at": [
+      173.68,
+      144
+     ],
+     "inCastle": true,
+     "garrison": [],
+     "threat": 10,
+     "deckSeed": 587678048
+    },
+    {
+     "id": "HUB-KEEP-SOUTHSLOPE:BARBARIAN_CAMP:1",
+     "lwKind": "BARBARIAN_CAMP",
+     "at": [
+      197.17,
+      135.3
+     ],
+     "ridge": "HUB-RG1",
+     "garrison": [
+      {
+       "unit": "CHIEFTAIN",
+       "count": 1
+      },
+      {
+       "unit": "BARBARIAN",
+       "count": 5
+      }
+     ],
+     "threat": 10,
+     "deckSeed": 3794512102
+    },
+    {
+     "id": "HUB-KEEP-SOUTHSLOPE:AIRDROP_ZONE:1",
+     "lwKind": "AIRDROP_ZONE",
+     "at": [
+      164.94,
+      129.11
+     ],
+     "garrison": [],
+     "threat": 10,
+     "deckSeed": 1306018436
+    }
+   ]
+  },
+  {
+   "castleId": "HUB-PALACE-ZHONGDU",
+   "zone": "HUB",
+   "layer": "SURFACE",
+   "kind": "PALACE",
+   "tier": 3,
+   "strength": 1,
+   "pois": [
+    {
+     "id": "HUB-PALACE-ZHONGDU:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "at": [
+      156.6,
+      122.78
+     ],
+     "inCastle": true,
+     "garrison": [],
+     "threat": 30,
+     "deckSeed": 3436308088
+    },
+    {
+     "id": "HUB-PALACE-ZHONGDU:GUARDIAN_PERCH:2",
+     "lwKind": "GUARDIAN_PERCH",
+     "at": [
+      156.6,
+      122.78
+     ],
+     "inCastle": true,
+     "garrison": [],
+     "threat": 30,
+     "deckSeed": 3486640945
+    },
+    {
+     "id": "HUB-PALACE-ZHONGDU:WAR_CAMP:1",
+     "lwKind": "WAR_CAMP",
+     "at": [
+      129.33,
+      133.69
+     ],
+     "garrison": [
+      {
+       "unit": "FIELD_OFFICER",
+       "count": 1
+      },
+      {
+       "unit": "SOLDIER",
+       "count": 4
+      }
+     ],
+     "threat": 30,
+     "deckSeed": 1804305686
+    },
+    {
+     "id": "HUB-PALACE-ZHONGDU:BARBARIAN_CAMP:1",
+     "lwKind": "BARBARIAN_CAMP",
+     "at": [
+      181.3,
+      110.42
+     ],
+     "ridge": "HUB-RG1",
+     "garrison": [
+      {
+       "unit": "CHIEFTAIN",
+       "count": 1
+      },
+      {
+       "unit": "BARBARIAN",
+       "count": 5
+      }
+     ],
+     "threat": 30,
+     "deckSeed": 456543870
+    },
+    {
+     "id": "HUB-PALACE-ZHONGDU:WILD_LAIR:1",
+     "lwKind": "WILD_LAIR",
+     "at": [
+      165.75,
+      130.94
+     ],
+     "ground": "RIDGE",
+     "monster": "WYRM",
+     "garrison": [
+      {
+       "unit": "ALPHA",
+       "count": 1
+      },
+      {
+       "unit": "PACK",
+       "count": 4
+      }
+     ],
+     "threat": 30,
+     "deckSeed": 2348585351
+    },
+    {
+     "id": "HUB-PALACE-ZHONGDU:AIRDROP_ZONE:1",
+     "lwKind": "AIRDROP_ZONE",
+     "at": [
+      170.17,
+      123.28
+     ],
+     "garrison": [],
+     "threat": 30,
+     "deckSeed": 1827054460
+    }
+   ]
+  },
+  {
+   "castleId": "KOL-CASTLE-FORTUNA",
+   "zone": "KOL",
+   "layer": "SURFACE",
+   "kind": "CASTLE",
+   "tier": 2,
+   "strength": 1,
+   "pois": [
+    {
+     "id": "KOL-CASTLE-FORTUNA:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "at": [
+      44,
+      22.7
+     ],
+     "inCastle": true,
+     "garrison": [],
+     "threat": 20,
+     "deckSeed": 712425987
+    },
+    {
+     "id": "KOL-CASTLE-FORTUNA:MERCENARY_POST:1",
+     "lwKind": "MERCENARY_POST",
+     "at": [
+      39.08,
+      18.28
+     ],
+     "onRoad": "KOL-RD-STRIP",
+     "garrison": [
+      {
+       "unit": "MERC_CAPTAIN",
+       "count": 1
+      }
+     ],
+     "threat": 20,
+     "deckSeed": 3904329372
+    },
+    {
+     "id": "KOL-CASTLE-FORTUNA:HARBOUR:1",
+     "lwKind": "HARBOUR",
+     "at": [
+      55.09,
+      19.34
+     ],
+     "anchorPoi": null,
+     "ships": 2,
+     "garrison": [
+      {
+       "unit": "HARBOUR_MASTER",
+       "count": 1
+      },
+      {
+       "unit": "MARINE",
+       "count": 2
+      },
+      {
+       "unit": "SHIP",
+       "count": 1
+      }
+     ],
+     "threat": 20,
+     "deckSeed": 3458397112
+    },
+    {
+     "id": "KOL-CASTLE-FORTUNA:BARBARIAN_CAMP:1",
+     "lwKind": "BARBARIAN_CAMP",
+     "at": [
+      65.87,
+      8.57
+     ],
+     "ridge": "KOL-RG1",
+     "garrison": [
+      {
+       "unit": "CHIEFTAIN",
+       "count": 1
+      },
+      {
+       "unit": "BARBARIAN",
+       "count": 5
+      }
+     ],
+     "threat": 20,
+     "deckSeed": 409285061
+    },
+    {
+     "id": "KOL-CASTLE-FORTUNA:LANDING_SPOT:1",
+     "lwKind": "LANDING_SPOT",
+     "at": [
+      59.5,
+      26.82
+     ],
+     "parent": "KOL-CASTLE-FORTUNA:HARBOUR:1",
+     "arrives": "NAVAL_LANDING",
+     "garrison": [],
+     "threat": 20,
+     "deckSeed": 3873886639
+    }
+   ]
+  },
+  {
+   "castleId": "UW2-BASTION-DOMINUS",
+   "zone": "UW2",
+   "layer": "UNDER",
+   "kind": "PALACE",
+   "tier": 3,
+   "strength": 3.5,
+   "pois": [
+    {
+     "id": "UW2-BASTION-DOMINUS:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "at": [
+      69.89,
+      75.04
+     ],
+     "inCastle": true,
+     "garrison": [],
+     "threat": 100,
+     "deckSeed": 2272158873
+    },
+    {
+     "id": "UW2-BASTION-DOMINUS:GUARDIAN_PERCH:2",
+     "lwKind": "GUARDIAN_PERCH",
+     "at": [
+      69.89,
+      75.04
+     ],
+     "inCastle": true,
+     "garrison": [],
+     "threat": 100,
+     "deckSeed": 2221826016
+    },
+    {
+     "id": "UW2-BASTION-DOMINUS:WAR_CAMP:1",
+     "lwKind": "WAR_CAMP",
+     "at": [
+      56.44,
+      67.85
+     ],
+     "garrison": [
+      {
+       "unit": "FIELD_OFFICER",
+       "count": 1
+      },
+      {
+       "unit": "SOLDIER",
+       "count": 4
+      }
+     ],
+     "threat": 100,
+     "deckSeed": 1690559443
+    },
+    {
+     "id": "UW2-BASTION-DOMINUS:VENT:1",
+     "lwKind": "VENT",
+     "at": [
+      76.86,
+      73.99
+     ],
+     "flow": "UW2-CH1",
+     "garrison": [
+      {
+       "unit": "ELEMENTAL",
+       "count": 2
+      }
+     ],
+     "threat": 100,
+     "deckSeed": 877834346
+    },
+    {
+     "id": "UW2-BASTION-DOMINUS:BARBARIAN_CAMP:1",
+     "lwKind": "BARBARIAN_CAMP",
+     "at": [
+      96.75,
+      86.98
+     ],
+     "ridge": "UW2-RG-P1",
+     "garrison": [
+      {
+       "unit": "CHIEFTAIN",
+       "count": 1
+      },
+      {
+       "unit": "BARBARIAN",
+       "count": 5
+      }
+     ],
+     "threat": 100,
+     "deckSeed": 1694774599
+    },
+    {
+     "id": "UW2-BASTION-DOMINUS:WILD_LAIR:1",
+     "lwKind": "WILD_LAIR",
+     "at": [
+      80.33,
+      66.99
+     ],
+     "ground": "UNDER",
+     "monster": "TROLL",
+     "garrison": [
+      {
+       "unit": "ALPHA",
+       "count": 1
+      },
+      {
+       "unit": "PACK",
+       "count": 4
+      }
+     ],
+     "threat": 100,
+     "deckSeed": 10705612
+    }
+   ]
+  },
+  {
+   "castleId": "UW2-CASTLE-DEEPGATE",
+   "zone": "UW2",
+   "layer": "UNDER",
+   "kind": "CASTLE",
+   "tier": 2,
+   "strength": 3.5,
+   "pois": [
+    {
+     "id": "UW2-CASTLE-DEEPGATE:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "at": [
+      105.2,
+      61.22
+     ],
+     "inCastle": true,
+     "garrison": [],
+     "threat": 70,
+     "deckSeed": 712918225
+    },
+    {
+     "id": "UW2-CASTLE-DEEPGATE:MERCENARY_POST:1",
+     "lwKind": "MERCENARY_POST",
+     "at": [
+      99.85,
+      62.93
+     ],
+     "onRoad": "UW2-SEC002",
+     "garrison": [
+      {
+       "unit": "MERC_CAPTAIN",
+       "count": 1
+      }
+     ],
+     "threat": 70,
+     "deckSeed": 4062571910
+    },
+    {
+     "id": "UW2-CASTLE-DEEPGATE:BARBARIAN_CAMP:1",
+     "lwKind": "BARBARIAN_CAMP",
+     "at": [
+      88.37,
+      86.54
+     ],
+     "ridge": "UW2-RG-C1",
+     "garrison": [
+      {
+       "unit": "CHIEFTAIN",
+       "count": 1
+      },
+      {
+       "unit": "BARBARIAN",
+       "count": 5
+      }
+     ],
+     "threat": 70,
+     "deckSeed": 2558721695
+    },
+    {
+     "id": "UW2-CASTLE-DEEPGATE:WILD_LAIR:1",
+     "lwKind": "WILD_LAIR",
+     "at": [
+      105.56,
+      78.05
+     ],
+     "ground": "UNDER",
+     "monster": "TROLL",
+     "garrison": [
+      {
+       "unit": "ALPHA",
+       "count": 1
+      },
+      {
+       "unit": "PACK",
+       "count": 4
+      }
+     ],
+     "threat": 70,
+     "deckSeed": 1433932196
+    }
+   ]
+  },
+  {
+   "castleId": "UW2-CASTLE-MOURNGATE",
+   "zone": "UW2",
+   "layer": "UNDER",
+   "kind": "CASTLE",
+   "tier": 2,
+   "strength": 3.5,
+   "pois": [
+    {
+     "id": "UW2-CASTLE-MOURNGATE:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "at": [
+      85.64,
+      71.64
+     ],
+     "inCastle": true,
+     "garrison": [],
+     "threat": 70,
+     "deckSeed": 2076827668
+    },
+    {
+     "id": "UW2-CASTLE-MOURNGATE:MERCENARY_POST:1",
+     "lwKind": "MERCENARY_POST",
+     "at": [
+      80.01,
+      72.79
+     ],
+     "onRoad": "UW2-SEC028",
+     "garrison": [
+      {
+       "unit": "MERC_CAPTAIN",
+       "count": 1
+      }
+     ],
+     "threat": 70,
+     "deckSeed": 1958673603
+    },
+    {
+     "id": "UW2-CASTLE-MOURNGATE:VENT:1",
+     "lwKind": "VENT",
+     "at": [
+      96.19,
+      72.83
+     ],
+     "flow": "UW2-LK-MERE",
+     "garrison": [
+      {
+       "unit": "ELEMENTAL",
+       "count": 2
+      }
+     ],
+     "threat": 70,
+     "deckSeed": 2153983679
+    },
+    {
+     "id": "UW2-CASTLE-MOURNGATE:BARBARIAN_CAMP:1",
+     "lwKind": "BARBARIAN_CAMP",
+     "at": [
+      113.55,
+      73.8
+     ],
+     "ridge": "UW2-RG-P2",
+     "garrison": [
+      {
+       "unit": "CHIEFTAIN",
+       "count": 1
+      },
+      {
+       "unit": "BARBARIAN",
+       "count": 5
+      }
+     ],
+     "threat": 70,
+     "deckSeed": 2401272130
+    }
+   ]
+  },
+  {
+   "castleId": "UW2-CASTLE-PALEWATER",
+   "zone": "UW2",
+   "layer": "UNDER",
+   "kind": "CASTLE",
+   "tier": 2,
+   "strength": 3.5,
+   "pois": [
+    {
+     "id": "UW2-CASTLE-PALEWATER:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "at": [
+      69.92,
+      21.18
+     ],
+     "inCastle": true,
+     "garrison": [],
+     "threat": 70,
+     "deckSeed": 787559089
+    },
+    {
+     "id": "UW2-CASTLE-PALEWATER:MERCENARY_POST:1",
+     "lwKind": "MERCENARY_POST",
+     "at": [
+      74.42,
+      22.94
+     ],
+     "onRoad": "UW2-RD3",
+     "garrison": [
+      {
+       "unit": "MERC_CAPTAIN",
+       "count": 1
+      }
+     ],
+     "threat": 70,
+     "deckSeed": 1750071910
+    },
+    {
+     "id": "UW2-CASTLE-PALEWATER:VENT:1",
+     "lwKind": "VENT",
+     "at": [
+      67.67,
+      10.61
+     ],
+     "flow": "UW2-LK-CENOTE3",
+     "garrison": [
+      {
+       "unit": "ELEMENTAL",
+       "count": 2
+      }
+     ],
+     "threat": 70,
+     "deckSeed": 1598582610
+    },
+    {
+     "id": "UW2-CASTLE-PALEWATER:BARBARIAN_CAMP:1",
+     "lwKind": "BARBARIAN_CAMP",
+     "at": [
+      41.43,
+      23.34
+     ],
+     "ridge": "UW2-RG-RIM-N",
+     "garrison": [
+      {
+       "unit": "CHIEFTAIN",
+       "count": 1
+      },
+      {
+       "unit": "BARBARIAN",
+       "count": 5
+      }
+     ],
+     "threat": 70,
+     "deckSeed": 1191483391
+    }
+   ]
+  },
+  {
+   "castleId": "UW2-KEEP-DROWNMEADOW",
+   "zone": "UW2",
+   "layer": "UNDER",
+   "kind": "KEEP",
+   "tier": 1,
+   "strength": 3.5,
+   "pois": [
+    {
+     "id": "UW2-KEEP-DROWNMEADOW:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "at": [
+      66.66,
+      124.64
+     ],
+     "inCastle": true,
+     "garrison": [],
+     "threat": 35,
+     "deckSeed": 2001236598
+    },
+    {
+     "id": "UW2-KEEP-DROWNMEADOW:VENT:1",
+     "lwKind": "VENT",
+     "at": [
+      67.13,
+      137.33
+     ],
+     "flow": "UW2-LK-MEADOW",
+     "garrison": [
+      {
+       "unit": "ELEMENTAL",
+       "count": 2
+      }
+     ],
+     "threat": 35,
+     "deckSeed": 1919915137
+    },
+    {
+     "id": "UW2-KEEP-DROWNMEADOW:MERCENARY_POST:1",
+     "lwKind": "MERCENARY_POST",
+     "at": [
+      63.27,
+      121.79
+     ],
+     "onRoad": "UW2-DT07",
+     "garrison": [
+      {
+       "unit": "MERC_CAPTAIN",
+       "count": 1
+      }
+     ],
+     "threat": 35,
+     "deckSeed": 1824763793
+    }
+   ]
+  },
+  {
+   "castleId": "UW2-KEEP-FERRYWATCH",
+   "zone": "UW2",
+   "layer": "UNDER",
+   "kind": "KEEP",
+   "tier": 1,
+   "strength": 3.5,
+   "pois": [
+    {
+     "id": "UW2-KEEP-FERRYWATCH:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "at": [
+      114.25,
+      79.91
+     ],
+     "inCastle": true,
+     "garrison": [],
+     "threat": 35,
+     "deckSeed": 2766462674
+    },
+    {
+     "id": "UW2-KEEP-FERRYWATCH:VENT:1",
+     "lwKind": "VENT",
+     "at": [
+      122.02,
+      81.81
+     ],
+     "flow": "UW2-LK-FERRY",
+     "garrison": [
+      {
+       "unit": "ELEMENTAL",
+       "count": 2
+      }
+     ],
+     "threat": 35,
+     "deckSeed": 1305139085
+    },
+    {
+     "id": "UW2-KEEP-FERRYWATCH:MERCENARY_POST:1",
+     "lwKind": "MERCENARY_POST",
+     "at": [
+      117.14,
+      74.87
+     ],
+     "onRoad": "UW2-DT05",
+     "garrison": [
+      {
+       "unit": "MERC_CAPTAIN",
+       "count": 1
+      }
+     ],
+     "threat": 35,
+     "deckSeed": 2316186885
+    }
+   ]
+  },
+  {
+   "castleId": "UW2-KEEP-PALELANTERN",
+   "zone": "UW2",
+   "layer": "UNDER",
+   "kind": "KEEP",
+   "tier": 1,
+   "strength": 3.5,
+   "pois": [
+    {
+     "id": "UW2-KEEP-PALELANTERN:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "at": [
+      40.48,
+      67.32
+     ],
+     "inCastle": true,
+     "garrison": [],
+     "threat": 35,
+     "deckSeed": 4159242159
+    },
+    {
+     "id": "UW2-KEEP-PALELANTERN:VENT:1",
+     "lwKind": "VENT",
+     "at": [
+      32.57,
+      56.33
+     ],
+     "flow": "UW2-CH1",
+     "garrison": [
+      {
+       "unit": "ELEMENTAL",
+       "count": 2
+      }
+     ],
+     "threat": 35,
+     "deckSeed": 2435563112
+    },
+    {
+     "id": "UW2-KEEP-PALELANTERN:MERCENARY_POST:1",
+     "lwKind": "MERCENARY_POST",
+     "at": [
+      45.52,
+      71.34
+     ],
+     "onRoad": "UW2-DT11",
+     "garrison": [
+      {
+       "unit": "MERC_CAPTAIN",
+       "count": 1
+      }
+     ],
+     "threat": 35,
+     "deckSeed": 3732882704
+    }
+   ]
+  },
+  {
+   "castleId": "UW2-KEEP-SUNKENCOURT",
+   "zone": "UW2",
+   "layer": "UNDER",
+   "kind": "KEEP",
+   "tier": 1,
+   "strength": 3.5,
+   "pois": [
+    {
+     "id": "UW2-KEEP-SUNKENCOURT:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "at": [
+      96.68,
+      114.7
+     ],
+     "inCastle": true,
+     "garrison": [],
+     "threat": 35,
+     "deckSeed": 508500678
+    },
+    {
+     "id": "UW2-KEEP-SUNKENCOURT:VENT:1",
+     "lwKind": "VENT",
+     "at": [
+      104.21,
+      123.35
+     ],
+     "flow": "UW2-LK-COURT",
+     "garrison": [
+      {
+       "unit": "ELEMENTAL",
+       "count": 2
+      }
+     ],
+     "threat": 35,
+     "deckSeed": 145062897
+    },
+    {
+     "id": "UW2-KEEP-SUNKENCOURT:MERCENARY_POST:1",
+     "lwKind": "MERCENARY_POST",
+     "at": [
+      91.82,
+      115.87
+     ],
+     "onRoad": "UW2-DT09",
+     "garrison": [
+      {
+       "unit": "MERC_CAPTAIN",
+       "count": 1
+      }
+     ],
+     "threat": 35,
+     "deckSeed": 1242382689
+    }
+   ]
+  },
+  {
+   "castleId": "UW2-KEEP-VIGILWATCH",
+   "zone": "UW2",
+   "layer": "UNDER",
+   "kind": "KEEP",
+   "tier": 1,
+   "strength": 3.5,
+   "pois": [
+    {
+     "id": "UW2-KEEP-VIGILWATCH:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "at": [
+      27.46,
+      75.72
+     ],
+     "inCastle": true,
+     "garrison": [],
+     "threat": 35,
+     "deckSeed": 2340164713
+    },
+    {
+     "id": "UW2-KEEP-VIGILWATCH:VENT:1",
+     "lwKind": "VENT",
+     "at": [
+      20.71,
+      66.23
+     ],
+     "flow": "UW2-CH1",
+     "garrison": [
+      {
+       "unit": "ELEMENTAL",
+       "count": 2
+      }
+     ],
+     "threat": 35,
+     "deckSeed": 3000615578
+    },
+    {
+     "id": "UW2-KEEP-VIGILWATCH:MERCENARY_POST:1",
+     "lwKind": "MERCENARY_POST",
+     "at": [
+      24.1,
+      71
+     ],
+     "onRoad": "UW2-DT03",
+     "garrison": [
+      {
+       "unit": "MERC_CAPTAIN",
+       "count": 1
+      }
+     ],
+     "threat": 35,
+     "deckSeed": 297007758
+    }
+   ]
+  },
+  {
+   "castleId": "UW3-KEEP-COIN",
+   "zone": "UW3",
+   "layer": "UNDER",
+   "kind": "KEEP",
+   "tier": 1,
+   "strength": 5,
+   "pois": [
+    {
+     "id": "UW3-KEEP-COIN:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "at": [
+      22.66,
+      9.77
+     ],
+     "inCastle": true,
+     "garrison": [],
+     "threat": 50,
+     "deckSeed": 1389815153
+    },
+    {
+     "id": "UW3-KEEP-COIN:VENT:1",
+     "lwKind": "VENT",
+     "at": [
+      20.78,
+      18.98
+     ],
+     "flow": "UW3-FL-N",
+     "garrison": [
+      {
+       "unit": "ELEMENTAL",
+       "count": 2
+      }
+     ],
+     "threat": 50,
+     "deckSeed": 3300600850
+    },
+    {
+     "id": "UW3-KEEP-COIN:MERCENARY_POST:1",
+     "lwKind": "MERCENARY_POST",
+     "at": [
+      24.98,
+      16.16
+     ],
+     "onRoad": "UW3-LOC09",
+     "garrison": [
+      {
+       "unit": "MERC_CAPTAIN",
+       "count": 1
+      }
+     ],
+     "threat": 50,
+     "deckSeed": 235767846
+    }
+   ]
+  },
+  {
+   "castleId": "UW3-KEEP-HUNGER",
+   "zone": "UW3",
+   "layer": "UNDER",
+   "kind": "KEEP",
+   "tier": 1,
+   "strength": 5,
+   "pois": [
+    {
+     "id": "UW3-KEEP-HUNGER:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "at": [
+      44.75,
+      11.79
+     ],
+     "inCastle": true,
+     "garrison": [],
+     "threat": 50,
+     "deckSeed": 3839273607
+    },
+    {
+     "id": "UW3-KEEP-HUNGER:BARBARIAN_CAMP:1",
+     "lwKind": "BARBARIAN_CAMP",
+     "at": [
+      66.83,
+      -2.07
+     ],
+     "ridge": "UW3-RG-REEF-NE",
+     "garrison": [
+      {
+       "unit": "CHIEFTAIN",
+       "count": 1
+      },
+      {
+       "unit": "BARBARIAN",
+       "count": 5
+      }
+     ],
+     "threat": 50,
+     "deckSeed": 1242714609
+    },
+    {
+     "id": "UW3-KEEP-HUNGER:MERCENARY_POST:1",
+     "lwKind": "MERCENARY_POST",
+     "at": [
+      40.8,
+      13.56
+     ],
+     "onRoad": "UW3-SP3",
+     "garrison": [
+      {
+       "unit": "MERC_CAPTAIN",
+       "count": 1
+      }
+     ],
+     "threat": 50,
+     "deckSeed": 2495692888
+    }
+   ]
+  },
+  {
+   "castleId": "UW3-KEEP-MIRRORS",
+   "zone": "UW3",
+   "layer": "UNDER",
+   "kind": "KEEP",
+   "tier": 1,
+   "strength": 5,
+   "pois": [
+    {
+     "id": "UW3-KEEP-MIRRORS:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "at": [
+      25.67,
+      46.05
+     ],
+     "inCastle": true,
+     "garrison": [],
+     "threat": 50,
+     "deckSeed": 2165030752
+    },
+    {
+     "id": "UW3-KEEP-MIRRORS:VENT:1",
+     "lwKind": "VENT",
+     "at": [
+      36.67,
+      48.31
+     ],
+     "flow": "UW3-FL-S",
+     "garrison": [
+      {
+       "unit": "ELEMENTAL",
+       "count": 2
+      }
+     ],
+     "threat": 50,
+     "deckSeed": 1902798891
+    },
+    {
+     "id": "UW3-KEEP-MIRRORS:MERCENARY_POST:1",
+     "lwKind": "MERCENARY_POST",
+     "at": [
+      24.47,
+      39.61
+     ],
+     "onRoad": "UW3-SEC05",
+     "garrison": [
+      {
+       "unit": "MERC_CAPTAIN",
+       "count": 1
+      }
+     ],
+     "threat": 50,
+     "deckSeed": 3185179335
+    }
+   ]
+  },
+  {
+   "castleId": "UW3-KEEP-SILK",
+   "zone": "UW3",
+   "layer": "UNDER",
+   "kind": "KEEP",
+   "tier": 1,
+   "strength": 5,
+   "pois": [
+    {
+     "id": "UW3-KEEP-SILK:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "at": [
+      33.31,
+      53.72
+     ],
+     "inCastle": true,
+     "garrison": [],
+     "threat": 50,
+     "deckSeed": 98991941
+    },
+    {
+     "id": "UW3-KEEP-SILK:VENT:1",
+     "lwKind": "VENT",
+     "at": [
+      35.26,
+      45.65
+     ],
+     "flow": "UW3-FL-S",
+     "garrison": [
+      {
+       "unit": "ELEMENTAL",
+       "count": 2
+      }
+     ],
+     "threat": 50,
+     "deckSeed": 624525782
+    },
+    {
+     "id": "UW3-KEEP-SILK:MERCENARY_POST:1",
+     "lwKind": "MERCENARY_POST",
+     "at": [
+      27.8,
+      54.69
+     ],
+     "onRoad": "UW3-SEC01",
+     "garrison": [
+      {
+       "unit": "MERC_CAPTAIN",
+       "count": 1
+      }
+     ],
+     "threat": 50,
+     "deckSeed": 93533154
+    }
+   ]
+  },
+  {
+   "castleId": "UW3-PALACE-VAULTPALACE",
+   "zone": "UW3",
+   "layer": "UNDER",
+   "kind": "PALACE",
+   "tier": 3,
+   "strength": 5,
+   "pois": [
+    {
+     "id": "UW3-PALACE-VAULTPALACE:GUARDIAN_PERCH:1",
+     "lwKind": "GUARDIAN_PERCH",
+     "at": [
+      40.51,
+      23.03
+     ],
+     "inCastle": true,
+     "garrison": [],
+     "threat": 100,
+     "deckSeed": 1693342467
+    },
+    {
+     "id": "UW3-PALACE-VAULTPALACE:GUARDIAN_PERCH:2",
+     "lwKind": "GUARDIAN_PERCH",
+     "at": [
+      40.51,
+      23.03
+     ],
+     "inCastle": true,
+     "garrison": [],
+     "threat": 100,
+     "deckSeed": 1710120086
+    },
+    {
+     "id": "UW3-PALACE-VAULTPALACE:WAR_CAMP:1",
+     "lwKind": "WAR_CAMP",
+     "at": [
+      57.49,
+      -1.21
+     ],
+     "garrison": [
+      {
+       "unit": "FIELD_OFFICER",
+       "count": 1
+      },
+      {
+       "unit": "SOLDIER",
+       "count": 4
+      }
+     ],
+     "threat": 100,
+     "deckSeed": 3892045853
+    },
+    {
+     "id": "UW3-PALACE-VAULTPALACE:VENT:1",
+     "lwKind": "VENT",
+     "at": [
+      28.3,
+      20.67
+     ],
+     "flow": "UW3-FL-N",
+     "garrison": [
+      {
+       "unit": "ELEMENTAL",
+       "count": 2
+      }
+     ],
+     "threat": 100,
+     "deckSeed": 1416381564
+    },
+    {
+     "id": "UW3-PALACE-VAULTPALACE:BARBARIAN_CAMP:1",
+     "lwKind": "BARBARIAN_CAMP",
+     "at": [
+      10.09,
+      33.69
+     ],
+     "ridge": "UW3-RG-REEF-NE",
+     "garrison": [
+      {
+       "unit": "CHIEFTAIN",
+       "count": 1
+      },
+      {
+       "unit": "BARBARIAN",
+       "count": 5
+      }
+     ],
+     "threat": 100,
+     "deckSeed": 1390201541
+    },
+    {
+     "id": "UW3-PALACE-VAULTPALACE:WILD_LAIR:1",
+     "lwKind": "WILD_LAIR",
+     "at": [
+      25.25,
+      40.75
+     ],
+     "ground": "UNDER",
+     "monster": "TROLL",
+     "garrison": [
+      {
+       "unit": "ALPHA",
+       "count": 1
+      },
+      {
+       "unit": "PACK",
+       "count": 4
+      }
+     ],
+     "threat": 100,
+     "deckSeed": 712429614
+    }
+   ]
+  }
+ ]
+}

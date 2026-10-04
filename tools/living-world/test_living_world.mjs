@@ -24,4 +24,18 @@ ok(PA.archetypes.every((x) => x.deck.every(([e]) => PA.events[e])), "every deck 
 ok(PA.archetypes.every((x) => x.garrison.reduce((n, [, c]) => n + c, 0) <= PA.limits.garrisonMax), "garrisons stay ≤ garrisonMax (few, named units)");
 ok(Object.values(PA.events).every((e) => typeof e.teleSec === "number"), "every event has a telegraph time");
 
+// D3/D4 castle POIs (seeded)
+const sa = run("tools/living-world/seed_castle_pois.mjs", "/tmp/lw_cp_a.json"), sb = run("tools/living-world/seed_castle_pois.mjs", "/tmp/lw_cp_b.json");
+ok(sa.equals(sb), "castle-pois rebuild is byte-identical (seeded PRNG, no clock)");
+ok(sa.equals(fs.readFileSync("data/living-world/castle-pois.json")), "committed castle-pois.json is up to date");
+const CP = JSON.parse(sa), all = CP.byCastle.flatMap((c) => c.pois.map((p) => ({ ...p, c })));
+ok(CP.byCastle.length === 67, "every one of the 67 castles is seeded");
+ok(CP.byCastle.every((c) => c.pois.filter((p) => p.lwKind !== "LANDING_SPOT").length === PA.budgetByCastleKind[c.kind].total), "each castle gets exactly its kind's POI budget (landing spots ride along)");
+ok(new Set(all.map((p) => p.id)).size === all.length, "POI ids are unique");
+ok(all.every((p) => kinds.includes(p.lwKind) && PA.archetypes.find((a) => a.lwKind === p.lwKind).layers.includes(p.c.layer)), "every POI is a known archetype on a layer it allows");
+ok(all.filter((p) => p.lwKind === "HARBOUR").every((p) => p.c.layer === "SURFACE"), "harbours only on the surface (coast)");
+ok(CP.byCastle.filter((c) => c.layer === "SKY").every((c) => c.pois.some((p) => p.lwKind === "AIRSHIP_DOCK")), "every sky castle has an airship dock");
+ok(all.filter((p) => p.lwKind === "LANDING_SPOT").every((p) => all.some((q) => q.id === p.parent)), "every landing spot hangs off a harbour or dock");
+ok(all.every((p) => p.garrison.reduce((n, g) => n + g.count, 0) <= PA.limits.garrisonMax && p.threat >= 0 && p.threat <= 100), "garrisons ≤ 6 units, threat 0–100");
+
 console.log(fails ? `❌ living-world: ${fails} failed` : "✅ living-world: all passed"); process.exit(fails ? 1 : 0);

@@ -19,9 +19,10 @@ airships, landing spots, harbours + sea ships; seed all 20K maps; an experience,
 ## Data & code
 - [x] D1 — Inventory castles / parcels / terrain from the overworld data (counts, fields, biomes, coast)
 - [x] D2 — `poi-archetypes.json`: the archetype templates (data the sim and docs both read)
-- [ ] D3 — Deterministic seeder: (parcel/castle, seed) → POI placements + event decks
-- [ ] D4 — Seed every castle → `data/living-world/castle-pois.json` + tests (determinism, coverage, bounds)
+- [x] D3 — Deterministic seeder: (parcel/castle, seed) → POI placements + event decks
+- [x] D4 — Seed every castle → `data/living-world/castle-pois.json` + tests (determinism, coverage, bounds)
 - [ ] D5 — Scale to all maps: per-terrain seeding over the full parcel set, plus a summary report
 - [ ] D6 — Headless sim samples: run N seeded POIs through `server/sim`, report win/hold-time spread
 - [ ] D7 — Guardian + defence balance table (`guardians.json`, `defences.json`) + tests
 - [ ] D8 — Map designer: POI types (airship dock, landing spot, harbour, sea ship lane) — PR
+- [ ] D4b — Rebalance: caravan waypoints are thin (4) — every castle with a port gets a caravan route; salvage only 1
