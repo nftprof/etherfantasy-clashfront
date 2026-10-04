@@ -166,7 +166,7 @@ const RF = await import("./region_feed.mjs"), RFS = JSON.parse(rf1), RFH = Objec
 ok(RFH.length > 0 && RFH.every((h) => !h.text.includes("?") && !/\{\w+\}/.test(h.text)), "every sample headline fills all its placeholders");
 ok(Object.values(RFS.feed).every((d) => Object.values(d).every((a) => a.length <= RF.FT.rules.perRegionPerDay)), "at most perRegionPerDay headlines per region per day");
 ok(!RF.newsworthy({ kind: "POI_CLEARED", ring: "WILD", threat: 34, repeatClear: true, facts: {} }) && !RF.newsworthy({ kind: "POI_CLEARED", ring: "WILD", threat: 24, facts: {} }) && RF.newsworthy({ kind: "POI_CLEARED", ring: "WILD", threat: 33, facts: {} }), "repeat clears and routine low-threat clears are not news (doc 06 §4)");
-ok(Object.values(RF.FT.kinds).every((k) => k.weight > 0 && k.variants.length >= 1 && k.icon), "every feed kind has a weight, an icon and a headline");
+ok(Object.values(RF.FT.kinds).every((k) => k.weight > 0 && k.variants >= 1 && k.icon), "every feed kind has a weight, an icon and a headline");
 const rfi = { id: "x|1", kind: "GUARDIAN_KO", facts: { attacker: "A", place: "P", pot: 15 } };
 ok(JSON.stringify(RF.headline(rfi)) === JSON.stringify(RF.headline({ ...rfi })), "the headline variant is a pure function of the item id");
 
@@ -456,5 +456,14 @@ const VE = await import("./validate_events.mjs"), veErr = VE.validate();
 ok(veErr.length === 0, "every event satisfies its engine contract (shape, scope, required/typed fields, no unknown fields; decks, calendar and allocate payloads respect scope)" + (veErr.length ? " — " + veErr.slice(0, 3).join("; ") : ""));
 const EC44 = JSON.parse(fs.readFileSync("data/living-world/event-contract.json", "utf8"));
 ok(["a", "b", "c", "d"].every((sd) => AL.drawDeck({ id: "x", lwKind: "MERCENARY_POST" }, sd, 3).every((e) => EC44.events[e.event].scope !== "OVERWORLD")), "overworld-only events (MERC_BIDDING) are never drawn into a battle deck");
+
+// D45 i18n-ready copy: every string keyed; every key renders; no player-facing literals left in code
+const I18 = await import("./i18n.mjs"), EN = I18.table("en"), enKeys = Object.keys(EN).filter((k) => !k.startsWith("_"));
+const dummy = new Proxy({}, { get: (_, k) => "X" });
+ok(enKeys.length > 50 && enKeys.every((k) => { const out = I18.t(k, dummy); return !/\{\w+\}/.test(out) && !out.includes("?"); }), `every one of the ${enKeys.length} en keys renders with its placeholders filled`);
+ok(Object.entries(RF.FT.kinds).every(([k, v]) => Array.from({ length: v.variants }, (_, i) => I18.has(`feed.${k}.${i}`)).every(Boolean)) && ["POI_CLEARED", "BARBARIAN_CAMP_CLEARED", "AIRDROP_TAKEN", "CARAVAN_RAIDED", "BOUNTY_CLAIMED", "POI_HELD"].every((k) => I18.has(`journal.win.${k}`) && (k === "POI_CLEARED" || I18.has(`journal.lossTarget.${k}`))), "every feed variant and every journal outcome has its key");
+let i18nThrows = false; try { I18.t("no.such.key"); } catch { i18nThrows = true; }
+ok(i18nThrows, "a missing key throws instead of rendering blank copy");
+ok(["journal.mjs", "region_feed.mjs", "stationings.mjs"].every((f) => !/"(Cleared the|Beaten back|Lost to|the Ascendant of|the Warden of|north-east|at your gates)/.test(fs.readFileSync("tools/living-world/" + f, "utf8"))), "no player-facing copy is hardcoded in the feed / journal / banner code");
 
 console.log(fails ? `❌ living-world: ${fails} failed` : "✅ living-world: all passed"); process.exit(fails ? 1 : 0);

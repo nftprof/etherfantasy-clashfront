@@ -80,4 +80,8 @@ airships, landing spots, harbours + sea ships; seed all 20K maps; an experience,
 - [x] D42 — Canon PR #2 refresh pack: fold the new proposals (FeedItem, allocate/callback `livingWorld@1`, region-rights ladder, storm season, SKY/UNDER terrain mapping, Guardian damage cap) into a ready-to-apply patch for the canon branch (handoff/, like PR #1)
 - [x] D41 — "Say go" packs for each owner call: a ready data patch per option (Warden fee 1 → 3, SKY/UNDER terrain applied + re-seed script, Guardian ≤ 20-min cap assertion), each pre-tested on a scratch copy
 - [x] D44 — Event-deck engine contract: a schema per event (fields the engine needs: units, arrivesAt, holdToClaimSec, hp…) + a validator over poi-archetypes events{} and the allocate decks
-- [ ] D45 — i18n-ready copy: feed + journal + banner templates keyed by stable ids (en baseline), with a test that every key renders
+- [x] D45 — i18n-ready copy: feed + journal + banner templates keyed by stable ids (en baseline), with a test that every key renders
+
+## Wave 9 (added cycle 57)
+- [ ] D46 — End-to-end slice through the REAL kernel: a calendar event on the board → a player takes it → buildAllocate → the headless battle (sim_harness, server/sim) → a v1 callback synthesised from the sim outcome → resolveResult → holder / escrows / feed / journal / influence; one command, deterministic, tested
+- [ ] D49 — Owner one-pager: the living world in 2 pages (what it is, how it's seeded for every map, the measured numbers, the open calls + their one-command packs, what's next) for the final summary and for sharing

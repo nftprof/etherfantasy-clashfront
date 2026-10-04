@@ -10,6 +10,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { fnv1a, mulberry32 } from "./seed_singles.mjs";
+import { t } from "./i18n.mjs";
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const rd = (f) => JSON.parse(fs.readFileSync(path.join(ROOT, f), "utf8"));
 export const GU = rd("data/living-world/guardians.json");
@@ -51,10 +52,10 @@ function stationingsForUncached(seed, zone, days) {
   return { ledger, tried };
 }
 
-const hm = (min) => `${Math.floor(min / 60)} h ${String(min % 60).padStart(2, "0")} m`;
+const hm = (min, lang = "en") => t("time.hm", { h: Math.floor(min / 60), mm: String(min % 60).padStart(2, "0") }, lang);
 export function challengeRow(s, tick) {
   const P = PERCHES[s.perchId], F = GU.forms[String(s.form)], left = s.end - tick, place = NAME[P.castleId] || P.castleId;
-  const banner = s.form === 3 ? `⚠ the Ascendant of ${place} stands for ${hm(left)}: 8 min of power from first contact, 3 Ward Stones` : `⚠ the Warden of ${place} stands for ${hm(left)}`;
+  const banner = t(s.form === 3 ? "banner.ascendant" : "banner.warden", { place, left: hm(left) });   // D45: copy in i18n/<lang>.json
   return { id: `gc|${s.perchId}|${s.start}`, src: "AUTO", kind: "GUARDIAN_CHALLENGE", at: s.perchId, postedAt: s.start, opens: s.start, closes: s.end, potCT: Math.round(F.feeCT * GU.kindMultiplier[P.kind] * GU.feeSplit.bountyEscrow * 100) / 100, form: s.form, banner };
 }
 

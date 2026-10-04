@@ -10,16 +10,16 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { fnv1a, mulberry32 } from "./seed_singles.mjs";
+import { t } from "./i18n.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const rd = (f) => JSON.parse(fs.readFileSync(path.join(ROOT, f), "utf8"));
 export const FT = rd("data/living-world/feed-templates.json");
 const PA = rd("data/living-world/poi-archetypes.json");
 
-export function headline(item) {
+export function headline(item, lang = "en") {
   const K = FT.kinds[item.kind]; if (!K) throw new Error("unknown feed kind " + item.kind);
-  const v = K.variants[fnv1a(item.id) % K.variants.length];
-  return { icon: K.icon, text: v.replace(/\{(\w+)\}/g, (_, k) => (item.facts[k] != null ? String(item.facts[k]) : "?")) };
+  return { icon: K.icon, text: t(`feed.${item.kind}.${fnv1a(item.id) % K.variants}`, item.facts, lang) };   // D45: copy in i18n/<lang>.json
 }
 export function newsworthy(item) {
   if (item.repeatClear && !FT.rules.repeatClearIsNews) return false;   // doc 06 §4: farming the same POI is never a story

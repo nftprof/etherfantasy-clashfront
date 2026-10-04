@@ -84,6 +84,9 @@ Rules and templates are in `data/living-world/feed-templates.json`; the function
   shown.
 - **Written:** each kind has 1–2 headline variants, picked by `fnv1a(itemId)`, so the same outcome always reads the
   same on every client.
+- **Translatable (D45):** every headline, journal line and Guardian banner is a keyed string in
+  `data/living-world/i18n/en.json` (`feed.<KIND>.<i>`, `journal.*`, `banner.*`), rendered by `i18n.mjs` `t(key, vars,
+  lang)`. A new language is one translated file; a missing key fails the tests instead of rendering blank.
 - **Sample:** `data/living-world/region-feed.sample.json` is a synthetic day 0 over the 67 castles: 64 outcomes →
   51 newsworthy → 49 headlines across 10 regions. Outcomes are drawn by PRNG, not the sim, and the warband names are
   placeholders. Some of BUS's headlines:

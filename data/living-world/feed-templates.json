@@ -1,6 +1,6 @@
 {
  "schema": "cf-living-world/feed-templates@1",
- "note": "D10 region feed (doc 05 §4, doc 06 §1): every outcome of an event is a candidate story; these rules decide which make the feed and how they read. Variant = fnv1a(itemId) % variants (deterministic). {placeholders} come from the feed item.",
+ "note": "D10 region feed (doc 05 §4, doc 06 §1): every outcome of an event is a candidate story; these rules decide which make the feed and how they read. Variant = fnv1a(itemId) % variants (deterministic). Headline copy lives in i18n/<lang>.json under feed.<KIND>.<i> (D45); `variants` is how many there are. {placeholders} come from the feed item.",
  "rules": {
   "perRegionPerDay": 8,
   "repeatClearIsNews": false,
@@ -8,20 +8,80 @@
   "potWeightPerLog10CT": 2
  },
  "kinds": {
-  "GUARDIAN_KO": { "weight": 9, "icon": "🏆", "variants": ["{attacker} broke the Warden of {place}: {pot} CT bounty", "The Warden of {place} falls to {attacker}, who split {pot} CT"] },
-  "GUARDIAN_UNBOUND": { "weight": 10, "icon": "🏆", "variants": ["{attacker} shattered all three Ward Stones and unbound the Ascendant of {place}: {pot} CT", "The Ascendant of {place} is unbound! {attacker} take the {pot} CT bounty"] },
-  "GUARDIAN_OUTLASTED": { "weight": 8, "icon": "⌛", "variants": ["{attacker} outlasted the Ascendant of {place}; it tired and fell. Half bounty: {pot} CT", "The Ascendant of {place} tired before {attacker} did: {pot} CT"] },
-  "GUARDIAN_HELD": { "weight": 6, "icon": "🛡", "variants": ["The {form} of {place} held; the stake goes home to {defender}", "{attacker} broke on the {form} of {place}"] },
-  "SIEGE_ME_BROKEN": { "weight": 9, "icon": "⚔", "variants": ["{defender} dared the world to take {place}. {attacker} did: {pot} CT in spoils", "{place} falls on a dare: {attacker} split {pot} CT"] },
-  "SIEGE_ME_HELD": { "weight": 7, "icon": "🛡", "variants": ["{defender} dared, and {place} held: {attacker} lost {losses} units at the walls", "{place} stood its SIEGE_ME window; the dare pot rolls to {defender}"] },
-  "BOUNTY_CLAIMED": { "weight": 6, "icon": "🎯", "variants": ["{attacker} claimed the {pot} CT bounty on {target}", "Bounty paid: {target} brought down by {attacker} ({pot} CT)"] },
-  "CARAVAN_RAIDED": { "weight": 6, "icon": "💰", "variants": ["{attacker} raided a caravan bound for {place} and took the cargo", "A caravan to {place} never arrived: {attacker} took it on the road"] },
-  "CARAVAN_ESCORTED": { "weight": 4, "icon": "🐫", "variants": ["{attacker} brought a caravan safely into {place}", "Escort paid: {attacker} saw the caravan through to {place}"] },
-  "AIRDROP_TAKEN": { "weight": 5, "icon": "📦", "variants": ["{attacker} held the {sponsor} airdrop at {place} for 20 s and took the crate", "Crate secured at {place}: {attacker} outlasted {rivals} rivals"] },
-  "BARBARIAN_CAMP_CLEARED": { "weight": 5, "icon": "🔥", "variants": ["{attacker} burned the barbarian camp near {place}: 48 h of quiet for the region", "The raids stop: {attacker} cleared the camp by {place}"] },
-  "POI_CLEARED": { "weight": 3, "icon": "⚔", "variants": ["{attacker} cleared the {poi} at {place}", "The {poi} at {place} was taken by {attacker}"] },
-  "POI_HELD": { "weight": 4, "icon": "🛡", "variants": ["{defender} held the {poi} at {place}", "The {poi} at {place} holds: {attacker} withdrew"] },
-  "KRAKEN": { "weight": 7, "icon": "🐙", "variants": ["The Kraken took a fleet on {lane}; it was dragged to Blackmere", "Kraken sighted on {lane}: {attacker} turned back in time"] },
-  "STORM_CLOSES": { "weight": 2, "icon": "🌩", "variants": ["Storm: {count} sea lanes from {place} are closed today"] }
+  "GUARDIAN_KO": {
+   "weight": 9,
+   "icon": "🏆",
+   "variants": 2
+  },
+  "GUARDIAN_UNBOUND": {
+   "weight": 10,
+   "icon": "🏆",
+   "variants": 2
+  },
+  "GUARDIAN_OUTLASTED": {
+   "weight": 8,
+   "icon": "⌛",
+   "variants": 2
+  },
+  "GUARDIAN_HELD": {
+   "weight": 6,
+   "icon": "🛡",
+   "variants": 2
+  },
+  "SIEGE_ME_BROKEN": {
+   "weight": 9,
+   "icon": "⚔",
+   "variants": 2
+  },
+  "SIEGE_ME_HELD": {
+   "weight": 7,
+   "icon": "🛡",
+   "variants": 2
+  },
+  "BOUNTY_CLAIMED": {
+   "weight": 6,
+   "icon": "🎯",
+   "variants": 2
+  },
+  "CARAVAN_RAIDED": {
+   "weight": 6,
+   "icon": "💰",
+   "variants": 2
+  },
+  "CARAVAN_ESCORTED": {
+   "weight": 4,
+   "icon": "🐫",
+   "variants": 2
+  },
+  "AIRDROP_TAKEN": {
+   "weight": 5,
+   "icon": "📦",
+   "variants": 2
+  },
+  "BARBARIAN_CAMP_CLEARED": {
+   "weight": 5,
+   "icon": "🔥",
+   "variants": 2
+  },
+  "POI_CLEARED": {
+   "weight": 3,
+   "icon": "⚔",
+   "variants": 2
+  },
+  "POI_HELD": {
+   "weight": 4,
+   "icon": "🛡",
+   "variants": 2
+  },
+  "KRAKEN": {
+   "weight": 7,
+   "icon": "🐙",
+   "variants": 2
+  },
+  "STORM_CLOSES": {
+   "weight": 2,
+   "icon": "🌩",
+   "variants": 1
+  }
  }
 }
