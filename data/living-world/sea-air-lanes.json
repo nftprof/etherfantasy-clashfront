@@ -1,0 +1,786 @@
+{
+ "schema": "cf-living-world/sea-air-lanes@1",
+ "note": "doc 07 — ambient traffic + voyages ride these lanes; krakenRisk per crossing ×1.5 in storm season",
+ "ports": [
+  {
+   "id": "BUS-HARBOUR",
+   "zone": "BUS",
+   "kind": "SEA_PORT",
+   "at": [
+    138.3,
+    71.8
+   ],
+   "name": "The First Dock"
+  },
+  {
+   "id": "BUS-PORT-CAPEMEET",
+   "zone": "BUS",
+   "kind": "SEA_PORT",
+   "at": [
+    11.3,
+    24.9
+   ],
+   "name": null
+  },
+  {
+   "id": "BUS-PORT-EASTREACH",
+   "zone": "BUS",
+   "kind": "SEA_PORT",
+   "at": [
+    341.4,
+    124.5
+   ],
+   "name": null
+  },
+  {
+   "id": "BUS-PORT-MIDDLEQUAY",
+   "zone": "BUS",
+   "kind": "SEA_PORT",
+   "at": [
+    275.8,
+    58.2
+   ],
+   "name": null
+  },
+  {
+   "id": "BUS-PORT-SKY",
+   "zone": "BUS",
+   "kind": "AIRSHIP_PORT",
+   "at": [
+    296,
+    178
+   ],
+   "name": null
+  },
+  {
+   "id": "CGI-LANDING",
+   "zone": "CGI",
+   "kind": "SEA_PORT",
+   "at": [
+    19.5,
+    42
+   ],
+   "name": null
+  },
+  {
+   "id": "CGI-PORT-OLYMPUS",
+   "zone": "CGI",
+   "kind": "SEA_PORT",
+   "at": [
+    67.3,
+    44.8
+   ],
+   "name": null
+  },
+  {
+   "id": "CGI-SKYDOCK",
+   "zone": "CGI",
+   "kind": "AIRSHIP_PORT",
+   "at": [
+    52,
+    20
+   ],
+   "name": null
+  },
+  {
+   "id": "ENT-MARINA",
+   "zone": "ENT",
+   "kind": "SEA_PORT",
+   "at": [
+    14,
+    452
+   ],
+   "name": null
+  },
+  {
+   "id": "ENT-PORT-LANTERNSHORE",
+   "zone": "ENT",
+   "kind": "SEA_PORT",
+   "at": [
+    7,
+    106.9
+   ],
+   "name": null
+  },
+  {
+   "id": "ENT-PORT-PETALPORT",
+   "zone": "ENT",
+   "kind": "SEA_PORT",
+   "at": [
+    18.8,
+    20.8
+   ],
+   "name": null
+  },
+  {
+   "id": "ENT-PORT-SUNSTRAND",
+   "zone": "ENT",
+   "kind": "SEA_PORT",
+   "at": [
+    2.2,
+    386.3
+   ],
+   "name": null
+  },
+  {
+   "id": "HS1-DOCK-GATEWAY",
+   "zone": "HS1",
+   "kind": "AIRSHIP_PORT",
+   "at": [
+    57,
+    114.2
+   ],
+   "name": "The Gate to Heaven"
+  },
+  {
+   "id": "HS3-ANCHORAGE",
+   "zone": "HS3",
+   "kind": "AIRSHIP_PORT",
+   "at": [
+    9.5,
+    95.5
+   ],
+   "name": "The Pilgrims' Anchorage"
+  },
+  {
+   "id": "HUB-PORT-SKY",
+   "zone": "HUB",
+   "kind": "AIRSHIP_PORT",
+   "at": [
+    304.6,
+    64
+   ],
+   "name": null
+  },
+  {
+   "id": "KOL-HARBOUR",
+   "zone": "KOL",
+   "kind": "SEA_PORT",
+   "at": [
+    44,
+    76.9
+   ],
+   "name": null
+  },
+  {
+   "id": "KOL-SKYDOCK",
+   "zone": "KOL",
+   "kind": "AIRSHIP_PORT",
+   "at": [
+    60,
+    47
+   ],
+   "name": null
+  }
+ ],
+ "counts": {
+  "sea": 55,
+  "air": 6
+ },
+ "lanes": [
+  {
+   "id": "SEA:BUS-HARBOUR~BUS-PORT-CAPEMEET",
+   "mode": "SEA",
+   "from": "BUS-HARBOUR",
+   "to": "BUS-PORT-CAPEMEET",
+   "crossZone": false,
+   "lengthU": 135.38,
+   "krakenRisk": 0.25,
+   "stormCloses": true
+  },
+  {
+   "id": "SEA:BUS-HARBOUR~BUS-PORT-EASTREACH",
+   "mode": "SEA",
+   "from": "BUS-HARBOUR",
+   "to": "BUS-PORT-EASTREACH",
+   "crossZone": false,
+   "lengthU": 209.83,
+   "krakenRisk": 0.25,
+   "stormCloses": true
+  },
+  {
+   "id": "SEA:BUS-HARBOUR~BUS-PORT-MIDDLEQUAY",
+   "mode": "SEA",
+   "from": "BUS-HARBOUR",
+   "to": "BUS-PORT-MIDDLEQUAY",
+   "crossZone": false,
+   "lengthU": 138.17,
+   "krakenRisk": 0.25,
+   "stormCloses": true
+  },
+  {
+   "id": "SEA:BUS-HARBOUR~CGI-LANDING",
+   "mode": "SEA",
+   "from": "BUS-HARBOUR",
+   "to": "CGI-LANDING",
+   "crossZone": true,
+   "lengthU": 400,
+   "krakenRisk": 0.25,
+   "stormCloses": true
+  },
+  {
+   "id": "SEA:BUS-HARBOUR~CGI-PORT-OLYMPUS",
+   "mode": "SEA",
+   "from": "BUS-HARBOUR",
+   "to": "CGI-PORT-OLYMPUS",
+   "crossZone": true,
+   "lengthU": 400,
+   "krakenRisk": 0.25,
+   "stormCloses": true
+  },
+  {
+   "id": "SEA:BUS-HARBOUR~ENT-MARINA",
+   "mode": "SEA",
+   "from": "BUS-HARBOUR",
+   "to": "ENT-MARINA",
+   "crossZone": true,
+   "lengthU": 400,
+   "krakenRisk": 0.25,
+   "stormCloses": true
+  },
+  {
+   "id": "SEA:BUS-HARBOUR~ENT-PORT-LANTERNSHORE",
+   "mode": "SEA",
+   "from": "BUS-HARBOUR",
+   "to": "ENT-PORT-LANTERNSHORE",
+   "crossZone": true,
+   "lengthU": 400,
+   "krakenRisk": 0.25,
+   "stormCloses": true
+  },
+  {
+   "id": "SEA:BUS-HARBOUR~ENT-PORT-PETALPORT",
+   "mode": "SEA",
+   "from": "BUS-HARBOUR",
+   "to": "ENT-PORT-PETALPORT",
+   "crossZone": true,
+   "lengthU": 400,
+   "krakenRisk": 0.25,
+   "stormCloses": true
+  },
+  {
+   "id": "SEA:BUS-HARBOUR~ENT-PORT-SUNSTRAND",
+   "mode": "SEA",
+   "from": "BUS-HARBOUR",
+   "to": "ENT-PORT-SUNSTRAND",
+   "crossZone": true,
+   "lengthU": 400,
+   "krakenRisk": 0.25,
+   "stormCloses": true
+  },
+  {
+   "id": "SEA:BUS-HARBOUR~KOL-HARBOUR",
+   "mode": "SEA",
+   "from": "BUS-HARBOUR",
+   "to": "KOL-HARBOUR",
+   "crossZone": true,
+   "lengthU": 400,
+   "krakenRisk": 0.25,
+   "stormCloses": true
+  },
+  {
+   "id": "SEA:BUS-PORT-CAPEMEET~BUS-PORT-EASTREACH",
+   "mode": "SEA",
+   "from": "BUS-PORT-CAPEMEET",
+   "to": "BUS-PORT-EASTREACH",
+   "crossZone": false,
+   "lengthU": 344.8,
+   "krakenRisk": 0.25,
+   "stormCloses": true
+  },
+  {
+   "id": "SEA:BUS-PORT-CAPEMEET~BUS-PORT-MIDDLEQUAY",
+   "mode": "SEA",
+   "from": "BUS-PORT-CAPEMEET",
+   "to": "BUS-PORT-MIDDLEQUAY",
+   "crossZone": false,
+   "lengthU": 266.59,
+   "krakenRisk": 0.25,
+   "stormCloses": true
+  },
+  {
+   "id": "SEA:BUS-PORT-CAPEMEET~CGI-LANDING",
+   "mode": "SEA",
+   "from": "BUS-PORT-CAPEMEET",
+   "to": "CGI-LANDING",
+   "crossZone": true,
+   "lengthU": 400,
+   "krakenRisk": 0.25,
+   "stormCloses": true
+  },
+  {
+   "id": "SEA:BUS-PORT-CAPEMEET~CGI-PORT-OLYMPUS",
+   "mode": "SEA",
+   "from": "BUS-PORT-CAPEMEET",
+   "to": "CGI-PORT-OLYMPUS",
+   "crossZone": true,
+   "lengthU": 400,
+   "krakenRisk": 0.25,
+   "stormCloses": true
+  },
+  {
+   "id": "SEA:BUS-PORT-CAPEMEET~ENT-MARINA",
+   "mode": "SEA",
+   "from": "BUS-PORT-CAPEMEET",
+   "to": "ENT-MARINA",
+   "crossZone": true,
+   "lengthU": 400,
+   "krakenRisk": 0.25,
+   "stormCloses": true
+  },
+  {
+   "id": "SEA:BUS-PORT-CAPEMEET~ENT-PORT-LANTERNSHORE",
+   "mode": "SEA",
+   "from": "BUS-PORT-CAPEMEET",
+   "to": "ENT-PORT-LANTERNSHORE",
+   "crossZone": true,
+   "lengthU": 400,
+   "krakenRisk": 0.25,
+   "stormCloses": true
+  },
+  {
+   "id": "SEA:BUS-PORT-CAPEMEET~ENT-PORT-PETALPORT",
+   "mode": "SEA",
+   "from": "BUS-PORT-CAPEMEET",
+   "to": "ENT-PORT-PETALPORT",
+   "crossZone": true,
+   "lengthU": 400,
+   "krakenRisk": 0.25,
+   "stormCloses": true
+  },
+  {
+   "id": "SEA:BUS-PORT-CAPEMEET~ENT-PORT-SUNSTRAND",
+   "mode": "SEA",
+   "from": "BUS-PORT-CAPEMEET",
+   "to": "ENT-PORT-SUNSTRAND",
+   "crossZone": true,
+   "lengthU": 400,
+   "krakenRisk": 0.25,
+   "stormCloses": true
+  },
+  {
+   "id": "SEA:BUS-PORT-CAPEMEET~KOL-HARBOUR",
+   "mode": "SEA",
+   "from": "BUS-PORT-CAPEMEET",
+   "to": "KOL-HARBOUR",
+   "crossZone": true,
+   "lengthU": 400,
+   "krakenRisk": 0.25,
+   "stormCloses": true
+  },
+  {
+   "id": "SEA:BUS-PORT-EASTREACH~BUS-PORT-MIDDLEQUAY",
+   "mode": "SEA",
+   "from": "BUS-PORT-EASTREACH",
+   "to": "BUS-PORT-MIDDLEQUAY",
+   "crossZone": false,
+   "lengthU": 93.27,
+   "krakenRisk": 0.25,
+   "stormCloses": true
+  },
+  {
+   "id": "SEA:BUS-PORT-EASTREACH~CGI-LANDING",
+   "mode": "SEA",
+   "from": "BUS-PORT-EASTREACH",
+   "to": "CGI-LANDING",
+   "crossZone": true,
+   "lengthU": 400,
+   "krakenRisk": 0.25,
+   "stormCloses": true
+  },
+  {
+   "id": "SEA:BUS-PORT-EASTREACH~CGI-PORT-OLYMPUS",
+   "mode": "SEA",
+   "from": "BUS-PORT-EASTREACH",
+   "to": "CGI-PORT-OLYMPUS",
+   "crossZone": true,
+   "lengthU": 400,
+   "krakenRisk": 0.25,
+   "stormCloses": true
+  },
+  {
+   "id": "SEA:BUS-PORT-EASTREACH~ENT-MARINA",
+   "mode": "SEA",
+   "from": "BUS-PORT-EASTREACH",
+   "to": "ENT-MARINA",
+   "crossZone": true,
+   "lengthU": 400,
+   "krakenRisk": 0.25,
+   "stormCloses": true
+  },
+  {
+   "id": "SEA:BUS-PORT-EASTREACH~ENT-PORT-LANTERNSHORE",
+   "mode": "SEA",
+   "from": "BUS-PORT-EASTREACH",
+   "to": "ENT-PORT-LANTERNSHORE",
+   "crossZone": true,
+   "lengthU": 400,
+   "krakenRisk": 0.25,
+   "stormCloses": true
+  },
+  {
+   "id": "SEA:BUS-PORT-EASTREACH~ENT-PORT-PETALPORT",
+   "mode": "SEA",
+   "from": "BUS-PORT-EASTREACH",
+   "to": "ENT-PORT-PETALPORT",
+   "crossZone": true,
+   "lengthU": 400,
+   "krakenRisk": 0.25,
+   "stormCloses": true
+  },
+  {
+   "id": "SEA:BUS-PORT-EASTREACH~ENT-PORT-SUNSTRAND",
+   "mode": "SEA",
+   "from": "BUS-PORT-EASTREACH",
+   "to": "ENT-PORT-SUNSTRAND",
+   "crossZone": true,
+   "lengthU": 400,
+   "krakenRisk": 0.25,
+   "stormCloses": true
+  },
+  {
+   "id": "SEA:BUS-PORT-EASTREACH~KOL-HARBOUR",
+   "mode": "SEA",
+   "from": "BUS-PORT-EASTREACH",
+   "to": "KOL-HARBOUR",
+   "crossZone": true,
+   "lengthU": 400,
+   "krakenRisk": 0.25,
+   "stormCloses": true
+  },
+  {
+   "id": "SEA:BUS-PORT-MIDDLEQUAY~CGI-LANDING",
+   "mode": "SEA",
+   "from": "BUS-PORT-MIDDLEQUAY",
+   "to": "CGI-LANDING",
+   "crossZone": true,
+   "lengthU": 400,
+   "krakenRisk": 0.25,
+   "stormCloses": true
+  },
+  {
+   "id": "SEA:BUS-PORT-MIDDLEQUAY~CGI-PORT-OLYMPUS",
+   "mode": "SEA",
+   "from": "BUS-PORT-MIDDLEQUAY",
+   "to": "CGI-PORT-OLYMPUS",
+   "crossZone": true,
+   "lengthU": 400,
+   "krakenRisk": 0.25,
+   "stormCloses": true
+  },
+  {
+   "id": "SEA:BUS-PORT-MIDDLEQUAY~ENT-MARINA",
+   "mode": "SEA",
+   "from": "BUS-PORT-MIDDLEQUAY",
+   "to": "ENT-MARINA",
+   "crossZone": true,
+   "lengthU": 400,
+   "krakenRisk": 0.25,
+   "stormCloses": true
+  },
+  {
+   "id": "SEA:BUS-PORT-MIDDLEQUAY~ENT-PORT-LANTERNSHORE",
+   "mode": "SEA",
+   "from": "BUS-PORT-MIDDLEQUAY",
+   "to": "ENT-PORT-LANTERNSHORE",
+   "crossZone": true,
+   "lengthU": 400,
+   "krakenRisk": 0.25,
+   "stormCloses": true
+  },
+  {
+   "id": "SEA:BUS-PORT-MIDDLEQUAY~ENT-PORT-PETALPORT",
+   "mode": "SEA",
+   "from": "BUS-PORT-MIDDLEQUAY",
+   "to": "ENT-PORT-PETALPORT",
+   "crossZone": true,
+   "lengthU": 400,
+   "krakenRisk": 0.25,
+   "stormCloses": true
+  },
+  {
+   "id": "SEA:BUS-PORT-MIDDLEQUAY~ENT-PORT-SUNSTRAND",
+   "mode": "SEA",
+   "from": "BUS-PORT-MIDDLEQUAY",
+   "to": "ENT-PORT-SUNSTRAND",
+   "crossZone": true,
+   "lengthU": 400,
+   "krakenRisk": 0.25,
+   "stormCloses": true
+  },
+  {
+   "id": "SEA:BUS-PORT-MIDDLEQUAY~KOL-HARBOUR",
+   "mode": "SEA",
+   "from": "BUS-PORT-MIDDLEQUAY",
+   "to": "KOL-HARBOUR",
+   "crossZone": true,
+   "lengthU": 400,
+   "krakenRisk": 0.25,
+   "stormCloses": true
+  },
+  {
+   "id": "SEA:CGI-LANDING~CGI-PORT-OLYMPUS",
+   "mode": "SEA",
+   "from": "CGI-LANDING",
+   "to": "CGI-PORT-OLYMPUS",
+   "crossZone": false,
+   "lengthU": 47.88,
+   "krakenRisk": 0.21152,
+   "stormCloses": true
+  },
+  {
+   "id": "SEA:CGI-LANDING~ENT-MARINA",
+   "mode": "SEA",
+   "from": "CGI-LANDING",
+   "to": "ENT-MARINA",
+   "crossZone": true,
+   "lengthU": 400,
+   "krakenRisk": 0.25,
+   "stormCloses": true
+  },
+  {
+   "id": "SEA:CGI-LANDING~ENT-PORT-LANTERNSHORE",
+   "mode": "SEA",
+   "from": "CGI-LANDING",
+   "to": "ENT-PORT-LANTERNSHORE",
+   "crossZone": true,
+   "lengthU": 400,
+   "krakenRisk": 0.25,
+   "stormCloses": true
+  },
+  {
+   "id": "SEA:CGI-LANDING~ENT-PORT-PETALPORT",
+   "mode": "SEA",
+   "from": "CGI-LANDING",
+   "to": "ENT-PORT-PETALPORT",
+   "crossZone": true,
+   "lengthU": 400,
+   "krakenRisk": 0.25,
+   "stormCloses": true
+  },
+  {
+   "id": "SEA:CGI-LANDING~ENT-PORT-SUNSTRAND",
+   "mode": "SEA",
+   "from": "CGI-LANDING",
+   "to": "ENT-PORT-SUNSTRAND",
+   "crossZone": true,
+   "lengthU": 400,
+   "krakenRisk": 0.25,
+   "stormCloses": true
+  },
+  {
+   "id": "SEA:CGI-LANDING~KOL-HARBOUR",
+   "mode": "SEA",
+   "from": "CGI-LANDING",
+   "to": "KOL-HARBOUR",
+   "crossZone": true,
+   "lengthU": 400,
+   "krakenRisk": 0.25,
+   "stormCloses": true
+  },
+  {
+   "id": "SEA:CGI-PORT-OLYMPUS~ENT-MARINA",
+   "mode": "SEA",
+   "from": "CGI-PORT-OLYMPUS",
+   "to": "ENT-MARINA",
+   "crossZone": true,
+   "lengthU": 400,
+   "krakenRisk": 0.25,
+   "stormCloses": true
+  },
+  {
+   "id": "SEA:CGI-PORT-OLYMPUS~ENT-PORT-LANTERNSHORE",
+   "mode": "SEA",
+   "from": "CGI-PORT-OLYMPUS",
+   "to": "ENT-PORT-LANTERNSHORE",
+   "crossZone": true,
+   "lengthU": 400,
+   "krakenRisk": 0.25,
+   "stormCloses": true
+  },
+  {
+   "id": "SEA:CGI-PORT-OLYMPUS~ENT-PORT-PETALPORT",
+   "mode": "SEA",
+   "from": "CGI-PORT-OLYMPUS",
+   "to": "ENT-PORT-PETALPORT",
+   "crossZone": true,
+   "lengthU": 400,
+   "krakenRisk": 0.25,
+   "stormCloses": true
+  },
+  {
+   "id": "SEA:CGI-PORT-OLYMPUS~ENT-PORT-SUNSTRAND",
+   "mode": "SEA",
+   "from": "CGI-PORT-OLYMPUS",
+   "to": "ENT-PORT-SUNSTRAND",
+   "crossZone": true,
+   "lengthU": 400,
+   "krakenRisk": 0.25,
+   "stormCloses": true
+  },
+  {
+   "id": "SEA:CGI-PORT-OLYMPUS~KOL-HARBOUR",
+   "mode": "SEA",
+   "from": "CGI-PORT-OLYMPUS",
+   "to": "KOL-HARBOUR",
+   "crossZone": true,
+   "lengthU": 400,
+   "krakenRisk": 0.25,
+   "stormCloses": true
+  },
+  {
+   "id": "SEA:ENT-MARINA~ENT-PORT-LANTERNSHORE",
+   "mode": "SEA",
+   "from": "ENT-MARINA",
+   "to": "ENT-PORT-LANTERNSHORE",
+   "crossZone": false,
+   "lengthU": 345.17,
+   "krakenRisk": 0.25,
+   "stormCloses": true
+  },
+  {
+   "id": "SEA:ENT-MARINA~ENT-PORT-PETALPORT",
+   "mode": "SEA",
+   "from": "ENT-MARINA",
+   "to": "ENT-PORT-PETALPORT",
+   "crossZone": false,
+   "lengthU": 431.23,
+   "krakenRisk": 0.25,
+   "stormCloses": true
+  },
+  {
+   "id": "SEA:ENT-MARINA~ENT-PORT-SUNSTRAND",
+   "mode": "SEA",
+   "from": "ENT-MARINA",
+   "to": "ENT-PORT-SUNSTRAND",
+   "crossZone": false,
+   "lengthU": 66.75,
+   "krakenRisk": 0.25,
+   "stormCloses": true
+  },
+  {
+   "id": "SEA:ENT-MARINA~KOL-HARBOUR",
+   "mode": "SEA",
+   "from": "ENT-MARINA",
+   "to": "KOL-HARBOUR",
+   "crossZone": true,
+   "lengthU": 400,
+   "krakenRisk": 0.25,
+   "stormCloses": true
+  },
+  {
+   "id": "SEA:ENT-PORT-LANTERNSHORE~ENT-PORT-PETALPORT",
+   "mode": "SEA",
+   "from": "ENT-PORT-LANTERNSHORE",
+   "to": "ENT-PORT-PETALPORT",
+   "crossZone": false,
+   "lengthU": 86.9,
+   "krakenRisk": 0.25,
+   "stormCloses": true
+  },
+  {
+   "id": "SEA:ENT-PORT-LANTERNSHORE~ENT-PORT-SUNSTRAND",
+   "mode": "SEA",
+   "from": "ENT-PORT-LANTERNSHORE",
+   "to": "ENT-PORT-SUNSTRAND",
+   "crossZone": false,
+   "lengthU": 279.44,
+   "krakenRisk": 0.25,
+   "stormCloses": true
+  },
+  {
+   "id": "SEA:ENT-PORT-LANTERNSHORE~KOL-HARBOUR",
+   "mode": "SEA",
+   "from": "ENT-PORT-LANTERNSHORE",
+   "to": "KOL-HARBOUR",
+   "crossZone": true,
+   "lengthU": 400,
+   "krakenRisk": 0.25,
+   "stormCloses": true
+  },
+  {
+   "id": "SEA:ENT-PORT-PETALPORT~ENT-PORT-SUNSTRAND",
+   "mode": "SEA",
+   "from": "ENT-PORT-PETALPORT",
+   "to": "ENT-PORT-SUNSTRAND",
+   "crossZone": false,
+   "lengthU": 365.88,
+   "krakenRisk": 0.25,
+   "stormCloses": true
+  },
+  {
+   "id": "SEA:ENT-PORT-PETALPORT~KOL-HARBOUR",
+   "mode": "SEA",
+   "from": "ENT-PORT-PETALPORT",
+   "to": "KOL-HARBOUR",
+   "crossZone": true,
+   "lengthU": 400,
+   "krakenRisk": 0.25,
+   "stormCloses": true
+  },
+  {
+   "id": "SEA:ENT-PORT-SUNSTRAND~KOL-HARBOUR",
+   "mode": "SEA",
+   "from": "ENT-PORT-SUNSTRAND",
+   "to": "KOL-HARBOUR",
+   "crossZone": true,
+   "lengthU": 400,
+   "krakenRisk": 0.25,
+   "stormCloses": true
+  },
+  {
+   "id": "AIR:BUS-PORT-SKY~HS1-DOCK-GATEWAY",
+   "mode": "AIR",
+   "from": "BUS-PORT-SKY",
+   "to": "HS1-DOCK-GATEWAY",
+   "crossZone": true,
+   "lengthU": 400,
+   "gated": "AEROPOLIS"
+  },
+  {
+   "id": "AIR:CGI-SKYDOCK~HS1-DOCK-GATEWAY",
+   "mode": "AIR",
+   "from": "CGI-SKYDOCK",
+   "to": "HS1-DOCK-GATEWAY",
+   "crossZone": true,
+   "lengthU": 400,
+   "gated": "AEROPOLIS"
+  },
+  {
+   "id": "AIR:HUB-PORT-SKY~HS1-DOCK-GATEWAY",
+   "mode": "AIR",
+   "from": "HUB-PORT-SKY",
+   "to": "HS1-DOCK-GATEWAY",
+   "crossZone": true,
+   "lengthU": 400,
+   "gated": "AEROPOLIS"
+  },
+  {
+   "id": "AIR:KOL-SKYDOCK~HS1-DOCK-GATEWAY",
+   "mode": "AIR",
+   "from": "KOL-SKYDOCK",
+   "to": "HS1-DOCK-GATEWAY",
+   "crossZone": true,
+   "lengthU": 400,
+   "gated": "AEROPOLIS"
+  },
+  {
+   "id": "AIR:HS1-DOCK-GATEWAY~HS2-GATE-AEROPOLIS",
+   "mode": "AIR",
+   "from": "HS1-DOCK-GATEWAY",
+   "to": "HS2-GATE-AEROPOLIS",
+   "crossZone": true,
+   "lengthU": 400,
+   "gated": "AEROPOLIS"
+  },
+  {
+   "id": "AIR:HS1-DOCK-GATEWAY~HS3-GATE-AEROPOLIS",
+   "mode": "AIR",
+   "from": "HS1-DOCK-GATEWAY",
+   "to": "HS3-GATE-AEROPOLIS",
+   "crossZone": true,
+   "lengthU": 400,
+   "gated": "AEROPOLIS"
+  }
+ ]
+}

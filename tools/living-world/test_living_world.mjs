@@ -85,4 +85,12 @@ ok(campsOk, "barbarian camps are ≥ 20 u apart in every zone (region guarantee)
 const wcCap = PA.archetypes.find((a) => a.lwKind === "WAR_CAMP").affinity.perZoneCap;
 ok(Object.entries(EST.reduce((m, p) => ((m[p.zone] = (m[p.zone] || 0) + p.nodes.filter((n) => n.k === "WAR_CAMP").length), m), {})).every(([z, n]) => n <= wcCap.base + Math.floor(EST.filter((p) => p.zone === z).length / wcCap.per)), "war camps stay within the per-zone cap");
 
+// doc 07 lanes
+const la = run("tools/living-world/sea_air_lanes.mjs", "/tmp/lw_l_a.json"), lb = run("tools/living-world/sea_air_lanes.mjs", "/tmp/lw_l_b.json");
+ok(la.equals(lb) && la.equals(fs.readFileSync("data/living-world/sea-air-lanes.json")), "sea/air lanes rebuild byte-identical and committed");
+const LN = JSON.parse(la), nSea = LN.ports.filter((p) => p.kind === "SEA_PORT").length;
+ok(LN.counts.sea === (nSea * (nSea - 1)) / 2, `every SEA_PORT pair has a lane (${nSea} ports → ${LN.counts.sea} lanes, canon "any port pair")`);
+ok(LN.lanes.filter((l) => l.mode === "SEA").every((l) => l.krakenRisk > 0 && l.krakenRisk <= 0.25), "kraken risk in (0, 0.25] on every sea lane");
+ok(LN.lanes.filter((l) => l.mode === "AIR").every((l) => l.gated === "AEROPOLIS") && !LN.lanes.some((l) => l.mode === "AIR" && /^HS[23]/.test(l.from) && /^HS[23]/.test(l.to)), "airships go through the Aeropolis gateway; Emberfall and Empyrea are not linked (canon)");
+
 console.log(fails ? `❌ living-world: ${fails} failed` : "✅ living-world: all passed"); process.exit(fails ? 1 : 0);
