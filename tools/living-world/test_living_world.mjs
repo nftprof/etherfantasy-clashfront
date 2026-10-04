@@ -240,4 +240,19 @@ const lair = (g) => MX.rows.find((r) => r.k === "WILD_LAIR" && r.ring === "WILD"
 ok(lair("PLAIN") < lair("FOREST") && lair("FOREST") < lair("RIDGE"), "defensible ground still holds longer after the groundShift: plain < forest < ridge (wild lairs)");
 ok(Object.keys(TB.groundShift).every((g) => TB.groundShift[g] < 0 && TMd.canon[TMd.groundToHexTerrain[g]][1] > 1), "groundShift only lowers threat where canon gives the defender a terrain bonus");
 
+// D16 event board
+const eb1 = run("tools/living-world/event_board.mjs", "/tmp/lw_eb_a.json"), eb2 = run("tools/living-world/event_board.mjs", "/tmp/lw_eb_b.json");
+ok(eb1.equals(eb2) && eb1.equals(fs.readFileSync("data/living-world/event-board.sample.json")), "event-board sample is byte-identical and committed");
+const EB = await import("./event_board.mjs"), ebT = 720, ebView = { at: [17.1, 30.27], holdings: [[17.1, 30.27]] };
+const ebB = EB.boardAt("cf-world-1", "BUS", ebT, ebView), ebRows = [...ebB.live, ...ebB.upcoming];
+ok(ebRows.every((e) => e.postedAt <= ebT && e.closes > ebT && e.opens <= ebT + EB.BOARD.horizonMin), "the board shows only posted, unfinished events opening within the horizon");
+ok([0, 1, 2].flatMap((d) => EB.postsFor("cf-world-1", "BUS", d)).every((e) => e.opens - e.postedAt >= (e.kind === "SPONSORED_AIRDROP" ? 1 : PE.rules.minNoticeSec / 60)), "every player post opens after the doc-05 notice (15 min; airdrops 60 s)");
+const ebD = EB.boardAt("cf-world-1", "BUS", ebT, { ...ebView, sort: "DISTANCE" }).upcoming.filter((e) => !e.ping && e.distU != null).map((e) => e.distU);
+ok(ebD.every((d, i) => i === 0 || d >= ebD[i - 1]), "sort by distance is nearest-first");
+ok(EB.boardAt("cf-world-1", "BUS", ebT, { ...ebView, minPot: 10 }).live.concat(EB.boardAt("cf-world-1", "BUS", ebT, { ...ebView, minPot: 10 }).upcoming).every((e) => e.potCT >= 10), "the pot filter holds");
+const ebPick = ebRows.find((e) => EB.NODES[e.at]), ebP = ebPick && EB.boardAt("cf-world-1", "BUS", ebT, { at: [0, 0], holdings: [EB.NODES[ebPick.at].at] });
+ok(ebP && [...ebP.live, ...ebP.upcoming].filter((e) => e.ping).some((e) => e.id === ebPick.id) && (ebP.live[0] || ebP.upcoming[0]).ping, "events near your holdings ping and sort first");
+const ebEmpty = WCm && poiRegions.flatMap((z) => [180, 600, 1020, 1380].map((t) => [z, t, (() => { const b = EB.boardAt("cf-world-1", z, t, {}); return b.live.length + b.upcoming.length; })()])).filter(([, , n]) => n < EB.BOARD.horizonMin / WCm.WC.windowMin);
+ok(ebEmpty.length === 0, "every POI region's board shows ≥ horizon / 3 h events (the calendar's one-per-window guarantee) at any hour sampled" + (ebEmpty.length ? " — " + ebEmpty.slice(0, 4).join(" ") : ""));
+
 console.log(fails ? `❌ living-world: ${fails} failed` : "✅ living-world: all passed"); process.exit(fails ? 1 : 0);

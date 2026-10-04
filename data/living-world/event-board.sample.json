@@ -1,0 +1,346 @@
+{
+ "schema": "cf-living-world/event-board-sample@1",
+ "note": "BUS at noon of day 0, viewer at Capemeet Citadel; world calendar + synthetic player posts",
+ "params": {
+  "boardLeadMin": 360,
+  "horizonMin": 360,
+  "pingU": 30,
+  "worldDurMin": {
+   "STORM": 1440
+  }
+ },
+ "boards": {
+  "BY_START": {
+   "zone": "BUS",
+   "tick": 720,
+   "live": [
+    {
+     "id": "BUS|0|post4",
+     "src": "PLAYER",
+     "kind": "BOUNTY",
+     "at": "5000529#0",
+     "postedAt": 196,
+     "opens": 318,
+     "closes": 1278,
+     "potCT": 150,
+     "state": "LIVE",
+     "inMin": 0,
+     "distU": 71.4,
+     "ping": false
+    }
+   ],
+   "upcoming": [
+    {
+     "id": "BUS|0|w14",
+     "src": "WORLD",
+     "kind": "BARBARIAN_RAID",
+     "at": "4000791#0",
+     "postedAt": 367,
+     "opens": 727,
+     "closes": 729,
+     "potCT": 0,
+     "state": "UPCOMING",
+     "inMin": 7,
+     "distU": 56.2,
+     "ping": false
+    },
+    {
+     "id": "BUS|0|w15",
+     "src": "WORLD",
+     "kind": "KRAKEN_SIGHTING",
+     "at": "SEA:BUS-PORT-CAPEMEET~BUS-PORT-EASTREACH",
+     "postedAt": 447,
+     "opens": 807,
+     "closes": 808,
+     "potCT": 0,
+     "state": "UPCOMING",
+     "inMin": 87,
+     "distU": null,
+     "ping": false
+    },
+    {
+     "id": "BUS|0|w16",
+     "src": "WORLD",
+     "kind": "SUPPLY_AIRDROP",
+     "at": "5000052#0",
+     "postedAt": 448,
+     "opens": 808,
+     "closes": 811,
+     "potCT": 0,
+     "state": "UPCOMING",
+     "inMin": 88,
+     "distU": 266.2,
+     "ping": false
+    },
+    {
+     "id": "BUS|0|post1",
+     "src": "PLAYER",
+     "kind": "BOUNTY",
+     "at": "4000960#0",
+     "postedAt": 717,
+     "opens": 842,
+     "closes": 4682,
+     "potCT": 127,
+     "state": "UPCOMING",
+     "inMin": 122,
+     "distU": 302.3,
+     "ping": false
+    },
+    {
+     "id": "BUS|0|w17",
+     "src": "WORLD",
+     "kind": "CARAVAN_RUN",
+     "at": "3001048#1",
+     "postedAt": 522,
+     "opens": 882,
+     "closes": 885,
+     "potCT": 0,
+     "state": "UPCOMING",
+     "inMin": 162,
+     "distU": 244.3,
+     "ping": false
+    },
+    {
+     "id": "BUS|0|w18",
+     "src": "WORLD",
+     "kind": "BARBARIAN_RAID",
+     "at": "2001141#0",
+     "postedAt": 574,
+     "opens": 934,
+     "closes": 936,
+     "potCT": 0,
+     "state": "UPCOMING",
+     "inMin": 214,
+     "distU": 318,
+     "ping": false
+    },
+    {
+     "id": "BUS|0|w19",
+     "src": "WORLD",
+     "kind": "KRAKEN_SIGHTING",
+     "at": "SEA:BUS-PORT-EASTREACH~ENT-PORT-SUNSTRAND",
+     "postedAt": 619,
+     "opens": 979,
+     "closes": 980,
+     "potCT": 0,
+     "state": "UPCOMING",
+     "inMin": 259,
+     "distU": null,
+     "ping": false
+    },
+    {
+     "id": "BUS|0|w20",
+     "src": "WORLD",
+     "kind": "SUPPLY_AIRDROP",
+     "at": "3001081#1",
+     "postedAt": 689,
+     "opens": 1049,
+     "closes": 1052,
+     "potCT": 0,
+     "state": "UPCOMING",
+     "inMin": 329,
+     "distU": 139.2,
+     "ping": false
+    },
+    {
+     "id": "BUS|0|w21",
+     "src": "WORLD",
+     "kind": "KRAKEN_SIGHTING",
+     "at": "SEA:BUS-PORT-CAPEMEET~CGI-PORT-OLYMPUS",
+     "postedAt": 712,
+     "opens": 1072,
+     "closes": 1073,
+     "potCT": 0,
+     "state": "UPCOMING",
+     "inMin": 352,
+     "distU": null,
+     "ping": false
+    }
+   ]
+  },
+  "BY_DISTANCE": {
+   "zone": "BUS",
+   "tick": 720,
+   "live": [
+    {
+     "id": "BUS|0|post4",
+     "src": "PLAYER",
+     "kind": "BOUNTY",
+     "at": "5000529#0",
+     "postedAt": 196,
+     "opens": 318,
+     "closes": 1278,
+     "potCT": 150,
+     "state": "LIVE",
+     "inMin": 0,
+     "distU": 71.4,
+     "ping": false
+    }
+   ],
+   "upcoming": [
+    {
+     "id": "BUS|0|w14",
+     "src": "WORLD",
+     "kind": "BARBARIAN_RAID",
+     "at": "4000791#0",
+     "postedAt": 367,
+     "opens": 727,
+     "closes": 729,
+     "potCT": 0,
+     "state": "UPCOMING",
+     "inMin": 7,
+     "distU": 56.2,
+     "ping": false
+    },
+    {
+     "id": "BUS|0|w20",
+     "src": "WORLD",
+     "kind": "SUPPLY_AIRDROP",
+     "at": "3001081#1",
+     "postedAt": 689,
+     "opens": 1049,
+     "closes": 1052,
+     "potCT": 0,
+     "state": "UPCOMING",
+     "inMin": 329,
+     "distU": 139.2,
+     "ping": false
+    },
+    {
+     "id": "BUS|0|w17",
+     "src": "WORLD",
+     "kind": "CARAVAN_RUN",
+     "at": "3001048#1",
+     "postedAt": 522,
+     "opens": 882,
+     "closes": 885,
+     "potCT": 0,
+     "state": "UPCOMING",
+     "inMin": 162,
+     "distU": 244.3,
+     "ping": false
+    },
+    {
+     "id": "BUS|0|w16",
+     "src": "WORLD",
+     "kind": "SUPPLY_AIRDROP",
+     "at": "5000052#0",
+     "postedAt": 448,
+     "opens": 808,
+     "closes": 811,
+     "potCT": 0,
+     "state": "UPCOMING",
+     "inMin": 88,
+     "distU": 266.2,
+     "ping": false
+    },
+    {
+     "id": "BUS|0|post1",
+     "src": "PLAYER",
+     "kind": "BOUNTY",
+     "at": "4000960#0",
+     "postedAt": 717,
+     "opens": 842,
+     "closes": 4682,
+     "potCT": 127,
+     "state": "UPCOMING",
+     "inMin": 122,
+     "distU": 302.3,
+     "ping": false
+    },
+    {
+     "id": "BUS|0|w18",
+     "src": "WORLD",
+     "kind": "BARBARIAN_RAID",
+     "at": "2001141#0",
+     "postedAt": 574,
+     "opens": 934,
+     "closes": 936,
+     "potCT": 0,
+     "state": "UPCOMING",
+     "inMin": 214,
+     "distU": 318,
+     "ping": false
+    },
+    {
+     "id": "BUS|0|w15",
+     "src": "WORLD",
+     "kind": "KRAKEN_SIGHTING",
+     "at": "SEA:BUS-PORT-CAPEMEET~BUS-PORT-EASTREACH",
+     "postedAt": 447,
+     "opens": 807,
+     "closes": 808,
+     "potCT": 0,
+     "state": "UPCOMING",
+     "inMin": 87,
+     "distU": null,
+     "ping": false
+    },
+    {
+     "id": "BUS|0|w19",
+     "src": "WORLD",
+     "kind": "KRAKEN_SIGHTING",
+     "at": "SEA:BUS-PORT-EASTREACH~ENT-PORT-SUNSTRAND",
+     "postedAt": 619,
+     "opens": 979,
+     "closes": 980,
+     "potCT": 0,
+     "state": "UPCOMING",
+     "inMin": 259,
+     "distU": null,
+     "ping": false
+    },
+    {
+     "id": "BUS|0|w21",
+     "src": "WORLD",
+     "kind": "KRAKEN_SIGHTING",
+     "at": "SEA:BUS-PORT-CAPEMEET~CGI-PORT-OLYMPUS",
+     "postedAt": 712,
+     "opens": 1072,
+     "closes": 1073,
+     "potCT": 0,
+     "state": "UPCOMING",
+     "inMin": 352,
+     "distU": null,
+     "ping": false
+    }
+   ]
+  },
+  "POT_10_PLUS": {
+   "zone": "BUS",
+   "tick": 720,
+   "live": [
+    {
+     "id": "BUS|0|post4",
+     "src": "PLAYER",
+     "kind": "BOUNTY",
+     "at": "5000529#0",
+     "postedAt": 196,
+     "opens": 318,
+     "closes": 1278,
+     "potCT": 150,
+     "state": "LIVE",
+     "inMin": 0,
+     "distU": 71.4,
+     "ping": false
+    }
+   ],
+   "upcoming": [
+    {
+     "id": "BUS|0|post1",
+     "src": "PLAYER",
+     "kind": "BOUNTY",
+     "at": "4000960#0",
+     "postedAt": 717,
+     "opens": 842,
+     "closes": 4682,
+     "potCT": 127,
+     "state": "UPCOMING",
+     "inMin": 122,
+     "distU": 302.3,
+     "ping": false
+    }
+   ]
+  }
+ }
+}

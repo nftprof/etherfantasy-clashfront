@@ -97,3 +97,19 @@ Player-posted events come on top of the world's own. `tools/living-world/world_c
 - **CGI (Olympus, the founders' isle) has no POIs and is exempt.** Its only world events are Kraken sightings and storms
   on its lanes.
 
+## 7. The event board (D16)
+
+`tools/living-world/event_board.mjs` gives `boardAt(world.seed, zone, tick, view)`, a pure function returning the
+region's **LIVE** and **UPCOMING** events.
+
+- **World calendar events (§6):** shown as a **6-hour forecast**. The calendar is seeded, so the board can show it
+  early.
+- **Player posts:** they appear when posted and open after the 15-min notice (airdrops 60 s).
+- **Filters (doc 05 §2.2):** event type, minimum pot, and sort by START / DISTANCE / POT / TYPE. Events within 30 u
+  of one of the viewer's holdings **ping** and sort first.
+- **Sample** (`data/living-world/event-board.sample.json`): BUS at noon, viewed from Capemeet Citadel, shows 1 live
+  bounty (150 CT) and 9 upcoming (a barbarian raid in 7 min, an airdrop in 88 min, a caravan, Kraken sightings…).
+- **Guarantee:** with one world event per 3-hour window, every POI region's board always shows **≥ 2** events, and busy
+  regions show about 10. The smallest, KOL (3 POIs), sits at the floor: a quiet corner, but never empty. A test checks
+  it at four hours of the day across all 11 regions.
+
