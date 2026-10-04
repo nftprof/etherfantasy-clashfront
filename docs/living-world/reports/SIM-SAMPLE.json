@@ -18,9 +18,9 @@
    "k": "AIRSHIP_DOCK",
    "n": 6,
    "breachRate": 100,
-   "medBreachSec": 355,
-   "medThreat": 29,
-   "medAttackerDeaths": 42,
+   "medBreachSec": 291,
+   "medThreat": 23,
+   "medAttackerDeaths": 34,
    "defenderWins": 0,
    "flag": "ok"
   },
@@ -28,19 +28,19 @@
    "k": "BARBARIAN_CAMP",
    "n": 6,
    "breachRate": 100,
-   "medBreachSec": 202,
-   "medThreat": 31,
-   "medAttackerDeaths": 24,
+   "medBreachSec": 186,
+   "medThreat": 26,
+   "medAttackerDeaths": 23,
    "defenderWins": 0,
-   "flag": "TOO SOFT (falls in < 4 min)"
+   "flag": "ok"
   },
   {
    "k": "HARBOUR",
    "n": 6,
    "breachRate": 100,
-   "medBreachSec": 243,
-   "medThreat": 17,
-   "medAttackerDeaths": 29,
+   "medBreachSec": 263,
+   "medThreat": 20,
+   "medAttackerDeaths": 31,
    "defenderWins": 0,
    "flag": "ok"
   },
@@ -48,29 +48,29 @@
    "k": "MERCENARY_POST",
    "n": 6,
    "breachRate": 100,
-   "medBreachSec": 222,
-   "medThreat": 17,
-   "medAttackerDeaths": 26,
+   "medBreachSec": 256,
+   "medThreat": 20,
+   "medAttackerDeaths": 30,
    "defenderWins": 0,
-   "flag": "TOO SOFT (falls in < 4 min)"
+   "flag": "ok"
   },
   {
    "k": "SALVAGE_SITE",
    "n": 6,
    "breachRate": 100,
-   "medBreachSec": 374,
-   "medThreat": 33,
-   "medAttackerDeaths": 44,
+   "medBreachSec": 311,
+   "medThreat": 25,
+   "medAttackerDeaths": 37,
    "defenderWins": 0,
    "flag": "ok"
   },
   {
    "k": "VENT",
    "n": 6,
-   "breachRate": 83,
-   "medBreachSec": 509,
-   "medThreat": 48,
-   "medAttackerDeaths": 60,
+   "breachRate": 100,
+   "medBreachSec": 313,
+   "medThreat": 26,
+   "medAttackerDeaths": 37,
    "defenderWins": 0,
    "flag": "ok"
   },
@@ -78,19 +78,19 @@
    "k": "WAR_CAMP",
    "n": 6,
    "breachRate": 100,
-   "medBreachSec": 253,
-   "medThreat": 28,
-   "medAttackerDeaths": 30,
+   "medBreachSec": 201,
+   "medThreat": 23,
+   "medAttackerDeaths": 24,
    "defenderWins": 0,
    "flag": "ok"
   },
   {
    "k": "WILD_LAIR",
    "n": 6,
-   "breachRate": 83,
-   "medBreachSec": 357,
-   "medThreat": 39,
-   "medAttackerDeaths": 42,
+   "breachRate": 100,
+   "medBreachSec": 250,
+   "medThreat": 27,
+   "medAttackerDeaths": 30,
    "defenderWins": 0,
    "flag": "ok"
   }
@@ -219,10 +219,10 @@
   {
    "id": "4000853#0",
    "k": "AIRSHIP_DOCK",
-   "threat": 17,
+   "threat": 20,
    "breached": true,
-   "sec": 243,
-   "attackerDeaths": 29,
+   "sec": 263,
+   "attackerDeaths": 31,
    "defenderWon": false,
    "left": {
     "walls": 0,
@@ -239,10 +239,10 @@
   {
    "id": "5060220#0",
    "k": "AIRSHIP_DOCK",
-   "threat": 33,
+   "threat": 25,
    "breached": true,
-   "sec": 390,
-   "attackerDeaths": 46,
+   "sec": 312,
+   "attackerDeaths": 37,
    "defenderWon": false,
    "left": {
     "walls": 0,
@@ -259,10 +259,10 @@
   {
    "id": "5040119#0",
    "k": "AIRSHIP_DOCK",
-   "threat": 29,
+   "threat": 23,
    "breached": true,
-   "sec": 355,
-   "attackerDeaths": 42,
+   "sec": 291,
+   "attackerDeaths": 34,
    "defenderWon": false,
    "left": {
     "walls": 0,
@@ -279,10 +279,10 @@
   {
    "id": "5040217#0",
    "k": "AIRSHIP_DOCK",
-   "threat": 56,
+   "threat": 28,
    "breached": true,
-   "sec": 623,
-   "attackerDeaths": 74,
+   "sec": 344,
+   "attackerDeaths": 41,
    "defenderWon": false,
    "left": {
     "walls": 0,
@@ -299,10 +299,10 @@
   {
    "id": "5050117#0",
    "k": "AIRSHIP_DOCK",
-   "threat": 31,
+   "threat": 24,
    "breached": true,
-   "sec": 383,
-   "attackerDeaths": 46,
+   "sec": 303,
+   "attackerDeaths": 36,
    "defenderWon": false,
    "left": {
     "walls": 0,
@@ -319,10 +319,10 @@
   {
    "id": "5050289#0",
    "k": "AIRSHIP_DOCK",
-   "threat": 27,
+   "threat": 22,
    "breached": true,
-   "sec": 317,
-   "attackerDeaths": 37,
+   "sec": 281,
+   "attackerDeaths": 33,
    "defenderWon": false,
    "left": {
     "walls": 0,
@@ -339,10 +339,10 @@
   {
    "id": "EDU-KEEP-LANTERNHILL:BARBARIAN_CAMP:1",
    "k": "BARBARIAN_CAMP",
-   "threat": 13,
+   "threat": 41,
    "breached": true,
-   "sec": 81,
-   "attackerDeaths": 10,
+   "sec": 338,
+   "attackerDeaths": 43,
    "defenderWon": false,
    "left": {
     "walls": 0,
@@ -359,10 +359,10 @@
   {
    "id": "2001116#1",
    "k": "BARBARIAN_CAMP",
-   "threat": 36,
+   "threat": 26,
    "breached": true,
-   "sec": 202,
-   "attackerDeaths": 24,
+   "sec": 186,
+   "attackerDeaths": 23,
    "defenderWon": false,
    "left": {
     "walls": 0,
@@ -379,10 +379,10 @@
   {
    "id": "5030364#0",
    "k": "BARBARIAN_CAMP",
-   "threat": 28,
+   "threat": 24,
    "breached": true,
-   "sec": 198,
-   "attackerDeaths": 24,
+   "sec": 188,
+   "attackerDeaths": 23,
    "defenderWon": false,
    "left": {
     "walls": 0,
@@ -399,10 +399,10 @@
   {
    "id": "5031022#0",
    "k": "BARBARIAN_CAMP",
-   "threat": 31,
+   "threat": 25,
    "breached": true,
-   "sec": 230,
-   "attackerDeaths": 28,
+   "sec": 183,
+   "attackerDeaths": 23,
    "defenderWon": false,
    "left": {
     "walls": 0,
@@ -419,10 +419,10 @@
   {
    "id": "4031406#0",
    "k": "BARBARIAN_CAMP",
-   "threat": 33,
+   "threat": 26,
    "breached": true,
-   "sec": 253,
-   "attackerDeaths": 31,
+   "sec": 186,
+   "attackerDeaths": 23,
    "defenderWon": false,
    "left": {
     "walls": 0,
@@ -439,10 +439,10 @@
   {
    "id": "5030914#0",
    "k": "BARBARIAN_CAMP",
-   "threat": 33,
+   "threat": 26,
    "breached": true,
-   "sec": 253,
-   "attackerDeaths": 31,
+   "sec": 186,
+   "attackerDeaths": 23,
    "defenderWon": false,
    "left": {
     "walls": 0,
@@ -459,10 +459,10 @@
   {
    "id": "5030542#0",
    "k": "HARBOUR",
-   "threat": 17,
+   "threat": 20,
    "breached": true,
-   "sec": 243,
-   "attackerDeaths": 29,
+   "sec": 263,
+   "attackerDeaths": 31,
    "defenderWon": false,
    "left": {
     "walls": 0,
@@ -479,10 +479,10 @@
   {
    "id": "5000154#0",
    "k": "HARBOUR",
-   "threat": 18,
+   "threat": 20,
    "breached": true,
-   "sec": 247,
-   "attackerDeaths": 29,
+   "sec": 263,
+   "attackerDeaths": 31,
    "defenderWon": false,
    "left": {
     "walls": 0,
@@ -499,10 +499,10 @@
   {
    "id": "5000054#0",
    "k": "HARBOUR",
-   "threat": 18,
+   "threat": 20,
    "breached": true,
-   "sec": 247,
-   "attackerDeaths": 29,
+   "sec": 263,
+   "attackerDeaths": 31,
    "defenderWon": false,
    "left": {
     "walls": 0,
@@ -519,10 +519,10 @@
   {
    "id": "5030500#0",
    "k": "HARBOUR",
-   "threat": 17,
+   "threat": 20,
    "breached": true,
-   "sec": 243,
-   "attackerDeaths": 29,
+   "sec": 263,
+   "attackerDeaths": 31,
    "defenderWon": false,
    "left": {
     "walls": 0,
@@ -539,10 +539,10 @@
   {
    "id": "ENT-KEEP-LANTERNSHORE:HARBOUR:1",
    "k": "HARBOUR",
-   "threat": 11,
+   "threat": 39,
    "breached": true,
-   "sec": 179,
-   "attackerDeaths": 21,
+   "sec": 441,
+   "attackerDeaths": 52,
    "defenderWon": false,
    "left": {
     "walls": 0,
@@ -559,10 +559,10 @@
   {
    "id": "5000102#0",
    "k": "HARBOUR",
-   "threat": 15,
+   "threat": 19,
    "breached": true,
-   "sec": 214,
-   "attackerDeaths": 25,
+   "sec": 254,
+   "attackerDeaths": 30,
    "defenderWon": false,
    "left": {
     "walls": 0,
@@ -579,10 +579,10 @@
   {
    "id": "4071376#0",
    "k": "MERCENARY_POST",
-   "threat": 14,
+   "threat": 18,
    "breached": true,
-   "sec": 210,
-   "attackerDeaths": 25,
+   "sec": 244,
+   "attackerDeaths": 29,
    "defenderWon": false,
    "left": {
     "walls": 0,
@@ -599,10 +599,10 @@
   {
    "id": "2001121#1",
    "k": "MERCENARY_POST",
-   "threat": 16,
+   "threat": 19,
    "breached": true,
-   "sec": 214,
-   "attackerDeaths": 25,
+   "sec": 244,
+   "attackerDeaths": 29,
    "defenderWon": false,
    "left": {
     "walls": 0,
@@ -619,10 +619,10 @@
   {
    "id": "5100008#0",
    "k": "MERCENARY_POST",
-   "threat": 54,
+   "threat": 27,
    "breached": true,
-   "sec": 561,
-   "attackerDeaths": 66,
+   "sec": 315,
+   "attackerDeaths": 37,
    "defenderWon": false,
    "left": {
     "walls": 0,
@@ -639,10 +639,10 @@
   {
    "id": "5100040#0",
    "k": "MERCENARY_POST",
-   "threat": 50,
+   "threat": 26,
    "breached": true,
-   "sec": 539,
-   "attackerDeaths": 64,
+   "sec": 313,
+   "attackerDeaths": 37,
    "defenderWon": false,
    "left": {
     "walls": 0,
@@ -659,10 +659,10 @@
   {
    "id": "5100185#0",
    "k": "MERCENARY_POST",
-   "threat": 58,
+   "threat": 28,
    "breached": true,
-   "sec": 608,
-   "attackerDeaths": 72,
+   "sec": 318,
+   "attackerDeaths": 37,
    "defenderWon": false,
    "left": {
     "walls": 0,
@@ -679,10 +679,10 @@
   {
    "id": "5000465#0",
    "k": "MERCENARY_POST",
-   "threat": 17,
+   "threat": 20,
    "breached": true,
-   "sec": 222,
-   "attackerDeaths": 26,
+   "sec": 256,
+   "attackerDeaths": 30,
    "defenderWon": false,
    "left": {
     "walls": 0,
@@ -699,10 +699,10 @@
   {
    "id": "5030585#0",
    "k": "SALVAGE_SITE",
-   "threat": 31,
+   "threat": 25,
    "breached": true,
-   "sec": 351,
-   "attackerDeaths": 41,
+   "sec": 311,
+   "attackerDeaths": 37,
    "defenderWon": false,
    "left": {
     "walls": 0,
@@ -719,10 +719,10 @@
   {
    "id": "5031089#0",
    "k": "SALVAGE_SITE",
-   "threat": 34,
+   "threat": 26,
    "breached": true,
-   "sec": 383,
-   "attackerDeaths": 45,
+   "sec": 313,
+   "attackerDeaths": 37,
    "defenderWon": false,
    "left": {
     "walls": 0,
@@ -739,6 +739,146 @@
   {
    "id": "5000589#0",
    "k": "SALVAGE_SITE",
+   "threat": 25,
+   "breached": true,
+   "sec": 311,
+   "attackerDeaths": 37,
+   "defenderWon": false,
+   "left": {
+    "walls": 0,
+    "gates": 0,
+    "towers": 0,
+    "keepPct": 0
+   },
+   "wardsDownAt": [],
+   "scen": "BASE",
+   "guardianWakeSec": null,
+   "guardianKoSec": null,
+   "guardianHpPct": null
+  },
+  {
+   "id": "5030562#0",
+   "k": "SALVAGE_SITE",
+   "threat": 26,
+   "breached": true,
+   "sec": 313,
+   "attackerDeaths": 37,
+   "defenderWon": false,
+   "left": {
+    "walls": 0,
+    "gates": 0,
+    "towers": 0,
+    "keepPct": 0
+   },
+   "wardsDownAt": [],
+   "scen": "BASE",
+   "guardianWakeSec": null,
+   "guardianKoSec": null,
+   "guardianHpPct": null
+  },
+  {
+   "id": "5030616#0",
+   "k": "SALVAGE_SITE",
+   "threat": 25,
+   "breached": true,
+   "sec": 311,
+   "attackerDeaths": 37,
+   "defenderWon": false,
+   "left": {
+    "walls": 0,
+    "gates": 0,
+    "towers": 0,
+    "keepPct": 0
+   },
+   "wardsDownAt": [],
+   "scen": "BASE",
+   "guardianWakeSec": null,
+   "guardianKoSec": null,
+   "guardianHpPct": null
+  },
+  {
+   "id": "5030910#0",
+   "k": "SALVAGE_SITE",
+   "threat": 26,
+   "breached": true,
+   "sec": 313,
+   "attackerDeaths": 37,
+   "defenderWon": false,
+   "left": {
+    "walls": 0,
+    "gates": 0,
+    "towers": 0,
+    "keepPct": 0
+   },
+   "wardsDownAt": [],
+   "scen": "BASE",
+   "guardianWakeSec": null,
+   "guardianKoSec": null,
+   "guardianHpPct": null
+  },
+  {
+   "id": "5100537#0",
+   "k": "VENT",
+   "threat": 28,
+   "breached": true,
+   "sec": 318,
+   "attackerDeaths": 37,
+   "defenderWon": false,
+   "left": {
+    "walls": 0,
+    "gates": 0,
+    "towers": 0,
+    "keepPct": 0
+   },
+   "wardsDownAt": [],
+   "scen": "BASE",
+   "guardianWakeSec": null,
+   "guardianKoSec": null,
+   "guardianHpPct": null
+  },
+  {
+   "id": "1101099#2",
+   "k": "VENT",
+   "threat": 25,
+   "breached": true,
+   "sec": 311,
+   "attackerDeaths": 37,
+   "defenderWon": false,
+   "left": {
+    "walls": 0,
+    "gates": 0,
+    "towers": 0,
+    "keepPct": 0
+   },
+   "wardsDownAt": [],
+   "scen": "BASE",
+   "guardianWakeSec": null,
+   "guardianKoSec": null,
+   "guardianHpPct": null
+  },
+  {
+   "id": "5090166#0",
+   "k": "VENT",
+   "threat": 28,
+   "breached": true,
+   "sec": 318,
+   "attackerDeaths": 37,
+   "defenderWon": false,
+   "left": {
+    "walls": 0,
+    "gates": 0,
+    "towers": 0,
+    "keepPct": 0
+   },
+   "wardsDownAt": [],
+   "scen": "BASE",
+   "guardianWakeSec": null,
+   "guardianKoSec": null,
+   "guardianHpPct": null
+  },
+  {
+   "id": "5090926#0",
+   "k": "VENT",
    "threat": 31,
    "breached": true,
    "sec": 351,
@@ -757,152 +897,12 @@
    "guardianHpPct": null
   },
   {
-   "id": "5030562#0",
-   "k": "SALVAGE_SITE",
-   "threat": 36,
-   "breached": true,
-   "sec": 397,
-   "attackerDeaths": 47,
-   "defenderWon": false,
-   "left": {
-    "walls": 0,
-    "gates": 0,
-    "towers": 0,
-    "keepPct": 0
-   },
-   "wardsDownAt": [],
-   "scen": "BASE",
-   "guardianWakeSec": null,
-   "guardianKoSec": null,
-   "guardianHpPct": null
-  },
-  {
-   "id": "5030616#0",
-   "k": "SALVAGE_SITE",
-   "threat": 33,
-   "breached": true,
-   "sec": 374,
-   "attackerDeaths": 44,
-   "defenderWon": false,
-   "left": {
-    "walls": 0,
-    "gates": 0,
-    "towers": 0,
-    "keepPct": 0
-   },
-   "wardsDownAt": [],
-   "scen": "BASE",
-   "guardianWakeSec": null,
-   "guardianKoSec": null,
-   "guardianHpPct": null
-  },
-  {
-   "id": "5030910#0",
-   "k": "SALVAGE_SITE",
-   "threat": 35,
-   "breached": true,
-   "sec": 390,
-   "attackerDeaths": 46,
-   "defenderWon": false,
-   "left": {
-    "walls": 0,
-    "gates": 0,
-    "towers": 0,
-    "keepPct": 0
-   },
-   "wardsDownAt": [],
-   "scen": "BASE",
-   "guardianWakeSec": null,
-   "guardianKoSec": null,
-   "guardianHpPct": null
-  },
-  {
-   "id": "5100537#0",
-   "k": "VENT",
-   "threat": 58,
-   "breached": true,
-   "sec": 608,
-   "attackerDeaths": 72,
-   "defenderWon": false,
-   "left": {
-    "walls": 0,
-    "gates": 0,
-    "towers": 0,
-    "keepPct": 0
-   },
-   "wardsDownAt": [],
-   "scen": "BASE",
-   "guardianWakeSec": null,
-   "guardianKoSec": null,
-   "guardianHpPct": null
-  },
-  {
-   "id": "1101099#2",
-   "k": "VENT",
-   "threat": 45,
-   "breached": true,
-   "sec": 482,
-   "attackerDeaths": 57,
-   "defenderWon": false,
-   "left": {
-    "walls": 0,
-    "gates": 0,
-    "towers": 0,
-    "keepPct": 0
-   },
-   "wardsDownAt": [],
-   "scen": "BASE",
-   "guardianWakeSec": null,
-   "guardianKoSec": null,
-   "guardianHpPct": null
-  },
-  {
-   "id": "5090166#0",
-   "k": "VENT",
-   "threat": 66,
-   "breached": true,
-   "sec": 699,
-   "attackerDeaths": 83,
-   "defenderWon": false,
-   "left": {
-    "walls": 0,
-    "gates": 0,
-    "towers": 0,
-    "keepPct": 0
-   },
-   "wardsDownAt": [],
-   "scen": "BASE",
-   "guardianWakeSec": null,
-   "guardianKoSec": null,
-   "guardianHpPct": null
-  },
-  {
-   "id": "5090926#0",
-   "k": "VENT",
-   "threat": 85,
-   "breached": false,
-   "sec": 720,
-   "attackerDeaths": 99,
-   "defenderWon": false,
-   "left": {
-    "walls": 0,
-    "gates": 0,
-    "towers": 1,
-    "keepPct": 100
-   },
-   "wardsDownAt": [],
-   "scen": "BASE",
-   "guardianWakeSec": null,
-   "guardianKoSec": null,
-   "guardianHpPct": null
-  },
-  {
    "id": "5100644#0",
    "k": "VENT",
-   "threat": 48,
+   "threat": 26,
    "breached": true,
-   "sec": 509,
-   "attackerDeaths": 60,
+   "sec": 313,
+   "attackerDeaths": 37,
    "defenderWon": false,
    "left": {
     "walls": 0,
@@ -919,10 +919,10 @@
   {
    "id": "3101076#0",
    "k": "VENT",
-   "threat": 47,
+   "threat": 25,
    "breached": true,
-   "sec": 507,
-   "attackerDeaths": 60,
+   "sec": 311,
+   "attackerDeaths": 37,
    "defenderWon": false,
    "left": {
     "walls": 0,
@@ -939,10 +939,10 @@
   {
    "id": "1071722#1",
    "k": "WAR_CAMP",
-   "threat": 17,
+   "threat": 21,
    "breached": true,
-   "sec": 153,
-   "attackerDeaths": 19,
+   "sec": 190,
+   "attackerDeaths": 23,
    "defenderWon": false,
    "left": {
     "walls": 0,
@@ -959,10 +959,10 @@
   {
    "id": "5050025#0",
    "k": "WAR_CAMP",
-   "threat": 30,
+   "threat": 23,
    "breached": true,
-   "sec": 285,
-   "attackerDeaths": 34,
+   "sec": 201,
+   "attackerDeaths": 24,
    "defenderWon": false,
    "left": {
     "walls": 0,
@@ -979,10 +979,10 @@
   {
    "id": "5060082#0",
    "k": "WAR_CAMP",
-   "threat": 28,
+   "threat": 23,
    "breached": true,
-   "sec": 253,
-   "attackerDeaths": 30,
+   "sec": 201,
+   "attackerDeaths": 24,
    "defenderWon": false,
    "left": {
     "walls": 0,
@@ -999,10 +999,10 @@
   {
    "id": "5050001#0",
    "k": "WAR_CAMP",
-   "threat": 30,
+   "threat": 24,
    "breached": true,
-   "sec": 285,
-   "attackerDeaths": 34,
+   "sec": 222,
+   "attackerDeaths": 27,
    "defenderWon": false,
    "left": {
     "walls": 0,
@@ -1019,10 +1019,10 @@
   {
    "id": "2101085#0",
    "k": "WAR_CAMP",
-   "threat": 60,
+   "threat": 28,
    "breached": true,
-   "sec": 606,
-   "attackerDeaths": 73,
+   "sec": 253,
+   "attackerDeaths": 30,
    "defenderWon": false,
    "left": {
     "walls": 0,
@@ -1039,10 +1039,10 @@
   {
    "id": "1071726#0",
    "k": "WAR_CAMP",
-   "threat": 14,
+   "threat": 18,
    "breached": true,
-   "sec": 134,
-   "attackerDeaths": 16,
+   "sec": 184,
+   "attackerDeaths": 23,
    "defenderWon": false,
    "left": {
     "walls": 0,
@@ -1059,10 +1059,10 @@
   {
    "id": "5060072#0",
    "k": "WILD_LAIR",
-   "threat": 66,
+   "threat": 29,
    "breached": true,
-   "sec": 699,
-   "attackerDeaths": 85,
+   "sec": 280,
+   "attackerDeaths": 34,
    "defenderWon": false,
    "left": {
     "walls": 0,
@@ -1078,6 +1078,26 @@
   },
   {
    "id": "4050407#0",
+   "k": "WILD_LAIR",
+   "threat": 22,
+   "breached": true,
+   "sec": 199,
+   "attackerDeaths": 24,
+   "defenderWon": false,
+   "left": {
+    "walls": 0,
+    "gates": 0,
+    "towers": 0,
+    "keepPct": 0
+   },
+   "wardsDownAt": [],
+   "scen": "BASE",
+   "guardianWakeSec": null,
+   "guardianKoSec": null,
+   "guardianHpPct": null
+  },
+  {
+   "id": "5100490#0",
    "k": "WILD_LAIR",
    "threat": 28,
    "breached": true,
@@ -1097,12 +1117,12 @@
    "guardianHpPct": null
   },
   {
-   "id": "5100490#0",
+   "id": "5090490#0",
    "k": "WILD_LAIR",
-   "threat": 60,
+   "threat": 29,
    "breached": true,
-   "sec": 606,
-   "attackerDeaths": 73,
+   "sec": 280,
+   "attackerDeaths": 34,
    "defenderWon": false,
    "left": {
     "walls": 0,
@@ -1117,32 +1137,12 @@
    "guardianHpPct": null
   },
   {
-   "id": "5090490#0",
-   "k": "WILD_LAIR",
-   "threat": 69,
-   "breached": false,
-   "sec": 720,
-   "attackerDeaths": 92,
-   "defenderWon": false,
-   "left": {
-    "walls": 0,
-    "gates": 0,
-    "towers": 0,
-    "keepPct": 47
-   },
-   "wardsDownAt": [],
-   "scen": "BASE",
-   "guardianWakeSec": null,
-   "guardianKoSec": null,
-   "guardianHpPct": null
-  },
-  {
    "id": "5071178#0",
    "k": "WILD_LAIR",
-   "threat": 16,
+   "threat": 20,
    "breached": true,
-   "sec": 149,
-   "attackerDeaths": 18,
+   "sec": 187,
+   "attackerDeaths": 23,
    "defenderWon": false,
    "left": {
     "walls": 0,
@@ -1159,10 +1159,10 @@
   {
    "id": "5000556#0",
    "k": "WILD_LAIR",
-   "threat": 39,
+   "threat": 27,
    "breached": true,
-   "sec": 357,
-   "attackerDeaths": 42,
+   "sec": 250,
+   "attackerDeaths": 30,
    "defenderWon": false,
    "left": {
     "walls": 0,

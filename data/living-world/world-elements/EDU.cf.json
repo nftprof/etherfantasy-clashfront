@@ -15,7 +15,7 @@
     119.43
    ],
    "name": "Barbarian Camp",
-   "note": "Living-world Node of EDU-CASTLE-SOUTHREACH (threat 26)",
+   "note": "Living-world Node of EDU-CASTLE-SOUTHREACH (threat 45)",
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   },
   {
@@ -26,7 +26,7 @@
     144.54
    ],
    "name": "Mercenary Post",
-   "note": "Living-world Node of EDU-CASTLE-SOUTHREACH (threat 26)",
+   "note": "Living-world Node of EDU-CASTLE-SOUTHREACH (threat 45)",
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   },
   {
@@ -37,7 +37,7 @@
     155.73
    ],
    "name": "Lair (wyrm)",
-   "note": "Living-world Node of EDU-CASTLE-SOUTHREACH (threat 26)",
+   "note": "Living-world Node of EDU-CASTLE-SOUTHREACH (threat 45)",
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   },
   {
@@ -48,7 +48,7 @@
     109.18
    ],
    "name": "Barbarian Camp",
-   "note": "Living-world Node of EDU-CASTLE-WESTGATE (threat 26)",
+   "note": "Living-world Node of EDU-CASTLE-WESTGATE (threat 45)",
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   },
   {
@@ -59,7 +59,7 @@
     85.41
    ],
    "name": "Mercenary Post",
-   "note": "Living-world Node of EDU-CASTLE-WESTGATE (threat 26)",
+   "note": "Living-world Node of EDU-CASTLE-WESTGATE (threat 45)",
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   },
   {
@@ -70,7 +70,7 @@
     85.37
    ],
    "name": "Lair (wolf)",
-   "note": "Living-world Node of EDU-CASTLE-WESTGATE (threat 26)",
+   "note": "Living-world Node of EDU-CASTLE-WESTGATE (threat 45)",
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   },
   {
@@ -81,7 +81,7 @@
     102.86
    ],
    "name": "Airdrop Zone",
-   "note": "Living-world Node of EDU-KEEP-CLIFFWATCH (threat 13)",
+   "note": "Living-world Node of EDU-KEEP-CLIFFWATCH (threat 41)",
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   },
   {
@@ -92,7 +92,7 @@
     140.56
    ],
    "name": "Barbarian Camp",
-   "note": "Living-world Node of EDU-KEEP-CLIFFWATCH (threat 13)",
+   "note": "Living-world Node of EDU-KEEP-CLIFFWATCH (threat 41)",
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   },
   {
@@ -103,7 +103,7 @@
     107.89
    ],
    "name": "Airdrop Zone",
-   "note": "Living-world Node of EDU-KEEP-LANTERNHILL (threat 13)",
+   "note": "Living-world Node of EDU-KEEP-LANTERNHILL (threat 41)",
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   },
   {
@@ -114,7 +114,7 @@
     143.74
    ],
    "name": "Barbarian Camp",
-   "note": "Living-world Node of EDU-KEEP-LANTERNHILL (threat 13)",
+   "note": "Living-world Node of EDU-KEEP-LANTERNHILL (threat 41)",
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   },
   {
@@ -125,7 +125,7 @@
     93.77
    ],
    "name": "Airdrop Zone",
-   "note": "Living-world Node of EDU-PALACE-ACADEMY (threat 39)",
+   "note": "Living-world Node of EDU-PALACE-ACADEMY (threat 49)",
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   },
   {
@@ -136,7 +136,7 @@
     90.61
    ],
    "name": "Barbarian Camp",
-   "note": "Living-world Node of EDU-PALACE-ACADEMY (threat 39)",
+   "note": "Living-world Node of EDU-PALACE-ACADEMY (threat 49)",
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   },
   {
@@ -147,7 +147,7 @@
     83.45
    ],
    "name": "War Camp",
-   "note": "Living-world Node of EDU-PALACE-ACADEMY (threat 39)",
+   "note": "Living-world Node of EDU-PALACE-ACADEMY (threat 49)",
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   },
   {
@@ -158,7 +158,7 @@
     105.65
    ],
    "name": "Lair (wolf)",
-   "note": "Living-world Node of EDU-PALACE-ACADEMY (threat 39)",
+   "note": "Living-world Node of EDU-PALACE-ACADEMY (threat 49)",
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   }
  ]

@@ -15,7 +15,7 @@
     16.16
    ],
    "name": "Mercenary Post",
-   "note": "Living-world Node of UW3-KEEP-COIN (threat 50)",
+   "note": "Living-world Node of UW3-KEEP-COIN (threat 52)",
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   },
   {
@@ -26,7 +26,7 @@
     18.98
    ],
    "name": "Vent",
-   "note": "Living-world Node of UW3-KEEP-COIN (threat 50)",
+   "note": "Living-world Node of UW3-KEEP-COIN (threat 52)",
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   },
   {
@@ -37,7 +37,7 @@
     13.56
    ],
    "name": "Mercenary Post",
-   "note": "Living-world Node of UW3-KEEP-HUNGER (threat 50)",
+   "note": "Living-world Node of UW3-KEEP-HUNGER (threat 52)",
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   },
   {
@@ -48,7 +48,7 @@
     8.15
    ],
    "name": "Vent",
-   "note": "Living-world Node of UW3-KEEP-HUNGER (threat 50)",
+   "note": "Living-world Node of UW3-KEEP-HUNGER (threat 52)",
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   },
   {
@@ -59,7 +59,7 @@
     39.61
    ],
    "name": "Mercenary Post",
-   "note": "Living-world Node of UW3-KEEP-MIRRORS (threat 50)",
+   "note": "Living-world Node of UW3-KEEP-MIRRORS (threat 52)",
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   },
   {
@@ -70,7 +70,7 @@
     48.31
    ],
    "name": "Vent",
-   "note": "Living-world Node of UW3-KEEP-MIRRORS (threat 50)",
+   "note": "Living-world Node of UW3-KEEP-MIRRORS (threat 52)",
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   },
   {
@@ -81,7 +81,7 @@
     54.69
    ],
    "name": "Mercenary Post",
-   "note": "Living-world Node of UW3-KEEP-SILK (threat 50)",
+   "note": "Living-world Node of UW3-KEEP-SILK (threat 52)",
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   },
   {
@@ -92,7 +92,7 @@
     45.65
    ],
    "name": "Vent",
-   "note": "Living-world Node of UW3-KEEP-SILK (threat 50)",
+   "note": "Living-world Node of UW3-KEEP-SILK (threat 52)",
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   },
   {
@@ -103,7 +103,7 @@
     33.69
    ],
    "name": "Barbarian Camp",
-   "note": "Living-world Node of UW3-PALACE-VAULTPALACE (threat 100)",
+   "note": "Living-world Node of UW3-PALACE-VAULTPALACE (threat 60)",
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   },
   {
@@ -114,7 +114,7 @@
     20.67
    ],
    "name": "Vent",
-   "note": "Living-world Node of UW3-PALACE-VAULTPALACE (threat 100)",
+   "note": "Living-world Node of UW3-PALACE-VAULTPALACE (threat 60)",
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   },
   {
@@ -125,7 +125,7 @@
     -1.21
    ],
    "name": "War Camp",
-   "note": "Living-world Node of UW3-PALACE-VAULTPALACE (threat 100)",
+   "note": "Living-world Node of UW3-PALACE-VAULTPALACE (threat 60)",
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   },
   {
@@ -136,7 +136,7 @@
     40.75
    ],
    "name": "Lair (troll)",
-   "note": "Living-world Node of UW3-PALACE-VAULTPALACE (threat 100)",
+   "note": "Living-world Node of UW3-PALACE-VAULTPALACE (threat 60)",
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   }
  ]

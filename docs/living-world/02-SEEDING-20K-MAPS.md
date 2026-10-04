@@ -48,7 +48,8 @@ ring        = distToCastle ≤ 12 → CASTLE (castle-pois own it)
 candidates  = archetypes whose layer + affinity match the context and ring
 count       = sizeClass budget (EPIC 3, GIANT/LARGE 2, MEDIUM 1, SMALL 1, SINGLE 0–1 with a density roll)
 pick        = weighted draw over candidates with mulberry32(lwSeed); ≤ 6 Nodes per parcel (overlay rule)
-params      = template defaults × zoneStrength (threat, garrison stats) × a ±15 % seeded jitter
+threat      = bandThreat(ring, zoneStrength, jitter)  // D6f: the ring's range (threatBands), ordered by log zone strength
+params      = template defaults × threat (garrison stats)
 ```
 
 **Region guarantees** apply on top of the per-parcel draws:
@@ -97,4 +98,27 @@ POIs are a **RAID** (6–12 min); frontier and wild POIs are a **SKIRMISH** (3�
   *ordering* inside that range. Deep zones stay the hardest skirmishes, but still skirmishes. The tuning lives in
   `poi-archetypes.json` (doc 02 §5 rule), never per map.
 - The battlefield is still flat in the harness, so ground only acts through threat. Terrain modifiers are a later item.
+
+### 7b. The banded threat curve (D6f): 46 % → 0.3 % out of band
+
+`tools/living-world/threat.mjs` replaces the three seeders' separate formulas with one curve:
+
+```
+threat = lo + (hi − lo) × clamp(0.8 × depth + 0.3 × (jitter − 0.5) + 0.1)        // estates + singles
+threat = lo + (hi − lo) × clamp(0.55 × depth + 0.35 × (tier − 1)/2 + 0.1)         // in-castle POIs
+depth  = log(zoneStrength) / log(5)                                              // CGI ×1 → 0, UW3 ×5 → 1
+```
+
+| Ring | Band | Threat range (`poi-archetypes.json` `threatBands`) |
+|---|---|---|
+| CASTLE | RAID 6–12 min | 36–60 |
+| FRONTIER | SKIRMISH 3–6 min | 18–30 |
+| WILD | SKIRMISH 3–6 min | 24–34 |
+
+- **Re-seeded and re-run: 56 of 57 cells ok.** Only 16 of 6,270 POIs sit out of band: in-castle barbarian camps at 5:38,
+  just under the 6-min floor.
+- **The Underworld is still the hardest place to fight, but now a hard skirmish, not a wall.** An attacker who walks
+  in with a sensible force breaks a UW3 lair in about 6 minutes, not never.
+- **Same placements.** The jitter uses the same single seeded draw, so every Node stays where it was; only its threat
+  changed. The ≥ 85 % in-band floor is now a test.
 

@@ -15,7 +15,7 @@
     8.57
    ],
    "name": "Barbarian Camp",
-   "note": "Living-world Node of KOL-CASTLE-FORTUNA (threat 20)",
+   "note": "Living-world Node of KOL-CASTLE-FORTUNA (threat 43)",
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   },
   {
@@ -26,7 +26,7 @@
     20.68
    ],
    "name": "Caravan Waypoint",
-   "note": "Living-world Node of KOL-CASTLE-FORTUNA (threat 20)",
+   "note": "Living-world Node of KOL-CASTLE-FORTUNA (threat 43)",
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   },
   {
@@ -37,7 +37,7 @@
     19.34
    ],
    "name": "Harbour",
-   "note": "Living-world Node of KOL-CASTLE-FORTUNA (threat 20)",
+   "note": "Living-world Node of KOL-CASTLE-FORTUNA (threat 43)",
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   },
   {
@@ -48,7 +48,7 @@
     26.82
    ],
    "name": "Landing Spot",
-   "note": "Living-world Node of KOL-CASTLE-FORTUNA (threat 20) — lands for HARBOUR 1",
+   "note": "Living-world Node of KOL-CASTLE-FORTUNA (threat 43) — lands for HARBOUR 1",
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   },
   {
@@ -59,7 +59,7 @@
     18.28
    ],
    "name": "Mercenary Post",
-   "note": "Living-world Node of KOL-CASTLE-FORTUNA (threat 20)",
+   "note": "Living-world Node of KOL-CASTLE-FORTUNA (threat 43)",
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   }
  ]

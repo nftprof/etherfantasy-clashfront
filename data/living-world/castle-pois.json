@@ -36,7 +36,7 @@
      ],
      "inCastle": true,
      "garrison": [],
-     "threat": 24,
+     "threat": 44,
      "deckSeed": 44820246
     },
     {
@@ -53,7 +53,7 @@
        "count": 1
       }
      ],
-     "threat": 24,
+     "threat": 44,
      "deckSeed": 2909048497
     },
     {
@@ -79,7 +79,7 @@
        "count": 1
       }
      ],
-     "threat": 24,
+     "threat": 44,
      "deckSeed": 627488267
     },
     {
@@ -100,7 +100,7 @@
        "count": 5
       }
      ],
-     "threat": 24,
+     "threat": 44,
      "deckSeed": 108949792
     },
     {
@@ -114,7 +114,7 @@
      "arrives": "NAVAL_LANDING",
      "rideAlong": true,
      "garrison": [],
-     "threat": 24,
+     "threat": 44,
      "deckSeed": 1793589886
     },
     {
@@ -130,7 +130,7 @@
      ],
      "rideAlong": true,
      "garrison": [],
-     "threat": 24,
+     "threat": 44,
      "deckSeed": 1471965302
     }
    ]
@@ -152,7 +152,7 @@
      ],
      "inCastle": true,
      "garrison": [],
-     "threat": 24,
+     "threat": 44,
      "deckSeed": 1501036404
     },
     {
@@ -169,7 +169,7 @@
        "count": 1
       }
      ],
-     "threat": 24,
+     "threat": 44,
      "deckSeed": 258104227
     },
     {
@@ -195,7 +195,7 @@
        "count": 1
       }
      ],
-     "threat": 24,
+     "threat": 44,
      "deckSeed": 506150021
     },
     {
@@ -217,7 +217,7 @@
        "count": 4
       }
      ],
-     "threat": 24,
+     "threat": 44,
      "deckSeed": 2088731075
     },
     {
@@ -231,7 +231,7 @@
      "arrives": "NAVAL_LANDING",
      "rideAlong": true,
      "garrison": [],
-     "threat": 24,
+     "threat": 44,
      "deckSeed": 216635652
     },
     {
@@ -247,7 +247,7 @@
      ],
      "rideAlong": true,
      "garrison": [],
-     "threat": 24,
+     "threat": 44,
      "deckSeed": 4204769452
     }
    ]
@@ -269,7 +269,7 @@
      ],
      "inCastle": true,
      "garrison": [],
-     "threat": 24,
+     "threat": 44,
      "deckSeed": 3389343177
     },
     {
@@ -286,7 +286,7 @@
        "count": 1
       }
      ],
-     "threat": 24,
+     "threat": 44,
      "deckSeed": 2587355758
     },
     {
@@ -312,7 +312,7 @@
        "count": 1
       }
      ],
-     "threat": 24,
+     "threat": 44,
      "deckSeed": 761368010
     },
     {
@@ -328,7 +328,7 @@
        "count": 3
       }
      ],
-     "threat": 24,
+     "threat": 44,
      "deckSeed": 1897660256
     },
     {
@@ -342,7 +342,7 @@
      "arrives": "NAVAL_LANDING",
      "rideAlong": true,
      "garrison": [],
-     "threat": 24,
+     "threat": 44,
      "deckSeed": 298850677
     },
     {
@@ -358,7 +358,7 @@
      ],
      "rideAlong": true,
      "garrison": [],
-     "threat": 24,
+     "threat": 44,
      "deckSeed": 2547145905
     }
    ]
@@ -380,7 +380,7 @@
      ],
      "inCastle": true,
      "garrison": [],
-     "threat": 24,
+     "threat": 44,
      "deckSeed": 3475323778
     },
     {
@@ -397,7 +397,7 @@
        "count": 1
       }
      ],
-     "threat": 24,
+     "threat": 44,
      "deckSeed": 2513905461
     },
     {
@@ -419,7 +419,7 @@
        "count": 4
       }
      ],
-     "threat": 24,
+     "threat": 44,
      "deckSeed": 427394553
     },
     {
@@ -430,7 +430,7 @@
       43.26
      ],
      "garrison": [],
-     "threat": 24,
+     "threat": 44,
      "deckSeed": 4253000978
     }
    ]
@@ -452,7 +452,7 @@
      ],
      "inCastle": true,
      "garrison": [],
-     "threat": 12,
+     "threat": 40,
      "deckSeed": 1333118497
     },
     {
@@ -478,7 +478,7 @@
        "count": 1
       }
      ],
-     "threat": 12,
+     "threat": 40,
      "deckSeed": 2846475218
     },
     {
@@ -489,7 +489,7 @@
       56.85
      ],
      "garrison": [],
-     "threat": 12,
+     "threat": 40,
      "deckSeed": 1354174585
     },
     {
@@ -503,7 +503,7 @@
      "arrives": "NAVAL_LANDING",
      "rideAlong": true,
      "garrison": [],
-     "threat": 12,
+     "threat": 40,
      "deckSeed": 811040397
     },
     {
@@ -519,7 +519,7 @@
      ],
      "rideAlong": true,
      "garrison": [],
-     "threat": 12,
+     "threat": 40,
      "deckSeed": 3886083529
     }
    ]
@@ -541,7 +541,7 @@
      ],
      "inCastle": true,
      "garrison": [],
-     "threat": 12,
+     "threat": 40,
      "deckSeed": 158666760
     },
     {
@@ -567,7 +567,7 @@
        "count": 1
       }
      ],
-     "threat": 12,
+     "threat": 40,
      "deckSeed": 136804737
     },
     {
@@ -578,7 +578,7 @@
       8.58
      ],
      "garrison": [],
-     "threat": 12,
+     "threat": 40,
      "deckSeed": 4051236300
     },
     {
@@ -592,7 +592,7 @@
      "arrives": "NAVAL_LANDING",
      "rideAlong": true,
      "garrison": [],
-     "threat": 12,
+     "threat": 40,
      "deckSeed": 3096523576
     },
     {
@@ -608,7 +608,7 @@
      ],
      "rideAlong": true,
      "garrison": [],
-     "threat": 12,
+     "threat": 40,
      "deckSeed": 438005480
     }
    ]
@@ -630,7 +630,7 @@
      ],
      "inCastle": true,
      "garrison": [],
-     "threat": 12,
+     "threat": 40,
      "deckSeed": 4214538196
     },
     {
@@ -656,7 +656,7 @@
        "count": 1
       }
      ],
-     "threat": 12,
+     "threat": 40,
      "deckSeed": 4205158181
     },
     {
@@ -667,7 +667,7 @@
       86.98
      ],
      "garrison": [],
-     "threat": 12,
+     "threat": 40,
      "deckSeed": 3938255352
     },
     {
@@ -681,7 +681,7 @@
      "arrives": "NAVAL_LANDING",
      "rideAlong": true,
      "garrison": [],
-     "threat": 12,
+     "threat": 40,
      "deckSeed": 1997867492
     },
     {
@@ -697,7 +697,7 @@
      ],
      "rideAlong": true,
      "garrison": [],
-     "threat": 12,
+     "threat": 40,
      "deckSeed": 3077112588
     }
    ]
@@ -719,7 +719,7 @@
      ],
      "inCastle": true,
      "garrison": [],
-     "threat": 12,
+     "threat": 40,
      "deckSeed": 1308233127
     },
     {
@@ -741,7 +741,7 @@
        "count": 4
       }
      ],
-     "threat": 12,
+     "threat": 40,
      "deckSeed": 1907481266
     },
     {
@@ -752,7 +752,7 @@
       134.81
      ],
      "garrison": [],
-     "threat": 12,
+     "threat": 40,
      "deckSeed": 1288905027
     }
    ]
@@ -774,7 +774,7 @@
      ],
      "inCastle": true,
      "garrison": [],
-     "threat": 36,
+     "threat": 48,
      "deckSeed": 3145560113
     },
     {
@@ -786,7 +786,7 @@
      ],
      "inCastle": true,
      "garrison": [],
-     "threat": 36,
+     "threat": 48,
      "deckSeed": 3095227256
     },
     {
@@ -806,7 +806,7 @@
        "count": 4
       }
      ],
-     "threat": 36,
+     "threat": 48,
      "deckSeed": 3730545003
     },
     {
@@ -828,7 +828,7 @@
        "count": 4
       }
      ],
-     "threat": 36,
+     "threat": 48,
      "deckSeed": 4214625732
     },
     {
@@ -843,7 +843,7 @@
       "BUS-HARBOUR"
      ],
      "garrison": [],
-     "threat": 36,
+     "threat": 48,
      "deckSeed": 217150297
     },
     {
@@ -854,7 +854,7 @@
       82.91
      ],
      "garrison": [],
-     "threat": 36,
+     "threat": 48,
      "deckSeed": 3972979209
     }
    ]
@@ -876,7 +876,7 @@
      ],
      "inCastle": true,
      "garrison": [],
-     "threat": 26,
+     "threat": 45,
      "deckSeed": 166054040
     },
     {
@@ -893,7 +893,7 @@
        "count": 1
       }
      ],
-     "threat": 26,
+     "threat": 45,
      "deckSeed": 3972170735
     },
     {
@@ -914,7 +914,7 @@
        "count": 5
       }
      ],
-     "threat": 26,
+     "threat": 45,
      "deckSeed": 3990940318
     },
     {
@@ -936,7 +936,7 @@
        "count": 4
       }
      ],
-     "threat": 26,
+     "threat": 45,
      "deckSeed": 913411559
     }
    ]
@@ -958,7 +958,7 @@
      ],
      "inCastle": true,
      "garrison": [],
-     "threat": 26,
+     "threat": 45,
      "deckSeed": 1753164248
     },
     {
@@ -975,7 +975,7 @@
        "count": 1
       }
      ],
-     "threat": 26,
+     "threat": 45,
      "deckSeed": 1109647151
     },
     {
@@ -996,7 +996,7 @@
        "count": 5
       }
      ],
-     "threat": 26,
+     "threat": 45,
      "deckSeed": 2864784094
     },
     {
@@ -1018,7 +1018,7 @@
        "count": 4
       }
      ],
-     "threat": 26,
+     "threat": 45,
      "deckSeed": 3130736167
     }
    ]
@@ -1040,7 +1040,7 @@
      ],
      "inCastle": true,
      "garrison": [],
-     "threat": 13,
+     "threat": 41,
      "deckSeed": 1703687694
     },
     {
@@ -1061,7 +1061,7 @@
        "count": 5
       }
      ],
-     "threat": 13,
+     "threat": 41,
      "deckSeed": 1571938488
     },
     {
@@ -1072,7 +1072,7 @@
       102.86
      ],
      "garrison": [],
-     "threat": 13,
+     "threat": 41,
      "deckSeed": 921742590
     }
    ]
@@ -1094,7 +1094,7 @@
      ],
      "inCastle": true,
      "garrison": [],
-     "threat": 13,
+     "threat": 41,
      "deckSeed": 2522393588
     },
     {
@@ -1115,7 +1115,7 @@
        "count": 5
       }
      ],
-     "threat": 13,
+     "threat": 41,
      "deckSeed": 2615395106
     },
     {
@@ -1126,7 +1126,7 @@
       107.89
      ],
      "garrison": [],
-     "threat": 13,
+     "threat": 41,
      "deckSeed": 260235416
     }
    ]
@@ -1148,7 +1148,7 @@
      ],
      "inCastle": true,
      "garrison": [],
-     "threat": 39,
+     "threat": 49,
      "deckSeed": 3004557468
     },
     {
@@ -1160,7 +1160,7 @@
      ],
      "inCastle": true,
      "garrison": [],
-     "threat": 39,
+     "threat": 49,
      "deckSeed": 3054890325
     },
     {
@@ -1180,7 +1180,7 @@
        "count": 4
       }
      ],
-     "threat": 39,
+     "threat": 49,
      "deckSeed": 2152790114
     },
     {
@@ -1201,7 +1201,7 @@
        "count": 5
       }
      ],
-     "threat": 39,
+     "threat": 49,
      "deckSeed": 1435509930
     },
     {
@@ -1223,7 +1223,7 @@
        "count": 4
       }
      ],
-     "threat": 39,
+     "threat": 49,
      "deckSeed": 3008316459
     },
     {
@@ -1234,7 +1234,7 @@
       93.77
      ],
      "garrison": [],
-     "threat": 39,
+     "threat": 49,
      "deckSeed": 1891336064
     }
    ]
@@ -1256,7 +1256,7 @@
      ],
      "inCastle": true,
      "garrison": [],
-     "threat": 22,
+     "threat": 43,
      "deckSeed": 1984915772
     },
     {
@@ -1273,7 +1273,7 @@
        "count": 1
       }
      ],
-     "threat": 22,
+     "threat": 43,
      "deckSeed": 3433432283
     },
     {
@@ -1295,7 +1295,7 @@
        "count": 4
       }
      ],
-     "threat": 22,
+     "threat": 43,
      "deckSeed": 3382364427
     },
     {
@@ -1306,7 +1306,7 @@
       441.82
      ],
      "garrison": [],
-     "threat": 22,
+     "threat": 43,
      "deckSeed": 959996832
     }
    ]
@@ -1328,7 +1328,7 @@
      ],
      "inCastle": true,
      "garrison": [],
-     "threat": 22,
+     "threat": 43,
      "deckSeed": 2567424004
     },
     {
@@ -1345,7 +1345,7 @@
        "count": 1
       }
      ],
-     "threat": 22,
+     "threat": 43,
      "deckSeed": 2758340211
     },
     {
@@ -1367,7 +1367,7 @@
        "count": 4
       }
      ],
-     "threat": 22,
+     "threat": 43,
      "deckSeed": 725428083
     },
     {
@@ -1378,7 +1378,7 @@
       158.11
      ],
      "garrison": [],
-     "threat": 22,
+     "threat": 43,
      "deckSeed": 217912360
     }
    ]
@@ -1400,7 +1400,7 @@
      ],
      "inCastle": true,
      "garrison": [],
-     "threat": 11,
+     "threat": 39,
      "deckSeed": 2095017198
     },
     {
@@ -1422,7 +1422,7 @@
        "count": 4
       }
      ],
-     "threat": 11,
+     "threat": 39,
      "deckSeed": 4138874421
     },
     {
@@ -1433,7 +1433,7 @@
       459.03
      ],
      "garrison": [],
-     "threat": 11,
+     "threat": 39,
      "deckSeed": 4095110494
     }
    ]
@@ -1455,7 +1455,7 @@
      ],
      "inCastle": true,
      "garrison": [],
-     "threat": 11,
+     "threat": 39,
      "deckSeed": 1927780517
     },
     {
@@ -1481,7 +1481,7 @@
        "count": 1
       }
      ],
-     "threat": 11,
+     "threat": 39,
      "deckSeed": 3115971534
     },
     {
@@ -1496,7 +1496,7 @@
       "ENT-PORT-LANTERNSHORE"
      ],
      "garrison": [],
-     "threat": 11,
+     "threat": 39,
      "deckSeed": 1637612325
     },
     {
@@ -1510,7 +1510,7 @@
      "arrives": "NAVAL_LANDING",
      "rideAlong": true,
      "garrison": [],
-     "threat": 11,
+     "threat": 39,
      "deckSeed": 3817917713
     }
    ]
@@ -1532,7 +1532,7 @@
      ],
      "inCastle": true,
      "garrison": [],
-     "threat": 11,
+     "threat": 39,
      "deckSeed": 1429686577
     },
     {
@@ -1558,7 +1558,7 @@
        "count": 1
       }
      ],
-     "threat": 11,
+     "threat": 39,
      "deckSeed": 770123458
     },
     {
@@ -1573,7 +1573,7 @@
       "ENT-PORT-PETALPORT"
      ],
      "garrison": [],
-     "threat": 11,
+     "threat": 39,
      "deckSeed": 1570075737
     },
     {
@@ -1587,7 +1587,7 @@
      "arrives": "NAVAL_LANDING",
      "rideAlong": true,
      "garrison": [],
-     "threat": 11,
+     "threat": 39,
      "deckSeed": 368613757
     }
    ]
@@ -1609,7 +1609,7 @@
      ],
      "inCastle": true,
      "garrison": [],
-     "threat": 11,
+     "threat": 39,
      "deckSeed": 3922653678
     },
     {
@@ -1630,7 +1630,7 @@
        "count": 5
       }
      ],
-     "threat": 11,
+     "threat": 39,
      "deckSeed": 966987672
     },
     {
@@ -1641,7 +1641,7 @@
       379.21
      ],
      "garrison": [],
-     "threat": 11,
+     "threat": 39,
      "deckSeed": 371665502
     }
    ]
@@ -1663,7 +1663,7 @@
      ],
      "inCastle": true,
      "garrison": [],
-     "threat": 11,
+     "threat": 39,
      "deckSeed": 1370554025
     },
     {
@@ -1684,7 +1684,7 @@
        "count": 5
       }
      ],
-     "threat": 11,
+     "threat": 39,
      "deckSeed": 3229510263
     },
     {
@@ -1695,7 +1695,7 @@
       425.46
      ],
      "garrison": [],
-     "threat": 11,
+     "threat": 39,
      "deckSeed": 2147174561
     }
    ]
@@ -1717,7 +1717,7 @@
      ],
      "inCastle": true,
      "garrison": [],
-     "threat": 33,
+     "threat": 48,
      "deckSeed": 1983567696
     },
     {
@@ -1729,7 +1729,7 @@
      ],
      "inCastle": true,
      "garrison": [],
-     "threat": 33,
+     "threat": 48,
      "deckSeed": 2033900553
     },
     {
@@ -1749,7 +1749,7 @@
        "count": 4
       }
      ],
-     "threat": 33,
+     "threat": 48,
      "deckSeed": 2629537294
     },
     {
@@ -1771,7 +1771,7 @@
        "count": 4
       }
      ],
-     "threat": 33,
+     "threat": 48,
      "deckSeed": 837380351
     },
     {
@@ -1782,7 +1782,7 @@
       463.02
      ],
      "garrison": [],
-     "threat": 33,
+     "threat": 48,
      "deckSeed": 1701876404
     },
     {
@@ -1797,7 +1797,7 @@
       null
      ],
      "garrison": [],
-     "threat": 33,
+     "threat": 48,
      "deckSeed": 2281196528
     }
    ]
@@ -1819,7 +1819,7 @@
      ],
      "inCastle": true,
      "garrison": [],
-     "threat": 60,
+     "threat": 52,
      "deckSeed": 971646541
     },
     {
@@ -1831,7 +1831,7 @@
      ],
      "inCastle": true,
      "garrison": [],
-     "threat": 60,
+     "threat": 52,
      "deckSeed": 921313684
     },
     {
@@ -1851,7 +1851,7 @@
        "count": 4
       }
      ],
-     "threat": 60,
+     "threat": 52,
      "deckSeed": 2074823759
     },
     {
@@ -1877,7 +1877,7 @@
        "count": 1
       }
      ],
-     "threat": 60,
+     "threat": 52,
      "deckSeed": 3936973273
     },
     {
@@ -1899,7 +1899,7 @@
        "count": 4
       }
      ],
-     "threat": 60,
+     "threat": 52,
      "deckSeed": 587282416
     },
     {
@@ -1910,7 +1910,7 @@
       63.72
      ],
      "garrison": [],
-     "threat": 60,
+     "threat": 52,
      "deckSeed": 3659854357
     },
     {
@@ -1924,7 +1924,7 @@
      "arrives": "AIRSHIP_DROP",
      "rideAlong": true,
      "garrison": [],
-     "threat": 60,
+     "threat": 52,
      "deckSeed": 1287147865
     },
     {
@@ -1938,7 +1938,7 @@
      "arrives": "AIRSHIP_DROP",
      "rideAlong": true,
      "garrison": [],
-     "threat": 60,
+     "threat": 52,
      "deckSeed": 1236815008
     },
     {
@@ -1954,7 +1954,7 @@
      ],
      "rideAlong": true,
      "garrison": [],
-     "threat": 60,
+     "threat": 52,
      "deckSeed": 3694345709
     }
    ]
@@ -1976,7 +1976,7 @@
      ],
      "inCastle": true,
      "garrison": [],
-     "threat": 40,
+     "threat": 48,
      "deckSeed": 3617330412
     },
     {
@@ -1993,7 +1993,7 @@
        "count": 1
       }
      ],
-     "threat": 40,
+     "threat": 48,
      "deckSeed": 4175341963
     },
     {
@@ -2019,7 +2019,7 @@
        "count": 1
       }
      ],
-     "threat": 40,
+     "threat": 48,
      "deckSeed": 1860723036
     },
     {
@@ -2041,7 +2041,7 @@
        "count": 4
       }
      ],
-     "threat": 40,
+     "threat": 48,
      "deckSeed": 4103913115
     },
     {
@@ -2055,7 +2055,7 @@
      "arrives": "AIRSHIP_DROP",
      "rideAlong": true,
      "garrison": [],
-     "threat": 40,
+     "threat": 48,
      "deckSeed": 1107125436
     },
     {
@@ -2069,7 +2069,7 @@
      "arrives": "AIRSHIP_DROP",
      "rideAlong": true,
      "garrison": [],
-     "threat": 40,
+     "threat": 48,
      "deckSeed": 1157458293
     },
     {
@@ -2085,7 +2085,7 @@
      ],
      "rideAlong": true,
      "garrison": [],
-     "threat": 40,
+     "threat": 48,
      "deckSeed": 3613989796
     }
    ]
@@ -2107,7 +2107,7 @@
      ],
      "inCastle": true,
      "garrison": [],
-     "threat": 40,
+     "threat": 48,
      "deckSeed": 732929531
     },
     {
@@ -2124,7 +2124,7 @@
        "count": 1
       }
      ],
-     "threat": 40,
+     "threat": 48,
      "deckSeed": 2348124804
     },
     {
@@ -2150,7 +2150,7 @@
        "count": 1
       }
      ],
-     "threat": 40,
+     "threat": 48,
      "deckSeed": 3371858463
     },
     {
@@ -2172,7 +2172,7 @@
        "count": 4
       }
      ],
-     "threat": 40,
+     "threat": 48,
      "deckSeed": 729464198
     },
     {
@@ -2186,7 +2186,7 @@
      "arrives": "AIRSHIP_DROP",
      "rideAlong": true,
      "garrison": [],
-     "threat": 40,
+     "threat": 48,
      "deckSeed": 351004423
     },
     {
@@ -2200,7 +2200,7 @@
      "arrives": "AIRSHIP_DROP",
      "rideAlong": true,
      "garrison": [],
-     "threat": 40,
+     "threat": 48,
      "deckSeed": 367782042
     },
     {
@@ -2216,7 +2216,7 @@
      ],
      "rideAlong": true,
      "garrison": [],
-     "threat": 40,
+     "threat": 48,
      "deckSeed": 2263055643
     }
    ]
@@ -2238,7 +2238,7 @@
      ],
      "inCastle": true,
      "garrison": [],
-     "threat": 40,
+     "threat": 48,
      "deckSeed": 1721875321
     },
     {
@@ -2255,7 +2255,7 @@
        "count": 1
       }
      ],
-     "threat": 40,
+     "threat": 48,
      "deckSeed": 323862302
     },
     {
@@ -2281,7 +2281,7 @@
        "count": 1
       }
      ],
-     "threat": 40,
+     "threat": 48,
      "deckSeed": 2679470221
     },
     {
@@ -2303,7 +2303,7 @@
        "count": 4
       }
      ],
-     "threat": 40,
+     "threat": 48,
      "deckSeed": 4263370220
     },
     {
@@ -2317,7 +2317,7 @@
      "arrives": "AIRSHIP_DROP",
      "rideAlong": true,
      "garrison": [],
-     "threat": 40,
+     "threat": 48,
      "deckSeed": 981537989
     },
     {
@@ -2331,7 +2331,7 @@
      "arrives": "AIRSHIP_DROP",
      "rideAlong": true,
      "garrison": [],
-     "threat": 40,
+     "threat": 48,
      "deckSeed": 931205132
     },
     {
@@ -2347,7 +2347,7 @@
      ],
      "rideAlong": true,
      "garrison": [],
-     "threat": 40,
+     "threat": 48,
      "deckSeed": 483282785
     }
    ]
@@ -2369,7 +2369,7 @@
      ],
      "inCastle": true,
      "garrison": [],
-     "threat": 20,
+     "threat": 44,
      "deckSeed": 3532872351
     },
     {
@@ -2395,7 +2395,7 @@
        "count": 1
       }
      ],
-     "threat": 20,
+     "threat": 44,
      "deckSeed": 3589436203
     },
     {
@@ -2406,7 +2406,7 @@
       94.73
      ],
      "garrison": [],
-     "threat": 20,
+     "threat": 44,
      "deckSeed": 1308879579
     },
     {
@@ -2420,7 +2420,7 @@
      "arrives": "AIRSHIP_DROP",
      "rideAlong": true,
      "garrison": [],
-     "threat": 20,
+     "threat": 44,
      "deckSeed": 1661821659
     },
     {
@@ -2434,7 +2434,7 @@
      "arrives": "AIRSHIP_DROP",
      "rideAlong": true,
      "garrison": [],
-     "threat": 20,
+     "threat": 44,
      "deckSeed": 1678599278
     },
     {
@@ -2450,7 +2450,7 @@
      ],
      "rideAlong": true,
      "garrison": [],
-     "threat": 20,
+     "threat": 44,
      "deckSeed": 2310746727
     }
    ]
@@ -2472,7 +2472,7 @@
      ],
      "inCastle": true,
      "garrison": [],
-     "threat": 20,
+     "threat": 44,
      "deckSeed": 572905967
     },
     {
@@ -2498,7 +2498,7 @@
        "count": 1
       }
      ],
-     "threat": 20,
+     "threat": 44,
      "deckSeed": 977827099
     },
     {
@@ -2509,7 +2509,7 @@
       33.24
      ],
      "garrison": [],
-     "threat": 20,
+     "threat": 44,
      "deckSeed": 3232514603
     },
     {
@@ -2523,7 +2523,7 @@
      "arrives": "AIRSHIP_DROP",
      "rideAlong": true,
      "garrison": [],
-     "threat": 20,
+     "threat": 44,
      "deckSeed": 3054097739
     },
     {
@@ -2537,7 +2537,7 @@
      "arrives": "AIRSHIP_DROP",
      "rideAlong": true,
      "garrison": [],
-     "threat": 20,
+     "threat": 44,
      "deckSeed": 3070875358
     },
     {
@@ -2553,7 +2553,7 @@
      ],
      "rideAlong": true,
      "garrison": [],
-     "threat": 20,
+     "threat": 44,
      "deckSeed": 867306039
     }
    ]
@@ -2575,7 +2575,7 @@
      ],
      "inCastle": true,
      "garrison": [],
-     "threat": 20,
+     "threat": 44,
      "deckSeed": 1538084693
     },
     {
@@ -2601,7 +2601,7 @@
        "count": 1
       }
      ],
-     "threat": 20,
+     "threat": 44,
      "deckSeed": 4231059233
     },
     {
@@ -2612,7 +2612,7 @@
       69.82
      ],
      "garrison": [],
-     "threat": 20,
+     "threat": 44,
      "deckSeed": 3400497981
     },
     {
@@ -2626,7 +2626,7 @@
      "arrives": "AIRSHIP_DROP",
      "rideAlong": true,
      "garrison": [],
-     "threat": 20,
+     "threat": 44,
      "deckSeed": 2001547233
     },
     {
@@ -2640,7 +2640,7 @@
      "arrives": "AIRSHIP_DROP",
      "rideAlong": true,
      "garrison": [],
-     "threat": 20,
+     "threat": 44,
      "deckSeed": 1951214376
     },
     {
@@ -2656,7 +2656,7 @@
      ],
      "rideAlong": true,
      "garrison": [],
-     "threat": 20,
+     "threat": 44,
      "deckSeed": 1174719701
     }
    ]
@@ -2678,7 +2678,7 @@
      ],
      "inCastle": true,
      "garrison": [],
-     "threat": 20,
+     "threat": 44,
      "deckSeed": 3786925032
     },
     {
@@ -2704,7 +2704,7 @@
        "count": 1
       }
      ],
-     "threat": 20,
+     "threat": 44,
      "deckSeed": 627887920
     },
     {
@@ -2715,7 +2715,7 @@
       11.08
      ],
      "garrison": [],
-     "threat": 20,
+     "threat": 44,
      "deckSeed": 2586546476
     },
     {
@@ -2729,7 +2729,7 @@
      "arrives": "AIRSHIP_DROP",
      "rideAlong": true,
      "garrison": [],
-     "threat": 20,
+     "threat": 44,
      "deckSeed": 4024252952
     },
     {
@@ -2743,7 +2743,7 @@
      "arrives": "AIRSHIP_DROP",
      "rideAlong": true,
      "garrison": [],
-     "threat": 20,
+     "threat": 44,
      "deckSeed": 4074585809
     },
     {
@@ -2759,7 +2759,7 @@
      ],
      "rideAlong": true,
      "garrison": [],
-     "threat": 20,
+     "threat": 44,
      "deckSeed": 85877192
     }
    ]
@@ -2781,7 +2781,7 @@
      ],
      "inCastle": true,
      "garrison": [],
-     "threat": 20,
+     "threat": 44,
      "deckSeed": 625591671
     },
     {
@@ -2807,7 +2807,7 @@
        "count": 1
       }
      ],
-     "threat": 20,
+     "threat": 44,
      "deckSeed": 1527016355
     },
     {
@@ -2818,7 +2818,7 @@
       88.68
      ],
      "garrison": [],
-     "threat": 20,
+     "threat": 44,
      "deckSeed": 1816131091
     },
     {
@@ -2832,7 +2832,7 @@
      "arrives": "AIRSHIP_DROP",
      "rideAlong": true,
      "garrison": [],
-     "threat": 20,
+     "threat": 44,
      "deckSeed": 3412973203
     },
     {
@@ -2846,7 +2846,7 @@
      "arrives": "AIRSHIP_DROP",
      "rideAlong": true,
      "garrison": [],
-     "threat": 20,
+     "threat": 44,
      "deckSeed": 3429750822
     },
     {
@@ -2862,7 +2862,7 @@
      ],
      "rideAlong": true,
      "garrison": [],
-     "threat": 20,
+     "threat": 44,
      "deckSeed": 3221576511
     }
    ]
@@ -2884,7 +2884,7 @@
      ],
      "inCastle": true,
      "garrison": [],
-     "threat": 20,
+     "threat": 44,
      "deckSeed": 2740363584
     },
     {
@@ -2910,7 +2910,7 @@
        "count": 1
       }
      ],
-     "threat": 20,
+     "threat": 44,
      "deckSeed": 2162342888
     },
     {
@@ -2921,7 +2921,7 @@
       93.6
      ],
      "garrison": [],
-     "threat": 20,
+     "threat": 44,
      "deckSeed": 2513810532
     },
     {
@@ -2935,7 +2935,7 @@
      "arrives": "AIRSHIP_DROP",
      "rideAlong": true,
      "garrison": [],
-     "threat": 20,
+     "threat": 44,
      "deckSeed": 3101473520
     },
     {
@@ -2949,7 +2949,7 @@
      "arrives": "AIRSHIP_DROP",
      "rideAlong": true,
      "garrison": [],
-     "threat": 20,
+     "threat": 44,
      "deckSeed": 3151806377
     },
     {
@@ -2965,7 +2965,7 @@
      ],
      "rideAlong": true,
      "garrison": [],
-     "threat": 20,
+     "threat": 44,
      "deckSeed": 4204180192
     }
    ]
@@ -2987,7 +2987,7 @@
      ],
      "inCastle": true,
      "garrison": [],
-     "threat": 20,
+     "threat": 44,
      "deckSeed": 3398926031
     },
     {
@@ -3013,7 +3013,7 @@
        "count": 1
       }
      ],
-     "threat": 20,
+     "threat": 44,
      "deckSeed": 1557854331
     },
     {
@@ -3024,7 +3024,7 @@
       40.13
      ],
      "garrison": [],
-     "threat": 20,
+     "threat": 44,
      "deckSeed": 3589632011
     },
     {
@@ -3038,7 +3038,7 @@
      "arrives": "AIRSHIP_DROP",
      "rideAlong": true,
      "garrison": [],
-     "threat": 20,
+     "threat": 44,
      "deckSeed": 2195319723
     },
     {
@@ -3052,7 +3052,7 @@
      "arrives": "AIRSHIP_DROP",
      "rideAlong": true,
      "garrison": [],
-     "threat": 20,
+     "threat": 44,
      "deckSeed": 2212097342
     },
     {
@@ -3068,7 +3068,7 @@
      ],
      "rideAlong": true,
      "garrison": [],
-     "threat": 20,
+     "threat": 44,
      "deckSeed": 1192650519
     }
    ]
@@ -3090,7 +3090,7 @@
      ],
      "inCastle": true,
      "garrison": [],
-     "threat": 20,
+     "threat": 44,
      "deckSeed": 2253626087
     },
     {
@@ -3116,7 +3116,7 @@
        "count": 1
       }
      ],
-     "threat": 20,
+     "threat": 44,
      "deckSeed": 2142380211
     },
     {
@@ -3127,7 +3127,7 @@
       79.65
      ],
      "garrison": [],
-     "threat": 20,
+     "threat": 44,
      "deckSeed": 4177329027
     },
     {
@@ -3141,7 +3141,7 @@
      "arrives": "AIRSHIP_DROP",
      "rideAlong": true,
      "garrison": [],
-     "threat": 20,
+     "threat": 44,
      "deckSeed": 2488231715
     },
     {
@@ -3155,7 +3155,7 @@
      "arrives": "AIRSHIP_DROP",
      "rideAlong": true,
      "garrison": [],
-     "threat": 20,
+     "threat": 44,
      "deckSeed": 2505009334
     },
     {
@@ -3171,7 +3171,7 @@
      ],
      "rideAlong": true,
      "garrison": [],
-     "threat": 20,
+     "threat": 44,
      "deckSeed": 3165084975
     }
    ]
@@ -3193,7 +3193,7 @@
      ],
      "inCastle": true,
      "garrison": [],
-     "threat": 20,
+     "threat": 44,
      "deckSeed": 3161655158
     },
     {
@@ -3219,7 +3219,7 @@
        "count": 1
       }
      ],
-     "threat": 20,
+     "threat": 44,
      "deckSeed": 2361140606
     },
     {
@@ -3230,7 +3230,7 @@
       62.24
      ],
      "garrison": [],
-     "threat": 20,
+     "threat": 44,
      "deckSeed": 2934192230
     },
     {
@@ -3244,7 +3244,7 @@
      "arrives": "AIRSHIP_DROP",
      "rideAlong": true,
      "garrison": [],
-     "threat": 20,
+     "threat": 44,
      "deckSeed": 3536323294
     },
     {
@@ -3258,7 +3258,7 @@
      "arrives": "AIRSHIP_DROP",
      "rideAlong": true,
      "garrison": [],
-     "threat": 20,
+     "threat": 44,
      "deckSeed": 3519545675
     },
     {
@@ -3274,7 +3274,7 @@
      ],
      "rideAlong": true,
      "garrison": [],
-     "threat": 20,
+     "threat": 44,
      "deckSeed": 1491081942
     }
    ]
@@ -3296,7 +3296,7 @@
      ],
      "inCastle": true,
      "garrison": [],
-     "threat": 60,
+     "threat": 52,
      "deckSeed": 3253562796
     },
     {
@@ -3308,7 +3308,7 @@
      ],
      "inCastle": true,
      "garrison": [],
-     "threat": 60,
+     "threat": 52,
      "deckSeed": 3303895653
     },
     {
@@ -3328,7 +3328,7 @@
        "count": 4
       }
      ],
-     "threat": 60,
+     "threat": 52,
      "deckSeed": 1326254930
     },
     {
@@ -3354,7 +3354,7 @@
        "count": 1
       }
      ],
-     "threat": 60,
+     "threat": 52,
      "deckSeed": 2715333148
     },
     {
@@ -3376,7 +3376,7 @@
        "count": 4
       }
      ],
-     "threat": 60,
+     "threat": 52,
      "deckSeed": 2239670363
     },
     {
@@ -3387,7 +3387,7 @@
       60.67
      ],
      "garrison": [],
-     "threat": 60,
+     "threat": 52,
      "deckSeed": 2552325904
     },
     {
@@ -3401,7 +3401,7 @@
      "arrives": "AIRSHIP_DROP",
      "rideAlong": true,
      "garrison": [],
-     "threat": 60,
+     "threat": 52,
      "deckSeed": 2181388412
     },
     {
@@ -3415,7 +3415,7 @@
      "arrives": "AIRSHIP_DROP",
      "rideAlong": true,
      "garrison": [],
-     "threat": 60,
+     "threat": 52,
      "deckSeed": 2231721269
     },
     {
@@ -3431,7 +3431,7 @@
      ],
      "rideAlong": true,
      "garrison": [],
-     "threat": 60,
+     "threat": 52,
      "deckSeed": 1805875556
     }
    ]
@@ -3453,7 +3453,7 @@
      ],
      "inCastle": true,
      "garrison": [],
-     "threat": 20,
+     "threat": 44,
      "deckSeed": 3780225891
     },
     {
@@ -3479,7 +3479,7 @@
        "count": 1
       }
      ],
-     "threat": 20,
+     "threat": 44,
      "deckSeed": 3776611495
     },
     {
@@ -3490,7 +3490,7 @@
       25.6
      ],
      "garrison": [],
-     "threat": 20,
+     "threat": 44,
      "deckSeed": 1023935695
     },
     {
@@ -3504,7 +3504,7 @@
      "arrives": "AIRSHIP_DROP",
      "rideAlong": true,
      "garrison": [],
-     "threat": 20,
+     "threat": 44,
      "deckSeed": 2454279311
     },
     {
@@ -3518,7 +3518,7 @@
      "arrives": "AIRSHIP_DROP",
      "rideAlong": true,
      "garrison": [],
-     "threat": 20,
+     "threat": 44,
      "deckSeed": 2471056930
     },
     {
@@ -3534,7 +3534,7 @@
      ],
      "rideAlong": true,
      "garrison": [],
-     "threat": 20,
+     "threat": 44,
      "deckSeed": 1291412355
     }
    ]
@@ -3556,7 +3556,7 @@
      ],
      "inCastle": true,
      "garrison": [],
-     "threat": 20,
+     "threat": 44,
      "deckSeed": 1911184618
     },
     {
@@ -3582,7 +3582,7 @@
        "count": 1
       }
      ],
-     "threat": 20,
+     "threat": 44,
      "deckSeed": 370837050
     },
     {
@@ -3593,7 +3593,7 @@
       42.8
      ],
      "garrison": [],
-     "threat": 20,
+     "threat": 44,
      "deckSeed": 883128698
     },
     {
@@ -3607,7 +3607,7 @@
      "arrives": "AIRSHIP_DROP",
      "rideAlong": true,
      "garrison": [],
-     "threat": 20,
+     "threat": 44,
      "deckSeed": 387085010
     },
     {
@@ -3621,7 +3621,7 @@
      "arrives": "AIRSHIP_DROP",
      "rideAlong": true,
      "garrison": [],
-     "threat": 20,
+     "threat": 44,
      "deckSeed": 370307391
     },
     {
@@ -3637,7 +3637,7 @@
      ],
      "rideAlong": true,
      "garrison": [],
-     "threat": 20,
+     "threat": 44,
      "deckSeed": 202389394
     }
    ]
@@ -3659,7 +3659,7 @@
      ],
      "inCastle": true,
      "garrison": [],
-     "threat": 20,
+     "threat": 44,
      "deckSeed": 3917840468
     },
     {
@@ -3685,7 +3685,7 @@
        "count": 1
       }
      ],
-     "threat": 20,
+     "threat": 44,
      "deckSeed": 1855853060
     },
     {
@@ -3696,7 +3696,7 @@
       39.43
      ],
      "garrison": [],
-     "threat": 20,
+     "threat": 44,
      "deckSeed": 709537400
     },
     {
@@ -3710,7 +3710,7 @@
      "arrives": "AIRSHIP_DROP",
      "rideAlong": true,
      "garrison": [],
-     "threat": 20,
+     "threat": 44,
      "deckSeed": 3064116836
     },
     {
@@ -3724,7 +3724,7 @@
      "arrives": "AIRSHIP_DROP",
      "rideAlong": true,
      "garrison": [],
-     "threat": 20,
+     "threat": 44,
      "deckSeed": 3114449693
     },
     {
@@ -3740,7 +3740,7 @@
      ],
      "rideAlong": true,
      "garrison": [],
-     "threat": 20,
+     "threat": 44,
      "deckSeed": 1933899660
     }
    ]
@@ -3762,7 +3762,7 @@
      ],
      "inCastle": true,
      "garrison": [],
-     "threat": 20,
+     "threat": 44,
      "deckSeed": 172219497
     },
     {
@@ -3788,7 +3788,7 @@
        "count": 1
       }
      ],
-     "threat": 20,
+     "threat": 44,
      "deckSeed": 3292808157
     },
     {
@@ -3799,7 +3799,7 @@
       28.31
      ],
      "garrison": [],
-     "threat": 20,
+     "threat": 44,
      "deckSeed": 2449146209
     },
     {
@@ -3813,7 +3813,7 @@
      "arrives": "AIRSHIP_DROP",
      "rideAlong": true,
      "garrison": [],
-     "threat": 20,
+     "threat": 44,
      "deckSeed": 2683576725
     },
     {
@@ -3827,7 +3827,7 @@
      "arrives": "AIRSHIP_DROP",
      "rideAlong": true,
      "garrison": [],
-     "threat": 20,
+     "threat": 44,
      "deckSeed": 2633243868
     },
     {
@@ -3843,7 +3843,7 @@
      ],
      "rideAlong": true,
      "garrison": [],
-     "threat": 20,
+     "threat": 44,
      "deckSeed": 2358378833
     }
    ]
@@ -3865,7 +3865,7 @@
      ],
      "inCastle": true,
      "garrison": [],
-     "threat": 60,
+     "threat": 52,
      "deckSeed": 823293070
     },
     {
@@ -3877,7 +3877,7 @@
      ],
      "inCastle": true,
      "garrison": [],
-     "threat": 60,
+     "threat": 52,
      "deckSeed": 806515451
     },
     {
@@ -3897,7 +3897,7 @@
        "count": 4
       }
      ],
-     "threat": 60,
+     "threat": 52,
      "deckSeed": 159350236
     },
     {
@@ -3923,7 +3923,7 @@
        "count": 1
       }
      ],
-     "threat": 60,
+     "threat": 52,
      "deckSeed": 2000636054
     },
     {
@@ -3945,7 +3945,7 @@
        "count": 4
       }
      ],
-     "threat": 60,
+     "threat": 52,
      "deckSeed": 3593075605
     },
     {
@@ -3956,7 +3956,7 @@
       16.64
      ],
      "garrison": [],
-     "threat": 60,
+     "threat": 52,
      "deckSeed": 921446270
     },
     {
@@ -3970,7 +3970,7 @@
      "arrives": "AIRSHIP_DROP",
      "rideAlong": true,
      "garrison": [],
-     "threat": 60,
+     "threat": 52,
      "deckSeed": 1271415574
     },
     {
@@ -3984,7 +3984,7 @@
      "arrives": "AIRSHIP_DROP",
      "rideAlong": true,
      "garrison": [],
-     "threat": 60,
+     "threat": 52,
      "deckSeed": 1254637955
     },
     {
@@ -4000,7 +4000,7 @@
      ],
      "rideAlong": true,
      "garrison": [],
-     "threat": 60,
+     "threat": 52,
      "deckSeed": 2012455438
     }
    ]
@@ -4022,7 +4022,7 @@
      ],
      "inCastle": true,
      "garrison": [],
-     "threat": 20,
+     "threat": 43,
      "deckSeed": 2192290070
     },
     {
@@ -4039,7 +4039,7 @@
        "count": 1
       }
      ],
-     "threat": 20,
+     "threat": 43,
      "deckSeed": 761551025
     },
     {
@@ -4060,7 +4060,7 @@
        "count": 5
       }
      ],
-     "threat": 20,
+     "threat": 43,
      "deckSeed": 2256419616
     },
     {
@@ -4082,7 +4082,7 @@
        "count": 4
       }
      ],
-     "threat": 20,
+     "threat": 43,
      "deckSeed": 3161291389
     }
    ]
@@ -4104,7 +4104,7 @@
      ],
      "inCastle": true,
      "garrison": [],
-     "threat": 20,
+     "threat": 43,
      "deckSeed": 1276886625
     },
     {
@@ -4121,7 +4121,7 @@
        "count": 1
       }
      ],
-     "threat": 20,
+     "threat": 43,
      "deckSeed": 1218461590
     },
     {
@@ -4142,7 +4142,7 @@
        "count": 5
       }
      ],
-     "threat": 20,
+     "threat": 43,
      "deckSeed": 244390351
     },
     {
@@ -4164,7 +4164,7 @@
        "count": 4
       }
      ],
-     "threat": 20,
+     "threat": 43,
      "deckSeed": 4086897556
     }
    ]
@@ -4186,7 +4186,7 @@
      ],
      "inCastle": true,
      "garrison": [],
-     "threat": 20,
+     "threat": 43,
      "deckSeed": 1086147042
     },
     {
@@ -4203,7 +4203,7 @@
        "count": 1
       }
      ],
-     "threat": 20,
+     "threat": 43,
      "deckSeed": 3690426133
     },
     {
@@ -4225,7 +4225,7 @@
        "count": 4
       }
      ],
-     "threat": 20,
+     "threat": 43,
      "deckSeed": 1465176217
     },
     {
@@ -4236,7 +4236,7 @@
       172.14
      ],
      "garrison": [],
-     "threat": 20,
+     "threat": 43,
      "deckSeed": 3969643250
     }
    ]
@@ -4258,7 +4258,7 @@
      ],
      "inCastle": true,
      "garrison": [],
-     "threat": 20,
+     "threat": 43,
      "deckSeed": 3277364450
     },
     {
@@ -4275,7 +4275,7 @@
        "count": 1
       }
      ],
-     "threat": 20,
+     "threat": 43,
      "deckSeed": 1586676245
     },
     {
@@ -4297,7 +4297,7 @@
        "count": 4
       }
      ],
-     "threat": 20,
+     "threat": 43,
      "deckSeed": 2198471065
     },
     {
@@ -4308,7 +4308,7 @@
       132.24
      ],
      "garrison": [],
-     "threat": 20,
+     "threat": 43,
      "deckSeed": 1911836146
     }
    ]
@@ -4330,7 +4330,7 @@
      ],
      "inCastle": true,
      "garrison": [],
-     "threat": 20,
+     "threat": 43,
      "deckSeed": 3700941845
     },
     {
@@ -4347,7 +4347,7 @@
        "count": 1
       }
      ],
-     "threat": 20,
+     "threat": 43,
      "deckSeed": 1407194034
     },
     {
@@ -4369,7 +4369,7 @@
        "count": 4
       }
      ],
-     "threat": 20,
+     "threat": 43,
      "deckSeed": 683038776
     },
     {
@@ -4380,7 +4380,7 @@
       100.92
      ],
      "garrison": [],
-     "threat": 20,
+     "threat": 43,
      "deckSeed": 652261629
     }
    ]
@@ -4402,7 +4402,7 @@
      ],
      "inCastle": true,
      "garrison": [],
-     "threat": 20,
+     "threat": 43,
      "deckSeed": 3801883853
     },
     {
@@ -4419,7 +4419,7 @@
        "count": 1
       }
      ],
-     "threat": 20,
+     "threat": 43,
      "deckSeed": 479318778
     },
     {
@@ -4445,7 +4445,7 @@
        "count": 1
       }
      ],
-     "threat": 20,
+     "threat": 43,
      "deckSeed": 3548032089
     },
     {
@@ -4467,7 +4467,7 @@
        "count": 4
       }
      ],
-     "threat": 20,
+     "threat": 43,
      "deckSeed": 4191541104
     },
     {
@@ -4481,7 +4481,7 @@
      "arrives": "AIRSHIP_DROP",
      "rideAlong": true,
      "garrison": [],
-     "threat": 20,
+     "threat": 43,
      "deckSeed": 898206681
     },
     {
@@ -4495,7 +4495,7 @@
      "arrives": "AIRSHIP_DROP",
      "rideAlong": true,
      "garrison": [],
-     "threat": 20,
+     "threat": 43,
      "deckSeed": 847873824
     },
     {
@@ -4511,7 +4511,7 @@
      ],
      "rideAlong": true,
      "garrison": [],
-     "threat": 20,
+     "threat": 43,
      "deckSeed": 3715997805
     }
    ]
@@ -4533,7 +4533,7 @@
      ],
      "inCastle": true,
      "garrison": [],
-     "threat": 10,
+     "threat": 38,
      "deckSeed": 1581639411
     },
     {
@@ -4554,7 +4554,7 @@
        "count": 5
       }
      ],
-     "threat": 10,
+     "threat": 38,
      "deckSeed": 4283044117
     },
     {
@@ -4565,7 +4565,7 @@
       137.24
      ],
      "garrison": [],
-     "threat": 10,
+     "threat": 38,
      "deckSeed": 3290670751
     }
    ]
@@ -4587,7 +4587,7 @@
      ],
      "inCastle": true,
      "garrison": [],
-     "threat": 10,
+     "threat": 38,
      "deckSeed": 535839069
     },
     {
@@ -4608,7 +4608,7 @@
        "count": 5
       }
      ],
-     "threat": 10,
+     "threat": 38,
      "deckSeed": 3821416547
     },
     {
@@ -4619,7 +4619,7 @@
       102.25
      ],
      "garrison": [],
-     "threat": 10,
+     "threat": 38,
      "deckSeed": 211441381
     }
    ]
@@ -4641,7 +4641,7 @@
      ],
      "inCastle": true,
      "garrison": [],
-     "threat": 10,
+     "threat": 38,
      "deckSeed": 429923128
     },
     {
@@ -4662,7 +4662,7 @@
        "count": 5
       }
      ],
-     "threat": 10,
+     "threat": 38,
      "deckSeed": 4051123006
     },
     {
@@ -4673,7 +4673,7 @@
       132.76
      ],
      "garrison": [],
-     "threat": 10,
+     "threat": 38,
      "deckSeed": 1118081340
     }
    ]
@@ -4695,7 +4695,7 @@
      ],
      "inCastle": true,
      "garrison": [],
-     "threat": 10,
+     "threat": 38,
      "deckSeed": 587678048
     },
     {
@@ -4716,7 +4716,7 @@
        "count": 5
       }
      ],
-     "threat": 10,
+     "threat": 38,
      "deckSeed": 3794512102
     },
     {
@@ -4727,7 +4727,7 @@
       129.11
      ],
      "garrison": [],
-     "threat": 10,
+     "threat": 38,
      "deckSeed": 1306018436
     }
    ]
@@ -4749,7 +4749,7 @@
      ],
      "inCastle": true,
      "garrison": [],
-     "threat": 30,
+     "threat": 47,
      "deckSeed": 3436308088
     },
     {
@@ -4761,7 +4761,7 @@
      ],
      "inCastle": true,
      "garrison": [],
-     "threat": 30,
+     "threat": 47,
      "deckSeed": 3486640945
     },
     {
@@ -4781,7 +4781,7 @@
        "count": 4
       }
      ],
-     "threat": 30,
+     "threat": 47,
      "deckSeed": 1804305686
     },
     {
@@ -4802,7 +4802,7 @@
        "count": 5
       }
      ],
-     "threat": 30,
+     "threat": 47,
      "deckSeed": 456543870
     },
     {
@@ -4824,7 +4824,7 @@
        "count": 4
       }
      ],
-     "threat": 30,
+     "threat": 47,
      "deckSeed": 2348585351
     },
     {
@@ -4835,7 +4835,7 @@
       123.28
      ],
      "garrison": [],
-     "threat": 30,
+     "threat": 47,
      "deckSeed": 1827054460
     }
    ]
@@ -4857,7 +4857,7 @@
      ],
      "inCastle": true,
      "garrison": [],
-     "threat": 20,
+     "threat": 43,
      "deckSeed": 712425987
     },
     {
@@ -4874,7 +4874,7 @@
        "count": 1
       }
      ],
-     "threat": 20,
+     "threat": 43,
      "deckSeed": 3904329372
     },
     {
@@ -4900,7 +4900,7 @@
        "count": 1
       }
      ],
-     "threat": 20,
+     "threat": 43,
      "deckSeed": 3458397112
     },
     {
@@ -4921,7 +4921,7 @@
        "count": 5
       }
      ],
-     "threat": 20,
+     "threat": 43,
      "deckSeed": 409285061
     },
     {
@@ -4935,7 +4935,7 @@
      "arrives": "NAVAL_LANDING",
      "rideAlong": true,
      "garrison": [],
-     "threat": 20,
+     "threat": 43,
      "deckSeed": 3873886639
     },
     {
@@ -4951,7 +4951,7 @@
      ],
      "rideAlong": true,
      "garrison": [],
-     "threat": 20,
+     "threat": 43,
      "deckSeed": 3740150947
     }
    ]
@@ -4973,7 +4973,7 @@
      ],
      "inCastle": true,
      "garrison": [],
-     "threat": 100,
+     "threat": 57,
      "deckSeed": 2272158873
     },
     {
@@ -4985,7 +4985,7 @@
      ],
      "inCastle": true,
      "garrison": [],
-     "threat": 100,
+     "threat": 57,
      "deckSeed": 2221826016
     },
     {
@@ -5005,7 +5005,7 @@
        "count": 4
       }
      ],
-     "threat": 100,
+     "threat": 57,
      "deckSeed": 1690559443
     },
     {
@@ -5022,7 +5022,7 @@
        "count": 2
       }
      ],
-     "threat": 100,
+     "threat": 57,
      "deckSeed": 877834346
     },
     {
@@ -5043,7 +5043,7 @@
        "count": 5
       }
      ],
-     "threat": 100,
+     "threat": 57,
      "deckSeed": 1694774599
     },
     {
@@ -5065,7 +5065,7 @@
        "count": 4
       }
      ],
-     "threat": 100,
+     "threat": 57,
      "deckSeed": 10705612
     }
    ]
@@ -5087,7 +5087,7 @@
      ],
      "inCastle": true,
      "garrison": [],
-     "threat": 70,
+     "threat": 53,
      "deckSeed": 712918225
     },
     {
@@ -5104,7 +5104,7 @@
        "count": 1
       }
      ],
-     "threat": 70,
+     "threat": 53,
      "deckSeed": 4062571910
     },
     {
@@ -5121,7 +5121,7 @@
        "count": 2
       }
      ],
-     "threat": 70,
+     "threat": 53,
      "deckSeed": 3484711794
     },
     {
@@ -5142,7 +5142,7 @@
        "count": 5
       }
      ],
-     "threat": 70,
+     "threat": 53,
      "deckSeed": 2558721695
     }
    ]
@@ -5164,7 +5164,7 @@
      ],
      "inCastle": true,
      "garrison": [],
-     "threat": 70,
+     "threat": 53,
      "deckSeed": 2076827668
     },
     {
@@ -5181,7 +5181,7 @@
        "count": 1
       }
      ],
-     "threat": 70,
+     "threat": 53,
      "deckSeed": 1958673603
     },
     {
@@ -5198,7 +5198,7 @@
        "count": 2
       }
      ],
-     "threat": 70,
+     "threat": 53,
      "deckSeed": 2153983679
     },
     {
@@ -5219,7 +5219,7 @@
        "count": 5
       }
      ],
-     "threat": 70,
+     "threat": 53,
      "deckSeed": 2401272130
     }
    ]
@@ -5241,7 +5241,7 @@
      ],
      "inCastle": true,
      "garrison": [],
-     "threat": 70,
+     "threat": 53,
      "deckSeed": 787559089
     },
     {
@@ -5258,7 +5258,7 @@
        "count": 1
       }
      ],
-     "threat": 70,
+     "threat": 53,
      "deckSeed": 1750071910
     },
     {
@@ -5275,7 +5275,7 @@
        "count": 2
       }
      ],
-     "threat": 70,
+     "threat": 53,
      "deckSeed": 1598582610
     },
     {
@@ -5296,7 +5296,7 @@
        "count": 5
       }
      ],
-     "threat": 70,
+     "threat": 53,
      "deckSeed": 1191483391
     }
    ]
@@ -5318,7 +5318,7 @@
      ],
      "inCastle": true,
      "garrison": [],
-     "threat": 35,
+     "threat": 49,
      "deckSeed": 2001236598
     },
     {
@@ -5335,7 +5335,7 @@
        "count": 2
       }
      ],
-     "threat": 35,
+     "threat": 49,
      "deckSeed": 1919915137
     },
     {
@@ -5352,7 +5352,7 @@
        "count": 1
       }
      ],
-     "threat": 35,
+     "threat": 49,
      "deckSeed": 1824763793
     }
    ]
@@ -5374,7 +5374,7 @@
      ],
      "inCastle": true,
      "garrison": [],
-     "threat": 35,
+     "threat": 49,
      "deckSeed": 2766462674
     },
     {
@@ -5391,7 +5391,7 @@
        "count": 2
       }
      ],
-     "threat": 35,
+     "threat": 49,
      "deckSeed": 1305139085
     },
     {
@@ -5408,7 +5408,7 @@
        "count": 1
       }
      ],
-     "threat": 35,
+     "threat": 49,
      "deckSeed": 2316186885
     }
    ]
@@ -5430,7 +5430,7 @@
      ],
      "inCastle": true,
      "garrison": [],
-     "threat": 35,
+     "threat": 49,
      "deckSeed": 4159242159
     },
     {
@@ -5447,7 +5447,7 @@
        "count": 2
       }
      ],
-     "threat": 35,
+     "threat": 49,
      "deckSeed": 2435563112
     },
     {
@@ -5464,7 +5464,7 @@
        "count": 1
       }
      ],
-     "threat": 35,
+     "threat": 49,
      "deckSeed": 3732882704
     }
    ]
@@ -5486,7 +5486,7 @@
      ],
      "inCastle": true,
      "garrison": [],
-     "threat": 35,
+     "threat": 49,
      "deckSeed": 508500678
     },
     {
@@ -5503,7 +5503,7 @@
        "count": 2
       }
      ],
-     "threat": 35,
+     "threat": 49,
      "deckSeed": 145062897
     },
     {
@@ -5520,7 +5520,7 @@
        "count": 1
       }
      ],
-     "threat": 35,
+     "threat": 49,
      "deckSeed": 1242382689
     }
    ]
@@ -5542,7 +5542,7 @@
      ],
      "inCastle": true,
      "garrison": [],
-     "threat": 35,
+     "threat": 49,
      "deckSeed": 2340164713
     },
     {
@@ -5559,7 +5559,7 @@
        "count": 2
       }
      ],
-     "threat": 35,
+     "threat": 49,
      "deckSeed": 3000615578
     },
     {
@@ -5576,7 +5576,7 @@
        "count": 1
       }
      ],
-     "threat": 35,
+     "threat": 49,
      "deckSeed": 297007758
     }
    ]
@@ -5598,7 +5598,7 @@
      ],
      "inCastle": true,
      "garrison": [],
-     "threat": 50,
+     "threat": 52,
      "deckSeed": 1389815153
     },
     {
@@ -5615,7 +5615,7 @@
        "count": 2
       }
      ],
-     "threat": 50,
+     "threat": 52,
      "deckSeed": 3300600850
     },
     {
@@ -5632,7 +5632,7 @@
        "count": 1
       }
      ],
-     "threat": 50,
+     "threat": 52,
      "deckSeed": 235767846
     }
    ]
@@ -5654,7 +5654,7 @@
      ],
      "inCastle": true,
      "garrison": [],
-     "threat": 50,
+     "threat": 52,
      "deckSeed": 3839273607
     },
     {
@@ -5671,7 +5671,7 @@
        "count": 2
       }
      ],
-     "threat": 50,
+     "threat": 52,
      "deckSeed": 3530252240
     },
     {
@@ -5688,7 +5688,7 @@
        "count": 1
       }
      ],
-     "threat": 50,
+     "threat": 52,
      "deckSeed": 2495692888
     }
    ]
@@ -5710,7 +5710,7 @@
      ],
      "inCastle": true,
      "garrison": [],
-     "threat": 50,
+     "threat": 52,
      "deckSeed": 2165030752
     },
     {
@@ -5727,7 +5727,7 @@
        "count": 2
       }
      ],
-     "threat": 50,
+     "threat": 52,
      "deckSeed": 1902798891
     },
     {
@@ -5744,7 +5744,7 @@
        "count": 1
       }
      ],
-     "threat": 50,
+     "threat": 52,
      "deckSeed": 3185179335
     }
    ]
@@ -5766,7 +5766,7 @@
      ],
      "inCastle": true,
      "garrison": [],
-     "threat": 50,
+     "threat": 52,
      "deckSeed": 98991941
     },
     {
@@ -5783,7 +5783,7 @@
        "count": 2
       }
      ],
-     "threat": 50,
+     "threat": 52,
      "deckSeed": 624525782
     },
     {
@@ -5800,7 +5800,7 @@
        "count": 1
       }
      ],
-     "threat": 50,
+     "threat": 52,
      "deckSeed": 93533154
     }
    ]
@@ -5822,7 +5822,7 @@
      ],
      "inCastle": true,
      "garrison": [],
-     "threat": 100,
+     "threat": 60,
      "deckSeed": 1693342467
     },
     {
@@ -5834,7 +5834,7 @@
      ],
      "inCastle": true,
      "garrison": [],
-     "threat": 100,
+     "threat": 60,
      "deckSeed": 1710120086
     },
     {
@@ -5854,7 +5854,7 @@
        "count": 4
       }
      ],
-     "threat": 100,
+     "threat": 60,
      "deckSeed": 3892045853
     },
     {
@@ -5871,7 +5871,7 @@
        "count": 2
       }
      ],
-     "threat": 100,
+     "threat": 60,
      "deckSeed": 1416381564
     },
     {
@@ -5892,7 +5892,7 @@
        "count": 5
       }
      ],
-     "threat": 100,
+     "threat": 60,
      "deckSeed": 1390201541
     },
     {
@@ -5914,7 +5914,7 @@
        "count": 4
       }
      ],
-     "threat": 100,
+     "threat": 60,
      "deckSeed": 712429614
     }
    ]

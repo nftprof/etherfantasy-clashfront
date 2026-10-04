@@ -4,6 +4,7 @@
 // distribution summary + a deterministic 1 % sample (no bulk per-parcel data).
 //   node tools/living-world/seed_singles.mjs [--world …/data] [--out data/living-world] [--only ZONE]
 import fs from "node:fs";
+import { bandThreat } from "./threat.mjs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -24,7 +25,8 @@ export function zoneContext(WORLD, zone, PA) {
   const f = path.join(WORLD, "world-terrain", `${zone}.json`);
   const Z = fs.existsSync(f) ? JSON.parse(fs.readFileSync(f, "utf8")) : null;
   const ARCH = Object.fromEntries(PA.archetypes.map((a) => [a.lwKind, a]));
-  return { zone, layer: LAYER(zone), terrainMissing: !Z, ARCH, castles: Z ? Z.castles || [] : [],
+  const ZR = JSON.parse(fs.readFileSync(path.join(WORLD, "zone-registry.json"), "utf8")), zr = (ZR.zones || []).find((z) => z.zoneId === zone);
+  return { zone, layer: LAYER(zone), terrainMissing: !Z, ARCH, threatBands: PA.threatBands, strength: (zr && zr.strengthMultiplier) || 1, castles: Z ? Z.castles || [] : [],
     coast: Z ? (Array.isArray(Z.coast) ? Z.coast : []).concat((Z.rivers || []).filter((r) => /-SEA$/.test(r.id))) : [],
     rivers: Z ? (Z.rivers || []).filter((r) => !/-SEA$/.test(r.id)) : [], roads: Z ? Z.roads || [] : [] };
 }
@@ -48,7 +50,7 @@ export function seedSingle(p, zc) {
   const tot = cands.reduce((s, k) => s + W[k], 0); let x = rng() * tot, k = cands[0];
   for (const c of cands) { x -= W[c]; if (x <= 0) { k = c; break; } }
   const ground = zc.layer !== "SURFACE" ? zc.layer : ctx.coastD <= 10 ? "WATER" : rng() < 0.6 ? "FOREST" : "PLAIN";
-  const node = { k, at: [r2(at[0]), r2(at[1])], threat: Math.round((ring === "WILD" ? 20 : 10) * (0.85 + rng() * 0.3)) };
+  const node = { k, at: [r2(at[0]), r2(at[1])], threat: bandThreat({ threatBands: zc.threatBands }, ring, zc.strength, rng()) };
   if (k === "WILD_LAIR") node.monster = zc.ARCH.WILD_LAIR.affinity.monsterByGround[ground] || "BANDIT";
   return { id: p.parcelId, ring, node };
 }
@@ -60,7 +62,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const zones = fs.readdirSync(path.join(WORLD, "hexagon-city-source/l3")).filter((f) => /^[A-Z0-9]+\.json$/.test(f)).map((f) => f.replace(".json", "")).sort().filter((z) => !args.only || z === args.only);
   const summary = { parcels: 0, nodes: 0, byRing: { CASTLE: 0, FRONTIER: 0, WILD: 0 }, byKind: {}, byZone: {} }, sample = [];
   for (const z of zones) {
-    const zc = zoneContext(WORLD, z, { archetypes: PA.archetypes }), L3 = JSON.parse(fs.readFileSync(path.join(WORLD, "hexagon-city-source/l3", `${z}.json`), "utf8")).singles;
+    const zc = zoneContext(WORLD, z, { archetypes: PA.archetypes, threatBands: PA.threatBands }), L3 = JSON.parse(fs.readFileSync(path.join(WORLD, "hexagon-city-source/l3", `${z}.json`), "utf8")).singles;
     const zs = { parcels: 0, nodes: 0, byKind: {}, terrainMissing: zc.terrainMissing || undefined };
     for (const p of L3.slice().sort((a, b) => (a.parcelId < b.parcelId ? -1 : 1))) {
       if (!p.center) continue; const r = seedSingle(p, zc);

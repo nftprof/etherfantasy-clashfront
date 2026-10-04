@@ -28,7 +28,7 @@ const med = (a) => { const s = a.slice().sort((x, y) => x - y); return s.length 
 const rows = kindsWithGarrison.map((k) => {
   const r = results.filter((x) => x.k === k), b = r.filter((x) => x.breached);
   const row = { k, n: r.length, breachRate: r.length ? Math.round((100 * b.length) / r.length) : 0, medBreachSec: med(b.map((x) => x.sec)), medThreat: med(r.map((x) => x.threat)), medAttackerDeaths: med(r.map((x) => x.attackerDeaths)), defenderWins: r.filter((x) => x.defenderWon).length };
-  row.flag = !r.length ? "NO SAMPLES" : row.breachRate < 50 ? "TOO HARD (most attacks fail the 12-min floor)" : row.breachRate === 100 && row.medBreachSec < 240 ? "TOO SOFT (falls in < 4 min)" : "ok";
+  row.flag = !r.length ? "NO SAMPLES" : row.breachRate < 50 ? "TOO HARD (most attacks fail the 12-min floor)" : row.breachRate === 100 && row.medBreachSec < 180 ? "TOO SOFT (falls in < 3 min, below the SKIRMISH band)" : "ok";
   return row;
 });
 fs.writeFileSync(JOUT, JSON.stringify({ schema: "cf-living-world/sim-sample@1", kernel: "server/sim (deterministic)", floorSec: FLOOR_SEC, nPerKind: N, rows, results, scenarios: SCEN }, null, 1) + "\n");

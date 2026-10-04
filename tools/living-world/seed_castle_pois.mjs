@@ -4,6 +4,7 @@
 // with a per-castle PRNG seeded from fnv1a(castleId|"lw1"). No clock, no Math.random → byte-identical rebuilds.
 //   node tools/living-world/seed_castle_pois.mjs [--world /path/to/overworld/data] [--out data/living-world/castle-pois.json]
 import fs from "node:fs";
+import { bandThreat } from "./threat.mjs";
 import path from "node:path";
 
 const args = Object.fromEntries(process.argv.slice(2).reduce((a, v, i, all) => (v.startsWith("--") ? a.concat([[v.slice(2), all[i + 1]]]) : a), []));
@@ -48,7 +49,7 @@ function seedCastle(c) {
   const add = (lwKind, at, extra = {}) => {
     const A = ARCH[lwKind]; const n = pois.filter((p) => p.lwKind === lwKind).length + 1;
     pois.push({ id: `${c.id}:${lwKind}:${n}`, lwKind, at, ...extra,
-      garrison: A.garrison.map(([unit, count]) => ({ unit, count })), threat: Math.min(100, Math.round(10 * tier * strength)),
+      garrison: A.garrison.map(([unit, count]) => ({ unit, count })), threat: bandThreat(PA, "CASTLE", strength, 0.5, tier),
       deckSeed: fnv1a(`${c.id}|${lwKind}|${n}`) });
   };
   // 1) the always-list

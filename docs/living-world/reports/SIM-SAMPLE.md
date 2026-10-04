@@ -7,14 +7,14 @@ Model: the POI's threat scales the defending core (×0.5–×2.5) and garrison; 
 | Archetype | n | Breached ≤ 12 min | Median breach | Median threat | Median attacker losses | Defender wins | Verdict |
 |---|---|---|---|---|---|---|---|
 | CALIBRATION | 6 | 100 % | 8:59 | 50 | 64 | 0 | ok |
-| AIRSHIP_DOCK | 6 | 100 % | 5:55 | 29 | 42 | 0 | ok |
-| BARBARIAN_CAMP | 6 | 100 % | 3:22 | 31 | 24 | 0 | TOO SOFT (falls in < 4 min) |
-| HARBOUR | 6 | 100 % | 4:03 | 17 | 29 | 0 | ok |
-| MERCENARY_POST | 6 | 100 % | 3:42 | 17 | 26 | 0 | TOO SOFT (falls in < 4 min) |
-| SALVAGE_SITE | 6 | 100 % | 6:14 | 33 | 44 | 0 | ok |
-| VENT | 6 | 83 % | 8:29 | 48 | 60 | 0 | ok |
-| WAR_CAMP | 6 | 100 % | 4:13 | 28 | 30 | 0 | ok |
-| WILD_LAIR | 6 | 83 % | 5:57 | 39 | 42 | 0 | ok |
+| AIRSHIP_DOCK | 6 | 100 % | 4:51 | 23 | 34 | 0 | ok |
+| BARBARIAN_CAMP | 6 | 100 % | 3:06 | 26 | 23 | 0 | ok |
+| HARBOUR | 6 | 100 % | 4:23 | 20 | 31 | 0 | ok |
+| MERCENARY_POST | 6 | 100 % | 4:16 | 20 | 30 | 0 | ok |
+| SALVAGE_SITE | 6 | 100 % | 5:11 | 25 | 37 | 0 | ok |
+| VENT | 6 | 100 % | 5:13 | 26 | 37 | 0 | ok |
+| WAR_CAMP | 6 | 100 % | 3:21 | 23 | 24 | 0 | ok |
+| WILD_LAIR | 6 | 100 % | 4:10 | 27 | 30 | 0 | ok |
 
 **Calibration:** a bare castle (threat 50, S2 structures: 8 walls 1,350 HP, 2 gates 1,150 HP, 2 castle towers 2,350 HP, keep 2,400 × tier; structure HP ×3) vs the floor-case attacker (1.5× squad, ⅓ canon SIEGE ×6 vs structures, + waves) breaches at **8:59** — inside the 6–12 min target band ✅.
 

@@ -15,7 +15,7 @@
     441.82
    ],
    "name": "Airdrop Zone",
-   "note": "Living-world Node of ENT-CASTLE-FESTGATE (threat 22)",
+   "note": "Living-world Node of ENT-CASTLE-FESTGATE (threat 43)",
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   },
   {
@@ -26,7 +26,7 @@
     426.58
    ],
    "name": "Mercenary Post",
-   "note": "Living-world Node of ENT-CASTLE-FESTGATE (threat 22)",
+   "note": "Living-world Node of ENT-CASTLE-FESTGATE (threat 43)",
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   },
   {
@@ -37,7 +37,7 @@
     444.87
    ],
    "name": "Lair (wolf)",
-   "note": "Living-world Node of ENT-CASTLE-FESTGATE (threat 22)",
+   "note": "Living-world Node of ENT-CASTLE-FESTGATE (threat 43)",
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   },
   {
@@ -48,7 +48,7 @@
     158.11
    ],
    "name": "Airdrop Zone",
-   "note": "Living-world Node of ENT-CASTLE-RIVERGATE (threat 22)",
+   "note": "Living-world Node of ENT-CASTLE-RIVERGATE (threat 43)",
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   },
   {
@@ -59,7 +59,7 @@
     165.02
    ],
    "name": "Mercenary Post",
-   "note": "Living-world Node of ENT-CASTLE-RIVERGATE (threat 22)",
+   "note": "Living-world Node of ENT-CASTLE-RIVERGATE (threat 43)",
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   },
   {
@@ -70,7 +70,7 @@
     173.44
    ],
    "name": "Lair (wolf)",
-   "note": "Living-world Node of ENT-CASTLE-RIVERGATE (threat 22)",
+   "note": "Living-world Node of ENT-CASTLE-RIVERGATE (threat 43)",
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   },
   {
@@ -81,7 +81,7 @@
     459.03
    ],
    "name": "Airdrop Zone",
-   "note": "Living-world Node of ENT-KEEP-CAMPANILE (threat 11)",
+   "note": "Living-world Node of ENT-KEEP-CAMPANILE (threat 39)",
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   },
   {
@@ -92,7 +92,7 @@
     480.56
    ],
    "name": "Lair (wolf)",
-   "note": "Living-world Node of ENT-KEEP-CAMPANILE (threat 11)",
+   "note": "Living-world Node of ENT-KEEP-CAMPANILE (threat 39)",
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   },
   {
@@ -103,7 +103,7 @@
     107.51
    ],
    "name": "Caravan Waypoint",
-   "note": "Living-world Node of ENT-KEEP-LANTERNSHORE (threat 11)",
+   "note": "Living-world Node of ENT-KEEP-LANTERNSHORE (threat 39)",
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   },
   {
@@ -114,7 +114,7 @@
     106.9
    ],
    "name": "Harbour",
-   "note": "Living-world Node of ENT-KEEP-LANTERNSHORE (threat 11) — on ENT-PORT-LANTERNSHORE",
+   "note": "Living-world Node of ENT-KEEP-LANTERNSHORE (threat 39) — on ENT-PORT-LANTERNSHORE",
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   },
   {
@@ -125,7 +125,7 @@
     101.56
    ],
    "name": "Landing Spot",
-   "note": "Living-world Node of ENT-KEEP-LANTERNSHORE (threat 11) — lands for HARBOUR 1",
+   "note": "Living-world Node of ENT-KEEP-LANTERNSHORE (threat 39) — lands for HARBOUR 1",
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   },
   {
@@ -136,7 +136,7 @@
     24.04
    ],
    "name": "Caravan Waypoint",
-   "note": "Living-world Node of ENT-KEEP-PETALPORT (threat 11)",
+   "note": "Living-world Node of ENT-KEEP-PETALPORT (threat 39)",
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   },
   {
@@ -147,7 +147,7 @@
     20.8
    ],
    "name": "Harbour",
-   "note": "Living-world Node of ENT-KEEP-PETALPORT (threat 11) — on ENT-PORT-PETALPORT",
+   "note": "Living-world Node of ENT-KEEP-PETALPORT (threat 39) — on ENT-PORT-PETALPORT",
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   },
   {
@@ -158,7 +158,7 @@
     21.47
    ],
    "name": "Landing Spot",
-   "note": "Living-world Node of ENT-KEEP-PETALPORT (threat 11) — lands for HARBOUR 1",
+   "note": "Living-world Node of ENT-KEEP-PETALPORT (threat 39) — lands for HARBOUR 1",
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   },
   {
@@ -169,7 +169,7 @@
     379.21
    ],
    "name": "Airdrop Zone",
-   "note": "Living-world Node of ENT-KEEP-SUNSTRAND (threat 11)",
+   "note": "Living-world Node of ENT-KEEP-SUNSTRAND (threat 39)",
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   },
   {
@@ -180,7 +180,7 @@
     410.46
    ],
    "name": "Barbarian Camp",
-   "note": "Living-world Node of ENT-KEEP-SUNSTRAND (threat 11)",
+   "note": "Living-world Node of ENT-KEEP-SUNSTRAND (threat 39)",
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   },
   {
@@ -191,7 +191,7 @@
     425.46
    ],
    "name": "Airdrop Zone",
-   "note": "Living-world Node of ENT-KEEP-TIDEWATCH (threat 11)",
+   "note": "Living-world Node of ENT-KEEP-TIDEWATCH (threat 39)",
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   },
   {
@@ -202,7 +202,7 @@
     450.74
    ],
    "name": "Barbarian Camp",
-   "note": "Living-world Node of ENT-KEEP-TIDEWATCH (threat 11)",
+   "note": "Living-world Node of ENT-KEEP-TIDEWATCH (threat 39)",
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   },
   {
@@ -213,7 +213,7 @@
     463.02
    ],
    "name": "Airdrop Zone",
-   "note": "Living-world Node of ENT-PALACE-MASKS (threat 33)",
+   "note": "Living-world Node of ENT-PALACE-MASKS (threat 48)",
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   },
   {
@@ -224,7 +224,7 @@
     446.85
    ],
    "name": "Caravan Waypoint",
-   "note": "Living-world Node of ENT-PALACE-MASKS (threat 33)",
+   "note": "Living-world Node of ENT-PALACE-MASKS (threat 48)",
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   },
   {
@@ -235,7 +235,7 @@
     466.92
    ],
    "name": "War Camp",
-   "note": "Living-world Node of ENT-PALACE-MASKS (threat 33)",
+   "note": "Living-world Node of ENT-PALACE-MASKS (threat 48)",
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   },
   {
@@ -246,7 +246,7 @@
     445.41
    ],
    "name": "Lair (bandit)",
-   "note": "Living-world Node of ENT-PALACE-MASKS (threat 33)",
+   "note": "Living-world Node of ENT-PALACE-MASKS (threat 48)",
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   }
  ]

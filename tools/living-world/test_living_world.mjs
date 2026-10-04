@@ -153,4 +153,10 @@ ok(PA.archetypes.filter((x) => x.garrison.length).every((x) => MX.rows.some((r) 
 ok(MX.rows.every((r) => r.n >= 1 && ["ok", "SOFT", "SLOW", "HARD"].includes(r.verdict) && ["RAID", "SKIRMISH"].includes(r.band)), "every matrix cell has samples, a band and a verdict");
 ok(MX.population === MX.rows.reduce((n, r) => n + r.population, 0), "matrix population adds up");
 
+// D6f banded threat curve
+const TB = PA.threatBands, inBand = (ring, t) => t >= TB[ring].lo && t <= TB[ring].hi;
+ok(EST.every((p) => p.nodes.every((n) => inBand(p.ring, n.threat))), "every estate Node's threat sits inside its ring's band");
+ok(JSON.parse(fs.readFileSync("data/living-world/castle-pois.json", "utf8")).byCastle.every((c) => c.pois.every((p) => inBand("CASTLE", p.threat))), "every in-castle POI's threat sits inside the RAID band");
+ok(MX.populationOutOfBand / MX.population <= 0.15, `≥ 85 % of seeded garrisoned POIs land their sim band (now ${100 - Math.round(100 * MX.populationOutOfBand / MX.population)} %)`);
+
 console.log(fails ? `❌ living-world: ${fails} failed` : "✅ living-world: all passed"); process.exit(fails ? 1 : 0);

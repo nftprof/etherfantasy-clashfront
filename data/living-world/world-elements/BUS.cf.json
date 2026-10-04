@@ -15,7 +15,7 @@
     24.12
    ],
    "name": "Barbarian Camp",
-   "note": "Living-world Node of BUS-CASTLE-CAPEMEET (threat 24)",
+   "note": "Living-world Node of BUS-CASTLE-CAPEMEET (threat 44)",
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   },
   {
@@ -26,7 +26,7 @@
     27.05
    ],
    "name": "Caravan Waypoint",
-   "note": "Living-world Node of BUS-CASTLE-CAPEMEET (threat 24)",
+   "note": "Living-world Node of BUS-CASTLE-CAPEMEET (threat 44)",
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   },
   {
@@ -37,7 +37,7 @@
     24.9
    ],
    "name": "Harbour",
-   "note": "Living-world Node of BUS-CASTLE-CAPEMEET (threat 24) — on BUS-PORT-CAPEMEET",
+   "note": "Living-world Node of BUS-CASTLE-CAPEMEET (threat 44) — on BUS-PORT-CAPEMEET",
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   },
   {
@@ -48,7 +48,7 @@
     31.15
    ],
    "name": "Landing Spot",
-   "note": "Living-world Node of BUS-CASTLE-CAPEMEET (threat 24) — lands for HARBOUR 1",
+   "note": "Living-world Node of BUS-CASTLE-CAPEMEET (threat 44) — lands for HARBOUR 1",
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   },
   {
@@ -59,7 +59,7 @@
     28.5
    ],
    "name": "Mercenary Post",
-   "note": "Living-world Node of BUS-CASTLE-CAPEMEET (threat 24)",
+   "note": "Living-world Node of BUS-CASTLE-CAPEMEET (threat 44)",
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   },
   {
@@ -70,7 +70,7 @@
     127.7
    ],
    "name": "Caravan Waypoint",
-   "note": "Living-world Node of BUS-CASTLE-EASTREACH (threat 24)",
+   "note": "Living-world Node of BUS-CASTLE-EASTREACH (threat 44)",
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   },
   {
@@ -81,7 +81,7 @@
     124.5
    ],
    "name": "Harbour",
-   "note": "Living-world Node of BUS-CASTLE-EASTREACH (threat 24) — on BUS-PORT-EASTREACH",
+   "note": "Living-world Node of BUS-CASTLE-EASTREACH (threat 44) — on BUS-PORT-EASTREACH",
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   },
   {
@@ -92,7 +92,7 @@
     117.82
    ],
    "name": "Landing Spot",
-   "note": "Living-world Node of BUS-CASTLE-EASTREACH (threat 24) — lands for HARBOUR 1",
+   "note": "Living-world Node of BUS-CASTLE-EASTREACH (threat 44) — lands for HARBOUR 1",
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   },
   {
@@ -103,7 +103,7 @@
     129.87
    ],
    "name": "Mercenary Post",
-   "note": "Living-world Node of BUS-CASTLE-EASTREACH (threat 24)",
+   "note": "Living-world Node of BUS-CASTLE-EASTREACH (threat 44)",
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   },
   {
@@ -114,7 +114,7 @@
     116.33
    ],
    "name": "Lair (wolf)",
-   "note": "Living-world Node of BUS-CASTLE-EASTREACH (threat 24)",
+   "note": "Living-world Node of BUS-CASTLE-EASTREACH (threat 44)",
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   },
   {
@@ -125,7 +125,7 @@
     60.91
    ],
    "name": "Caravan Waypoint",
-   "note": "Living-world Node of BUS-CASTLE-MIDDLEQUAY (threat 24)",
+   "note": "Living-world Node of BUS-CASTLE-MIDDLEQUAY (threat 44)",
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   },
   {
@@ -136,7 +136,7 @@
     58.2
    ],
    "name": "Harbour",
-   "note": "Living-world Node of BUS-CASTLE-MIDDLEQUAY (threat 24) — on BUS-PORT-MIDDLEQUAY",
+   "note": "Living-world Node of BUS-CASTLE-MIDDLEQUAY (threat 44) — on BUS-PORT-MIDDLEQUAY",
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   },
   {
@@ -147,7 +147,7 @@
     51.42
    ],
    "name": "Landing Spot",
-   "note": "Living-world Node of BUS-CASTLE-MIDDLEQUAY (threat 24) — lands for HARBOUR 1",
+   "note": "Living-world Node of BUS-CASTLE-MIDDLEQUAY (threat 44) — lands for HARBOUR 1",
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   },
   {
@@ -158,7 +158,7 @@
     62.74
    ],
    "name": "Mercenary Post",
-   "note": "Living-world Node of BUS-CASTLE-MIDDLEQUAY (threat 24)",
+   "note": "Living-world Node of BUS-CASTLE-MIDDLEQUAY (threat 44)",
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   },
   {
@@ -169,7 +169,7 @@
     77.94
    ],
    "name": "Salvage Site",
-   "note": "Living-world Node of BUS-CASTLE-MIDDLEQUAY (threat 24)",
+   "note": "Living-world Node of BUS-CASTLE-MIDDLEQUAY (threat 44)",
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   },
   {
@@ -180,7 +180,7 @@
     43.26
    ],
    "name": "Airdrop Zone",
-   "note": "Living-world Node of BUS-FORT-TIDEGATE (threat 24)",
+   "note": "Living-world Node of BUS-FORT-TIDEGATE (threat 44)",
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   },
   {
@@ -191,7 +191,7 @@
     56.66
    ],
    "name": "Mercenary Post",
-   "note": "Living-world Node of BUS-FORT-TIDEGATE (threat 24)",
+   "note": "Living-world Node of BUS-FORT-TIDEGATE (threat 44)",
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   },
   {
@@ -202,7 +202,7 @@
     47.56
    ],
    "name": "Lair (bandit)",
-   "note": "Living-world Node of BUS-FORT-TIDEGATE (threat 24)",
+   "note": "Living-world Node of BUS-FORT-TIDEGATE (threat 44)",
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   },
   {
@@ -213,7 +213,7 @@
     56.85
    ],
    "name": "Airdrop Zone",
-   "note": "Living-world Node of BUS-KEEP-DELTALIGHT (threat 12)",
+   "note": "Living-world Node of BUS-KEEP-DELTALIGHT (threat 40)",
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   },
   {
@@ -224,7 +224,7 @@
     60.07
    ],
    "name": "Caravan Waypoint",
-   "note": "Living-world Node of BUS-KEEP-DELTALIGHT (threat 12)",
+   "note": "Living-world Node of BUS-KEEP-DELTALIGHT (threat 40)",
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   },
   {
@@ -235,7 +235,7 @@
     63.89
    ],
    "name": "Harbour",
-   "note": "Living-world Node of BUS-KEEP-DELTALIGHT (threat 12)",
+   "note": "Living-world Node of BUS-KEEP-DELTALIGHT (threat 40)",
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   },
   {
@@ -246,7 +246,7 @@
     59.31
    ],
    "name": "Landing Spot",
-   "note": "Living-world Node of BUS-KEEP-DELTALIGHT (threat 12) — lands for HARBOUR 1",
+   "note": "Living-world Node of BUS-KEEP-DELTALIGHT (threat 40) — lands for HARBOUR 1",
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   },
   {
@@ -257,7 +257,7 @@
     8.58
    ],
    "name": "Airdrop Zone",
-   "note": "Living-world Node of BUS-KEEP-DUNEWATCH (threat 12)",
+   "note": "Living-world Node of BUS-KEEP-DUNEWATCH (threat 40)",
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   },
   {
@@ -268,7 +268,7 @@
     13.84
    ],
    "name": "Caravan Waypoint",
-   "note": "Living-world Node of BUS-KEEP-DUNEWATCH (threat 12)",
+   "note": "Living-world Node of BUS-KEEP-DUNEWATCH (threat 40)",
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   },
   {
@@ -279,7 +279,7 @@
     15.22
    ],
    "name": "Harbour",
-   "note": "Living-world Node of BUS-KEEP-DUNEWATCH (threat 12)",
+   "note": "Living-world Node of BUS-KEEP-DUNEWATCH (threat 40)",
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   },
   {
@@ -290,7 +290,7 @@
     13.77
    ],
    "name": "Landing Spot",
-   "note": "Living-world Node of BUS-KEEP-DUNEWATCH (threat 12) — lands for HARBOUR 1",
+   "note": "Living-world Node of BUS-KEEP-DUNEWATCH (threat 40) — lands for HARBOUR 1",
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   },
   {
@@ -301,7 +301,7 @@
     86.98
    ],
    "name": "Airdrop Zone",
-   "note": "Living-world Node of BUS-KEEP-GULLSHOAL (threat 12)",
+   "note": "Living-world Node of BUS-KEEP-GULLSHOAL (threat 40)",
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   },
   {
@@ -312,7 +312,7 @@
     81.87
    ],
    "name": "Caravan Waypoint",
-   "note": "Living-world Node of BUS-KEEP-GULLSHOAL (threat 12)",
+   "note": "Living-world Node of BUS-KEEP-GULLSHOAL (threat 40)",
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   },
   {
@@ -323,7 +323,7 @@
     78.65
    ],
    "name": "Harbour",
-   "note": "Living-world Node of BUS-KEEP-GULLSHOAL (threat 12)",
+   "note": "Living-world Node of BUS-KEEP-GULLSHOAL (threat 40)",
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   },
   {
@@ -334,7 +334,7 @@
     78.91
    ],
    "name": "Landing Spot",
-   "note": "Living-world Node of BUS-KEEP-GULLSHOAL (threat 12) — lands for HARBOUR 1",
+   "note": "Living-world Node of BUS-KEEP-GULLSHOAL (threat 40) — lands for HARBOUR 1",
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   },
   {
@@ -345,7 +345,7 @@
     134.81
    ],
    "name": "Airdrop Zone",
-   "note": "Living-world Node of BUS-KEEP-MARSHGATE (threat 12)",
+   "note": "Living-world Node of BUS-KEEP-MARSHGATE (threat 40)",
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   },
   {
@@ -356,7 +356,7 @@
     137.16
    ],
    "name": "Lair (wolf)",
-   "note": "Living-world Node of BUS-KEEP-MARSHGATE (threat 12)",
+   "note": "Living-world Node of BUS-KEEP-MARSHGATE (threat 40)",
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   },
   {
@@ -367,7 +367,7 @@
     82.91
    ],
    "name": "Airdrop Zone",
-   "note": "Living-world Node of BUS-PALACE-EXCHANGE (threat 36)",
+   "note": "Living-world Node of BUS-PALACE-EXCHANGE (threat 48)",
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   },
   {
@@ -378,7 +378,7 @@
     74.99
    ],
    "name": "Caravan Waypoint",
-   "note": "Living-world Node of BUS-PALACE-EXCHANGE (threat 36)",
+   "note": "Living-world Node of BUS-PALACE-EXCHANGE (threat 48)",
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   },
   {
@@ -389,7 +389,7 @@
     58.16
    ],
    "name": "War Camp",
-   "note": "Living-world Node of BUS-PALACE-EXCHANGE (threat 36)",
+   "note": "Living-world Node of BUS-PALACE-EXCHANGE (threat 48)",
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   },
   {
@@ -400,7 +400,7 @@
     89.15
    ],
    "name": "Lair (wolf)",
-   "note": "Living-world Node of BUS-PALACE-EXCHANGE (threat 36)",
+   "note": "Living-world Node of BUS-PALACE-EXCHANGE (threat 48)",
    "loreRef": "etherfantasy-clashfront@claude/browser-moba-clashfont-gmiy7p docs/living-world/01-POI-CATALOGUE.md"
   }
  ]

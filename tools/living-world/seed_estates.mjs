@@ -4,6 +4,7 @@
 // guarantees in a fixed order. Output: data/living-world/estate-pois/<ZONE>.json + estate-pois.summary.json.
 //   node tools/living-world/seed_estates.mjs [--world /path/to/overworld/data] [--out data/living-world]
 import fs from "node:fs";
+import { bandThreat } from "./threat.mjs";
 import path from "node:path";
 
 const args = Object.fromEntries(process.argv.slice(2).reduce((a, v, i, all) => (v.startsWith("--") ? a.concat([[v.slice(2), all[i + 1]]]) : a), []));
@@ -77,7 +78,7 @@ for (const e of ESTATES) {
     for (let i = 0; i < n && cands.length; i++) {
       const tot = cands.reduce((s, k) => s + W[k], 0); let x = rng() * tot, pick = cands[0];
       for (const k of cands) { x -= W[k]; if (x <= 0) { pick = k; break; } }
-      const jitter = 0.85 + rng() * 0.3, threat = Math.min(100, Math.round((ring === "WILD" ? 30 : 15) * (STRENGTH[e.zone] || 1) * jitter));
+      const threat = bandThreat(PA, ring, STRENGTH[e.zone], rng());   // D6f banded curve (same single rng draw as the old jitter)
       const a = rng() * Math.PI * 2, rr = rng() * 0.4;
       const bw = e.bbox ? Math.min(e.bbox[2] - e.bbox[0], e.bbox[3] - e.bbox[1]) : 1;
       const node = { k: pick, at: [r2(at[0] + Math.cos(a) * rr * bw), r2(at[1] + Math.sin(a) * rr * bw)], threat };
