@@ -68,4 +68,9 @@ airships, landing spots, harbours + sea ships; seed all 20K maps; an experience,
 - [x] D31 — Guardian damage-share cap (doc 04 §4, guardians.json caps.guardianDamageShareMax 0.20): measure the Guardian's share of defender damage in the F2/F3 harness runs; clamp its bombard if it exceeds 20 %; test the invariant
 - [x] D32 — A month at scale: agent-based run (hundreds of players, all regions) over the real board/rewards/influence/stationings → banner churn, feed volume, holdings concentration (Gini); North Star check: nobody holds every region
 - [x] D34 — Living-world README: one page mapping docs ↔ data ↔ tools ↔ tests ↔ reports, plus "how to re-seed / re-run / hand off"
-- [ ] D35 — Performance budget: seedSingle latency per parcel, full 284 K re-seed time, matrix + test-suite wall time; record budgets and a test that fails on 2× regressions
+- [x] D35 — Performance budget: seedSingle latency per parcel, full 284 K re-seed time, matrix + test-suite wall time; record budgets and a test that fails on 2× regressions
+
+## Wave 7 (added cycle 49)
+- [ ] D36 — Result resolver (the other half of D21): the v1 result callback → world updates as pure functions: POI ownership, defence/Guardian/mercenary escrows settled through the ledger, attacker unit-loss cost, feed + journal items, with the HERO_IMPACT_MAX clamp on officer contributions; idempotent on battleId
+- [ ] D39 — Abuse sim: colluding alts/alliances trying to farm Guardian bounties, SIEGE_ME dares, bounties and mercenary auctions → show the relation checks + held bids + escrow rules leave them net-negative
+- [ ] D38 — Live-ops watch list: the post-launch metrics (band drift, burn ratio, banner churn, whale share, idle sessions, feed volume) each mapped to the test/invariant that defines "healthy", with alert thresholds

@@ -79,7 +79,9 @@ These are enforced by a second deterministic pass.
 
 ## 6. Cost
 
-Seeding all 284 K parcels is a pure function over JSON (seconds of CPU). The sim sample is about
+Seeding all 284 K parcels is a pure function over JSON (seconds of CPU). **Measured (D35, `perf-budget.json`):** **18 µs per
+lazy parcel seed**, **4.4 s for all 284,314 singles**, 1.2 s for every estate, 18 s for the full sim matrix. The tests gate
+the per-call paths at 2× their baselines. The sim sample is about
 70 templates × 30 runs = **2,100 headless battles a night**. Nothing per map is hand-made except the
 ≈ 450 story places.
 

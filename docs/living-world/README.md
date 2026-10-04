@@ -46,6 +46,7 @@ byte-compares the results, re-runs the sims and checks every invariant (≈ 1 mi
 | `approaches.json` | NAVAL_APPROACH / AIR_APPROACH + pier/pad anchors per baked map | `derive_approaches.mjs` |
 | `region-influence.json` | Holdable POIs per region (23,489) | `influence.mjs` |
 | `season-beats.json` | Storm front, threat peak + lull, Ascension nights per region per 28 days | `season_beats.mjs` |
+| `perf-budget.json` | Hot-path baselines + 2× budgets (seedSingle 18 µs, board view 0.09 ms, traffic frame 0.1 ms; full singles seed 4.4 s, matrix 18 s) | `perf_budget.mjs --record` |
 | `*.sample.json`, `allocate.samples.json` | Worked samples: traffic, feed, calendar, board, stationings, mercenary market, allocate payloads | The matching tool |
 
 ## Tools (`tools/living-world/`)
@@ -72,6 +73,7 @@ byte-compares the results, re-runs the sims and checks every invariant (≈ 1 mi
   - `ct_flow_sim.mjs` (ledger invariants);
   - `first_week.mjs` (explorer vs grinder);
   - `month_sim.mjs` (North Star at scale).
+- **Performance:** `perf_budget.mjs` (`--record` sets baselines; plain run gates at 2×).
 - **Handoff:** `pr1_refresh.sh`.
 
 ## Common jobs

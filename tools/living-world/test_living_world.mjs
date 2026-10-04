@@ -393,4 +393,10 @@ const rmMiss = [...fs.readdirSync("tools/living-world").filter((f) => f !== "tes
   .filter((f) => !RM.includes(f.replace(/\.(mjs|sh)$/, "")) && !RM.includes(f));
 ok(rmMiss.length === 0, "the living-world README mentions every tool, data file and doc" + (rmMiss.length ? " — missing: " + rmMiss.join(", ") : ""));
 
+// D35 performance budgets (per-call probes, best of 3; budget = 2× the recorded baseline)
+const PB = JSON.parse(fs.readFileSync("data/living-world/perf-budget.json", "utf8")), PERF = await import("./perf_budget.mjs"), pm = PERF.measure();
+const pOver = Object.entries(pm).filter(([k, v]) => v > PB.budget[k]);
+ok(pOver.length === 0, `hot paths inside budget: ${Object.entries(pm).map(([k, v]) => `${k} ${v}/${PB.budget[k]}`).join(", ")}`);
+ok(PB.baseline.boardAt_ms < 1 && PB.baseline.seedSingle_us < 100, "a board view costs < 1 ms and a lazy parcel seed < 100 µs (UI- and first-visit-safe)");
+
 console.log(fails ? `❌ living-world: ${fails} failed` : "✅ living-world: all passed"); process.exit(fails ? 1 : 0);

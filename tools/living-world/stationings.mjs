@@ -35,7 +35,11 @@ export function canStation(ledger, req) {
 export function station(ledger, req) { const c = canStation(ledger, req); if (c.ok) ledger.push({ ...req, end: req.start + req.hours * H }); return c; }
 
 // A synthetic week: each day, each perch in the zone gets a seeded chance of a request from one of a few owners' NFTs.
+const SF = new Map();   // D35: memoised (pure in its arguments) — the board asks for the same week on every view
 export function stationingsFor(seed, zone, days = 7) {
+  const key = `${seed}|${zone}|${days}`; if (!SF.has(key)) SF.set(key, stationingsForUncached(seed, zone, days)); return SF.get(key);
+}
+function stationingsForUncached(seed, zone, days) {
   const ledger = [], tried = [], perches = Object.keys(PERCHES).filter((id) => PERCHES[id].zone === zone).sort();
   const nfts = Array.from({ length: 6 }, (_, i) => ({ nftId: `pet_SAMPLE_${zone}_${i}`, form: i < 2 ? 3 : 2, owner: `gov_SAMPLE_${i % 3}` }));
   for (let day = 0; day < days; day++) for (const perchId of perches) {

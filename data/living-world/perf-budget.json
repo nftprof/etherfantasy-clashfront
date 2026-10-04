@@ -1,0 +1,22 @@
+{
+ "schema": "cf-living-world/perf-budget@1",
+ "note": "baselines (best of 3) on the dev container; budget = max(2× baseline, baseline + 0.05); per-call probes gate in the test suite, batch jobs are reference only",
+ "baseline": {
+  "seedSingle_us": 17.789,
+  "boardAt_ms": 0.09,
+  "shipsAt_ms": 0.103,
+  "calendar_ms": 0.019,
+  "buildAllocate_ms": 0.011
+ },
+ "budget": {
+  "seedSingle_us": 35.578,
+  "boardAt_ms": 0.18,
+  "shipsAt_ms": 0.206,
+  "calendar_ms": 0.069,
+  "buildAllocate_ms": 0.061
+ },
+ "batchReference": {
+  "seedSinglesAll_s": 4.4,
+  "simMatrix_s": 17.8
+ }
+}

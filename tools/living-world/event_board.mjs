@@ -24,7 +24,8 @@ export const NODES = (() => {
   for (const f of fs.readdirSync(path.join(ROOT, "data/living-world/estate-pois")).sort()) { const E = rd("data/living-world/estate-pois/" + f); for (const p of E.parcels) p.nodes.forEach((n, i) => (N[`${p.id}#${i}`] = { zone: E.zone, at: n.at, k: n.k })); }
   return N;
 })();
-const byKindInZone = (zone, k) => Object.entries(NODES).filter(([, n]) => n.zone === zone && n.k === k).map(([id]) => id).sort();
+const KZ = new Map();   // D35: memoised (pure) — the full Node scan ran 5× per board view
+const byKindInZone = (zone, k) => { const key = zone + "|" + k; if (!KZ.has(key)) KZ.set(key, Object.entries(NODES).filter(([, n]) => n.zone === zone && n.k === k).map(([id]) => id).sort()); return KZ.get(key); };
 
 // Synthetic player posts for one region-day (placeholder posters; the shapes and notice rules are doc 05's).
 export function postsFor(seed, zone, day) {
