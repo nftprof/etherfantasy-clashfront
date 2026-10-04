@@ -3,6 +3,19 @@
 Each open call below lists the options, a recommendation, **what changes for each answer**, and what we do
 meanwhile. Everything is built so that any answer is a data edit or a short doc change, not a rebuild.
 
+**One command per recommended option** (D41). `node tools/living-world/apply_decision.mjs <pack>` applies the change,
+regenerates everything that depends on it and edits the docs. Each pack is pre-tested: it was applied to a scratch copy
+and the full test suite passed there (`handoff/DECISION-PACKS.json`).
+
+| Pack | Call | What it does |
+|---|---|---|
+| `guardian-20min-cap` | §3 option A | Records the decision in doc 03; adds a test that every Guardian castle breaks within 20 min |
+| `warden-fee-x3` | §5 option A | Warden fee 1 → 3 CT; regenerates the board, feed, stationings, allocate samples, balance sheet, CT flow and abuse reports |
+| `sky-under-terrain` | Proposal: SKY / UNDER terrain | Applies SKY → HILLS / UNDER → MOUNTAIN + the seed shifts; re-seeds everything; re-runs every report; rebuilds the PR #1 patch |
+
+Calls §1 (Points vs CT) and §2 (Form 3 stand-ins) are doc-only decisions, and §4 (PR #50) is a GitHub action, so they
+need no pack.
+
 ## The five calls
 
 ### 1. Points vs CT: what pays for what?

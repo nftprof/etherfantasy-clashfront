@@ -78,7 +78,7 @@ byte-compares the results, re-runs the sims and checks every invariant (≈ 1 mi
   - `abuse_sim.mjs` (coalition self-farming: every scheme net-negative).
 - **Live ops:** `liveops_baseline.mjs` (every baseline in its healthy band).
 - **Performance:** `perf_budget.mjs` (`--record` sets baselines; plain run gates at 2×).
-- **Handoff:** `pr1_refresh.sh`.
+- **Handoff:** `pr1_refresh.sh`; `apply_decision.mjs` (one command per owner decision, pre-tested on scratch copies).
 
 ## Common jobs
 

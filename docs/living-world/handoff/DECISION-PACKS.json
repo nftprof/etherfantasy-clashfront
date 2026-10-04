@@ -1,0 +1,23 @@
+{
+ "warden-fee-x3": {
+  "call": "§5 What is a Guardian hunt for?",
+  "option": "A",
+  "applied": true,
+  "testsOk": true,
+  "failing": []
+ },
+ "sky-under-terrain": {
+  "call": "Proposal: SKY / UNDER terrain rows",
+  "option": "apply",
+  "applied": true,
+  "testsOk": true,
+  "failing": []
+ },
+ "guardian-20min-cap": {
+  "call": "§3 Guardians vs the 12-minute floor",
+  "option": "A",
+  "applied": true,
+  "testsOk": true,
+  "failing": []
+ }
+}

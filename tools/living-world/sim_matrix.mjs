@@ -22,7 +22,7 @@ const rows = [...cells.keys()].sort().map((key) => {
   const [k, ring, ground] = key.split("|"), all = cells.get(key), band = BANDS[ring];
   const picks = all.slice().sort((a, b) => fnv1a(a.id + "|pick") - fnv1a(b.id + "|pick")).slice(0, N);
   // D30 proposed mode: apply the proposed seed groundShift for SKY/UNDER (what a re-seed would produce), floor moving with it
-  const shifted = opts.TERRAIN === "proposed" ? picks.map((p) => { const sh = TM.proposed.groundShift[p.ground] || 0, b = PA.threatBands[p.ring]; return sh ? { ...p, threat: Math.max(b.lo + sh, p.threat + sh) } : p; }) : picks;
+  const shifted = opts.TERRAIN === "proposed" && !TM.appliedFromProposal ? picks.map((p) => { const sh = TM.proposed.groundShift[p.ground] || 0, b = PA.threatBands[p.ring]; return sh ? { ...p, threat: Math.max(b.lo + sh, p.threat + sh) } : p; }) : picks;
   const r = shifted.map((p) => runOne(p)), b = r.filter((x) => x.breached), m = med(b.map((x) => x.sec));
   const breachRate = Math.round((100 * b.length) / r.length);
   const verdict = breachRate < 50 ? "HARD" : m < band.lo ? "SOFT" : m > band.hi ? "SLOW" : "ok";

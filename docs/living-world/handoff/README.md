@@ -39,3 +39,9 @@ defence stakes and player events. This patch adds what was designed since, all m
 It's verified to apply cleanly to `73a9008`. A test keeps its enums in sync with the living-world code; if they drift,
 the patch needs regenerating.
 
+## `DECISION-PACKS.json`: the owner-call packs, pre-tested
+
+`tools/living-world/apply_decision.mjs --pretest` applies every pack to a scratch copy of this repo and runs the full
+test suite there. All three currently pass. Apply one for real with `node tools/living-world/apply_decision.mjs <pack>`,
+then run the tests and commit. The table is in `OWNER-DECISIONS.md`.
+

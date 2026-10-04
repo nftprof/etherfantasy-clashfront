@@ -446,4 +446,9 @@ ok(JSON.stringify(enumOf("RegionRight")) === JSON.stringify(EX.influenceUnlocks.
 ok(JSON.stringify(enumOf("SeasonBeat")) === JSON.stringify(["ASCENSION_NIGHT", "LULL", "STORM_FRONT", "THREAT_PEAK"]) && enumOf("SeasonBeat").every((b) => fs.readFileSync("tools/living-world/season_beats.mjs", "utf8").includes(`"${b}"`)), "canon SeasonBeat = the beats the calendar emits");
 ok(JSON.stringify(enumOf("GuardianOutcome")) === JSON.stringify(["HELD", "KO", "OUTLASTED", "UNBOUND"]) && JSON.stringify(enumOf("ArrivalVia")) === JSON.stringify(["AIR_APPROACH", "EDGE", "NAVAL_APPROACH"]), "canon GuardianOutcome / ArrivalVia = what the resolver and arrivals code use");
 
+// D41 "say go" packs: every pack was pre-tested green on a scratch copy and is listed on the owner sheet
+const DP = JSON.parse(fs.readFileSync("docs/living-world/handoff/DECISION-PACKS.json", "utf8")), ADm = await import("./apply_decision.mjs");
+ok(Object.keys(ADm.PACKS).every((k) => DP[k] && DP[k].applied && DP[k].testsOk), "every decision pack applied cleanly to a scratch copy and the full suite passed there");
+ok(Object.keys(ADm.PACKS).every((k) => OD.includes("`" + k + "`")), "every decision pack is listed on the owner-decision sheet");
+
 console.log(fails ? `❌ living-world: ${fails} failed` : "✅ living-world: all passed"); process.exit(fails ? 1 : 0);
