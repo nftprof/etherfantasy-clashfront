@@ -1,0 +1,828 @@
+{
+ "schema": "cf-living-world/allocate-samples@1",
+ "contract": "cf-overworld docs/briefs/ALLOCATE-CALLBACK-SCHEMA.md §1 (v1) + additive livingWorld@1",
+ "samples": {
+  "WILD_LAIR_ON_A_RIDGE": {
+   "v": 1,
+   "battleId": "battle_SAMPLE0000000000000000001",
+   "seed": "5a8038d659803743",
+   "mode": "accelerated",
+   "rates": {
+    "tickHz": 30,
+    "commandSnapshotHz": 3
+   },
+   "parcel": {
+    "parcelId": "2001158",
+    "zone": "BUS",
+    "kind": "WILD"
+   },
+   "battlefield": {
+    "arena": {
+     "shape": "polygon",
+     "sizeM": 322,
+     "bounds": [
+      [
+       -161,
+       -161
+      ],
+      [
+       161,
+       -161
+      ],
+      [
+       161,
+       161
+      ],
+      [
+       -161,
+       161
+      ]
+     ]
+    },
+    "laneCount": 1,
+    "obstacles": [],
+    "spawnZones": [
+     {
+      "id": "spawn_atk_s",
+      "side": "ATTACKER",
+      "edge": "S",
+      "x": 0,
+      "z": -131.6
+     }
+    ],
+    "structures": [
+     {
+      "anchorId": "anchor_core",
+      "kind": "CORE",
+      "side": "DEFENDER",
+      "x": 0,
+      "z": 114.8,
+      "hp": 6480,
+      "hpMax": 6480
+     },
+     {
+      "anchorId": "anchor_gate_0",
+      "kind": "GATE",
+      "side": "DEFENDER",
+      "x": -11.3,
+      "z": 103.5,
+      "hp": 3105,
+      "hpMax": 3105
+     },
+     {
+      "anchorId": "anchor_wall_1",
+      "kind": "WALL",
+      "side": "DEFENDER",
+      "x": -2.5,
+      "z": 99,
+      "hp": 3645,
+      "hpMax": 3645
+     },
+     {
+      "anchorId": "anchor_wall_2",
+      "kind": "WALL",
+      "side": "DEFENDER",
+      "x": 7.3,
+      "z": 100.5,
+      "hp": 3645,
+      "hpMax": 3645
+     },
+     {
+      "anchorId": "anchor_wall_3",
+      "kind": "WALL",
+      "side": "DEFENDER",
+      "x": 14.3,
+      "z": 107.5,
+      "hp": 3645,
+      "hpMax": 3645
+     },
+     {
+      "anchorId": "anchor_wall_4",
+      "kind": "WALL",
+      "side": "DEFENDER",
+      "x": 15.8,
+      "z": 117.3,
+      "hp": 3645,
+      "hpMax": 3645
+     },
+     {
+      "anchorId": "anchor_gate_5",
+      "kind": "GATE",
+      "side": "DEFENDER",
+      "x": 11.3,
+      "z": 126.1,
+      "hp": 3105,
+      "hpMax": 3105
+     },
+     {
+      "anchorId": "anchor_wall_6",
+      "kind": "WALL",
+      "side": "DEFENDER",
+      "x": 2.5,
+      "z": 130.6,
+      "hp": 3645,
+      "hpMax": 3645
+     },
+     {
+      "anchorId": "anchor_wall_7",
+      "kind": "WALL",
+      "side": "DEFENDER",
+      "x": -7.3,
+      "z": 129.1,
+      "hp": 3645,
+      "hpMax": 3645
+     },
+     {
+      "anchorId": "anchor_wall_8",
+      "kind": "WALL",
+      "side": "DEFENDER",
+      "x": -14.3,
+      "z": 122.1,
+      "hp": 3645,
+      "hpMax": 3645
+     },
+     {
+      "anchorId": "anchor_wall_9",
+      "kind": "WALL",
+      "side": "DEFENDER",
+      "x": -15.8,
+      "z": 112.3,
+      "hp": 3645,
+      "hpMax": 3645
+     },
+     {
+      "anchorId": "anchor_tower_0",
+      "kind": "TOWER",
+      "side": "DEFENDER",
+      "x": -15,
+      "z": 109.8,
+      "hp": 6345,
+      "hpMax": 6345
+     },
+     {
+      "anchorId": "anchor_tower_1",
+      "kind": "TOWER",
+      "side": "DEFENDER",
+      "x": -5,
+      "z": 99.8,
+      "hp": 6345,
+      "hpMax": 6345
+     }
+    ],
+    "mobs": [
+     {
+      "id": "mob_0",
+      "kind": "ALPHA",
+      "x": 9,
+      "z": 105.8,
+      "count": 1
+     },
+     {
+      "id": "mob_1",
+      "kind": "PACK",
+      "x": -9,
+      "z": 105.8,
+      "count": 4
+     }
+    ]
+   },
+   "sides": {
+    "ATTACKER": {
+     "governorId": "gov_SAMPLE_ATTACKER",
+     "armies": [
+      {
+       "armyId": "army_SAMPLE_A",
+       "units": [
+        {
+         "cls": "INFANTRY",
+         "count": 400
+        },
+        {
+         "cls": "SIEGE",
+         "count": 60
+        }
+       ],
+       "officers": [
+        {
+         "masterId": "master_sample",
+         "name": "Sample",
+         "level": 10,
+         "revives": 2
+        }
+       ],
+       "provisions": {
+        "food": 4000,
+        "gold": 800,
+        "wood": 600
+       },
+       "entryEdge": "S"
+      }
+     ]
+    },
+    "DEFENDER": {
+     "governorId": null,
+     "armies": []
+    }
+   },
+   "callback": {
+    "url": "https://cf.etherfantasy.com/internal/battle-result",
+    "keyId": "cf-hmac-1"
+   },
+   "livingWorld": {
+    "v": 1,
+    "poiId": "2001158#1",
+    "lwKind": "WILD_LAIR",
+    "threat": 20,
+    "ground": "RIDGE",
+    "hexTerrain": "HILLS",
+    "terrainMods": {
+     "attacker": 0.9,
+     "defender": 1.1
+    },
+    "garrisonStats": {
+     "hp": 630,
+     "dmg": 38,
+     "leashed": true
+    },
+    "eventDeck": [
+     {
+      "event": "ALPHA_ENRAGE",
+      "atSec": 194,
+      "teleSec": 3
+     },
+     {
+      "event": "STAMPEDE",
+      "atSec": 401,
+      "teleSec": 4
+     },
+     {
+      "event": "PACK_HUNT",
+      "atSec": 567,
+      "teleSec": 3
+     }
+    ],
+    "defence": {
+     "rating": 1,
+     "ratingMax": 1.6
+    },
+    "floorSec": 720
+   }
+  },
+  "HELD_HARBOUR_LIVE": {
+   "v": 1,
+   "battleId": "battle_SAMPLE0000000000000000002",
+   "seed": "00e2de4b01e2dfde",
+   "mode": "live",
+   "rates": {
+    "tickHz": 30,
+    "commandSnapshotHz": 3
+   },
+   "joinWindowSec": 120,
+   "parcel": {
+    "parcelId": "BUS-CASTLE-CAPEMEET",
+    "zone": "BUS",
+    "kind": "PLAYER"
+   },
+   "battlefield": {
+    "arena": {
+     "shape": "polygon",
+     "sizeM": 322,
+     "bounds": [
+      [
+       -161,
+       -161
+      ],
+      [
+       161,
+       -161
+      ],
+      [
+       161,
+       161
+      ],
+      [
+       -161,
+       161
+      ]
+     ]
+    },
+    "laneCount": 1,
+    "obstacles": [],
+    "spawnZones": [
+     {
+      "id": "spawn_atk_s",
+      "side": "ATTACKER",
+      "edge": "S",
+      "x": 0,
+      "z": -131.6
+     }
+    ],
+    "structures": [
+     {
+      "anchorId": "anchor_core",
+      "kind": "CORE",
+      "side": "DEFENDER",
+      "x": 0,
+      "z": 114.8,
+      "hp": 25834,
+      "hpMax": 25834
+     },
+     {
+      "anchorId": "anchor_gate_0",
+      "kind": "GATE",
+      "side": "DEFENDER",
+      "x": -11.3,
+      "z": 103.5,
+      "hp": 6189,
+      "hpMax": 6189
+     },
+     {
+      "anchorId": "anchor_wall_1",
+      "kind": "WALL",
+      "side": "DEFENDER",
+      "x": -2.5,
+      "z": 99,
+      "hp": 7266,
+      "hpMax": 7266
+     },
+     {
+      "anchorId": "anchor_wall_2",
+      "kind": "WALL",
+      "side": "DEFENDER",
+      "x": 7.3,
+      "z": 100.5,
+      "hp": 7266,
+      "hpMax": 7266
+     },
+     {
+      "anchorId": "anchor_wall_3",
+      "kind": "WALL",
+      "side": "DEFENDER",
+      "x": 14.3,
+      "z": 107.5,
+      "hp": 7266,
+      "hpMax": 7266
+     },
+     {
+      "anchorId": "anchor_wall_4",
+      "kind": "WALL",
+      "side": "DEFENDER",
+      "x": 15.8,
+      "z": 117.3,
+      "hp": 7266,
+      "hpMax": 7266
+     },
+     {
+      "anchorId": "anchor_gate_5",
+      "kind": "GATE",
+      "side": "DEFENDER",
+      "x": 11.3,
+      "z": 126.1,
+      "hp": 6189,
+      "hpMax": 6189
+     },
+     {
+      "anchorId": "anchor_wall_6",
+      "kind": "WALL",
+      "side": "DEFENDER",
+      "x": 2.5,
+      "z": 130.6,
+      "hp": 7266,
+      "hpMax": 7266
+     },
+     {
+      "anchorId": "anchor_wall_7",
+      "kind": "WALL",
+      "side": "DEFENDER",
+      "x": -7.3,
+      "z": 129.1,
+      "hp": 7266,
+      "hpMax": 7266
+     },
+     {
+      "anchorId": "anchor_wall_8",
+      "kind": "WALL",
+      "side": "DEFENDER",
+      "x": -14.3,
+      "z": 122.1,
+      "hp": 7266,
+      "hpMax": 7266
+     },
+     {
+      "anchorId": "anchor_wall_9",
+      "kind": "WALL",
+      "side": "DEFENDER",
+      "x": -15.8,
+      "z": 112.3,
+      "hp": 7266,
+      "hpMax": 7266
+     },
+     {
+      "anchorId": "anchor_tower_0",
+      "kind": "TOWER",
+      "side": "DEFENDER",
+      "x": -15,
+      "z": 109.8,
+      "hp": 12648,
+      "hpMax": 12648
+     },
+     {
+      "anchorId": "anchor_tower_1",
+      "kind": "TOWER",
+      "side": "DEFENDER",
+      "x": -5,
+      "z": 99.8,
+      "hp": 12648,
+      "hpMax": 12648
+     }
+    ]
+   },
+   "sides": {
+    "ATTACKER": {
+     "governorId": "gov_SAMPLE_ATTACKER",
+     "armies": [
+      {
+       "armyId": "army_SAMPLE_A",
+       "units": [
+        {
+         "cls": "INFANTRY",
+         "count": 400
+        },
+        {
+         "cls": "SIEGE",
+         "count": 60
+        }
+       ],
+       "officers": [
+        {
+         "masterId": "master_sample",
+         "name": "Sample",
+         "level": 10,
+         "revives": 2
+        }
+       ],
+       "provisions": {
+        "food": 4000,
+        "gold": 800,
+        "wood": 600
+       },
+       "entryEdge": "S"
+      }
+     ]
+    },
+    "DEFENDER": {
+     "governorId": "gov_SAMPLE_HOLDER",
+     "armies": [
+      {
+       "armyId": "army_SAMPLE_GARRISON",
+       "units": [
+        {
+         "cls": "INFANTRY",
+         "count": 10
+        },
+        {
+         "cls": "MARINE",
+         "count": 20
+        },
+        {
+         "cls": "SHIP",
+         "count": 1
+        }
+       ],
+       "officers": [],
+       "provisions": {
+        "food": 0,
+        "gold": 0,
+        "wood": 0
+       },
+       "entryEdge": "N"
+      }
+     ]
+    }
+   },
+   "callback": {
+    "url": "https://cf.etherfantasy.com/internal/battle-result",
+    "keyId": "cf-hmac-1"
+   },
+   "livingWorld": {
+    "v": 1,
+    "poiId": "BUS-CASTLE-CAPEMEET:HARBOUR:1",
+    "lwKind": "HARBOUR",
+    "threat": 44,
+    "ground": "WATER",
+    "hexTerrain": "RIVER",
+    "terrainMods": {
+     "attacker": 0.9,
+     "defender": 1.1
+    },
+    "garrisonStats": {
+     "hp": 966,
+     "dmg": 47,
+     "leashed": true
+    },
+    "eventDeck": [
+     {
+      "event": "NAVAL_LANDING",
+      "atSec": 146,
+      "teleSec": 8
+     },
+     {
+      "event": "STORM",
+      "atSec": 331,
+      "teleSec": 10
+     },
+     {
+      "event": "SMUGGLER_RUN",
+      "atSec": 494,
+      "teleSec": 4
+     }
+    ],
+    "defence": {
+     "rating": 1.3,
+     "ratingMax": 1.6
+    },
+    "floorSec": 720
+   }
+  },
+  "CASTLE_POI_WITH_ASCENDANT": {
+   "v": 1,
+   "battleId": "battle_SAMPLE0000000000000000003",
+   "seed": "7d7a4150807a4609",
+   "mode": "accelerated",
+   "rates": {
+    "tickHz": 30,
+    "commandSnapshotHz": 3
+   },
+   "parcel": {
+    "parcelId": "BUS-CASTLE-CAPEMEET",
+    "zone": "BUS",
+    "kind": "PLAYER"
+   },
+   "battlefield": {
+    "arena": {
+     "shape": "polygon",
+     "sizeM": 322,
+     "bounds": [
+      [
+       -161,
+       -161
+      ],
+      [
+       161,
+       -161
+      ],
+      [
+       161,
+       161
+      ],
+      [
+       -161,
+       161
+      ]
+     ]
+    },
+    "laneCount": 1,
+    "obstacles": [],
+    "spawnZones": [
+     {
+      "id": "spawn_atk_s",
+      "side": "ATTACKER",
+      "edge": "S",
+      "x": 0,
+      "z": -131.6
+     }
+    ],
+    "structures": [
+     {
+      "anchorId": "anchor_core",
+      "kind": "CORE",
+      "side": "DEFENDER",
+      "x": 0,
+      "z": 114.8,
+      "hp": 31795,
+      "hpMax": 31795
+     },
+     {
+      "anchorId": "anchor_gate_0",
+      "kind": "GATE",
+      "side": "DEFENDER",
+      "x": -11.3,
+      "z": 103.5,
+      "hp": 7618,
+      "hpMax": 7618
+     },
+     {
+      "anchorId": "anchor_wall_1",
+      "kind": "WALL",
+      "side": "DEFENDER",
+      "x": -2.5,
+      "z": 99,
+      "hp": 8942,
+      "hpMax": 8942
+     },
+     {
+      "anchorId": "anchor_wall_2",
+      "kind": "WALL",
+      "side": "DEFENDER",
+      "x": 7.3,
+      "z": 100.5,
+      "hp": 8942,
+      "hpMax": 8942
+     },
+     {
+      "anchorId": "anchor_wall_3",
+      "kind": "WALL",
+      "side": "DEFENDER",
+      "x": 14.3,
+      "z": 107.5,
+      "hp": 8942,
+      "hpMax": 8942
+     },
+     {
+      "anchorId": "anchor_wall_4",
+      "kind": "WALL",
+      "side": "DEFENDER",
+      "x": 15.8,
+      "z": 117.3,
+      "hp": 8942,
+      "hpMax": 8942
+     },
+     {
+      "anchorId": "anchor_gate_5",
+      "kind": "GATE",
+      "side": "DEFENDER",
+      "x": 11.3,
+      "z": 126.1,
+      "hp": 7618,
+      "hpMax": 7618
+     },
+     {
+      "anchorId": "anchor_wall_6",
+      "kind": "WALL",
+      "side": "DEFENDER",
+      "x": 2.5,
+      "z": 130.6,
+      "hp": 8942,
+      "hpMax": 8942
+     },
+     {
+      "anchorId": "anchor_wall_7",
+      "kind": "WALL",
+      "side": "DEFENDER",
+      "x": -7.3,
+      "z": 129.1,
+      "hp": 8942,
+      "hpMax": 8942
+     },
+     {
+      "anchorId": "anchor_wall_8",
+      "kind": "WALL",
+      "side": "DEFENDER",
+      "x": -14.3,
+      "z": 122.1,
+      "hp": 8942,
+      "hpMax": 8942
+     },
+     {
+      "anchorId": "anchor_wall_9",
+      "kind": "WALL",
+      "side": "DEFENDER",
+      "x": -15.8,
+      "z": 112.3,
+      "hp": 8942,
+      "hpMax": 8942
+     },
+     {
+      "anchorId": "anchor_tower_0",
+      "kind": "TOWER",
+      "side": "DEFENDER",
+      "x": -15,
+      "z": 109.8,
+      "hp": 15566,
+      "hpMax": 15566
+     },
+     {
+      "anchorId": "anchor_tower_1",
+      "kind": "TOWER",
+      "side": "DEFENDER",
+      "x": -5,
+      "z": 99.8,
+      "hp": 15566,
+      "hpMax": 15566
+     }
+    ]
+   },
+   "sides": {
+    "ATTACKER": {
+     "governorId": "gov_SAMPLE_ATTACKER",
+     "armies": [
+      {
+       "armyId": "army_SAMPLE_A",
+       "units": [
+        {
+         "cls": "INFANTRY",
+         "count": 400
+        },
+        {
+         "cls": "SIEGE",
+         "count": 60
+        }
+       ],
+       "officers": [
+        {
+         "masterId": "master_sample",
+         "name": "Sample",
+         "level": 10,
+         "revives": 2
+        }
+       ],
+       "provisions": {
+        "food": 4000,
+        "gold": 800,
+        "wood": 600
+       },
+       "entryEdge": "S"
+      }
+     ]
+    },
+    "DEFENDER": {
+     "governorId": "gov_SAMPLE_HOLDER",
+     "armies": [
+      {
+       "armyId": "army_SAMPLE_GARRISON",
+       "units": [],
+       "officers": [],
+       "provisions": {
+        "food": 0,
+        "gold": 0,
+        "wood": 0
+       },
+       "entryEdge": "N"
+      }
+     ]
+    }
+   },
+   "callback": {
+    "url": "https://cf.etherfantasy.com/internal/battle-result",
+    "keyId": "cf-hmac-1"
+   },
+   "livingWorld": {
+    "v": 1,
+    "poiId": "BUS-CASTLE-CAPEMEET:GUARDIAN_PERCH:1",
+    "lwKind": "GUARDIAN_PERCH",
+    "threat": 44,
+    "ground": "SURFACE",
+    "hexTerrain": "PLAINS",
+    "terrainMods": {
+     "attacker": 1,
+     "defender": 1
+    },
+    "garrisonStats": {
+     "hp": 966,
+     "dmg": 47,
+     "leashed": true
+    },
+    "eventDeck": [
+     {
+      "event": "GUARDIAN_WAKE",
+      "trigger": "FIRST_CONTACT",
+      "teleSec": 10
+     }
+    ],
+    "defence": {
+     "rating": 1.6,
+     "ratingMax": 1.6
+    },
+    "floorSec": 720,
+    "guardian": {
+     "form": 3,
+     "name": "Ascendant",
+     "nftId": "pet_SAMPLE_F3",
+     "owner": "gov_SAMPLE_HOLDER",
+     "battleHp": 18000,
+     "shieldsCore": true,
+     "bombard": {
+      "everySec": 6,
+      "teleSec": 0.9
+     },
+     "aura": {
+      "radiusU": 24,
+      "structureDmgMul": 0.7
+     },
+     "ascended": {
+      "windowSec": 480,
+      "damageTakenMul": 0.05,
+      "tiredHpPct": 40,
+      "wardStones": {
+       "count": 3,
+       "hp": 1200,
+       "cutSecEach": 120
+      },
+      "clockStarts": "FIRST_CONTACT"
+     },
+     "stationEndsTick": 360
+    }
+   }
+  }
+ }
+}

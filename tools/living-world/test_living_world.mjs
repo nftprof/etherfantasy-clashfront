@@ -255,4 +255,16 @@ ok(ebP && [...ebP.live, ...ebP.upcoming].filter((e) => e.ping).some((e) => e.id 
 const ebEmpty = WCm && poiRegions.flatMap((z) => [180, 600, 1020, 1380].map((t) => [z, t, (() => { const b = EB.boardAt("cf-world-1", z, t, {}); return b.live.length + b.upcoming.length; })()])).filter(([, , n]) => n < EB.BOARD.horizonMin / WCm.WC.windowMin);
 ok(ebEmpty.length === 0, "every POI region's board shows ≥ horizon / 3 h events (the calendar's one-per-window guarantee) at any hour sampled" + (ebEmpty.length ? " — " + ebEmpty.slice(0, 4).join(" ") : ""));
 
+// D21 allocate payload (cf-overworld ALLOCATE-CALLBACK-SCHEMA v1 + additive livingWorld@1)
+const al1 = run("tools/living-world/allocate_payload.mjs", "/tmp/lw_al_a.json"), al2 = run("tools/living-world/allocate_payload.mjs", "/tmp/lw_al_b.json");
+ok(al1.equals(al2) && al1.equals(fs.readFileSync("data/living-world/allocate.samples.json")), "allocate samples are byte-identical and committed");
+const AL = await import("./allocate_payload.mjs"), ALS = Object.values(JSON.parse(al1).samples), alBrief = fs.readFileSync("/home/user/cf-overworld/docs/briefs/ALLOCATE-CALLBACK-SCHEMA.md", "utf8");
+ok(ALS.every((s) => s.v === 1 && /^battle_/.test(s.battleId) && /^[0-9a-f]{16}$/.test(s.seed) && ["live", "accelerated"].includes(s.mode) && ["WILD", "PLAYER", "ESTATE"].includes(s.parcel.kind) && s.callback.url), "every payload carries the v1 envelope (battleId, 16-hex seed, mode, parcel kind, callback)");
+ok(ALS.every((s) => s.battlefield.arena.sizeM === 322 && s.battlefield.structures.every((t) => Math.abs(t.x) <= 161 && Math.abs(t.z) <= 161 && Number.isInteger(t.hp) && t.hp === t.hpMax && ["CORE", "TOWER", "GATE", "WALL"].includes(t.kind)) && s.battlefield.structures.filter((t) => t.kind === "CORE").every((t) => t.z === 114.8) && s.battlefield.spawnZones.every((z) => Math.abs(z.z) === 131.6)), "battlefield in the canon ±161 frame: integer HP, cores at 114.8, spawns at ±131.6");
+ok(alBrief.includes('"sizeM": 322') && alBrief.includes("±131.6") && alBrief.includes("±114.8"), "the frame constants still match the canon brief");
+ok(ALS.every((s) => [s.sides.ATTACKER, s.sides.DEFENDER].every((d) => d.armies.every((a) => a.units.every((u) => AL.UNIT_CLASS.includes(u.cls) && Number.isInteger(u.count) && u.count > 0)))), "every army unit is a canon UnitClass with an integer count");
+ok(ALS.every((s) => (s.parcel.kind === "WILD") === (s.sides.DEFENDER.governorId === null && !!s.battlefield.mobs)), "WILD ⇔ no defending governor and the garrison as mobs; held POIs field the garrison as DEFENDER units");
+ok(ALS.every((s) => s.livingWorld.eventDeck.every((e) => PA.events[e.event] && (e.trigger || (e.atSec >= 60 && e.atSec < 720))) && new Set(s.livingWorld.eventDeck.map((e) => e.event)).size === s.livingWorld.eventDeck.length), "event decks: defined events, no repeats, timed inside the 12-min floor (Guardian wake on first contact)");
+ok(ALS.every((s) => JSON.stringify([s.livingWorld.terrainMods.attacker, s.livingWorld.terrainMods.defender]) === JSON.stringify(TMd.canon[s.livingWorld.hexTerrain])) && ALS.some((s) => s.livingWorld.guardian && s.livingWorld.guardian.ascended), "livingWorld carries the canon terrain mods and, when stationed, the Guardian (with its Ascension)");
+
 console.log(fails ? `❌ living-world: ${fails} failed` : "✅ living-world: all passed"); process.exit(fails ? 1 : 0);
