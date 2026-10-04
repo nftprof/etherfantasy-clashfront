@@ -70,3 +70,16 @@ Mercenaries are hired at a **`MERCENARY_POST`** POI (doc 01). The contract is es
 
 > ❓ OPEN: currency for upgrades. Proposal (doc 01): lasting world effects are **CT only**; Pentagon
 > **Points** buy one-off experiences (event entries, revives, cosmetic war banners). Owner decision.
+
+## Balance sheet (D15, `reports/BALANCE-SHEET.md`)
+
+The sheet sets each scenario's CT paid against the attacker's units lost (canon re-training cost, at several
+soldiers-per-sim-unit ratios). Three findings:
+
+1. **Guardians are priced far below defences for the same pain:** 0.4 CT vs 57 CT per extra attacker unit lost.
+2. **A Guardian's bounty is tiny next to the losses it costs to win.**
+3. **Defences buy force, not time.** The full stack adds 0:36 to the breach, but makes the attacker bring 1.6× the
+   army.
+
+Findings 1–2 are owner call §5 in `OWNER-DECISIONS.md`.
+

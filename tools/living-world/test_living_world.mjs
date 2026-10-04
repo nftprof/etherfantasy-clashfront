@@ -199,7 +199,7 @@ ok(!/Math\.random|Date\.now|new Date/.test(fs.readFileSync("tools/living-world/r
 const OD = fs.readFileSync("docs/living-world/OWNER-DECISIONS.md", "utf8");
 const openQs = fs.readdirSync("docs/living-world").filter((f) => /^0\d-.*\.md$/.test(f)).flatMap((f) => (fs.readFileSync("docs/living-world/" + f, "utf8").match(/❓ OPEN/g) || []).map(() => f));
 ok(openQs.length > 0 && [...new Set(openQs)].every((f) => OD.includes("doc " + f.slice(0, 2).replace(/^0/, "0"))), `every doc with a ❓ OPEN (${[...new Set(openQs)].join(", ")}) is on the owner-decision sheet`);
-ok((OD.match(/\*\*A \(recommended\)\*\*/g) || []).length === 4, "each of the 4 calls carries one recommended option");
+ok((OD.match(/\*\*A \(recommended\)\*\*/g) || []).length === 5, "each of the 5 calls carries one recommended option");
 
 // D17 world events calendar
 const wc1 = run("tools/living-world/world_calendar.mjs", "/tmp/lw_wc_a.json"), wc2 = run("tools/living-world/world_calendar.mjs", "/tmp/lw_wc_b.json");
@@ -211,5 +211,13 @@ ok(wcBad.length === 0, `every POI region, every day of a 28-day cycle: ≥ ${WCm
 const wcAll = poiRegions.flatMap((z) => WCm.calendar("cf-world-1", z, 3));
 ok(wcAll.filter((e) => e.kind === "SUPPLY_AIRDROP" && !e.at.endsWith(":single")).every((e) => Object.values(WCm.REGIONS).some((R) => (R.nodes.AIRDROP_ZONE || []).includes(e.at))), "airdrops land on real AIRDROP_ZONE Nodes");
 ok(Object.keys(WCm.WC.kinds).filter((k) => k !== "STORM").every((k) => PA.events[k]), "every calendar kind is a defined event (poi-archetypes events{})");
+
+// D15 defend/attack balance sheet
+execFileSync("node", ["tools/living-world/balance_sheet.mjs", "--out", "/tmp/lw_bs_a.md"], { stdio: "ignore" });
+ok(fs.readFileSync("/tmp/lw_bs_a.json").equals(fs.readFileSync("docs/living-world/reports/BALANCE-SHEET.json")), "balance sheet is reproducible and committed");
+const BS = JSON.parse(fs.readFileSync("docs/living-world/reports/BALANCE-SHEET.json", "utf8"));
+ok(BS.ctPerSoldier > 0 && BS.rows.length === 4 && BS.rows.every((r) => r.lossCT[1] > 0 && Math.abs(r.lossCT[20] - r.attackerUnitsLost * 20 * BS.ctPerSoldier) <= r.attackerUnitsLost * 20 * 0.05), "loss CT = units × ratio × canon re-training cost, at every ratio");
+ok(BS.rows.find((r) => r.scen === "DEFENDED").burnedCT >= 0.1 * BS.rows.find((r) => r.scen === "DEFENDED").defenderPaidCT && BS.rows.filter((r) => r.scen[0] === "F").every((r) => r.burnedCT >= 0.1 * r.defenderPaidCT), "every defender spend burns ≥ 10 % (Decision 17)");
+ok(OD.includes("BALANCE-SHEET") && BS.findings.defencesVsWarden > 10, "the Warden price outlier is on the owner-decision sheet");
 
 console.log(fails ? `❌ living-world: ${fails} failed` : "✅ living-world: all passed"); process.exit(fails ? 1 : 0);

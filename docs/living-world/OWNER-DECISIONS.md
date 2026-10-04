@@ -3,7 +3,7 @@
 Each open call below lists the options, a recommendation, **what changes for each answer**, and what we do
 meanwhile. Everything is built so that any answer is a data edit or a short doc change, not a rebuild.
 
-## The four calls
+## The five calls
 
 ### 1. Points vs CT: what pays for what?
 
@@ -55,6 +55,23 @@ co-champion notice") is open and unchanged since 2026-09-13. Season 2 standings 
 | B | Keep it: rebase onto main and re-review |
 
 **Meanwhile:** no action.
+
+### 5. What is a Guardian hunt *for*? (D15 balance sheet)
+
+Source: `reports/BALANCE-SHEET.md`. Per extra attacker unit lost, a Form 2 Warden costs the defender **0.4 CT**; a
+full defence stack costs **57 CT**. And at 10 soldiers per sim unit, the losses an attacker takes against a Warden
+are worth **~210×** the bounty they can win. Raising fees alone can't close that gap.
+
+| Option | Meaning | What changes |
+|---|---|---|
+| **A (recommended)** | The prize is the castle; the bounty is a trophy | Warden fee 20 → 60 CT in `guardians.json`. Feed copy says "the bounty is glory; the castle is the prize". Doc 04 §3's "beating a Guardian pays" becomes "beating a Guardian *wins the castle*, and a trophy" |
+| B | The bounty is a wage | The region pool tops up a standing Guardian's escrow to ~25 % of expected attacker losses. That needs a pool source: a new CT sink decision |
+| C | Leave as is | ⚠ Wardens stay ~140× the cheapest defence purchase |
+
+A related engine parameter needs a value: **soldiers per sim unit** (canon reports casualties in soldiers). It's
+proposed at 10 and has no canon value yet. Every CT-equivalent loss in the sheet scales with it.
+
+**Meanwhile:** fees stay as they are (20 / 120 CT).
 
 ## Proposals waiting on canon (no decision needed now; flagged so nothing slips in silently)
 

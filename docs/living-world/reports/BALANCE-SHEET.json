@@ -1,0 +1,94 @@
+{
+ "schema": "cf-living-world/balance-sheet@1",
+ "ctPerSoldier": 4.7,
+ "ratios": [
+  1,
+  5,
+  10,
+  20
+ ],
+ "proposedRatio": 10,
+ "rows": [
+  {
+   "scen": "BASE",
+   "what": "Bare castle",
+   "defenderPaidCT": 0,
+   "burnedCT": 0,
+   "escrowCT": 0,
+   "medBreachSec": 539,
+   "attackerUnitsLost": 64,
+   "lossCT": {
+    "1": 299,
+    "5": 1493,
+    "10": 2987,
+    "20": 5973
+   },
+   "extraUnitsLost": 0,
+   "extraSec": 0,
+   "ctPerExtraUnitLost": null,
+   "ctPerExtraMinute": null
+  },
+  {
+   "scen": "DEFENDED",
+   "what": "Full defence stack (every castle upgrade at max level, 7 days)",
+   "defenderPaidCT": 171,
+   "burnedCT": 51.3,
+   "escrowCT": 68.4,
+   "medBreachSec": 575,
+   "attackerUnitsLost": 67,
+   "lossCT": {
+    "1": 313,
+    "5": 1563,
+    "10": 3127,
+    "20": 6253
+   },
+   "extraUnitsLost": 3,
+   "extraSec": 36,
+   "ctPerExtraUnitLost": 57,
+   "ctPerExtraMinute": 285
+  },
+  {
+   "scen": "F2",
+   "what": "+ Form 2 Warden (stationing fee)",
+   "defenderPaidCT": 20,
+   "burnedCT": 6,
+   "escrowCT": 10,
+   "medBreachSec": 911,
+   "attackerUnitsLost": 109,
+   "lossCT": {
+    "1": 509,
+    "5": 2543,
+    "10": 5087,
+    "20": 10173
+   },
+   "extraUnitsLost": 45,
+   "extraSec": 372,
+   "ctPerExtraUnitLost": 0.4,
+   "ctPerExtraMinute": 3.2
+  },
+  {
+   "scen": "F3",
+   "what": "+ Form 3 Ascendant (stationing fee)",
+   "defenderPaidCT": 120,
+   "burnedCT": 36,
+   "escrowCT": 60,
+   "medBreachSec": 1086,
+   "attackerUnitsLost": 117,
+   "lossCT": {
+    "1": 546,
+    "5": 2730,
+    "10": 5460,
+    "20": 10920
+   },
+   "extraUnitsLost": 53,
+   "extraSec": 547,
+   "ctPerExtraUnitLost": 2.3,
+   "ctPerExtraMinute": 13.2
+  }
+ ],
+ "findings": {
+  "defencesVsWarden": 142.5,
+  "wardenBountyVsLosses": 210,
+  "ascendantBountyVsLosses": 41.2
+ }
+}
