@@ -47,7 +47,7 @@ function eligible(k, ctx) {
     case "AIRSHIP_DOCK": return ctx.layer === "SKY" || ctx.skyPortD <= 25;
     case "MERCENARY_POST": case "CARAVAN_WAYPOINT": return ctx.roadD <= 2;
     case "AIRDROP_ZONE": return ctx.roadD <= A.affinity.roadMax;
-    case "BARBARIAN_CAMP": return ctx.ridgeD <= A.affinity.ridgeMax;
+    case "BARBARIAN_CAMP": return ctx.ridgeD <= A.affinity.ridgeMax || ctx.ring === "WILD";   // D5c: any wild estate may host one (ridges preferred via weight); 20-u spacing still applies
     case "SALVAGE_SITE": return ctx.coastD <= A.affinity.coastMax;
     case "VENT": return ctx.riverD <= A.affinity.riverMax || (A.affinity.anywhereInZones || []).includes(ctx.zone);
     default: return true;
@@ -63,12 +63,16 @@ for (const e of ESTATES) {
   let dC = Infinity; for (const c of Z.castles) dC = Math.min(dC, dist(at, c.at));
   const ctx = { zone: e.zone, layer, coastD: Z.coast.length ? lineDist(at, Z.coast) : Infinity, riverD: lineDist(at, Z.rivers), ridgeD: lineDist(at, Z.ridges), roadD: lineDist(at, Z.roads),
     skyPortD: Z.skyPorts.reduce((m, p) => Math.min(m, dist(at, p.at)), Infinity) };
-  const ring = RING(dC); summary.byRing[ring]++;
+  const ring = RING(dC); ctx.ring = ring; summary.byRing[ring]++;
   const rng0 = mulberry32(fnv1a(`${e.parcelId}|${e.zone}|pre|lw1`)), ground = groundOf(ctx, rng0);
   const rng = mulberry32(fnv1a(`${e.parcelId}|${e.zone}|${ground}|lw1`));
   const nodes = [];
   if (ring !== "CASTLE") {
-    const W = WEIGHTS[ring], cands = Object.keys(W).filter((k) => eligible(k, ctx)).sort();
+    // D5c weight tweaks: ridge camps full weight, open-wild camps ⅓; a vent that only qualifies via "anywhere in zone" × 0.4
+    const W = { ...WEIGHTS[ring] };
+    if (W.BARBARIAN_CAMP && !(ctx.ridgeD <= ARCH.BARBARIAN_CAMP.affinity.ridgeMax)) W.BARBARIAN_CAMP = W.BARBARIAN_CAMP / 3;
+    if (W.VENT && !(ctx.riverD <= ARCH.VENT.affinity.riverMax)) W.VENT = W.VENT * 0.4;
+    const cands = Object.keys(W).filter((k) => eligible(k, ctx)).sort();
     const n = Math.min(COUNT[e.sizeClass] || 1, PA.limits.perParcelMax);
     for (let i = 0; i < n && cands.length; i++) {
       const tot = cands.reduce((s, k) => s + W[k], 0); let x = rng() * tot, pick = cands[0];

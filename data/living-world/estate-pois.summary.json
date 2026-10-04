@@ -5,41 +5,41 @@
    "parcels": 1187,
    "nodes": 1282,
    "byKind": {
-    "AIRDROP_ZONE": 408,
+    "AIRDROP_ZONE": 393,
     "AIRSHIP_DOCK": 15,
-    "BARBARIAN_CAMP": 8,
+    "BARBARIAN_CAMP": 39,
     "CARAVAN_WAYPOINT": 61,
     "HARBOUR": 77,
     "MERCENARY_POST": 57,
-    "SALVAGE_SITE": 6,
+    "SALVAGE_SITE": 5,
     "WAR_CAMP": 5,
-    "WILD_LAIR": 645
+    "WILD_LAIR": 630
    }
   },
   "EDU": {
    "parcels": 372,
    "nodes": 360,
    "byKind": {
-    "AIRDROP_ZONE": 126,
-    "BARBARIAN_CAMP": 7,
+    "AIRDROP_ZONE": 121,
+    "BARBARIAN_CAMP": 14,
     "CARAVAN_WAYPOINT": 14,
     "MERCENARY_POST": 6,
     "WAR_CAMP": 3,
-    "WILD_LAIR": 204
+    "WILD_LAIR": 202
    }
   },
   "ENT": {
    "parcels": 1492,
    "nodes": 1451,
    "byKind": {
-    "AIRDROP_ZONE": 345,
-    "BARBARIAN_CAMP": 22,
+    "AIRDROP_ZONE": 329,
+    "BARBARIAN_CAMP": 60,
     "CARAVAN_WAYPOINT": 31,
     "HARBOUR": 50,
     "MERCENARY_POST": 24,
-    "SALVAGE_SITE": 24,
+    "SALVAGE_SITE": 25,
     "WAR_CAMP": 6,
-    "WILD_LAIR": 949
+    "WILD_LAIR": 926
    }
   },
   "HS1": {
@@ -82,21 +82,22 @@
    "parcels": 1744,
    "nodes": 1812,
    "byKind": {
-    "AIRDROP_ZONE": 524,
+    "AIRDROP_ZONE": 505,
     "AIRSHIP_DOCK": 15,
-    "BARBARIAN_CAMP": 2,
+    "BARBARIAN_CAMP": 43,
     "CARAVAN_WAYPOINT": 67,
     "MERCENARY_POST": 70,
     "WAR_CAMP": 7,
-    "WILD_LAIR": 1127
+    "WILD_LAIR": 1105
    }
   },
   "UW1": {
    "parcels": 1233,
    "nodes": 1271,
    "byKind": {
-    "VENT": 655,
-    "WILD_LAIR": 616
+    "BARBARIAN_CAMP": 25,
+    "VENT": 318,
+    "WILD_LAIR": 928
    }
   },
   "UW2": {
@@ -124,16 +125,16 @@
   }
  },
  "byKind": {
-  "AIRDROP_ZONE": 1914,
+  "AIRDROP_ZONE": 1859,
   "AIRSHIP_DOCK": 432,
-  "BARBARIAN_CAMP": 44,
+  "BARBARIAN_CAMP": 186,
   "CARAVAN_WAYPOINT": 234,
   "HARBOUR": 127,
   "MERCENARY_POST": 266,
   "SALVAGE_SITE": 30,
-  "VENT": 1090,
+  "VENT": 753,
   "WAR_CAMP": 40,
-  "WILD_LAIR": 4056
+  "WILD_LAIR": 4306
  },
  "byRing": {
   "CASTLE": 793,
@@ -142,5 +143,5 @@
  },
  "parcels": 8482,
  "nodes": 8233,
- "droppedByGuarantee": 932
+ "droppedByGuarantee": 1420
 }

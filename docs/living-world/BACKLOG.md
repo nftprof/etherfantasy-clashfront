@@ -27,7 +27,7 @@ airships, landing spots, harbours + sea ships; seed all 20K maps; an experience,
 - [x] D8 — Map designer: POI types (airship dock, landing spot, harbour, sea ship lane) — PR
 - [x] D4b — Rebalance: caravan waypoints are thin (4) — every castle with a port gets a caravan route; salvage only 1
 - [x] D5b — L3 singles (284 K): lazy seed function export + 1 % sampled report (no bulk commit)
-- [ ] D5c — Tune: UW1 vent-heavy (655/1,233), barbarian camps rare (44) — revisit with sim sampling
+- [x] D5c — Tune: UW1 vent-heavy (655/1,233), barbarian camps rare (44) — revisit with sim sampling
 - [ ] D8b — Battle-map anchors: PIER / LANDING_PAD placement + NAVAL_APPROACH / AIR_APPROACH spawn classes in generate.js (designer follow-up PR)
 - [x] D6b — Calibrate the sim harness: model castle structures (wall rings, gates, keep 2,400×tier, doc-03 defences) so the CALIBRATION row lands near the S2 floors; then tune archetypes
 - [x] D6c — Per-tier target bands: frontier skirmish POIs 3–6 min vs castle-tier 6–12 min; re-tune MERCENARY_POST (3:42) / HARBOUR (4:03) garrisons accordingly; add a defences (doc 03) + Guardian (doc 04) scenario to the sampler

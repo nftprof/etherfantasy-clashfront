@@ -8,11 +8,11 @@ Model: the POI's threat scales the defending core (×0.5–×2.5) and garrison; 
 |---|---|---|---|---|---|---|---|
 | CALIBRATION | 6 | 100 % | 8:59 | 50 | 64 | 0 | ok |
 | AIRSHIP_DOCK | 6 | 100 % | 5:55 | 29 | 42 | 0 | ok |
-| BARBARIAN_CAMP | 6 | 83 % | 3:22 | 29 | 24 | 0 | ok |
+| BARBARIAN_CAMP | 6 | 100 % | 3:22 | 31 | 24 | 0 | TOO SOFT (falls in < 4 min) |
 | HARBOUR | 6 | 100 % | 4:03 | 17 | 29 | 0 | ok |
 | MERCENARY_POST | 6 | 100 % | 3:42 | 17 | 26 | 0 | TOO SOFT (falls in < 4 min) |
-| SALVAGE_SITE | 6 | 100 % | 6:23 | 34 | 45 | 0 | ok |
-| VENT | 6 | 67 % | 8:29 | 58 | 72 | 0 | ok |
+| SALVAGE_SITE | 6 | 100 % | 6:14 | 33 | 44 | 0 | ok |
+| VENT | 6 | 83 % | 8:29 | 48 | 60 | 0 | ok |
 | WAR_CAMP | 6 | 100 % | 4:13 | 28 | 30 | 0 | ok |
 | WILD_LAIR | 6 | 83 % | 5:57 | 39 | 42 | 0 | ok |
 

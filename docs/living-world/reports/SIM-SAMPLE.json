@@ -27,12 +27,12 @@
   {
    "k": "BARBARIAN_CAMP",
    "n": 6,
-   "breachRate": 83,
+   "breachRate": 100,
    "medBreachSec": 202,
-   "medThreat": 29,
+   "medThreat": 31,
    "medAttackerDeaths": 24,
    "defenderWins": 0,
-   "flag": "ok"
+   "flag": "TOO SOFT (falls in < 4 min)"
   },
   {
    "k": "HARBOUR",
@@ -58,19 +58,19 @@
    "k": "SALVAGE_SITE",
    "n": 6,
    "breachRate": 100,
-   "medBreachSec": 383,
-   "medThreat": 34,
-   "medAttackerDeaths": 45,
+   "medBreachSec": 374,
+   "medThreat": 33,
+   "medAttackerDeaths": 44,
    "defenderWins": 0,
    "flag": "ok"
   },
   {
    "k": "VENT",
    "n": 6,
-   "breachRate": 67,
+   "breachRate": 83,
    "medBreachSec": 509,
-   "medThreat": 58,
-   "medAttackerDeaths": 72,
+   "medThreat": 48,
+   "medAttackerDeaths": 60,
    "defenderWins": 0,
    "flag": "ok"
   },
@@ -397,7 +397,27 @@
    "guardianHpPct": null
   },
   {
-   "id": "5030914#0",
+   "id": "5031022#0",
+   "k": "BARBARIAN_CAMP",
+   "threat": 31,
+   "breached": true,
+   "sec": 230,
+   "attackerDeaths": 28,
+   "defenderWon": false,
+   "left": {
+    "walls": 0,
+    "gates": 0,
+    "towers": 0,
+    "keepPct": 0
+   },
+   "wardsDownAt": [],
+   "scen": "BASE",
+   "guardianWakeSec": null,
+   "guardianKoSec": null,
+   "guardianHpPct": null
+  },
+  {
+   "id": "4031406#0",
    "k": "BARBARIAN_CAMP",
    "threat": 33,
    "breached": true,
@@ -417,32 +437,12 @@
    "guardianHpPct": null
   },
   {
-   "id": "5100083#0",
+   "id": "5030914#0",
    "k": "BARBARIAN_CAMP",
-   "threat": 100,
-   "breached": false,
-   "sec": 720,
-   "attackerDeaths": 100,
-   "defenderWon": false,
-   "left": {
-    "walls": 0,
-    "gates": 0,
-    "towers": 1,
-    "keepPct": 100
-   },
-   "wardsDownAt": [],
-   "scen": "BASE",
-   "guardianWakeSec": null,
-   "guardianKoSec": null,
-   "guardianHpPct": null
-  },
-  {
-   "id": "4031395#0",
-   "k": "BARBARIAN_CAMP",
-   "threat": 29,
+   "threat": 33,
    "breached": true,
-   "sec": 227,
-   "attackerDeaths": 28,
+   "sec": 253,
+   "attackerDeaths": 31,
    "defenderWon": false,
    "left": {
     "walls": 0,
@@ -737,6 +737,26 @@
    "guardianHpPct": null
   },
   {
+   "id": "5000589#0",
+   "k": "SALVAGE_SITE",
+   "threat": 31,
+   "breached": true,
+   "sec": 351,
+   "attackerDeaths": 41,
+   "defenderWon": false,
+   "left": {
+    "walls": 0,
+    "gates": 0,
+    "towers": 0,
+    "keepPct": 0
+   },
+   "wardsDownAt": [],
+   "scen": "BASE",
+   "guardianWakeSec": null,
+   "guardianKoSec": null,
+   "guardianHpPct": null
+  },
+  {
    "id": "5030562#0",
    "k": "SALVAGE_SITE",
    "threat": 36,
@@ -777,32 +797,12 @@
    "guardianHpPct": null
   },
   {
-   "id": "5030472#0",
+   "id": "5030910#0",
    "k": "SALVAGE_SITE",
-   "threat": 38,
+   "threat": 35,
    "breached": true,
-   "sec": 428,
-   "attackerDeaths": 51,
-   "defenderWon": false,
-   "left": {
-    "walls": 0,
-    "gates": 0,
-    "towers": 0,
-    "keepPct": 0
-   },
-   "wardsDownAt": [],
-   "scen": "BASE",
-   "guardianWakeSec": null,
-   "guardianKoSec": null,
-   "guardianHpPct": null
-  },
-  {
-   "id": "5030956#0",
-   "k": "SALVAGE_SITE",
-   "threat": 37,
-   "breached": true,
-   "sec": 408,
-   "attackerDeaths": 48,
+   "sec": 390,
+   "attackerDeaths": 46,
    "defenderWon": false,
    "left": {
     "walls": 0,
@@ -857,26 +857,6 @@
    "guardianHpPct": null
   },
   {
-   "id": "4091142#0",
-   "k": "VENT",
-   "threat": 85,
-   "breached": false,
-   "sec": 720,
-   "attackerDeaths": 99,
-   "defenderWon": false,
-   "left": {
-    "walls": 0,
-    "gates": 0,
-    "towers": 1,
-    "keepPct": 100
-   },
-   "wardsDownAt": [],
-   "scen": "BASE",
-   "guardianWakeSec": null,
-   "guardianKoSec": null,
-   "guardianHpPct": null
-  },
-  {
    "id": "5090166#0",
    "k": "VENT",
    "threat": 66,
@@ -922,6 +902,26 @@
    "threat": 48,
    "breached": true,
    "sec": 509,
+   "attackerDeaths": 60,
+   "defenderWon": false,
+   "left": {
+    "walls": 0,
+    "gates": 0,
+    "towers": 0,
+    "keepPct": 0
+   },
+   "wardsDownAt": [],
+   "scen": "BASE",
+   "guardianWakeSec": null,
+   "guardianKoSec": null,
+   "guardianHpPct": null
+  },
+  {
+   "id": "3101076#0",
+   "k": "VENT",
+   "threat": 47,
+   "breached": true,
+   "sec": 507,
    "attackerDeaths": 60,
    "defenderWon": false,
    "left": {
