@@ -62,4 +62,10 @@ airships, landing spots, harbours + sea ships; seed all 20K maps; an experience,
 - [x] D27 — PR #1 refresh pack: regenerate the world-elements overlay + designer icon notes against the current seeds (post D6f/D14b/D24 threats) as a ready-to-apply patch file for the cf-overworld PR branch (no push there without the owner's go)
 - [x] D28 — Mercenary market: MERCENARY_POST hire flow (MERCENARY_DEFEND contract, MERC_BIDDING when two sides want the same company) as pure functions + escrow tests, using defences.json MERCENARIES prices
 - [x] D29 — Season beat calendar: the weekly beats of doc 06 §3 (Ascension week per castle, storm season, region threat cycle) on one 28-day calendar; check no region has two "big beats" on the same day
-- [ ] D30 — Underworld / Sky terrain rows: propose HexTerrain analogues for SKY (open platforms, gale) and UNDER (caverns, vents) to the canon terrain table, with harness numbers
+- [x] D30 — Underworld / Sky terrain rows: propose HexTerrain analogues for SKY (open platforms, gale) and UNDER (caverns, vents) to the canon terrain table, with harness numbers
+
+## Wave 6 (added cycle 45)
+- [ ] D31 — Guardian damage-share cap (doc 04 §4, guardians.json caps.guardianDamageShareMax 0.20): measure the Guardian's share of defender damage in the F2/F3 harness runs; clamp its bombard if it exceeds 20 %; test the invariant
+- [ ] D32 — A month at scale: agent-based run (hundreds of players, all regions) over the real board/rewards/influence/stationings → banner churn, feed volume, holdings concentration (Gini); North Star check: nobody holds every region
+- [ ] D34 — Living-world README: one page mapping docs ↔ data ↔ tools ↔ tests ↔ reports, plus "how to re-seed / re-run / hand off"
+- [ ] D35 — Performance budget: seedSingle latency per parcel, full 284 K re-seed time, matrix + test-suite wall time; record budgets and a test that fails on 2× regressions

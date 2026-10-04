@@ -174,3 +174,22 @@ to **6:21**. The UNDER camps, which the band clamp now caps at 60, come down fro
 **The matrix now reads 57 / 57 cells in band with canon terrain on, and 0 of 6,270 seeded POIs out of band.** A test
 holds every cell there.
 
+### 7f. Sky and Underworld terrain: a proposal (D30)
+
+Canon `HexTerrain` (`PLAINS | FOREST | HILLS | MOUNTAIN | RIVER | COAST | OCEAN | ROAD`) has no row for the sky isles or
+the Underworld, so the harness treats both as neutral. **Proposal (⚙, owner/canon call): map them onto existing rows.**
+No new enum values are needed.
+
+| Layer | Canon row | Attacker / defender | Why | Seed `groundShift` |
+|---|---|---|---|---|
+| SKY isles | HILLS | 0.90 / 1.10 | Attackers land or climb onto raised platforms | −8 |
+| UNDER caverns | MOUNTAIN | 0.90 / 1.15 | Tunnels and chokepoints | −13 |
+
+- Both live in `terrain-mods.json` `proposed`. The measured run is `reports/SIM-MATRIX-PROPOSED.md`
+  (`sim_matrix --terrain proposed`).
+- **Without the shift:** 53 / 57 cells ok and 23 % of POIs out of band (wild Underworld lairs and vents run 6:29–6:41).
+- **With it: 57 / 57.** The Underworld still holds longer than open surface (wild lairs 5:06 vs 4:06), so depth is now
+  expressed as terrain advantage instead of raw threat.
+- Nothing is applied to the committed seeds until the owner says go. It's a mapping plus two numbers in
+  `threatBands.groundShift`, then a re-seed.
+

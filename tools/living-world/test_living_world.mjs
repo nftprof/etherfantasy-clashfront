@@ -358,4 +358,10 @@ for (let cy = 0; cy < 6; cy++) {
 }
 ok(sbBad.length === 0, "6 cycles × all regions: one threat peak each (≤ 2 regions per day), big beats never on the same or adjacent days, never in a lull; storm fronts on sea regions; one Ascension night per week where there are perches" + (sbBad.length ? " — " + sbBad.slice(0, 3).join("; ") : ""));
 
+// D30 proposed SKY / UNDER terrain rows (existing canon HexTerrain values only)
+const MXP = JSON.parse(fs.readFileSync("docs/living-world/reports/SIM-MATRIX-PROPOSED.json", "utf8")), canonHT = fs.readFileSync("/home/user/cf-overworld/docs/08-data-models.md", "utf8").match(/export type HexTerrain = ([^;]+);/)[1];
+ok(Object.values(TMd.proposed.groundToHexTerrain).every((t) => canonHT.includes(`'${t}'`) && TMd.canon[t]), "the SKY / UNDER proposal maps onto EXISTING canon HexTerrain rows (no new enum values)");
+ok(MXP.terrain === "proposed" && MXP.rows.every((r) => r.verdict === "ok"), `with the proposal + its seed groundShift, every cell still lands its band (${MXP.rows.length} cells)`);
+ok(MX.terrain === true && !MX.rows.some((r) => r.medThreat !== MXP.rows.find((x) => x.k === r.k && x.ring === r.ring && x.ground === r.ground).medThreat && !["SKY", "UNDER"].includes(r.ground)), "the proposal only touches SKY / UNDER cells; the committed canon matrix is unchanged");
+
 console.log(fails ? `❌ living-world: ${fails} failed` : "✅ living-world: all passed"); process.exit(fails ? 1 : 0);

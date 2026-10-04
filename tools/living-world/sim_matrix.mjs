@@ -6,9 +6,9 @@
 //   FRONTIER / WILD (estate POIs)   → SKIRMISH band 3–6 min
 //   node tools/living-world/sim_matrix.mjs [--n 4] [--out docs/living-world/reports/SIM-MATRIX.md]
 import fs from "node:fs";
-import { PA, pool, fnv1a, runOne, opts, terrainMods } from "./sim_harness.mjs";
+import { PA, pool, fnv1a, runOne, opts, terrainMods, TM } from "./sim_harness.mjs";
 const args = Object.fromEntries(process.argv.slice(2).reduce((a, v, i, all) => (v.startsWith("--") ? a.concat([[v.slice(2), all[i + 1]]]) : a), []));
-opts.TERRAIN = args.terrain !== "off";   // D14: canon terrain mods by ground (pass --terrain off for the flat baseline)
+opts.TERRAIN = args.terrain === "off" ? false : args.terrain === "proposed" ? "proposed" : true;   // D14: canon terrain mods by ground (pass --terrain off for the flat baseline)
 const N = +(args.n || 4), OUT = args.out || "docs/living-world/reports/SIM-MATRIX.md", JOUT = OUT.replace(/\.md$/, ".json");
 export const BANDS = { CASTLE: { name: "RAID", lo: 360, hi: 720 }, FRONTIER: { name: "SKIRMISH", lo: 180, hi: 360 }, WILD: { name: "SKIRMISH", lo: 180, hi: 360 } };
 
@@ -21,10 +21,12 @@ const mmss = (v) => (v != null ? Math.floor(v / 60) + ":" + String(v % 60).padSt
 const rows = [...cells.keys()].sort().map((key) => {
   const [k, ring, ground] = key.split("|"), all = cells.get(key), band = BANDS[ring];
   const picks = all.slice().sort((a, b) => fnv1a(a.id + "|pick") - fnv1a(b.id + "|pick")).slice(0, N);
-  const r = picks.map((p) => runOne(p)), b = r.filter((x) => x.breached), m = med(b.map((x) => x.sec));
+  // D30 proposed mode: apply the proposed seed groundShift for SKY/UNDER (what a re-seed would produce), floor moving with it
+  const shifted = opts.TERRAIN === "proposed" ? picks.map((p) => { const sh = TM.proposed.groundShift[p.ground] || 0, b = PA.threatBands[p.ring]; return sh ? { ...p, threat: Math.max(b.lo + sh, p.threat + sh) } : p; }) : picks;
+  const r = shifted.map((p) => runOne(p)), b = r.filter((x) => x.breached), m = med(b.map((x) => x.sec));
   const breachRate = Math.round((100 * b.length) / r.length);
   const verdict = breachRate < 50 ? "HARD" : m < band.lo ? "SOFT" : m > band.hi ? "SLOW" : "ok";
-  return { k, ring, ground, population: all.length, n: r.length, band: band.name, breachRate, medBreachSec: m, medThreat: med(picks.map((p) => p.threat)), medAttackerDeaths: med(r.map((x) => x.attackerDeaths)), verdict };
+  return { k, ring, ground, population: all.length, n: r.length, band: band.name, breachRate, medBreachSec: m, medThreat: med(shifted.map((p) => p.threat)), medAttackerDeaths: med(r.map((x) => x.attackerDeaths)), verdict };
 });
 const tally = rows.reduce((t, r) => ((t[r.verdict] = (t[r.verdict] || 0) + 1), t), {});
 const popOut = rows.filter((r) => r.verdict !== "ok").reduce((n, r) => n + r.population, 0), popAll = rows.reduce((n, r) => n + r.population, 0);

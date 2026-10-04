@@ -2,6 +2,46 @@
  "schema": "cf-living-world/terrain-mods@1",
  "src": "cf-overworld docs/04-battle-system.md §terrain modifier defaults (HexTerrain: attacker / defender; ❓ OPEN there — the final table is Sim-owned balance.json)",
  "note": "D14: living-world ground → canon HexTerrain row. Applied in the headless harness as damage-taken multipliers: defenders take attacker damage × attacker mod, attackers take defender damage × defender mod. SKY and UNDER have no canon row (⚙ neutral until the Sim table names them).",
- "canon": { "PLAINS": [1.0, 1.0], "FOREST": [0.95, 1.05], "HILLS": [0.9, 1.1], "RIVER": [0.9, 1.1], "MOUNTAIN": [0.9, 1.15] },
- "groundToHexTerrain": { "PLAIN": "PLAINS", "FOREST": "FOREST", "RIDGE": "HILLS", "WATER": "RIVER", "SURFACE": "PLAINS", "SKY": "PLAINS", "UNDER": "PLAINS" }
+ "canon": {
+  "PLAINS": [
+   1.0,
+   1.0
+  ],
+  "FOREST": [
+   0.95,
+   1.05
+  ],
+  "HILLS": [
+   0.9,
+   1.1
+  ],
+  "RIVER": [
+   0.9,
+   1.1
+  ],
+  "MOUNTAIN": [
+   0.9,
+   1.15
+  ]
+ },
+ "groundToHexTerrain": {
+  "PLAIN": "PLAINS",
+  "FOREST": "FOREST",
+  "RIDGE": "HILLS",
+  "WATER": "RIVER",
+  "SURFACE": "PLAINS",
+  "SKY": "PLAINS",
+  "UNDER": "PLAINS"
+ },
+ "proposed": {
+  "note": "D30 ⚙ proposal (owner/canon call, OWNER-DECISIONS proposals): map the layers canon has no HexTerrain for onto EXISTING rows — no new enum values. SKY isles ≈ HILLS (attackers climb/land onto raised platforms); UNDER caverns ≈ MOUNTAIN (tunnels and chokepoints). With a matching seed groundShift so the fights stay in band.",
+  "groundToHexTerrain": {
+   "SKY": "HILLS",
+   "UNDER": "MOUNTAIN"
+  },
+  "groundShift": {
+   "SKY": -8,
+   "UNDER": -13
+  }
+ }
 }

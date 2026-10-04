@@ -7,7 +7,7 @@ import { makeWorld, mkUnit } from "../../server/sim/state.js";
 import { step } from "../../server/sim/step.js";
 export const opts = { SQUAD_MUL: 1.5, DEF_MUL: 3, G_HP: null, TERRAIN: false };   // TERRAIN: opt-in canon terrain mods by poi.ground (D14; sim_matrix turns it on)
 export const TM = JSON.parse(fs.readFileSync("data/living-world/terrain-mods.json", "utf8"));
-export const terrainMods = (ground) => TM.canon[TM.groundToHexTerrain[ground] || "PLAINS"];   // DEF_MUL: structure-HP calibration (D6b sweep: ×3 → a bare threat-50 castle breaches at ~9 min, mid 6–12 band)
+export const terrainMods = (ground) => TM.canon[(opts.TERRAIN === "proposed" && TM.proposed.groundToHexTerrain[ground]) || TM.groundToHexTerrain[ground] || "PLAINS"];   // D30: "proposed" adds the SKY/UNDER mapping   // DEF_MUL: structure-HP calibration (D6b sweep: ×3 → a bare threat-50 castle breaches at ~9 min, mid 6–12 band)
 export const PA = JSON.parse(fs.readFileSync("data/living-world/poi-archetypes.json", "utf8"));
 export const CP = JSON.parse(fs.readFileSync("data/living-world/castle-pois.json", "utf8"));
 export function fnv1a(s) { let h = 0x811c9dc5; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 0x01000193); } return h >>> 0; }

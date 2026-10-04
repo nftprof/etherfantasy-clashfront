@@ -82,4 +82,5 @@ proposed at 10 and has no canon value yet. Every CT-equivalent loss in the sheet
 | Storm season: the last 7 of every 28 days, 35 % lane closure per day | doc 07 §4c | Proposal; no canon definition of "storm season" exists yet |
 | `FeedItem` `{ id, tick, zone, kind, facts }` (the region feed) | doc 05 §5 | Proposal for the next canon PR |
 | Region rights ladder: POST_EVENTS 3, HARBOUR_RIGHTS 5, PAD_RIGHTS 10, FORM3_STATION 25 | doc 06 §5 | Living-world proposal. The vessel classes themselves stay canon (parcels 5 / 10 / 25 / 100) |
+| Sky and Underworld terrain: SKY → HILLS, UNDER → MOUNTAIN (existing canon rows) + seed groundShift −8 / −13 | doc 02 §7f, `SIM-MATRIX-PROPOSED.md` | Proposal; 57 / 57 in band when applied; not applied yet |
 | Vessel loss below a threshold: vessels persist vs decommission after grace | canon brief §7 ⚙ | Canon's own open question; the living world works with either answer |
