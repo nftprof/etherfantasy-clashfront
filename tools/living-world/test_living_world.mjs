@@ -372,4 +372,19 @@ ok(Object.values(JSON.parse(fs.readFileSync("data/living-world/allocate.samples.
 const kern = fs.readFileSync("server/sim/systems/combat.js", "utf8") + fs.readFileSync("server/sim/abilities.js", "utf8");
 ok((kern.match(/dmgDealt != null\) \w+\.dmgDealt \+= dealt/g) || []).length === 2, "the kernel's damage ledger is opt-in (only units with dmgDealt record), so stock battles are untouched");
 
+// D32 a month at scale (North Star)
+execFileSync("node", ["tools/living-world/month_sim.mjs", "--out", "/tmp/lw_mo_a.md"], { stdio: "ignore" });
+ok(fs.readFileSync("/tmp/lw_mo_a.json").equals(fs.readFileSync("docs/living-world/reports/MONTH.json")), "month-at-scale report is reproducible and committed");
+const moBad = [];
+for (const sd of ["cf-world-1", "m2", "m3", "m4"]) {
+  execFileSync("node", ["tools/living-world/month_sim.mjs", "--seed", sd, "--out", `/tmp/lw_mo_${sd}.md`], { stdio: "ignore" });
+  const M = JSON.parse(fs.readFileSync(`/tmp/lw_mo_${sd}.json`, "utf8")), Z = M.bannersByDay[0] ? Object.keys(M.bannersByDay[0]).length : 0;
+  if (!(M.maxRegionsOnePlayer < Z)) moBad.push(`${sd}: one player bannered ${M.maxRegionsOnePlayer}/${Z}`);
+  if (!(M.maxRegionsOneAlliance <= Math.ceil(Z / 2))) moBad.push(`${sd}: one alliance bannered ${M.maxRegionsOneAlliance}/${Z}`);
+  if (!(M.whaleSharePct < 5)) moBad.push(`${sd}: whale holds ${M.whaleSharePct} %`);
+  if (!(M.bannerChanges > Z)) moBad.push(`${sd}: only ${M.bannerChanges} banner changes`);
+  if (!(M.takesFromPlayers > 0 && M.wildAtEnd > 0)) moBad.push(`${sd}: no contest or no wild left`);
+}
+ok(moBad.length === 0, "4 seeds × 400 agents × 28 days: nobody holds every region (one player ≤ 1–2, one alliance ≤ half), the whale stays < 5 % of all holdings, banners keep changing hands, wild land remains" + (moBad.length ? " — " + moBad.join("; ") : ""));
+
 console.log(fails ? `❌ living-world: ${fails} failed` : "✅ living-world: all passed"); process.exit(fails ? 1 : 0);

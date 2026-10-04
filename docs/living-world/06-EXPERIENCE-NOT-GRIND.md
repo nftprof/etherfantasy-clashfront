@@ -143,3 +143,25 @@ do. Three things to watch:
 3. **9 explorer repeat clears** came from world events landing on the same Nodes on different days. The curve priced
    them down as designed.
 
+## 8. Measured: a month at scale (D32, `reports/MONTH.md`)
+
+`tools/living-world/month_sim.mjs` runs 400 agents in 8 alliances over the **real** holdable-POI counts of all 11 regions
+(23,489 POIs) for 28 days, through the real ladder and banner functions. One whale plays every day with 3× the fights.
+Abandoned land (7 days unplayed) goes wild again.
+
+| Measure | Month |
+|---|---|
+| Fights | 25,274: 10,956 wild POIs taken, 4,715 taken from rivals |
+| Held at day 28 | 10,845 (12,644 still wild: the frontier never runs out) |
+| Holdings Gini | 0.30 (moderate) |
+| The whale | Top player with 170 POIs: **1.6 % of everything held** |
+| Banner changes | 74 over the month (~7 per region) |
+| Most regions bannered by one player / alliance | **1 / 2** of 11 |
+| Unlocks reached | POST_EVENTS 373, HARBOUR_RIGHTS 355, PAD_RIGHTS 326, FORM3_STATION 169 of 400 |
+
+**North Star holds:** playing three times as hard makes you the biggest holder, not the owner of the world. Regions
+keep changing hands, and no player or alliance holds most of the map. A test enforces this across 4 seeds.
+
+FORM3_STATION (25 POIs in one region) is a week-1 alliance goal (§7) but a month-1 goal for about 40 % of active
+players. That's the pacing we want.
+
