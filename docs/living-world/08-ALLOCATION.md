@@ -36,11 +36,28 @@ correct canon battle.
 **Proposal for the brief:** add `livingWorld` (optional, versioned) to §1. Until it's accepted, the engine reads it
 opportunistically and CF can send it harmlessly.
 
-## 3. What comes back
+## 3. What comes back: the result resolver (D36)
 
-The **result callback** (brief §2) needs nothing new.
+`tools/living-world/resolve_result.mjs` `resolveResult(world, alloc, callback)` turns the v1 result callback
+(brief §2) into world updates. It's a pure function.
 
-- **Casualties per `UnitClass`:** feed the attacker's unit-loss price (doc 03, `reports/BALANCE-SHEET.md`).
-- **`structures[].destroyed`:** decides the doc-03 spoils escrow.
-- **Guardian:** a KO, unbind or tire is read from the officer/mob outcome and settles the doc-04 bounty.
-- **The whole outcome** becomes a region-feed item (doc 05 §5).
+- **Idempotent on `battleId`.** A re-delivery changes nothing. A second result with a different `matchId` is a
+  **409** (results are never silently overwritten).
+- **Attacker wins:**
+  - a holdable POI changes holder;
+  - the defence spoils escrow pays the attacker (doc 03);
+  - the Guardian escrow pays by outcome: KO or UNBOUND → all, OUTLASTED → half, the rest home (doc 04 §3);
+  - a related attacker's share **burns** (doc 05 §3);
+  - a barbarian camp clear starts the 48 h lull.
+- **Defender wins:** holder and escrows stay; they settle on expiry.
+- **HERO_IMPACT_MAX:** each officer's raw impact is clamped to **0.20** before it scales the clear reward (+0–20 %),
+  per canon invariant 4.
+- **Attacker losses** are priced at canon **`balance.json` v2** re-training cost (INFANTRY 0.02 CT, SIEGE 0.1 CT).
+  This is informational; that CT was spent when the troops were trained.
+- **Stories:** a feed item (if newsworthy) and a journal line for each side.
+- **One proposed callback addition:** `livingWorld: { guardianOutcome: KO | UNBOUND | OUTLASTED | HELD }`. It's
+  additive, like the request block in §2.
+
+> ⚠ **Scale finding (D36):** canon `balance.json` was **re-scaled ÷100** (a line soldier is 0.02 CT; WALL module
+> 0.4 CT). The living-world CT prices (defences 6–15 CT, Guardian fees 20 / 120 CT, the D15 sheet's 2 CT/soldier from
+> the stale doc-03 table) are on the **old scale**. Re-scaling them is the next backlog item (D40).

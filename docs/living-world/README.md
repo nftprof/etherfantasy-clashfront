@@ -67,7 +67,7 @@ byte-compares the results, re-runs the sims and checks every invariant (≈ 1 mi
   - `arrivals.mjs` (naval/air arrivals);
   - `ambient_traffic.mjs` (`shipsAt(seed, tick)`);
   - `world_calendar.mjs`, `season_beats.mjs`, `event_board.mjs`, `region_feed.mjs`, `journal.mjs`;
-  - `allocate_payload.mjs` (the battle wire).
+  - `allocate_payload.mjs` (the battle wire out) and `resolve_result.mjs` (the result callback back into the world).
 - **Reports** (→ `docs/living-world/reports/`):
   - `balance_sheet.mjs` (CT paid vs units lost);
   - `ct_flow_sim.mjs` (ledger invariants);

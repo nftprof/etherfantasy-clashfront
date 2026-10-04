@@ -399,4 +399,21 @@ const pOver = Object.entries(pm).filter(([k, v]) => v > PB.budget[k]);
 ok(pOver.length === 0, `hot paths inside budget: ${Object.entries(pm).map(([k, v]) => `${k} ${v}/${PB.budget[k]}`).join(", ")}`);
 ok(PB.baseline.boardAt_ms < 1 && PB.baseline.seedSingle_us < 100, "a board view costs < 1 ms and a lazy parcel seed < 100 µs (UI- and first-visit-safe)");
 
+// D36 result resolver (callback → world updates)
+const RR = await import("./resolve_result.mjs"), rrS = JSON.parse(fs.readFileSync("data/living-world/allocate.samples.json", "utf8")).samples.CASTLE_POI_WITH_ASCENDANT, rrP = rrS.livingWorld.poiId;
+const rrW = () => RR.newWorld({ [`ESCROW:DEFENCE:${rrP}`]: 4000, [`ESCROW:GUARDIAN:${rrP}`]: 9000, gov_SAMPLE_HOLDER: 1000 }, { alliance: { gov_SAMPLE_ATTACKER: 1, gov_SAMPLE_HOLDER: 2 }, guardianOwner: { [rrP]: "gov_SAMPLE_HOLDER" }, holders: { [rrP]: "gov_SAMPLE_HOLDER" } });
+const rrCb = (winner, go, raw = 0.5, matchId = "efm_1") => ({ v: 1, battleId: rrS.battleId, matchId, outcome: { winner, reason: "CORE_DESTROYED" }, sides: { ATTACKER: { casualties: { INFANTRY: 140, SIEGE: 20 }, survivors: {}, officers: [{ masterId: "m", state: "ALIVE", contribution: { rawImpact: raw } }] }, DEFENDER: { casualties: {}, survivors: {}, officers: [] } }, livingWorld: { guardianOutcome: go } });
+const rrSum = (w) => Object.values(w.bal).reduce((x, y) => x + y, 0);
+const r1 = RR.resolveResult(rrW(), rrS, rrCb("ATTACKER", "KO"));
+ok(r1.world.bal[`ESCROW:DEFENCE:${rrP}`] === 0 && r1.world.bal[`ESCROW:GUARDIAN:${rrP}`] === 0 && r1.world.bal.gov_SAMPLE_ATTACKER === 13000 && rrSum(r1.world) === rrSum(rrW()), "attacker win + Guardian KO: defence spoils and the whole bounty go to the attacker; CT conserved");
+const r2 = RR.resolveResult(rrW(), rrS, rrCb("ATTACKER", "OUTLASTED"));
+ok(r2.world.bal.gov_SAMPLE_HOLDER === 1000 + 4500 && r2.world.bal.gov_SAMPLE_ATTACKER === 4000 + 4500, "an outlasted Ascendant pays half its bounty; the other half goes home (doc 04 §3)");
+const r3 = RR.resolveResult(rrW(), rrS, rrCb("DEFENDER", "HELD"));
+ok(r3.world.bal[`ESCROW:GUARDIAN:${rrP}`] === 9000 && r3.world.holders[rrP] === "gov_SAMPLE_HOLDER" && r3.world.feed.some((f) => f.kind === "GUARDIAN_HELD"), "a held castle keeps its holder and escrows, and makes a GUARDIAN_HELD story");
+ok(r1.effects.find((e) => e.kind === "CLEAR_REWARD").heroImpact === RR.HERO_IMPACT_MAX && RR.resolveResult(rrW(), rrS, rrCb("ATTACKER", "KO", 0.07)).effects.find((e) => e.kind === "CLEAR_REWARD").heroImpact === 0.07, "officer raw impact is clamped to HERO_IMPACT_MAX = 0.20 (canon invariant 4)");
+ok(RR.resolveResult(r1.world, rrS, rrCb("ATTACKER", "KO")).duplicate === true && RR.resolveResult(r1.world, rrS, rrCb("ATTACKER", "KO", 0.5, "efm_OTHER")).status === 409, "idempotent on battleId; a second result with a different matchId is a 409 conflict");
+const rrRel = rrW(); rrRel.alliance.gov_SAMPLE_ATTACKER = 2;
+ok(RR.resolveResult(rrRel, rrS, rrCb("ATTACKER", "KO")).world.bal.BURN === 13000, "an attacker allied with the defender gets nothing: the escrows burn (doc 05 relation check)");
+ok(r1.effects.find((e) => e.kind === "ATTACKER_LOSSES").retrainCT === 4.8, "attacker losses are priced at canon balance.json v2 re-training cost (INFANTRY 0.02 CT, SIEGE 0.1 CT)");
+
 console.log(fails ? `❌ living-world: ${fails} failed` : "✅ living-world: all passed"); process.exit(fails ? 1 : 0);
