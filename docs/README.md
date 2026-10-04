@@ -134,6 +134,17 @@ Single source of truth for names. All docs, code, and schemas MUST use these exa
 - **Hex** — the atomic map cell. Territories occupy one or more hexes. Movement is hex-to-hex.
 - **ZoneType** — `VILLAGE | TOWN | FORTRESS | HARBOR | CAPITAL | WILD | SEA`.
 - **Node** — a point of interest on a hex (e.g. a resource node, a port, a shrine).
+  - *(proposed)* **LwNode** — a seeded living-world Node with an `LwPoiKind` (harbour, airship dock, landing spot,
+    airdrop zone, barbarian camp, mercenary post, caravan waypoint, wild lair, war camp, guardian perch, salvage site,
+    vent), a small garrison, a threat level and an event deck drawn per visit. Seeded for every castle, estate and
+    single parcel (`docs/08` §4 *Living world*).
+  - *(proposed)* **Guardian** — an NFT pet stationed on a castle's guardian perch for a bounded time: **Warden**
+    (Form 2, beatable) or **Ascendant** (Form 3, nearly immune for 8 min from first contact, then tires). While it
+    stands, the keep can't be damaged.
+  - *(proposed)* **Defence stake** — CT spent on a time-bound defence: 40 % spoils escrow (to whoever breaks it,
+    refunded if it holds), 30 % burned, 30 % to the pool.
+  - *(proposed)* **Player event** — a fight a player posts for others (siege-me, bounty, caravan run, sponsored
+    airdrop, warband call, guardian challenge), escrowed before it goes live.
 - **Route** — a traversable connection (road / sea lane) with a movement-cost weight.
 
 ### Environment (see `12-environment-and-weather.md`)
