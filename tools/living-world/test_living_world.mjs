@@ -100,4 +100,14 @@ ok(fs.readFileSync("/tmp/lw_sim_a.json").equals(fs.readFileSync("/tmp/lw_sim_b.j
 const SIM = JSON.parse(fs.readFileSync("/tmp/lw_sim_a.json", "utf8"));
 ok(SIM.rows.some((r) => r.k === "CALIBRATION") && SIM.rows.filter((r) => r.k !== "CALIBRATION").every((r) => r.n === 3), "sampler covers a calibration row + every garrisoned archetype");
 
+// doc 06 experience
+const EX = JSON.parse(fs.readFileSync("data/living-world/experience.json", "utf8")), doc6 = fs.readFileSync("docs/living-world/06-EXPERIENCE-NOT-GRIND.md", "utf8");
+const am = EX.antiFarm.multipliers;
+ok(am[0] === 1 && am.every((m, i) => i === 0 || m < am[i - 1]) && am[am.length - 1] > 0, "anti-farm curve starts at ×1, strictly falls, never hits 0");
+ok(am.every((m) => doc6.includes("×" + m.toFixed(1))), "doc 06 table quotes the same anti-farm multipliers");
+ok(EX.lullHours.BARBARIAN_CAMP === PA.archetypes.find((a) => a.lwKind === "BARBARIAN_CAMP").holdReward.hours, "barbarian lull hours match poi-archetypes holdReward");
+ok(EX.influenceUnlocks.map((u) => u.poisHeld).join() === "3,5,10,25", "influence unlock thresholds 3/5/10/25 (5/10/25 = canon vessel access)");
+const simR = JSON.parse(fs.readFileSync("docs/living-world/reports/SIM-SAMPLE.json", "utf8")).rows;
+ok(simR.filter((r) => r.k !== "CALIBRATION" && r.medBreachSec != null).every((r) => r.medBreachSec >= EX.sessions.SKIRMISH[0] * 60 * 0.5 && r.medBreachSec <= 720), "sampled POI fights fit the session shapes (between a half-skirmish and 12 min)");
+
 console.log(fails ? `❌ living-world: ${fails} failed` : "✅ living-world: all passed"); process.exit(fails ? 1 : 0);

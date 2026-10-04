@@ -1,0 +1,59 @@
+{
+ "schema": "cf-living-world/experience@1",
+ "note": "doc 06 \u2014 session shapes, anti-farm curve, influence unlocks. Consumers: reward resolution + region influence.",
+ "sessions": {
+  "SKIRMISH": [
+   3,
+   6
+  ],
+  "RAID": [
+   10,
+   15
+  ],
+  "HUNT": [
+   15,
+   20
+  ],
+  "VOYAGE": [
+   5,
+   10
+  ]
+ },
+ "antiFarm": {
+  "windowHours": 24,
+  "scope": "SAME_ACCOUNT_SAME_POI",
+  "multipliers": [
+   1.0,
+   0.6,
+   0.3,
+   0.1
+  ]
+ },
+ "lullHours": {
+  "BARBARIAN_CAMP": 48
+ },
+ "influenceUnlocks": [
+  {
+   "poisHeld": 3,
+   "unlock": "POST_EVENTS"
+  },
+  {
+   "poisHeld": 5,
+   "unlock": "SHIP_NORMAL"
+  },
+  {
+   "poisHeld": 10,
+   "unlock": "AIRSHIP_NORMAL"
+  },
+  {
+   "poisHeld": 25,
+   "unlock": "SHIP_LARGE+AIRSHIP_LARGE+FORM3_STATION"
+  }
+ ],
+ "notBuilt": [
+  "ENERGY",
+  "DAILY_CHEST",
+  "LOGIN_CALENDAR",
+  "STREAKS"
+ ]
+}
