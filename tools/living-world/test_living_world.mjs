@@ -182,4 +182,17 @@ const RI = JSON.parse(ri1);
 ok(Object.values(RI.regions).every((r) => IN.regionInfluence(Math.floor(r.holdable / 2) + 1, r.holdable).unlocks.includes("FORM3_STATION")), "every region (even KOL with 3) can be fully dominated by holding a majority");
 ok(IN.regionBanner({ a: 30, b: 30 }) === null && IN.regionBanner({ a: 24 }) === null && IN.regionBanner({ a: 40, b: 30 }) === "a" && IN.regionBanner({ a: 2, b: 1 }, 3) === "a", "region banner: plurality ≥ 25 (a majority in small regions), ties go to nobody");
 
+// D12 anti-farm + lull reward functions
+const RW = await import("./rewards.mjs"), H1 = [];
+const clr = (account, poiId, tick, base = 100) => { const r = RW.resolveClear(H1, { account, poiId, tick, base }); H1.push({ account, poiId, tick }); return r; };
+const rw = [clr("a", "p1", 0), clr("a", "p1", 60), clr("a", "p1", 120), clr("a", "p1", 180), clr("a", "p1", 240)];
+ok(rw.map((r) => r.mult).join() === EX.antiFarm.multipliers.concat([EX.antiFarm.multipliers.at(-1)]).join() && rw.map((r) => r.reward).join() === "100,60,30,10,10", "same account, same POI within 24 h: ×1 → 0.6 → 0.3 → 0.1 (and stays at 0.1)");
+ok(clr("a", "p2", 300).mult === 1 && clr("b", "p1", 300).mult === 1, "a different POI, or a different account, is always full value");
+ok(clr("a", "p1", 24 * 60 + 241).mult === 1, "the curve resets once the earlier clears leave the 24 h window");
+ok(RW.resolveClear([], { account: "a", poiId: "x", tick: 0, base: 3 }).reward === 3 && RW.resolveClear([{ account: "a", poiId: "x", tick: 0 }, { account: "a", poiId: "x", tick: 1 }, { account: "a", poiId: "x", tick: 2 }], { account: "a", poiId: "x", tick: 3, base: 3 }).reward === 1, "a positive base never rounds to 0");
+const CC2 = [{ zone: "BUS", tick: 100 }, { zone: "BUS", tick: 1000 }, { zone: "UW1", tick: 50 }];
+ok(RW.lullUntil(CC2, "BUS") === 1000 + 48 * 60 && RW.lullUntil(CC2, "EDU") === null, "lull = 48 h after the LATEST camp clear; lulls don't stack");
+ok(!RW.raidsAllowed(CC2, "BUS", 1000 + 48 * 60 - 1) && RW.raidsAllowed(CC2, "BUS", 1000 + 48 * 60) && RW.raidsAllowed(CC2, "BUS", 99) && !RW.raidsAllowed(CC2, "BUS", 500), "raids pause inside the lull, resume at its end; a future clear doesn't silence the past");
+ok(!/Math\.random|Date\.now|new Date/.test(fs.readFileSync("tools/living-world/rewards.mjs", "utf8")), "reward functions read no clock (callers pass world ticks)");
+
 console.log(fails ? `❌ living-world: ${fails} failed` : "✅ living-world: all passed"); process.exit(fails ? 1 : 0);

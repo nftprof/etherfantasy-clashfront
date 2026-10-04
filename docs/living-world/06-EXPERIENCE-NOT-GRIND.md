@@ -52,6 +52,12 @@ reward:
 - The S2 lesson "fewer, meaningful enemies" applies: each POI clear is one real fight, not 30 trash
   mobs.
 - Event decks are drawn per visit (doc 02 layer ③), so even a revisit plays differently.
+- **As code (D12, `tools/living-world/rewards.mjs`):**
+  - `resolveClear(history, clear)` applies the curve over a trailing 24 h window. The count is per account and per
+    POI, and a positive base never rounds to 0.
+  - `lullUntil` / `raidsAllowed` give the barbarian lull: 48 h from the **latest** camp clear in the region. Lulls
+    don't stack, so clearing three camps in a row doesn't buy six days.
+  - Callers pass world ticks; the functions read no clock.
 
 ## 5. Dominating an area (the PvE progression)
 
