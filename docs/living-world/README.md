@@ -72,7 +72,8 @@ byte-compares the results, re-runs the sims and checks every invariant (≈ 1 mi
   - `balance_sheet.mjs` (CT paid vs units lost);
   - `ct_flow_sim.mjs` (ledger invariants);
   - `first_week.mjs` (explorer vs grinder);
-  - `month_sim.mjs` (North Star at scale).
+  - `month_sim.mjs` (North Star at scale);
+  - `abuse_sim.mjs` (coalition self-farming: every scheme net-negative).
 - **Performance:** `perf_budget.mjs` (`--record` sets baselines; plain run gates at 2×).
 - **Handoff:** `pr1_refresh.sh`.
 

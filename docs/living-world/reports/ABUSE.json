@@ -1,0 +1,88 @@
+{
+ "schema": "cf-living-world/abuse@1",
+ "unitsLost": {
+  "INFANTRY": 60,
+  "SIEGE": 10
+ },
+ "results": [
+  {
+   "scheme": "Guardian bounty self-farm (alt KOs your Warden)",
+   "LINKED": {
+    "netCT": -1.5,
+    "unitsLostCT": 2.2,
+    "totalCT": -3.7
+   },
+   "UNLINKED": {
+    "netCT": -0.75,
+    "unitsLostCT": 2.2,
+    "totalCT": -2.95
+   }
+  },
+  {
+   "scheme": "Defence spoils self-farm (alt breaks your fully staked castle)",
+   "LINKED": {
+    "netCT": -9.07,
+    "unitsLostCT": 2.2,
+    "totalCT": -11.27
+   },
+   "UNLINKED": {
+    "netCT": -5.45,
+    "unitsLostCT": 2.2,
+    "totalCT": -7.65
+   }
+  },
+  {
+   "scheme": "SIEGE_ME dare self-farm (alt takes your dare pot)",
+   "LINKED": {
+    "netCT": -3,
+    "unitsLostCT": 2.2,
+    "totalCT": -5.2
+   },
+   "UNLINKED": {
+    "netCT": -0.3,
+    "unitsLostCT": 2.2,
+    "totalCT": -2.5
+   }
+  },
+  {
+   "scheme": "BOUNTY laundering (bounty on your own alt)",
+   "LINKED": {
+    "refused": "RELATED_TARGET (can't post)",
+    "netCT": 0,
+    "unitsLostCT": 0,
+    "totalCT": 0
+   },
+   "UNLINKED": {
+    "netCT": -0.4,
+    "unitsLostCT": 2.2,
+    "totalCT": -2.6
+   }
+  },
+  {
+   "scheme": "SPONSORED_AIRDROP self-farm (alt grabs your crate)",
+   "LINKED": {
+    "netCT": -7.5,
+    "unitsLostCT": 2.2,
+    "totalCT": -9.7
+   },
+   "UNLINKED": {
+    "netCT": -0.75,
+    "unitsLostCT": 2.2,
+    "totalCT": -2.95
+   }
+  },
+  {
+   "scheme": "MERC_BIDDING shill (bid up your own company)",
+   "LINKED": {
+    "netCT": -1.2,
+    "unitsLostCT": 0,
+    "totalCT": -1.2
+   },
+   "UNLINKED": {
+    "netCT": -1.2,
+    "unitsLostCT": 0,
+    "totalCT": -1.2
+   }
+  }
+ ]
+}

@@ -40,6 +40,26 @@ raid or escort, a sponsored airdrop. Numbers live in `data/living-world/player-e
 | **Airdrop sniping by one guild** | The crate needs a **20 s uncontested hold**. Any enemy unit in the circle pauses the timer (S2 Tide-style contest) |
 | **Fake SIEGE_ME** (post, then pull defences) | Stakes are locked for the window; withdrawing forfeits the dare top-up to the pool |
 
+### 3b. Measured: no farm loop (D39, `reports/ABUSE.md`)
+
+`tools/living-world/abuse_sim.mjs` has a main account and its alt try every payout through the real resolver and market
+code. The coalition's net CT per attempt is summed across both accounts:
+
+| Scheme | Linked alt | Unlinked alt (invisible to the relation check) |
+|---|---|---|
+| Guardian bounty self-farm | −3.7 CT | −2.95 CT |
+| Defence spoils self-farm | −11.27 CT | −7.65 CT |
+| SIEGE_ME dare self-farm | −5.2 CT | −2.5 CT |
+| BOUNTY laundering | refused (can't post) | −2.6 CT |
+| SPONSORED_AIRDROP self-farm | −9.7 CT | −2.95 CT |
+| MERC_BIDDING shill | −1.2 CT | −1.2 CT |
+
+- **Every scheme loses.** A linked alt loses everything to the relation check.
+- **An unlinked alt** still pays the split's burn and pool share, or the ≥ 10 % rake, plus the units it throws at a
+  fake fight (~2.2 CT of re-training).
+- **Shill bids** only raise what the coalition pays the NPC company.
+- The tests hold every row below zero.
+
 ## 4. Why it feels like an experience
 
 - **There's always something on the board**, and it's player stories, not chores: "Raiders, the
