@@ -28,6 +28,7 @@ byte-compares the results, re-runs the sims and checks every invariant (≈ 1 mi
 | `06-EXPERIENCE-NOT-GRIND.md` | Session shapes, anti-farm, the two progression ladders, beats, the first week, a month at scale |
 | `07-NAVAL-AND-AIR.md` | Sea and sky lanes, ambient traffic, approaches, arrival events |
 | `08-ALLOCATION.md` | How a POI battle becomes the v1 allocate request (+ the `livingWorld@1` block) |
+| `reports/CLIENT-SPEC.md` | **For the client team (plan G):** every surface to render, its producing function, field shape and a real sample (generated) |
 | `09-LIVE-OPS.md` | What to watch after launch: 13 metrics, bands, alerts, levers |
 | `OWNER-DECISIONS.md` | **The open calls, each with options and a recommendation** |
 | `BACKLOG.md` / `CYCLE-LOG.md` | What was built, in order, one line per cycle |
@@ -91,6 +92,7 @@ byte-compares the results, re-runs the sims and checks every invariant (≈ 1 mi
 - **Contracts:** `validate_events.mjs` (every event vs its engine shape and scope).
 - **Live ops:** `liveops_baseline.mjs` (every baseline in its healthy band).
 - **Performance:** `perf_budget.mjs` (`--record` sets baselines; plain run gates at 2×).
+- **Client spec:** `client_spec.mjs` (regenerates `reports/CLIENT-SPEC.md`).
 - **Handoff:** `pr1_refresh.sh`; `apply_decision.mjs` (one command per owner decision, pre-tested on scratch copies).
 
 ## Common jobs

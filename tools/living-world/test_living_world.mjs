@@ -522,4 +522,10 @@ const PHc = (await import("./placeholders_check.mjs")).check(), PHR = JSON.parse
 ok(PHc.length >= 20 && PHc.every((x) => x.ok), `every ⚙ placeholder in the register matches its live value (${PHc.length} entries)` + (PHc.some((x) => !x.ok) ? " — " + PHc.filter((x) => !x.ok).map((x) => `${x.id}: ${JSON.stringify(x.live)}`).join(", ") : ""));
 ok(PHR.entries.every((e) => e.moves && e.tune && e.guard && tsrc.includes(e.guard)), "every placeholder says what it moves, how to tune it, and names a test that guards it");
 
+// D60 client hand-off spec (generated from the live functions)
+execFileSync("node", ["tools/living-world/client_spec.mjs", "--out", "/tmp/lw_cs_a.md"], { stdio: "ignore" });
+ok(fs.readFileSync("/tmp/lw_cs_a.md").equals(fs.readFileSync("docs/living-world/reports/CLIENT-SPEC.md")), "the client spec is regenerated from the live functions and committed (it can't drift)");
+const CSm = await import("./client_spec.mjs"), CSs = CSm.surfaces();
+ok(CSs.length >= 9 && CSs.every((x) => x.values.length > 0), "every client surface in the spec has at least one real sample");
+
 console.log(fails ? `❌ living-world: ${fails} failed` : "✅ living-world: all passed"); process.exit(fails ? 1 : 0);
