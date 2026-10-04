@@ -1,0 +1,50 @@
+{
+ "schema": "cf-living-world/ct-flow@1",
+ "seed": "cf-world-1",
+ "days": 7,
+ "agents": 60,
+ "events": {
+  "DEFENCE": 33,
+  "GUARDIAN": 26,
+  "BOUNTY": 25,
+  "AIRDROP": 11,
+  "SIEGE_ME": 16
+ },
+ "ledgerEntries": 457,
+ "genesisCT": 100963,
+ "spendCT": 9565.68,
+ "burnedCT": 2853.37,
+ "poolCT": 1996.9,
+ "invariants": {
+  "noMint": true,
+  "noNegativeBalance": true,
+  "escrowsSettled": true,
+  "burnRatio": 0.2983,
+  "burnAtLeast10pct": true
+ },
+ "byReasonCT": {
+  "AIRDROP_CRATE": 990,
+  "AIRDROP_PAID": 739.8,
+  "AIRDROP_RAKE": 99,
+  "BOUNTY_EXPIRY_RAKE": 33.3,
+  "BOUNTY_PAID": 462.22,
+  "BOUNTY_POT": 962,
+  "BOUNTY_RAKE": 62.9,
+  "BOUNTY_REFUND": 299.7,
+  "DEFENCE_REFUND": 1435.98,
+  "DEFENCE_SPOILS_PAID": 671.45,
+  "DEFENCE_STAKE_BURN": 1692.24,
+  "DEFENCE_STAKE_ESCROW": 2256.54,
+  "DEFENCE_STAKE_POOL": 1692.9,
+  "GUARDIAN_BOUNTY_PAID": 423.65,
+  "GUARDIAN_FEE_BURN": 456,
+  "GUARDIAN_FEE_ESCROW": 760,
+  "GUARDIAN_FEE_POOL": 304,
+  "GUARDIAN_REFUND": 320,
+  "RELATED_SHARE_BURNED": 464.73,
+  "SIEGE_ME_DARE": 452,
+  "SIEGE_ME_DARE_REFUND": 300.6,
+  "SIEGE_ME_PAID": 62.01,
+  "SIEGE_ME_RAKE": 45.2
+ }
+}

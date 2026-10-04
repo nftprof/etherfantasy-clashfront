@@ -83,3 +83,22 @@ soldiers-per-sim-unit ratios). Three findings:
 
 Findings 1–2 are owner call §5 in `OWNER-DECISIONS.md`.
 
+## CT flow simulation (D19, `reports/CT-FLOW.md`)
+
+`tools/living-world/ct_flow_sim.mjs` runs the money side of docs 03–05 for 7 days: 60 agents in 8 alliances, using
+defence stakes, Guardian fees, bounties, sponsored airdrops and SIEGE_ME dares. Every move is one double-entry
+`LedgerEntry` in integer centi-CT. Outcomes are drawn by PRNG; the battles themselves aren't simulated.
+
+- **Every invariant holds:**
+  - no CT is minted;
+  - no player balance goes negative;
+  - every escrow settles to 0 (paid, refunded, raked or pooled);
+  - burn ≥ 10 %.
+- The same holds for **5 seeds × 200 agents × 14 days** in the tests.
+- **Burn runs at ~28–30 % of all spend, three times the Decision 17 floor.** Defence stakes and Guardian fees burn
+  30 % up front, even when the defence holds. That makes the living world a strong CT sink, which is good against
+  inflation. If the economy owner wants defending to feel cheaper, the lever is `stakeSplit.burn` 0.3 → 0.2; the burn
+  would stay above 10 %.
+- **The doc-05 relation check burned ~465 CT** of shares claimed by the poster's own alliance (out of 9,566 CT spent),
+  so the self-farming defence is live in the ledger.
+

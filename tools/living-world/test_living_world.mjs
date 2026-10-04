@@ -220,4 +220,16 @@ ok(BS.ctPerSoldier > 0 && BS.rows.length === 4 && BS.rows.every((r) => r.lossCT[
 ok(BS.rows.find((r) => r.scen === "DEFENDED").burnedCT >= 0.1 * BS.rows.find((r) => r.scen === "DEFENDED").defenderPaidCT && BS.rows.filter((r) => r.scen[0] === "F").every((r) => r.burnedCT >= 0.1 * r.defenderPaidCT), "every defender spend burns ≥ 10 % (Decision 17)");
 ok(OD.includes("BALANCE-SHEET") && BS.findings.defencesVsWarden > 10, "the Warden price outlier is on the owner-decision sheet");
 
+// D19 CT flow simulation (circular economy invariants)
+execFileSync("node", ["tools/living-world/ct_flow_sim.mjs", "--out", "/tmp/lw_ctf_a.md"], { stdio: "ignore" });
+ok(fs.readFileSync("/tmp/lw_ctf_a.json").equals(fs.readFileSync("docs/living-world/reports/CT-FLOW.json")), "CT flow report is reproducible and committed");
+const ctfBad = [];
+for (const sd of ["s1", "s2", "s3", "s4", "s5"]) {
+  execFileSync("node", ["tools/living-world/ct_flow_sim.mjs", "--seed", sd, "--agents", "200", "--days", "14", "--out", `/tmp/lw_ctf_${sd}.md`], { stdio: "ignore" });
+  const inv = JSON.parse(fs.readFileSync(`/tmp/lw_ctf_${sd}.json`, "utf8")).invariants;
+  if (!(inv.noMint && inv.noNegativeBalance && inv.escrowsSettled && inv.burnAtLeast10pct)) ctfBad.push(sd + ":" + JSON.stringify(inv));
+}
+ok(ctfBad.length === 0, "5 seeds × 200 agents × 14 days: no mint, no overdraft, every escrow settles, burn ≥ 10 %" + (ctfBad.length ? " — " + ctfBad.join(" ") : ""));
+ok(!/Math\.random|Date\.now|new Date/.test(fs.readFileSync("tools/living-world/ct_flow_sim.mjs", "utf8")), "the CT flow sim reads no clock and no unseeded randomness");
+
 console.log(fails ? `❌ living-world: ${fails} failed` : "✅ living-world: all passed"); process.exit(fails ? 1 : 0);
