@@ -1,0 +1,26 @@
+# A new player's first week (scripted through the real functions)
+
+`tools/living-world/first_week.mjs`. Two 15-min sessions a day from Capemeet Citadel (BUS). Fights are seeded PRNG at 75 % win, not the battle sim. Rewards are abstract points (10 per clear) through the doc-06 anti-farm curve. Held POIs are lost to others at 10 % a day.
+
+| | EXPLORER (follows the board) | GRINDER (nearest POI, again and again) |
+|---|---|---|
+| Fights / wins | 42 / 36 | 42 / 34 |
+| Reward points | 321 | 56 |
+| **Reward per win** | **8.92** | **1.65** |
+| Repeat clears (same POI within 24 h) | 9 | 33 |
+| Stories (newsworthy feed items) | 8 | 0 |
+| Sessions with nothing to do | 0 | 0 |
+| POIs held at day 7 | 10 | 1 |
+| First unlock (day) | POST_EVENTS d2, HARBOUR_RIGHTS d2, PAD_RIGHTS d7 | — |
+
+Explorer, day by day:
+
+| Day | Held | Unlocks | Next | Stories |
+|---|---|---|---|---|
+| 1 | 2 | — | POST_EVENTS in 1 | 1 |
+| 2 | 5 | POST_EVENTS, HARBOUR_RIGHTS | PAD_RIGHTS in 5 | 0 |
+| 3 | 7 | POST_EVENTS, HARBOUR_RIGHTS | PAD_RIGHTS in 3 | 2 |
+| 4 | 8 | POST_EVENTS, HARBOUR_RIGHTS | PAD_RIGHTS in 2 | 2 |
+| 5 | 6 | POST_EVENTS, HARBOUR_RIGHTS | PAD_RIGHTS in 4 | 2 |
+| 6 | 8 | POST_EVENTS, HARBOUR_RIGHTS | PAD_RIGHTS in 2 | 1 |
+| 7 | 10 | POST_EVENTS, HARBOUR_RIGHTS, PAD_RIGHTS | FORM3_STATION in 15 | 0 |

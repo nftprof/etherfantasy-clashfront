@@ -1,0 +1,225 @@
+{
+ "schema": "cf-living-world/first-week@1",
+ "seed": "cf-world-1",
+ "zone": "BUS",
+ "home": "BUS-CASTLE-CAPEMEET",
+ "runs": [
+  {
+   "policy": "EXPLORER",
+   "fights": 42,
+   "wins": 36,
+   "reward": 321,
+   "rewardPerWin": 8.92,
+   "repeatClears": 9,
+   "stories": 8,
+   "idleSessions": 0,
+   "unlockDay": {
+    "POST_EVENTS": 1,
+    "HARBOUR_RIGHTS": 1,
+    "PAD_RIGHTS": 6
+   },
+   "days": [
+    {
+     "day": 0,
+     "held": 2,
+     "unlocks": [],
+     "next": {
+      "unlock": "POST_EVENTS",
+      "at": 3,
+      "need": 1
+     },
+     "stories": 1,
+     "reward": 30
+    },
+    {
+     "day": 1,
+     "held": 5,
+     "unlocks": [
+      "POST_EVENTS",
+      "HARBOUR_RIGHTS"
+     ],
+     "next": {
+      "unlock": "PAD_RIGHTS",
+      "at": 10,
+      "need": 5
+     },
+     "stories": 0,
+     "reward": 90
+    },
+    {
+     "day": 2,
+     "held": 7,
+     "unlocks": [
+      "POST_EVENTS",
+      "HARBOUR_RIGHTS"
+     ],
+     "next": {
+      "unlock": "PAD_RIGHTS",
+      "at": 10,
+      "need": 3
+     },
+     "stories": 2,
+     "reward": 140
+    },
+    {
+     "day": 3,
+     "held": 8,
+     "unlocks": [
+      "POST_EVENTS",
+      "HARBOUR_RIGHTS"
+     ],
+     "next": {
+      "unlock": "PAD_RIGHTS",
+      "at": 10,
+      "need": 2
+     },
+     "stories": 2,
+     "reward": 188
+    },
+    {
+     "day": 4,
+     "held": 6,
+     "unlocks": [
+      "POST_EVENTS",
+      "HARBOUR_RIGHTS"
+     ],
+     "next": {
+      "unlock": "PAD_RIGHTS",
+      "at": 10,
+      "need": 4
+     },
+     "stories": 2,
+     "reward": 226
+    },
+    {
+     "day": 5,
+     "held": 8,
+     "unlocks": [
+      "POST_EVENTS",
+      "HARBOUR_RIGHTS"
+     ],
+     "next": {
+      "unlock": "PAD_RIGHTS",
+      "at": 10,
+      "need": 2
+     },
+     "stories": 1,
+     "reward": 271
+    },
+    {
+     "day": 6,
+     "held": 10,
+     "unlocks": [
+      "POST_EVENTS",
+      "HARBOUR_RIGHTS",
+      "PAD_RIGHTS"
+     ],
+     "next": {
+      "unlock": "FORM3_STATION",
+      "at": 25,
+      "need": 15
+     },
+     "stories": 0,
+     "reward": 321
+    }
+   ]
+  },
+  {
+   "policy": "GRINDER",
+   "fights": 42,
+   "wins": 34,
+   "reward": 56,
+   "rewardPerWin": 1.65,
+   "repeatClears": 33,
+   "stories": 0,
+   "idleSessions": 0,
+   "unlockDay": {},
+   "days": [
+    {
+     "day": 0,
+     "held": 1,
+     "unlocks": [],
+     "next": {
+      "unlock": "POST_EVENTS",
+      "at": 3,
+      "need": 2
+     },
+     "stories": 0,
+     "reward": 21
+    },
+    {
+     "day": 1,
+     "held": 1,
+     "unlocks": [],
+     "next": {
+      "unlock": "POST_EVENTS",
+      "at": 3,
+      "need": 2
+     },
+     "stories": 0,
+     "reward": 26
+    },
+    {
+     "day": 2,
+     "held": 1,
+     "unlocks": [],
+     "next": {
+      "unlock": "POST_EVENTS",
+      "at": 3,
+      "need": 2
+     },
+     "stories": 0,
+     "reward": 31
+    },
+    {
+     "day": 3,
+     "held": 1,
+     "unlocks": [],
+     "next": {
+      "unlock": "POST_EVENTS",
+      "at": 3,
+      "need": 2
+     },
+     "stories": 0,
+     "reward": 36
+    },
+    {
+     "day": 4,
+     "held": 1,
+     "unlocks": [],
+     "next": {
+      "unlock": "POST_EVENTS",
+      "at": 3,
+      "need": 2
+     },
+     "stories": 0,
+     "reward": 42
+    },
+    {
+     "day": 5,
+     "held": 0,
+     "unlocks": [],
+     "next": {
+      "unlock": "POST_EVENTS",
+      "at": 3,
+      "need": 3
+     },
+     "stories": 0,
+     "reward": 46
+    },
+    {
+     "day": 6,
+     "held": 1,
+     "unlocks": [],
+     "next": {
+      "unlock": "POST_EVENTS",
+      "at": 3,
+      "need": 2
+     },
+     "stories": 0,
+     "reward": 56
+    }
+   ]
+  }
+ ]
+}

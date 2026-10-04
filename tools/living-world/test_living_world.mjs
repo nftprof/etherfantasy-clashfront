@@ -267,4 +267,13 @@ ok(ALS.every((s) => (s.parcel.kind === "WILD") === (s.sides.DEFENDER.governorId 
 ok(ALS.every((s) => s.livingWorld.eventDeck.every((e) => PA.events[e.event] && (e.trigger || (e.atSec >= 60 && e.atSec < 720))) && new Set(s.livingWorld.eventDeck.map((e) => e.event)).size === s.livingWorld.eventDeck.length), "event decks: defined events, no repeats, timed inside the 12-min floor (Guardian wake on first contact)");
 ok(ALS.every((s) => JSON.stringify([s.livingWorld.terrainMods.attacker, s.livingWorld.terrainMods.defender]) === JSON.stringify(TMd.canon[s.livingWorld.hexTerrain])) && ALS.some((s) => s.livingWorld.guardian && s.livingWorld.guardian.ascended), "livingWorld carries the canon terrain mods and, when stationed, the Guardian (with its Ascension)");
 
+// D22 first-week walkthrough (doc 06 claims, through the real functions)
+execFileSync("node", ["tools/living-world/first_week.mjs", "--out", "/tmp/lw_fw_a.md"], { stdio: "ignore" });
+ok(fs.readFileSync("/tmp/lw_fw_a.json").equals(fs.readFileSync("docs/living-world/reports/FIRST-WEEK.json")), "first-week walkthrough is reproducible and committed");
+const FW = JSON.parse(fs.readFileSync("docs/living-world/reports/FIRST-WEEK.json", "utf8")).runs, FWE = FW.find((x) => x.policy === "EXPLORER"), FWG = FW.find((x) => x.policy === "GRINDER");
+ok(FWE.rewardPerWin >= 3 * FWG.rewardPerWin, `exploring pays ≥ 3× grinding per win (${FWE.rewardPerWin} vs ${FWG.rewardPerWin}) — the incentive points outward (doc 06 §4)`);
+ok(FWG.stories === 0 && FWE.stories >= 7, "grinding the same POI makes no stories; exploring makes about one a day");
+ok(FWE.idleSessions === 0 && FWG.idleSessions === 0, "no session in the first week had nothing to do");
+ok(FWE.unlockDay.POST_EVENTS != null && FWE.unlockDay.POST_EVENTS <= 1, "a new player can post events by day 2 (doc 06 §5 ladder step 1)");
+
 console.log(fails ? `❌ living-world: ${fails} failed` : "✅ living-world: all passed"); process.exit(fails ? 1 : 0);

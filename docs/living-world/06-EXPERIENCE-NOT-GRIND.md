@@ -105,3 +105,28 @@ power there:
 - Energy or stamina bars, daily chests, login calendars.
 - Timers you have to babysit (every timer either runs out in your favour or posts an event).
 - Rewards for clicking the same node every day.
+
+## 7. Measured: a new player's first week (D22, `reports/FIRST-WEEK.md`)
+
+`tools/living-world/first_week.mjs` plays 7 days from Capemeet Citadel through the real functions: board, reward
+curve, influence ladder, feed. It runs two 15-min sessions a day. Fights are PRNG at 75 % win, not the battle sim.
+
+| | Explorer (follows the board) | Grinder (nearest POI, again and again) |
+|---|---|---|
+| Reward per win | **8.9** | **1.65** (≈ 5× less) |
+| Stories | 8 | 0 |
+| POIs held at day 7 | 10 | 1 |
+| Unlocks | POST_EVENTS + HARBOUR_RIGHTS on day 2, PAD_RIGHTS on day 7 | none |
+| Idle sessions | 0 | 0 |
+
+The claims hold. The incentive points outward, grinding makes no stories, and the board always has something to
+do. Three things to watch:
+
+1. **About one story a day, not one per session.** Most frontier clears sit below the feed's "newsworthy" threshold,
+   so the explorer had two quiet days. Proposal: a **personal journal** that logs every win (the region feed stays
+   curated).
+2. **FORM3_STATION (25 held) is out of solo reach in week 1.** Holdings plateau around 10 with 10 %/day attrition.
+   Read this as intended: a Form 3 Ascendant is an alliance-scale goal.
+3. **9 explorer repeat clears** came from world events landing on the same Nodes on different days. The curve priced
+   them down as designed.
+
