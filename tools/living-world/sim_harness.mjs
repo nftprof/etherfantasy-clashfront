@@ -5,7 +5,9 @@
 import fs from "node:fs";
 import { makeWorld, mkUnit } from "../../server/sim/state.js";
 import { step } from "../../server/sim/step.js";
-export const opts = { SQUAD_MUL: 1.5, DEF_MUL: 3, G_HP: null };   // DEF_MUL: structure-HP calibration (D6b sweep: ×3 → a bare threat-50 castle breaches at ~9 min, mid 6–12 band)
+export const opts = { SQUAD_MUL: 1.5, DEF_MUL: 3, G_HP: null, TERRAIN: false };   // TERRAIN: opt-in canon terrain mods by poi.ground (D14; sim_matrix turns it on)
+export const TM = JSON.parse(fs.readFileSync("data/living-world/terrain-mods.json", "utf8"));
+export const terrainMods = (ground) => TM.canon[TM.groundToHexTerrain[ground] || "PLAINS"];   // DEF_MUL: structure-HP calibration (D6b sweep: ×3 → a bare threat-50 castle breaches at ~9 min, mid 6–12 band)
 export const PA = JSON.parse(fs.readFileSync("data/living-world/poi-archetypes.json", "utf8"));
 export const CP = JSON.parse(fs.readFileSync("data/living-world/castle-pois.json", "utf8"));
 export function fnv1a(s) { let h = 0x811c9dc5; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 0x01000193); } return h >>> 0; }
@@ -58,11 +60,15 @@ export function runOne(poi, scen = "BASE") {
     const ws = mkUnit({ kind: "wall", team: 1, x: K.x + Math.cos(a) * 11, z: K.z + Math.sin(a) * 11, hp, maxHp: hp, dmg: 0, range: 0, speed: 0 }); ws.slot = "WARD_STONE"; w.units.set(ws.uid, ws); wards.push(ws);
   }
   let gKoSec = null, tired = false, wakeT = null, cut = 0, wardsDownAt = [];   // doc 04 (revised by this sample): the Ascension clock starts at FIRST CONTACT, not battle start
+  // D14 canon terrain (opt-in): the attacker's mod scales the damage defenders take, the defender's mod the damage attackers take
+  const [aMod, dMod] = opts.TERRAIN ? terrainMods(poi.ground) : [1, 1];
+  if (aMod !== 1) for (const u of w.units.values()) if (u.team === 1 && u !== G) u.dmgTakenMul = aMod;
   const inputs = new Map(); let deaths = 0; const aliveNow = new Set();
   for (const u of w.units.values()) if (u.team === 0 && u.hp > 0) aliveNow.add(u.uid);
   const cap = F ? GUARDIAN_CAP_SEC : FLOOR_SEC;   // guardian scenarios run to 20 min so the tired / KO phase is visible
   while (w.winner == null && w.t < cap) {
     step(w, DT, inputs);
+    if (dMod !== 1) for (const u of w.units.values()) if (u.team === 0 && u.dmgTakenMul == null) u.dmgTakenMul = dMod;   // waves spawn mid-battle
     for (const u of [...w.units.values()]) if (u.team === 1 && u.kind === "minion") w.units.delete(u.uid);
     if (G && wakeT == null && G.hp < G.maxHp) wakeT = w.t;
     if (G && F.ascended && !tired) { const down = wards.filter((x) => !(x.hp > 0)).length; while (wardsDownAt.length < down) wardsDownAt.push(Math.round(w.t)); cut = down * F.ascended.wardStones.cutSecEach; }

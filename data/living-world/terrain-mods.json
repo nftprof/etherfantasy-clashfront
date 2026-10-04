@@ -1,0 +1,7 @@
+{
+ "schema": "cf-living-world/terrain-mods@1",
+ "src": "cf-overworld docs/04-battle-system.md §terrain modifier defaults (HexTerrain: attacker / defender; ❓ OPEN there — the final table is Sim-owned balance.json)",
+ "note": "D14: living-world ground → canon HexTerrain row. Applied in the headless harness as damage-taken multipliers: defenders take attacker damage × attacker mod, attackers take defender damage × defender mod. SKY and UNDER have no canon row (⚙ neutral until the Sim table names them).",
+ "canon": { "PLAINS": [1.0, 1.0], "FOREST": [0.95, 1.05], "HILLS": [0.9, 1.1], "RIVER": [0.9, 1.1], "MOUNTAIN": [0.9, 1.15] },
+ "groundToHexTerrain": { "PLAIN": "PLAINS", "FOREST": "FOREST", "RIDGE": "HILLS", "WATER": "RIVER", "SURFACE": "PLAINS", "SKY": "PLAINS", "UNDER": "PLAINS" }
+}

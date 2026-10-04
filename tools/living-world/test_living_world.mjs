@@ -232,4 +232,11 @@ for (const sd of ["s1", "s2", "s3", "s4", "s5"]) {
 ok(ctfBad.length === 0, "5 seeds × 200 agents × 14 days: no mint, no overdraft, every escrow settles, burn ≥ 10 %" + (ctfBad.length ? " — " + ctfBad.join(" ") : ""));
 ok(!/Math\.random|Date\.now|new Date/.test(fs.readFileSync("tools/living-world/ct_flow_sim.mjs", "utf8")), "the CT flow sim reads no clock and no unseeded randomness");
 
+// D14 canon terrain in the harness
+const TMd = JSON.parse(fs.readFileSync("data/living-world/terrain-mods.json", "utf8")), bs04 = fs.readFileSync("/home/user/cf-overworld/docs/04-battle-system.md", "utf8");
+ok(Object.entries(TMd.canon).every(([t, [a, d]]) => new RegExp("^\\| " + t + "[^|]*\\| " + a.toFixed(2) + " \\| " + d.toFixed(2) + " \\|", "m").test(bs04)), "terrain-mods mirror the canon doc-04 table (attacker / defender per HexTerrain)");
+ok(MX.terrain === true && ["FOREST", "RIDGE", "WATER"].every((g) => MX.rows.some((r) => r.ground === g)), "the committed matrix runs with canon terrain on");
+const lair = (g) => MX.rows.find((r) => r.k === "WILD_LAIR" && r.ring === "WILD" && r.ground === g).medBreachSec;
+ok(lair("PLAIN") < lair("FOREST") && lair("FOREST") < lair("RIDGE"), "defensible ground holds longer: plain < forest < ridge (wild lairs)");
+
 console.log(fails ? `❌ living-world: ${fails} failed` : "✅ living-world: all passed"); process.exit(fails ? 1 : 0);

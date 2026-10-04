@@ -122,3 +122,27 @@ depth  = log(zoneStrength) / log(5)                                             
 - **Same placements.** The jitter uses the same single seeded draw, so every Node stays where it was; only its threat
   changed. The ≥ 85 % in-band floor is now a test.
 
+### 7c. Terrain in the harness (D14)
+
+The harness now applies cf-overworld's canon terrain modifiers (doc 04, attacker / defender) by POI ground, from
+`data/living-world/terrain-mods.json`:
+
+| Ground | Canon row | Modifiers |
+|---|---|---|
+| FOREST | FOREST | 0.95 / 1.05 |
+| RIDGE | HILLS | 0.90 / 1.10 |
+| WATER | RIVER crossing | 0.90 / 1.10 |
+| SKY, UNDER | none yet | neutral ⚙ |
+
+They act as damage-taken multipliers: defenders take attacker damage × the attacker mod, attackers take defender
+damage × the defender mod. It's opt-in, so `SIM-SAMPLE` and the Guardian numbers are unchanged; `sim_matrix` turns it
+on (`--terrain off` gives the flat baseline).
+
+- **Ground now matters.** Forest adds ~0:30 to a skirmish; ridges and water crossings add 1:20–2:40. Lairs: plain 4:06,
+  forest 4:40, ridge 6:44.
+- **51 / 57 cells ok; 5 % of POIs out of band.** The 5 SLOW cells are wild lairs on ridges and in water, frontier
+  harbours on ridges and water, and salvage sites. They run 6:05–6:44, just past the 6-min skirmish ceiling.
+- **That's the canon high-ground advantage doing its job.** The tuning question is whether defensible ground should
+  get a slightly lower threat so the fight still lands in band. That's the next item (D14b), still in `threatBands`
+  and never per map.
+
