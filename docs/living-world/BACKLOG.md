@@ -49,3 +49,10 @@ airships, landing spots, harbours + sea ships; seed all 20K maps; an experience,
 - [x] D14 — Terrain in the sim harness: forest cover (ranged −), ridge high ground (range +), water crossings (speed −) so SIM-MATRIX ground columns mean something
 - [x] D14b — Ground-aware threat: `threatBands.groundShift` (e.g. RIDGE / WATER −3) so defensible-ground skirmishes land in 3–6 min with canon terrain on; re-seed (placements unchanged), re-run SIM-MATRIX → ≥ 95 % in band
 - [x] D16 — Event board at tick T: one region's live + upcoming events (player-posted + auto), filter/sort per doc 05 §2.2, sample output
+
+## Wave 4 (added cycle 35)
+- [ ] D21 — Allocation payload: a living-world POI battle → the doc-09 §5 allocate request (BattleInstance + POI garrison, threat, ground/terrain mods, seeded event deck, Guardian/defence state) — the wire between overworld and this engine; schema + builder + tests
+- [ ] D22 — First-week walkthrough: script a new player's 7 days through the real functions (board, clears, rewards curve, influence ladder, feed) → report: time to first unlock, CT in/out, stories generated; checks the doc-06 "experience, not grind" claims
+- [ ] D24 — Last out-of-band cell: in-castle BARBARIAN_CAMP raids fall at 5:38 (< 6 min RAID floor) — tune in poi-archetypes (garrison or castle threat mix)
+- [ ] D25 — NAVAL_LANDING / AIRSHIP_DROP spawn at the derived approaches (approaches.json) per map: event → spawn point resolver + tests
+- [ ] D23 — Guardian stationings on the board: GUARDIAN_CHALLENGE auto-posts (doc 05) with the doc-04 wake banner / time-left text; synthetic stationings respecting cooldowns and the 1-Ascendant-per-castle-per-week limit
