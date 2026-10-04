@@ -78,7 +78,8 @@ byte-compares the results, re-runs the sims and checks every invariant (≈ 1 mi
   - `ct_flow_sim.mjs` (ledger invariants);
   - `first_week.mjs` (explorer vs grinder);
   - `month_sim.mjs` (North Star at scale);
-  - `abuse_sim.mjs` (coalition self-farming: every scheme net-negative).
+  - `abuse_sim.mjs` (coalition self-farming: every scheme net-negative);
+  - `e2e_slice.mjs` (one fight end to end: board → allocate → real kernel → callback → resolver → influence).
 - **Contracts:** `validate_events.mjs` (every event vs its engine shape and scope).
 - **Live ops:** `liveops_baseline.mjs` (every baseline in its healthy band).
 - **Performance:** `perf_budget.mjs` (`--record` sets baselines; plain run gates at 2×).

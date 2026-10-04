@@ -466,4 +466,12 @@ let i18nThrows = false; try { I18.t("no.such.key"); } catch { i18nThrows = true;
 ok(i18nThrows, "a missing key throws instead of rendering blank copy");
 ok(["journal.mjs", "region_feed.mjs", "stationings.mjs"].every((f) => !/"(Cleared the|Beaten back|Lost to|the Ascendant of|the Warden of|north-east|at your gates)/.test(fs.readFileSync("tools/living-world/" + f, "utf8"))), "no player-facing copy is hardcoded in the feed / journal / banner code");
 
+// D46 end-to-end slice through the real kernel
+execFileSync("node", ["tools/living-world/e2e_slice.mjs", "--out", "/tmp/lw_e2e_a.md"], { stdio: "ignore" });
+ok(fs.readFileSync("/tmp/lw_e2e_a.json").equals(fs.readFileSync("docs/living-world/reports/E2E.json")), "the end-to-end slice is deterministic and committed");
+const E2E = JSON.parse(fs.readFileSync("docs/living-world/reports/E2E.json", "utf8")).fights;
+ok(E2E.length >= 2 && E2E.every((x) => (x.callback.winner === "ATTACKER") === x.sim.breached && x.sim.guardianDmgShare <= 0.2), "every slice battle: the callback's winner is the kernel's outcome, and the Guardian kept to its 20 % damage cap");
+ok(E2E.every((x) => { const o = x.callback.guardianOutcome; const esc = x.board.potCT; return o === "KO" || o === "UNBOUND" ? Math.abs(x.resolved.raiderCT - esc) < 0.011 : o === "OUTLASTED" ? Math.abs(x.resolved.raiderCT + x.resolved.ownerCT - esc) < 0.011 && x.resolved.ownerCT > 0 : x.resolved.escrowLeftCT === esc; }) && E2E.every((x) => x.resolved.escrowLeftCT === 0 || x.callback.guardianOutcome === "HELD"), "the bounty escrow shown on the board settles exactly per the Guardian outcome (KO all / OUTLASTED half / HELD stays)");
+ok(E2E.every((x) => x.resolved.feed.includes("GUARDIAN_" + x.callback.guardianOutcome) && x.resolved.effects.some((e) => e.kind === "POST_VICTORY_CHOICE" && e.options.join() === "PILLAGE,OCCUPY") === (x.callback.winner === "ATTACKER")), "a broken castle makes its feed story and hands the winner the canon PILLAGE / OCCUPY choice (never taken by the resolver)");
+
 console.log(fails ? `❌ living-world: ${fails} failed` : "✅ living-world: all passed"); process.exit(fails ? 1 : 0);

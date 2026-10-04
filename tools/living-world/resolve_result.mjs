@@ -42,6 +42,9 @@ export function resolveResult(world0, alloc, cb) {
   let feedKind = null;
   if (won) {
     if (HOLD.has(lw.lwKind)) { w.holders[poiId] = atkGov; effects.push({ kind: "HOLDER_CHANGED", poiId, from: defGov, to: atkGov }); }
+    // a castle battle (its Guardian perch): the castle itself changes hands only through the canon post-victory flow —
+    // the WINNER chooses PILLAGE or OCCUPY, once (canon invariant 10). The resolver raises the choice; it never takes it.
+    if (lw.lwKind === "GUARDIAN_PERCH") effects.push({ kind: "POST_VICTORY_CHOICE", castleId: alloc.parcel.parcelId, chooser: atkGov, options: ["PILLAGE", "OCCUPY"] });
     if (lw.lwKind === "BARBARIAN_CAMP") { w.lulls.push({ zone: alloc.parcel.zone, tick: w.tick }); effects.push({ kind: "LULL_STARTED", zone: alloc.parcel.zone, hours: EX.lullHours.BARBARIAN_CAMP }); }
     pay(`ESCROW:DEFENCE:${poiId}`, "DEFENCE_SPOILS_PAID");
     const go = cb.livingWorld && cb.livingWorld.guardianOutcome, gAcct = `ESCROW:GUARDIAN:${poiId}`;

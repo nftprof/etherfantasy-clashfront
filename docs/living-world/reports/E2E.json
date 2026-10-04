@@ -1,0 +1,181 @@
+{
+ "schema": "cf-living-world/e2e@1",
+ "zone": "BUS",
+ "tick": 720,
+ "fights": [
+  {
+   "board": {
+    "id": "gc|BUS-KEEP-GULLSHOAL:GUARDIAN_PERCH:1|348",
+    "banner": "⚠ the Warden of Gullshoal Light stands for 10 h 48 m",
+    "potCT": 0.5
+   },
+   "allocate": {
+    "battleId": "battle_E2E00000000000000000000000",
+    "structures": 13,
+    "deck": [
+     "GUARDIAN_WAKE"
+    ],
+    "guardian": "Warden"
+   },
+   "sim": {
+    "breached": true,
+    "sec": 708,
+    "attackerDeaths": 81,
+    "guardianWakeSec": 562,
+    "guardianKoSec": 669,
+    "wardsDownAt": [],
+    "guardianDmgShare": 0.197
+   },
+   "callback": {
+    "winner": "ATTACKER",
+    "casualties": {
+     "INFANTRY": 540,
+     "SIEGE": 270
+    },
+    "guardianOutcome": "KO",
+    "durationSec": 708
+   },
+   "resolved": {
+    "effects": [
+     {
+      "kind": "ATTACKER_LOSSES",
+      "casualties": {
+       "INFANTRY": 540,
+       "SIEGE": 270
+      },
+      "retrainCT": 37.8
+     },
+     {
+      "kind": "POST_VICTORY_CHOICE",
+      "castleId": "BUS-KEEP-GULLSHOAL",
+      "chooser": "gov_E2E_RAIDER",
+      "options": [
+       "PILLAGE",
+       "OCCUPY"
+      ]
+     },
+     {
+      "kind": "GUARDIAN_BOUNTY_PAID",
+      "ct": 0.5,
+      "burned": false
+     },
+     {
+      "kind": "CLEAR_REWARD",
+      "nth": 1,
+      "mult": 1,
+      "heroImpact": 0.12,
+      "rewardPoints": 11
+     }
+    ],
+    "holder": "gov_SAMPLE_1",
+    "escrowLeftCT": 0,
+    "raiderCT": 0.5,
+    "ownerCT": 0,
+    "feed": [
+     "GUARDIAN_KO"
+    ],
+    "journal": [
+     "Cleared the Guardian's perch out in the region (+11)",
+     "Beaten back at the Guardian's perch out in the region. They'll remember you."
+    ]
+   },
+   "influence": {
+    "held": 0,
+    "unlocks": [],
+    "next": {
+     "unlock": "POST_EVENTS",
+     "at": 3,
+     "need": 3
+    }
+   }
+  },
+  {
+   "board": {
+    "id": "gc|BUS-FORT-TIDEGATE:GUARDIAN_PERCH:1|465",
+    "banner": "⚠ the Ascendant of Fort Tidegate stands for 1 h 45 m: 8 min of power from first contact, 3 Ward Stones",
+    "potCT": 4.5
+   },
+   "allocate": {
+    "battleId": "battle_E2E00000000000000000000001",
+    "structures": 13,
+    "deck": [
+     "GUARDIAN_WAKE"
+    ],
+    "guardian": "Ascendant"
+   },
+   "sim": {
+    "breached": true,
+    "sec": 982,
+    "attackerDeaths": 87,
+    "guardianWakeSec": 549,
+    "guardianKoSec": 923,
+    "wardsDownAt": [
+     548
+    ],
+    "guardianDmgShare": 0.197
+   },
+   "callback": {
+    "winner": "ATTACKER",
+    "casualties": {
+     "INFANTRY": 580,
+     "SIEGE": 290
+    },
+    "guardianOutcome": "OUTLASTED",
+    "durationSec": 982
+   },
+   "resolved": {
+    "effects": [
+     {
+      "kind": "ATTACKER_LOSSES",
+      "casualties": {
+       "INFANTRY": 580,
+       "SIEGE": 290
+      },
+      "retrainCT": 40.6
+     },
+     {
+      "kind": "POST_VICTORY_CHOICE",
+      "castleId": "BUS-FORT-TIDEGATE",
+      "chooser": "gov_E2E_RAIDER",
+      "options": [
+       "PILLAGE",
+       "OCCUPY"
+      ]
+     },
+     {
+      "kind": "GUARDIAN_OUTLASTED_PAID",
+      "ct": 2.25,
+      "burned": false
+     },
+     {
+      "kind": "CLEAR_REWARD",
+      "nth": 1,
+      "mult": 1,
+      "heroImpact": 0.12,
+      "rewardPoints": 11
+     }
+    ],
+    "holder": "gov_SAMPLE_1",
+    "escrowLeftCT": 0,
+    "raiderCT": 2.25,
+    "ownerCT": 2.25,
+    "feed": [
+     "GUARDIAN_OUTLASTED"
+    ],
+    "journal": [
+     "Cleared the Guardian's perch out in the region (+11)",
+     "Beaten back at the Guardian's perch out in the region. They'll remember you."
+    ]
+   },
+   "influence": {
+    "held": 0,
+    "unlocks": [],
+    "next": {
+     "unlock": "POST_EVENTS",
+     "at": 3,
+     "need": 3
+    }
+   }
+  }
+ ]
+}

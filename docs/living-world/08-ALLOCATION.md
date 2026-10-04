@@ -94,3 +94,25 @@ carries a `BATTLE` one.
 - `KRAKEN_SIGHTING` had no effect parameter, so an engine wouldn't have known what it does. It's now a telegraphed
   300-damage strike on each ship (⚙).
 
+## 5. One fight end to end (D46, `reports/E2E.md`)
+
+`tools/living-world/e2e_slice.mjs` chains the shipped pieces through the **real kernel**:
+
+1. The BUS board's live `GUARDIAN_CHALLENGE`s.
+2. `buildAllocate`.
+3. The headless battle in `server/sim`, with the Guardian rules and the 20 % damage budget.
+4. A v1 callback synthesised from the sim outcome.
+5. `resolveResult`.
+6. Region influence.
+
+| Fight | Kernel | Outcome | Settlement |
+|---|---|---|---|
+| Warden of Gullshoal Light | Woke 9:22, KO'd 11:09; breached at 11:48 | KO | The whole 0.5 CT bounty to the raider |
+| Ascendant of Fort Tidegate | Woke 9:09, 1 Ward Stone down, tired at 15:09, KO'd 15:23; breached at 16:22 | OUTLASTED | 2.25 CT to the raider, 2.25 CT home |
+
+- **It found one gap, now closed.** Breaking a castle never transferred the castle, and that's correct: canon makes the
+  winner choose PILLAGE or OCCUPY, once (invariant 10). So the resolver now raises a `POST_VICTORY_CHOICE` for
+  castle battles instead of silently doing nothing.
+- The tests check the chain stays consistent: the winner comes from the kernel, the cap holds, the escrow settles
+  exactly per outcome, and the feed story and post-victory choice are emitted.
+

@@ -38,6 +38,7 @@
  "poi.LANDING_SPOT": "landing spot",
  "poi.SALVAGE_SITE": "salvage site",
  "poi.BARBARIAN_CAMP": "barbarian camp",
+ "poi.GUARDIAN_PERCH": "Guardian's perch",
  "poi._default": "position",
  "journal.win.POI_CLEARED": "Cleared the {poi} {where}",
  "journal.win.BARBARIAN_CAMP_CLEARED": "Broke a barbarian raid {where}: 48 h of quiet for the region",
