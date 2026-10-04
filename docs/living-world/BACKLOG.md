@@ -14,7 +14,7 @@ airships, landing spots, harbours + sea ships; seed all 20K maps; an experience,
 - [x] 05 — Player-created events (bounties, sieges, guardian challenges) and how other players find and join them
 - [x] 06 — Experience, not grind: session shapes, lulls, rewards cadence, anti-farming
 - [x] 07 — Naval + air layer: harbours, sea ships, airship docks, landing spots, ferry routes
-- [ ] 08 — Canon reconciliation: add new terms to the data-model canon (PR to the overworld branch)
+- [x] 08 — Canon reconciliation: add new terms to the data-model canon (PR to the overworld branch)
 
 ## Data & code
 - [x] D1 — Inventory castles / parcels / terrain from the overworld data (counts, fields, biomes, coast)
