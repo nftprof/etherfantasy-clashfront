@@ -35,7 +35,8 @@ airships, landing spots, harbours + sea ships; seed all 20K maps; an experience,
 
 ## Wave 2 (added cycle 22, after the first backlog emptied)
 - [x] D9 — Ambient ship traffic: seeded `shipsAt(world.seed, tick)` over `sea-air-lanes.json` (merchant hulls + airships, storm-season lane closures) + determinism tests — doc 07 step 1
-- [ ] D6e — Archetype × biome sampling matrix (doc 02 §5.2): N seeded parcels per template through the sampler; flag any template outside its tier band
+- [x] D6e — Archetype × biome sampling matrix (doc 02 §5.2): N seeded parcels per template through the sampler; flag any template outside its tier band
+- [ ] D6f — Threat curve per ring: clamp seeded threat into the range that lands each band (SKIRMISH 3–6, RAID 6–12), keeping zone strength as the ordering; re-seed, re-run SIM-MATRIX → target ≥ 85 % of POIs in band
 - [ ] D10 — Region feed: deterministic headline generator from `player-events.json` + POI outcomes (doc 05/06 "something happened" stories), with sample output
 - [ ] D11 — Influence ladder (doc 06 §5) as data + function: POIs held per region → unlocks (SIEGE_ME, ship 5, airship 10, Ascendant 25) + tests against vessel thresholds
 - [ ] D12 — Anti-farm + lull rules as a pure reward function (×1/0.6/0.3/0.1 repeat curve, 48 h camp quiet) + tests

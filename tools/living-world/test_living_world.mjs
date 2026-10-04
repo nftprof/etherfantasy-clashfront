@@ -144,4 +144,13 @@ ok(AT.LANES.lanes.filter((l) => l.mode === "AIR").every((l) => Array.from({ leng
 const atS = JSON.parse(at1);
 ok(atS.snapshots.slice(1).every((s) => s.closedLanes > 0 && s.closedLanes < AT.LANES.counts.sea), "every storm-season day closes some sea lanes, never all");
 
+// D6e archetype × ring × ground matrix (shared harness)
+execFileSync("node", ["tools/living-world/sim_matrix.mjs", "--n", "1", "--out", "/tmp/lw_mx_a.md"], { stdio: "ignore" });
+execFileSync("node", ["tools/living-world/sim_matrix.mjs", "--n", "1", "--out", "/tmp/lw_mx_b.md"], { stdio: "ignore" });
+ok(fs.readFileSync("/tmp/lw_mx_a.json").equals(fs.readFileSync("/tmp/lw_mx_b.json")), "sim matrix is deterministic (same seeds → same cells)");
+const MX = JSON.parse(fs.readFileSync("docs/living-world/reports/SIM-MATRIX.json", "utf8"));
+ok(PA.archetypes.filter((x) => x.garrison.length).every((x) => MX.rows.some((r) => r.k === x.lwKind)), "every garrisoned archetype appears in the committed matrix");
+ok(MX.rows.every((r) => r.n >= 1 && ["ok", "SOFT", "SLOW", "HARD"].includes(r.verdict) && ["RAID", "SKIRMISH"].includes(r.band)), "every matrix cell has samples, a band and a verdict");
+ok(MX.population === MX.rows.reduce((n, r) => n + r.population, 0), "matrix population adds up");
+
 console.log(fails ? `❌ living-world: ${fails} failed` : "✅ living-world: all passed"); process.exit(fails ? 1 : 0);

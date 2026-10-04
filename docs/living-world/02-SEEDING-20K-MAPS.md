@@ -81,3 +81,20 @@ These are enforced by a second deterministic pass.
 Seeding all 284 K parcels is a pure function over JSON (seconds of CPU). The sim sample is about
 70 templates × 30 runs = **2,100 headless battles a night**. Nothing per map is hand-made except the
 ≈ 450 story places.
+
+## 7. First matrix run (D6e, `reports/SIM-MATRIX.md`)
+
+`tools/living-world/sim_matrix.mjs` runs §5.2 for real. Every (archetype, ring, ground) cell the seeders produce gets
+N = 4 seeded POIs through the shared harness (`sim_harness.mjs`), judged against its band from doc 06 §2: in-castle
+POIs are a **RAID** (6–12 min); frontier and wild POIs are a **SKIRMISH** (3–6 min).
+
+- **57 cells: 30 ok, 14 SOFT, 8 SLOW, 5 HARD.** That leaves **46 % of seeded garrisoned POIs** in out-of-band cells.
+- **The cause is the threat curve, not the templates.** Threat follows zone strength, so:
+  - Underworld POIs (median threat 50–85) are **SLOW** or **HARD**: wild lairs under the surface never breach in 12 min;
+  - surface in-castle POIs (threat 12–26) are **SOFT** raids at 1–5 min;
+  - surface frontier lairs and war camps (threat ≈ 16) fall in about 2:30.
+- **Fix (next item, D6f):** clamp each ring's threat into the range that lands its band, keeping zone strength as the
+  *ordering* inside that range. Deep zones stay the hardest skirmishes, but still skirmishes. The tuning lives in
+  `poi-archetypes.json` (doc 02 §5 rule), never per map.
+- The battlefield is still flat in the harness, so ground only acts through threat. Terrain modifiers are a later item.
+
