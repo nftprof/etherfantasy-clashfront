@@ -1,0 +1,613 @@
+{
+ "schema": "cf-living-world/poi-archetypes@1",
+ "note": "Single source of truth for POI archetypes + their event decks (doc 01). The seeder and the sim read this file; docs quote it. Numbers start from the shipped Season 2 tunables (src).",
+ "limits": {
+  "garrisonMax": 6,
+  "perParcelMax": 6,
+  "heroImpactMax": 0.2,
+  "deadFloorSec": 600
+ },
+ "budgetByCastleKind": {
+  "PALACE": {
+   "total": 6,
+   "always": [
+    "GUARDIAN_PERCH",
+    "GUARDIAN_PERCH",
+    "WAR_CAMP"
+   ]
+  },
+  "CASTLE": {
+   "total": 4,
+   "always": [
+    "GUARDIAN_PERCH",
+    "MERCENARY_POST"
+   ]
+  },
+  "KEEP": {
+   "total": 3,
+   "always": [
+    "GUARDIAN_PERCH"
+   ]
+  }
+ },
+ "archetypes": [
+  {
+   "lwKind": "HARBOUR",
+   "layers": [
+    "SURFACE"
+   ],
+   "affinity": {
+    "coastMax": 20,
+    "preferPoi": "SEA_PORT"
+   },
+   "garrison": [
+    [
+     "HARBOUR_MASTER",
+     1
+    ],
+    [
+     "MARINE",
+     2
+    ],
+    [
+     "SHIP",
+     1
+    ]
+   ],
+   "deck": [
+    [
+     "NAVAL_LANDING",
+     4
+    ],
+    [
+     "SMUGGLER_RUN",
+     2
+    ],
+    [
+     "STORM",
+     2
+    ],
+    [
+     "KRAKEN_SIGHTING",
+     1
+    ]
+   ],
+   "holdReward": {
+    "kind": "SEA_LANE_TOLL",
+    "tollPct": 5
+   }
+  },
+  {
+   "lwKind": "AIRSHIP_DOCK",
+   "layers": [
+    "SKY",
+    "SURFACE"
+   ],
+   "affinity": {
+    "skyAlways": true,
+    "preferPoi": "AIRSHIP_PORT",
+    "portMax": 25
+   },
+   "garrison": [
+    [
+     "DOCKWARDEN",
+     1
+    ],
+    [
+     "SKIRMISHER",
+     2
+    ],
+    [
+     "AIRSHIP",
+     1
+    ]
+   ],
+   "deck": [
+    [
+     "AIRSHIP_DROP",
+     4
+    ],
+    [
+     "SKY_RAIDERS",
+     2
+    ],
+    [
+     "GALE",
+     2
+    ]
+   ],
+   "holdReward": {
+    "kind": "AIR_REINFORCE",
+    "rangeU": 40
+   }
+  },
+  {
+   "lwKind": "LANDING_SPOT",
+   "layers": [
+    "SURFACE",
+    "SKY"
+   ],
+   "affinity": {
+    "parent": [
+     "HARBOUR",
+     "AIRSHIP_DOCK"
+    ],
+    "perParent": [
+     1,
+     2
+    ],
+    "offsetU": [
+     4,
+     9
+    ]
+   },
+   "garrison": [],
+   "deck": [],
+   "holdReward": {
+    "kind": "TAKE_THE_DROP"
+   }
+  },
+  {
+   "lwKind": "AIRDROP_ZONE",
+   "layers": [
+    "SURFACE",
+    "SKY"
+   ],
+   "affinity": {
+    "roadMax": 8,
+    "castleMin": 10
+   },
+   "garrison": [],
+   "deck": [
+    [
+     "SUPPLY_AIRDROP",
+     1
+    ]
+   ],
+   "holdReward": {
+    "kind": "CRATE"
+   }
+  },
+  {
+   "lwKind": "BARBARIAN_CAMP",
+   "layers": [
+    "SURFACE",
+    "UNDER"
+   ],
+   "affinity": {
+    "ridgeMax": 30,
+    "castleMin": 25
+   },
+   "garrison": [
+    [
+     "CHIEFTAIN",
+     1
+    ],
+    [
+     "BARBARIAN",
+     5
+    ]
+   ],
+   "deck": [
+    [
+     "BARBARIAN_RAID",
+     4
+    ],
+    [
+     "CHIEFTAIN_DUEL",
+     1
+    ]
+   ],
+   "holdReward": {
+    "kind": "LULL",
+    "hours": 48
+   }
+  },
+  {
+   "lwKind": "MERCENARY_POST",
+   "layers": [
+    "SURFACE",
+    "SKY",
+    "UNDER"
+   ],
+   "affinity": {
+    "roadMax": 2,
+    "between": [
+     "castle",
+     "port"
+    ]
+   },
+   "garrison": [
+    [
+     "MERC_CAPTAIN",
+     1
+    ]
+   ],
+   "deck": [
+    [
+     "MERC_BIDDING",
+     1
+    ]
+   ],
+   "holdReward": {
+    "kind": "HIRE_GUARDS",
+    "contract": "MERCENARY_DEFEND"
+   }
+  },
+  {
+   "lwKind": "CARAVAN_WAYPOINT",
+   "layers": [
+    "SURFACE",
+    "SKY"
+   ],
+   "affinity": {
+    "onRoad": true,
+    "between": [
+     "castle",
+     "port"
+    ]
+   },
+   "garrison": [],
+   "deck": [
+    [
+     "CARAVAN_RUN",
+     3
+    ],
+    [
+     "BANDIT_TOLL",
+     1
+    ]
+   ],
+   "holdReward": {
+    "kind": "ESCORT_PAY",
+    "army": "CARAVAN"
+   }
+  },
+  {
+   "lwKind": "WILD_LAIR",
+   "layers": [
+    "SURFACE",
+    "SKY",
+    "UNDER"
+   ],
+   "affinity": {
+    "castleMin": 12,
+    "monsterByGround": {
+     "FOREST": "WOLF",
+     "RIDGE": "WYRM",
+     "SKY": "HARPY",
+     "UNDER": "TROLL",
+     "WATER": "KRAKEN_SPAWN",
+     "PLAIN": "BANDIT"
+    }
+   },
+   "garrison": [
+    [
+     "ALPHA",
+     1
+    ],
+    [
+     "PACK",
+     4
+    ]
+   ],
+   "deck": [
+    [
+     "PACK_HUNT",
+     3
+    ],
+    [
+     "ALPHA_ENRAGE",
+     1
+    ],
+    [
+     "STAMPEDE",
+     1
+    ]
+   ],
+   "holdReward": {
+    "kind": "TAMING_PROGRESS",
+    "wildSpawnKind": "MONSTER_NODE"
+   }
+  },
+  {
+   "lwKind": "WAR_CAMP",
+   "layers": [
+    "SURFACE",
+    "SKY",
+    "UNDER"
+   ],
+   "affinity": {
+    "preferPoi": "WAR_CAMP",
+    "flankU": [
+     15,
+     30
+    ]
+   },
+   "garrison": [
+    [
+     "FIELD_OFFICER",
+     1
+    ],
+    [
+     "SOLDIER",
+     4
+    ]
+   ],
+   "deck": [
+    [
+     "MUSTER",
+     3
+    ],
+    [
+     "WARLORD",
+     1
+    ]
+   ],
+   "holdReward": {
+    "kind": "FAST_MUSTER",
+    "musterMul": 0.75
+   }
+  },
+  {
+   "lwKind": "GUARDIAN_PERCH",
+   "layers": [
+    "SURFACE",
+    "SKY",
+    "UNDER"
+   ],
+   "affinity": {
+    "inCastle": true
+   },
+   "garrison": [],
+   "deck": [
+    [
+     "GUARDIAN_WAKE",
+     1
+    ]
+   ],
+   "holdReward": {
+    "kind": "STATION_GUARDIAN"
+   }
+  },
+  {
+   "lwKind": "SALVAGE_SITE",
+   "layers": [
+    "SURFACE",
+    "UNDER"
+   ],
+   "affinity": {
+    "coastMax": 10,
+    "orRuin": true
+   },
+   "garrison": [
+    [
+     "SCAVENGER",
+     3
+    ]
+   ],
+   "deck": [
+    [
+     "SALVAGE_RACE",
+     3
+    ],
+    [
+     "STORM",
+     1
+    ]
+   ],
+   "holdReward": {
+    "kind": "ONE_OFF_LOOT"
+   }
+  },
+  {
+   "lwKind": "VENT",
+   "layers": [
+    "UNDER"
+   ],
+   "affinity": {
+    "riverMax": 15
+   },
+   "garrison": [
+    [
+     "ELEMENTAL",
+     2
+    ]
+   ],
+   "deck": [
+    [
+     "ERUPTION",
+     3
+    ],
+    [
+     "CAVE_IN",
+     1
+    ]
+   ],
+   "holdReward": {
+    "kind": "RARE_MATERIAL"
+   }
+  }
+ ],
+ "events": {
+  "NAVAL_LANDING": {
+   "src": "S2 field: every 3rd wave by ship",
+   "teleSec": 8,
+   "durSec": 90,
+   "who": "NEAREST",
+   "units": [
+    4,
+    6
+   ],
+   "arrivesAt": "LANDING_SPOT"
+  },
+  "AIRSHIP_DROP": {
+   "src": "S2: siege airship every 75 s / field tier2+ every 55 s, 5\u20137 troops, shoot-down +150",
+   "teleSec": 6,
+   "durSec": 60,
+   "who": "HOLDER_ENEMY",
+   "units": [
+    5,
+    7
+   ],
+   "arrivesAt": "LANDING_SPOT",
+   "shootDownHp": 900
+  },
+  "SUPPLY_AIRDROP": {
+   "src": "new \u2014 the contested crate",
+   "teleSec": 60,
+   "durSec": 180,
+   "who": "ANY",
+   "holdToClaimSec": 20
+  },
+  "BARBARIAN_RAID": {
+   "src": "S2 barbarians: every 95 s, live 110 s, cap 10, chieftain every 3rd band",
+   "teleSec": 5.5,
+   "durSec": 110,
+   "who": "NEAREST",
+   "units": [
+    4,
+    6
+   ],
+   "chieftainEvery": 3
+  },
+  "CHIEFTAIN_DUEL": {
+   "src": "S2 chieftain \u00d72.6 HP \u00d71.5 dmg",
+   "teleSec": 5.5,
+   "durSec": 120,
+   "who": "CHALLENGER",
+   "hpMul": 2.6,
+   "dmgMul": 1.5
+  },
+  "MUSTER": {
+   "src": "S2 wizard recall: every 45 s, 10+2\u00b7tier stragglers regroup, +4+2\u00b7tier fresh",
+   "teleSec": 5.5,
+   "durSec": 60,
+   "who": "ENGAGED",
+   "units": [
+    4,
+    10
+   ]
+  },
+  "WARLORD": {
+   "src": "S2 field warlord: rout = raiders flee 40 s + lull",
+   "teleSec": 8,
+   "durSec": 240,
+   "who": "ENGAGED",
+   "routFleeSec": 40,
+   "hpBase": 2600
+  },
+  "GUARDIAN_WAKE": {
+   "src": "S2 Dracobra (doc 04 for Form 2/3 rules)",
+   "teleSec": 10,
+   "durSec": 0,
+   "who": "ATTACKER"
+  },
+  "STORM": {
+   "src": "S2 field storm",
+   "teleSec": 10,
+   "durSec": 40,
+   "who": "ALL",
+   "moveMul": 0.8,
+   "rangedMul": 0.7
+  },
+  "GALE": {
+   "src": "sky storm variant",
+   "teleSec": 10,
+   "durSec": 40,
+   "who": "ALL",
+   "airMul": 0.6
+  },
+  "STAMPEDE": {
+   "src": "S2 stampede: 55 dmg + knockback, both sides",
+   "teleSec": 4,
+   "durSec": 8,
+   "who": "ALL",
+   "dmg": 55
+  },
+  "ERUPTION": {
+   "src": "S2 fire attack: 28 dps, spreads 4.5 s, 22 s, max 10 patches",
+   "teleSec": 5,
+   "durSec": 22,
+   "who": "ALL",
+   "dps": 28,
+   "maxPatches": 10
+  },
+  "CAVE_IN": {
+   "src": "S2 earthquake: 2 s slow, aftershock",
+   "teleSec": 3,
+   "durSec": 6,
+   "who": "ALL",
+   "slowSec": 2
+  },
+  "SMUGGLER_RUN": {
+   "src": "new \u2014 runner escapes past the edge (S2 loot runner +50/\u221240)",
+   "teleSec": 4,
+   "durSec": 45,
+   "who": "ANY",
+   "escapeU": 112
+  },
+  "KRAKEN_SIGHTING": {
+   "src": "lore: the Kraken drags ships to Blackmere (WORLD-STATE-AND-TRAVEL)",
+   "teleSec": 12,
+   "durSec": 60,
+   "who": "SHIPS"
+  },
+  "SKY_RAIDERS": {
+   "src": "new \u2014 harpy riders strike the deck",
+   "teleSec": 6,
+   "durSec": 70,
+   "who": "NEAREST",
+   "units": [
+    3,
+    5
+   ]
+  },
+  "MERC_BIDDING": {
+   "src": "new \u2014 two sides bid for one company (MERCENARY_DEFEND escrow)",
+   "teleSec": 0,
+   "durSec": 0,
+   "who": "BIDDERS"
+  },
+  "CARAVAN_RUN": {
+   "src": "coded Army.kind CARAVAN; transport.ts raidCaravans",
+   "teleSec": 8,
+   "durSec": 150,
+   "who": "ESCORT_VS_RAIDER"
+  },
+  "BANDIT_TOLL": {
+   "src": "BANDIT mobs on roads",
+   "teleSec": 4,
+   "durSec": 60,
+   "who": "NEAREST",
+   "units": [
+    3,
+    4
+   ]
+  },
+  "PACK_HUNT": {
+   "src": "S2 aggro + pack pull (18 u)",
+   "teleSec": 3,
+   "durSec": 90,
+   "who": "NEAREST",
+   "units": [
+    3,
+    5
+   ]
+  },
+  "ALPHA_ENRAGE": {
+   "src": "S2 boss retaliation",
+   "teleSec": 3,
+   "durSec": 30,
+   "who": "ENGAGED",
+   "dmgMul": 1.5
+  },
+  "SALVAGE_RACE": {
+   "src": "new \u2014 first to hold 90 s",
+   "teleSec": 6,
+   "durSec": 180,
+   "who": "ANY",
+   "holdToClaimSec": 90
+  }
+ }
+}

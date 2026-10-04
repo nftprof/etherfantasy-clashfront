@@ -18,7 +18,7 @@ airships, landing spots, harbours + sea ships; seed all 20K maps; an experience,
 
 ## Data & code
 - [x] D1 — Inventory castles / parcels / terrain from the overworld data (counts, fields, biomes, coast)
-- [ ] D2 — `poi-archetypes.json`: the archetype templates (data the sim and docs both read)
+- [x] D2 — `poi-archetypes.json`: the archetype templates (data the sim and docs both read)
 - [ ] D3 — Deterministic seeder: (parcel/castle, seed) → POI placements + event decks
 - [ ] D4 — Seed every castle → `data/living-world/castle-pois.json` + tests (determinism, coverage, bounds)
 - [ ] D5 — Scale to all maps: per-terrain seeding over the full parcel set, plus a summary report
