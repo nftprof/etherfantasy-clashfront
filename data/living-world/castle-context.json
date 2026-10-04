@@ -1,0 +1,2679 @@
+{
+ "schema": "cf-living-world/castle-context@1",
+ "source": "overworld data/world-terrain + hexagon-city-source/parcels-l2.json",
+ "units": "zone SVG units",
+ "estateRadius": 12,
+ "count": 67,
+ "byKind": {
+  "CASTLE": 21,
+  "KEEP": 37,
+  "PALACE": 9
+ },
+ "castles": [
+  {
+   "id": "BUS-CASTLE-CAPEMEET",
+   "zone": "BUS",
+   "layer": "SURFACE",
+   "kind": "CASTLE",
+   "name": "Capemeet Citadel",
+   "at": [
+    17.1,
+    30.27
+   ],
+   "townEstateId": "2001117",
+   "heroParcels": 5,
+   "water": {
+    "coast": {
+     "id": "BUS-COAST",
+     "d": 7.86
+    },
+    "river": {
+     "id": "BUS-RV3",
+     "d": 72.93
+    }
+   },
+   "ridge": {
+    "id": "BUS-RG1",
+    "d": 13.59
+   },
+   "road": {
+    "id": "BUS-MT15",
+    "d": 0
+   },
+   "seaPort": {
+    "id": "BUS-PORT-CAPEMEET",
+    "d": 7.91
+   },
+   "airshipPort": {
+    "id": "BUS-PORT-SKY",
+    "d": 315.61
+   },
+   "estatesWithin12": {
+    "SMALL": 9,
+    "MEDIUM": 2,
+    "LARGE": 0,
+    "GIANT": 1,
+    "EPIC": 0
+   }
+  },
+  {
+   "id": "BUS-CASTLE-EASTREACH",
+   "zone": "BUS",
+   "layer": "SURFACE",
+   "kind": "CASTLE",
+   "name": "Eastreach Citadel",
+   "at": [
+    326.46,
+    132.51
+   ],
+   "townEstateId": "2001150",
+   "heroParcels": 5,
+   "water": {
+    "coast": {
+     "id": "BUS-COAST",
+     "d": 17
+    },
+    "river": {
+     "id": "BUS-RV1B",
+     "d": 129.03
+    }
+   },
+   "ridge": {
+    "id": "BUS-RG2",
+    "d": 115.45
+   },
+   "road": {
+    "id": "BUS-MT25",
+    "d": 0
+   },
+   "seaPort": {
+    "id": "BUS-PORT-EASTREACH",
+    "d": 16.95
+   },
+   "airshipPort": {
+    "id": "BUS-PORT-SKY",
+    "d": 54.75
+   },
+   "estatesWithin12": {
+    "SMALL": 2,
+    "MEDIUM": 4,
+    "LARGE": 2,
+    "GIANT": 1,
+    "EPIC": 0
+   }
+  },
+  {
+   "id": "BUS-CASTLE-MIDDLEQUAY",
+   "zone": "BUS",
+   "layer": "SURFACE",
+   "kind": "CASTLE",
+   "name": "Middlequay Citadel",
+   "at": [
+    273.42,
+    64.98
+   ],
+   "townEstateId": "2001173",
+   "heroParcels": 5,
+   "water": {
+    "coast": {
+     "id": "BUS-COAST",
+     "d": 7.1
+    },
+    "river": {
+     "id": "BUS-RV1B",
+     "d": 49.42
+    }
+   },
+   "ridge": {
+    "id": "BUS-RG2",
+    "d": 142.47
+   },
+   "road": {
+    "id": "BUS-MT05",
+    "d": 0
+   },
+   "seaPort": {
+    "id": "BUS-PORT-MIDDLEQUAY",
+    "d": 7.19
+   },
+   "airshipPort": {
+    "id": "BUS-PORT-SKY",
+    "d": 115.26
+   },
+   "estatesWithin12": {
+    "SMALL": 7,
+    "MEDIUM": 3,
+    "LARGE": 1,
+    "GIANT": 1,
+    "EPIC": 0
+   }
+  },
+  {
+   "id": "BUS-FORT-TIDEGATE",
+   "zone": "BUS",
+   "layer": "SURFACE",
+   "kind": "CASTLE",
+   "name": "Fort Tidegate",
+   "at": [
+    159.99,
+    59.15
+   ],
+   "townEstateId": "2001144",
+   "heroParcels": 5,
+   "water": {
+    "coast": {
+     "id": "BUS-COAST",
+     "d": 21.19
+    },
+    "river": {
+     "id": "BUS-RV1",
+     "d": 19.27
+    }
+   },
+   "ridge": {
+    "id": "BUS-RG1",
+    "d": 111.33
+   },
+   "road": {
+    "id": "BUS-SEC035",
+    "d": 0.01
+   },
+   "seaPort": {
+    "id": "BUS-HARBOUR",
+    "d": 25.11
+   },
+   "airshipPort": {
+    "id": "BUS-PORT-SKY",
+    "d": 180.63
+   },
+   "estatesWithin12": {
+    "SMALL": 4,
+    "MEDIUM": 1,
+    "LARGE": 2,
+    "GIANT": 2,
+    "EPIC": 0
+   }
+  },
+  {
+   "id": "BUS-KEEP-DELTALIGHT",
+   "zone": "BUS",
+   "layer": "SURFACE",
+   "kind": "KEEP",
+   "name": "Deltalight Keep",
+   "at": [
+    227.57,
+    54.34
+   ],
+   "townEstateId": "3000995",
+   "heroParcels": 3,
+   "water": {
+    "coast": {
+     "id": "BUS-COAST",
+     "d": 6.09
+    },
+    "river": {
+     "id": "BUS-RV1B",
+     "d": 3.43
+    }
+   },
+   "ridge": {
+    "id": "BUS-RG2",
+    "d": 140.42
+   },
+   "road": {
+    "id": "BUS-AP01",
+    "d": 0
+   },
+   "seaPort": {
+    "id": "BUS-PORT-MIDDLEQUAY",
+    "d": 48.38
+   },
+   "airshipPort": {
+    "id": "BUS-PORT-SKY",
+    "d": 141.33
+   },
+   "estatesWithin12": {
+    "SMALL": 7,
+    "MEDIUM": 3,
+    "LARGE": 2,
+    "GIANT": 0,
+    "EPIC": 0
+   }
+  },
+  {
+   "id": "BUS-KEEP-DUNEWATCH",
+   "zone": "BUS",
+   "layer": "SURFACE",
+   "kind": "KEEP",
+   "name": "Dunewatch Light",
+   "at": [
+    65.32,
+    11.77
+   ],
+   "townEstateId": "3001035",
+   "heroParcels": 3,
+   "water": {
+    "coast": {
+     "id": "BUS-COAST",
+     "d": 10.49
+    },
+    "river": {
+     "id": "BUS-RV3",
+     "d": 37.94
+    }
+   },
+   "ridge": {
+    "id": "BUS-RG1",
+    "d": 7.81
+   },
+   "road": {
+    "id": "BUS-SEC094",
+    "d": 0
+   },
+   "seaPort": {
+    "id": "BUS-PORT-CAPEMEET",
+    "d": 55.59
+   },
+   "airshipPort": {
+    "id": "BUS-PORT-SKY",
+    "d": 284.33
+   },
+   "estatesWithin12": {
+    "SMALL": 3,
+    "MEDIUM": 6,
+    "LARGE": 1,
+    "GIANT": 0,
+    "EPIC": 0
+   }
+  },
+  {
+   "id": "BUS-KEEP-GULLSHOAL",
+   "zone": "BUS",
+   "layer": "SURFACE",
+   "kind": "KEEP",
+   "name": "Gullshoal Light",
+   "at": [
+    303.83,
+    86.69
+   ],
+   "townEstateId": "3000986",
+   "heroParcels": 3,
+   "water": {
+    "coast": {
+     "id": "BUS-COAST",
+     "d": 8.55
+    },
+    "river": {
+     "id": "BUS-RV1B",
+     "d": 86
+    }
+   },
+   "ridge": {
+    "id": "BUS-RG2",
+    "d": 139.03
+   },
+   "road": {
+    "id": "BUS-SEC161",
+    "d": 0
+   },
+   "seaPort": {
+    "id": "BUS-PORT-MIDDLEQUAY",
+    "d": 39.97
+   },
+   "airshipPort": {
+    "id": "BUS-PORT-SKY",
+    "d": 91.65
+   },
+   "estatesWithin12": {
+    "SMALL": 10,
+    "MEDIUM": 4,
+    "LARGE": 1,
+    "GIANT": 0,
+    "EPIC": 0
+   }
+  },
+  {
+   "id": "BUS-KEEP-MARSHGATE",
+   "zone": "BUS",
+   "layer": "SURFACE",
+   "kind": "KEEP",
+   "name": "Marshgate Keep",
+   "at": [
+    170.63,
+    127.15
+   ],
+   "townEstateId": "3001065",
+   "heroParcels": 3,
+   "water": {
+    "coast": {
+     "id": "BUS-COAST",
+     "d": 86.09
+    },
+    "river": {
+     "id": "BUS-RV1",
+     "d": 0.26
+    }
+   },
+   "ridge": {
+    "id": "BUS-RG2",
+    "d": 79.15
+   },
+   "road": {
+    "id": "BUS-SEC048",
+    "d": 0
+   },
+   "seaPort": {
+    "id": "BUS-HARBOUR",
+    "d": 64.1
+   },
+   "airshipPort": {
+    "id": "BUS-PORT-SKY",
+    "d": 135.29
+   },
+   "estatesWithin12": {
+    "SMALL": 8,
+    "MEDIUM": 3,
+    "LARGE": 2,
+    "GIANT": 2,
+    "EPIC": 0
+   }
+  },
+  {
+   "id": "BUS-PALACE-EXCHANGE",
+   "zone": "BUS",
+   "layer": "SURFACE",
+   "kind": "PALACE",
+   "name": "The Grand Exchange",
+   "at": [
+    129.57,
+    79.78
+   ],
+   "townEstateId": "1001178",
+   "heroParcels": 0,
+   "water": {
+    "coast": {
+     "id": "BUS-COAST",
+     "d": 48.68
+    },
+    "river": {
+     "id": "BUS-RV1",
+     "d": 11.49
+    }
+   },
+   "ridge": {
+    "id": "BUS-RG1",
+    "d": 96.87
+   },
+   "road": {
+    "id": "BUS-CW13",
+    "d": 0
+   },
+   "seaPort": {
+    "id": "BUS-HARBOUR",
+    "d": 11.83
+   },
+   "airshipPort": {
+    "id": "BUS-PORT-SKY",
+    "d": 193.25
+   },
+   "estatesWithin12": {
+    "SMALL": 5,
+    "MEDIUM": 4,
+    "LARGE": 0,
+    "GIANT": 0,
+    "EPIC": 1
+   }
+  },
+  {
+   "id": "EDU-CASTLE-SOUTHREACH",
+   "zone": "EDU",
+   "layer": "SURFACE",
+   "kind": "CASTLE",
+   "name": "Southreach Castle",
+   "at": [
+    57.32,
+    140.07
+   ],
+   "townEstateId": "2020368",
+   "heroParcels": 5,
+   "water": {
+    "coast": null,
+    "river": {
+     "id": "EDU-RV2",
+     "d": 38.18
+    }
+   },
+   "ridge": {
+    "id": "EDU-RG2",
+    "d": 2.3
+   },
+   "road": {
+    "id": "EDU-SEC04",
+    "d": 0
+   },
+   "seaPort": null,
+   "airshipPort": null,
+   "estatesWithin12": {
+    "SMALL": 2,
+    "MEDIUM": 0,
+    "LARGE": 0,
+    "GIANT": 1,
+    "EPIC": 0
+   }
+  },
+  {
+   "id": "EDU-CASTLE-WESTGATE",
+   "zone": "EDU",
+   "layer": "SURFACE",
+   "kind": "CASTLE",
+   "name": "Westgate Castle",
+   "at": [
+    120.28,
+    90.91
+   ],
+   "townEstateId": "2020367",
+   "heroParcels": 5,
+   "water": {
+    "coast": null,
+    "river": {
+     "id": "EDU-RV1",
+     "d": 15.18
+    }
+   },
+   "ridge": {
+    "id": "EDU-RG1",
+    "d": 25.36
+   },
+   "road": {
+    "id": "EDU-JK-GATE",
+    "d": 0.01
+   },
+   "seaPort": null,
+   "airshipPort": null,
+   "estatesWithin12": {
+    "SMALL": 11,
+    "MEDIUM": 0,
+    "LARGE": 0,
+    "GIANT": 1,
+    "EPIC": 1
+   }
+  },
+  {
+   "id": "EDU-KEEP-CLIFFWATCH",
+   "zone": "EDU",
+   "layer": "SURFACE",
+   "kind": "KEEP",
+   "name": "Cliffwatch Temple",
+   "at": [
+    141.54,
+    113.75
+   ],
+   "townEstateId": "3020352",
+   "heroParcels": 3,
+   "water": {
+    "coast": null,
+    "river": {
+     "id": "EDU-RV1",
+     "d": 16.22
+    }
+   },
+   "ridge": {
+    "id": "EDU-RG1",
+    "d": 0.98
+   },
+   "road": {
+    "id": "EDU-SEC12",
+    "d": 0
+   },
+   "seaPort": null,
+   "airshipPort": null,
+   "estatesWithin12": {
+    "SMALL": 11,
+    "MEDIUM": 1,
+    "LARGE": 2,
+    "GIANT": 0,
+    "EPIC": 0
+   }
+  },
+  {
+   "id": "EDU-KEEP-LANTERNHILL",
+   "zone": "EDU",
+   "layer": "SURFACE",
+   "kind": "KEEP",
+   "name": "Lantern Hill Temple",
+   "at": [
+    134.11,
+    122.7
+   ],
+   "townEstateId": "3020351",
+   "heroParcels": 3,
+   "water": {
+    "coast": null,
+    "river": {
+     "id": "EDU-RV1",
+     "d": 4.68
+    }
+   },
+   "ridge": {
+    "id": "EDU-RG1",
+    "d": 7.09
+   },
+   "road": {
+    "id": "EDU-LOC13",
+    "d": 0
+   },
+   "seaPort": null,
+   "airshipPort": null,
+   "estatesWithin12": {
+    "SMALL": 6,
+    "MEDIUM": 2,
+    "LARGE": 2,
+    "GIANT": 0,
+    "EPIC": 0
+   }
+  },
+  {
+   "id": "EDU-PALACE-ACADEMY",
+   "zone": "EDU",
+   "layer": "SURFACE",
+   "kind": "PALACE",
+   "name": "The Grand Academy",
+   "at": [
+    123.56,
+    84.98
+   ],
+   "townEstateId": "1020371",
+   "heroParcels": 0,
+   "water": {
+    "coast": null,
+    "river": {
+     "id": "EDU-RV1",
+     "d": 21.46
+    }
+   },
+   "ridge": {
+    "id": "EDU-RG1",
+    "d": 21.11
+   },
+   "road": {
+    "id": "EDU-JK-R1",
+    "d": 1.02
+   },
+   "seaPort": null,
+   "airshipPort": null,
+   "estatesWithin12": {
+    "SMALL": 11,
+    "MEDIUM": 0,
+    "LARGE": 0,
+    "GIANT": 1,
+    "EPIC": 1
+   }
+  },
+  {
+   "id": "ENT-CASTLE-FESTGATE",
+   "zone": "ENT",
+   "layer": "SURFACE",
+   "kind": "CASTLE",
+   "name": "Festgate Citadel",
+   "at": [
+    206.21,
+    430.23
+   ],
+   "townEstateId": "2031485",
+   "heroParcels": 5,
+   "water": {
+    "coast": {
+     "id": "ENT-COAST",
+     "d": 129.83
+    },
+    "river": {
+     "id": "ENT-RV2",
+     "d": 92.62
+    }
+   },
+   "ridge": {
+    "id": "ENT-RG2",
+    "d": 89.45
+   },
+   "road": {
+    "id": "ENT-SEC001",
+    "d": 0.01
+   },
+   "seaPort": {
+    "id": "ENT-MARINA",
+    "d": 193.44
+   },
+   "airshipPort": null,
+   "estatesWithin12": {
+    "SMALL": 18,
+    "MEDIUM": 0,
+    "LARGE": 0,
+    "GIANT": 1,
+    "EPIC": 0
+   }
+  },
+  {
+   "id": "ENT-CASTLE-RIVERGATE",
+   "zone": "ENT",
+   "layer": "SURFACE",
+   "kind": "CASTLE",
+   "name": "Rivergate Citadel",
+   "at": [
+    72,
+    160.31
+   ],
+   "townEstateId": "2031488",
+   "heroParcels": 5,
+   "water": {
+    "coast": {
+     "id": "ENT-COAST",
+     "d": 61.79
+    },
+    "river": {
+     "id": "ENT-RV1",
+     "d": 3.12
+    }
+   },
+   "ridge": {
+    "id": "ENT-RG2",
+    "d": 55.77
+   },
+   "road": {
+    "id": "ENT-SEC019",
+    "d": 0
+   },
+   "seaPort": {
+    "id": "ENT-PORT-LANTERNSHORE",
+    "d": 84.13
+   },
+   "airshipPort": null,
+   "estatesWithin12": {
+    "SMALL": 5,
+    "MEDIUM": 1,
+    "LARGE": 0,
+    "GIANT": 1,
+    "EPIC": 0
+   }
+  },
+  {
+   "id": "ENT-KEEP-CAMPANILE",
+   "zone": "ENT",
+   "layer": "SURFACE",
+   "kind": "KEEP",
+   "name": "The Velaria Campanile",
+   "at": [
+    81.06,
+    463.47
+   ],
+   "townEstateId": "3031461",
+   "heroParcels": 3,
+   "water": {
+    "coast": {
+     "id": "ENT-COAST",
+     "d": 38.68
+    },
+    "river": {
+     "id": "ENT-RV2",
+     "d": 0.6
+    }
+   },
+   "ridge": {
+    "id": "ENT-RG4",
+    "d": 59.29
+   },
+   "road": {
+    "id": "ENT-SEC008",
+    "d": 0
+   },
+   "seaPort": {
+    "id": "ENT-MARINA",
+    "d": 68.03
+   },
+   "airshipPort": null,
+   "estatesWithin12": {
+    "SMALL": 9,
+    "MEDIUM": 0,
+    "LARGE": 1,
+    "GIANT": 0,
+    "EPIC": 0
+   }
+  },
+  {
+   "id": "ENT-KEEP-LANTERNSHORE",
+   "zone": "ENT",
+   "layer": "SURFACE",
+   "kind": "KEEP",
+   "name": "Lanternshore Watch",
+   "at": [
+    21.3,
+    108.42
+   ],
+   "townEstateId": "3031450",
+   "heroParcels": 3,
+   "water": {
+    "coast": {
+     "id": "ENT-COAST",
+     "d": 14.36
+    },
+    "river": {
+     "id": "ENT-RV3",
+     "d": 4.06
+    }
+   },
+   "ridge": {
+    "id": "ENT-RG1",
+    "d": 113.98
+   },
+   "road": {
+    "id": "ENT-MT08",
+    "d": 0
+   },
+   "seaPort": {
+    "id": "ENT-PORT-LANTERNSHORE",
+    "d": 14.38
+   },
+   "airshipPort": null,
+   "estatesWithin12": {
+    "SMALL": 8,
+    "MEDIUM": 2,
+    "LARGE": 1,
+    "GIANT": 0,
+    "EPIC": 0
+   }
+  },
+  {
+   "id": "ENT-KEEP-PETALPORT",
+   "zone": "ENT",
+   "layer": "SURFACE",
+   "kind": "KEEP",
+   "name": "Petalport Watch",
+   "at": [
+    30.02,
+    28.89
+   ],
+   "townEstateId": "3031459",
+   "heroParcels": 3,
+   "water": {
+    "coast": {
+     "id": "ENT-COAST",
+     "d": 13.82
+    },
+    "river": {
+     "id": "ENT-INL-PETALPORT",
+     "d": 12.92
+    }
+   },
+   "ridge": {
+    "id": "ENT-RG1",
+    "d": 120.94
+   },
+   "road": {
+    "id": "ENT-SEC025",
+    "d": 0
+   },
+   "seaPort": {
+    "id": "ENT-PORT-PETALPORT",
+    "d": 13.84
+   },
+   "airshipPort": null,
+   "estatesWithin12": {
+    "SMALL": 1,
+    "MEDIUM": 1,
+    "LARGE": 1,
+    "GIANT": 0,
+    "EPIC": 0
+   }
+  },
+  {
+   "id": "ENT-KEEP-SUNSTRAND",
+   "zone": "ENT",
+   "layer": "SURFACE",
+   "kind": "KEEP",
+   "name": "Sunstrand Watch",
+   "at": [
+    46.35,
+    385.86
+   ],
+   "townEstateId": "3031460",
+   "heroParcels": 3,
+   "water": {
+    "coast": {
+     "id": "ENT-COAST",
+     "d": 44.12
+    },
+    "river": {
+     "id": "ENT-INL-SUNSTRAND",
+     "d": 43.22
+    }
+   },
+   "ridge": {
+    "id": "ENT-RG4",
+    "d": 26.19
+   },
+   "road": {
+    "id": "ENT-MT14",
+    "d": 0
+   },
+   "seaPort": {
+    "id": "ENT-PORT-SUNSTRAND",
+    "d": 44.15
+   },
+   "airshipPort": null,
+   "estatesWithin12": {
+    "SMALL": 9,
+    "MEDIUM": 1,
+    "LARGE": 1,
+    "GIANT": 0,
+    "EPIC": 0
+   }
+  },
+  {
+   "id": "ENT-KEEP-TIDEWATCH",
+   "zone": "ENT",
+   "layer": "SURFACE",
+   "kind": "KEEP",
+   "name": "Tidewatch Temple",
+   "at": [
+    44.94,
+    416.18
+   ],
+   "townEstateId": "3031453",
+   "heroParcels": 3,
+   "water": {
+    "coast": {
+     "id": "ENT-COAST",
+     "d": 43.59
+    },
+    "river": {
+     "id": "ENT-INL-CARN1",
+     "d": 44.68
+    }
+   },
+   "ridge": {
+    "id": "ENT-RG4",
+    "d": 0.79
+   },
+   "road": {
+    "id": "ENT-SEC021",
+    "d": 0
+   },
+   "seaPort": {
+    "id": "ENT-MARINA",
+    "d": 47.34
+   },
+   "airshipPort": null,
+   "estatesWithin12": {
+    "SMALL": 8,
+    "MEDIUM": 3,
+    "LARGE": 1,
+    "GIANT": 0,
+    "EPIC": 0
+   }
+  },
+  {
+   "id": "ENT-PALACE-MASKS",
+   "zone": "ENT",
+   "layer": "SURFACE",
+   "kind": "PALACE",
+   "name": "The Palace of Masks",
+   "at": [
+    53.82,
+    450.91
+   ],
+   "townEstateId": "1031491",
+   "heroParcels": 0,
+   "water": {
+    "coast": {
+     "id": "ENT-COAST",
+     "d": 32.23
+    },
+    "river": {
+     "id": "ENT-RV2A",
+     "d": 17.73
+    }
+   },
+   "ridge": {
+    "id": "ENT-RG4",
+    "d": 31.83
+   },
+   "road": {
+    "id": "ENT-CW-MASKS",
+    "d": 0.31
+   },
+   "seaPort": {
+    "id": "ENT-MARINA",
+    "d": 39.83
+   },
+   "airshipPort": null,
+   "estatesWithin12": {
+    "SMALL": 6,
+    "MEDIUM": 1,
+    "LARGE": 1,
+    "GIANT": 0,
+    "EPIC": 1
+   }
+  },
+  {
+   "id": "HS1-AEROPOLIS",
+   "zone": "HS1",
+   "layer": "SKY",
+   "kind": "PALACE",
+   "name": "The Aeropolis",
+   "at": [
+    101.87,
+    54.72
+   ],
+   "townEstateId": "1040345",
+   "heroParcels": 0,
+   "water": {
+    "coast": null,
+    "river": {
+     "id": "HS1-LK-MIRROR",
+     "d": 17.95
+    }
+   },
+   "ridge": {
+    "id": "HS1-RG-RIM-E1",
+    "d": 9.76
+   },
+   "road": {
+    "id": "HS1-RD1",
+    "d": 0.03
+   },
+   "seaPort": null,
+   "airshipPort": null,
+   "estatesWithin12": {
+    "SMALL": 4,
+    "MEDIUM": 0,
+    "LARGE": 1,
+    "GIANT": 0,
+    "EPIC": 1
+   }
+  },
+  {
+   "id": "HS1-CASTLE-GARDENHOLD",
+   "zone": "HS1",
+   "layer": "SKY",
+   "kind": "CASTLE",
+   "name": "Gardenhold Castle",
+   "at": [
+    30.09,
+    16.1
+   ],
+   "townEstateId": "2040339",
+   "heroParcels": 5,
+   "water": {
+    "coast": null,
+    "river": {
+     "id": "HS1-CH2",
+     "d": 8.93
+    }
+   },
+   "ridge": {
+    "id": "HS1-RG-LOW2",
+    "d": 0.05
+   },
+   "road": {
+    "id": "HS1-AP01",
+    "d": 0.01
+   },
+   "seaPort": null,
+   "airshipPort": null,
+   "estatesWithin12": {
+    "SMALL": 16,
+    "MEDIUM": 0,
+    "LARGE": 1,
+    "GIANT": 1,
+    "EPIC": 0
+   }
+  },
+  {
+   "id": "HS1-CASTLE-HEAVENSGATE",
+   "zone": "HS1",
+   "layer": "SKY",
+   "kind": "CASTLE",
+   "name": "Heavensgate Castle",
+   "at": [
+    60.8,
+    109.01
+   ],
+   "townEstateId": "2040342",
+   "heroParcels": 5,
+   "water": {
+    "coast": null,
+    "river": {
+     "id": "HS1-CH3",
+     "d": 21.95
+    }
+   },
+   "ridge": {
+    "id": "HS1-RG-RIM-S2",
+    "d": 6.1
+   },
+   "road": {
+    "id": "HS1-DQ-LANDING",
+    "d": 0
+   },
+   "seaPort": null,
+   "airshipPort": null,
+   "estatesWithin12": {
+    "SMALL": 4,
+    "MEDIUM": 1,
+    "LARGE": 1,
+    "GIANT": 2,
+    "EPIC": 0
+   }
+  },
+  {
+   "id": "HS1-CASTLE-TERRACEHALL",
+   "zone": "HS1",
+   "layer": "SKY",
+   "kind": "CASTLE",
+   "name": "Terracehall Castle",
+   "at": [
+    78.55,
+    105.93
+   ],
+   "townEstateId": "2040341",
+   "heroParcels": 5,
+   "water": {
+    "coast": null,
+    "river": {
+     "id": "HS1-CH3",
+     "d": 39.05
+    }
+   },
+   "ridge": {
+    "id": "HS1-RG-MID1",
+    "d": 4.95
+   },
+   "road": {
+    "id": "HS1-SEC002",
+    "d": 0.14
+   },
+   "seaPort": null,
+   "airshipPort": null,
+   "estatesWithin12": {
+    "SMALL": 2,
+    "MEDIUM": 0,
+    "LARGE": 0,
+    "GIANT": 1,
+    "EPIC": 0
+   }
+  },
+  {
+   "id": "HS1-KEEP-EMBERWATCH",
+   "zone": "HS1",
+   "layer": "SKY",
+   "kind": "KEEP",
+   "name": "Emberwatch Keep",
+   "at": [
+    94.6,
+    83.31
+   ],
+   "townEstateId": "3040337",
+   "heroParcels": 3,
+   "water": {
+    "coast": null,
+    "river": {
+     "id": "HS1-LK-MIRROR",
+     "d": 42.3
+    }
+   },
+   "ridge": {
+    "id": "HS1-RG-HIGH1",
+    "d": 1.28
+   },
+   "road": {
+    "id": "HS1-SEC004",
+    "d": 0.14
+   },
+   "seaPort": null,
+   "airshipPort": null,
+   "estatesWithin12": {
+    "SMALL": 6,
+    "MEDIUM": 4,
+    "LARGE": 1,
+    "GIANT": 1,
+    "EPIC": 0
+   }
+  },
+  {
+   "id": "HS1-KEEP-EMPYREAWATCH",
+   "zone": "HS1",
+   "layer": "SKY",
+   "kind": "KEEP",
+   "name": "Empyreawatch Keep",
+   "at": [
+    39.9,
+    20.21
+   ],
+   "townEstateId": "3040326",
+   "heroParcels": 3,
+   "water": {
+    "coast": null,
+    "river": {
+     "id": "HS1-LK-GARDEN",
+     "d": 2.35
+    }
+   },
+   "ridge": {
+    "id": "HS1-RG-LOW2",
+    "d": 10.49
+   },
+   "road": {
+    "id": "HS1-RD3",
+    "d": 0.91
+   },
+   "seaPort": null,
+   "airshipPort": null,
+   "estatesWithin12": {
+    "SMALL": 16,
+    "MEDIUM": 1,
+    "LARGE": 1,
+    "GIANT": 1,
+    "EPIC": 0
+   }
+  },
+  {
+   "id": "HS1-KEEP-STAIRWATCH",
+   "zone": "HS1",
+   "layer": "SKY",
+   "kind": "KEEP",
+   "name": "Stairwatch Keep",
+   "at": [
+    51.2,
+    60
+   ],
+   "townEstateId": "3040335",
+   "heroParcels": 3,
+   "water": {
+    "coast": null,
+    "river": {
+     "id": "HS1-CH3",
+     "d": 25.05
+    }
+   },
+   "ridge": {
+    "id": "HS1-RG-MID2",
+    "d": 5.15
+   },
+   "road": {
+    "id": "HS1-SEC013",
+    "d": 0.01
+   },
+   "seaPort": null,
+   "airshipPort": null,
+   "estatesWithin12": {
+    "SMALL": 12,
+    "MEDIUM": 3,
+    "LARGE": 1,
+    "GIANT": 0,
+    "EPIC": 0
+   }
+  },
+  {
+   "id": "HS2-KEEP-BULWARK",
+   "zone": "HS2",
+   "layer": "SKY",
+   "kind": "KEEP",
+   "name": "The Bulwark Keep",
+   "at": [
+    69.39,
+    11.28
+   ],
+   "townEstateId": "3050448",
+   "heroParcels": 3,
+   "water": {
+    "coast": null,
+    "river": {
+     "id": "HS2-LK-FORGE",
+     "d": 49.15
+    }
+   },
+   "ridge": {
+    "id": "HS2-RG-BULWARK-E",
+    "d": 4.49
+   },
+   "road": {
+    "id": "HS2-SEC006",
+    "d": 0.26
+   },
+   "seaPort": null,
+   "airshipPort": null,
+   "estatesWithin12": {
+    "SMALL": 15,
+    "MEDIUM": 1,
+    "LARGE": 2,
+    "GIANT": 0,
+    "EPIC": 0
+   }
+  },
+  {
+   "id": "HS2-KEEP-CINDERHOLM",
+   "zone": "HS2",
+   "layer": "SKY",
+   "kind": "KEEP",
+   "name": "Cinderholm Keep",
+   "at": [
+    34.52,
+    98.21
+   ],
+   "townEstateId": "3050438",
+   "heroParcels": 3,
+   "water": {
+    "coast": null,
+    "river": {
+     "id": "HS2-LK-FORGE",
+     "d": 68.89
+    }
+   },
+   "ridge": {
+    "id": "HS2-RG-CI3",
+    "d": 2.75
+   },
+   "road": {
+    "id": "HS2-SEC002",
+    "d": 0.23
+   },
+   "seaPort": null,
+   "airshipPort": null,
+   "estatesWithin12": {
+    "SMALL": 17,
+    "MEDIUM": 2,
+    "LARGE": 2,
+    "GIANT": 0,
+    "EPIC": 0
+   }
+  },
+  {
+   "id": "HS2-KEEP-PARADEWATCH",
+   "zone": "HS2",
+   "layer": "SKY",
+   "kind": "KEEP",
+   "name": "Paradewatch Keep",
+   "at": [
+    56.63,
+    78.8
+   ],
+   "townEstateId": "3050439",
+   "heroParcels": 3,
+   "water": {
+    "coast": null,
+    "river": {
+     "id": "HS2-LK-FORGE",
+     "d": 39.71
+    }
+   },
+   "ridge": {
+    "id": "HS2-RG-TIER1",
+    "d": 2.91
+   },
+   "road": {
+    "id": "HS2-RD3",
+    "d": 0.16
+   },
+   "seaPort": null,
+   "airshipPort": null,
+   "estatesWithin12": {
+    "SMALL": 7,
+    "MEDIUM": 2,
+    "LARGE": 3,
+    "GIANT": 0,
+    "EPIC": 0
+   }
+  },
+  {
+   "id": "HS2-KEEP-SEAMWATCH",
+   "zone": "HS2",
+   "layer": "SKY",
+   "kind": "KEEP",
+   "name": "Seamwatch Keep",
+   "at": [
+    25.28,
+    26.51
+   ],
+   "townEstateId": "3050449",
+   "heroParcels": 3,
+   "water": {
+    "coast": null,
+    "river": {
+     "id": "HS2-LK-FORGE",
+     "d": 71.55
+    }
+   },
+   "ridge": {
+    "id": "HS2-RG-TIER1",
+    "d": 18.11
+   },
+   "road": {
+    "id": "HS2-SEC009",
+    "d": 0.18
+   },
+   "seaPort": null,
+   "airshipPort": null,
+   "estatesWithin12": {
+    "SMALL": 14,
+    "MEDIUM": 2,
+    "LARGE": 1,
+    "GIANT": 0,
+    "EPIC": 0
+   }
+  },
+  {
+   "id": "HS2-KEEP-SHARDWATCH",
+   "zone": "HS2",
+   "layer": "SKY",
+   "kind": "KEEP",
+   "name": "Shardwatch Keep",
+   "at": [
+    98.07,
+    97.13
+   ],
+   "townEstateId": "3050436",
+   "heroParcels": 3,
+   "water": {
+    "coast": null,
+    "river": {
+     "id": "HS2-LK-FORGE",
+     "d": 38.76
+    }
+   },
+   "ridge": {
+    "id": "HS2-RG-SH3",
+    "d": 4.42
+   },
+   "road": {
+    "id": "HS2-SEC001",
+    "d": 0.47
+   },
+   "seaPort": null,
+   "airshipPort": null,
+   "estatesWithin12": {
+    "SMALL": 12,
+    "MEDIUM": 1,
+    "LARGE": 1,
+    "GIANT": 0,
+    "EPIC": 0
+   }
+  },
+  {
+   "id": "HS2-KEEP-WESTGATE",
+   "zone": "HS2",
+   "layer": "SKY",
+   "kind": "KEEP",
+   "name": "Westgate Bastion",
+   "at": [
+    13.47,
+    53.39
+   ],
+   "townEstateId": "3050441",
+   "heroParcels": 3,
+   "water": {
+    "coast": null,
+    "river": {
+     "id": "HS2-LK-FORGE",
+     "d": 76.7
+    }
+   },
+   "ridge": {
+    "id": "HS2-RG-RV2",
+    "d": 9.84
+   },
+   "road": {
+    "id": "HS2-SEC005",
+    "d": 0.05
+   },
+   "seaPort": null,
+   "airshipPort": null,
+   "estatesWithin12": {
+    "SMALL": 10,
+    "MEDIUM": 0,
+    "LARGE": 4,
+    "GIANT": 0,
+    "EPIC": 0
+   }
+  },
+  {
+   "id": "HS2-PALACE-EMBERTHRONE",
+   "zone": "HS2",
+   "layer": "SKY",
+   "kind": "PALACE",
+   "name": "The Ember Throne",
+   "at": [
+    62.39,
+    50.58
+   ],
+   "townEstateId": "3050435",
+   "heroParcels": 3,
+   "water": {
+    "coast": null,
+    "river": {
+     "id": "HS2-LK-FORGE",
+     "d": 28.44
+    }
+   },
+   "ridge": {
+    "id": "HS2-RG-TIER3",
+    "d": 8.71
+   },
+   "road": {
+    "id": "HS2-RD1",
+    "d": 0
+   },
+   "seaPort": null,
+   "airshipPort": null,
+   "estatesWithin12": {
+    "SMALL": 13,
+    "MEDIUM": 3,
+    "LARGE": 1,
+    "GIANT": 0,
+    "EPIC": 0
+   }
+  },
+  {
+   "id": "HS3-KEEP-AURORA",
+   "zone": "HS3",
+   "layer": "SKY",
+   "kind": "KEEP",
+   "name": "Aurora Keep",
+   "at": [
+    79.03,
+    21.63
+   ],
+   "townEstateId": "3060462",
+   "heroParcels": 3,
+   "water": {
+    "coast": null,
+    "river": {
+     "id": "HS3-CH2",
+     "d": 12.41
+    }
+   },
+   "ridge": {
+    "id": "HS3-RG-R2D",
+    "d": 10.61
+   },
+   "road": {
+    "id": "HS3-SEC006",
+    "d": 0.07
+   },
+   "seaPort": null,
+   "airshipPort": {
+    "id": "HS3-ANCHORAGE",
+    "d": 101.45
+   },
+   "estatesWithin12": {
+    "SMALL": 9,
+    "MEDIUM": 2,
+    "LARGE": 1,
+    "GIANT": 0,
+    "EPIC": 0
+   }
+  },
+  {
+   "id": "HS3-KEEP-DAWNSHIELD",
+   "zone": "HS3",
+   "layer": "SKY",
+   "kind": "KEEP",
+   "name": "Dawnshield Keep",
+   "at": [
+    64.7,
+    32.39
+   ],
+   "townEstateId": "3060461",
+   "heroParcels": 3,
+   "water": {
+    "coast": null,
+    "river": {
+     "id": "HS3-CH2",
+     "d": 13.4
+    }
+   },
+   "ridge": {
+    "id": "HS3-RG-R2D",
+    "d": 7.21
+   },
+   "road": {
+    "id": "HS3-SEC005",
+    "d": 0.17
+   },
+   "seaPort": null,
+   "airshipPort": {
+    "id": "HS3-ANCHORAGE",
+    "d": 83.84
+   },
+   "estatesWithin12": {
+    "SMALL": 7,
+    "MEDIUM": 4,
+    "LARGE": 1,
+    "GIANT": 0,
+    "EPIC": 0
+   }
+  },
+  {
+   "id": "HS3-KEEP-PILGRIMWATCH",
+   "zone": "HS3",
+   "layer": "SKY",
+   "kind": "KEEP",
+   "name": "Pilgrimwatch Keep",
+   "at": [
+    20.74,
+    45.56
+   ],
+   "townEstateId": "3060459",
+   "heroParcels": 3,
+   "water": {
+    "coast": null,
+    "river": {
+     "id": "HS3-CH1",
+     "d": 26.26
+    }
+   },
+   "ridge": {
+    "id": "HS3-RG-R2A",
+    "d": 5.26
+   },
+   "road": {
+    "id": "HS3-SEC003",
+    "d": 0.21
+   },
+   "seaPort": null,
+   "airshipPort": {
+    "id": "HS3-ANCHORAGE",
+    "d": 51.19
+   },
+   "estatesWithin12": {
+    "SMALL": 15,
+    "MEDIUM": 3,
+    "LARGE": 1,
+    "GIANT": 0,
+    "EPIC": 0
+   }
+  },
+  {
+   "id": "HS3-KEEP-SHIELDGATE",
+   "zone": "HS3",
+   "layer": "SKY",
+   "kind": "KEEP",
+   "name": "Shieldgate Keep",
+   "at": [
+    52.24,
+    32.72
+   ],
+   "townEstateId": "3060457",
+   "heroParcels": 3,
+   "water": {
+    "coast": null,
+    "river": {
+     "id": "HS3-CH1",
+     "d": 5.77
+    }
+   },
+   "ridge": {
+    "id": "HS3-RG-R3A",
+    "d": 1.99
+   },
+   "road": {
+    "id": "HS3-SEC001",
+    "d": 0.15
+   },
+   "seaPort": null,
+   "airshipPort": {
+    "id": "HS3-ANCHORAGE",
+    "d": 75.95
+   },
+   "estatesWithin12": {
+    "SMALL": 12,
+    "MEDIUM": 1,
+    "LARGE": 1,
+    "GIANT": 0,
+    "EPIC": 0
+   }
+  },
+  {
+   "id": "HS3-SANCTUM",
+   "zone": "HS3",
+   "layer": "SKY",
+   "kind": "PALACE",
+   "name": "The Sanctum of Empyrea",
+   "at": [
+    45.52,
+    20.55
+   ],
+   "townEstateId": "1060463",
+   "heroParcels": 0,
+   "water": {
+    "coast": null,
+    "river": {
+     "id": "HS3-LK-MIRROR",
+     "d": 4.3
+    }
+   },
+   "ridge": {
+    "id": "HS3-RG-R3B",
+    "d": 11.7
+   },
+   "road": {
+    "id": "HS3-AP01",
+    "d": 0
+   },
+   "seaPort": null,
+   "airshipPort": {
+    "id": "HS3-ANCHORAGE",
+    "d": 83.15
+   },
+   "estatesWithin12": {
+    "SMALL": 15,
+    "MEDIUM": 0,
+    "LARGE": 0,
+    "GIANT": 0,
+    "EPIC": 1
+   }
+  },
+  {
+   "id": "HUB-CASTLE-DONGGUAN",
+   "zone": "HUB",
+   "layer": "SURFACE",
+   "kind": "CASTLE",
+   "name": "Dongguan Fort",
+   "at": [
+    200.44,
+    128.97
+   ],
+   "townEstateId": "2071719",
+   "heroParcels": 5,
+   "water": {
+    "coast": null,
+    "river": {
+     "id": "HUB-RV4",
+     "d": 28.26
+    }
+   },
+   "ridge": {
+    "id": "HUB-RG3",
+    "d": 6.91
+   },
+   "road": {
+    "id": "HUB-SEC047",
+    "d": 0
+   },
+   "seaPort": null,
+   "airshipPort": {
+    "id": "HUB-PORT-SKY",
+    "d": 122.76
+   },
+   "estatesWithin12": {
+    "SMALL": 9,
+    "MEDIUM": 3,
+    "LARGE": 0,
+    "GIANT": 1,
+    "EPIC": 1
+   }
+  },
+  {
+   "id": "HUB-CASTLE-JINJIANG",
+   "zone": "HUB",
+   "layer": "SURFACE",
+   "kind": "CASTLE",
+   "name": "Jinjiang River Citadel",
+   "at": [
+    163.7,
+    71.8
+   ],
+   "townEstateId": "1071729",
+   "heroParcels": 0,
+   "water": {
+    "coast": null,
+    "river": {
+     "id": "HUB-RV1",
+     "d": 7.2
+    }
+   },
+   "ridge": {
+    "id": "HUB-RG2",
+    "d": 25.04
+   },
+   "road": {
+    "id": "HUB-MT05",
+    "d": 0
+   },
+   "seaPort": null,
+   "airshipPort": {
+    "id": "HUB-PORT-SKY",
+    "d": 141.12
+   },
+   "estatesWithin12": {
+    "SMALL": 14,
+    "MEDIUM": 2,
+    "LARGE": 0,
+    "GIANT": 0,
+    "EPIC": 1
+   }
+  },
+  {
+   "id": "HUB-CASTLE-NANPING",
+   "zone": "HUB",
+   "layer": "SURFACE",
+   "kind": "CASTLE",
+   "name": "Nanping Walled City",
+   "at": [
+    246.84,
+    160.4
+   ],
+   "townEstateId": "1071733",
+   "heroParcels": 0,
+   "water": {
+    "coast": null,
+    "river": {
+     "id": "HUB-RV4",
+     "d": 80.11
+    }
+   },
+   "ridge": {
+    "id": "HUB-RG3",
+    "d": 38.55
+   },
+   "road": {
+    "id": "HUB-MT15",
+    "d": 0
+   },
+   "seaPort": null,
+   "airshipPort": {
+    "id": "HUB-PORT-SKY",
+    "d": 112.38
+   },
+   "estatesWithin12": {
+    "SMALL": 2,
+    "MEDIUM": 3,
+    "LARGE": 0,
+    "GIANT": 0,
+    "EPIC": 1
+   }
+  },
+  {
+   "id": "HUB-CASTLE-TIEDU",
+   "zone": "HUB",
+   "layer": "SURFACE",
+   "kind": "CASTLE",
+   "name": "Iron Ford Bridge Fort",
+   "at": [
+    134.98,
+    130.25
+   ],
+   "townEstateId": "2071671",
+   "heroParcels": 5,
+   "water": {
+    "coast": null,
+    "river": {
+     "id": "HUB-RV1",
+     "d": 11.35
+    }
+   },
+   "ridge": {
+    "id": "HUB-RG1",
+    "d": 36.64
+   },
+   "road": {
+    "id": "HUB-SEC004",
+    "d": 0
+   },
+   "seaPort": null,
+   "airshipPort": {
+    "id": "HUB-PORT-SKY",
+    "d": 182.1
+   },
+   "estatesWithin12": {
+    "SMALL": 8,
+    "MEDIUM": 3,
+    "LARGE": 0,
+    "GIANT": 2,
+    "EPIC": 0
+   }
+  },
+  {
+   "id": "HUB-CASTLE-XICHUAN",
+   "zone": "HUB",
+   "layer": "SURFACE",
+   "kind": "CASTLE",
+   "name": "Xichuan Round City",
+   "at": [
+    47.91,
+    85.48
+   ],
+   "townEstateId": "1071738",
+   "heroParcels": 0,
+   "water": {
+    "coast": null,
+    "river": {
+     "id": "HUB-RV3",
+     "d": 75.2
+    }
+   },
+   "ridge": {
+    "id": "HUB-RG1",
+    "d": 122.71
+   },
+   "road": {
+    "id": "HUB-AP01",
+    "d": 0
+   },
+   "seaPort": null,
+   "airshipPort": {
+    "id": "HUB-PORT-SKY",
+    "d": 257.59
+   },
+   "estatesWithin12": {
+    "SMALL": 8,
+    "MEDIUM": 1,
+    "LARGE": 0,
+    "GIANT": 0,
+    "EPIC": 1
+   }
+  },
+  {
+   "id": "HUB-CASTLE-YONGAN",
+   "zone": "HUB",
+   "layer": "SURFACE",
+   "kind": "CASTLE",
+   "name": "Yong'an Walled City",
+   "at": [
+    296.64,
+    69.46
+   ],
+   "townEstateId": "1071728",
+   "heroParcels": 0,
+   "water": {
+    "coast": null,
+    "river": {
+     "id": "HUB-RV4",
+     "d": 91.06
+    }
+   },
+   "ridge": {
+    "id": "HUB-RG2",
+    "d": 104.15
+   },
+   "road": {
+    "id": "HUB-MT12",
+    "d": 0
+   },
+   "seaPort": null,
+   "airshipPort": {
+    "id": "HUB-PORT-SKY",
+    "d": 9.65
+   },
+   "estatesWithin12": {
+    "SMALL": 15,
+    "MEDIUM": 0,
+    "LARGE": 0,
+    "GIANT": 0,
+    "EPIC": 1
+   }
+  },
+  {
+   "id": "HUB-KEEP-DRAGONTAIL",
+   "zone": "HUB",
+   "layer": "SURFACE",
+   "kind": "KEEP",
+   "name": "Dragontail Beacon",
+   "at": [
+    188.44,
+    144.65
+   ],
+   "townEstateId": "3071621",
+   "heroParcels": 3,
+   "water": {
+    "coast": null,
+    "river": {
+     "id": "HUB-RV1",
+     "d": 32.89
+    }
+   },
+   "ridge": {
+    "id": "HUB-RG3",
+    "d": 11.2
+   },
+   "road": {
+    "id": "HUB-SEC093",
+    "d": 0
+   },
+   "seaPort": null,
+   "airshipPort": {
+    "id": "HUB-PORT-SKY",
+    "d": 141.41
+   },
+   "estatesWithin12": {
+    "SMALL": 8,
+    "MEDIUM": 4,
+    "LARGE": 2,
+    "GIANT": 0,
+    "EPIC": 0
+   }
+  },
+  {
+   "id": "HUB-KEEP-SHAFTWATCH",
+   "zone": "HUB",
+   "layer": "SURFACE",
+   "kind": "KEEP",
+   "name": "Shaftwatch Beacon",
+   "at": [
+    172.41,
+    113.08
+   ],
+   "townEstateId": "3071605",
+   "heroParcels": 0,
+   "water": {
+    "coast": null,
+    "river": {
+     "id": "HUB-RV2",
+     "d": 6.42
+    }
+   },
+   "ridge": {
+    "id": "HUB-RG1",
+    "d": 4.31
+   },
+   "road": {
+    "id": "HUB-SEC013",
+    "d": 0
+   },
+   "seaPort": null,
+   "airshipPort": {
+    "id": "HUB-PORT-SKY",
+    "d": 141.01
+   },
+   "estatesWithin12": {
+    "SMALL": 5,
+    "MEDIUM": 1,
+    "LARGE": 1,
+    "GIANT": 1,
+    "EPIC": 0
+   }
+  },
+  {
+   "id": "HUB-KEEP-SOUTHGATE",
+   "zone": "HUB",
+   "layer": "SURFACE",
+   "kind": "KEEP",
+   "name": "Southgate Watch",
+   "at": [
+    165.16,
+    129.62
+   ],
+   "townEstateId": "3071665",
+   "heroParcels": 3,
+   "water": {
+    "coast": null,
+    "river": {
+     "id": "HUB-RV2",
+     "d": 16.14
+    }
+   },
+   "ridge": {
+    "id": "HUB-RG1",
+    "d": 9.17
+   },
+   "road": {
+    "id": "HUB-SEC061",
+    "d": 0
+   },
+   "seaPort": null,
+   "airshipPort": {
+    "id": "HUB-PORT-SKY",
+    "d": 154.11
+   },
+   "estatesWithin12": {
+    "SMALL": 6,
+    "MEDIUM": 0,
+    "LARGE": 1,
+    "GIANT": 1,
+    "EPIC": 1
+   }
+  },
+  {
+   "id": "HUB-KEEP-SOUTHSLOPE",
+   "zone": "HUB",
+   "layer": "SURFACE",
+   "kind": "KEEP",
+   "name": "South Slope Beacon",
+   "at": [
+    173.68,
+    144
+   ],
+   "townEstateId": "3071619",
+   "heroParcels": 3,
+   "water": {
+    "coast": null,
+    "river": {
+     "id": "HUB-RV1",
+     "d": 19.4
+    }
+   },
+   "ridge": {
+    "id": "HUB-RG1",
+    "d": 18.15
+   },
+   "road": {
+    "id": "HUB-SEC091",
+    "d": 0
+   },
+   "seaPort": null,
+   "airshipPort": {
+    "id": "HUB-PORT-SKY",
+    "d": 153.43
+   },
+   "estatesWithin12": {
+    "SMALL": 13,
+    "MEDIUM": 2,
+    "LARGE": 1,
+    "GIANT": 0,
+    "EPIC": 0
+   }
+  },
+  {
+   "id": "HUB-PALACE-ZHONGDU",
+   "zone": "HUB",
+   "layer": "SURFACE",
+   "kind": "PALACE",
+   "name": "The Vermilion Palace",
+   "at": [
+    156.6,
+    122.78
+   ],
+   "townEstateId": "1071732",
+   "heroParcels": 0,
+   "water": {
+    "coast": null,
+    "river": {
+     "id": "HUB-RV2",
+     "d": 9.88
+    }
+   },
+   "ridge": {
+    "id": "HUB-RG1",
+    "d": 14.28
+   },
+   "road": {
+    "id": "HUB-CW-AXIS",
+    "d": 0
+   },
+   "seaPort": null,
+   "airshipPort": {
+    "id": "HUB-PORT-SKY",
+    "d": 159.25
+   },
+   "estatesWithin12": {
+    "SMALL": 9,
+    "MEDIUM": 0,
+    "LARGE": 1,
+    "GIANT": 0,
+    "EPIC": 1
+   }
+  },
+  {
+   "id": "KOL-CASTLE-FORTUNA",
+   "zone": "KOL",
+   "layer": "SURFACE",
+   "kind": "CASTLE",
+   "name": "The Fortuna Grand",
+   "at": [
+    44,
+    22.7
+   ],
+   "townEstateId": null,
+   "heroParcels": 0,
+   "water": {
+    "coast": {
+     "id": "KOL-COAST",
+     "d": 9.62
+    },
+    "river": {
+     "id": "KOL-ST1",
+     "d": 18.31
+    }
+   },
+   "ridge": {
+    "id": "KOL-RG1",
+    "d": 6.32
+   },
+   "road": {
+    "id": "KOL-RD-STRIP",
+    "d": 0.25
+   },
+   "seaPort": {
+    "id": "KOL-HARBOUR",
+    "d": 54.2
+   },
+   "airshipPort": {
+    "id": "KOL-SKYDOCK",
+    "d": 29.09
+   },
+   "estatesWithin12": {
+    "SMALL": 0,
+    "MEDIUM": 0,
+    "LARGE": 0,
+    "GIANT": 0,
+    "EPIC": 0
+   }
+  },
+  {
+   "id": "UW2-BASTION-DOMINUS",
+   "zone": "UW2",
+   "layer": "UNDER",
+   "kind": "PALACE",
+   "name": "The Bastion of Dominus",
+   "at": [
+    69.89,
+    75.04
+   ],
+   "townEstateId": "1101100",
+   "heroParcels": 0,
+   "water": {
+    "coast": null,
+    "river": {
+     "id": "UW2-CH1",
+     "d": 8.39
+    }
+   },
+   "ridge": {
+    "id": "UW2-RG-P1",
+    "d": 20.87
+   },
+   "road": {
+    "id": "UW2-RD2",
+    "d": 0.04
+   },
+   "seaPort": null,
+   "airshipPort": null,
+   "estatesWithin12": {
+    "SMALL": 7,
+    "MEDIUM": 0,
+    "LARGE": 1,
+    "GIANT": 0,
+    "EPIC": 2
+   }
+  },
+  {
+   "id": "UW2-CASTLE-DEEPGATE",
+   "zone": "UW2",
+   "layer": "UNDER",
+   "kind": "CASTLE",
+   "name": "Deepgate Citadel",
+   "at": [
+    105.2,
+    61.22
+   ],
+   "townEstateId": "2101083",
+   "heroParcels": 5,
+   "water": {
+    "coast": null,
+    "river": {
+     "id": "UW2-LK-FERRY",
+     "d": 19.01
+    }
+   },
+   "ridge": {
+    "id": "UW2-RG-C1",
+    "d": 9.59
+   },
+   "road": {
+    "id": "UW2-SEC002",
+    "d": 0.24
+   },
+   "seaPort": null,
+   "airshipPort": null,
+   "estatesWithin12": {
+    "SMALL": 10,
+    "MEDIUM": 4,
+    "LARGE": 0,
+    "GIANT": 1,
+    "EPIC": 0
+   }
+  },
+  {
+   "id": "UW2-CASTLE-MOURNGATE",
+   "zone": "UW2",
+   "layer": "UNDER",
+   "kind": "CASTLE",
+   "name": "Mourngate Citadel",
+   "at": [
+    85.64,
+    71.64
+   ],
+   "townEstateId": "2101090",
+   "heroParcels": 5,
+   "water": {
+    "coast": null,
+    "river": {
+     "id": "UW2-LK-MERE",
+     "d": 7.14
+    }
+   },
+   "ridge": {
+    "id": "UW2-RG-P2",
+    "d": 26.58
+   },
+   "road": {
+    "id": "UW2-SEC028",
+    "d": 0.13
+   },
+   "seaPort": null,
+   "airshipPort": null,
+   "estatesWithin12": {
+    "SMALL": 2,
+    "MEDIUM": 2,
+    "LARGE": 1,
+    "GIANT": 1,
+    "EPIC": 1
+   }
+  },
+  {
+   "id": "UW2-CASTLE-PALEWATER",
+   "zone": "UW2",
+   "layer": "UNDER",
+   "kind": "CASTLE",
+   "name": "Palewater Citadel",
+   "at": [
+    69.92,
+    21.18
+   ],
+   "townEstateId": "2101092",
+   "heroParcels": 5,
+   "water": {
+    "coast": null,
+    "river": {
+     "id": "UW2-LK-CENOTE3",
+     "d": 8.24
+    }
+   },
+   "ridge": {
+    "id": "UW2-RG-RIM-N",
+    "d": 18.71
+   },
+   "road": {
+    "id": "UW2-RD3",
+    "d": 0.17
+   },
+   "seaPort": null,
+   "airshipPort": null,
+   "estatesWithin12": {
+    "SMALL": 20,
+    "MEDIUM": 1,
+    "LARGE": 0,
+    "GIANT": 1,
+    "EPIC": 0
+   }
+  },
+  {
+   "id": "UW2-KEEP-DROWNMEADOW",
+   "zone": "UW2",
+   "layer": "UNDER",
+   "kind": "KEEP",
+   "name": "Drownmeadow Keep",
+   "at": [
+    66.66,
+    124.64
+   ],
+   "townEstateId": "3101057",
+   "heroParcels": 3,
+   "water": {
+    "coast": null,
+    "river": {
+     "id": "UW2-LK-MEADOW",
+     "d": 3.3
+    }
+   },
+   "ridge": {
+    "id": "UW2-RG-D2",
+    "d": 10.6
+   },
+   "road": {
+    "id": "UW2-DT07",
+    "d": 0
+   },
+   "seaPort": null,
+   "airshipPort": null,
+   "estatesWithin12": {
+    "SMALL": 16,
+    "MEDIUM": 4,
+    "LARGE": 2,
+    "GIANT": 0,
+    "EPIC": 0
+   }
+  },
+  {
+   "id": "UW2-KEEP-FERRYWATCH",
+   "zone": "UW2",
+   "layer": "UNDER",
+   "kind": "KEEP",
+   "name": "Ferrywatch Keep",
+   "at": [
+    114.25,
+    79.91
+   ],
+   "townEstateId": "3101067",
+   "heroParcels": 3,
+   "water": {
+    "coast": null,
+    "river": {
+     "id": "UW2-LK-FERRY",
+     "d": 12.37
+    }
+   },
+   "ridge": {
+    "id": "UW2-RG-C2",
+    "d": 2.59
+   },
+   "road": {
+    "id": "UW2-DT05",
+    "d": 0
+   },
+   "seaPort": null,
+   "airshipPort": null,
+   "estatesWithin12": {
+    "SMALL": 24,
+    "MEDIUM": 1,
+    "LARGE": 2,
+    "GIANT": 0,
+    "EPIC": 0
+   }
+  },
+  {
+   "id": "UW2-KEEP-PALELANTERN",
+   "zone": "UW2",
+   "layer": "UNDER",
+   "kind": "KEEP",
+   "name": "Palelantern Keep",
+   "at": [
+    40.48,
+    67.32
+   ],
+   "townEstateId": "3101078",
+   "heroParcels": 3,
+   "water": {
+    "coast": null,
+    "river": {
+     "id": "UW2-CH1",
+     "d": 5.47
+    }
+   },
+   "ridge": {
+    "id": "UW2-RG-A2",
+    "d": 5.35
+   },
+   "road": {
+    "id": "UW2-DT11",
+    "d": 0
+   },
+   "seaPort": null,
+   "airshipPort": null,
+   "estatesWithin12": {
+    "SMALL": 13,
+    "MEDIUM": 4,
+    "LARGE": 1,
+    "GIANT": 0,
+    "EPIC": 0
+   }
+  },
+  {
+   "id": "UW2-KEEP-SUNKENCOURT",
+   "zone": "UW2",
+   "layer": "UNDER",
+   "kind": "KEEP",
+   "name": "Sunken Court Keep",
+   "at": [
+    96.68,
+    114.7
+   ],
+   "townEstateId": "3101072",
+   "heroParcels": 3,
+   "water": {
+    "coast": null,
+    "river": {
+     "id": "UW2-LK-COURT",
+     "d": 1.95
+    }
+   },
+   "ridge": {
+    "id": "UW2-RG-D3",
+    "d": 2.43
+   },
+   "road": {
+    "id": "UW2-DT09",
+    "d": 0
+   },
+   "seaPort": null,
+   "airshipPort": null,
+   "estatesWithin12": {
+    "SMALL": 10,
+    "MEDIUM": 4,
+    "LARGE": 2,
+    "GIANT": 0,
+    "EPIC": 0
+   }
+  },
+  {
+   "id": "UW2-KEEP-VIGILWATCH",
+   "zone": "UW2",
+   "layer": "UNDER",
+   "kind": "KEEP",
+   "name": "Vigilwatch Keep",
+   "at": [
+    27.46,
+    75.72
+   ],
+   "townEstateId": "3101075",
+   "heroParcels": 3,
+   "water": {
+    "coast": null,
+    "river": {
+     "id": "UW2-CH1",
+     "d": 8.74
+    }
+   },
+   "ridge": {
+    "id": "UW2-RG-A2",
+    "d": 9.47
+   },
+   "road": {
+    "id": "UW2-DT03",
+    "d": 0
+   },
+   "seaPort": null,
+   "airshipPort": null,
+   "estatesWithin12": {
+    "SMALL": 18,
+    "MEDIUM": 5,
+    "LARGE": 1,
+    "GIANT": 0,
+    "EPIC": 0
+   }
+  },
+  {
+   "id": "UW3-KEEP-COIN",
+   "zone": "UW3",
+   "layer": "UNDER",
+   "kind": "KEEP",
+   "name": "The House of Coin",
+   "at": [
+    22.66,
+    9.77
+   ],
+   "townEstateId": "3110086",
+   "heroParcels": 3,
+   "water": {
+    "coast": null,
+    "river": {
+     "id": "UW3-FL-N",
+     "d": 5.71
+    }
+   },
+   "ridge": {
+    "id": "UW3-RG-RIM-N",
+    "d": 8.66
+   },
+   "road": {
+    "id": "UW3-LOC09",
+    "d": 0.06
+   },
+   "seaPort": null,
+   "airshipPort": null,
+   "estatesWithin12": {
+    "SMALL": 1,
+    "MEDIUM": 8,
+    "LARGE": 1,
+    "GIANT": 0,
+    "EPIC": 0
+   }
+  },
+  {
+   "id": "UW3-KEEP-HUNGER",
+   "zone": "UW3",
+   "layer": "UNDER",
+   "kind": "KEEP",
+   "name": "The House of Hunger",
+   "at": [
+    44.75,
+    11.79
+   ],
+   "townEstateId": "3110084",
+   "heroParcels": 3,
+   "water": {
+    "coast": null,
+    "river": {
+     "id": "UW3-FL-N",
+     "d": 15.26
+    }
+   },
+   "ridge": {
+    "id": "UW3-RG-REEF-NE",
+    "d": 8.69
+   },
+   "road": {
+    "id": "UW3-SP3",
+    "d": 0.16
+   },
+   "seaPort": null,
+   "airshipPort": null,
+   "estatesWithin12": {
+    "SMALL": 2,
+    "MEDIUM": 5,
+    "LARGE": 3,
+    "GIANT": 0,
+    "EPIC": 0
+   }
+  },
+  {
+   "id": "UW3-KEEP-MIRRORS",
+   "zone": "UW3",
+   "layer": "UNDER",
+   "kind": "KEEP",
+   "name": "The House of Mirrors",
+   "at": [
+    25.67,
+    46.05
+   ],
+   "townEstateId": "3110089",
+   "heroParcels": 3,
+   "water": {
+    "coast": null,
+    "river": {
+     "id": "UW3-FL-S",
+     "d": 2.08
+    }
+   },
+   "ridge": {
+    "id": "UW3-RG-RIM-S",
+    "d": 16.8
+   },
+   "road": {
+    "id": "UW3-SEC05",
+    "d": 0.15
+   },
+   "seaPort": null,
+   "airshipPort": null,
+   "estatesWithin12": {
+    "SMALL": 8,
+    "MEDIUM": 3,
+    "LARGE": 3,
+    "GIANT": 0,
+    "EPIC": 0
+   }
+  },
+  {
+   "id": "UW3-KEEP-SILK",
+   "zone": "UW3",
+   "layer": "UNDER",
+   "kind": "KEEP",
+   "name": "The House of Silk",
+   "at": [
+    33.31,
+    53.72
+   ],
+   "townEstateId": "3110088",
+   "heroParcels": 3,
+   "water": {
+    "coast": null,
+    "river": {
+     "id": "UW3-FL-S",
+     "d": 6.93
+    }
+   },
+   "ridge": {
+    "id": "UW3-RG-RIM-S",
+    "d": 9.19
+   },
+   "road": {
+    "id": "UW3-SEC01",
+    "d": 0.1
+   },
+   "seaPort": null,
+   "airshipPort": null,
+   "estatesWithin12": {
+    "SMALL": 7,
+    "MEDIUM": 2,
+    "LARGE": 4,
+    "GIANT": 0,
+    "EPIC": 0
+   }
+  },
+  {
+   "id": "UW3-PALACE-VAULTPALACE",
+   "zone": "UW3",
+   "layer": "UNDER",
+   "kind": "PALACE",
+   "name": "The Vault-Palace of Luxuria",
+   "at": [
+    40.51,
+    23.03
+   ],
+   "townEstateId": "3110087",
+   "heroParcels": 3,
+   "water": {
+    "coast": null,
+    "river": {
+     "id": "UW3-FL-N",
+     "d": 9.6
+    }
+   },
+   "ridge": {
+    "id": "UW3-RG-REEF-NE",
+    "d": 19.42
+   },
+   "road": {
+    "id": "UW3-SP0",
+    "d": 0.03
+   },
+   "seaPort": null,
+   "airshipPort": null,
+   "estatesWithin12": {
+    "SMALL": 5,
+    "MEDIUM": 2,
+    "LARGE": 4,
+    "GIANT": 0,
+    "EPIC": 0
+   }
+  }
+ ]
+}

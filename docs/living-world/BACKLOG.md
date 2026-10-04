@@ -17,7 +17,7 @@ airships, landing spots, harbours + sea ships; seed all 20K maps; an experience,
 - [ ] 08 — Canon reconciliation: add new terms to the data-model canon (PR to the overworld branch)
 
 ## Data & code
-- [ ] D1 — Inventory castles / parcels / terrain from the overworld data (counts, fields, biomes, coast)
+- [x] D1 — Inventory castles / parcels / terrain from the overworld data (counts, fields, biomes, coast)
 - [ ] D2 — `poi-archetypes.json`: the archetype templates (data the sim and docs both read)
 - [ ] D3 — Deterministic seeder: (parcel/castle, seed) → POI placements + event decks
 - [ ] D4 — Seed every castle → `data/living-world/castle-pois.json` + tests (determinism, coverage, bounds)
