@@ -170,4 +170,16 @@ ok(Object.values(RF.FT.kinds).every((k) => k.weight > 0 && k.variants.length >= 
 const rfi = { id: "x|1", kind: "GUARDIAN_KO", facts: { attacker: "A", place: "P", pot: 15 } };
 ok(JSON.stringify(RF.headline(rfi)) === JSON.stringify(RF.headline({ ...rfi })), "the headline variant is a pure function of the item id");
 
+// D11 two progression ladders
+const ri1 = run("tools/living-world/influence.mjs", "/tmp/lw_ri_a.json"), ri2 = run("tools/living-world/influence.mjs", "/tmp/lw_ri_b.json");
+ok(ri1.equals(ri2) && ri1.equals(fs.readFileSync("data/living-world/region-influence.json")), "region-influence totals are byte-identical and committed");
+const IN = await import("./influence.mjs"), brief = fs.readFileSync("/home/user/cf-overworld/docs/briefs/NAVAL-AIRSHIP-THREE-LAYER-MAPS.md", "utf8");
+const briefTiers = [...brief.matchAll(/^\| (\d+) \| (NORMAL ship|NORMAL airship|LARGE ship|IMPERIAL carrier)/gm)].map((m) => +m[1]);
+ok(briefTiers.join() === "5,10,25,100" && EX.vesselAccess.tiers.map((t) => t.parcels).join() === briefTiers.join(), "vessel access mirrors the canon brief §7 (5 / 10 / 25 / 100 parcels controlled)");
+ok(IN.vessels(4).length === 0 && IN.vessels(5).join() === "SHIP_NORMAL" && IN.vessels(100).includes("IMPERIAL_CARRIER"), "vessels() gates by parcels controlled");
+ok([0, 2, 3, 9, 10, 24, 25, 99].every((h, i, a) => i === 0 || IN.regionInfluence(h).unlocks.length >= IN.regionInfluence(a[i - 1]).unlocks.length) && IN.regionInfluence(4).next.need === 1 && IN.regionInfluence(25).next === null, "region unlocks are monotonic and report the next step");
+const RI = JSON.parse(ri1);
+ok(Object.values(RI.regions).every((r) => IN.regionInfluence(Math.floor(r.holdable / 2) + 1, r.holdable).unlocks.includes("FORM3_STATION")), "every region (even KOL with 3) can be fully dominated by holding a majority");
+ok(IN.regionBanner({ a: 30, b: 30 }) === null && IN.regionBanner({ a: 24 }) === null && IN.regionBanner({ a: 40, b: 30 }) === "a" && IN.regionBanner({ a: 2, b: 1 }, 3) === "a", "region banner: plurality ≥ 25 (a majority in small regions), ties go to nobody");
+
 console.log(fails ? `❌ living-world: ${fails} failed` : "✅ living-world: all passed"); process.exit(fails ? 1 : 0);

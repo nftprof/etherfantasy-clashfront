@@ -1,6 +1,6 @@
 {
  "schema": "cf-living-world/experience@1",
- "note": "doc 06 \u2014 session shapes, anti-farm curve, influence unlocks. Consumers: reward resolution + region influence.",
+ "note": "doc 06 — session shapes, anti-farm curve, two progression ladders: vesselAccess (canon: parcels controlled, world-wide) and influenceUnlocks (living world: holdable POIs held per region). Consumers: reward resolution + region influence.",
  "sessions": {
   "SKIRMISH": [
    3,
@@ -35,19 +35,23 @@
  "influenceUnlocks": [
   {
    "poisHeld": 3,
-   "unlock": "POST_EVENTS"
+   "unlock": "POST_EVENTS",
+   "what": "post SIEGE_ME / BOUNTY / CARAVAN_RUN from this region (doc 05)"
   },
   {
    "poisHeld": 5,
-   "unlock": "SHIP_NORMAL"
+   "unlock": "HARBOUR_RIGHTS",
+   "what": "dock and ferry your ships at this region's harbours toll-free (needs a ship: vesselAccess)"
   },
   {
    "poisHeld": 10,
-   "unlock": "AIRSHIP_NORMAL"
+   "unlock": "PAD_RIGHTS",
+   "what": "air reinforcement to your held landing spots in this region (needs an airship: vesselAccess)"
   },
   {
    "poisHeld": 25,
-   "unlock": "SHIP_LARGE+AIRSHIP_LARGE+FORM3_STATION"
+   "unlock": "FORM3_STATION",
+   "what": "station a Form 3 Ascendant on a perch you hold in this region (doc 04 limits still apply)"
   }
  ],
  "notBuilt": [
@@ -55,5 +59,41 @@
   "DAILY_CHEST",
   "LOGIN_CALENDAR",
   "STREAKS"
+ ],
+ "regionBanner": {
+  "rule": "PLURALITY",
+  "minHeld": 25,
+  "what": "most holdable POIs in the region (ties: nobody) → banner on the region map, feed headlines, a World Remembers monument when lost"
+ },
+ "vesselAccess": {
+  "src": "cf-overworld docs/briefs/NAVAL-AIRSHIP-THREE-LAYER-MAPS.md §7 (⚙ canon proposal, owner 2026-08-31)",
+  "metric": "PARCELS_CONTROLLED",
+  "tiers": [
+   {
+    "parcels": 5,
+    "unlock": "SHIP_NORMAL"
+   },
+   {
+    "parcels": 10,
+    "unlock": "AIRSHIP_NORMAL"
+   },
+   {
+    "parcels": 25,
+    "unlock": "SHIP_LARGE+AIRSHIP_LARGE"
+   },
+   {
+    "parcels": 100,
+    "unlock": "IMPERIAL_CARRIER"
+   }
+  ]
+ },
+ "holdable": [
+  "AIRSHIP_DOCK",
+  "HARBOUR",
+  "LANDING_SPOT",
+  "MERCENARY_POST",
+  "VENT",
+  "WAR_CAMP",
+  "WILD_LAIR"
  ]
 }

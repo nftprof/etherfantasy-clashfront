@@ -1,0 +1,117 @@
+{
+ "schema": "cf-living-world/region-influence@1",
+ "holdable": [
+  "AIRSHIP_DOCK",
+  "HARBOUR",
+  "LANDING_SPOT",
+  "MERCENARY_POST",
+  "VENT",
+  "WAR_CAMP",
+  "WILD_LAIR"
+ ],
+ "total": 23489,
+ "regions": {
+  "BUS": {
+   "holdable": 4629,
+   "byKind": {
+    "AIRSHIP_DOCK": 15,
+    "HARBOUR": 83,
+    "LANDING_SPOT": 6,
+    "MERCENARY_POST": 61,
+    "WAR_CAMP": 6,
+    "WILD_LAIR": 4458
+   }
+  },
+  "EDU": {
+   "holdable": 997,
+   "byKind": {
+    "MERCENARY_POST": 8,
+    "WAR_CAMP": 4,
+    "WILD_LAIR": 985
+   }
+  },
+  "ENT": {
+   "holdable": 3492,
+   "byKind": {
+    "HARBOUR": 52,
+    "LANDING_SPOT": 2,
+    "MERCENARY_POST": 26,
+    "WAR_CAMP": 7,
+    "WILD_LAIR": 3405
+   }
+  },
+  "HS1": {
+   "holdable": 932,
+   "byKind": {
+    "AIRSHIP_DOCK": 134,
+    "LANDING_SPOT": 14,
+    "MERCENARY_POST": 17,
+    "WAR_CAMP": 4,
+    "WILD_LAIR": 763
+   }
+  },
+  "HS2": {
+   "holdable": 776,
+   "byKind": {
+    "AIRSHIP_DOCK": 148,
+    "LANDING_SPOT": 14,
+    "MERCENARY_POST": 22,
+    "WAR_CAMP": 5,
+    "WILD_LAIR": 587
+   }
+  },
+  "HS3": {
+   "holdable": 808,
+   "byKind": {
+    "AIRSHIP_DOCK": 139,
+    "LANDING_SPOT": 10,
+    "MERCENARY_POST": 19,
+    "WAR_CAMP": 5,
+    "WILD_LAIR": 635
+   }
+  },
+  "HUB": {
+   "holdable": 4572,
+   "byKind": {
+    "AIRSHIP_DOCK": 16,
+    "LANDING_SPOT": 2,
+    "MERCENARY_POST": 76,
+    "WAR_CAMP": 8,
+    "WILD_LAIR": 4470
+   }
+  },
+  "KOL": {
+   "holdable": 3,
+   "byKind": {
+    "HARBOUR": 1,
+    "LANDING_SPOT": 1,
+    "MERCENARY_POST": 1
+   }
+  },
+  "UW1": {
+   "holdable": 3531,
+   "byKind": {
+    "VENT": 1188,
+    "WILD_LAIR": 2343
+   }
+  },
+  "UW2": {
+   "holdable": 3445,
+   "byKind": {
+    "MERCENARY_POST": 55,
+    "VENT": 1723,
+    "WAR_CAMP": 6,
+    "WILD_LAIR": 1661
+   }
+  },
+  "UW3": {
+   "holdable": 304,
+   "byKind": {
+    "MERCENARY_POST": 11,
+    "VENT": 154,
+    "WAR_CAMP": 4,
+    "WILD_LAIR": 135
+   }
+  }
+ }
+}

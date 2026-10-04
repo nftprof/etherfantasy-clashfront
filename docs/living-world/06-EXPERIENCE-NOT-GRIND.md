@@ -55,15 +55,37 @@ reward:
 
 ## 5. Dominating an area (the PvE progression)
 
-Holding POIs gives **influence** in a region. Influence unlocks things that change *how you play*:
+Two ladders, kept apart on purpose (D11, `tools/living-world/influence.mjs`):
 
-| POIs held in a region | Unlocks | Canon hook |
+**Ladder 1: vessel classes (canon, world-wide).** These come from **parcels you control**, per
+`NAVAL-AIRSHIP-THREE-LAYER-MAPS.md` §7 (⚙ canon proposal). The living world doesn't change them:
+
+| Parcels controlled | Vessel class |
+|---|---|
+| 5 | NORMAL ship |
+| 10 | NORMAL airship |
+| 25 | LARGE ship + LARGE airship |
+| 100 | IMPERIAL carrier |
+
+**Ladder 2: region influence (living world, per region).** Holding POIs in a region (the holdable kinds: airship
+docks, harbours, landing spots, mercenary posts, vents, war camps, wild lairs) gives you the *right to use* your
+power there:
+
+| Holdable POIs held in the region | Unlocks | Canon hook |
 |---|---|---|
-| 3 | Post **SIEGE_ME** / **BOUNTY** events from that region | doc 05 |
-| 5 | **NORMAL ship**: sea lanes from that region's harbours | `NAVAL-AIRSHIP…` §7 (5 parcels) |
-| 10 | **NORMAL airship**: air reinforcement to held landing spots | §7 (10 parcels) |
-| 25 | **LARGE ship / airship**; station a **Form 3 Ascendant** | §7 (25), doc 04 |
-| Region majority | Your banner on the region map; region feed headlines; a World Remembers monument when you finally lose it | `WORLD-REMEMBERS-AND-TOWNS` |
+| 3 | **POST_EVENTS**: post SIEGE_ME / BOUNTY / CARAVAN_RUN from that region | doc 05 |
+| 5 | **HARBOUR_RIGHTS**: dock and ferry *your* ships at the region's harbours toll-free | needs a ship (ladder 1) |
+| 10 | **PAD_RIGHTS**: air reinforcement to your held landing spots | needs an airship (ladder 1) |
+| 25 | **FORM3_STATION**: station a Form 3 Ascendant on a perch you hold here | doc 04 limits still apply |
+| Plurality (≥ 25, or a majority in small regions; no tie) | **Region banner**: your banner on the region map, feed headlines, and a World Remembers monument when you finally lose it | `WORLD-REMEMBERS-AND-TOWNS` |
+
+- **Using a ship from a region's harbours needs both ladders:** the class (land) and the right (influence).
+- **Small regions are not locked out.** No threshold exceeds a majority of the region's holdable POIs. KOL has 3, so
+  holding 2 unlocks everything.
+- **Region sizes** are in `data/living-world/region-influence.json`: 23,489 holdable POIs across 11 regions, from
+  BUS 4,629 down to KOL 3.
+- **Earlier draft:** doc 06 said POIs held unlocked the vessel classes. That conflated the canon parcel gate with
+  influence, and is now fixed.
 
 - **Spend is a choice, not an entry fee.**
   - CT stakes defences (doc 03) and Guardians (doc 04): durable world effects.
