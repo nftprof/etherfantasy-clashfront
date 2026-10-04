@@ -338,4 +338,24 @@ ok(MM.hire(MM.newState({ r: 10000 }), { postId: mmPost, companyId: mmCo, side: "
 const mm1 = run("tools/living-world/merc_market.mjs", "/tmp/lw_mm_a.json");
 ok(mm1.equals(fs.readFileSync("data/living-world/merc-market.sample.json")) && JSON.parse(mm1).biddingExample.conserved, "merc-market sample is reproducible, committed, and conserves CT");
 
+// D29 season beats (doc 06 §3 weekly beats on one 28-day cycle)
+const sb1 = run("tools/living-world/season_beats.mjs", "/tmp/lw_sb_a.json");
+ok(sb1.equals(fs.readFileSync("data/living-world/season-beats.json")), "season-beats calendar is reproducible and committed");
+const SB = await import("./season_beats.mjs"), sbBad = [];
+for (let cy = 0; cy < 6; cy++) {
+  const C = SB.beats("cf-world-1", cy), peaks = {};
+  for (const [z, Bz] of Object.entries(C)) {
+    const bigD = Bz.filter((b) => SB.CYCLE.big.includes(b.beat)).map((b) => b.day).sort((x, y) => x - y), lull = new Set(Bz.filter((b) => b.beat === "LULL").map((b) => b.day));
+    if (bigD.some((d, i) => i && d - bigD[i - 1] < 2)) sbBad.push(`${cy}/${z}: big beats adjacent`);
+    if (bigD.some((d) => lull.has(d))) sbBad.push(`${cy}/${z}: big beat in a lull`);
+    if (Bz.filter((b) => b.beat === "THREAT_PEAK").length !== 1) sbBad.push(`${cy}/${z}: peaks ≠ 1`);
+    if ((WCm.REGIONS[z].lanes || []).length && !Bz.some((b) => b.beat === "STORM_FRONT")) sbBad.push(`${cy}/${z}: no storm front`);
+    const asc = Bz.filter((b) => b.beat === "ASCENSION_NIGHT").map((b) => Math.floor(b.day / 7));
+    if (asc.length && asc.join() !== "0,1,2,3") sbBad.push(`${cy}/${z}: ascension nights not one per week`);
+    for (const b of Bz) if (b.beat === "THREAT_PEAK") peaks[b.day] = (peaks[b.day] || 0) + 1;
+  }
+  if (Object.values(peaks).some((n) => n > SB.CYCLE.maxPeaksPerDay)) sbBad.push(`${cy}: > 2 peaks on a day`);
+}
+ok(sbBad.length === 0, "6 cycles × all regions: one threat peak each (≤ 2 regions per day), big beats never on the same or adjacent days, never in a lull; storm fronts on sea regions; one Ascension night per week where there are perches" + (sbBad.length ? " — " + sbBad.slice(0, 3).join("; ") : ""));
+
 console.log(fails ? `❌ living-world: ${fails} failed` : "✅ living-world: all passed"); process.exit(fails ? 1 : 0);

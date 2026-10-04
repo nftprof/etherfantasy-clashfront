@@ -1,0 +1,660 @@
+{
+ "schema": "cf-living-world/season-beats@1",
+ "cycle": {
+  "days": 28,
+  "stormFrontDay": 21,
+  "lullDays": 2,
+  "maxPeaksPerDay": 2,
+  "big": [
+   "STORM_FRONT",
+   "THREAT_PEAK",
+   "ASCENSION_NIGHT"
+  ]
+ },
+ "cycles": {
+  "0": {
+   "BUS": [
+    {
+     "day": 4,
+     "beat": "ASCENSION_NIGHT"
+    },
+    {
+     "day": 12,
+     "beat": "ASCENSION_NIGHT"
+    },
+    {
+     "day": 17,
+     "beat": "ASCENSION_NIGHT"
+    },
+    {
+     "day": 21,
+     "beat": "STORM_FRONT"
+    },
+    {
+     "day": 23,
+     "beat": "ASCENSION_NIGHT"
+    },
+    {
+     "day": 25,
+     "beat": "THREAT_PEAK"
+    },
+    {
+     "day": 26,
+     "beat": "LULL"
+    },
+    {
+     "day": 27,
+     "beat": "LULL"
+    }
+   ],
+   "EDU": [
+    {
+     "day": 5,
+     "beat": "ASCENSION_NIGHT"
+    },
+    {
+     "day": 8,
+     "beat": "THREAT_PEAK"
+    },
+    {
+     "day": 9,
+     "beat": "LULL"
+    },
+    {
+     "day": 10,
+     "beat": "LULL"
+    },
+    {
+     "day": 11,
+     "beat": "ASCENSION_NIGHT"
+    },
+    {
+     "day": 20,
+     "beat": "ASCENSION_NIGHT"
+    },
+    {
+     "day": 22,
+     "beat": "ASCENSION_NIGHT"
+    }
+   ],
+   "ENT": [
+    {
+     "day": 2,
+     "beat": "ASCENSION_NIGHT"
+    },
+    {
+     "day": 10,
+     "beat": "ASCENSION_NIGHT"
+    },
+    {
+     "day": 18,
+     "beat": "ASCENSION_NIGHT"
+    },
+    {
+     "day": 21,
+     "beat": "STORM_FRONT"
+    },
+    {
+     "day": 23,
+     "beat": "THREAT_PEAK"
+    },
+    {
+     "day": 24,
+     "beat": "LULL"
+    },
+    {
+     "day": 25,
+     "beat": "LULL"
+    },
+    {
+     "day": 26,
+     "beat": "ASCENSION_NIGHT"
+    }
+   ],
+   "HS1": [
+    {
+     "day": 5,
+     "beat": "ASCENSION_NIGHT"
+    },
+    {
+     "day": 10,
+     "beat": "THREAT_PEAK"
+    },
+    {
+     "day": 11,
+     "beat": "LULL"
+    },
+    {
+     "day": 12,
+     "beat": "LULL"
+    },
+    {
+     "day": 13,
+     "beat": "ASCENSION_NIGHT"
+    },
+    {
+     "day": 17,
+     "beat": "ASCENSION_NIGHT"
+    },
+    {
+     "day": 23,
+     "beat": "ASCENSION_NIGHT"
+    }
+   ],
+   "HS2": [
+    {
+     "day": 6,
+     "beat": "ASCENSION_NIGHT"
+    },
+    {
+     "day": 9,
+     "beat": "ASCENSION_NIGHT"
+    },
+    {
+     "day": 14,
+     "beat": "ASCENSION_NIGHT"
+    },
+    {
+     "day": 21,
+     "beat": "THREAT_PEAK"
+    },
+    {
+     "day": 22,
+     "beat": "LULL"
+    },
+    {
+     "day": 23,
+     "beat": "LULL"
+    },
+    {
+     "day": 24,
+     "beat": "ASCENSION_NIGHT"
+    }
+   ],
+   "HS3": [
+    {
+     "day": 0,
+     "beat": "ASCENSION_NIGHT"
+    },
+    {
+     "day": 2,
+     "beat": "THREAT_PEAK"
+    },
+    {
+     "day": 3,
+     "beat": "LULL"
+    },
+    {
+     "day": 4,
+     "beat": "LULL"
+    },
+    {
+     "day": 8,
+     "beat": "ASCENSION_NIGHT"
+    },
+    {
+     "day": 19,
+     "beat": "ASCENSION_NIGHT"
+    },
+    {
+     "day": 25,
+     "beat": "ASCENSION_NIGHT"
+    }
+   ],
+   "HUB": [
+    {
+     "day": 5,
+     "beat": "ASCENSION_NIGHT"
+    },
+    {
+     "day": 11,
+     "beat": "ASCENSION_NIGHT"
+    },
+    {
+     "day": 14,
+     "beat": "ASCENSION_NIGHT"
+    },
+    {
+     "day": 18,
+     "beat": "THREAT_PEAK"
+    },
+    {
+     "day": 19,
+     "beat": "LULL"
+    },
+    {
+     "day": 20,
+     "beat": "LULL"
+    },
+    {
+     "day": 21,
+     "beat": "ASCENSION_NIGHT"
+    }
+   ],
+   "KOL": [
+    {
+     "day": 6,
+     "beat": "ASCENSION_NIGHT"
+    },
+    {
+     "day": 8,
+     "beat": "THREAT_PEAK"
+    },
+    {
+     "day": 9,
+     "beat": "LULL"
+    },
+    {
+     "day": 10,
+     "beat": "LULL"
+    },
+    {
+     "day": 11,
+     "beat": "ASCENSION_NIGHT"
+    },
+    {
+     "day": 14,
+     "beat": "ASCENSION_NIGHT"
+    },
+    {
+     "day": 22,
+     "beat": "ASCENSION_NIGHT"
+    }
+   ],
+   "UW1": [
+    {
+     "day": 10,
+     "beat": "THREAT_PEAK"
+    },
+    {
+     "day": 11,
+     "beat": "LULL"
+    },
+    {
+     "day": 12,
+     "beat": "LULL"
+    }
+   ],
+   "UW2": [
+    {
+     "day": 0,
+     "beat": "ASCENSION_NIGHT"
+    },
+    {
+     "day": 13,
+     "beat": "ASCENSION_NIGHT"
+    },
+    {
+     "day": 18,
+     "beat": "ASCENSION_NIGHT"
+    },
+    {
+     "day": 21,
+     "beat": "THREAT_PEAK"
+    },
+    {
+     "day": 22,
+     "beat": "LULL"
+    },
+    {
+     "day": 23,
+     "beat": "LULL"
+    },
+    {
+     "day": 24,
+     "beat": "ASCENSION_NIGHT"
+    }
+   ],
+   "UW3": [
+    {
+     "day": 0,
+     "beat": "THREAT_PEAK"
+    },
+    {
+     "day": 1,
+     "beat": "LULL"
+    },
+    {
+     "day": 2,
+     "beat": "LULL"
+    },
+    {
+     "day": 3,
+     "beat": "ASCENSION_NIGHT"
+    },
+    {
+     "day": 10,
+     "beat": "ASCENSION_NIGHT"
+    },
+    {
+     "day": 15,
+     "beat": "ASCENSION_NIGHT"
+    },
+    {
+     "day": 23,
+     "beat": "ASCENSION_NIGHT"
+    }
+   ]
+  },
+  "1": {
+   "BUS": [
+    {
+     "day": 0,
+     "beat": "ASCENSION_NIGHT"
+    },
+    {
+     "day": 9,
+     "beat": "ASCENSION_NIGHT"
+    },
+    {
+     "day": 18,
+     "beat": "ASCENSION_NIGHT"
+    },
+    {
+     "day": 21,
+     "beat": "STORM_FRONT"
+    },
+    {
+     "day": 23,
+     "beat": "THREAT_PEAK"
+    },
+    {
+     "day": 24,
+     "beat": "LULL"
+    },
+    {
+     "day": 25,
+     "beat": "LULL"
+    },
+    {
+     "day": 26,
+     "beat": "ASCENSION_NIGHT"
+    }
+   ],
+   "EDU": [
+    {
+     "day": 1,
+     "beat": "ASCENSION_NIGHT"
+    },
+    {
+     "day": 8,
+     "beat": "THREAT_PEAK"
+    },
+    {
+     "day": 9,
+     "beat": "LULL"
+    },
+    {
+     "day": 10,
+     "beat": "LULL"
+    },
+    {
+     "day": 11,
+     "beat": "ASCENSION_NIGHT"
+    },
+    {
+     "day": 19,
+     "beat": "ASCENSION_NIGHT"
+    },
+    {
+     "day": 27,
+     "beat": "ASCENSION_NIGHT"
+    }
+   ],
+   "ENT": [
+    {
+     "day": 3,
+     "beat": "ASCENSION_NIGHT"
+    },
+    {
+     "day": 10,
+     "beat": "ASCENSION_NIGHT"
+    },
+    {
+     "day": 14,
+     "beat": "THREAT_PEAK"
+    },
+    {
+     "day": 15,
+     "beat": "LULL"
+    },
+    {
+     "day": 16,
+     "beat": "LULL"
+    },
+    {
+     "day": 17,
+     "beat": "ASCENSION_NIGHT"
+    },
+    {
+     "day": 21,
+     "beat": "STORM_FRONT"
+    },
+    {
+     "day": 23,
+     "beat": "ASCENSION_NIGHT"
+    }
+   ],
+   "HS1": [
+    {
+     "day": 2,
+     "beat": "ASCENSION_NIGHT"
+    },
+    {
+     "day": 7,
+     "beat": "ASCENSION_NIGHT"
+    },
+    {
+     "day": 17,
+     "beat": "THREAT_PEAK"
+    },
+    {
+     "day": 18,
+     "beat": "LULL"
+    },
+    {
+     "day": 19,
+     "beat": "LULL"
+    },
+    {
+     "day": 20,
+     "beat": "ASCENSION_NIGHT"
+    },
+    {
+     "day": 23,
+     "beat": "ASCENSION_NIGHT"
+    }
+   ],
+   "HS2": [
+    {
+     "day": 6,
+     "beat": "ASCENSION_NIGHT"
+    },
+    {
+     "day": 8,
+     "beat": "THREAT_PEAK"
+    },
+    {
+     "day": 9,
+     "beat": "LULL"
+    },
+    {
+     "day": 10,
+     "beat": "LULL"
+    },
+    {
+     "day": 11,
+     "beat": "ASCENSION_NIGHT"
+    },
+    {
+     "day": 18,
+     "beat": "ASCENSION_NIGHT"
+    },
+    {
+     "day": 21,
+     "beat": "ASCENSION_NIGHT"
+    }
+   ],
+   "HS3": [
+    {
+     "day": 3,
+     "beat": "ASCENSION_NIGHT"
+    },
+    {
+     "day": 11,
+     "beat": "ASCENSION_NIGHT"
+    },
+    {
+     "day": 18,
+     "beat": "ASCENSION_NIGHT"
+    },
+    {
+     "day": 23,
+     "beat": "THREAT_PEAK"
+    },
+    {
+     "day": 24,
+     "beat": "LULL"
+    },
+    {
+     "day": 25,
+     "beat": "LULL"
+    },
+    {
+     "day": 26,
+     "beat": "ASCENSION_NIGHT"
+    }
+   ],
+   "HUB": [
+    {
+     "day": 0,
+     "beat": "ASCENSION_NIGHT"
+    },
+    {
+     "day": 8,
+     "beat": "ASCENSION_NIGHT"
+    },
+    {
+     "day": 15,
+     "beat": "ASCENSION_NIGHT"
+    },
+    {
+     "day": 19,
+     "beat": "THREAT_PEAK"
+    },
+    {
+     "day": 20,
+     "beat": "LULL"
+    },
+    {
+     "day": 21,
+     "beat": "LULL"
+    },
+    {
+     "day": 22,
+     "beat": "ASCENSION_NIGHT"
+    }
+   ],
+   "KOL": [
+    {
+     "day": 0,
+     "beat": "THREAT_PEAK"
+    },
+    {
+     "day": 1,
+     "beat": "LULL"
+    },
+    {
+     "day": 2,
+     "beat": "LULL"
+    },
+    {
+     "day": 4,
+     "beat": "ASCENSION_NIGHT"
+    },
+    {
+     "day": 13,
+     "beat": "ASCENSION_NIGHT"
+    },
+    {
+     "day": 16,
+     "beat": "ASCENSION_NIGHT"
+    },
+    {
+     "day": 27,
+     "beat": "ASCENSION_NIGHT"
+    }
+   ],
+   "UW1": [
+    {
+     "day": 26,
+     "beat": "THREAT_PEAK"
+    },
+    {
+     "day": 27,
+     "beat": "LULL"
+    }
+   ],
+   "UW2": [
+    {
+     "day": 1,
+     "beat": "ASCENSION_NIGHT"
+    },
+    {
+     "day": 8,
+     "beat": "ASCENSION_NIGHT"
+    },
+    {
+     "day": 13,
+     "beat": "THREAT_PEAK"
+    },
+    {
+     "day": 14,
+     "beat": "LULL"
+    },
+    {
+     "day": 15,
+     "beat": "LULL"
+    },
+    {
+     "day": 16,
+     "beat": "ASCENSION_NIGHT"
+    },
+    {
+     "day": 22,
+     "beat": "ASCENSION_NIGHT"
+    }
+   ],
+   "UW3": [
+    {
+     "day": 0,
+     "beat": "THREAT_PEAK"
+    },
+    {
+     "day": 1,
+     "beat": "LULL"
+    },
+    {
+     "day": 2,
+     "beat": "LULL"
+    },
+    {
+     "day": 6,
+     "beat": "ASCENSION_NIGHT"
+    },
+    {
+     "day": 9,
+     "beat": "ASCENSION_NIGHT"
+    },
+    {
+     "day": 14,
+     "beat": "ASCENSION_NIGHT"
+    },
+    {
+     "day": 23,
+     "beat": "ASCENSION_NIGHT"
+    }
+   ]
+  }
+ }
+}

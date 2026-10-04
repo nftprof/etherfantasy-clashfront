@@ -37,6 +37,16 @@ in 6–12 (16 with a Guardian).
   - region threat cycles.
 - **Lulls are rewards.** Clearing a barbarian camp buys the region **48 h of quiet** (doc 01). Winning
   *earns* rest.
+- **The beats on one calendar** (D29, `tools/living-world/season_beats.mjs` → `data/living-world/season-beats.json`).
+  Per region, per 28-day cycle:
+  - **STORM_FRONT** on day 21, for regions with sea lanes;
+  - one **THREAT_PEAK** (a warlord raid), followed by a 2-day **LULL**;
+  - one **ASCENSION_NIGHT** a week (the featured Form 3 challenge), for regions with perches.
+  - **Constraints:** a region's big beats are never on the same or adjacent days (escalate, then release) and never
+    in a lull. At most 2 regions crest on any day, so the world always has a peak somewhere but never everywhere.
+    Tests hold this over 6 cycles.
+  - Cycle 0 for BUS: `____A_______A____A___S_A_P··` (A = Ascension night, S = storm front, P = threat peak,
+    · = lull).
 
 ## 4. Anti-farm: why repeating the same fight is pointless
 
