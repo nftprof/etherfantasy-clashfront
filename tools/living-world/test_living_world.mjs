@@ -453,7 +453,8 @@ ok(JSON.stringify(enumOf("GuardianOutcome")) === JSON.stringify(["HELD", "KO", "
 
 // D41 "say go" packs: every pack was pre-tested green on a scratch copy and is listed on the owner sheet
 const DP = JSON.parse(fs.readFileSync("docs/living-world/handoff/DECISION-PACKS.json", "utf8")), ADm = await import("./apply_decision.mjs");
-ok(Object.keys(ADm.PACKS).every((k) => DP[k] && DP[k].applied && DP[k].testsOk), "every decision pack applied cleanly to a scratch copy and the full suite passed there");
+if (!process.env.LW_PRETEST) ok(Object.keys(ADm.PACKS).every((k) => DP[k] && DP[k].applied && DP[k].testsOk),   // skipped inside a pretest: it would judge the pack by its own previous run
+   "every decision pack applied cleanly to a scratch copy and the full suite passed there");
 ok(Object.keys(ADm.PACKS).every((k) => OD.includes("`" + k + "`")), "every decision pack is listed on the owner-decision sheet");
 
 // D44 event engine contract
