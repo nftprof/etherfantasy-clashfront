@@ -201,4 +201,15 @@ const openQs = fs.readdirSync("docs/living-world").filter((f) => /^0\d-.*\.md$/.
 ok(openQs.length > 0 && [...new Set(openQs)].every((f) => OD.includes("doc " + f.slice(0, 2).replace(/^0/, "0"))), `every doc with a ❓ OPEN (${[...new Set(openQs)].join(", ")}) is on the owner-decision sheet`);
 ok((OD.match(/\*\*A \(recommended\)\*\*/g) || []).length === 4, "each of the 4 calls carries one recommended option");
 
+// D17 world events calendar
+const wc1 = run("tools/living-world/world_calendar.mjs", "/tmp/lw_wc_a.json"), wc2 = run("tools/living-world/world_calendar.mjs", "/tmp/lw_wc_b.json");
+ok(wc1.equals(wc2) && wc1.equals(fs.readFileSync("data/living-world/world-calendar.sample.json")), "world-calendar sample is byte-identical and committed");
+const WCm = await import("./world_calendar.mjs"), poiRegions = Object.keys(WCm.REGIONS).filter((z) => Object.keys(WCm.REGIONS[z].nodes).length).sort();
+const wcBad = [];
+for (let d = 0; d < 28; d++) for (const z of poiRegions) { const c = WCm.coverage(WCm.calendar("cf-world-1", z, d), d); if (c.events < WCm.WC.coverage.minEventsPerDay || c.emptyWindows > WCm.WC.coverage.maxEmptyWindows) wcBad.push(`${z}@${d}:${c.events}/${c.emptyWindows}`); }
+ok(wcBad.length === 0, `every POI region, every day of a 28-day cycle: ≥ ${WCm.WC.coverage.minEventsPerDay} world events and no empty 3-hour window (${poiRegions.length} regions)${wcBad.length ? " — " + wcBad.slice(0, 5).join(" ") : ""}`);
+const wcAll = poiRegions.flatMap((z) => WCm.calendar("cf-world-1", z, 3));
+ok(wcAll.filter((e) => e.kind === "SUPPLY_AIRDROP" && !e.at.endsWith(":single")).every((e) => Object.values(WCm.REGIONS).some((R) => (R.nodes.AIRDROP_ZONE || []).includes(e.at))), "airdrops land on real AIRDROP_ZONE Nodes");
+ok(Object.keys(WCm.WC.kinds).filter((k) => k !== "STORM").every((k) => PA.events[k]), "every calendar kind is a defined event (poi-archetypes events{})");
+
 console.log(fails ? `❌ living-world: ${fails} failed` : "✅ living-world: all passed"); process.exit(fails ? 1 : 0);

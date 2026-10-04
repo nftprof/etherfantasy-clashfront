@@ -1,0 +1,15 @@
+{
+ "schema": "cf-living-world/world-calendar@1",
+ "coverage": { "minEventsPerDay": 8, "maxEmptyWindows": 0, "exempt": "regions with no POIs (CGI, the founders' isle)" },
+ "note": "D17: the world's own (non-player) events per region per day, seeded by PRNG(world.seed, day, zone, kind). Event ids refer to poi-archetypes events{}. Rates are proposals sized from each region's POI counts (castle + estate + singles).",
+ "windowMin": 180,
+ "kinds": {
+  "SUPPLY_AIRDROP": { "from": "AIRDROP_ZONE", "perDay": { "per": 100, "min": 1, "max": 6 } },
+  "CARAVAN_RUN": { "from": "CARAVAN_WAYPOINT", "perDay": { "per": 12, "min": 1, "max": 6 } },
+  "ERUPTION": { "from": "VENT", "perDay": { "per": 150, "min": 1, "max": 4 }, "note": "overworld vent surge: a rush to hold vents for RARE_MATERIAL" },
+  "BARBARIAN_RAID": { "from": "BARBARIAN_CAMP", "everyMin": 180, "jitterMin": 60, "note": "paused inside a 48 h lull (rewards.raidsAllowed)" },
+  "SKY_RAIDERS": { "from": "AIRSHIP_DOCK", "everyMin": 180, "jitterMin": 60, "onlyIfNo": "BARBARIAN_CAMP", "note": "the sky's roaming threat: harpy riders out of the docks, for regions with no barbarian camps (HS1–3)" },
+  "KRAKEN_SIGHTING": { "from": "SEA_LANE", "perLanePerDay": "krakenRisk", "stormSeasonMul": 1.5 },
+  "STORM": { "from": "SEA_LANE", "perDay": "ambient_traffic.laneClosed (storm season only)" }
+ }
+}

@@ -43,7 +43,7 @@ airships, landing spots, harbours + sea ships; seed all 20K maps; an experience,
 - [x] D13 — Owner-decision sheet: one page of the 4 open ❓ calls (Points vs CT, Form 3 stand-ins, Guardians vs 12-min floor, PR #50) with the proposals and what each answer changes
 
 ## Wave 3 (added cycle 29)
-- [ ] D17 — World events calendar: seeded per-region daily schedule of auto events (airdrops, barbarian raids, Kraken sightings, storms, Guardian wakes) — check doc 05's promise "always something on the board" (≥ N per region per day, no dead hours)
+- [x] D17 — World events calendar: seeded per-region daily schedule of auto events (airdrops, barbarian raids, Kraken sightings, storms, Guardian wakes) — check doc 05's promise "always something on the board" (≥ N per region per day, no dead hours)
 - [ ] D15 — Defend/attack balance sheet: the CT a defender pays (stakes, mercenaries, Guardian fees) vs the units an attacker loses (sim SIM-SAMPLE losses × unit upkeep) per scenario; is either side's price obviously wrong?
 - [ ] D19 — CT flow simulation: a seeded 7-day multi-agent run of stakes / bounties / escrows / burns → prove no CT is minted, burn ≥ 10 %, escrows always settle
 - [ ] D14 — Terrain in the sim harness: forest cover (ranged −), ridge high ground (range +), water crossings (speed −) so SIM-MATRIX ground columns mean something

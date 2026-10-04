@@ -74,3 +74,26 @@ Rules and templates are in `data/living-world/feed-templates.json`; the function
   `{ id, tick, zone, kind, facts }` for a later canon PR. A real item is written by the battle result callback
   (doc 09 §5) and carries player or alliance names.
 
+## 6. The world's own calendar (D17): the board is never empty
+
+Player-posted events come on top of the world's own. `tools/living-world/world_calendar.mjs` gives
+`calendar(world.seed, zone, day)`, a pure function. Rates are in `data/living-world/world-calendar.json`.
+
+| World event | Source in the region | Rate |
+|---|---|---|
+| `SUPPLY_AIRDROP` | Airdrop zones | 1 per 100 zones, 1–6 a day, spread through the day |
+| `CARAVAN_RUN` (NPC caravans to escort or raid) | Caravan waypoints | 1 per 12 waypoints, 1–6 a day |
+| `ERUPTION` (vent surge: a rush to hold vents) | Vents | 1 per 150 vents, 1–4 a day |
+| `BARBARIAN_RAID` | Barbarian camps | Every 3 h (± 1 h); paused by the 48 h lull |
+| `SKY_RAIDERS` | Airship docks, in regions with no camps (the sky) | Every 3 h (± 1 h) |
+| `KRAKEN_SIGHTING` | The region's sea lanes | Each lane rolls its `krakenRisk` once a day (× 1.5 in storm season) |
+| `STORM` | The region's sea lanes | Storm-season closures (doc 07 §4c) |
+
+- **Measured over a full 28-day cycle**, every region that has POIs gets **≥ 8 world events a day, and no 3-hour window
+  is empty**. Busy regions such as BUS get ~29 a day (34 on a storm day); the smallest, KOL, gets 9. A test enforces
+  this.
+- **The sky regions failed at first:** they have no barbarian camps, so they had dead 3-hour windows. `SKY_RAIDERS` is
+  the sky's own roaming threat and fixes that.
+- **CGI (Olympus, the founders' isle) has no POIs and is exempt.** Its only world events are Kraken sightings and storms
+  on its lanes.
+
