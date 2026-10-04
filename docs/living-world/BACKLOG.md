@@ -74,4 +74,10 @@ airships, landing spots, harbours + sea ships; seed all 20K maps; an experience,
 - [x] D36 — Result resolver (the other half of D21): the v1 result callback → world updates as pure functions: POI ownership, defence/Guardian/mercenary escrows settled through the ledger, attacker unit-loss cost, feed + journal items, with the HERO_IMPACT_MAX clamp on officer contributions; idempotent on battleId
 - [x] D40 — **Re-scale living-world CT to canon balance.json v2 (÷100 economy)**: defences.json (anchor on build.baseCostCtUnitsByKey: WALL 0.4 CT …), Guardian fees, mercenary prices, bounty/dare minimums, CT-flow genesis (≈ 5 / 50 / 500 CT start balances); re-run the balance sheet with balance.json train costs (not the stale docs/03 table); keep every ratio/split; update docs 03/04/05 + owner sheet
 - [x] D39 — Abuse sim: colluding alts/alliances trying to farm Guardian bounties, SIEGE_ME dares, bounties and mercenary auctions → show the relation checks + held bids + escrow rules leave them net-negative
-- [ ] D38 — Live-ops watch list: the post-launch metrics (band drift, burn ratio, banner churn, whale share, idle sessions, feed volume) each mapped to the test/invariant that defines "healthy", with alert thresholds
+- [x] D38 — Live-ops watch list: the post-launch metrics (band drift, burn ratio, banner churn, whale share, idle sessions, feed volume) each mapped to the test/invariant that defines "healthy", with alert thresholds
+
+## Wave 8 (added cycle 53)
+- [ ] D42 — Canon PR #2 refresh pack: fold the new proposals (FeedItem, allocate/callback `livingWorld@1`, region-rights ladder, storm season, SKY/UNDER terrain mapping, Guardian damage cap) into a ready-to-apply patch for the canon branch (handoff/, like PR #1)
+- [ ] D41 — "Say go" packs for each owner call: a ready data patch per option (Warden fee 1 → 3, SKY/UNDER terrain applied + re-seed script, Guardian ≤ 20-min cap assertion), each pre-tested on a scratch copy
+- [ ] D44 — Event-deck engine contract: a schema per event (fields the engine needs: units, arrivesAt, holdToClaimSec, hp…) + a validator over poi-archetypes events{} and the allocate decks
+- [ ] D45 — i18n-ready copy: feed + journal + banner templates keyed by stable ids (en baseline), with a test that every key renders

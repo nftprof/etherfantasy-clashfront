@@ -430,4 +430,11 @@ const AB = JSON.parse(fs.readFileSync("docs/living-world/reports/ABUSE.json", "u
 ok(AB.length >= 6 && AB.every((r) => ["LINKED", "UNLINKED"].every((k) => r[k].refused || r[k].totalCT < 0)), "every self-farm scheme is net-negative for the coalition, linked or unlinked (or refused outright)");
 ok(AB.filter((r) => !/shill/.test(r.scheme)).every((r) => r.LINKED.refused || r.LINKED.netCT <= r.UNLINKED.netCT), "a linked alt never does better than an unlinked one: the relation check only ever costs more");
 
+// D38 live-ops watch list: every baseline is in its healthy band; every lever names real data
+const LO = await import("./liveops_baseline.mjs"), loB = LO.baselines(), LW = JSON.parse(fs.readFileSync("data/living-world/liveops-watch.json", "utf8"));
+ok(loB.length >= 12 && loB.every((x) => x.ok), "every live-ops baseline sits in its healthy band" + (loB.some((x) => !x.ok) ? " — " + loB.filter((x) => !x.ok).map((x) => `${x.id}=${x.value}`).join(", ") : ""));
+ok(LW.metrics.every((m) => m.what && m.live && m.lever && Array.isArray(m.healthy) && Array.isArray(m.alert) && fs.existsSync(m.baseline.file)) && LW.metrics.filter((m) => m.hard).length >= 3, "every metric says what it is, how to measure it live, its bands and its lever; the canon invariants are marked hard");
+const d09 = fs.readFileSync("docs/living-world/09-LIVE-OPS.md", "utf8");
+ok(LW.metrics.length === (d09.match(/^\| [A-Z][^|]+\| [^|]+\| [^|]+\| [^|]+\| [^|]+\|$/gm) || []).length - 1, "doc 09's table has one row per watched metric");
+
 console.log(fails ? `❌ living-world: ${fails} failed` : "✅ living-world: all passed"); process.exit(fails ? 1 : 0);
