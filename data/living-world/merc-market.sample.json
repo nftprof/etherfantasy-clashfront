@@ -1,0 +1,176 @@
+{
+ "schema": "cf-living-world/merc-market-sample@1",
+ "market": {
+  "companiesPerPost": 2,
+  "biddingWindowMin": 10,
+  "minRaise": 0.1,
+  "attackSplit": {
+   "burn": 0.5,
+   "pool": 0.5
+  }
+ },
+ "priceCT": {
+  "level1": 12,
+  "level2": 19.2
+ },
+ "posts": 30,
+ "rosters": {
+  "BUS-CASTLE-CAPEMEET:MERCENARY_POST:1": [
+   "Ashen Pikes",
+   "Lantern Company"
+  ],
+  "BUS-CASTLE-EASTREACH:MERCENARY_POST:1": [
+   "Gull Wardens",
+   "Grey Hounds"
+  ],
+  "BUS-CASTLE-MIDDLEQUAY:MERCENARY_POST:1": [
+   "Lantern Company",
+   "Hired Blades"
+  ],
+  "BUS-FORT-TIDEGATE:MERCENARY_POST:1": [
+   "Gull Wardens",
+   "Saltwind Lances"
+  ],
+  "EDU-CASTLE-SOUTHREACH:MERCENARY_POST:1": [
+   "Lantern Company",
+   "Saltwind Lances"
+  ],
+  "EDU-CASTLE-WESTGATE:MERCENARY_POST:1": [
+   "Saltwind Lances",
+   "Hired Blades"
+  ],
+  "ENT-CASTLE-FESTGATE:MERCENARY_POST:1": [
+   "Grey Hounds",
+   "Red Ferrymen"
+  ],
+  "ENT-CASTLE-RIVERGATE:MERCENARY_POST:1": [
+   "Hired Blades",
+   "Grey Hounds"
+  ],
+  "HS1-CASTLE-GARDENHOLD:MERCENARY_POST:1": [
+   "Red Ferrymen",
+   "Iron Tithe"
+  ],
+  "HS1-CASTLE-HEAVENSGATE:MERCENARY_POST:1": [
+   "Lantern Company",
+   "Iron Tithe"
+  ],
+  "HS1-CASTLE-TERRACEHALL:MERCENARY_POST:1": [
+   "Grey Hounds",
+   "Saltwind Lances"
+  ],
+  "HUB-CASTLE-DONGGUAN:MERCENARY_POST:1": [
+   "Iron Tithe",
+   "Ashen Pikes"
+  ],
+  "HUB-CASTLE-JINJIANG:MERCENARY_POST:1": [
+   "Ashen Pikes",
+   "Hired Blades"
+  ],
+  "HUB-CASTLE-NANPING:MERCENARY_POST:1": [
+   "Red Ferrymen",
+   "Red Ferrymen"
+  ],
+  "HUB-CASTLE-TIEDU:MERCENARY_POST:1": [
+   "Iron Tithe",
+   "Hired Blades"
+  ],
+  "HUB-CASTLE-XICHUAN:MERCENARY_POST:1": [
+   "Gull Wardens",
+   "Grey Hounds"
+  ],
+  "HUB-CASTLE-YONGAN:MERCENARY_POST:1": [
+   "Grey Hounds",
+   "Iron Tithe"
+  ],
+  "KOL-CASTLE-FORTUNA:MERCENARY_POST:1": [
+   "Grey Hounds",
+   "Hired Blades"
+  ],
+  "UW2-CASTLE-DEEPGATE:MERCENARY_POST:1": [
+   "Lantern Company",
+   "Iron Tithe"
+  ],
+  "UW2-CASTLE-MOURNGATE:MERCENARY_POST:1": [
+   "Ashen Pikes",
+   "Iron Tithe"
+  ],
+  "UW2-CASTLE-PALEWATER:MERCENARY_POST:1": [
+   "Red Ferrymen",
+   "Grey Hounds"
+  ],
+  "UW2-KEEP-DROWNMEADOW:MERCENARY_POST:1": [
+   "Hired Blades",
+   "Grey Hounds"
+  ],
+  "UW2-KEEP-FERRYWATCH:MERCENARY_POST:1": [
+   "Lantern Company",
+   "Grey Hounds"
+  ],
+  "UW2-KEEP-PALELANTERN:MERCENARY_POST:1": [
+   "Iron Tithe",
+   "Grey Hounds"
+  ],
+  "UW2-KEEP-SUNKENCOURT:MERCENARY_POST:1": [
+   "Grey Hounds",
+   "Ashen Pikes"
+  ],
+  "UW2-KEEP-VIGILWATCH:MERCENARY_POST:1": [
+   "Iron Tithe",
+   "Iron Tithe"
+  ],
+  "UW3-KEEP-COIN:MERCENARY_POST:1": [
+   "Saltwind Lances",
+   "Ashen Pikes"
+  ],
+  "UW3-KEEP-HUNGER:MERCENARY_POST:1": [
+   "Gull Wardens",
+   "Lantern Company"
+  ],
+  "UW3-KEEP-MIRRORS:MERCENARY_POST:1": [
+   "Gull Wardens",
+   "Grey Hounds"
+  ],
+  "UW3-KEEP-SILK:MERCENARY_POST:1": [
+   "Grey Hounds",
+   "Iron Tithe"
+  ]
+ },
+ "biddingExample": {
+  "post": "BUS-CASTLE-CAPEMEET:MERCENARY_POST:1",
+  "company": "BUS-CASTLE-CAPEMEET:MERCENARY_POST:1|co0",
+  "steps": [
+   {
+    "ok": true,
+    "floor": 1920
+   },
+   {
+    "ok": true,
+    "floor": 2112
+   },
+   {
+    "ok": true,
+    "floor": 2324
+   }
+  ],
+  "winner": {
+   "id": "contract_0",
+   "type": "MERCENARY_DEFEND",
+   "posterGovernorId": "holder",
+   "targetRef": "BUS-CASTLE-CAPEMEET:MERCENARY_POST:1|co0",
+   "rewardCt": 2400,
+   "state": "TAKEN",
+   "takerId": "BUS-CASTLE-CAPEMEET:MERCENARY_POST:1|co0",
+   "expiresAt": 4326,
+   "mercs": 4
+  },
+  "balancesCT": {
+   "holder": 26,
+   "raider": 50,
+   "ESCROW:contract_0": 9.6,
+   "BURN": 7.2,
+   "POOL": 7.2
+  },
+  "conserved": true
+ }
+}

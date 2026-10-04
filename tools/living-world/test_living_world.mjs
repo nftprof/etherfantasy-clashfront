@@ -320,4 +320,22 @@ const p1Minus = P1.split("\n").filter((l) => /^-\s/.test(l)), p1Plus = P1.split(
 ok(p1Files.length > 0 && p1Minus.length === p1Plus.length && p1Minus.every((l, i) => l.slice(1).replace(/threat \d+/, "threat N") === p1Plus[i].slice(1).replace(/threat \d+/, "threat N")), `the PR #1 refresh only changes threat numbers (${p1Plus.length} lines in ${p1Files.length} files)`);
 ok(P1.split(/^diff --git /m).slice(1).every((sec) => { const f = sec.match(/^\+\+\+ b\/data\/world-elements\/(\S+)$/m)[1], cur = fs.readFileSync("data/living-world/world-elements/" + f, "utf8"); return sec.split("\n").filter((l) => /^\+\s/.test(l)).every((l) => cur.includes(l.slice(1).trim())); }), "every line the patch adds is in this branch's current overlay");
 
+// D28 mercenary market
+const MM = await import("./merc_market.mjs"), mmPost = "TEST-POST", mmCo = `${mmPost}|co0`, mmSum = (st) => Object.values(st.bal).reduce((x, y) => x + y, 0);
+const m1 = MM.newState({ h: 10000, r: 10000 }), h1 = MM.hire(m1, { postId: mmPost, companyId: mmCo, side: "DEFEND", hirer: "h", level: 1, tick: 0 });
+ok(h1.ok && h1.contract.type === "MERCENARY_DEFEND" && h1.contract.state === "TAKEN" && h1.contract.mercs === 2 && h1.contract.expiresAt === 24 * 60 && m1.bal.BURN === Math.floor(MM.priceC(1) * 0.3), "a DEFEND hire is a canon Contract (TAKEN, +2 mercs for 24 h) split like a defence stake (30 % burned)");
+ok(MM.hire(m1, { postId: mmPost, companyId: mmCo, side: "ATTACK", hirer: "r", level: 1, tick: 5 }).reason === "COMPANY_TAKEN", "a hired company can't serve the other side");
+MM.expire(m1, 24 * 60);
+ok(m1.contracts[0].state === "FULFILLED" && m1.companies[mmCo].state === "FREE" && m1.bal.h === 10000 - MM.priceC(1) + Math.floor(MM.priceC(1) * 0.4) && mmSum(m1) === 20000, "on expiry the contract is FULFILLED, the company is free again, the unbroken defence's escrow comes home; CT conserved");
+const m2 = MM.newState({ h: 10000, r: 10000 }), p2 = MM.priceC(2);
+MM.bid(m2, { postId: mmPost, companyId: mmCo, side: "DEFEND", hirer: "h", level: 2, amount: p2, tick: 0 });
+ok(MM.bid(m2, { postId: mmPost, companyId: mmCo, side: "ATTACK", hirer: "r", level: 2, amount: p2 + 1, tick: 2 }).reason === "RAISE_TOO_SMALL", "MERC_BIDDING: a raise under +10 % is refused");
+MM.bid(m2, { postId: mmPost, companyId: mmCo, side: "ATTACK", hirer: "r", level: 2, amount: Math.ceil(p2 * 1.1), tick: 3 });
+ok(MM.hire(m2, { postId: mmPost, companyId: mmCo, side: "DEFEND", hirer: "h", level: 2, tick: 4 }).reason === "IN_BIDDING", "a company in bidding can't be hired around the auction");
+const won2 = MM.closeBidding(m2, mmCo, 10);
+ok(won2.ok && won2.contract.type === "MERCENARY_ATTACK" && m2.bal.h === 10000 && m2.bal.r === 10000 - Math.ceil(p2 * 1.1) && mmSum(m2) === 20000 && m2.bal.BURN >= 0.1 * Math.ceil(p2 * 1.1), "the top bid wins and pays its bid (raider → MERCENARY_ATTACK); the loser is refunded in full; CT conserved; burn ≥ 10 %");
+ok(MM.hire(MM.newState({ r: 10000 }), { postId: mmPost, companyId: mmCo, side: "ATTACK", hirer: "r", hirerAlliance: 3, targetHolderAlliance: 3, level: 1, tick: 0 }).reason === "RELATED_TARGET", "you can't hire mercenaries against your own alliance (doc 05 relation check)");
+const mm1 = run("tools/living-world/merc_market.mjs", "/tmp/lw_mm_a.json");
+ok(mm1.equals(fs.readFileSync("data/living-world/merc-market.sample.json")) && JSON.parse(mm1).biddingExample.conserved, "merc-market sample is reproducible, committed, and conserves CT");
+
 console.log(fails ? `❌ living-world: ${fails} failed` : "✅ living-world: all passed"); process.exit(fails ? 1 : 0);

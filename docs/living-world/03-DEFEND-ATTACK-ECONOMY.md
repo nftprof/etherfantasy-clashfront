@@ -38,6 +38,24 @@ Mercenaries are hired at a **`MERCENARY_POST`** POI (doc 01). The contract is es
 - **Unhired companies at a post are for anyone, attackers included** (the `MERC_BIDDING` event). This is the S2
   lesson "every Master you don't rent rides against you": if you don't hire them, your enemy might.
 
+### The market as code (D28, `tools/living-world/merc_market.mjs`)
+
+- **Roster:** each `MERCENARY_POST` has 2 seeded companies (⚙), e.g. "Hired Blades" or "Saltwind Lances".
+- **Prices** (from `defences.json`): level 1 = **12 CT** for +2 mercs for 24 h; level 2 = **19.2 CT** for +4 mercs for
+  72 h.
+- **Hiring creates a canon `Contract`** (`MERCENARY_DEFEND` for the holder, `MERCENARY_ATTACK` for a raider) in
+  state `TAKEN`. When it expires it becomes `FULFILLED` and the company is free again.
+- **The money:**
+  - A DEFEND hire is a defence stake: 40 % spoils escrow, 30 % burn, 30 % pool. The escrow comes home if the defence
+    holds.
+  - An ATTACK hire has no defence to lose, so it's 50 % burn and 50 % pool (⚙ proposal).
+- **`MERC_BIDDING`:** if both sides want the same free company, a 10-min ascending auction opens. Each raise must be
+  ≥ +10 % and ties go to the earlier bid. Every bid is *held*, not spent: losers get theirs back in full, and only the
+  winner pays, at their bid.
+- **Relation check:** you can't hire against your own alliance.
+- **Worked example** (`merc-market.sample.json`): the holder bids 19.2, the raider 21.2, the holder 24.0 and wins.
+  The raider is refunded 21.2. CT is conserved and 7.2 CT is burned.
+
 ## 3. Diminishing returns: no impregnable fortress
 
 - **Defence rating** = 1 + Σ(level × weight), capped at **×1.6** over an undefended castle of the same
