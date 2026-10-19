@@ -74,15 +74,26 @@ async function frame(page, s, i, n) {
 }
 
 // PNG/JPEG buffer → webp file, via the browser's encoder (this ffmpeg build has no webp/jpeg encoders)
-async function toWebp(page, pngBuf, outFile, maxW, quality = 0.82) {
+async function toWebp(page, pngBuf, outFile, maxW, quality = 0.82, keyBg = false) {
   const mime = pngBuf[0] === 0xff && pngBuf[1] === 0xd8 ? "image/jpeg" : "image/png";
-  const data = await page.evaluate(async ([b64, mw, q, m]) => {
+  const data = await page.evaluate(async ([b64, mw, q, m, key]) => {
     const img = new Image(); img.src = "data:" + m + ";base64," + b64; await img.decode();
     const sc = Math.min(1, mw / img.naturalWidth);
     const c = document.createElement("canvas"); c.width = Math.round(img.naturalWidth * sc); c.height = Math.round(img.naturalHeight * sc);
-    c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+    const x = c.getContext("2d"); x.drawImage(img, 0, 0, c.width, c.height);
+    if (key) { // mosaics bake on an opaque backdrop: flood-fill it from the edges → transparent
+      const W = c.width, H = c.height, id = x.getImageData(0, 0, W, H), d = id.data;
+      const r0 = d[0], g0 = d[1], b0 = d[2], tol = 14, seen = new Uint8Array(W * H), st = [];
+      const near = (i) => Math.abs(d[i] - r0) <= tol && Math.abs(d[i + 1] - g0) <= tol && Math.abs(d[i + 2] - b0) <= tol;
+      for (let i = 0; i < W; i++) st.push(i, (H - 1) * W + i);
+      for (let j = 0; j < H; j++) st.push(j * W, j * W + W - 1);
+      while (st.length) { const k = st.pop(); if (seen[k]) continue; seen[k] = 1; if (!near(k * 4)) continue; d[k * 4 + 3] = 0;
+        const px = k % W, py = (k - px) / W;
+        if (px > 0) st.push(k - 1); if (px < W - 1) st.push(k + 1); if (py > 0) st.push(k - W); if (py < H - 1) st.push(k + W); }
+      x.putImageData(id, 0, 0);
+    }
     return c.toDataURL("image/webp", q).split(",")[1];
-  }, [pngBuf.toString("base64"), maxW, quality, mime]);
+  }, [pngBuf.toString("base64"), maxW, quality, mime, keyBg]);
   fs.mkdirSync(path.dirname(outFile), { recursive: true });
   fs.writeFileSync(outFile, Buffer.from(data, "base64"));
   return fs.statSync(outFile).size;
@@ -137,9 +148,10 @@ async function stills(browser) {
   for (const z of st.zones.filter((z) => z.charted)) {
     const r = await fetch(`${BASE}/internal/v1/mosaic.png?zone=${z.zoneId}`);
     if (!r.ok) { console.log(`  ${z.zoneId}: no mosaic (${r.status})`); continue; }
-    const kb = await toWebp(page, Buffer.from(await r.arrayBuffer()), path.join(MEDIA, "continents", `${z.zoneId}.webp`), 720, 0.8);
+    const kb = await toWebp(page, Buffer.from(await r.arrayBuffer()), path.join(MEDIA, "continents", `${z.zoneId}.webp`), 720, 0.8, true);
     console.log(`  continents/${z.zoneId}.webp ${(kb / 1e3).toFixed(0)} KB`);
   }
+  if (process.argv.includes("--continents")) { await page.close(); return; }
   // tool screenshots for the "what this is" cards
   const shots = [
     ["tool-atlas.webp", `${BASE}/designer/world`, 3000, async (p) => { const f = await p.$(".atlas-frame"); return f ? f.screenshot() : null; }],
