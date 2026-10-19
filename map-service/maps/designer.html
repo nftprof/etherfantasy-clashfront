@@ -123,6 +123,11 @@
   button.busy::after{content:"";position:absolute;left:50%;top:50%;width:16px;height:16px;margin:-8px 0 0 -8px;border-radius:50%;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;animation:spin .8s linear infinite}
   @keyframes spin{to{transform:rotate(360deg)}}
   @media(prefers-reduced-motion:reduce){.skel,#mapWrap.loading::after,button.busy::after{animation:none}}
+  /* P5: name search suggestions */
+  .namehits{position:absolute;left:0;top:calc(100% + 6px);z-index:40;width:320px;max-height:320px;overflow:auto;background:var(--ef-bg-3);border:1px solid var(--ef-line-2);border-radius:12px;box-shadow:var(--ef-shadow);padding:6px}
+  .namehits button{display:flex;width:100%;justify-content:space-between;gap:10px;text-align:left;border:0;border-radius:8px;background:transparent;padding:9px 10px;font:500 13px/1.3 var(--ef-font);color:var(--ef-text)}
+  .namehits button:hover,.namehits button:focus{background:rgba(168,85,247,.16);outline:none}
+  .namehits small{color:var(--ef-text-3);white-space:nowrap}
   /* parcel inspector (C3) */
   .insp{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:13px;margin:0 0 14px;padding:12px 14px;border:1px solid var(--ef-line);border-radius:12px;background:var(--ef-bg-2)}
   .insp dt{color:var(--ef-text-3)} .insp dd{margin:0;color:var(--ef-text);text-align:right;font-variant-numeric:tabular-nums}
@@ -261,7 +266,8 @@
     <div id="parcelView" style="display:none">
       <div class="maptools">
         <div class="row toggles">
-          <input id="search" placeholder="search parcel id…" style="width:200px">
+          <span style="position:relative;display:inline-block"><input id="search" placeholder="parcel id or castle name…" style="width:230px" autocomplete="off" aria-autocomplete="list" aria-controls="nameHits">
+            <div id="nameHits" class="namehits" role="listbox" hidden></div></span>
           <label style="display:flex;gap:6px;align-items:center;margin:0;text-transform:none;letter-spacing:0;font-size:12.5px;color:var(--fg-dim)"><input type="checkbox" id="mineOnly" style="width:auto"> my land only</label>
           <label style="display:flex;gap:6px;align-items:center;margin:0;text-transform:none;letter-spacing:0;font-size:12.5px;color:var(--fg-dim)"><input type="checkbox" id="designedOnly" style="width:auto"> designed only</label>
           <label style="display:flex;gap:6px;align-items:center;margin:0;text-transform:none;letter-spacing:0;font-size:12.5px;color:var(--fg-dim)"><input type="checkbox" id="featuresOverlay" style="width:auto" checked> 🗺 features</label>
@@ -855,7 +861,20 @@ function renderPager(){const el=$("pager");el.innerHTML="";if(!q||total<=1)retur
   el.appendChild(mk("‹",()=>{if(page>0){page--;jump(page);}},page<=0));
   const s=document.createElement("span");s.textContent=total.toLocaleString()+" match"+(total>1?"es":"")+" — click one or step";el.appendChild(s);
   el.appendChild(mk("›",()=>{if(page<total-1){page++;jump(page);}},page>=total-1));}
-let _st=null;$("search").addEventListener("input",(e)=>{clearTimeout(_st);_st=setTimeout(()=>{q=e.target.value.trim().toLowerCase();applyFilter();},220);});
+let _st=null;$("search").addEventListener("input",(e)=>{clearTimeout(_st);_st=setTimeout(()=>{q=e.target.value.trim().toLowerCase();applyFilter();nameSearch(q);},220);});
+/* P5: castle / estate NAME search across every continent (server /castles?q=) → jump to its continent + parcel */
+const KIND_ICON={PALACE:"👑",CASTLE:"🏰",KEEP:"🗼"};let _nsSeq=0;
+async function nameSearch(text){const box=$("nameHits");if(!/[a-z]/i.test(text)||text.length<2){box.hidden=true;return;}
+  const seq=++_nsSeq;try{const d=await fetch("/internal/v1/castles?q="+encodeURIComponent(text)).then(r=>r.json());if(seq!==_nsSeq)return;
+    const hits=(d.castles||[]).slice(0,8);box.innerHTML=hits.length?"":'<div class="hint" style="padding:8px 10px;margin:0">No castle or estate named “'+esc(text)+'”.</div>';
+    hits.forEach(c=>{const b=document.createElement("button");b.setAttribute("role","option");
+      b.innerHTML='<span>'+(KIND_ICON[c.kind]||"🏰")+" "+esc(c.name)+'</span><small>'+esc(c.zoneName||c.zone)+" · "+c.kind.toLowerCase()+'</small>';
+      b.onclick=()=>{box.hidden=true;$("search").value="";q="";zone=c.zone;page=0;loadParcels().then(()=>selectParcel(c.parcel));};box.appendChild(b);});
+    box.hidden=false;}catch(_){box.hidden=true;}}
+$("search").addEventListener("keydown",(e)=>{if(e.key==="ArrowDown"){const f=$("nameHits").querySelector("button");if(f){e.preventDefault();f.focus();}}else if(e.key==="Escape")$("nameHits").hidden=true;});
+$("nameHits").addEventListener("keydown",(e)=>{const t=e.target;if(e.key==="ArrowDown"&&t.nextElementSibling){e.preventDefault();t.nextElementSibling.focus();}
+  else if(e.key==="ArrowUp"){e.preventDefault();(t.previousElementSibling||$("search")).focus();}else if(e.key==="Escape"){$("nameHits").hidden=true;$("search").focus();}});
+document.addEventListener("click",(e)=>{if(!e.target.closest("#nameHits")&&e.target!==$("search"))$("nameHits").hidden=true;});
 $("mineOnly").addEventListener("change",(e)=>{mineOnly=e.target.checked;loadParcels();});
 $("designedOnly").addEventListener("change",(e)=>{designedOnly=e.target.checked;loadParcels();});
 $("featuresOverlay").addEventListener("change",(e)=>{showFeatures=e.target.checked;

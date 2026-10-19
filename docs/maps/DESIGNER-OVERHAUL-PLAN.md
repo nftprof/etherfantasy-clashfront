@@ -86,7 +86,7 @@ the same top nav so this is obvious: `Home · World Atlas · Designer · Get Lan
 - [x] P2 3D viewer: bottom hint bar unreadable over busy terrain — now a panel (wraps on phones).
 - [x] P3 Atlas: two-finger pinch zoom on touch (pinch never triggers a continent click).
 - [x] P4 Atlas for signed-in owners: "your land" — summary pill, ★ badges on continents, hover row, list cards (on-chain parcels + estates by token-id continent code).
-- [ ] P5 Designer search: find estates/castles by name, not only parcel id.
+- [x] P5 Designer search: castle/estate NAME suggestions across all continents (keyboard + click) → jumps to the continent and selects the castle parcel.
 
 ## Log
 - 2026-10-19 14:38Z — plan written; loop armed (1-minute cron job 174a9fd9).
