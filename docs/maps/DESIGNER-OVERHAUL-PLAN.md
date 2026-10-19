@@ -45,7 +45,7 @@ the same top nav so this is obvious: `Home · World Atlas · Designer · Get Lan
 
 ### A — Fix + foundations
 - [x] A1 **World Atlas stacking bug**: deploy never ships `data/hexagon-city-source/zone-layout.json` → every continent at offset (0,0). Add it to `map-deploy.yml`; guard: worldmap.js warns + falls back to a grid layout when the file is missing. → DONE: workflow ships it; fallback row verified (10/10 distinct positions with + without the file).
-- [ ] A2 **Design system**: `/ui/theme.css` (tokens, type scale, buttons, cards, nav, footer, light+dark) + `/ui/shell.js` (injects header nav w/ active state, sign-in pill w/ admin badge, footer). Serve `/ui/*` statically.
+- [x] A2 **Design system**: `/ui/theme.css` (tokens, type scale, buttons, cards, nav, footer, light+dark) + `/ui/shell.js` (injects header nav w/ active state, sign-in pill w/ admin badge, footer). Serve `/ui/*` statically. → DONE: tokens/type/buttons/cards/pills/nav/footer/toasts/forms/responsive; `window.EFShell`; `/ui/*` + `/media/*` routes (utf-8).
 - [ ] A3 **Routing**: `/` → landing; signed-out first visit to `/designer` → landing (deep links `?parcel=` and "Continue as guest" bypass via sessionStorage).
 - [ ] A4 **Admin = all features**: admin designs get the max budget tier; admin badge in shell; audit + remove client gates/"coming soon" blocks for admin; `/whoami` drives it.
 
@@ -84,3 +84,4 @@ the same top nav so this is obvious: `Home · World Atlas · Designer · Get Lan
 ## Log
 - 2026-10-19 14:38Z — plan written; loop armed (1-minute cron job 174a9fd9).
 - A1 shipped — continents no longer stacked on the live Atlas.
+- A2 shipped — shared shell + theme (header nav Home · World Atlas · Designer · Sky Cities · Get Land; admin badge; footer).

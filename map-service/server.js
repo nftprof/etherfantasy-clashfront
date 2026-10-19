@@ -124,6 +124,21 @@ export function handleRequest(req, res) {
   }
   if (p === "/ef_battlefield.js") return sendFile(res, "maps/ef_battlefield.js.bak", "application/javascript");
   {
+    // shared design system (overhaul A2): /ui/theme.css + /ui/shell.js — every page's chrome
+    const ui = /^\/ui\/([a-zA-Z0-9._-]+\.(css|js|svg))$/.exec(p);
+    if (ui) return sendFile(res, "ui/" + ui[1], { css: "text/css; charset=utf-8", js: "application/javascript; charset=utf-8", svg: "image/svg+xml" }[ui[2]]);
+    // landing media (overhaul B2): showcase video + posters. Content-stable → long cache.
+    const md = /^\/media\/([a-zA-Z0-9._-]+\.(webm|mp4|jpg|jpeg|png|webp))$/.exec(p);
+    if (md) {
+      const type = { webm: "video/webm", mp4: "video/mp4", jpg: "image/jpeg", jpeg: "image/jpeg", png: "image/png", webp: "image/webp" }[md[2]];
+      return fs.readFile(path.join(__dirname, "media", md[1]), (e, buf) => {
+        if (e) { res.writeHead(404); return res.end("not found"); }
+        res.writeHead(200, { "content-type": type, "cache-control": "public,max-age=86400", "accept-ranges": "none" });
+        res.end(buf);
+      });
+    }
+  }
+  {
     // 🕹→📱 Clash Lands AR terrains — the shared EF drop the AR pet game fetches (glb / json /
     // height.png / manifest.json). CORS-open, cached. Built by tools/build_ar_terrains.mjs +
     // tools/export_ar_glb.mjs, shipped from data/cf-maps/ar-terrains/.
