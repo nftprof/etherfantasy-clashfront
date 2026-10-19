@@ -84,7 +84,7 @@ the same top nav so this is obvious: `Home · World Atlas · Designer · Get Lan
 ### P — Polish (after the backlog; loop time)
 - [x] P1 gzip API JSON — per-continent parcel list 4.6 MB → 0.6 MB (7.6×), ~2× faster locally.
 - [x] P2 3D viewer: bottom hint bar unreadable over busy terrain — now a panel (wraps on phones).
-- [ ] P3 Atlas: two-finger pinch zoom on touch.
+- [x] P3 Atlas: two-finger pinch zoom on touch (pinch never triggers a continent click).
 - [ ] P4 Atlas for signed-in owners: "your land" count per continent on hover + list.
 - [ ] P5 Designer search: find estates/castles by name, not only parcel id.
 
