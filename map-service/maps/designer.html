@@ -146,6 +146,7 @@
   .ml-list{display:flex;flex-wrap:wrap;gap:6px}
   .ml-list button{padding:7px 11px;font-size:12.5px}
   .ml-list button.est{border-color:var(--ef-gold);color:#f2d38a}
+  .hint-touch{display:none} @media(hover:none) and (pointer:coarse){.hint-desk{display:none}.hint-touch{display:inline}}
   /* parcel inspector (C3) */
   .insp{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:13px;margin:0 0 14px;padding:12px 14px;border:1px solid var(--ef-line);border-radius:12px;background:var(--ef-bg-2)}
   .insp dt{color:var(--ef-text-3)} .insp dd{margin:0;color:var(--ef-text);text-align:right;font-variant-numeric:tabular-nums}
@@ -311,7 +312,7 @@
           <span class="stat" id="zLbl" style="text-align:center">100%</span>
         </div>
       </div>
-      <div class="hint">scroll to zoom · drag to pan · click a parcel to select</div>
+      <div class="hint"><span class="hint-desk">scroll to zoom · drag to pan · click a parcel to select</span><span class="hint-touch">two fingers to move and zoom · tap a parcel to select</span></div>
       <div class="legend">
         <span><i style="background:#4d5a68"></i>undesigned</span>
         <span><i style="background:#5fe9d0"></i>seed design</span>
@@ -856,6 +857,13 @@ cv.addEventListener("mousedown",(ev)=>{const[mx,my]=toCanvas(ev);drag={mx,my,px:
 window.addEventListener("mouseup",(ev)=>{if(!drag)return;if(drag.moved<25){const p=nearest(ev);if(p)selectParcel(p.parcelId);}drag=null;});
 cv.addEventListener("mousemove",(ev)=>{if(drag){window.__panning=true;const[mx,my]=toCanvas(ev);panX=drag.px+(mx-drag.mx);panY=drag.py+(my-drag.my);drag.moved+=Math.abs(mx-drag.mx)+Math.abs(my-drag.my);drawMap();}});
 window.addEventListener("mouseup",()=>{setTimeout(()=>{window.__panning=false;},0);});
+/* polish S3: phones — one finger scrolls the page as usual; TWO fingers pan + pinch-zoom the map */
+let t2=null;
+const tMid=(t)=>{const r=cv.getBoundingClientRect(),k=cv.width/r.width;return{x:((t[0].clientX+t[1].clientX)/2-r.left)*k,y:((t[0].clientY+t[1].clientY)/2-r.top)*k,d:Math.hypot(t[0].clientX-t[1].clientX,t[0].clientY-t[1].clientY)};};
+cv.addEventListener("touchstart",(e)=>{if(e.touches.length===2){e.preventDefault();t2=tMid(e.touches);drag=null;}},{passive:false});
+cv.addEventListener("touchmove",(e)=>{if(e.touches.length!==2||!t2)return;e.preventDefault();window.__panning=true;const n=tMid(e.touches);
+  panX+=n.x-t2.x;panY+=n.y-t2.y;if(t2.d>0)setZoom(zoom*(n.d/t2.d),n.x,n.y);else drawMap();t2=n;},{passive:false});
+cv.addEventListener("touchend",(e)=>{if(e.touches.length<2&&t2){t2=null;setTimeout(()=>{window.__panning=false;},0);updZoomUI();}});
 $("zin").onclick=()=>setZoom(zoom*1.4);$("zout").onclick=()=>setZoom(zoom/1.4);
 $("zreset").onclick=()=>{fitView();drawMap();updZoomUI();};
 
