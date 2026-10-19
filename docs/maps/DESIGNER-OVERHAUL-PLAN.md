@@ -94,6 +94,11 @@ the same top nav so this is obvious: `Home · World Atlas · Designer · Get Lan
 - [x] Q3 Per-parcel share preview: /designer?parcel=X serves og:image = that parcel's thumbnail + its name.
 - [x] Q4 Landing: "Recently designed" strip from the registry (AI-designed / frozen maps), hidden when empty.
 
+### R — Third round
+- [x] R1 Styled 404 for browsers (Atlas / Designer / Home exits); API + /internal keep plain 404.
+- [ ] R2 Designer keyboard shortcuts (/ search · G generate · 3 toggle 3D · F freeze · ? help).
+- [ ] R3 Owners: "My land" list in the Designer — jump straight to any parcel/estate you own.
+
 ## Log
 - 2026-10-19 14:38Z — plan written; loop armed (1-minute cron job 174a9fd9).
 - A1 shipped — continents no longer stacked on the live Atlas.

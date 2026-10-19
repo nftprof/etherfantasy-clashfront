@@ -196,6 +196,10 @@ export function handleRequest(req, res) {
   // everything else → the map API (designer, registry, prompt/regenerate/freeze, thumbs, render.json)
   if (mapsApi(req, res)) return;
 
+  // browsers get a styled page (polish R1); API clients and assets keep the plain 404
+  if (req.method === "GET" && /text\/html/.test(req.headers.accept || "") && !p.startsWith("/internal/"))
+    return fs.readFile(path.join(__dirname, "maps", "404.html"), (e, buf) => {
+      res.writeHead(404, { "content-type": e ? "text/plain" : "text/html; charset=utf-8", "cache-control": "no-cache" }); res.end(e ? "not found" : buf); });
   res.writeHead(404, { "content-type": "text/plain" });
   res.end("not found");
 }
