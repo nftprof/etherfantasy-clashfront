@@ -172,3 +172,5 @@ body.ef{margin:0;background:var(--ef-bg);color:var(--ef-text);font:15px/1.6 var(
 
 /* the hidden attribute always wins over component display rules */
 .ef [hidden]{display:none!important}
+/* full-screen viewers (3D, Sky Cities): header floats over the canvas */
+.ef-header--minimal{position:fixed;left:0;right:0;top:0}

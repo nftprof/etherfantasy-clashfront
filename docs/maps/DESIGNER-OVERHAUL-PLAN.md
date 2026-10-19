@@ -77,7 +77,7 @@ the same top nav so this is obvious: `Home · World Atlas · Designer · Get Lan
 - [ ] E1 Mobile/responsive pass on every page.
 - [ ] E2 SEO + OpenGraph/Twitter cards + social image.
 - [ ] E3 Accessibility: contrast, focus rings, alt text, reduced-motion (pause video).
-- [ ] E4 3D viewer + Sky Cities chrome on the shared shell.
+- [x] E4 3D viewer + Sky Cities chrome on the shared shell. — DONE: floating shared header on /designer/3d and /designer/decks (skipped for ?thumb/?export/?showcase/?bare capture modes); HUDs offset below it.
 - [ ] E5 Performance: lazy-load mosaics/video, cache headers.
 - [ ] E6 Final consistency review + screenshot set to the owner.
 
