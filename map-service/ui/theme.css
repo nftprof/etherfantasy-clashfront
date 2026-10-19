@@ -169,3 +169,6 @@ body.ef{margin:0;background:var(--ef-bg);color:var(--ef-text);font:15px/1.6 var(
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
 }
+
+/* the hidden attribute always wins over component display rules */
+.ef [hidden]{display:none!important}

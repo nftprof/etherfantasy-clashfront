@@ -1,150 +1,317 @@
 <!doctype html><html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>CF World Map — coverage overview</title>
+<title>World Atlas — Ether Fantasy</title>
+<meta name="description" content="The whole Ether Fantasy world at a glance: 12 continents across three layers — sky isles, surface realms and the underworld. Click a continent to open it in the Land Designer.">
+<link rel="stylesheet" href="/ui/theme.css">
 <style>
-  :root{--bg:#0c1018;--panel:#141b28;--ink:#e8eef6;--dim:#8ea0b8;--line:#243247;
-        --gen:#54d18b;--seed:#3a5578;--wild:#caa14a;--sel:#ffd24a;}
-  *{box-sizing:border-box}
-  html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);
-    font:13px/1.4 ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
-  #wrap{display:flex;flex-direction:column;height:100%}
-  header{display:flex;align-items:center;gap:14px;padding:10px 14px;border-bottom:1px solid var(--line);
-    background:var(--panel);flex-wrap:wrap}
-  header b{font-size:15px;letter-spacing:.3px}
-  .pill{background:#0e1622;border:1px solid var(--line);border-radius:20px;padding:4px 11px;color:var(--dim)}
-  .pill.big{color:var(--ink);font-weight:600}
-  .bar{position:relative;height:10px;width:220px;background:#0e1622;border:1px solid var(--line);border-radius:6px;overflow:hidden}
-  .bar>i{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,#3a8f60,var(--gen));display:block}
-  .legend{display:flex;gap:12px;color:var(--dim);align-items:center;margin-left:auto;flex-wrap:wrap}
-  .legend span{display:inline-flex;align-items:center;gap:5px}
-  .sw{width:11px;height:11px;border-radius:3px;display:inline-block}
-  main{flex:1;position:relative;overflow:hidden}
-  canvas{display:block;width:100%;height:100%;cursor:grab}
-  canvas.drag{cursor:grabbing}
-  #tip{position:absolute;pointer-events:none;background:#0e1622ee;border:1px solid var(--line);
-    border-radius:8px;padding:7px 10px;font-size:12px;display:none;max-width:240px;z-index:5}
-  #tip b{color:var(--sel)}
-  .hint{position:absolute;left:12px;bottom:10px;color:var(--dim);font-size:11px;z-index:4}
-  a{color:#7fb2ff}
-  .toggle{display:inline-flex;gap:6px;align-items:center;cursor:pointer;color:var(--dim);user-select:none}
+  /* World Atlas (overhaul D1–D4, 2026-10-19). The public "whole world" view: continents drawn with
+     their baked aerial terrain, arranged in three depth layers (or their overworld positions), with
+     the real travel routes between them. Coverage stats are an admin-only overlay. */
+  .atlas-hero{border-bottom:1px solid var(--ef-line);background:linear-gradient(180deg,rgba(95,233,208,.06),transparent)}
+  .atlas-hero .ef-container{padding-top:28px;padding-bottom:22px;display:flex;gap:24px;justify-content:space-between;align-items:flex-end;flex-wrap:wrap}
+  .atlas-hero h1{font:700 clamp(24px,3vw,32px)/1.12 var(--ef-font-display);margin:0}
+  .atlas-hero p{color:var(--ef-text-2);font-size:14.5px;max-width:680px;margin:10px 0 0}
+  .seg{display:inline-flex;border:1px solid var(--ef-line-2);border-radius:999px;padding:3px;background:var(--ef-bg-2)}
+  .seg button{font:600 12.5px/1 var(--ef-font);border:0;background:transparent;color:var(--ef-text-2);padding:8px 14px;border-radius:999px;cursor:pointer}
+  .seg button.on{background:linear-gradient(135deg,var(--ef-ether),var(--ef-ether-lo));color:#fff}
+  .atlas-wrap{max-width:var(--ef-max);margin:0 auto;padding:20px 24px 8px}
+  .atlas-frame{position:relative;height:min(74vh,760px);min-height:480px;border:1px solid var(--ef-line);border-radius:var(--ef-r-xl);overflow:hidden;
+    background:radial-gradient(900px 500px at 50% 0%,rgba(95,233,208,.07),transparent 60%),radial-gradient(900px 500px at 50% 100%,rgba(239,108,58,.07),transparent 60%),var(--ef-bg-2);box-shadow:var(--ef-shadow)}
+  #c{display:block;width:100%;height:100%;cursor:grab;touch-action:none}
+  #c.drag{cursor:grabbing} #c.hot{cursor:pointer}
+  .ov{position:absolute;z-index:3;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .ov-tl{left:14px;top:14px} .ov-tr{right:14px;top:14px;flex-direction:column}
+  .ov-bl{left:14px;bottom:14px;max-width:calc(100% - 28px)}
+  .ov .tg{display:inline-flex;gap:7px;align-items:center;font:500 12.5px/1 var(--ef-font);color:var(--ef-text-2);padding:8px 12px;border:1px solid var(--ef-line-2);
+    border-radius:999px;background:rgba(10,8,18,.78);backdrop-filter:blur(6px);cursor:pointer;user-select:none}
+  .ov .tg input{accent-color:var(--ef-ether);margin:0}
+  .zbtn{width:38px;height:34px;border-radius:10px;border:1px solid var(--ef-line-2);background:rgba(10,8,18,.82);color:var(--ef-text);font:600 15px/1 var(--ef-font);cursor:pointer}
+  .zbtn:hover{border-color:var(--ef-ether)}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--ef-text-2);padding:9px 14px;border:1px solid var(--ef-line);border-radius:12px;background:rgba(10,8,18,.8);backdrop-filter:blur(6px)}
+  .legend i{display:inline-block;width:18px;height:0;border-top:2px dashed;vertical-align:middle;margin-right:6px}
+  .legend b{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+  #tip{position:absolute;z-index:6;pointer-events:none;display:none;width:260px;padding:14px 16px;border-radius:14px;border:1px solid var(--ef-line-2);
+    background:rgba(14,11,24,.97);box-shadow:var(--ef-shadow);font-size:13px;color:var(--ef-text-2)}
+  #tip .tn{font:700 18px/1.15 var(--ef-font-display);color:var(--ef-text)}
+  #tip .ts{color:var(--ef-crystal);font-size:12px;margin:3px 0 9px}
+  #tip .tr{display:flex;justify-content:space-between;padding:3px 0;border-top:1px solid var(--ef-line)}
+  #tip .tr span:last-child{color:var(--ef-text)}
+  #tip .tc{margin-top:9px;color:var(--ef-ether-hi);font-weight:600}
+  .admin-strip{display:none;gap:8px;flex-wrap:wrap;align-items:center;margin:12px 0 0}
+  .admin-strip.on{display:flex}
+  .admin-strip .bar{position:relative;height:8px;width:180px;border-radius:6px;background:var(--ef-bg);border:1px solid var(--ef-line-2);overflow:hidden}
+  .admin-strip .bar i{position:absolute;inset:0 auto 0 0;background:linear-gradient(90deg,var(--ef-crystal-lo),var(--ef-crystal))}
+  .explain{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:22px 0 6px}
+  .explain .ef-card{padding:18px 20px}
+  .explain h3{margin:0 0 6px;font:650 16px/1.3 var(--ef-font)}
+  .explain p{margin:0;color:var(--ef-text-2);font-size:14px;line-height:1.55}
+  .tierlist{margin:26px 0 10px}
+  .tierlist h2{font:700 22px/1.2 var(--ef-font-display);margin:0 0 4px}
+  .tierlist .sub{color:var(--ef-text-3);font-size:13.5px;margin:0 0 14px}
+  .band-h{font:600 12px/1 var(--ef-font);letter-spacing:.16em;text-transform:uppercase;margin:20px 0 10px;display:flex;gap:10px;align-items:center}
+  .band-h::after{content:"";flex:1;height:1px;background:var(--ef-line)}
+  .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px}
+  .zc{display:block;text-decoration:none;color:inherit;border:1px solid var(--ef-line);border-radius:14px;overflow:hidden;background:var(--ef-surface);transition:transform .15s,border-color .15s}
+  .zc:hover{transform:translateY(-2px);border-color:var(--ef-ether)}
+  .zc .im{height:110px;background:var(--ef-bg) center/contain no-repeat;border-bottom:1px solid var(--ef-line)}
+  .zc .bd{padding:11px 13px}
+  .zc .nm{font:700 16px/1.2 var(--ef-font-display);color:var(--ef-text)}
+  .zc .mt{font-size:12px;color:var(--ef-text-3);margin-top:3px}
+  .zc.unch{opacity:.7;cursor:default}
+  .zc.unch .im{display:flex;align-items:center;justify-content:center;color:var(--ef-text-3);font-size:12px;letter-spacing:.12em;text-transform:uppercase;
+    background:repeating-linear-gradient(45deg,transparent 0 10px,rgba(255,255,255,.025) 10px 20px)}
+  @media(max-width:560px){.cards{grid-template-columns:1fr 1fr;gap:10px}.zc .im{height:88px}.zc .nm{font-size:14px}}
+  @media(max-width:760px){.atlas-wrap{padding:14px 16px 8px}.explain{grid-template-columns:1fr}.atlas-frame{height:68vh;min-height:420px}
+    .ov-bl .legend{font-size:11px;gap:8px;padding:7px 10px}}
 </style></head>
-<body><div id="wrap">
-  <header>
-    <b>🗺 CF World Map</b>
-    <span class="pill big" id="cov">— generated</span>
-    <div class="bar"><i id="covbar" style="width:0"></i></div>
-    <span class="pill" id="parcels">— parcels</span>
-    <span class="pill" id="wild">— wilderness fields</span>
-    <label class="toggle"><input type="checkbox" id="tGen" checked> show generated</label>
-    <label class="toggle"><input type="checkbox" id="tLabels" checked> zone labels</label>
-    <div class="legend">
-      <span><i class="sw" style="background:var(--gen)"></i>generated</span>
-      <span><i class="sw" style="background:var(--seed)"></i>seeded (not baked)</span>
-      <span><i class="sw" style="background:var(--wild)"></i>wilderness authored</span>
+<body class="ef">
+<section class="atlas-hero">
+  <div class="ef-container">
+    <div>
+      <p class="ef-eyebrow">World Atlas</p>
+      <h1>The whole world, at a glance.</h1>
+      <p>Twelve continents in three layers: sky isles above, the surface realms, and the underworld below. Every speck of land is a parcel, and every parcel is a battlefield.
+        <b style="color:var(--ef-text)">Click a continent to open it in the Designer.</b></p>
+      <div class="admin-strip" id="adminStrip">
+        <span class="ef-pill ef-pill--admin">👑 Admin · coverage</span>
+        <span class="ef-pill" id="cov">— designed</span><span class="bar"><i id="covbar" style="width:0"></i></span>
+        <span class="ef-pill" id="parcelsPill">— parcels</span>
+      </div>
     </div>
-  </header>
-  <main>
-    <canvas id="c"></canvas>
+    <div class="seg" role="tablist" aria-label="Atlas layout">
+      <button class="on" data-mode="layers" role="tab" aria-selected="true">Layers</button>
+      <button data-mode="overworld" role="tab" aria-selected="false">Overworld positions</button>
+    </div>
+  </div>
+</section>
+
+<div class="atlas-wrap">
+  <div class="atlas-frame">
+    <canvas id="c" aria-label="World Atlas map — use the continent list below for keyboard access"></canvas>
+    <div class="ov ov-tl">
+      <label class="tg"><input type="checkbox" id="tRoutes" checked> Travel routes</label>
+      <label class="tg"><input type="checkbox" id="tLabels" checked> Names</label>
+      <label class="tg" id="tCovWrap" hidden><input type="checkbox" id="tCov"> Coverage (admin)</label>
+    </div>
+    <div class="ov ov-tr">
+      <button class="zbtn" id="zin" title="Zoom in" aria-label="Zoom in">＋</button>
+      <button class="zbtn" id="zout" title="Zoom out" aria-label="Zoom out">－</button>
+      <button class="zbtn" id="zfit" title="Fit the world" aria-label="Fit the world" style="font-size:12px">fit</button>
+    </div>
+    <div class="ov ov-bl"><div class="legend">
+      <span><b style="background:#5fe9d0"></b>Sky isles</span>
+      <span><b style="background:#e8c46f"></b>Surface realms</span>
+      <span><b style="background:#ef6c3a"></b>Underworld</span>
+      <span><i style="border-color:#5fe9d0"></i>Airship way</span>
+      <span><i style="border-color:#ef6c3a"></i>Descent</span>
+    </div></div>
     <div id="tip"></div>
-    <div class="hint">drag = pan · wheel = zoom · click a cell = open that parcel in the 3D designer</div>
-  </main>
+  </div>
+
+  <div class="explain">
+    <div class="ef-card"><h3>🗺 World Atlas: the whole map</h3><p>Every continent, how big it is, which layer it sits on and how you travel between them. Use it to find where you want land.</p></div>
+    <div class="ef-card"><h3>⚒ Designer: one parcel up close</h3><p>Open a continent to see its individual parcels, pick one and design the battlefield it becomes — then view it in 3D. <a href="/designer">Open the Designer →</a></p></div>
+  </div>
+
+  <section class="tierlist" aria-label="All continents">
+    <h2>All continents</h2>
+    <p class="sub">Each opens in the Designer, where you can browse its parcels.</p>
+    <div id="bands"></div>
+  </section>
 </div>
+
 <script>
-const cv=document.getElementById('c'), ctx=cv.getContext('2d'), tip=document.getElementById('tip');
-let DATA=null, view={x:0,z:0,s:1}, dpr=Math.max(1,window.devicePixelRatio||1);
-const tGen=document.getElementById('tGen'), tLabels=document.getElementById('tLabels');
-function resize(){cv.width=cv.clientWidth*dpr;cv.height=cv.clientHeight*dpr;draw();}
-window.addEventListener('resize',resize);
+(()=>{
+const $=(id)=>document.getElementById(id);
+const cv=$("c"), ctx=cv.getContext("2d"), tip=$("tip");
+const TIER={sky:{label:"☁  SKY ISLES",col:"#5fe9d0",tint:"rgba(95,233,208,.055)"},
+            surface:{label:"⛰  SURFACE REALMS",col:"#e8c46f",tint:"rgba(232,196,111,.045)"},
+            underworld:{label:"🜂  UNDERWORLD",col:"#ef6c3a",tint:"rgba(239,108,58,.055)"}};
+const BAND_ORDER=["sky","surface","underworld"];
+// left→right within each layer: keeps travel routes short (gateway HS1 in the middle; the Shaft under HUB)
+const ORDER={sky:["HS2","HS1","HS3"],surface:["CGI","ENT","HUB","EDU","BUS","KOL"],underworld:["UW1","UW2","UW3"]};
+// owner-locked travel (data/zone-registry.json zoneLinks + the Shaft's linear descent) — server copy wins when present
+const FALLBACK_LINKS=[["EDU","HS1","AIRSHIP_WAY","Airship way"],["BUS","HS1","AIRSHIP_WAY","Airship way"],["HS1","HS2","AIRSHIP_WAY","to Emberfall"],
+  ["HS1","HS3","AIRSHIP_WAY","to Empyrea"],["HUB","UW1","SHAFT","The Shaft"],["UW1","UW2","SHAFT","descent"],["UW2","UW3","SHAFT","descent"],
+  ["ENT","UW2","SECRET_ENTRANCE","The Diminishing Stair"]];
+const S=120;                 // world-units: the largest continent's long side
+let Z=[], LINKS=FALLBACK_LINKS, mode="layers", view={x:0,z:0,s:1}, target=null, anim=null, hover=null, dpr=1, isAdmin=false, stats=null;
 
-function fit(){
-  if(!DATA)return; const b=DATA.bounds, pad=40;
-  const W=cv.clientWidth-pad*2, H=cv.clientHeight-pad*2;
-  const sx=W/Math.max(1e-6,b.x1-b.x0), sz=H/Math.max(1e-6,b.z1-b.z0);
-  view.s=Math.min(sx,sz); view.x=(b.x0+b.x1)/2; view.z=(b.z0+b.z1)/2;
+function sizeFor(z,maxCount){ // area ∝ parcels (honest size), floor so tiny continents stay clickable
+  const k=z.charted?Math.max(.42,Math.sqrt(z.parcels/maxCount)):.42;
+  const asp=z.grid?z.grid.w/z.grid.h:1;
+  return asp>=1?{w:S*k,h:S*k/asp}:{w:S*k*asp,h:S*k};
 }
-function w2s(x,z){ // world → screen
-  return [cv.clientWidth/2+(x-view.x)*view.s, cv.clientHeight/2+(z-view.z)*view.s];
+function layoutLayers(){
+  const maxC=Math.max(...Z.map(z=>z.parcels||0),1); const GAP=34, BANDGAP=70, ROWGAP=40;
+  const perRow=cv.clientWidth<640?3:99;   // phones: wrap each layer so continents stay a readable size
+  let y=0; const bands={};
+  for(const t of BAND_ORDER){
+    const all=ORDER[t].map(id=>Z.find(z=>z.zoneId===id)).filter(Boolean).concat(Z.filter(z=>z.tier===t&&!ORDER[t].includes(z.zoneId)));
+    const y0=y; let bw=0;
+    for(let r0=0;r0<all.length;r0+=perRow){
+      const row=all.slice(r0,r0+perRow), sz=row.map(z=>sizeFor(z,maxC));
+      const W=sz.reduce((a,s)=>a+s.w,0)+GAP*(row.length-1), H=Math.max(...sz.map(s=>s.h)); bw=Math.max(bw,W);
+      let x=-W/2; row.forEach((z,i)=>{z.L={x:x+sz[i].w/2,z:y+H/2,w:sz[i].w,h:sz[i].h};x+=sz[i].w+GAP;});
+      y+=H+ROWGAP;
+    }
+    y-=ROWGAP; bands[t]={y0:y0-22,y1:y+22,w:bw}; y+=BANDGAP;
+  }
+  return bands;
 }
+let BANDS={};
+function layoutOverworld(){ for(const z of Z){ if(z.world) z.O={x:z.world.x,z:z.world.z,w:z.world.w,h:z.world.h}; else z.O=null; } }
+function pos(z){ // current (possibly animating) rectangle
+  const a=mode==="layers"?z.L:(z.O||null), b=anim?(anim.from==="layers"?z.L:(z.O||null)):null;
+  if(!a)return null; if(!anim||!b)return a;
+  const k=anim.k, e=k*k*(3-2*k); return {x:b.x+(a.x-b.x)*e,z:b.z+(a.z-b.z)*e,w:b.w+(a.w-b.w)*e,h:b.h+(a.h-b.h)*e};
+}
+function bounds(){ let x0=1e9,z0=1e9,x1=-1e9,z1=-1e9;
+  for(const z of Z){const r=mode==="layers"?z.L:z.O;if(!r)continue;x0=Math.min(x0,r.x-r.w/2);x1=Math.max(x1,r.x+r.w/2);z0=Math.min(z0,r.z-r.h/2);z1=Math.max(z1,r.z+r.h/2);}
+  if(mode==="layers")x0-=70; return {x0,z0:z0-26,x1,z1:z1+26}; }
+function fitView(){ const b=bounds(), pad=44, W=cv.clientWidth-pad*2, H=cv.clientHeight-pad*2-30;
+  const s=Math.min(W/Math.max(1,b.x1-b.x0),H/Math.max(1,b.z1-b.z0)); return {x:(b.x0+b.x1)/2,z:(b.z0+b.z1)/2+8/s,s}; }
+const w2s=(x,z)=>[cv.clientWidth/2+(x-view.x)*view.s, cv.clientHeight/2+(z-view.z)*view.s];
+function resize(){ dpr=Math.max(1,window.devicePixelRatio||1); cv.width=cv.clientWidth*dpr; cv.height=cv.clientHeight*dpr; draw(); }
+function rr(x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
+
 function draw(){
-  ctx.setTransform(dpr,0,0,dpr,0,0);
-  ctx.fillStyle=getComputedStyle(document.documentElement).getPropertyValue('--bg');
-  ctx.fillRect(0,0,cv.clientWidth,cv.clientHeight);
-  if(!DATA)return;
-  const showGen=tGen.checked;
-  for(const z of DATA.zones){
-    const g=z.grid, cw=z.world.w/g.w*view.s, ch=z.world.h/g.h*view.s;
-    const [ox,oy]=w2s(z.world.x-z.world.w/2, z.world.z-z.world.h/2);
-    // tile backdrop (wilderness tint if the field is authored)
-    ctx.fillStyle = z.wilderness ? 'rgba(202,161,74,.07)' : 'rgba(58,85,120,.05)';
-    ctx.fillRect(ox,oy,z.world.w*view.s,z.world.h*view.s);
-    ctx.strokeStyle='rgba(36,50,71,.9)'; ctx.lineWidth=1; ctx.strokeRect(ox,oy,z.world.w*view.s,z.world.h*view.s);
-    // cells
-    const dot=Math.max(1,Math.min(cw,ch)*0.82);
-    for(let j=0;j<g.h;j++)for(let i=0;i<g.w;i++){
-      const k=j*g.w+i, t=z.total[k]; if(!t)continue;
-      const gen=z.generatedGrid[k];
-      const cx=ox+(i+0.5)*cw, cy=oy+(j+0.5)*ch;
-      let col;
-      if(showGen && gen>0) col=`rgba(84,209,139,${0.45+0.55*Math.min(1,gen/t)})`;
-      else col= z.wilderness ? 'rgba(120,140,170,.55)' : 'rgba(58,85,120,.75)';
-      ctx.fillStyle=col;
-      ctx.fillRect(cx-dot/2,cy-dot/2,dot,dot);
-    }
-    if(tLabels.checked && view.s*z.world.w>60){
-      ctx.fillStyle='rgba(232,238,246,.9)'; ctx.font='700 12px system-ui';
-      ctx.textAlign='center';
-      ctx.fillText(z.zoneId, ox+z.world.w*view.s/2, oy-6);
-      ctx.fillStyle='rgba(142,160,184,.85)'; ctx.font='11px system-ui';
-      ctx.fillText(`${z.name} · ${(z.coverage*100).toFixed(0)}%`, ox+z.world.w*view.s/2, oy+z.world.h*view.s+14);
+  ctx.setTransform(dpr,0,0,dpr,0,0); ctx.clearRect(0,0,cv.clientWidth,cv.clientHeight);
+  if(!Z.length)return;
+  const bandA=mode==="layers"?(anim?anim.k:1):(anim?1-anim.k:0);
+  if(bandA>0.01) for(const t of BAND_ORDER){ const b=BANDS[t]; if(!b)continue;
+    const [x0,y0]=w2s(-b.w/2-60,b.y0), [x1,y1]=w2s(b.w/2+30,b.y1);
+    ctx.globalAlpha=bandA; ctx.fillStyle=TIER[t].tint; rr(x0,y0,x1-x0,y1-y0,16); ctx.fill();
+    ctx.fillStyle=TIER[t].col; ctx.font="600 11px Inter,system-ui,sans-serif"; ctx.textAlign="left";
+    ctx.save(); ctx.translate(x0+20,(y0+y1)/2); ctx.rotate(-Math.PI/2); ctx.textAlign="center"; ctx.fillText(TIER[t].label.replace(/^\S+\s+/,""),0,4); ctx.restore();
+    ctx.globalAlpha=1; }
+  if($("tRoutes").checked) drawLinks();
+  for(const z of Z){ const r=pos(z); if(!r)continue;
+    const [ox,oy]=w2s(r.x-r.w/2,r.z-r.h/2), W=r.w*view.s, H=r.h*view.s, hot=hover===z, col=(TIER[z.tier]||TIER.surface).col;
+    if(!z.charted){ ctx.setLineDash([5,5]); ctx.strokeStyle="rgba(255,255,255,.22)"; rr(ox,oy,W,H,10); ctx.stroke(); ctx.setLineDash([]);
+      ctx.fillStyle="rgba(255,255,255,.35)"; ctx.font="600 10px Inter,system-ui"; ctx.textAlign="center"; ctx.fillText("UNCHARTED",ox+W/2,oy+H/2+4); }
+    else if(z.img&&z.img.complete&&z.img.naturalWidth){
+      if(hot){ctx.shadowColor=col;ctx.shadowBlur=24;}
+      ctx.drawImage(z.img,ox,oy,W,H); ctx.shadowBlur=0; }
+    else drawCells(z,ox,oy,W,H,col);
+    if(isAdmin&&$("tCov").checked) drawCoverage(z,ox,oy,W,H);
+    if(hot){ ctx.strokeStyle=col; ctx.lineWidth=1.5; rr(ox-4,oy-4,W+8,H+8,12); ctx.stroke(); }
+    if($("tLabels").checked&&W>34){
+      ctx.textAlign="center"; ctx.fillStyle=hot?"#fff":"rgba(244,240,255,.92)"; ctx.font=`700 ${Math.max(11,Math.min(17,W/7))}px Cinzel,Georgia,serif`;
+      ctx.fillText(z.name,ox+W/2,oy-8);
+      if(W>70&&(mode==="layers"&&!anim||hot)){ ctx.fillStyle="rgba(190,182,214,.75)"; ctx.font="11px Inter,system-ui"; ctx.fillText(z.charted?`${z.parcels.toLocaleString()} parcels`:"not yet mapped",ox+W/2,oy+H+15); }
     }
   }
 }
-function cellAt(mx,my){
-  if(!DATA)return null;
-  for(const z of DATA.zones){
-    const [ox,oy]=w2s(z.world.x-z.world.w/2, z.world.z-z.world.h/2);
-    const W=z.world.w*view.s, H=z.world.h*view.s;
-    if(mx<ox||my<oy||mx>ox+W||my>oy+H)continue;
-    const g=z.grid, i=Math.min(g.w-1,Math.floor((mx-ox)/W*g.w)), j=Math.min(g.h-1,Math.floor((my-oy)/H*g.h));
-    const k=j*g.w+i;
-    return {z,i,j,k,total:z.total[k],gen:z.generatedGrid[k],id:z.ids[k]};
+function drawCells(z,ox,oy,W,H,col){ if(!z.grid)return; const g=z.grid, cw=W/g.w, ch=H/g.h, d=Math.max(1,Math.min(cw,ch)*.85);
+  ctx.fillStyle=col; ctx.globalAlpha=.55;
+  for(let j=0;j<g.h;j++)for(let i=0;i<g.w;i++) if(z.total[j*g.w+i]) ctx.fillRect(ox+(i+.5)*cw-d/2,oy+(j+.5)*ch-d/2,d,d);
+  ctx.globalAlpha=1; }
+function drawCoverage(z,ox,oy,W,H){ if(!z.grid||!z.generatedGrid)return; const g=z.grid, cw=W/g.w, ch=H/g.h;
+  ctx.fillStyle="rgba(84,209,139,.85)";
+  for(let k=0;k<z.generatedGrid.length;k++) if(z.generatedGrid[k]) ctx.fillRect(ox+(k%g.w)*cw,oy+Math.floor(k/g.w)*ch,Math.max(1,cw),Math.max(1,ch)); }
+function edgePt(r,tx,tz){ // where the line from r's centre toward (tx,tz) leaves r
+  const dx=tx-r.x, dz=tz-r.z, sx=Math.abs(dx)/(r.w/2+6), sz=Math.abs(dz)/(r.h/2+6), k=1/Math.max(sx,sz,1e-6); return [r.x+dx*k,r.z+dz*k]; }
+function drawLinks(){
+  for(const [a,b,kind,label] of LINKS){ const A=Z.find(z=>z.zoneId===a), B=Z.find(z=>z.zoneId===b); if(!A||!B)continue;
+    const ra=pos(A), rb=pos(B); if(!ra||!rb)continue;
+    const [ax,az]=edgePt(ra,rb.x,rb.z), [bx,bz]=edgePt(rb,ra.x,ra.z);
+    const [x1,y1]=w2s(ax,az), [x2,y2]=w2s(bx,bz); const mx=(x1+x2)/2, my=(y1+y2)/2, nx=-(y2-y1)*.12, ny=(x2-x1)*.12;
+    const sky=kind==="AIRSHIP_WAY", col=sky?"rgba(95,233,208,.75)":"rgba(239,108,58,.8)";
+    const on=hover&&(hover===A||hover===B);
+    ctx.strokeStyle=col; ctx.lineWidth=on?2.4:1.4; ctx.setLineDash(kind==="SECRET_ENTRANCE"?[2,5]:[7,6]);
+    ctx.beginPath(); ctx.moveTo(x1,y1); ctx.quadraticCurveTo(mx+nx,my+ny,x2,y2); ctx.stroke(); ctx.setLineDash([]);
+    // arrowhead at the destination
+    const ang=Math.atan2(y2-(my+ny),x2-(mx+nx)); ctx.fillStyle=col; ctx.beginPath(); ctx.moveTo(x2,y2);
+    ctx.lineTo(x2-9*Math.cos(ang-.4),y2-9*Math.sin(ang-.4)); ctx.lineTo(x2-9*Math.cos(ang+.4),y2-9*Math.sin(ang+.4)); ctx.fill();
+    if(label&&(on||view.s>3.2)){ ctx.font="600 10.5px Inter,system-ui"; ctx.textAlign="center"; const tw=ctx.measureText(label).width+12;
+      ctx.fillStyle="rgba(10,8,18,.88)"; rr(mx+nx/2-tw/2,my+ny/2-9,tw,18,9); ctx.fill(); ctx.fillStyle=col; ctx.fillText(label,mx+nx/2,my+ny/2+4); }
   }
-  return null;
 }
-// interaction
-let drag=null;
-cv.addEventListener('mousedown',e=>{drag={x:e.clientX,y:e.clientY,vx:view.x,vz:view.z,moved:false};cv.classList.add('drag');});
-window.addEventListener('mouseup',()=>{if(drag)cv.classList.remove('drag');drag=null;});
-window.addEventListener('mousemove',e=>{
-  const r=cv.getBoundingClientRect(), mx=e.clientX-r.left, my=e.clientY-r.top;
-  if(drag){const dx=e.clientX-drag.x,dy=e.clientY-drag.y; if(Math.abs(dx)+Math.abs(dy)>3)drag.moved=true;
-    view.x=drag.vx-dx/view.s; view.z=drag.vz-dy/view.s; draw(); tip.style.display='none'; return;}
-  const c=cellAt(mx,my);
-  if(c&&c.total){ tip.style.display='block'; tip.style.left=(mx+14)+'px'; tip.style.top=(my+14)+'px';
-    tip.innerHTML=`<b>${c.z.zoneId}</b> · ${c.z.name}<br>${c.total} parcel${c.total>1?'s':''} here · ${c.gen} generated`+
-      (c.id?`<br><span style="color:#8ea0b8">click → parcel ${c.id}</span>`:''); }
-  else tip.style.display='none';
-});
-cv.addEventListener('click',e=>{
-  if(drag&&drag.moved)return;
-  const r=cv.getBoundingClientRect(); const c=cellAt(e.clientX-r.left,e.clientY-r.top);
-  if(c&&c.id) window.open('/designer/3d?parcel='+encodeURIComponent(c.id),'_blank');
-});
-cv.addEventListener('wheel',e=>{e.preventDefault();
-  const r=cv.getBoundingClientRect(), mx=e.clientX-r.left, my=e.clientY-r.top;
-  const wx=view.x+(mx-cv.clientWidth/2)/view.s, wz=view.z+(my-cv.clientHeight/2)/view.s;
-  const f=e.deltaY<0?1.15:1/1.15; view.s*=f;
-  view.x=wx-(mx-cv.clientWidth/2)/view.s; view.z=wz-(my-cv.clientHeight/2)/view.s; draw();
-},{passive:false});
-tGen.onchange=tLabels.onchange=draw;
+function zoneAt(mx,my){ for(let i=Z.length-1;i>=0;i--){ const z=Z[i], r=pos(z); if(!r)continue;
+  const [ox,oy]=w2s(r.x-r.w/2,r.z-r.h/2); if(mx>=ox-4&&my>=oy-22&&mx<=ox+r.w*view.s+4&&my<=oy+r.h*view.s+18) return z; } return null; }
 
-fetch('/internal/v1/worldmap.json'+location.search).then(r=>r.json()).then(d=>{
-  if(!d.ok){document.getElementById('cov').textContent='world map unavailable';return;}
-  DATA=d; const s=d.stats;
-  document.getElementById('cov').textContent=`${(s.parcelCoverage*100).toFixed(1)}% generated`;
-  document.getElementById('covbar').style.width=(s.parcelCoverage*100).toFixed(1)+'%';
-  document.getElementById('parcels').textContent=`${s.totalGenerated.toLocaleString()} / ${s.totalParcels.toLocaleString()} parcels`;
-  document.getElementById('wild').textContent=`${s.zonesWithWilderness}/${s.zones} wilderness fields`;
-  fit(); resize();
-}).catch(e=>{document.getElementById('cov').textContent='error: '+e.message;});
-</script></body></html>
+/* camera tween (layout switch + fit) */
+function tweenTo(v,from){ const v0={...view}; const t0=performance.now(); anim=from?{from,k:0}:null;
+  const step=(t)=>{ const k=Math.min(1,(t-t0)/650), e=k*k*(3-2*k); view={x:v0.x+(v.x-v0.x)*e,z:v0.z+(v.z-v0.z)*e,s:v0.s+(v.s-v0.s)*e};
+    if(anim)anim.k=k; draw(); if(k<1)requestAnimationFrame(step); else {anim=null;draw();} };
+  requestAnimationFrame(step); }
+function setMode(m){ if(m===mode)return; const from=mode; mode=m;
+  document.querySelectorAll(".seg button").forEach(b=>{const on=b.dataset.mode===m;b.classList.toggle("on",on);b.setAttribute("aria-selected",on);});
+  try{localStorage.setItem("ef_atlas_mode",m);}catch(_){}
+  tweenTo(fitView(),from); }
+document.querySelectorAll(".seg button").forEach(b=>b.onclick=()=>setMode(b.dataset.mode));
+
+/* interaction: drag / wheel / buttons / hover card / click → Designer */
+let drag=null;
+cv.addEventListener("pointerdown",e=>{cv.setPointerCapture(e.pointerId);drag={x:e.clientX,y:e.clientY,vx:view.x,vz:view.z,moved:false};cv.classList.add("drag");});
+cv.addEventListener("pointerup",e=>{cv.classList.remove("drag"); const d=drag; drag=null; if(d&&!d.moved){const r=cv.getBoundingClientRect();openZone(zoneAt(e.clientX-r.left,e.clientY-r.top));}});
+cv.addEventListener("pointermove",e=>{ const r=cv.getBoundingClientRect(), mx=e.clientX-r.left, my=e.clientY-r.top;
+  if(drag){ const dx=e.clientX-drag.x, dy=e.clientY-drag.y; if(Math.abs(dx)+Math.abs(dy)>4)drag.moved=true;
+    if(drag.moved){view.x=drag.vx-dx/view.s;view.z=drag.vz-dy/view.s;tip.style.display="none";draw();} return; }
+  const z=zoneAt(mx,my); if(z!==hover){hover=z;draw();} cv.classList.toggle("hot",!!z);
+  if(z&&e.pointerType==="mouse"){ showTip(z); const tw=260, l=mx+18+tw>r.width?mx-tw-18:mx+18; tip.style.left=l+"px"; tip.style.top=Math.min(my+12,r.height-190)+"px"; }
+  else tip.style.display="none"; });
+cv.addEventListener("pointerleave",()=>{hover=null;tip.style.display="none";draw();});
+cv.addEventListener("wheel",e=>{e.preventDefault(); zoomAt(e.deltaY<0?1.15:1/1.15,e.offsetX,e.offsetY);},{passive:false});
+function zoomAt(f,mx,my){ const wx=view.x+(mx-cv.clientWidth/2)/view.s, wz=view.z+(my-cv.clientHeight/2)/view.s;
+  view.s=Math.max(.3,Math.min(60,view.s*f)); view.x=wx-(mx-cv.clientWidth/2)/view.s; view.z=wz-(my-cv.clientHeight/2)/view.s; draw(); }
+$("zin").onclick=()=>zoomAt(1.3,cv.clientWidth/2,cv.clientHeight/2);
+$("zout").onclick=()=>zoomAt(1/1.3,cv.clientWidth/2,cv.clientHeight/2);
+$("zfit").onclick=()=>tweenTo(fitView());
+["tRoutes","tLabels","tCov"].forEach(id=>$(id).onchange=draw);
+const esc=(s)=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function showTip(z){ const t=TIER[z.tier]||TIER.surface;
+  tip.innerHTML=`<div class="tn">${esc(z.name)}</div><div class="ts">${esc(z.subtitle||"")}</div>
+   <div class="tr"><span>Layer</span><span style="color:${t.col}">${esc(t.label.replace(/^\S+\s+/,"").toLowerCase().replace(/^\w/,c=>c.toUpperCase()))}</span></div>
+   ${z.charted?`<div class="tr"><span>Parcels</span><span>${z.parcels.toLocaleString()}</span></div><div class="tr"><span>Castles</span><span>${z.castles||0}</span></div>`:""}
+   ${isAdmin&&z.count?`<div class="tr"><span>Designed (admin)</span><span>${(z.coverage*100).toFixed(1)}%</span></div>`:""}
+   <div class="tc">${z.charted?"Click to open in the Designer →":"Not yet mapped — coming later"}</div>`;
+  tip.style.display="block"; }
+function openZone(z){ if(!z)return;
+  if(!z.charted){ window.EFShell?EFShell.toast(z.name+" isn't mapped yet — it's coming in a later age.","warn"):0; return; }
+  location.href="/designer?zone="+encodeURIComponent(z.zoneId); }
+
+/* continent list (also the keyboard / screen-reader path) */
+function renderList(){ const host=$("bands"); host.innerHTML="";
+  for(const t of BAND_ORDER){ const zs=Z.filter(z=>z.tier===t); if(!zs.length)continue;
+    const h=document.createElement("div"); h.className="band-h"; h.style.color=TIER[t].col; h.textContent=TIER[t].label; host.appendChild(h);
+    const g=document.createElement("div"); g.className="cards"; host.appendChild(g);
+    for(const id of ORDER[t].concat(zs.map(z=>z.zoneId))){ const z=zs.find(x=>x.zoneId===id); if(!z||g.querySelector(`[data-z="${id}"]`))continue;
+      const a=document.createElement(z.charted?"a":"div"); a.className="zc"+(z.charted?"":" unch"); a.dataset.z=z.zoneId;
+      if(z.charted)a.href="/designer?zone="+encodeURIComponent(z.zoneId);
+      a.innerHTML=`<div class="im" ${z.charted?`style="background-image:url('/media/continents/${z.zoneId}.webp')"`:""}>${z.charted?"":"Uncharted"}</div>
+        <div class="bd"><div class="nm">${esc(z.name)}</div><div class="mt">${esc(z.subtitle||"")}</div>
+        <div class="mt">${z.charted?z.parcels.toLocaleString()+" parcels · "+(z.castles||0)+" castles":"Not yet mapped"}</div></div>`;
+      g.appendChild(a); } } }
+
+/* data */
+Promise.all([fetch("/internal/v1/landing-stats").then(r=>r.json()),fetch("/internal/v1/worldmap.json"+location.search).then(r=>r.json()).catch(()=>({ok:false}))])
+.then(([st,wm])=>{
+  if(!st.ok)throw new Error("atlas data unavailable");
+  const byId=Object.fromEntries((wm.ok?wm.zones:[]).map(z=>[z.zoneId,z]));
+  Z=st.zones.map(z=>{ const w=byId[z.zoneId]||{}; const o={...z,grid:w.grid,total:w.total,generatedGrid:w.generatedGrid,world:w.world,count:w.count,coverage:w.coverage||0};
+    if(z.charted){ o.img=new Image(); o.img.onload=draw; o.img.src="/media/continents/"+z.zoneId+".webp"; } return o; });
+  if(Array.isArray(st.links)&&st.links.length) LINKS=st.links.map(l=>[l.from,l.to,l.kind,l.label]);
+  stats=wm.ok?wm.stats:null;
+  BANDS=layoutLayers(); layoutOverworld();
+  try{const m=localStorage.getItem("ef_atlas_mode");if(m==="overworld")mode="overworld";}catch(_){}
+  document.querySelectorAll(".seg button").forEach(b=>{const on=b.dataset.mode===mode;b.classList.toggle("on",on);b.setAttribute("aria-selected",on);});
+  renderList(); resize(); view=fitView(); draw();
+  if(window.EFShell&&EFShell.who)onWho(EFShell.who);
+}).catch(e=>{ ctx.fillStyle="#bbb"; ctx.font="14px Inter,system-ui"; ctx.fillText("The Atlas couldn't load: "+e.message,24,40); });
+window.addEventListener("resize",()=>{resize();});
+let _narrow=null;
+new ResizeObserver(()=>{ if(!Z.length)return; const n=cv.clientWidth<640; if(n!==_narrow){_narrow=n;BANDS=layoutLayers();view=fitView();} resize(); }).observe(cv);
+
+/* admin-only: coverage (how much of the world has a generated design) */
+function onWho(w){ isAdmin=!!(w&&w.ok&&w.admin); $("tCovWrap").hidden=!isAdmin; $("adminStrip").classList.toggle("on",isAdmin);
+  if(isAdmin&&stats){ $("cov").textContent=(stats.parcelCoverage*100).toFixed(1)+"% designed"; $("covbar").style.width=(stats.parcelCoverage*100).toFixed(1)+"%";
+    $("parcelsPill").textContent=stats.totalGenerated.toLocaleString()+" / "+stats.totalParcels.toLocaleString()+" parcels"; }
+  draw(); }
+const hook=()=>{ if(window.EFShell){ EFShell.ready.then(()=>setTimeout(()=>onWho(EFShell.who),0)); } };
+if(window.EFShell)hook(); else window.addEventListener("load",hook);
+})();
+</script>
+<script src="/ui/shell.js"></script>
+</body></html>

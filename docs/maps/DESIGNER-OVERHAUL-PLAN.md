@@ -68,10 +68,10 @@ the same top nav so this is obvious: `Home · World Atlas · Designer · Get Lan
 - [ ] C5 Toasts, loading skeletons, empty + error states.
 
 ### D — World Atlas, reframed
-- [ ] D1 Public framing: title/legend/intro say what it is; coverage % → admin-only.
-- [ ] D2 Real arrangement + non-overlapping labels; continents drawn with their baked mosaics.
-- [ ] D3 Click a continent → Designer at that continent; hover cards.
-- [ ] D4 Depth tiers (sky isles above · surface · underworld below) explained in a legend.
+- [x] D1 Public framing: title/legend/intro say what it is; coverage % → admin-only. — DONE: "World Atlas" hero + Atlas-vs-Designer cards; coverage strip + overlay only for admins.
+- [x] D2 Real arrangement + non-overlapping labels; continents drawn with their baked mosaics. — DONE: "Layers" (default, area ∝ parcels, wraps on phones) and "Overworld positions" with an animated switch; draws /media/continents/<ZONE>.webp (cell-dot fallback until B7 stills ship); owner-locked travel routes drawn (airship ways, the Shaft, the Diminishing Stair).
+- [x] D3 Click a continent → Designer at that continent; hover cards. — DONE: /designer?zone=XX + hover card (layer, parcels, castles). Also fixed a pre-existing bug: every ?parcel=/?zone= deep link loaded 0 parcels (TDZ on pgTok).
+- [x] D4 Depth tiers (sky isles above · surface · underworld below) explained in a legend. — DONE: tinted bands + legend + "All continents" list grouped by layer (keyboard path).
 
 ### E — Polish
 - [ ] E1 Mobile/responsive pass on every page.
@@ -86,3 +86,5 @@ the same top nav so this is obvious: `Home · World Atlas · Designer · Get Lan
 - A1 shipped — continents no longer stacked on the live Atlas.
 - A3 + landing (B1,B3–B6,B8,B9) shipped — `/` = landing; cold signed-out /designer → landing once.
 - A2 shipped — shared shell + theme (header nav Home · World Atlas · Designer · Sky Cities · Get Land; admin badge; footer).
+- C1 + A4 shipped — Designer studio layout; admin land-tier control.
+- D1–D4 shipped — World Atlas reframed for the public; deep-link 0-parcels bug fixed.

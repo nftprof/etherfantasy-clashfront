@@ -9,7 +9,7 @@
    navigation / a stored session always go straight to the studio. */
 (function(){try{var q=new URLSearchParams(location.search);
   if(q.has("guest"))sessionStorage.setItem("ef_guest","1");
-  if(q.has("parcel")||q.has("guest")||location.hash)return;
+  if(q.has("parcel")||q.has("zone")||q.has("guest")||location.hash)return;
   if(localStorage.getItem("ef_pg_token")||localStorage.getItem("ef_mm_wallet")||sessionStorage.getItem("ef_guest")||localStorage.getItem("ef_seen_landing"))return;
   var r=document.referrer;if(r&&new URL(r).origin===location.origin)return;
   location.replace("/");}catch(e){}})();
@@ -524,7 +524,8 @@ async function loadZones(){try{const d=await fetch("/internal/v1/zones").then(r=
   const g=$("zgrid");g.innerHTML="";zones.forEach(z=>{const el=document.createElement("div");el.className="zone";
     el.innerHTML='<div class="zn">'+z.name+'</div><div class="zc">'+z.zoneId+' · '+z.biomeFamily.toLowerCase().replace("_"," ")+'<br>'+z.count.toLocaleString()+' parcels</div>';
     el.onclick=()=>{zone=z.zoneId;page=0;q="";$("search").value="";loadParcels();};g.appendChild(el);});
-  showZoneView();}catch(e){$("mapStat").textContent="· world unavailable";}}
+  if(zone)setCrumb();else showZoneView();   /* a deep link (?zone / ?parcel) may already have opened a continent */
+  }catch(e){$("mapStat").textContent="· world unavailable";}}
 
 /* render parcels as their real polygons (svgPath) when zoomed enough, else dots — CF-main-map feel */
 // zoom/pan is a pure SCREEN-space transform on top of the fit view — no re-fetch, stays lightweight.
@@ -778,7 +779,13 @@ $("featuresOverlay").addEventListener("change",(e)=>{showFeatures=e.target.check
 $("plannerLayer").addEventListener("change",(e)=>{mosaicMode=e.target.checked?"planner":"thumb";loadMosaic(zone);});
 $("outlineLayer").addEventListener("change",(e)=>{showOutlines=e.target.checked;if(showOutlines)loadOutlines(zone);else drawMap();});
 loadZones();
+/* deep links run after the whole script has initialised (pgTok etc. are declared further down — calling
+   loadParcels synchronously here hit the temporal dead zone and every ?parcel=/?zone= link loaded 0 parcels) */
+setTimeout(()=>{
 try{const _dl=new URLSearchParams(location.search).get("parcel");if(_dl){const z={"00":"BUS","01":"CGI","02":"EDU","03":"ENT","04":"HS1","05":"HS2","06":"HS3","07":"HUB","08":"KOL","09":"UW1","10":"UW2","11":"UW3"}[_dl.slice(1,3)];if(z){zone=z;loadParcels().then(()=>selectParcel(_dl.trim()));}else selectParcel(_dl.trim());}}catch(e){}
+/* overhaul D3: /designer?zone=HUB (from the World Atlas) opens straight onto that continent */
+try{const _zq=(new URLSearchParams(location.search).get("zone")||"").toUpperCase();if(_zq&&!new URLSearchParams(location.search).get("parcel")&&/^[A-Z0-9]{2,4}$/.test(_zq)){zone=_zq;page=0;loadParcels();}}catch(e){}
+},0);
 function markStatus(id,row){const p=parcels.find(q=>q.parcelId===id);if(p&&row){p.status=row.status;p.v=row.designVersion;p.archetype=row.archetype;p.palette=row.palette;}drawMap();}
 
 /* ============ sign-in (PG identity) ============ */
