@@ -92,6 +92,17 @@
   .hint{color:var(--ef-text-3);font-size:12.5px;margin-top:8px;line-height:1.5}
   .err{color:var(--ef-bad);font-size:13px;min-height:16px;margin-top:6px}
   .stat{font-size:12.5px;color:var(--ef-text-2)}
+  /* loading + busy states (C5) */
+  @keyframes shimmer{from{background-position:-400px 0}to{background-position:400px 0}}
+  .skel{background:linear-gradient(90deg,rgba(255,255,255,.03) 0,rgba(255,255,255,.08) 50%,rgba(255,255,255,.03) 100%) 0 0/800px 100%;animation:shimmer 1.3s linear infinite;border-radius:14px}
+  .zone.skel{height:86px;border-color:transparent;cursor:default}
+  #mapWrap.loading::after{content:"Loading continent…";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;border-radius:14px;
+    color:var(--ef-text-2);font:600 13px/1 var(--ef-font);background:linear-gradient(90deg,rgba(12,10,22,.55) 0,rgba(40,30,70,.6) 50%,rgba(12,10,22,.55) 100%) 0 0/800px 100%;animation:shimmer 1.3s linear infinite}
+  #thumb.ld{min-height:240px;opacity:.35}
+  button.busy{position:relative;color:transparent!important}
+  button.busy::after{content:"";position:absolute;left:50%;top:50%;width:16px;height:16px;margin:-8px 0 0 -8px;border-radius:50%;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;animation:spin .8s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  @media(prefers-reduced-motion:reduce){.skel,#mapWrap.loading::after,button.busy::after{animation:none}}
   /* parcel inspector (C3) */
   .insp{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:13px;margin:0 0 14px;padding:12px 14px;border:1px solid var(--ef-line);border-radius:12px;background:var(--ef-bg-2)}
   .insp dt{color:var(--ef-text-3)} .insp dd{margin:0;color:var(--ef-text);text-align:right;font-variant-numeric:tabular-nums}
@@ -224,7 +235,7 @@
     <div class="crumb" id="crumb"></div>
 
     <div id="zoneView">
-      <div class="zgrid" id="zgrid"></div>
+      <div class="zgrid" id="zgrid"><div class="zone skel" aria-hidden="true"></div><div class="zone skel" aria-hidden="true"></div><div class="zone skel" aria-hidden="true"></div><div class="zone skel" aria-hidden="true"></div><div class="zone skel" aria-hidden="true"></div><div class="zone skel" aria-hidden="true"></div><div class="zone skel" aria-hidden="true"></div><div class="zone skel" aria-hidden="true"></div></div>
     </div>
 
     <div id="parcelView" style="display:none">
@@ -239,7 +250,7 @@
         </div>
         <span class="sel" id="selChip" hidden></span>
       </div>
-      <div style="position:relative">
+      <div style="position:relative" id="mapWrap">
         <canvas id="landmap" width="1920" height="720"></canvas>
         <div class="zoomctl">
           <button class="ghost" id="zin" title="zoom in">＋</button>
@@ -776,7 +787,7 @@ let allParcels=[];
 let myParcels=new Set(),myWallet=null,myEstates=[];
 let connWallet=null;try{connWallet=localStorage.getItem("ef_mm_wallet");}catch(e){}
 const authHdr=()=>{const h={};if(pgTok)h.authorization="Bearer "+pgTok;if(connWallet)h["x-wallet"]=connWallet;return h;};
-async function loadParcels(){showParcelView();$("mapStat").textContent="· loading continent…";
+async function loadParcels(){showParcelView();$("mapStat").textContent="· loading continent…";$("mapWrap").classList.add("loading");
   const url="/internal/v1/parcels?light=1&zone="+encodeURIComponent(zone||"EDU")+(mineOnly?"&mine=1":"")+(designedOnly?"&designed=1":"");
   try{const d=await fetch(url,{headers:authHdr()}).then(r=>r.json());
     allParcels=d.parcels||[];admin=!!d.admin;me=d.me||me;ownersKnown=!!d.ownersKnown;
@@ -787,7 +798,8 @@ async function loadParcels(){showParcelView();$("mapStat").textContent="· loadi
     loadLodIndex(zone);                               // which parcels have a crisp LOD thumb (zoom-in detail)
     applyFilter();setCrumb();
     if(showFeatures)loadWorldFeatures();              // refresh the geography overlay for the new continent
-  }catch(e){$("mapStat").textContent="· unavailable";$("err").textContent=e.message;}}
+  }catch(e){$("mapStat").textContent="· unavailable";$("err").textContent="Couldn't load this continent — "+e.message;}
+  finally{$("mapWrap").classList.remove("loading");}}
 function setOwnHint(){
   if(admin){$("ownHint").innerHTML="👑 <b>Admin</b> — you can view and design any land.";return;}
   if(myWallet)$("ownHint").innerHTML="🔗 Wallet <b>"+myWallet.slice(0,6)+"…"+myWallet.slice(-4)+"</b> — you own <b>"+myParcels.size+"</b> parcels on-chain"+(myEstates.length?" + "+myEstates.length+" estates":"")+". They're ringed in white; you can design them.";
@@ -900,6 +912,7 @@ async function selectParcel(id){selId=id;$("parcel").value=id;$("selChip").hidde
   catch(e){$("err").textContent=e.message;$("dhint").textContent="";}}
 const MODE_LABEL={DUEL:"⚔ DUEL",SIEGE:"🏰 SIEGE",GUARD:"🐺 GUARD",CLASH:"🎯 CLASH",DOMINION:"👑 DOMINION"};
 function show(parcelId,row,artifact,budget){cur={parcelId,row,artifact,budget:budget||(cur&&cur.budget)};
+  $("thumb").classList.add("ld");$("thumb").onload=$("thumb").onerror=function(){this.classList.remove("ld");};
   $("thumb").src=`/internal/v1/designs/${parcelId}/thumb.png?v=${row.designVersion}&t=${row.lastGeneratedAt}`;$("thumb").hidden=false;
   $("view3d").hidden=false;$("view3d").href=`/designer/3d?parcel=${parcelId}&v=${row.designVersion}`;
   $("status").textContent=`· ${row.status} · v${row.designVersion}`;
@@ -957,14 +970,14 @@ $("freeze").onclick=async()=>{if(!cur)return;const on=cur.row.status!=="OWNER_FR
 
 /* ============ generate ============ */
 $("gen").onclick=async()=>{const id=selId||$("parcel").value.trim(),dir=$("directive").value.trim();
-  if(!id){$("err").textContent="Select a parcel first (step 1).";return;}
-  if(!dir){$("err").textContent="Describe the battlefield you want (step 3).";return;}
-  $("err").textContent="";$("gen").disabled=true;persist();
+  if(!id){$("err").textContent="Pick a parcel on the map first (step 1).";return;}
+  if(!dir){$("err").textContent="Describe the battlefield you want (step 2).";$("directive").focus();return;}
+  $("err").textContent="";$("gen").disabled=true;$("gen").classList.add("busy");persist();
   try{let body={directive:dir};const prov=$("prov").value;
     if(prov!=="server"){$("genStat").textContent="Asking "+PROVIDERS[prov].label+"…";
       const P=PROVIDERS[prov],k=$("key").value.trim();const cf={url:$("customUrl").value.trim(),model:$("customModel").value.trim()};
-      if(prov==="custom"&&!cf.url)throw new Error("Set your endpoint's Base URL in step 2.");
-      if(!k&&prov!=="custom")throw new Error("Add your "+P.label+" API key in step 2 (or switch to Pentagon default).");
+      if(prov==="custom"&&!cf.url){$("aiAdvanced").open=true;throw new Error("Set your endpoint's Base URL under AI engine.");}
+      if(!k&&prov!=="custom"){$("aiAdvanced").open=true;throw new Error("Add your "+P.label+" API key under AI engine (or switch to Pentagon default).");}
       const rq=P.req(k,$("model").value,SYS+budgetLine(cur&&cur.budget),dir,cf);
       const d=await fetch(rq.url,{method:"POST",headers:rq.headers,body:JSON.stringify(rq.body)}).then(r=>r.json());
       const txt=P.parse(d);const m=txt.match(/\{[\s\S]*\}/);if(!m)throw new Error("model returned no JSON");body.params=JSON.parse(m[0]);
@@ -973,8 +986,11 @@ $("gen").onclick=async()=>{const id=selId||$("parcel").value.trim(),dir=$("direc
     const d=await fetch(`/internal/v1/designs/${id}/prompt`,{method:"POST",headers:hdrs(),body:JSON.stringify(body)}).then(r=>r.json());
     if(!d.ok)throw new Error(d.error||"generation failed");show(id,d.row,d.artifact,d.budget);markStatus(id,d.row);
     $("genStat").textContent="✅ Saved as v"+d.row.designVersion+" — your land keeps this design until you change it.";
+    window.EFShell&&EFShell.toast("New design saved as v"+d.row.designVersion+".","ok");
   }catch(e){$("err").textContent=e.message;$("genStat").textContent="";}
-  $("gen").disabled=false;};
+  $("gen").disabled=false;$("gen").classList.remove("busy");};
+/* C5: every inline error also surfaces as a toast, so it's seen even when the panel is scrolled away */
+try{new MutationObserver(()=>{const t=$("err").textContent.trim();if(t&&window.EFShell)EFShell.toast(t,"bad");}).observe($("err"),{childList:true,characterData:true,subtree:true});}catch(_){}
 
 /* ============ MINT LAND — free-claim unminted land with a size token (owner 2026-07-21) ============
    Own the matching SIZE token → the size's distributor mints the LAND NFT free (gas only).

@@ -65,7 +65,7 @@ the same top nav so this is obvious: `Home · World Atlas · Designer · Get Lan
 - [x] C2 FTUE coach-mark tour (first visit, replay from Help). — DONE: welcome card → 5-step spotlight tour (land, describe, result, account, claim/castles); "Take the tour" replays; Esc/arrow keys; phone-friendly.
 - [x] C3 Parcel inspector: zone, size, owner, minted, design status, open 3D, copy link. — DONE: decoded from the token id (estate size / parent estate / chain), ownership (yours · minted · unminted→"Claim this land"), design status; Copy link.
 - [ ] C4 Continent picker as image cards (mosaic thumb + identity) instead of text tiles.
-- [ ] C5 Toasts, loading skeletons, empty + error states.
+- [x] C5 Toasts, loading skeletons, empty + error states. — DONE: continent skeletons, map "Loading continent…" shimmer, preview loading state, Generate spinner + success toast, every inline error mirrored as a toast, stale "step 2/3" copy fixed (AI-key errors open the AI engine section).
 
 ### D — World Atlas, reframed
 - [x] D1 Public framing: title/legend/intro say what it is; coverage % → admin-only. — DONE: "World Atlas" hero + Atlas-vs-Designer cards; coverage strip + overlay only for admins.
