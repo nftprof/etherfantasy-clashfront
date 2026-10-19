@@ -201,6 +201,20 @@ export function mapsApi(req, res) {
     return true;
   }
   const reg_list_len = () => { try { return reg.list().length; } catch { return 0; } };
+  if (p === "/internal/v1/recent-designs") {                // landing (polish Q4): newest AI-designed / frozen maps
+    try {
+      const lim = Math.max(1, Math.min(24, parseInt(new URL(req.url, "http://x").searchParams.get("limit") || "12", 10) || 12));
+      const names = new Map(zoneList().map((z) => [z.zoneId, z.name]));
+      const items = reg.list()
+        .filter((r) => r.status && r.status !== "SEED_V0" && /^\d{7}$|^\d{11}$/.test(String(r.parcelId)))
+        .sort((a, b) => (b.lastGeneratedAt || 0) - (a.lastGeneratedAt || 0)).slice(0, lim)
+        .map((r) => { const id = String(r.parcelId), zid = ZONE_CODE[id.slice(1, 3)];
+          let castle = null; try { const f = zid && loadWorldField(zid); castle = f && (f.castles || []).find((c) => c.parcel === id || String(c.estateMapId || "") === id || (c.heroParcels || []).includes(id)); } catch {}
+          return { parcelId: id, zone: zid, zoneName: names.get(zid) || zid, status: r.status, v: r.designVersion, archetype: r.archetype || "", palette: r.palette || "", at: r.lastGeneratedAt || 0, name: castle ? castle.name : null }; });
+      J(res, 200, { ok: true, items });
+    } catch (e) { J(res, 500, { ok: false, error: e.message }); }
+    return true;
+  }
   if (p === "/internal/v1/landing-stats") {                 // landing page (overhaul B7/B8): continents by tier + totals
     try {
       let zreg = {};

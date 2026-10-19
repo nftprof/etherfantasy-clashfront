@@ -98,6 +98,12 @@
   .vid-toggle{position:absolute;z-index:4;right:18px;bottom:18px;width:40px;height:40px;border-radius:50%;border:1px solid rgba(255,255,255,.25);
     background:rgba(7,6,13,.6);backdrop-filter:blur(6px);color:#fff;font:600 14px/1 var(--ef-font);cursor:pointer;display:flex;align-items:center;justify-content:center}
   .vid-toggle:hover{border-color:var(--ef-crystal)}
+  .recent-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:14px}
+  .rc{display:block;text-decoration:none;color:inherit;border:1px solid var(--ef-line);border-radius:14px;overflow:hidden;background:var(--ef-surface);transition:transform .15s,border-color .15s}
+  .rc:hover{transform:translateY(-2px);border-color:var(--ef-ether)}
+  .rc img{display:block;width:100%;aspect-ratio:1;object-fit:cover;image-rendering:pixelated;background:var(--ef-bg-2)}
+  .rc .rb{padding:9px 11px} .rc .rn{font-weight:650;font-size:13.5px;color:var(--ef-text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .rc .rm{font-size:12px;color:var(--ef-text-3)}
   .showcase{position:relative;border-radius:var(--ef-r-xl);overflow:hidden;border:1px solid var(--ef-line-2);box-shadow:var(--ef-shadow);background:#0b0916}
   .showcase video,.showcase img{width:100%;display:block;aspect-ratio:16/9;object-fit:cover}
   .showcase-cap{position:absolute;left:0;right:0;bottom:0;padding:22px 24px;background:linear-gradient(0deg,rgba(7,6,13,.9),transparent);display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap}
@@ -213,6 +219,16 @@
         <a class="ef-btn ef-btn--ghost ef-btn--sm" href="/designer/3d?parcel=3050435">Explore in 3D →</a>
       </figcaption>
     </figure>
+  </div>
+</section>
+
+<!-- ===================== RECENTLY DESIGNED (polish Q4; hidden until there are ≥3) ===================== -->
+<section class="ef-section--tight" id="recent" hidden>
+  <div class="ef-container">
+    <p class="ef-eyebrow">Fresh from the forge</p>
+    <h2 class="ef-h2" style="margin:0 0 6px">Recently designed battlefields</h2>
+    <p class="ef-faint" style="margin:0 0 20px">Real maps landowners just generated or froze in the Designer. Click one to open it.</p>
+    <div class="recent-grid" id="recentGrid"></div>
   </div>
 </section>
 
@@ -465,6 +481,17 @@
     const c = document.querySelector('[data-stat="castles"]'); if (c) c.textContent = fmt(d.totals.castles);
   }).catch(() => {});
 
+  // recently designed (polish Q4) — only shown when there is real activity to show
+  fetch("/internal/v1/recent-designs?limit=12").then((r) => r.json()).then((d) => {
+    const it = (d && d.ok && d.items) || []; if (it.length < 3) return;
+    const esc = (x) => String(x == null ? "" : x).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+    const ago = (t) => { if (!t) return ""; const m = Math.round((Date.now() - t) / 60000); return m < 60 ? m + " min ago" : m < 1440 ? Math.round(m / 60) + " h ago" : Math.round(m / 1440) + " d ago"; };
+    document.getElementById("recentGrid").innerHTML = it.map((x) => `<a class="rc" href="/designer?parcel=${encodeURIComponent(x.parcelId)}">
+      <img loading="lazy" alt="${esc(x.name || "Parcel " + x.parcelId)} battlefield" src="/internal/v1/designs/${encodeURIComponent(x.parcelId)}/thumb.png?v=${x.v}" onerror="this.onerror=null;this.style.imageRendering='auto';this.style.objectFit='contain';this.src='/media/continents/${esc(x.zone)}.webp'">
+      <div class="rb"><div class="rn">${esc(x.name || (x.parcelId.length === 7 ? "Estate " : "Parcel ") + x.parcelId)}</div>
+      <div class="rm">${esc(x.zoneName)} · ${x.status === "OWNER_FROZEN" ? "frozen" : "AI-designed"}${x.at ? " · " + ago(x.at) : ""}</div></div></a>`).join("");
+    document.getElementById("recent").hidden = false;
+  }).catch(() => {});
   // video: hero autoplays; the showcase plays only while on screen; respect reduced-motion
   const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const hero = document.getElementById("heroVideo"), show = document.getElementById("showcaseVideo");
