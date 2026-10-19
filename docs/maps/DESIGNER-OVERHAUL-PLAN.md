@@ -99,6 +99,9 @@ the same top nav so this is obvious: `Home · World Atlas · Designer · Get Lan
 - [x] R2 Designer keyboard shortcuts (/ search · G generate · 3 toggle 3D · F freeze · ? help).
 - [x] R3 Owners: "My land" list in the Designer — jump straight to any parcel/estate you own.
 
+### S — Fourth round (audit-driven)
+- [x] S1 Landing on phones / data-saver: poster only, the 5.7 MB reel loads on tap (desktop unchanged).
+
 ## Log
 - 2026-10-19 14:38Z — plan written; loop armed (1-minute cron job 174a9fd9).
 - A1 shipped — continents no longer stacked on the live Atlas.

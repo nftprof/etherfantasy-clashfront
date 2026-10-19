@@ -140,7 +140,7 @@
 <section class="hero" aria-label="Introduction">
   <button class="vid-toggle" type="button" data-vid="heroVideo" aria-label="Pause background video">❚❚</button>
   <div class="hero-media">
-    <video id="heroVideo" autoplay muted loop playsinline preload="metadata" poster="/media/showcase-poster.webp" aria-hidden="true">
+    <video id="heroVideo" muted loop playsinline preload="none" poster="/media/showcase-poster.webp" aria-hidden="true">
       <source src="/media/showcase.webm" type="video/webm">
     </video>
   </div>
@@ -495,7 +495,9 @@
   // video: hero autoplays; the showcase plays only while on screen; respect reduced-motion
   const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const hero = document.getElementById("heroVideo"), show = document.getElementById("showcaseVideo");
-  if (reduce && hero) { hero.removeAttribute("autoplay"); hero.pause(); }
+  // phones / data-saver: poster only until the visitor presses play (the reel is 5.7 MB)
+  const light = !!(navigator.connection && navigator.connection.saveData) || window.matchMedia("(max-width: 640px)").matches;
+  if (hero && !reduce && !light) { hero.preload = "auto"; hero.play().catch(() => {}); }
   // pause/play controls (moving content must be stoppable) — label tracks the real state
   document.querySelectorAll(".vid-toggle").forEach((b) => {
     const v = document.getElementById(b.dataset.vid); if (!v) { b.hidden = true; return; }
@@ -503,7 +505,7 @@
     b.addEventListener("click", () => { if (v.paused) { v.dataset.user = "play"; v.play().catch(() => {}); } else { v.dataset.user = "pause"; v.pause(); } });
     v.addEventListener("play", sync); v.addEventListener("pause", sync); sync();
   });
-  if (show && "IntersectionObserver" in window && !reduce) {
+  if (show && "IntersectionObserver" in window && !reduce && !light) {
     new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) { if (show.dataset.user !== "pause") { show.preload = "auto"; show.play().catch(() => {}); } } else if (!show.paused) { show.pause(); } }), { threshold: 0.35 }).observe(show);
   }
 })();
