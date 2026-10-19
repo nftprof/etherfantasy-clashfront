@@ -56,6 +56,9 @@ jobs:
           # via dataRoot(); without them /internal/v1/unminted?collection=estates returns total:0 and
           # the distributor/claim addresses are null.
           cp "$GITHUB_WORKSPACE"/data/hexagon-city-source/parcels-l2.json "$HOME"/ef-map-service/data/hexagon-city-source/
+          # zone-layout.json = each continent's worldOffset. Without it /designer/world drew all 10
+          # continents stacked at (0,0) (owner screenshot 2026-10-19).
+          cp "$GITHUB_WORKSPACE"/data/hexagon-city-source/zone-layout.json "$HOME"/ef-map-service/data/hexagon-city-source/
           cp "$GITHUB_WORKSPACE"/data/land-contracts.json "$HOME"/ef-map-service/data/
           # committed MOBA maps (siege-test etc.) — served at /internal/v1/moba-map/<name> so the MOBA
           # staging FETCHES the authoritative current map instead of drifting to a stale hand-copy.

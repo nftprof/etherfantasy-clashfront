@@ -35,6 +35,12 @@ function skeleton() {
   if (_cache) return _cache;
   const layout = zoneLayout();
   const zones = [];
+  // fallback placement for zones missing from zone-layout.json: a row BELOW every laid-out zone
+  // (or a plain grid when the file is absent entirely) — never on top of real positions.
+  const known = Object.values(layout).map((l) => l && l.worldOffset).filter(Boolean);
+  const fallbackX0 = known.length ? Math.min(...known.map((o) => o.x || 0)) : 0;
+  const fallbackZ0 = known.length ? Math.max(...known.map((o) => o.z || 0)) + TILE_BASE * 1.5 : 0;
+  let fallbackSlot = 0;
   for (const z of zoneList()) {
     if (!z.bbox) continue;
     const [x0, y0, x1, y1] = z.bbox;
@@ -56,7 +62,14 @@ function skeleton() {
       cellOf.push([String(r.parcelId), k]);
     }
     const lay = layout[z.zoneId] || {};
-    const off = lay.worldOffset || { x: 0, z: 0 };
+    // No layout entry (file missing on the box, or a zone added later) must NEVER stack tiles at
+    // (0,0) — fall back to a deterministic grid slot so the atlas stays readable.
+    let off = lay.worldOffset;
+    if (!off) {
+      const slot = fallbackSlot++;
+      off = { x: fallbackX0 + (slot % 4) * TILE_BASE * 1.3, z: fallbackZ0 + Math.floor(slot / 4) * TILE_BASE * 1.3 };
+      console.warn(`[worldmap] no zone-layout offset for ${z.zoneId} — placed in fallback row`);
+    }
     const aspect = w / h;
     const tileW = aspect >= 1 ? TILE_BASE : TILE_BASE * aspect;
     const tileH = aspect >= 1 ? TILE_BASE / aspect : TILE_BASE;

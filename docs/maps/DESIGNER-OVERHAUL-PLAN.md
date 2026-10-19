@@ -1,0 +1,86 @@
+# MAP DESIGNER OVERHAUL — 24h improvement loop (owner 2026-10-19)
+
+> Owner: "revisit map designer entirely so it is professional looking and owner OR admin = nftprof can
+> use all features right now. Include FTUE / a landing page — what this is, why users should use it,
+> the benefit, why get land, how to get land; video preview of the complete land; flow diagrams;
+> guide new users through the journey; explain why land is important + what it does. A full landing
+> page for users not logged in. I'm not getting what this is vs the full world map."
+> Cadence: 1-minute ticks for 24h → **loop ends 2026-10-20T14:38Z** (CronDelete the job then).
+
+## The product, in one line each (the IA every page must teach)
+
+| Page | URL | Who | Job |
+|---|---|---|---|
+| **Landing** | `/` (and `/designer` for signed-out first visits) | everyone | what this is · why own land · how to get land · journey |
+| **World Atlas** | `/designer/world` | everyone | the WHOLE world at a glance — 12 continents in their real arrangement; click → open a continent in the Designer |
+| **Designer (Studio)** | `/designer` | signed in / guest | pick YOUR parcel → describe its battlefield → AI builds + validates it → 3D preview → freeze |
+| **3D view** | `/designer/3d?parcel=` | everyone | one parcel's battlefield exactly as the game renders it |
+| **Sky Cities** | `/designer/decks` | everyone | stacked-city concept maps |
+
+**The confusion to kill:** the Atlas is the *map of the world* (where is everything); the Designer is
+the *workshop for one parcel* (what does MY land look like when it's fought over). Every page carries
+the same top nav so this is obvious: `Home · World Atlas · Designer · Get Land · Sky Cities · Sign in`.
+
+## Principles
+- **One design system** (tokens, header, footer, buttons, cards) shared by every page — `/ui/theme.css` + `/ui/shell.js`.
+- **Honest copy.** Live features are stated as live; planned ones say "coming". **No financial-return
+  claims** (canon decision 17: the CT economy is house-edged — never promise earnings). Land's value =
+  ownership, a real battlefield, design rights, home-turf, a name in the World Chronicle.
+- **Facts from canon/data**, not invented: land contracts + claim flow from `data/land-contracts.json`
+  / `LAND-CONTRACTS-AND-SALE.md`; continents from `data/zone-registry.json`; counts from live endpoints.
+- **Admin (nftprof) = everything**: server already treats `nftprof` as admin (`MAPS_ADMIN_USERS`);
+  the client must not hide or cap anything for admin.
+- Every change: boot the server, headless-screenshot the affected page, run the map-service suite,
+  then ship (`origin claude/clash-front-overworld-mkcyia` + `bsh deploy/map`).
+
+## Loop protocol (each 1-minute tick)
+1. If now ≥ **2026-10-20T14:38Z** → CronDelete the loop job, write the final report, stop.
+2. Pick the FIRST unchecked `[ ]` item below (skip `[~]` blocked ones). Big items may span ticks — leave
+   a `(wip: …)` note and continue next tick.
+3. Implement → verify (server boot + headless screenshot + `node --test --test-concurrency=1 maps/test/*.test.js`).
+4. Commit (attribution trailer) → push origin mkcyia + `bsh HEAD:deploy/map` → tick `[x]` with a one-line result.
+5. One short visible status line. Never re-ask the owner things already decided here.
+
+## Backlog (ordered)
+
+### A — Fix + foundations
+- [x] A1 **World Atlas stacking bug**: deploy never ships `data/hexagon-city-source/zone-layout.json` → every continent at offset (0,0). Add it to `map-deploy.yml`; guard: worldmap.js warns + falls back to a grid layout when the file is missing. → DONE: workflow ships it; fallback row verified (10/10 distinct positions with + without the file).
+- [ ] A2 **Design system**: `/ui/theme.css` (tokens, type scale, buttons, cards, nav, footer, light+dark) + `/ui/shell.js` (injects header nav w/ active state, sign-in pill w/ admin badge, footer). Serve `/ui/*` statically.
+- [ ] A3 **Routing**: `/` → landing; signed-out first visit to `/designer` → landing (deep links `?parcel=` and "Continue as guest" bypass via sessionStorage).
+- [ ] A4 **Admin = all features**: admin designs get the max budget tier; admin badge in shell; audit + remove client gates/"coming soon" blocks for admin; `/whoami` drives it.
+
+### B — Landing page (`maps/landing.html`)
+- [ ] B1 Hero: headline + subhead + CTAs (Explore the world · Design your land · Get land) over the video.
+- [ ] B2 **Video**: `tools/record_showcase.mjs` — frame-stepped orbit of real castle/palace maps (PNG frames → bundled ffmpeg VP8 webm + poster), committed under `map-service/media/`, served `/media/*`.
+- [ ] B3 "What is this" + **Atlas vs Designer** explainer (two cards, screenshots).
+- [ ] B4 **Journey flow diagram** (inline SVG): Get land → Design its battlefield → Fight in Clash Front → Leave your mark.
+- [ ] B5 Why land matters — honest benefit grid (real battlefield, design rights, home turf, castles/estates, World Chronicle, cross-game).
+- [ ] B6 **How to get land** — paths with live/soon status + claim flow diagram (size token → approve → claim → design); contract facts.
+- [ ] B7 Continents gallery — 12 continents, mosaic thumbs, identity line, parcel counts, "open in Atlas".
+- [ ] B8 Live stats strip (parcels, estates, castles, designed maps) from endpoints.
+- [ ] B9 FAQ + footer.
+
+### C — Designer studio, professional pass
+- [ ] C1 Adopt shell + theme; studio layout (left: land picker / right: design panel); remove ad-hoc inline styles.
+- [ ] C2 FTUE coach-mark tour (first visit, replay from Help).
+- [ ] C3 Parcel inspector: zone, size, owner, minted, design status, open 3D, copy link.
+- [ ] C4 Continent picker as image cards (mosaic thumb + identity) instead of text tiles.
+- [ ] C5 Toasts, loading skeletons, empty + error states.
+
+### D — World Atlas, reframed
+- [ ] D1 Public framing: title/legend/intro say what it is; coverage % → admin-only.
+- [ ] D2 Real arrangement + non-overlapping labels; continents drawn with their baked mosaics.
+- [ ] D3 Click a continent → Designer at that continent; hover cards.
+- [ ] D4 Depth tiers (sky isles above · surface · underworld below) explained in a legend.
+
+### E — Polish
+- [ ] E1 Mobile/responsive pass on every page.
+- [ ] E2 SEO + OpenGraph/Twitter cards + social image.
+- [ ] E3 Accessibility: contrast, focus rings, alt text, reduced-motion (pause video).
+- [ ] E4 3D viewer + Sky Cities chrome on the shared shell.
+- [ ] E5 Performance: lazy-load mosaics/video, cache headers.
+- [ ] E6 Final consistency review + screenshot set to the owner.
+
+## Log
+- 2026-10-19 14:38Z — plan written; loop armed (1-minute cron job 174a9fd9).
+- A1 shipped — continents no longer stacked on the live Atlas.
