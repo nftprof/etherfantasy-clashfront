@@ -117,6 +117,7 @@ function serveStatic(req, res, abs, type, cache) {
 }
 
 export function handleRequest(req, res) {
+  res._gz = /\bgzip\b/.test(req.headers["accept-encoding"] || "");
   const [p] = req.url.split("?");
 
   if (p === "/healthz" || p === "/health") { res.writeHead(200, { "content-type": "text/plain" }); return res.end("ok"); }

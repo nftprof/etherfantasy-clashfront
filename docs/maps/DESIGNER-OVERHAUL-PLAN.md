@@ -81,6 +81,13 @@ the same top nav so this is obvious: `Home · World Atlas · Designer · Get Lan
 - [x] E5 Performance: lazy-load mosaics/video, cache headers. — DONE: ETag/304 for /ui + /media, byte ranges (206) so Safari/iOS can play the videos, /media/continents/ served (was 404), showcase video preload=none until on screen.
 - [x] E6 Final consistency review + screenshot set to the owner. — DONE 2026-10-19: link crawl of all 5 pages (37 internal links, 0 broken; 3 external links unverifiable from the sandbox), continent-count wording aligned (12 total = 10 mapped + 2 uncharted), 8-shot screenshot set sent.
 
+### P — Polish (after the backlog; loop time)
+- [x] P1 gzip API JSON — per-continent parcel list 4.6 MB → 0.6 MB (7.6×), ~2× faster locally.
+- [ ] P2 3D viewer: bottom hint bar text collides with the toggle buttons.
+- [ ] P3 Atlas: two-finger pinch zoom on touch.
+- [ ] P4 Atlas for signed-in owners: "your land" count per continent on hover + list.
+- [ ] P5 Designer search: find estates/castles by name, not only parcel id.
+
 ## Log
 - 2026-10-19 14:38Z — plan written; loop armed (1-minute cron job 174a9fd9).
 - A1 shipped — continents no longer stacked on the live Atlas.

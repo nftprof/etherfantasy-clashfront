@@ -14,6 +14,7 @@
 // Parcel facts come from the overworld world snapshot (MAPS_WORLD_URL), cached 10 min;
 // unreachable world ⇒ generate from parcelId alone (square fallback per the brief).
 import fs from "fs";
+import zlib from "zlib";
 import path from "path";
 import { fileURLToPath } from "url";
 import * as reg from "./registry.js";
@@ -81,7 +82,16 @@ async function parcelFacts(parcelId) {
   return { parcelId: String(parcelId), zone: p?.zone || "", biome: p?.biome || "", polygon: p?.polygon };
 }
 
-const J = (res, code, obj) => { res.writeHead(code, { "content-type": "application/json", "access-control-allow-origin": "*" }); res.end(JSON.stringify(obj)); };
+// JSON out; gzip when the client accepts it and the body is big (the per-continent parcel list is
+// ~4.5 MB raw → a fraction gzipped). server.js tags res._gz from Accept-Encoding.
+const J = (res, code, obj) => {
+  const body = JSON.stringify(obj), h = { "content-type": "application/json", "access-control-allow-origin": "*", vary: "accept-encoding" };
+  if (res._gz && body.length > 2048) return zlib.gzip(body, { level: 6 }, (e, gz) => {
+    if (e) { res.writeHead(code, h); return res.end(body); }
+    res.writeHead(code, { ...h, "content-encoding": "gzip" }); res.end(gz);
+  });
+  res.writeHead(code, h); res.end(body);
+};
 const readBody = (req) => new Promise((ok) => { let b = ""; req.on("data", (d) => { b += d; if (b.length > 32768) req.destroy(); }); req.on("end", () => { try { ok(JSON.parse(b || "{}")); } catch { ok(null); } }); req.on("error", () => ok(null)); });
 
 // ---- edit gate: VIEWING is public, DESIGNING needs identity (+ ownership once known) --------
