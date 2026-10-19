@@ -101,7 +101,7 @@ the same top nav so this is obvious: `Home · World Atlas · Designer · Get Lan
 
 ### S — Fourth round (audit-driven)
 - [x] S1 Landing on phones / data-saver: poster only, the 5.7 MB reel loads on tap (desktop unchanged).
-- [x] S2 Designer base map light-first: 1600px webp (HUB 6.2 MB → 0.3 MB) baked ON the box after its re-bake, named by the served fingerprint; full PNG only past 160% zoom (and cached for good via ?fp=). No Chromium / stale fingerprint → falls back to today's PNG.
+- [x] S2 Designer base map light-first: 1600px webp (HUB 6.2 MB → 0.3 MB) baked ON the box after its re-bake, named by the served fingerprint; full PNG only past 160% zoom (and cached for good via ?fp=). Live box has no Chromium (deploy log) and serves the COMMITTED mosaics, so the light copies are baked from those (`--mosaics-committed`) and committed; any fingerprint mismatch → full PNG.
 
 ## Log
 - 2026-10-19 14:38Z — plan written; loop armed (1-minute cron job 174a9fd9).

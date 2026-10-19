@@ -160,6 +160,22 @@ async function liteMosaics(browser) {
   await page.close();
 }
 
+// same, but straight from the COMMITTED mosaics (data/cf-maps/world-mosaic) — what a box without
+// Chromium/thumbs serves. Run locally, commit media/mosaics/.
+async function liteMosaicsCommitted(browser) {
+  const page = await browser.newPage(); await page.goto("about:blank");
+  const src = path.join(ROOT, "..", "data", "cf-maps", "world-mosaic"), dir = path.join(MEDIA, "mosaics");
+  fs.rmSync(dir, { recursive: true, force: true });
+  for (const f of fs.readdirSync(src).filter((f) => /^[A-Z0-9]+(\.planner)?\.json$/.test(f))) {
+    const meta = JSON.parse(fs.readFileSync(path.join(src, f), "utf8")), png = path.join(src, f.replace(/\.json$/, ".png"));
+    if (!meta.fingerprint || !fs.existsSync(png)) continue;
+    const zone = f.split(".")[0], mode = f.includes(".planner.") ? "planner" : "thumb", fp = String(meta.fingerprint).replace(/[^a-zA-Z0-9-]/g, "");
+    const kb = await toWebp(page, fs.readFileSync(png), path.join(dir, `${zone}.${mode}.${fp}.webp`), 1600, 0.82);
+    console.log(`  mosaics/${zone}.${mode}.${fp}.webp ${(kb / 1e3).toFixed(0)} KB`);
+  }
+  await page.close();
+}
+
 async function stills(browser) {
   const page = await browser.newPage({ viewport: { width: W, height: H } });
   await page.goto(`${BASE}/healthz`);
@@ -223,4 +239,5 @@ try {
   if (process.argv.includes("--video")) await video(browser);
   if (process.argv.includes("--stills")) await stills(browser);
   if (process.argv.includes("--mosaics")) await liteMosaics(browser);
+  if (process.argv.includes("--mosaics-committed")) await liteMosaicsCommitted(browser);
 } finally { await browser.close(); }
