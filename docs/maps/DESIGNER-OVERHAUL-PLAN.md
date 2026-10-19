@@ -88,6 +88,12 @@ the same top nav so this is obvious: `Home · World Atlas · Designer · Get Lan
 - [x] P4 Atlas for signed-in owners: "your land" — summary pill, ★ badges on continents, hover row, list cards (on-chain parcels + estates by token-id continent code).
 - [x] P5 Designer search: castle/estate NAME suggestions across all continents (keyboard + click) → jumps to the continent and selects the castle parcel.
 
+### Q — Second polish round (state-of-the-art pass)
+- [x] Q1 Designer: live 3D preview inline in the Current design card (2D / 3D toggle; lazy, no new tab needed).
+- [ ] Q2 Atlas: castle markers when zoomed in (palace/castle/keep), click → that castle in the Designer.
+- [ ] Q3 Per-parcel share preview: /designer?parcel=X serves og:image = that parcel's thumbnail + its name.
+- [ ] Q4 Landing: "Recently designed" strip from the registry (AI-designed / frozen maps), hidden when empty.
+
 ## Log
 - 2026-10-19 14:38Z — plan written; loop armed (1-minute cron job 174a9fd9).
 - A1 shipped — continents no longer stacked on the live Atlas.

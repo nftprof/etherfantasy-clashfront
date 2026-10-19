@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Battlefield 3D — Ether Fantasy</title>
 <script>/* overhaul E4: shared site header on the full-screen viewers — skipped for capture modes */
-(function(){var q=new URLSearchParams(location.search);if(q.get("thumb")==="1"||q.get("export")==="1"||q.get("showcase")==="1"||q.get("bare")==="1")return;
+(function(){var q=new URLSearchParams(location.search);if(q.get("thumb")==="1"||q.get("export")==="1"||q.get("showcase")==="1"||q.get("bare")==="1"||q.get("embed")==="1")return;
   document.documentElement.classList.add("ef-chrome");var l=document.createElement("link");l.rel="stylesheet";l.href="/ui/theme.css";document.head.appendChild(l);
   addEventListener("DOMContentLoaded",function(){document.body.setAttribute("data-ef-shell","minimal");var s=document.createElement("script");s.src="/ui/shell.js";document.body.appendChild(s);});})();</script>
 
@@ -983,6 +983,13 @@ if(q.get("showcase")==="1"){
     setOrbit(theta,phi,dist,ty){ const t=ctl.target; if(ty!=null)t.y=ty;
       cam.position.set(t.x+dist*Math.sin(phi)*Math.cos(theta), t.y+dist*Math.cos(phi), t.z+dist*Math.sin(phi)*Math.sin(theta));
       cam.lookAt(t); }, };
+}
+// ---- EMBED (polish Q1): ?embed=1 = the Designer's inline 3D card — no panels, slow turntable until touched
+if(q.get("embed")==="1"){
+  for(const id of ["hud","hint","north"]){const el=document.getElementById(id);if(el)el.style.display="none";}
+  ctl.autoRotate=true; ctl.autoRotateSpeed=0.7;
+  ren.domElement.addEventListener("pointerdown",()=>{ctl.autoRotate=false;},{once:true});
+  window.__CF_EMBED={ready:true};
 }
 const fogBase=parity&&scene.fog?{near:scene.fog.near,far:scene.fog.far,dist:220}:null;
 let _clock=0;
