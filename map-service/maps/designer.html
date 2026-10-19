@@ -3,6 +3,17 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<script>
+/* overhaul A3: a signed-out visitor arriving COLD at /designer (no deep link, not from another page of
+   this site, never seen the landing) is shown the landing once. ?guest=1 / ?parcel= / #hash / in-site
+   navigation / a stored session always go straight to the studio. */
+(function(){try{var q=new URLSearchParams(location.search);
+  if(q.has("guest"))sessionStorage.setItem("ef_guest","1");
+  if(q.has("parcel")||q.has("guest")||location.hash)return;
+  if(localStorage.getItem("ef_pg_token")||localStorage.getItem("ef_mm_wallet")||sessionStorage.getItem("ef_guest")||localStorage.getItem("ef_seen_landing"))return;
+  var r=document.referrer;if(r&&new URL(r).origin===location.origin)return;
+  location.replace("/");}catch(e){}})();
+</script>
 <title>EtherFantasy — Land Designer</title>
 <style>
   :root{--ink-950:#050409;--ink-900:#0a0813;--ink-850:#0f0c1b;--ether-300:#d8bbff;--ether-400:#c08cff;--ether-500:#a855f7;--ether-700:#6d28d9;

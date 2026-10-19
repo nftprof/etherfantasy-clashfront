@@ -108,7 +108,9 @@ export function handleRequest(req, res) {
   }
 
   // the designer IS the entry now (owner 2026-07-18 — gallery/example maps retired). Redirect legacy paths.
-  if (p === "/" || p === "/gallery" || p === "/gallery/") { res.writeHead(302, { location: "/designer" }); return res.end(); }
+  // public front door (overhaul A3): the landing page explains what this is, why own land, how to get it.
+  if (p === "/" || p === "/welcome") return sendFile(res, "maps/landing.html", "text/html; charset=utf-8");
+  if (p === "/gallery" || p === "/gallery/") { res.writeHead(302, { location: "/" }); return res.end(); }
 
   // Nine-layer render assets (pristine mirrors of the MOBA repo — the UNIFIED shared renderer
   // shared/ef_battlefield_renderer.js + floors/*.png). The 3D preview loads the module and the

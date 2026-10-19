@@ -164,6 +164,26 @@ export function mapsApi(req, res) {
     });
     return true;
   }
+  const reg_list_len = () => { try { return reg.list().length; } catch { return 0; } };
+  if (p === "/internal/v1/landing-stats") {                 // landing page (overhaul B7/B8): continents by tier + totals
+    try {
+      let zreg = {};
+      try { zreg = JSON.parse(fs.readFileSync(path.join(dataRoot(), "zone-registry.json"), "utf8")); } catch {}
+      const regZones = Array.isArray(zreg.zones) ? zreg.zones : Object.values(zreg.zones || zreg).filter((z) => z && z.zoneId);
+      const live = new Map(zoneList().map((z) => [z.zoneId, z]));
+      let castles = 0, parcels = 0;
+      const zones = regZones.map((z) => {
+        const l = live.get(z.zoneId);
+        const f = loadWorldField(z.zoneId);
+        const nc = f && Array.isArray(f.castles) ? f.castles.length : 0;
+        castles += nc; parcels += l ? l.count : 0;
+        return { zoneId: z.zoneId, name: z.name, subtitle: z.subtitle || "", tier: z.tier || z.depth || z.layer || "surface",
+          biomeFamily: z.biomeFamily || "", parcels: l ? l.count : 0, charted: !!(l && l.bbox), castles: nc };
+      });
+      J(res, 200, { ok: true, zones, totals: { parcels, castles, continents: zones.length, designed: reg_list_len() } });
+    } catch (e) { J(res, 500, { ok: false, error: e.message }); }
+    return true;
+  }
   if (p === "/internal/v1/worldmap.json") {                 // the 2D world overview data + coverage %
     try {
       const u = new URL(req.url, "http://x");

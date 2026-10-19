@@ -46,19 +46,19 @@ the same top nav so this is obvious: `Home · World Atlas · Designer · Get Lan
 ### A — Fix + foundations
 - [x] A1 **World Atlas stacking bug**: deploy never ships `data/hexagon-city-source/zone-layout.json` → every continent at offset (0,0). Add it to `map-deploy.yml`; guard: worldmap.js warns + falls back to a grid layout when the file is missing. → DONE: workflow ships it; fallback row verified (10/10 distinct positions with + without the file).
 - [x] A2 **Design system**: `/ui/theme.css` (tokens, type scale, buttons, cards, nav, footer, light+dark) + `/ui/shell.js` (injects header nav w/ active state, sign-in pill w/ admin badge, footer). Serve `/ui/*` statically. → DONE: tokens/type/buttons/cards/pills/nav/footer/toasts/forms/responsive; `window.EFShell`; `/ui/*` + `/media/*` routes (utf-8).
-- [ ] A3 **Routing**: `/` → landing; signed-out first visit to `/designer` → landing (deep links `?parcel=` and "Continue as guest" bypass via sessionStorage).
+- [x] A3 **Routing**: `/` → landing; signed-out first visit to `/designer` → landing (deep links `?parcel=` and "Continue as guest" bypass via sessionStorage).
 - [ ] A4 **Admin = all features**: admin designs get the max budget tier; admin badge in shell; audit + remove client gates/"coming soon" blocks for admin; `/whoami` drives it.
 
 ### B — Landing page (`maps/landing.html`)
-- [ ] B1 Hero: headline + subhead + CTAs (Explore the world · Design your land · Get land) over the video.
+- [x] B1 Hero: headline + subhead + CTAs (Explore the world · Design your land · Get land) over the video.
 - [ ] B2 **Video**: `tools/record_showcase.mjs` — frame-stepped orbit of real castle/palace maps (PNG frames → bundled ffmpeg VP8 webm + poster), committed under `map-service/media/`, served `/media/*`.
-- [ ] B3 "What is this" + **Atlas vs Designer** explainer (two cards, screenshots).
-- [ ] B4 **Journey flow diagram** (inline SVG): Get land → Design its battlefield → Fight in Clash Front → Leave your mark.
-- [ ] B5 Why land matters — honest benefit grid (real battlefield, design rights, home turf, castles/estates, World Chronicle, cross-game).
-- [ ] B6 **How to get land** — paths with live/soon status + claim flow diagram (size token → approve → claim → design); contract facts.
-- [ ] B7 Continents gallery — 12 continents, mosaic thumbs, identity line, parcel counts, "open in Atlas".
-- [ ] B8 Live stats strip (parcels, estates, castles, designed maps) from endpoints.
-- [ ] B9 FAQ + footer.
+- [x] B3 "What is this" + **Atlas vs Designer** explainer (two cards, screenshots).
+- [x] B4 **Journey flow diagram** (inline SVG): Get land → Design its battlefield → Fight in Clash Front → Leave your mark.
+- [x] B5 Why land matters — honest benefit grid (real battlefield, design rights, home turf, castles/estates, World Chronicle, cross-game).
+- [x] B6 **How to get land** — paths with live/soon status + claim flow diagram (size token → approve → claim → design); contract facts.
+- [~] B7 Continents gallery (wip: tiers + cards + /internal/v1/landing-stats live; needs /media/continents/<ZONE>.webp thumbnails) — 12 continents, mosaic thumbs, identity line, parcel counts, "open in Atlas".
+- [x] B8 Live stats strip (parcels, estates, castles, designed maps) from endpoints.
+- [x] B9 FAQ + footer.
 
 ### C — Designer studio, professional pass
 - [ ] C1 Adopt shell + theme; studio layout (left: land picker / right: design panel); remove ad-hoc inline styles.
@@ -84,4 +84,5 @@ the same top nav so this is obvious: `Home · World Atlas · Designer · Get Lan
 ## Log
 - 2026-10-19 14:38Z — plan written; loop armed (1-minute cron job 174a9fd9).
 - A1 shipped — continents no longer stacked on the live Atlas.
+- A3 + landing (B1,B3–B6,B8,B9) shipped — `/` = landing; cold signed-out /designer → landing once.
 - A2 shipped — shared shell + theme (header nav Home · World Atlas · Designer · Sky Cities · Get Land; admin badge; footer).
