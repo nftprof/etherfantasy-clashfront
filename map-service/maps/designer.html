@@ -14,99 +14,148 @@
   var r=document.referrer;if(r&&new URL(r).origin===location.origin)return;
   location.replace("/");}catch(e){}})();
 </script>
-<title>EtherFantasy — Land Designer</title>
+<title>Land Designer — Ether Fantasy</title>
+<meta name="description" content="Design the battlefield your land becomes. Pick a parcel, describe it in plain words, and the engine builds a fair, playable 3D map.">
+<link rel="stylesheet" href="/ui/theme.css">
 <style>
-  :root{--ink-950:#050409;--ink-900:#0a0813;--ink-850:#0f0c1b;--ether-300:#d8bbff;--ether-400:#c08cff;--ether-500:#a855f7;--ether-700:#6d28d9;
-    --gold-300:#ecd293;--gold-400:#e0bd6b;--crystal-300:#9cf6e4;--crystal-400:#5fe9d0;--fg:#ece9f5;--fg-dim:#a8a3bf;--fg-mute:#6f6a88;--edge:rgba(255,255,255,.10)}
-  *{box-sizing:border-box}
-  body{margin:0;font-family:"Inter",ui-sans-serif,system-ui,Segoe UI,sans-serif;color:var(--fg);min-height:100vh;background:
-    radial-gradient(1100px 650px at 78% -10%,rgba(168,85,247,.16),transparent 60%),
-    radial-gradient(800px 550px at 8% 8%,rgba(45,212,191,.09),transparent 55%),var(--ink-950)}
-  .wrap{max-width:1080px;margin:0 auto;padding:20px 16px 70px}
-  h1{font-family:Georgia,serif;font-size:28px;margin:2px 0;background:linear-gradient(120deg,#fff 8%,var(--ether-300) 52%,var(--crystal-300));-webkit-background-clip:text;background-clip:text;color:transparent}
-  .topbar{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
-  .tag{color:var(--fg-dim);font-size:13px;margin:2px 0 14px;max-width:640px}
-  .card{background:linear-gradient(180deg,rgba(255,255,255,.045),rgba(255,255,255,.012));border:1px solid var(--edge);border-radius:16px;padding:16px;margin:12px 0}
-  h2{font-family:Georgia,serif;font-size:18px;margin:0 0 10px}
-  h2 .n{display:inline-flex;width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,var(--ether-500),var(--ether-700));color:#fff;font-size:12px;align-items:center;justify-content:center;margin-right:8px;vertical-align:2px;font-family:Inter}
-  label{font-size:11px;text-transform:uppercase;letter-spacing:.14em;color:var(--fg-mute);display:block;margin:8px 0 4px}
-  input,select,textarea{font:inherit;width:100%;background:var(--ink-900);border:1px solid var(--edge);color:var(--fg);border-radius:9px;padding:9px 11px}
-  textarea{min-height:70px;resize:vertical}
-  input:focus,select:focus,textarea:focus{outline:none;border-color:var(--ether-500)}
-  button{font:inherit;font-weight:600;cursor:pointer;border-radius:10px;border:1px solid var(--edge);background:rgba(255,255,255,.05);color:var(--fg);padding:9px 14px}
-  button.primary{border:none;color:#fff;background:linear-gradient(135deg,var(--ether-500),var(--ether-700))}
-  button.ghost{padding:6px 11px;font-size:12.5px}
-  button:disabled{opacity:.4;cursor:not-allowed}
+  /* overhaul C1 (2026-10-19): the studio on the shared design system. Old token names are ALIASES so
+     every inline style + JS-built element (var(--fg-dim), var(--edge)…) follows the new theme. */
+  :root{--ink-950:var(--ef-bg);--ink-900:var(--ef-bg-2);--ink-850:var(--ef-bg-3);--ether-300:var(--ef-ether-hi);--ether-400:#c08cff;
+    --ether-500:var(--ef-ether);--ether-700:var(--ef-ether-lo);--gold-300:#f2d38a;--gold-400:var(--ef-gold);--crystal-300:#9cf6e4;
+    --crystal-400:var(--ef-crystal);--fg:var(--ef-text);--fg-dim:var(--ef-text-2);--fg-mute:var(--ef-text-3);--edge:var(--ef-line-2);--line:var(--ef-line-2)}
+  body.studio{background:radial-gradient(1100px 600px at 88% -8%,rgba(168,85,247,.13),transparent 60%),
+    radial-gradient(800px 500px at 0% 6%,rgba(95,233,208,.06),transparent 55%),var(--ef-bg)}
+  /* studio hero */
+  .studio-hero{border-bottom:1px solid var(--ef-line);background:linear-gradient(180deg,rgba(168,85,247,.07),transparent)}
+  .studio-hero .ef-container{padding-top:30px;padding-bottom:24px;display:flex;justify-content:space-between;gap:24px;align-items:flex-end;flex-wrap:wrap}
+  .studio-title{font:700 clamp(24px,3vw,32px)/1.12 var(--ef-font-display);margin:0;letter-spacing:.005em}
+  .studio-lead{color:var(--ef-text-2);font-size:14.5px;max-width:640px;margin:10px 0 0}
+  .studio-tools{display:flex;flex-direction:column;align-items:flex-end;gap:10px}
+  #whoTop{font-size:13px;color:var(--ef-text-2)}
+  .wrap{max-width:var(--ef-max);margin:0 auto;padding:24px 24px 40px}
+  /* cards + headings */
+  .card{background:linear-gradient(180deg,var(--ef-surface-2),var(--ef-surface));border:1px solid var(--ef-line);border-radius:var(--ef-r-lg);
+    padding:20px 22px;margin:0 0 18px;box-shadow:var(--ef-shadow)}
+  h2{font:650 17px/1.3 var(--ef-font);letter-spacing:-.01em;margin:0 0 14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  h2 .n{display:inline-flex;width:26px;height:26px;border-radius:8px;flex:0 0 auto;background:linear-gradient(135deg,var(--ef-ether),var(--ef-ether-lo));
+    color:#fff;font:700 13px/1 var(--ef-font);align-items:center;justify-content:center;box-shadow:0 6px 18px -6px rgba(168,85,247,.7)}
+  h2 .stat{font-weight:500}
+  .step-sub{color:var(--ef-text-3);font-size:13px;margin:-8px 0 14px}
+  /* forms */
+  label{font:600 11px/1 var(--ef-font);letter-spacing:.14em;text-transform:uppercase;color:var(--ef-text-3);display:block;margin:12px 0 6px}
+  input,select,textarea{font:inherit;font-size:14px;width:100%;background:var(--ef-bg-2);border:1px solid var(--ef-line-2);color:var(--ef-text);border-radius:10px;padding:9px 12px}
+  textarea{min-height:104px;resize:vertical;line-height:1.5}
+  input:focus,select:focus,textarea:focus{outline:none;border-color:var(--ef-ether);box-shadow:0 0 0 3px rgba(168,85,247,.18)}
+  input[type=checkbox]{accent-color:var(--ef-ether)}
+  /* buttons (studio uses <button> + classes primary/ghost) */
+  button{font:600 13.5px/1 var(--ef-font);cursor:pointer;border-radius:999px;border:1px solid var(--ef-line-2);background:var(--ef-surface-2);
+    color:var(--ef-text);padding:10px 16px;transition:background .15s,border-color .15s,transform .15s,box-shadow .2s}
+  button:hover{border-color:rgba(255,255,255,.3);background:var(--ef-surface-3)}
+  button.primary{border:none;color:#fff;background:linear-gradient(135deg,var(--ef-ether),var(--ef-ether-lo));box-shadow:var(--ef-glow);padding:12px 20px}
+  button.primary:hover{transform:translateY(-1px)}
+  button.ghost{padding:7px 13px;font-size:12.5px;background:transparent}
+  button:disabled{opacity:.4;cursor:not-allowed;transform:none!important}
+  [hidden]{display:none!important}
   .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
   .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-  @media(max-width:760px){.grid{grid-template-columns:1fr}}
-  .chip{display:inline-flex;padding:4px 12px;border-radius:999px;font-size:12px;border:1px solid var(--edge);background:rgba(255,255,255,.05);color:var(--fg-dim);cursor:pointer}
-  .chip:hover{border-color:var(--ether-400);color:var(--fg)}
-  .sel{display:inline-flex;gap:8px;align-items:center;padding:5px 14px;border-radius:999px;font-size:13px;border:1px solid var(--crystal-400);color:var(--crystal-300);background:rgba(45,212,191,.07)}
-  .badge{font-size:11px;padding:3px 10px;border-radius:999px;border:1px solid var(--gold-400);color:var(--gold-300);background:rgba(224,189,107,.08)}
-  /* breadcrumb + picker */
-  .crumb{display:flex;gap:6px;align-items:center;font-size:13px;color:var(--fg-dim);margin-bottom:10px;flex-wrap:wrap}
-  .crumb a{color:var(--ether-300);cursor:pointer;text-decoration:none}
-  .crumb b{color:var(--fg)}
-  .zgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
-  .zone{border:1px solid var(--edge);border-radius:12px;padding:12px;cursor:pointer;background:rgba(255,255,255,.03)}
-  .zone:hover{border-color:var(--ether-400);background:rgba(168,85,247,.08)}
-  .zone .zn{font-family:Georgia,serif;font-size:16px}.zone .zc{font-size:11.5px;color:var(--fg-dim);margin-top:3px}
-  #landmap{width:100%;border-radius:12px;border:1px solid var(--edge);background:var(--ink-900);cursor:crosshair;display:block}
-  #maptip{position:fixed;pointer-events:none;background:rgba(5,4,9,.94);border:1px solid var(--edge);border-radius:8px;padding:5px 9px;font-size:12px;display:none;z-index:80}
-  .pager{display:flex;gap:8px;align-items:center;justify-content:center;margin-top:10px;font-size:13px;color:var(--fg-dim)}
-  .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:11.5px;color:var(--fg-dim);margin-top:8px}
-  .legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:-1px}
-  .meta{display:flex;gap:7px;flex-wrap:wrap;margin-top:8px}
-  .meta span{font-size:11px;padding:3px 9px;border-radius:999px;border:1px solid var(--edge);color:var(--crystal-300)}
-  #thumb{width:100%;max-width:340px;image-rendering:pixelated;border-radius:12px;border:1px solid var(--edge);display:block}
-  .vstrip{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
-  .vstrip button{padding:4px 10px;font-size:12px}
-  .vstrip button.cur{border-color:var(--ether-400);color:var(--ether-300)}
-  .hint{color:var(--fg-mute);font-size:12px;margin-top:6px}
-  .err{color:#f0556b;font-size:13px;min-height:16px;margin-top:6px}
-  .stat{font-size:12px;color:var(--fg-dim)}
+  .chip{display:inline-flex;align-items:center;padding:6px 12px;border-radius:999px;font-size:12.5px;border:1px solid var(--ef-line-2);background:var(--ef-surface);color:var(--ef-text-2);cursor:pointer;transition:all .15s}
+  .chip:hover{border-color:var(--ef-ether);color:#fff;background:rgba(168,85,247,.12)}
+  .sel{display:inline-flex;gap:8px;align-items:center;padding:6px 14px;border-radius:999px;font-size:13px;border:1px solid var(--ef-crystal);color:#9cf6e4;background:rgba(95,233,208,.08)}
+  .badge{font-size:11px;padding:3px 10px;border-radius:999px;border:1px solid var(--ef-gold);color:#f2d38a;background:rgba(232,196,111,.1)}
+  /* land picker */
+  .crumb{display:flex;gap:8px;align-items:center;font-size:13.5px;color:var(--ef-text-2);margin-bottom:14px;flex-wrap:wrap}
+  .crumb a{color:var(--ef-ether-hi);cursor:pointer;text-decoration:none}
+  .crumb b{color:var(--ef-text)}
+  .zgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px}
+  .zone{border:1px solid var(--ef-line);border-radius:14px;padding:14px;cursor:pointer;background:var(--ef-surface);transition:all .15s}
+  .zone:hover{border-color:var(--ef-ether);background:rgba(168,85,247,.08);transform:translateY(-2px)}
+  .zone .zn{font:700 16px/1.2 var(--ef-font-display)}.zone .zc{font-size:12px;color:var(--ef-text-3);margin-top:4px}
+  #landmap{width:100%;border-radius:14px;border:1px solid var(--ef-line);background:var(--ef-bg-2);cursor:crosshair;display:block}
+  #maptip{position:fixed;pointer-events:none;background:rgba(12,10,22,.96);border:1px solid var(--ef-line-2);border-radius:10px;padding:7px 10px;font-size:12.5px;display:none;z-index:80;box-shadow:var(--ef-shadow)}
+  .maptools{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:10px;align-items:center}
+  .toggles{display:flex;gap:6px;flex-wrap:wrap}
+  .toggles label{display:inline-flex!important;gap:7px;align-items:center;margin:0!important;text-transform:none!important;letter-spacing:0!important;
+    font:500 12.5px/1 var(--ef-font)!important;color:var(--ef-text-2)!important;padding:7px 11px;border:1px solid var(--ef-line);border-radius:999px;cursor:pointer;background:var(--ef-surface)}
+  .toggles label:hover{border-color:var(--ef-line-2);color:#fff!important}
+  .zoomctl{position:absolute;right:12px;top:12px;display:flex;flex-direction:column;gap:6px;align-items:stretch}
+  .zoomctl button{background:rgba(12,10,22,.85);backdrop-filter:blur(6px);width:38px;height:34px;padding:0;border-radius:10px}
+  .pager{display:flex;gap:8px;align-items:center;justify-content:center;margin-top:12px;font-size:13px;color:var(--ef-text-2)}
+  .legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--ef-text-2);margin-top:10px}
+  .legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:-1px}
+  .meta{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}
+  .meta span{font-size:11.5px;padding:4px 10px;border-radius:999px;border:1px solid var(--ef-line-2);color:#9cf6e4;background:rgba(95,233,208,.05)}
+  #thumb{width:100%;image-rendering:pixelated;border-radius:14px;border:1px solid var(--ef-line);display:block;background:var(--ef-bg-2)}
+  .design-empty{border:1px dashed var(--ef-line-2);border-radius:14px;padding:34px 18px;text-align:center;color:var(--ef-text-3);font-size:13.5px}
+  .vstrip{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}
+  .vstrip button{padding:5px 11px;font-size:12px}
+  .vstrip button.cur{border-color:var(--ef-ether);color:var(--ef-ether-hi);background:rgba(168,85,247,.12)}
+  .hint{color:var(--ef-text-3);font-size:12.5px;margin-top:8px;line-height:1.5}
+  .err{color:var(--ef-bad);font-size:13px;min-height:16px;margin-top:6px}
+  .stat{font-size:12.5px;color:var(--ef-text-2)}
+  /* studio layout */
+  .studio-cols{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:18px;align-items:start;margin-bottom:18px}
+  .studio-cols>.card{margin:0}
+  .sticky{position:sticky;top:calc(var(--ef-header-h) + 16px)}
+  details.adv{border:1px solid var(--ef-line);border-radius:12px;padding:0 14px;margin:14px 0 0;background:rgba(255,255,255,.015)}
+  details.adv>summary{cursor:pointer;list-style:none;padding:12px 0;font:600 13px/1 var(--ef-font);color:var(--ef-text-2);display:flex;justify-content:space-between;gap:10px}
+  details.adv>summary::-webkit-details-marker{display:none}
+  details.adv>summary::after{content:"▾";color:var(--ef-text-3)} details.adv[open]>summary::after{content:"▴"}
+  details.adv[open]{padding-bottom:14px}
+  .account{border:1px solid var(--ef-line);border-radius:14px;padding:16px;background:var(--ef-bg-2);margin-top:18px}
+  .account-title{font:600 12px/1 var(--ef-font);letter-spacing:.14em;text-transform:uppercase;color:var(--ef-text-3);margin-bottom:10px}
+  .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;align-items:center}
+  /* drawers: estate castles + claim land slide over the studio */
+  .drawer{position:fixed!important;top:var(--ef-header-h);right:0;bottom:0;width:min(620px,100vw);margin:0!important;border-radius:0!important;overflow:auto;z-index:70;
+    border:0!important;border-left:1px solid var(--ef-line-2)!important;background:var(--ef-bg-3)!important;
+    box-shadow:0 0 0 100vmax rgba(3,2,7,.62),-30px 0 60px -20px rgba(0,0,0,.7)!important;animation:drawerIn .25s ease;padding:24px!important}
+  @keyframes drawerIn{from{transform:translateX(40px);opacity:0}to{transform:none;opacity:1}}
+  .drawer .tag{color:var(--ef-text-2);font-size:13.5px;margin:0 0 12px}
   /* info tabs */
-  .tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px}
-  .tabs button{padding:6px 12px;font-size:12.5px}
-  .tabs button.on{border-color:var(--ether-400);color:var(--ether-300);background:rgba(168,85,247,.1)}
-  .pane{display:none;font-size:13.5px;line-height:1.55;color:var(--fg-dim)}
+  .tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+  .tabs button{padding:8px 14px;font-size:13px}
+  .tabs button.on{border-color:var(--ef-ether);color:#fff;background:rgba(168,85,247,.16)}
+  .pane{display:none;font-size:14px;line-height:1.6;color:var(--ef-text-2)}
   .pane.on{display:block}
-  .pane h3{color:var(--fg);font-family:Georgia,serif;font-size:15px;margin:14px 0 6px}
-  .pane b{color:var(--ether-300)}
-  .lg{display:flex;align-items:center;gap:9px;margin:5px 0}
-  .lg .sw{width:26px;height:26px;border-radius:6px;flex:0 0 auto;border:1px solid var(--edge);display:flex;align-items:center;justify-content:center}
-  .mode{border:1px solid var(--edge);border-radius:11px;padding:11px 13px;margin:8px 0;background:rgba(255,255,255,.02)}
-  .mode .mh{font-family:Georgia,serif;color:var(--fg);font-size:14.5px}
-  .mode .ms{font-size:12px;color:var(--crystal-300);margin:2px 0 5px}
+  .pane h3{color:var(--ef-text);font:650 15px/1.3 var(--ef-font);margin:16px 0 6px}
+  .pane b{color:var(--ef-ether-hi)}
+  .lg{display:flex;align-items:center;gap:10px;margin:7px 0}
+  .lg .sw{width:28px;height:28px;border-radius:8px;flex:0 0 auto;border:1px solid var(--ef-line-2);display:flex;align-items:center;justify-content:center}
+  .mode{border:1px solid var(--ef-line);border-radius:12px;padding:12px 14px;margin:8px 0;background:var(--ef-surface)}
+  .mode .mh{font:650 14.5px/1.3 var(--ef-font);color:var(--ef-text)}
+  .mode .ms{font-size:12px;color:#9cf6e4;margin:2px 0 5px}
   /* FTUE */
-  #ftue{position:fixed;inset:0;background:rgba(3,2,7,.82);z-index:120;display:none;align-items:center;justify-content:center;padding:18px}
-  #ftue .box{max-width:520px;background:var(--ink-850);border:1px solid var(--ether-500);border-radius:18px;padding:24px}
-  #ftue h2{font-size:22px}
-  #ftue .step{display:flex;gap:12px;margin:12px 0}
-  #ftue .num{flex:0 0 auto;width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--ether-500),var(--ether-700));color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700}
-  #ftue .step div b{color:var(--ether-300)}
+  #ftue{position:fixed;inset:0;background:rgba(3,2,7,.78);backdrop-filter:blur(4px);z-index:120;display:none;align-items:center;justify-content:center;padding:18px}
+  #ftue .box{max-width:540px;background:var(--ef-bg-3);border:1px solid rgba(168,85,247,.45);border-radius:22px;padding:28px;box-shadow:var(--ef-glow)}
+  #ftue h2{font:700 24px/1.15 var(--ef-font-display);margin-bottom:6px}
+  #ftue .step{display:flex;gap:14px;margin:14px 0;color:var(--ef-text-2);font-size:14px}
+  #ftue .num{flex:0 0 auto;width:30px;height:30px;border-radius:9px;background:linear-gradient(135deg,var(--ef-ether),var(--ef-ether-lo));color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700}
+  #ftue .step div b{color:#fff}
+  @media(max-width:960px){.studio-cols{grid-template-columns:1fr}.sticky{position:static}.studio-tools{align-items:flex-start}}
+  @media(max-width:760px){.grid{grid-template-columns:1fr}.wrap{padding:16px 16px 32px}.card{padding:16px}}
 </style>
 </head>
-<body>
-<div class="wrap">
-  <div class="topbar">
+<body class="ef studio">
+<section class="studio-hero">
+  <div class="ef-container">
     <div>
-      <h1>🗺 Land Designer <a href="/designer/world" style="font-size:12px;font-weight:400;margin-left:10px;color:#7fb2ff;text-decoration:none">🌍 World Map ›</a></h1>
-      <div class="tag">Find your land, describe the battlefield in your own words, and the engine renders it in 3D — every design is guaranteed fair and playable, and your land keeps its look forever until you redesign it. <a href="/designer/world" style="color:#7fb2ff">See the whole world &amp; how much is generated →</a></div>
+      <p class="ef-eyebrow">Land Designer</p>
+      <h1 class="studio-title">Design the battlefield your land becomes.</h1>
+      <p class="studio-lead">Pick a parcel, describe it in plain words, and the engine builds it — checked fair and playable, rendered exactly as the game will.
+        Looking for the whole world? <a href="/designer/world">Open the World Atlas →</a></p>
     </div>
-    <div style="text-align:right">
+    <div class="studio-tools">
       <div id="whoTop" class="stat">…</div>
-      <div class="row" style="justify-content:flex-end;gap:6px;margin-top:6px">
-        <button class="ghost" id="estatesBtn" title="Browse every curated estate castle">🏰 Estates</button>
-        <button class="ghost" id="mintBtn" title="Claim unminted land with a size token">🪙 Mint land</button>
-        <button class="ghost" id="helpBtn">📖 How it works</button>
+      <div class="row" style="gap:8px;justify-content:flex-end">
+        <button class="ghost" id="estatesBtn" title="Browse every curated estate castle">🏰 Estate castles</button>
+        <button class="ghost" id="mintBtn" title="Claim unminted land with a size token">🪙 Claim land</button>
+        <button class="ghost" id="helpBtn">📖 Take the tour</button>
       </div>
     </div>
   </div>
-
+</section>
+<div class="wrap">
   <!-- ===================== ESTATE CASTLE EXPLORER (owner 2026-07-21) ===================== -->
-  <div class="card" id="castleCard" style="display:none">
+  <div class="card drawer" id="castleCard" style="display:none" role="dialog" aria-label="Estate castles">
     <h2><span class="n">🏰</span>Estate castles <span class="stat" id="castleStat"></span>
       <button class="ghost" id="castleClose" style="float:right;padding:3px 10px">✕ close</button></h2>
     <div class="tag">Every curated estate fortification — palaces, castles and keeps hand-placed across the world. Filter and click one to open its 3D. <span id="castleAdmin" style="color:var(--fg-dim)"></span></div>
@@ -120,8 +169,8 @@
   </div>
 
   <!-- ===================== MINT LAND (free-claim by size token) — owner 2026-07-21 ============ -->
-  <div class="card" id="mintCard" style="display:none">
-    <h2><span class="n">🪙</span>Mint land <span class="stat" id="mintStat"></span>
+  <div class="card drawer" id="mintCard" style="display:none" role="dialog" aria-label="Claim land">
+    <h2><span class="n">🪙</span>Claim land <span class="stat" id="mintStat"></span>
       <button class="ghost" id="mintClose" style="float:right;padding:3px 10px">✕ close</button></h2>
     <div class="tag">Hold a LAND <b>size token</b> and claim unminted land of that size — the mint is <b>free</b> (you pay only gas). Estates live on <b>Ethereum</b>, single parcels on <b>Polygon</b>. Buying directly with ETH/POL is coming soon.</div>
     <div id="mintConnect" class="hint" style="margin:10px 0"></div>
@@ -156,7 +205,8 @@
 
   <!-- ===================== 1. SELECT LAND (world → continent → parcel) ===================== -->
   <div class="card">
-    <h2><span class="n">1</span>Select land <span class="stat" id="mapStat"></span></h2>
+    <h2><span class="n">1</span>Choose your land <span class="stat" id="mapStat"></span></h2>
+    <p class="step-sub">Pick a continent, then click a parcel. Your own land is ringed in white once you sign in or connect a wallet.</p>
     <div class="crumb" id="crumb"></div>
 
     <div id="zoneView">
@@ -164,8 +214,8 @@
     </div>
 
     <div id="parcelView" style="display:none">
-      <div class="row" style="justify-content:space-between;margin-bottom:8px">
-        <div class="row">
+      <div class="maptools">
+        <div class="row toggles">
           <input id="search" placeholder="search parcel id…" style="width:200px">
           <label style="display:flex;gap:6px;align-items:center;margin:0;text-transform:none;letter-spacing:0;font-size:12.5px;color:var(--fg-dim)"><input type="checkbox" id="mineOnly" style="width:auto"> my land only</label>
           <label style="display:flex;gap:6px;align-items:center;margin:0;text-transform:none;letter-spacing:0;font-size:12.5px;color:var(--fg-dim)"><input type="checkbox" id="designedOnly" style="width:auto"> designed only</label>
@@ -177,10 +227,10 @@
       </div>
       <div style="position:relative">
         <canvas id="landmap" width="1920" height="720"></canvas>
-        <div style="position:absolute;right:10px;top:10px;display:flex;flex-direction:column;gap:4px;align-items:stretch">
-          <button class="ghost" id="zin" title="zoom in" style="padding:4px 10px">＋</button>
-          <button class="ghost" id="zout" title="zoom out" style="padding:4px 10px">－</button>
-          <button class="ghost" id="zreset" title="fit continent" style="padding:4px 8px;font-size:11px">fit</button>
+        <div class="zoomctl">
+          <button class="ghost" id="zin" title="zoom in">＋</button>
+          <button class="ghost" id="zout" title="zoom out">－</button>
+          <button class="ghost" id="zreset" title="fit continent">fit</button>
           <span class="stat" id="zLbl" style="text-align:center">100%</span>
         </div>
       </div>
@@ -199,20 +249,11 @@
     <div class="err" id="err"></div>
   </div>
 
-  <div class="grid">
+  <div class="studio-cols">
     <!-- ===================== 2. DESIGN ===================== -->
     <div class="card">
-      <h2><span class="n">2</span>Connect your AI</h2>
-      <label>Provider</label><select id="prov"></select>
-      <label>Model</label><select id="model"></select>
-      <div id="keyRow"><label>API key (stays in your browser — never sent to our server)</label><input id="key" type="password" placeholder="sk-…" autocomplete="off"></div>
-      <div id="customRow" style="display:none">
-        <label>Base URL (chat-completions endpoint)</label><input id="customUrl" placeholder="https://your-host/v1/chat/completions">
-        <label>Model id</label><input id="customModel" placeholder="e.g. poca-0.2">
-      </div>
-      <div class="hint" id="provHint"></div>
-
-      <h2 style="margin-top:20px"><span class="n">3</span>Describe your battlefield</h2>
+      <h2><span class="n">2</span>Describe your battlefield</h2>
+      <p class="step-sub">Write it in plain words. The AI turns it into terrain; the engine checks it's fair before it's saved.</p>
       <textarea id="directive" placeholder="volcanic wasteland with a ruined fortress and a river of lava splitting the map, gold in the caldera"></textarea>
       <div class="row" style="margin-top:8px">
         <span style="font-size:11px;color:var(--fg-dim);align-self:center">🏰 go standard:</span>
@@ -231,12 +272,25 @@
         <span class="chip" data-p="snow-white dream land: frosted rainbow-sprinkle fields under a lavender dream haze, a sugar palace">❄️ Snow dream</span>
       </div>
       <div style="font-size:11px;color:var(--fg-dim);margin-top:4px">Creative themes restyle the LOOK only — armies, walls and balance play identically. (Custom themes become an ENABLE upgrade later.)</div>
-      <div class="row" style="margin-top:12px">
+      <div class="actions">
         <button class="primary" id="gen" disabled>⚒ Generate design</button>
-        <button id="freeze" disabled>🔒 Freeze</button>
+        <button id="freeze" disabled>🔒 Freeze this look</button>
       </div>
-      <div class="hint" id="who">Checking sign-in…</div>
-      <div id="loginRow" style="display:none;margin-top:8px">
+      <div class="hint" id="genStat"></div>
+      <details class="adv" id="aiAdvanced"><summary>AI engine <span class="stat" id="aiSummary" style="margin-left:auto;margin-right:8px">Pentagon default</span></summary>
+        <label>Provider</label><select id="prov"></select>
+      <label>Model</label><select id="model"></select>
+      <div id="keyRow"><label>API key (stays in your browser — never sent to our server)</label><input id="key" type="password" placeholder="sk-…" autocomplete="off"></div>
+      <div id="customRow" style="display:none">
+        <label>Base URL (chat-completions endpoint)</label><input id="customUrl" placeholder="https://your-host/v1/chat/completions">
+        <label>Model id</label><input id="customModel" placeholder="e.g. poca-0.2">
+      </div>
+      <div class="hint" id="provHint"></div>
+      </details>
+      <div class="account" id="signin">
+        <div class="account-title">Your account</div>
+        <div class="hint" id="who">Checking sign-in…</div>
+        <div id="loginRow" style="display:none;margin-top:8px">
         <div class="row">
           <input id="pgEmail" type="email" placeholder="Pentagon Games email" autocomplete="username" style="flex:1;min-width:170px">
           <input id="pgPass" type="password" placeholder="Password" autocomplete="current-password" style="flex:1;min-width:120px">
@@ -244,23 +298,26 @@
         </div>
         <div class="hint">Same Pentagon Games account as the game. <a href="https://blockchainsuperheroes.github.io/pg-identity-docs/" target="_blank" rel="noopener" style="color:var(--ether-300)">What is Pentagon Games login?</a></div>
       </div>
-      <div class="row" style="margin-top:8px;gap:8px;align-items:center">
+      
+        <div class="row" style="margin-top:8px;gap:8px;align-items:center">
         <button class="ghost" id="mmConnect">🦊 Connect MetaMask</button>
         <span class="hint" id="mmState" style="margin:0">or connect a wallet to see the land it owns.</span>
       </div>
-      <label style="margin-top:10px">Admin key (ops only)</label><input id="adminKey" type="password" placeholder="x-maps-key (optional)" autocomplete="off">
-      <div class="hint" id="genStat"></div>
+        <details class="adv" style="margin-top:12px"><summary>Advanced · ops</summary>
+          <label style="margin-top:10px">Admin key (ops only)</label><input id="adminKey" type="password" placeholder="x-maps-key (optional)" autocomplete="off">
+        </details>
+      </div>
     </div>
 
     <!-- ===================== CURRENT DESIGN ===================== -->
-    <div class="card">
+    <div class="card sticky">
       <h2>🗺 Current design <span class="stat" id="status"></span></h2>
       <img id="thumb" alt="" hidden>
-      <div class="row" style="margin-top:8px"><a id="view3d" hidden target="_blank" rel="noopener"><button>🧊 View in 3D</button></a></div>
+      <div class="row" style="margin-top:12px"><a id="view3d" hidden target="_blank" rel="noopener"><button class="primary">🧊 Open in 3D</button></a></div>
       <div class="meta" id="meta"></div>
       <div class="hint" id="modeHint"></div>
       <div class="vstrip" id="vstrip"></div>
-      <div class="hint" id="dhint">Pick a parcel above. First visit mints its permanent seed design.</div>
+      <div class="hint design-empty" id="dhint">Pick a parcel on the map to see its battlefield. Every parcel already has a seed design — generate a new one any time.</div>
     </div>
   </div>
 
@@ -729,6 +786,7 @@ async function refreshWho(){
       const _so=document.getElementById("signout");
       if(_so)_so.onclick=(e)=>{e.preventDefault();try{localStorage.removeItem("ef_pg_token");}catch(_){};pgTok=null;me=null;admin=false;myParcels=new Set();myWallet=null;refreshWho();loadParcels&&zone&&loadParcels();};
       loadMyLand();   // pull the connected wallet's on-chain parcels → highlight + edit-enable
+      try{window.EFShell&&EFShell.refreshAuth();}catch(_){}
 
       try{const p=await fetch("/internal/v1/prefs",{headers:{authorization:"Bearer "+pgTok}}).then(x=>x.json());
         if(p.ok&&p.prefs){Object.assign(saved,{provider:p.prefs.provider,model:p.prefs.model,customUrl:p.prefs.customUrl,customModel:p.prefs.customModel});renderProv();}}catch(_){}
@@ -744,7 +802,12 @@ $("pgLogin").onclick=async()=>{const email=$("pgEmail").value.trim(),pass=$("pgP
     $("pgPass").value="";await refreshWho();if(zone)loadParcels();}catch(e){$("err").textContent=e.message;}
   $("pgLogin").disabled=false;};
 $("pgPass").addEventListener("keydown",(e)=>{if(e.key==="Enter")$("pgLogin").click();});
-refreshWho();
+refreshWho().then(()=>{try{window.EFShell&&EFShell.refreshAuth();}catch(_){}});
+/* overhaul C1: deep links from the shared header / landing — #signin opens the account box, #mint the claim drawer */
+setTimeout(()=>{const h=location.hash;
+  if(h==="#signin"){const lr=$("loginRow");if(lr&&lr.style.display==="none"&&!me)lr.style.display="block";$("signin").scrollIntoView({behavior:"smooth",block:"center"});setTimeout(()=>{try{$("pgEmail").focus();}catch(_){}},400);}
+  else if(h==="#mint"){$("mintBtn").click();}
+  else if(h==="#estates"){$("estatesBtn").click();}},300);
 window.syncPrefs=(()=>{let t=null;return()=>{if(!pgTok||!me)return;clearTimeout(t);t=setTimeout(()=>{
   fetch("/internal/v1/prefs",{method:"POST",headers:{"content-type":"application/json",authorization:"Bearer "+pgTok},
     body:JSON.stringify({provider:saved.provider,model:saved.model,customUrl:saved.customUrl,customModel:saved.customModel})}).catch(()=>{});},600);};})();
@@ -851,7 +914,7 @@ $("gen").onclick=async()=>{const id=selId||$("parcel").value.trim(),dir=$("direc
 
   async function openMint(){
     $("mintCard").style.display="";$("mintCard").scrollIntoView({behavior:"smooth"});
-    if(!hasW()&&!admin){$("mintConnect").innerHTML='Connect MetaMask first (the 🦊 button in the “Connect your AI” panel below) to see and claim land with your size tokens.';$("mintBody").style.display="none";return;}
+    if(!hasW()&&!admin){$("mintConnect").innerHTML='Connect MetaMask first (the 🦊 button in the “Your account” box) to see and claim land with your size tokens.';$("mintBody").style.display="none";return;}
     $("mintConnect").innerHTML="";$("mintBody").style.display="";
     $("mintWallet").textContent=connWallet?("🦊 "+short(connWallet)):(admin?"👑 admin (browse-only — connect a wallet to claim)":"");
     if(hasW())await refreshChain(); else browseAsAdmin();
@@ -996,5 +1059,6 @@ $("gen").onclick=async()=>{const id=selId||$("parcel").value.trim(),dir=$("direc
   if(window.ethereum&&window.ethereum.on)window.ethereum.on("chainChanged",()=>{if($("mintCard").style.display!=="none"&&hasW())refreshChain();});
 })();
 </script>
+<script src="/ui/shell.js"></script>
 </body>
 </html>
