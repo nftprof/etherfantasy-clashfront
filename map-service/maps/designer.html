@@ -593,7 +593,7 @@ const cv=$("landmap"),cx=cv.getContext("2d");
 function setCrumb(){const c=$("crumb");if(!zone){c.innerHTML="<b>🌍 World</b> — pick a continent";}
   else c.innerHTML='<a id="toworld">🌍 World</a> ▸ <b>'+(zones.find(z=>z.zoneId===zone)?.name||zone)+'</b> <span class="stat">('+total.toLocaleString()+' parcels)</span>';
   const tw=$("toworld");if(tw)tw.onclick=()=>{zone=null;selId=null;showZoneView();};}
-function showZoneView(){$("zoneView").style.display="";$("parcelView").style.display="none";setCrumb();$("mapStat").textContent="· "+zones.length+" continents";}
+function showZoneView(){$("zoneView").style.display="";$("parcelView").style.display="none";setCrumb();$("mapStat").textContent="· "+zones.length+" mapped continents (Olympus + Fortuna still uncharted)";}
 function showParcelView(){$("zoneView").style.display="none";$("parcelView").style.display="";setCrumb();}
 
 async function loadZones(){try{const d=await fetch("/internal/v1/zones").then(r=>r.json());zones=d.zones||[];

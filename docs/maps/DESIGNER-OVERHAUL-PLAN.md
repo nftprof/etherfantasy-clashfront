@@ -79,7 +79,7 @@ the same top nav so this is obvious: `Home · World Atlas · Designer · Get Lan
 - [x] E3 Accessibility: contrast, focus rings, alt text, reduced-motion (pause video). — DONE: faint text #8a85a6 (≈5.7:1 on bg), pause/play buttons on both landing videos (scroll autoplay honours a user pause), reduced-motion already respected, focus rings global, alt/aria on preview + Atlas canvas, keyboardable continent list.
 - [x] E4 3D viewer + Sky Cities chrome on the shared shell. — DONE: floating shared header on /designer/3d and /designer/decks (skipped for ?thumb/?export/?showcase/?bare capture modes); HUDs offset below it.
 - [x] E5 Performance: lazy-load mosaics/video, cache headers. — DONE: ETag/304 for /ui + /media, byte ranges (206) so Safari/iOS can play the videos, /media/continents/ served (was 404), showcase video preload=none until on screen.
-- [ ] E6 Final consistency review + screenshot set to the owner.
+- [x] E6 Final consistency review + screenshot set to the owner. — DONE 2026-10-19: link crawl of all 5 pages (37 internal links, 0 broken; 3 external links unverifiable from the sandbox), continent-count wording aligned (12 total = 10 mapped + 2 uncharted), 8-shot screenshot set sent.
 
 ## Log
 - 2026-10-19 14:38Z — plan written; loop armed (1-minute cron job 174a9fd9).
@@ -88,3 +88,4 @@ the same top nav so this is obvious: `Home · World Atlas · Designer · Get Lan
 - A2 shipped — shared shell + theme (header nav Home · World Atlas · Designer · Sky Cities · Get Land; admin badge; footer).
 - C1 + A4 shipped — Designer studio layout; admin land-tier control.
 - D1–D4 shipped — World Atlas reframed for the public; deep-link 0-parcels bug fixed.
+- C2–C5, E1–E6, B2, B7 shipped — backlog complete 2026-10-19 ~15:45Z. Remaining loop time = polish passes.
