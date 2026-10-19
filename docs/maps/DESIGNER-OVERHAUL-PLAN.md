@@ -56,7 +56,7 @@ the same top nav so this is obvious: `Home · World Atlas · Designer · Get Lan
 - [x] B4 **Journey flow diagram** (inline SVG): Get land → Design its battlefield → Fight in Clash Front → Leave your mark.
 - [x] B5 Why land matters — honest benefit grid (real battlefield, design rights, home turf, castles/estates, World Chronicle, cross-game).
 - [x] B6 **How to get land** — paths with live/soon status + claim flow diagram (size token → approve → claim → design); contract facts.
-- [~] B7 Continents gallery (wip: tiers + cards + /internal/v1/landing-stats live; needs /media/continents/<ZONE>.webp thumbnails) — 12 continents, mosaic thumbs, identity line, parcel counts, "open in Atlas".
+- [x] B7 Continents gallery — DONE: 10 charted continents baked to /media/continents/<ZONE>.webp (44–116 KB, 720px) from the aerial mosaics; used by Landing, Atlas and Designer picker; tool-*.webp screenshots refreshed for the new pages. — 12 continents, mosaic thumbs, identity line, parcel counts, "open in Atlas".
 - [x] B8 Live stats strip (parcels, estates, castles, designed maps) from endpoints.
 - [x] B9 FAQ + footer.
 
