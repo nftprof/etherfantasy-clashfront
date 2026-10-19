@@ -97,7 +97,7 @@ the same top nav so this is obvious: `Home · World Atlas · Designer · Get Lan
 ### R — Third round
 - [x] R1 Styled 404 for browsers (Atlas / Designer / Home exits); API + /internal keep plain 404.
 - [x] R2 Designer keyboard shortcuts (/ search · G generate · 3 toggle 3D · F freeze · ? help).
-- [ ] R3 Owners: "My land" list in the Designer — jump straight to any parcel/estate you own.
+- [x] R3 Owners: "My land" list in the Designer — jump straight to any parcel/estate you own.
 
 ## Log
 - 2026-10-19 14:38Z — plan written; loop armed (1-minute cron job 174a9fd9).

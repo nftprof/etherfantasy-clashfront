@@ -93,7 +93,7 @@
     if (!box || !w || !w.ok) return;
     const name = w.username || (w.wallet ? w.wallet.slice(0, 6) + "…" + w.wallet.slice(-4) : "Signed in");
     const initial = esc((w.username || w.wallet || "?").replace(/^0x/, "").slice(0, 1).toUpperCase());
-    box.innerHTML = `${w.admin ? '<span class="ef-pill ef-pill--admin ef-pill--plain" title="Full access to every parcel and feature">👑 Admin</span>' : ""}
+    box.innerHTML = `<a class="ef-btn ef-btn--ghost ef-btn--sm ef-play" href="${GAME_URL}" target="_blank" rel="noopener">Play Clash Front ↗</a>${w.admin ? '<span class="ef-pill ef-pill--admin ef-pill--plain" title="Full access to every parcel and feature">👑 Admin</span>' : ""}
       <a class="ef-user" href="/designer" title="Open your land in the Designer"><span class="ef-avatar">${initial}</span>${esc(name)}</a>`;
   }
   const ready = fetch("/internal/v1/whoami", { headers: authHeaders() })
