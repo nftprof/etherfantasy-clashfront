@@ -76,7 +76,7 @@ the same top nav so this is obvious: `Home · World Atlas · Designer · Get Lan
 ### E — Polish
 - [ ] E1 Mobile/responsive pass on every page.
 - [ ] E2 SEO + OpenGraph/Twitter cards + social image.
-- [ ] E3 Accessibility: contrast, focus rings, alt text, reduced-motion (pause video).
+- [x] E3 Accessibility: contrast, focus rings, alt text, reduced-motion (pause video). — DONE: faint text #8a85a6 (≈5.7:1 on bg), pause/play buttons on both landing videos (scroll autoplay honours a user pause), reduced-motion already respected, focus rings global, alt/aria on preview + Atlas canvas, keyboardable continent list.
 - [x] E4 3D viewer + Sky Cities chrome on the shared shell. — DONE: floating shared header on /designer/3d and /designer/decks (skipped for ?thumb/?export/?showcase/?bare capture modes); HUDs offset below it.
 - [ ] E5 Performance: lazy-load mosaics/video, cache headers.
 - [ ] E6 Final consistency review + screenshot set to the owner.

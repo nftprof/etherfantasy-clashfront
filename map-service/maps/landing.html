@@ -80,6 +80,9 @@
   .stat-label{color:var(--ef-text-3);font-size:13px;margin-top:8px}
 
   /* ---------- showcase ---------- */
+  .vid-toggle{position:absolute;z-index:4;right:18px;bottom:18px;width:40px;height:40px;border-radius:50%;border:1px solid rgba(255,255,255,.25);
+    background:rgba(7,6,13,.6);backdrop-filter:blur(6px);color:#fff;font:600 14px/1 var(--ef-font);cursor:pointer;display:flex;align-items:center;justify-content:center}
+  .vid-toggle:hover{border-color:var(--ef-crystal)}
   .showcase{position:relative;border-radius:var(--ef-r-xl);overflow:hidden;border:1px solid var(--ef-line-2);box-shadow:var(--ef-shadow);background:#0b0916}
   .showcase video,.showcase img{width:100%;display:block;aspect-ratio:16/9;object-fit:cover}
   .showcase-cap{position:absolute;left:0;right:0;bottom:0;padding:22px 24px;background:linear-gradient(0deg,rgba(7,6,13,.9),transparent);display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap}
@@ -114,6 +117,7 @@
 
 <!-- ===================== HERO ===================== -->
 <section class="hero" aria-label="Introduction">
+  <button class="vid-toggle" type="button" data-vid="heroVideo" aria-label="Pause background video">❚❚</button>
   <div class="hero-media">
     <video id="heroVideo" autoplay muted loop playsinline preload="metadata" poster="/media/showcase-poster.webp" aria-hidden="true">
       <source src="/media/showcase.webm" type="video/webm">
@@ -187,6 +191,7 @@
       <video id="showcaseVideo" muted loop playsinline preload="none" poster="/media/showcase-poster.webp" aria-label="Orbit of castle estates rendered by the battle engine">
         <source src="/media/showcase.webm" type="video/webm">
       </video>
+      <button class="vid-toggle" type="button" data-vid="showcaseVideo" aria-label="Play video" style="top:18px;bottom:auto">▶</button>
       <figcaption class="showcase-cap">
         <div><p class="ef-eyebrow" style="margin-bottom:8px">Rendered by the battle engine</p>
           <div class="ef-h3" style="margin:0">Real castle estates, as you'll fight on them.</div></div>
@@ -442,8 +447,15 @@
   const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const hero = document.getElementById("heroVideo"), show = document.getElementById("showcaseVideo");
   if (reduce && hero) { hero.removeAttribute("autoplay"); hero.pause(); }
+  // pause/play controls (moving content must be stoppable) — label tracks the real state
+  document.querySelectorAll(".vid-toggle").forEach((b) => {
+    const v = document.getElementById(b.dataset.vid); if (!v) { b.hidden = true; return; }
+    const sync = () => { const on = !v.paused; b.textContent = on ? "❚❚" : "▶"; b.setAttribute("aria-label", (on ? "Pause" : "Play") + " video"); };
+    b.addEventListener("click", () => { if (v.paused) { v.dataset.user = "play"; v.play().catch(() => {}); } else { v.dataset.user = "pause"; v.pause(); } });
+    v.addEventListener("play", sync); v.addEventListener("pause", sync); sync();
+  });
   if (show && "IntersectionObserver" in window && !reduce) {
-    new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) { show.preload = "auto"; show.play().catch(() => {}); } else show.pause(); }), { threshold: 0.35 }).observe(show);
+    new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) { if (show.dataset.user !== "pause") { show.preload = "auto"; show.play().catch(() => {}); } } else if (!show.paused) { show.pause(); } }), { threshold: 0.35 }).observe(show);
   }
 })();
 </script>
