@@ -78,6 +78,7 @@ function skeleton() {
       grid: { w: gw, h: gh }, total: Array.from(total), ids,
       world: { x: off.x || 0, z: off.z || 0, w: tileW, h: tileH },
       wilderness: hasWildernessField(z.zoneId),
+      bbox: [x0, y0, x1, y1],
       cellOf,
     });
   }
@@ -102,7 +103,7 @@ export function worldMap(generatedSet) {
       zoneId: z.zoneId, name: z.name, biomeFamily: z.biomeFamily,
       count: z.count, generated: zg, coverage: z.count ? zg / z.count : 0,
       grid: z.grid, total: z.total, generatedGrid: Array.from(generated), ids: z.ids,
-      world: z.world, wilderness: z.wilderness,
+      world: z.world, wilderness: z.wilderness, bbox: z.bbox,
     };
   });
   // world bounds (tile rects placed at world offsets) so the client can fit-to-view

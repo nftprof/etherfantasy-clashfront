@@ -104,6 +104,7 @@
     <div class="ov ov-tl">
       <label class="tg"><input type="checkbox" id="tRoutes" checked> Travel routes</label>
       <label class="tg"><input type="checkbox" id="tLabels" checked> Names</label>
+      <label class="tg" title="Zoom into a continent to see its castles"><input type="checkbox" id="tCastles" checked> Castles</label>
       <label class="tg" id="tCovWrap" hidden><input type="checkbox" id="tCov"> Coverage (admin)</label>
     </div>
     <div class="ov ov-tr">
@@ -117,6 +118,7 @@
       <span><b style="background:#ef6c3a"></b>Underworld</span>
       <span><i style="border-color:#5fe9d0"></i>Airship way</span>
       <span><i style="border-color:#ef6c3a"></i>Descent</span>
+      <span title="Shown when zoomed in"><b style="background:#e8c46f;border-radius:50%"></b>Palace <b style="background:#c08cff;border-radius:50%;margin-left:6px"></b>Castle <b style="background:#5fe9d0;border-radius:50%;margin-left:6px"></b>Keep</span>
     </div></div>
     <div id="tip"></div>
   </div>
@@ -148,7 +150,7 @@ const FALLBACK_LINKS=[["EDU","HS1","AIRSHIP_WAY","Airship way"],["BUS","HS1","AI
   ["HS1","HS3","AIRSHIP_WAY","to Empyrea"],["HUB","UW1","SHAFT","The Shaft"],["UW1","UW2","SHAFT","descent"],["UW2","UW3","SHAFT","descent"],
   ["ENT","UW2","SECRET_ENTRANCE","The Diminishing Stair"]];
 const S=120;                 // world-units: the largest continent's long side
-let MINE={}, Z=[], LINKS=FALLBACK_LINKS, mode="layers", view={x:0,z:0,s:1}, target=null, anim=null, hover=null, dpr=1, isAdmin=false, stats=null;
+let CASTLES=[], hoverC=null, MINE={}, Z=[], LINKS=FALLBACK_LINKS, mode="layers", view={x:0,z:0,s:1}, target=null, anim=null, hover=null, dpr=1, isAdmin=false, stats=null;
 
 function sizeFor(z,maxCount){ // area ∝ parcels (honest size), floor so tiny continents stay clickable
   const k=z.charted?Math.max(.42,Math.sqrt(z.parcels/maxCount)):.42;
@@ -217,7 +219,22 @@ function draw(){
       if(W>70&&(mode==="layers"&&!anim||hot)){ ctx.fillStyle="rgba(190,182,214,.75)"; ctx.font="11px Inter,system-ui"; const lb=z.charted?`${z.parcels.toLocaleString()} parcels`:"not yet mapped"; ctx.lineWidth=4; ctx.strokeStyle="rgba(7,6,13,.92)"; ctx.strokeText(lb,ox+W/2,oy+H+15); ctx.fillText(lb,ox+W/2,oy+H+15); }
     }
   }
+  drawCastles();
 }
+/* polish Q2: castle markers once a continent is big enough on screen; click → that castle in the Designer */
+const KCOL={PALACE:"#e8c46f",CASTLE:"#c08cff",KEEP:"#5fe9d0"};
+function castleXY(c){ const z=Z.find(q=>q.zoneId===c.zone); if(!z||!z.bbox||!c.at)return null; const r=pos(z); if(!r)return null;
+  const [x0,y0,x1,y1]=z.bbox, W=r.w*view.s, H=r.h*view.s; if(W<240)return null;
+  const [ox,oy]=w2s(r.x-r.w/2,r.z-r.h/2), x=ox+(c.at[0]-x0)/(x1-x0)*W, y=oy+(c.at[1]-y0)/(y1-y0)*H;
+  if(x<-20||y<-20||x>cv.clientWidth+20||y>cv.clientHeight+20)return null; return [x,y,W]; }
+function drawCastles(){ if(!$("tCastles").checked)return;
+  for(const c of CASTLES){ const p=castleXY(c); if(!p)continue; const [x,y,W]=p, hot=hoverC===c, R=c.kind==="PALACE"?6:c.kind==="CASTLE"?5:4;
+    ctx.beginPath(); ctx.arc(x,y,R+(hot?2:0),0,Math.PI*2); ctx.fillStyle=KCOL[c.kind]||"#fff"; ctx.fill(); ctx.lineWidth=2; ctx.strokeStyle="rgba(7,6,13,.9)"; ctx.stroke();
+    if(W>520||hot){ ctx.font=`${hot?700:600} 11px Inter,system-ui`; ctx.textAlign="left"; ctx.lineJoin="round"; ctx.lineWidth=4; ctx.strokeStyle="rgba(7,6,13,.92)";
+      ctx.strokeText(c.name,x+R+5,y+4); ctx.fillStyle=hot?"#fff":"rgba(244,240,255,.92)"; ctx.fillText(c.name,x+R+5,y+4); } } }
+window.__atlas={castles:()=>CASTLES.map(c=>({name:c.name,parcel:c.parcel,xy:castleXY(c)}))};   // read-only test hook
+function castleAt(mx,my){ if(!$("tCastles").checked)return null; let best=null,bd=12;
+  for(const c of CASTLES){ const p=castleXY(c); if(!p)continue; const d=Math.hypot(p[0]-mx,p[1]-my); if(d<bd){bd=d;best=c;} } return best; }
 function drawCells(z,ox,oy,W,H,col){ if(!z.grid)return; const g=z.grid, cw=W/g.w, ch=H/g.h, d=Math.max(1,Math.min(cw,ch)*.85);
   ctx.fillStyle=col; ctx.globalAlpha=.55;
   for(let j=0;j<g.h;j++)for(let i=0;i<g.w;i++) if(z.total[j*g.w+i]) ctx.fillRect(ox+(i+.5)*cw-d/2,oy+(j+.5)*ch-d/2,d,d);
@@ -265,13 +282,17 @@ cv.addEventListener("pointerdown",e=>{cv.setPointerCapture(e.pointerId);ptrs.set
   drag={x:e.clientX,y:e.clientY,vx:view.x,vz:view.z,moved:false};cv.classList.add("drag");});
 const endPtr=(e)=>{ptrs.delete(e.pointerId);if(ptrs.size<2)pinch=null;};
 cv.addEventListener("pointercancel",e=>{endPtr(e);drag=null;cv.classList.remove("drag");});
-cv.addEventListener("pointerup",e=>{endPtr(e);cv.classList.remove("drag"); const d=drag; if(ptrs.size)return; drag=null; if(d&&!d.moved){const r=cv.getBoundingClientRect();openZone(zoneAt(e.clientX-r.left,e.clientY-r.top));}});
+cv.addEventListener("pointerup",e=>{endPtr(e);cv.classList.remove("drag"); const d=drag; if(ptrs.size)return; drag=null; if(d&&!d.moved){const r=cv.getBoundingClientRect(),mx=e.clientX-r.left,my=e.clientY-r.top;const c=castleAt(mx,my);
+  if(c){location.href="/designer?parcel="+encodeURIComponent(c.parcel);return;} openZone(zoneAt(mx,my));}});
 cv.addEventListener("pointermove",e=>{ const r=cv.getBoundingClientRect(), mx=e.clientX-r.left, my=e.clientY-r.top;
   if(ptrs.has(e.pointerId))ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
   if(pinch&&ptrs.size===2){const n=pinchState();if(pinch.d>0)zoomAt(n.d/pinch.d,n.mx-r.left,n.my-r.top);
     view.x-=(n.mx-pinch.mx)/view.s;view.z-=(n.my-pinch.my)/view.s;draw();pinch=n;tip.style.display="none";return;}
   if(drag){ const dx=e.clientX-drag.x, dy=e.clientY-drag.y; if(Math.abs(dx)+Math.abs(dy)>4)drag.moved=true;
     if(drag.moved){view.x=drag.vx-dx/view.s;view.z=drag.vz-dy/view.s;tip.style.display="none";draw();} return; }
+  const c=castleAt(mx,my); if(c!==hoverC){hoverC=c;draw();}
+  if(c){ cv.classList.add("hot"); if(e.pointerType==="mouse"){ tip.innerHTML=`<div class="tn">${esc(c.name)}</div><div class="ts">${esc(c.zoneName||c.zone)} · ${c.kind.toLowerCase()}</div><div class="tc">Click to open it in the Designer →</div>`;
+      tip.style.display="block"; const tw=260, l=mx+18+tw>r.width?mx-tw-18:mx+18; tip.style.left=l+"px"; tip.style.top=Math.min(my+12,r.height-120)+"px"; } return; }
   const z=zoneAt(mx,my); if(z!==hover){hover=z;draw();} cv.classList.toggle("hot",!!z);
   if(z&&e.pointerType==="mouse"){ showTip(z); const tw=260, l=mx+18+tw>r.width?mx-tw-18:mx+18; tip.style.left=l+"px"; tip.style.top=Math.min(my+12,r.height-190)+"px"; }
   else tip.style.display="none"; });
@@ -282,7 +303,7 @@ function zoomAt(f,mx,my){ const wx=view.x+(mx-cv.clientWidth/2)/view.s, wz=view.
 $("zin").onclick=()=>zoomAt(1.3,cv.clientWidth/2,cv.clientHeight/2);
 $("zout").onclick=()=>zoomAt(1/1.3,cv.clientWidth/2,cv.clientHeight/2);
 $("zfit").onclick=()=>tweenTo(fitView());
-["tRoutes","tLabels","tCov"].forEach(id=>$(id).onchange=draw);
+["tRoutes","tLabels","tCov","tCastles"].forEach(id=>$(id).onchange=draw);
 const esc=(s)=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 function showTip(z){ const t=TIER[z.tier]||TIER.surface;
   tip.innerHTML=`<div class="tn">${esc(z.name)}</div><div class="ts">${esc(z.subtitle||"")}</div>
@@ -314,7 +335,7 @@ Promise.all([fetch("/internal/v1/landing-stats").then(r=>r.json()),fetch("/inter
 .then(([st,wm])=>{
   if(!st.ok)throw new Error("atlas data unavailable");
   const byId=Object.fromEntries((wm.ok?wm.zones:[]).map(z=>[z.zoneId,z]));
-  Z=st.zones.map(z=>{ const w=byId[z.zoneId]||{}; const o={...z,grid:w.grid,total:w.total,generatedGrid:w.generatedGrid,world:w.world,count:w.count,coverage:w.coverage||0};
+  Z=st.zones.map(z=>{ const w=byId[z.zoneId]||{}; const o={...z,grid:w.grid,total:w.total,generatedGrid:w.generatedGrid,world:w.world,bbox:w.bbox,count:w.count,coverage:w.coverage||0};
     if(z.charted){ o.img=new Image(); o.img.onload=draw; o.img.src="/media/continents/"+z.zoneId+".webp"; } return o; });
   if(Array.isArray(st.links)&&st.links.length) LINKS=st.links.map(l=>[l.from,l.to,l.kind,l.label]);
   stats=wm.ok?wm.stats:null;
@@ -322,6 +343,7 @@ Promise.all([fetch("/internal/v1/landing-stats").then(r=>r.json()),fetch("/inter
   try{const m=localStorage.getItem("ef_atlas_mode");if(m==="overworld")mode="overworld";}catch(_){}
   document.querySelectorAll(".seg button").forEach(b=>{const on=b.dataset.mode===mode;b.classList.toggle("on",on);b.setAttribute("aria-selected",on);});
   renderList(); resize(); view=fitView(); draw();
+  fetch("/internal/v1/castles").then(r=>r.json()).then(d=>{CASTLES=(d.castles||[]).filter(c=>c.at&&c.parcel);draw();}).catch(()=>{});
   if(window.EFShell&&EFShell.who)onWho(EFShell.who);
 }).catch(e=>{ ctx.fillStyle="#bbb"; ctx.font="14px Inter,system-ui"; ctx.fillText("The Atlas couldn't load: "+e.message,24,40); });
 window.addEventListener("resize",()=>{resize();});

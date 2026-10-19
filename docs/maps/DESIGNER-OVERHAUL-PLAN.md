@@ -90,7 +90,7 @@ the same top nav so this is obvious: `Home · World Atlas · Designer · Get Lan
 
 ### Q — Second polish round (state-of-the-art pass)
 - [x] Q1 Designer: live 3D preview inline in the Current design card (2D / 3D toggle; lazy, no new tab needed).
-- [ ] Q2 Atlas: castle markers when zoomed in (palace/castle/keep), click → that castle in the Designer.
+- [x] Q2 Atlas: castle markers when zoomed in (palace/castle/keep), click → that castle in the Designer.
 - [ ] Q3 Per-parcel share preview: /designer?parcel=X serves og:image = that parcel's thumbnail + its name.
 - [ ] Q4 Landing: "Recently designed" strip from the registry (AI-designed / frozen maps), hidden when empty.
 
