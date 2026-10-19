@@ -167,19 +167,27 @@ async function stills(browser) {
     console.log(`  ${file} ${(await toWebp(page, png, path.join(MEDIA, file), 960, 0.8) / 1e3).toFixed(0)} KB`);
     await p.close();
   }
-  // social share card 1200×630 (og:image): the showcase poster + brand + promise
-  const poster = path.join(MEDIA, "showcase-poster.webp");
-  if (fs.existsSync(poster)) {
+  // social share card 1200×630 (og:image): a clean caption-free engine frame on the right + brand + promise
+  {
+    const shot = await browser.newPage({ viewport: { width: 760, height: 630 } });
+    await shot.goto(`${BASE}/designer/3d?parcel=1040345&showcase=1`, { waitUntil: "networkidle", timeout: 60000 });
+    await shot.waitForFunction(() => window.__CF_SHOW && window.__CF_SHOW.ready, null, { timeout: 60000 });
+    await shot.waitForTimeout(2500);
+    await shot.evaluate(() => window.__CF_SHOW.setOrbit(2.6, 0.98, 230, 6));
+    await shot.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
+    const frame = await shot.screenshot({ type: "jpeg", quality: 90 });
+    await shot.close();
     const og = await browser.newPage({ viewport: { width: 1200, height: 630 } });
     const mark = fs.readFileSync(path.join(ROOT, "ui", "mark.svg"), "utf8");
     await og.setContent(`<html><body style="margin:0;width:1200px;height:630px;position:relative;overflow:hidden;background:#07060d;font-family:Inter,system-ui,sans-serif">
-      <img src="data:image/webp;base64,${fs.readFileSync(poster).toString("base64")}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover">
-      <div style="position:absolute;inset:0;background:linear-gradient(90deg,rgba(7,6,13,.94) 0%,rgba(7,6,13,.72) 48%,rgba(7,6,13,.1) 100%)"></div>
-      <div style="position:absolute;left:64px;top:64px;display:flex;gap:14px;align-items:center;color:#fff;font:700 22px/1 Georgia,serif;letter-spacing:.08em">
+      <img src="data:image/jpeg;base64,${frame.toString("base64")}" style="position:absolute;right:0;top:0;width:760px;height:630px;object-fit:cover">
+      <div style="position:absolute;inset:0;background:linear-gradient(90deg,#07060d 0%,#07060d 38%,rgba(7,6,13,.55) 58%,rgba(7,6,13,0) 78%)"></div>
+      <div style="position:absolute;inset:0;background:radial-gradient(600px 400px at 85% 50%,transparent 40%,rgba(7,6,13,.35) 100%)"></div>
+      <div style="position:absolute;left:64px;top:60px;display:flex;gap:14px;align-items:center;color:#fff;font:700 22px/1 Georgia,serif;letter-spacing:.08em">
         <div style="width:48px;height:48px">${mark}</div>ETHER FANTASY · LAND</div>
-      <div style="position:absolute;left:64px;top:190px;width:640px;color:#fff;font:700 60px/1.06 Georgia,serif">Own a piece of a world at war.</div>
-      <div style="position:absolute;left:64px;top:345px;width:600px;color:#c9c3de;font:400 26px/1.4 Inter,system-ui,sans-serif">Every parcel is a real battlefield in Clash Front. Claim it, design it with AI, defend it.</div>
-      <div style="position:absolute;left:64px;bottom:60px;color:#5fe9d0;font:600 20px/1 Inter,system-ui,sans-serif;letter-spacing:.14em">MAP.ETHERFANTASY.COM</div>
+      <div style="position:absolute;left:64px;top:180px;width:560px;color:#fff;font:700 58px/1.06 Georgia,serif">Own a piece of a world at war.</div>
+      <div style="position:absolute;left:64px;top:340px;width:520px;color:#c9c3de;font:400 25px/1.4 Inter,system-ui,sans-serif">Every parcel is a real battlefield in Clash Front. Claim it, design it with AI, defend it.</div>
+      <div style="position:absolute;left:64px;bottom:58px;color:#5fe9d0;font:600 20px/1 Inter,system-ui,sans-serif;letter-spacing:.14em">MAP.ETHERFANTASY.COM</div>
     </body></html>`);
     await og.waitForTimeout(300);
     await og.screenshot({ path: path.join(MEDIA, "og-card.png") });
