@@ -317,6 +317,14 @@
       <div class="meta" id="meta"></div>
       <div class="hint" id="modeHint"></div>
       <div class="vstrip" id="vstrip"></div>
+      <div class="account" id="tierAdmin" hidden style="margin-top:14px">
+        <div class="account-title">👑 Admin · land tier</div>
+        <div class="row"><select id="tierSel" style="width:auto;flex:1;min-width:180px">
+          <option value="0">0 · Untamed</option><option value="1">1 · Settled</option><option value="2">2 · Developed</option>
+          <option value="3">3 · Prosperous</option><option value="4">4 · Rich Vein</option><option value="5">5 · Golden (max)</option></select>
+          <button id="tierSet">Apply tier</button></div>
+        <div class="hint">Raises this parcel's content caps (resource nodes, camps, towers, landmark). Owners will buy tiers with CT in Clash Front; admins can set them now. Generate again to use the new caps.</div>
+      </div>
       <div class="hint design-empty" id="dhint">Pick a parcel on the map to see its battlefield. Every parcel already has a seed design — generate a new one any time.</div>
     </div>
   </div>
@@ -777,7 +785,7 @@ function markStatus(id,row){const p=parcels.find(q=>q.parcelId===id);if(p&&row){
 let pgTok=null;try{pgTok=localStorage.getItem("ef_pg_token");}catch(e){}
 async function refreshWho(){
   try{const r=await fetch("/internal/v1/whoami",{headers:authHdr()}).then(x=>x.json());
-    me=r.ok?r.username:null;admin=!!(r.ok&&r.admin);
+    me=r.ok?r.username:null;admin=!!(r.ok&&r.admin);try{syncTierAdmin();}catch(_){}
     if(r.ok){
       const disp=r.username||(connWallet?("🦊 "+connWallet.slice(0,6)+"…"+connWallet.slice(-4)):"connected");
       $("whoTop").innerHTML="✅ <b>"+disp+"</b>"+(admin?' <span class="badge">👑 admin</span>':"")+(r.username?' · <a href="#" id="signout" style="color:var(--fg-dim)">sign out</a>':"");
@@ -847,11 +855,25 @@ function show(parcelId,row,artifact,budget){cur={parcelId,row,artifact,budget:bu
   $("meta").innerHTML=[b?("🏦 "+b.name+" (tier "+b.level+")"):null,p.archetype,p.palette,p.landmark!=="NONE"?p.landmark:null,
     (artifact?.laneCount||1)+" lane(s)",(artifact?.resources?.length??0)+" nodes",(artifact?.mobs?.length??0)+" camps",(artifact?.structures?.length??0)+" structures"].filter(Boolean).map(x=>`<span>${x}</span>`).join("");
   $("modeHint").innerHTML=modes?("Hosts: "+modes.map(m=>MODE_LABEL[m]||m).join("  ")+' <span class="stat">— see the Game modes tab</span>'):"";
-  if(b)$("dhint").textContent="Tier caps: ≤"+b.resourceNodes+" resource nodes · richness ≤"+Math.round(b.maxRichness*100)+"% · ≤"+b.mobCamps+" camps · ≤"+b.towers+" towers"+(b.landmark?"":" · no landmark")+". Invest CT in Clash Front to raise them (coming soon).";
+  if(b)$("dhint").textContent="Tier caps: ≤"+b.resourceNodes+" resource nodes · richness ≤"+Math.round(b.maxRichness*100)+"% · ≤"+b.mobCamps+" camps · ≤"+b.towers+" towers"+(b.landmark?"":" · no landmark")+((admin&&me)?". 👑 Admin: change the tier below.":". Invest CT in Clash Front to raise them (coming soon).");
+  $("dhint").classList.remove("design-empty");
   const vs=$("vstrip");vs.innerHTML="";
   for(let v=0;v<=row.designVersion;v++){const btn=document.createElement("button");btn.textContent="v"+v;if(v===row.designVersion)btn.className="cur";
     btn.onclick=()=>{$("thumb").src=`/internal/v1/designs/${parcelId}/thumb.png?v=${v}`;$("view3d").href=`/designer/3d?parcel=${parcelId}&v=${v}`;};vs.appendChild(btn);}
-  $("freeze").disabled=false;$("freeze").textContent=row.status==="OWNER_FROZEN"?"🔓 Unfreeze":"🔒 Freeze";}
+  $("freeze").disabled=false;$("freeze").textContent=row.status==="OWNER_FROZEN"?"🔓 Unfreeze":"🔒 Freeze";
+  syncTierAdmin();}
+/* overhaul A4: admins (verified PG login) set a parcel's investment tier directly — server action "invest" */
+function syncTierAdmin(){const box=$("tierAdmin");if(!box)return;
+  const on=!!(admin&&me&&cur&&cur.row&&cur.row.status!=="ESTATE_MAP");box.hidden=!on;
+  if(on&&cur.budget)$("tierSel").value=String(cur.budget.level|0);}
+$("tierSet").onclick=async()=>{if(!cur)return;const level=+$("tierSel").value;$("tierSet").disabled=true;
+  try{const d=await fetch(`/internal/v1/designs/${cur.parcelId}/invest`,{method:"POST",headers:hdrs(),body:JSON.stringify({level})}).then(r=>r.json());
+    if(!d.ok)throw new Error(d.error||"tier change failed");
+    cur.budget=d.budget;show(cur.parcelId,cur.row,cur.artifact,d.budget);
+    const msg="Tier set to "+d.budget.name+" — generate again to use the new caps.";
+    if(window.EFShell)EFShell.toast(msg,"ok");else $("genStat").textContent=msg;}
+  catch(e){$("err").textContent=e.message;if(window.EFShell)EFShell.toast(e.message,"bad");}
+  finally{$("tierSet").disabled=false;}};
 $("load").onclick=()=>{const id=$("parcel").value.trim();if(id)selectParcel(id);};
 $("parcel").addEventListener("keydown",(e)=>{if(e.key==="Enter")$("load").click();});
 $("freeze").onclick=async()=>{if(!cur)return;const on=cur.row.status!=="OWNER_FROZEN";

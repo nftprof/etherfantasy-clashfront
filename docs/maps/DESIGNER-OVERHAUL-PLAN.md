@@ -47,7 +47,7 @@ the same top nav so this is obvious: `Home · World Atlas · Designer · Get Lan
 - [x] A1 **World Atlas stacking bug**: deploy never ships `data/hexagon-city-source/zone-layout.json` → every continent at offset (0,0). Add it to `map-deploy.yml`; guard: worldmap.js warns + falls back to a grid layout when the file is missing. → DONE: workflow ships it; fallback row verified (10/10 distinct positions with + without the file).
 - [x] A2 **Design system**: `/ui/theme.css` (tokens, type scale, buttons, cards, nav, footer, light+dark) + `/ui/shell.js` (injects header nav w/ active state, sign-in pill w/ admin badge, footer). Serve `/ui/*` statically. → DONE: tokens/type/buttons/cards/pills/nav/footer/toasts/forms/responsive; `window.EFShell`; `/ui/*` + `/media/*` routes (utf-8).
 - [x] A3 **Routing**: `/` → landing; signed-out first visit to `/designer` → landing (deep links `?parcel=` and "Continue as guest" bypass via sessionStorage).
-- [ ] A4 **Admin = all features**: admin designs get the max budget tier; admin badge in shell; audit + remove client gates/"coming soon" blocks for admin; `/whoami` drives it.
+- [x] A4 **Admin = all features**: admin designs get the max budget tier; admin badge in shell; audit + remove client gates/"coming soon" blocks for admin; `/whoami` drives it. — DONE 2026-10-19: admin tier control (0–5, Golden = max) in Current design → server `invest` action; admin copy replaces "coming soon"; shell shows 👑 Admin. Admin = the VERIFIED PG login (nftprof) or ops key. The admin *wallet* stays view-only on purpose: `x-wallet` is an unsigned header, so it cannot grant write access.
 
 ### B — Landing page (`maps/landing.html`)
 - [x] B1 Hero: headline + subhead + CTAs (Explore the world · Design your land · Get land) over the video.
