@@ -92,6 +92,11 @@
   .hint{color:var(--ef-text-3);font-size:12.5px;margin-top:8px;line-height:1.5}
   .err{color:var(--ef-bad);font-size:13px;min-height:16px;margin-top:6px}
   .stat{font-size:12.5px;color:var(--ef-text-2)}
+  /* parcel inspector (C3) */
+  .insp{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:13px;margin:0 0 14px;padding:12px 14px;border:1px solid var(--ef-line);border-radius:12px;background:var(--ef-bg-2)}
+  .insp dt{color:var(--ef-text-3)} .insp dd{margin:0;color:var(--ef-text);text-align:right;font-variant-numeric:tabular-nums}
+  .insp .idv{font-family:var(--ef-mono);font-size:12.5px}
+  .insp .yes{color:var(--ef-ok)} .insp .no{color:var(--ef-gold)}
   /* studio layout */
   .studio-cols{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:18px;align-items:start;margin-bottom:18px}
   .studio-cols>.card{margin:0}
@@ -312,8 +317,11 @@
     <!-- ===================== CURRENT DESIGN ===================== -->
     <div class="card sticky">
       <h2>🗺 Current design <span class="stat" id="status"></span></h2>
-      <img id="thumb" alt="" hidden>
-      <div class="row" style="margin-top:12px"><a id="view3d" hidden target="_blank" rel="noopener"><button class="primary">🧊 Open in 3D</button></a></div>
+      <dl class="insp" id="insp" hidden></dl>
+      <img id="thumb" alt="Top-down preview of this parcel's battlefield" hidden>
+      <div class="row" style="margin-top:12px"><a id="view3d" hidden target="_blank" rel="noopener"><button class="primary">🧊 Open in 3D</button></a>
+        <button id="copyLink" hidden title="Copy a link to this parcel">🔗 Copy link</button>
+        <button id="claimThis" hidden title="This land is unminted — claim it with a size token">🪙 Claim this land</button></div>
       <div class="meta" id="meta"></div>
       <div class="hint" id="modeHint"></div>
       <div class="vstrip" id="vstrip"></div>
@@ -868,7 +876,30 @@ function show(parcelId,row,artifact,budget){cur={parcelId,row,artifact,budget:bu
   for(let v=0;v<=row.designVersion;v++){const btn=document.createElement("button");btn.textContent="v"+v;if(v===row.designVersion)btn.className="cur";
     btn.onclick=()=>{$("thumb").src=`/internal/v1/designs/${parcelId}/thumb.png?v=${v}`;$("view3d").href=`/designer/3d?parcel=${parcelId}&v=${v}`;};vs.appendChild(btn);}
   $("freeze").disabled=false;$("freeze").textContent=row.status==="OWNER_FROZEN"?"🔓 Unfreeze":"🔒 Freeze";
-  syncTierAdmin();}
+  syncTierAdmin();try{renderInspector(parcelId,row);}catch(_){}}
+/* overhaul C3: parcel inspector — facts decoded from the on-chain token id + the zone's parcel list */
+const SIZE_BY_DIGIT={"1":"EPIC","2":"GIANT","3":"LARGE","4":"MEDIUM","5":"SMALL","6":"SINGLE"};
+const ZONE_BY_CODE={"00":"BUS","01":"CGI","02":"EDU","03":"ENT","04":"HS1","05":"HS2","06":"HS3","07":"HUB","08":"KOL","09":"UW1","10":"UW2","11":"UW3"};
+const STATUS_LABEL={SEED_V0:"Seed design",AI_DESIGNED:"AI-designed",OWNER_FROZEN:"Frozen by owner",ESTATE_MAP:"Curated estate map"};
+function decodeId(id){id=String(id);const z=ZONE_BY_CODE[id.slice(1,3)];
+  if(/^\d{7}$/.test(id))return{estate:true,size:SIZE_BY_DIGIT[id[0]]||"?",zone:z,index:+id.slice(3)};
+  if(/^\d{11}$/.test(id))return{estate:false,parentSize:SIZE_BY_DIGIT[id[0]]||"?",zone:z,parent:+id.slice(3,7),sub:+id.slice(7)};
+  return{zone:z};}
+function renderInspector(parcelId,row){const el=$("insp");if(!el)return;const d=decodeId(parcelId);
+  const zn=(zones.find(z=>z.zoneId===d.zone)||{}).name||d.zone||"—";const p=(allParcels||[]).find(x=>x.parcelId===String(parcelId));
+  const cap=(t)=>t?t[0]+t.slice(1).toLowerCase():"";
+  const rows=[["Parcel id",'<span class="idv">'+esc(parcelId)+'</span>'],["Continent",esc(zn)+(d.zone?' <span class="stat">'+d.zone+'</span>':"")]];
+  if(d.estate)rows.push(["Kind",cap(d.size)+" estate · Ethereum"]);
+  else if(d.parentSize)rows.push(["Kind","Single parcel · Polygon"],["Part of",cap(d.parentSize)+" estate #"+d.parent]);
+  if(p)rows.push(["Ownership",p.mine?'<span class="yes">✓ Yours</span>':(p.minted?"Minted":'<span class="no">Unminted — claimable</span>')]);
+  if(row)rows.push(["Design",(STATUS_LABEL[row.status]||row.status)+" · v"+row.designVersion]);
+  el.innerHTML=rows.map(([k,v])=>"<dt>"+k+"</dt><dd>"+v+"</dd>").join("");el.hidden=false;
+  $("copyLink").hidden=false;$("claimThis").hidden=!(p&&!p.minted);}
+const esc=(s)=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+$("copyLink").onclick=async()=>{if(!cur)return;const url=location.origin+"/designer?parcel="+encodeURIComponent(cur.parcelId);
+  try{await navigator.clipboard.writeText(url);window.EFShell&&EFShell.toast("Link copied — anyone can open this parcel.","ok");}
+  catch(_){prompt("Copy this link:",url);}};
+$("claimThis").onclick=()=>$("mintBtn").click();
 /* overhaul A4: admins (verified PG login) set a parcel's investment tier directly — server action "invest" */
 function syncTierAdmin(){const box=$("tierAdmin");if(!box)return;
   const on=!!(admin&&me&&cur&&cur.row&&cur.row.status!=="ESTATE_MAP");box.hidden=!on;
