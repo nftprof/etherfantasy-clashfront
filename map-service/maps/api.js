@@ -180,7 +180,18 @@ export function mapsApi(req, res) {
         return { zoneId: z.zoneId, name: z.name, subtitle: z.subtitle || "", tier: z.tier || z.depth || z.layer || "surface",
           biomeFamily: z.biomeFamily || "", parcels: l ? l.count : 0, charted: !!(l && l.bbox), castles: nc };
       });
-      J(res, 200, { ok: true, zones, totals: { parcels, castles, continents: zones.length, designed: reg_list_len() } });
+      // travel routes for the World Atlas: owner-locked zoneLinks between real continents + the Shaft's
+      // linear descent HUB→UW1→UW2→UW3 (stated in the zoneLinks note). Pseudo-origins (SEA/SKY) skipped.
+      const ids = new Set(zones.map((z) => z.zoneId)), nameOf = (id) => (zones.find((z) => z.zoneId === id) || {}).name || id;
+      const LABEL = { AIRSHIP_WAY: "Airship way", SECRET_ENTRANCE: "The Diminishing Stair", SHAFT: "The Shaft" };
+      const links = [];
+      for (const l of (zreg.zoneLinks && zreg.zoneLinks.locked) || []) {
+        if (!ids.has(l.from) || !ids.has(l.to)) continue;
+        links.push({ from: l.from, to: l.to, kind: l.kind, label: l.from.startsWith("HS") ? "to " + nameOf(l.to) : (LABEL[l.kind] || l.kind) });
+      }
+      for (const [a, b] of [["HUB", "UW1"], ["UW1", "UW2"], ["UW2", "UW3"]])
+        if (ids.has(a) && ids.has(b) && !links.some((l) => l.from === a && l.to === b)) links.push({ from: a, to: b, kind: "SHAFT", label: a === "HUB" ? "The Shaft" : "descent" });
+      J(res, 200, { ok: true, zones, links, totals: { parcels, castles, continents: zones.length, designed: reg_list_len() } });
     } catch (e) { J(res, 500, { ok: false, error: e.message }); }
     return true;
   }

@@ -94,6 +94,28 @@ const sendFile = (res, file, type) => {
   });
 };
 
+// static assets with validators + byte ranges (overhaul E5): ETag/304 for /ui and /media, and HTTP
+// Range → 206 so Safari/iOS can play the landing videos (it refuses video without range support).
+function serveStatic(req, res, abs, type, cache) {
+  fs.stat(abs, (e, st) => {
+    if (e || !st.isFile()) { res.writeHead(404); return res.end("not found"); }
+    const etag = `"${st.size.toString(16)}-${Math.floor(st.mtimeMs).toString(16)}"`;
+    const base = { "content-type": type, "cache-control": cache, etag, "accept-ranges": "bytes" };
+    if (req.headers["if-none-match"] === etag) { res.writeHead(304, base); return res.end(); }
+    const m = /^bytes=(\d*)-(\d*)$/.exec(req.headers.range || "");
+    if (m && (m[1] || m[2])) {
+      let a = m[1] ? +m[1] : Math.max(0, st.size - +m[2]), b = m[1] && m[2] ? Math.min(+m[2], st.size - 1) : st.size - 1;
+      if (a > b || a >= st.size) { res.writeHead(416, { "content-range": `bytes */${st.size}` }); return res.end(); }
+      res.writeHead(206, { ...base, "content-range": `bytes ${a}-${b}/${st.size}`, "content-length": b - a + 1 });
+      if (req.method === "HEAD") return res.end();
+      return fs.createReadStream(abs, { start: a, end: b }).pipe(res);
+    }
+    res.writeHead(200, { ...base, "content-length": st.size });
+    if (req.method === "HEAD") return res.end();
+    fs.createReadStream(abs).pipe(res);
+  });
+}
+
 export function handleRequest(req, res) {
   const [p] = req.url.split("?");
 
@@ -128,16 +150,12 @@ export function handleRequest(req, res) {
   {
     // shared design system (overhaul A2): /ui/theme.css + /ui/shell.js — every page's chrome
     const ui = /^\/ui\/([a-zA-Z0-9._-]+\.(css|js|svg))$/.exec(p);
-    if (ui) return sendFile(res, "ui/" + ui[1], { css: "text/css; charset=utf-8", js: "application/javascript; charset=utf-8", svg: "image/svg+xml" }[ui[2]]);
+    if (ui) return serveStatic(req, res, path.join(__dirname, "ui", ui[1]), { css: "text/css; charset=utf-8", js: "application/javascript; charset=utf-8", svg: "image/svg+xml" }[ui[2]], "public,max-age=300");
     // landing media (overhaul B2): showcase video + posters. Content-stable → long cache.
-    const md = /^\/media\/([a-zA-Z0-9._-]+\.(webm|mp4|jpg|jpeg|png|webp))$/.exec(p);
+    const md = /^\/media\/((?:continents\/)?[a-zA-Z0-9._-]+\.(webm|mp4|jpg|jpeg|png|webp))$/.exec(p);
     if (md) {
       const type = { webm: "video/webm", mp4: "video/mp4", jpg: "image/jpeg", jpeg: "image/jpeg", png: "image/png", webp: "image/webp" }[md[2]];
-      return fs.readFile(path.join(__dirname, "media", md[1]), (e, buf) => {
-        if (e) { res.writeHead(404); return res.end("not found"); }
-        res.writeHead(200, { "content-type": type, "cache-control": "public,max-age=86400", "accept-ranges": "none" });
-        res.end(buf);
-      });
+      return serveStatic(req, res, path.join(__dirname, "media", md[1]), type, "public,max-age=86400");
     }
   }
   {

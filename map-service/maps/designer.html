@@ -82,6 +82,14 @@
   .zone{border:1px solid var(--ef-line);border-radius:14px;padding:14px;cursor:pointer;background:var(--ef-surface);transition:all .15s}
   .zone:hover{border-color:var(--ef-ether);background:rgba(168,85,247,.08);transform:translateY(-2px)}
   .zone .zn{font:700 16px/1.2 var(--ef-font-display)}.zone .zc{font-size:12px;color:var(--ef-text-3);margin-top:4px}
+  /* C4: continent picture cards */
+  .zgrid{grid-template-columns:repeat(auto-fill,minmax(200px,1fr))}
+  .zone.pic{padding:0;overflow:hidden}
+  .zone.pic .zi{height:112px;background:var(--ef-bg-2) center/contain no-repeat;border-bottom:1px solid var(--ef-line);position:relative}
+  .zone.pic .zb{padding:11px 13px}
+  .zone .tierchip{position:absolute;left:8px;top:8px;font:600 10px/1 var(--ef-font);letter-spacing:.12em;text-transform:uppercase;padding:4px 8px;border-radius:999px;background:rgba(7,6,13,.75);border:1px solid currentColor}
+  .zband{grid-column:1/-1;font:600 11.5px/1 var(--ef-font);letter-spacing:.16em;text-transform:uppercase;margin:6px 0 -2px;display:flex;gap:10px;align-items:center}
+  .zband::after{content:"";flex:1;height:1px;background:var(--ef-line)}
   #landmap{width:100%;border-radius:14px;border:1px solid var(--ef-line);background:var(--ef-bg-2);cursor:crosshair;display:block}
   #maptip{position:fixed;pointer-events:none;background:rgba(12,10,22,.96);border:1px solid var(--ef-line-2);border-radius:10px;padding:7px 10px;font-size:12.5px;display:none;z-index:80;box-shadow:var(--ef-shadow)}
   .maptools{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:10px;align-items:center}
@@ -416,9 +424,9 @@
   <h2>Welcome to the Land Designer</h2>
   <div class="hint" style="margin-bottom:6px">Design the battlefield your land becomes when it's fought over.</div>
   <div class="step"><div class="num">1</div><div><b>Find your land.</b> Pick a continent, then your parcel — search by id, or toggle "my land only" once you're signed in. Your own land is ringed in white.</div></div>
-  <div class="step"><div class="num">2</div><div><b>Connect an AI.</b> Use the Pentagon default, or bring your own key (it never leaves your browser).</div></div>
-  <div class="step"><div class="num">3</div><div><b>Describe it &amp; generate.</b> Write the battlefield in plain words. The engine builds it, checks it's fair, and renders it in 3D. Freeze it to lock the look.</div></div>
-  <div class="row" style="margin-top:14px"><button class="primary" id="ftueGo">Got it — start</button><button class="ghost" id="ftueSkip">skip</button></div>
+  <div class="step"><div class="num">2</div><div><b>Describe it &amp; generate.</b> Write the battlefield in plain words or tap a theme. The built-in AI does the rest — or bring your own key under <i>AI engine</i> (it never leaves your browser).</div></div>
+  <div class="step"><div class="num">3</div><div><b>See it in 3D &amp; keep it.</b> The engine checks every design is fair, then you can walk it in 3D. Freeze the look you want to keep.</div></div>
+  <div class="row" style="margin-top:14px"><button class="primary" id="ftueGo">Show me around</button><button class="ghost" id="ftueSkip">skip</button></div>
 </div></div>
 
 <script>
@@ -589,9 +597,17 @@ function showZoneView(){$("zoneView").style.display="";$("parcelView").style.dis
 function showParcelView(){$("zoneView").style.display="none";$("parcelView").style.display="";setCrumb();}
 
 async function loadZones(){try{const d=await fetch("/internal/v1/zones").then(r=>r.json());zones=d.zones||[];
-  const g=$("zgrid");g.innerHTML="";zones.forEach(z=>{const el=document.createElement("div");el.className="zone";
-    el.innerHTML='<div class="zn">'+z.name+'</div><div class="zc">'+z.zoneId+' · '+z.biomeFamily.toLowerCase().replace("_"," ")+'<br>'+z.count.toLocaleString()+' parcels</div>';
-    el.onclick=()=>{zone=z.zoneId;page=0;q="";$("search").value="";loadParcels();};g.appendChild(el);});
+  const g=$("zgrid");g.innerHTML="";
+  const layerOf=(id)=>/^HS/.test(id)?"sky":/^UW/.test(id)?"underworld":"surface";
+  const LAYER={sky:["☁ Sky isles","#5fe9d0"],surface:["⛰ Surface realms","#e8c46f"],underworld:["🜂 Underworld","#ef6c3a"]};
+  for(const L of ["sky","surface","underworld"]){const zs=zones.filter(z=>layerOf(z.zoneId)===L);if(!zs.length)continue;
+    const h=document.createElement("div");h.className="zband";h.style.color=LAYER[L][1];h.textContent=LAYER[L][0];g.appendChild(h);
+    zs.forEach(z=>{const el=document.createElement("div");el.className="zone pic";el.tabIndex=0;el.setAttribute("role","button");el.setAttribute("aria-label","Open "+z.name);
+      el.innerHTML='<div class="zi" style="background-image:url(\'/media/continents/'+z.zoneId+'.webp\')"><span class="tierchip" style="color:'+LAYER[L][1]+'">'+z.zoneId+'</span></div>'+
+        '<div class="zb"><div class="zn">'+z.name+'</div><div class="zc">'+z.biomeFamily.toLowerCase().replace("_"," ")+' · '+z.count.toLocaleString()+' parcels</div></div>';
+      {const im=new Image();im.onerror=()=>{const zi=el.querySelector('.zi');if(zi){zi.style.height='34px';zi.style.backgroundImage='none';}};im.src='/media/continents/'+z.zoneId+'.webp';}
+      el.onclick=()=>{zone=z.zoneId;page=0;q="";$("search").value="";loadParcels();};
+      el.onkeydown=(e)=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();el.click();}};g.appendChild(el);});}
   if(zone)setCrumb();else showZoneView();   /* a deep link (?zone / ?parcel) may already have opened a continent */
   }catch(e){$("mapStat").textContent="· world unavailable";}}
 
