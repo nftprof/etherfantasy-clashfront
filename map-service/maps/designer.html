@@ -135,6 +135,15 @@
   #ftue .step{display:flex;gap:14px;margin:14px 0;color:var(--ef-text-2);font-size:14px}
   #ftue .num{flex:0 0 auto;width:30px;height:30px;border-radius:9px;background:linear-gradient(135deg,var(--ef-ether),var(--ef-ether-lo));color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700}
   #ftue .step div b{color:#fff}
+  /* coach-mark tour (C2) */
+  #coachSpot{position:fixed;z-index:118;border-radius:18px;pointer-events:none;box-shadow:0 0 0 9999px rgba(3,2,7,.74),0 0 0 2px var(--ef-ether),0 0 40px rgba(168,85,247,.45);transition:all .35s ease}
+  #coachPop{position:fixed;z-index:119;width:min(360px,calc(100vw - 32px));background:var(--ef-bg-3);border:1px solid rgba(168,85,247,.5);border-radius:16px;padding:18px 18px 14px;box-shadow:var(--ef-shadow);transition:top .35s ease,left .35s ease}
+  #coachPop .ck{font:600 11px/1 var(--ef-font);letter-spacing:.16em;text-transform:uppercase;color:var(--ef-crystal);margin-bottom:8px}
+  #coachPop h3{margin:0 0 6px;font:650 17px/1.3 var(--ef-font);color:#fff}
+  #coachPop p{margin:0;color:var(--ef-text-2);font-size:13.5px;line-height:1.55}
+  #coachPop .cn{display:flex;justify-content:space-between;align-items:center;margin-top:14px;gap:8px}
+  #coachPop .dots{display:flex;gap:5px}#coachPop .dots i{width:7px;height:7px;border-radius:50%;background:var(--ef-line-2)}#coachPop .dots i.on{background:var(--ef-ether)}
+  @media(max-width:560px){#coachPop{left:16px!important;right:16px;bottom:16px;top:auto!important;width:auto}}
   @media(max-width:960px){.studio-cols{grid-template-columns:1fr}.sticky{position:static}.studio-tools{align-items:flex-start}}
   @media(max-width:760px){.grid{grid-template-columns:1fr}.wrap{padding:16px 16px 32px}.card{padding:16px}}
 </style>
@@ -453,8 +462,36 @@ document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>{
 /* ============ FTUE (first visit) ============ */
 if(!localStorage.getItem("efmaps-ftue")){$("ftue").style.display="flex";}
 const closeFtue=()=>{$("ftue").style.display="none";localStorage.setItem("efmaps-ftue","1");};
-$("ftueGo").onclick=closeFtue;$("ftueSkip").onclick=closeFtue;
-$("helpBtn").onclick=()=>{$("ftue").style.display="flex";};
+$("ftueSkip").onclick=closeFtue;
+$("ftueGo").onclick=()=>{closeFtue();startTour();};
+/* overhaul C2: coach-mark tour — spotlights each part of the studio in order; replay from "Take the tour" */
+const TOUR=[
+  {t:()=>$("crumb").closest(".card"),k:"Step 1 of the studio",h:"Choose your land",p:"Pick a continent, then click a parcel. Toggle <b>my land only</b> once you've signed in; <b>terrain</b> and <b>features</b> show rivers, roads and castles."},
+  {t:()=>$("directive").closest(".card"),k:"Step 2",h:"Describe the battlefield",p:"Write it in plain words or tap a theme chip, then <b>Generate</b>. The engine checks every design is fair and playable before it's saved."},
+  {t:()=>$("thumb").closest(".card"),k:"Step 3",h:"See what you built",p:"Your parcel's facts and battlefield. <b>Open in 3D</b> to walk it, step through versions, and <b>Freeze</b> the look you want to keep."},
+  {t:()=>$("signin"),k:"Your account",h:"Sign in to design your land",p:"Use your Pentagon Games account (same as the game) or connect MetaMask to see the land your wallet owns. Viewing is open to everyone."},
+  {t:()=>$("mintBtn").parentElement,k:"No land yet?",h:"Claim land or explore castles",p:"<b>Claim land</b> mints unminted land with a size token — free, gas only. <b>Estate castles</b> lists every curated castle in the world."},
+];
+let tourI=-1;
+function startTour(){tourI=0;if(!$("coachSpot")){const sp=document.createElement("div");sp.id="coachSpot";const pp=document.createElement("div");pp.id="coachPop";pp.setAttribute("role","dialog");pp.setAttribute("aria-live","polite");document.body.append(sp,pp);}
+  $("coachSpot").style.display=$("coachPop").style.display="block";tourStep();}
+function endTour(){tourI=-1;["coachSpot","coachPop"].forEach(id=>{const e=$(id);if(e)e.style.display="none";});try{localStorage.setItem("efmaps-tour","1");}catch(_){}}
+function tourStep(noScroll){const st=TOUR[tourI],el=st&&st.t();if(!el){endTour();return;}
+  if(!noScroll)el.scrollIntoView({block:"center",behavior:"instant"});
+  requestAnimationFrame(()=>{const r=el.getBoundingClientRect(),pad=8,sp=$("coachSpot"),pp=$("coachPop");
+    const top=Math.max(8,r.top-pad),h=Math.min(innerHeight-16,r.height+pad*2);
+    Object.assign(sp.style,{left:(r.left-pad)+"px",top:top+"px",width:(r.width+pad*2)+"px",height:h+"px"});
+    pp.innerHTML=`<div class="ck">${st.k}</div><h3>${st.h}</h3><p>${st.p}</p><div class="cn"><div class="dots">${TOUR.map((_,i)=>`<i class="${i===tourI?"on":""}"></i>`).join("")}</div>
+      <div class="row" style="gap:6px">${tourI?'<button class="ghost" id="tBack">Back</button>':'<button class="ghost" id="tSkip">Skip</button>'}<button class="primary" id="tNext" style="padding:9px 16px">${tourI===TOUR.length-1?"Done":"Next"}</button></div></div>`;
+    const pw=pp.offsetWidth,ph=pp.offsetHeight;let pt=top+h+12;if(pt+ph>innerHeight-8)pt=Math.max(8,top-ph-12);if(pt<8||h>innerHeight*.6)pt=Math.min(innerHeight-ph-16,Math.max(16,top+24));
+    pp.style.top=pt+"px";pp.style.left=Math.max(16,Math.min(innerWidth-pw-16,r.left+24))+"px";
+    $("tNext").onclick=()=>{tourI++;tourI>=TOUR.length?endTour():tourStep();};
+    const b=$("tBack");if(b)b.onclick=()=>{tourI--;tourStep();};const sk=$("tSkip");if(sk)sk.onclick=endTour;
+    $("tNext").focus({preventScroll:true});});}
+document.addEventListener("keydown",(e)=>{if(tourI<0)return;if(e.key==="Escape")endTour();else if(e.key==="ArrowRight"){$("tNext").click();}else if(e.key==="ArrowLeft"&&tourI>0){tourI--;tourStep();}});
+window.addEventListener("resize",()=>{if(tourI>=0)tourStep();});
+let _tq=0;window.addEventListener("scroll",()=>{if(tourI<0||_tq)return;_tq=requestAnimationFrame(()=>{_tq=0;tourStep(true);});},{passive:true});
+$("helpBtn").onclick=()=>startTour();
 
 // ---- ESTATE CASTLE EXPLORER (owner 2026-07-21: "each castle for estates curated … a separate
 // explorer for large land … as admin filter for them easily") ----

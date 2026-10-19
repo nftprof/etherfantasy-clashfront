@@ -62,7 +62,7 @@ the same top nav so this is obvious: `Home · World Atlas · Designer · Get Lan
 
 ### C — Designer studio, professional pass
 - [x] C1 Adopt shell + theme; studio layout (left: land picker / right: design panel); remove ad-hoc inline styles. — DONE 2026-10-19: studio hero, full-width land map, Describe | sticky Current design columns, AI engine + ops key collapsed, castle/claim as slide-over drawers, #signin/#mint/#estates deep links; all element IDs kept (old tokens aliased to the theme).
-- [ ] C2 FTUE coach-mark tour (first visit, replay from Help).
+- [x] C2 FTUE coach-mark tour (first visit, replay from Help). — DONE: welcome card → 5-step spotlight tour (land, describe, result, account, claim/castles); "Take the tour" replays; Esc/arrow keys; phone-friendly.
 - [x] C3 Parcel inspector: zone, size, owner, minted, design status, open 3D, copy link. — DONE: decoded from the token id (estate size / parent estate / chain), ownership (yours · minted · unminted→"Claim this land"), design status; Copy link.
 - [ ] C4 Continent picker as image cards (mosaic thumb + identity) instead of text tiles.
 - [ ] C5 Toasts, loading skeletons, empty + error states.
