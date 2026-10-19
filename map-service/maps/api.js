@@ -84,6 +84,32 @@ async function parcelFacts(parcelId) {
 
 // JSON out; gzip when the client accepts it and the body is big (the per-continent parcel list is
 // ~4.5 MB raw → a fraction gzipped). server.js tags res._gz from Accept-Encoding.
+// polish Q3: a shared /designer?parcel=X link previews THAT parcel — its name, continent and (for single
+// parcels) its battlefield thumbnail — instead of the generic site card. Pure string swap on the meta tags.
+const SITE = "https://map.etherfantasy.com";
+const ZONE_CODE = { "00": "BUS", "01": "CGI", "02": "EDU", "03": "ENT", "04": "HS1", "05": "HS2", "06": "HS3", "07": "HUB", "08": "KOL", "09": "UW1", "10": "UW2", "11": "UW3" };
+function parcelShareMeta(html, req) {
+  try {
+    const id = new URL(req.url, "http://x").searchParams.get("parcel") || "";
+    if (!/^\d{7}$|^\d{11}$/.test(id)) return html;
+    const zid = ZONE_CODE[id.slice(1, 3)], zone = zoneList().find((z) => z.zoneId === zid);
+    let castle = null;
+    try { const f = zid && loadWorldField(zid); castle = f && (f.castles || []).find((c) => c.parcel === id || String(c.estateMapId || "") === id || (c.heroParcels || []).includes(id)); } catch {}
+    const estate = id.length === 7, zname = (zone && zone.name) || zid || "Hexagon City";
+    const title = `${castle ? castle.name : estate ? "Estate " + id : "Parcel " + id} · ${zname} — Ether Fantasy Land`;
+    const desc = castle ? `${castle.name}, a ${String(castle.kind || "castle").toLowerCase()} in ${zname}. Open its battlefield in the Land Designer and walk it in 3D.`
+      : `${estate ? "An estate" : "A parcel"} in ${zname}. Every parcel is a real battlefield in Clash Front — see this one in the Land Designer.`;
+    const img = estate ? null : `${SITE}/internal/v1/designs/${id}/thumb.png`;
+    const q = (v) => String(v).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
+    const set = (h, attr, key, val) => h.replace(new RegExp(`(<meta ${attr}="${key}" content=")[^"]*(")`), `$1${q(val)}$2`);
+    let h = html.replace(/<title>[^<]*<\/title>/, `<title>${q(title)}</title>`);
+    h = set(h, "property", "og:title", title); h = set(h, "property", "og:description", desc); h = set(h, "name", "description", desc);
+    h = set(h, "property", "og:url", `${SITE}/designer?parcel=${id}`);
+    if (img) { h = set(h, "property", "og:image", img); h = set(h, "name", "twitter:image", img); h = set(h, "name", "twitter:card", "summary");
+      h = h.replace(/<meta property="og:image:width"[^>]*>/, '<meta property="og:image:width" content="322"><meta property="og:image:height" content="322">'); }
+    return h;
+  } catch { return html; }
+}
 const J = (res, code, obj) => {
   const body = JSON.stringify(obj), h = { "content-type": "application/json", "access-control-allow-origin": "*", vary: "accept-encoding" };
   if (res._gz && body.length > 2048) return zlib.gzip(body, { level: 6 }, (e, gz) => {
@@ -170,7 +196,7 @@ export function mapsApi(req, res) {
     fs.readFile(path.join(__dirname, page), (e, buf) => {
       if (e) { res.writeHead(404); return res.end("page missing"); }
       res.writeHead(200, { "content-type": "text/html", "cache-control": "no-cache" });
-      res.end(buf);
+      res.end(page === "designer.html" ? parcelShareMeta(buf.toString("utf8"), req) : buf);
     });
     return true;
   }
