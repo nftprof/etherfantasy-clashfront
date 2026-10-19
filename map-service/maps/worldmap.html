@@ -210,8 +210,8 @@ function draw(){
     if(hot){ ctx.strokeStyle=col; ctx.lineWidth=1.5; rr(ox-4,oy-4,W+8,H+8,12); ctx.stroke(); }
     if($("tLabels").checked&&W>34){
       ctx.textAlign="center"; ctx.fillStyle=hot?"#fff":"rgba(244,240,255,.92)"; ctx.font=`700 ${Math.max(11,Math.min(17,W/7))}px Cinzel,Georgia,serif`;
-      ctx.fillText(z.name,ox+W/2,oy-8);
-      if(W>70&&(mode==="layers"&&!anim||hot)){ ctx.fillStyle="rgba(190,182,214,.75)"; ctx.font="11px Inter,system-ui"; ctx.fillText(z.charted?`${z.parcels.toLocaleString()} parcels`:"not yet mapped",ox+W/2,oy+H+15); }
+      ctx.lineJoin="round";ctx.lineWidth=4;ctx.strokeStyle="rgba(7,6,13,.92)";ctx.strokeText(z.name,ox+W/2,oy-8);ctx.fillText(z.name,ox+W/2,oy-8);
+      if(W>70&&(mode==="layers"&&!anim||hot)){ ctx.fillStyle="rgba(190,182,214,.75)"; ctx.font="11px Inter,system-ui"; const lb=z.charted?`${z.parcels.toLocaleString()} parcels`:"not yet mapped"; ctx.lineWidth=4; ctx.strokeStyle="rgba(7,6,13,.92)"; ctx.strokeText(lb,ox+W/2,oy+H+15); ctx.fillText(lb,ox+W/2,oy+H+15); }
     }
   }
 }
