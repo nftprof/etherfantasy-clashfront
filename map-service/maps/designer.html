@@ -622,12 +622,20 @@ let zones=[],zone=null,parcels=[],view=null,selId=null,hoverId=null;
 // they're an opt-in layer, not the map surface, until the arena is rebuilt to fill the polygon.
 let mosaicImg=null,mosaicMeta=null,showMosaic=true,mosaicMode="planner";
 // mode "thumb" = the 3D-thumb land map (default); "planner" = the 2D terrain reference layer.
-function loadMosaic(z){mosaicImg=null;mosaicMeta=null;if(!z)return;const zz=z,md=mosaicMode;
-  const qs="zone="+encodeURIComponent(zz)+"&mode="+md;
+/* polish S2: light-first. A 1600px webp baked for this exact mosaic version (fingerprint in the name) loads in a
+   fraction of the bytes; the full PNG (up to ~6 MB) is fetched only when you zoom in past 160% — or if no light copy exists. */
+let mosaicLite=false,mosaicQs="";
+function loadMosaicFull(zz,md){const img=new Image();img.onload=()=>{if(mosaicMeta&&mosaicMeta.zone===zone&&mosaicMode===md){mosaicImg=img;mosaicLite=false;drawMap();}};
+  img.src="/internal/v1/mosaic.png?"+mosaicQs+(mosaicMeta&&mosaicMeta.fingerprint?"&fp="+encodeURIComponent(mosaicMeta.fingerprint):"");}
+function loadMosaic(z){mosaicImg=null;mosaicMeta=null;mosaicLite=false;if(!z)return;const zz=z,md=mosaicMode;
+  const qs="zone="+encodeURIComponent(zz)+"&mode="+md;mosaicQs=qs;
   fetch("/internal/v1/mosaic.json?"+qs).then(r=>r.json()).then(m=>{
     if(!m||!m.ok||m.zone!==zone||mosaicMode!==md)return;mosaicMeta=m;
-    const img=new Image();img.onload=()=>{if(mosaicMeta&&mosaicMeta.zone===zone&&mosaicMode===md){mosaicImg=img;drawMap();}};
-    img.src="/internal/v1/mosaic.png?"+qs;
+    if(!m.fingerprint){loadMosaicFull(zz,md);return;}
+    const lite=new Image();
+    lite.onload=()=>{if(mosaicMeta&&mosaicMeta.zone===zone&&mosaicMode===md&&!mosaicImg){mosaicImg=lite;mosaicLite=true;drawMap();if(zoom>1.6)loadMosaicFull(zz,md);}};
+    lite.onerror=()=>loadMosaicFull(zz,md);
+    lite.src="/media/mosaics/"+zz+"."+md+"."+String(m.fingerprint).replace(/[^a-zA-Z0-9-]/g,"")+".webp";
   }).catch(()=>{});}
 let page=0,pageSize=2000,total=0,q="",mineOnly=false,designedOnly=false,me=null,admin=false,ownersKnown=false;
 const cv=$("landmap"),cx=cv.getContext("2d");
@@ -664,7 +672,8 @@ const BASE=(x,y)=>[x*view.s+view.ox, cv.height-(y*view.s+view.oy)];       // fit
 const PX=(x,y)=>{const b=BASE(x,y);return[b[0]*zoom+panX, b[1]*zoom+panY];}; // screen-space (zoom+pan)
 function setZoom(nz,cxp,cyp){nz=Math.max(1,Math.min(280,nz));const mx=cxp??cv.width/2,my=cyp??cv.height/2;   // max zoom ~4.5× deeper (owner 2026-08-26: near-full-parcel preview)
   panX=mx-(mx-panX)*(nz/zoom);panY=my-(my-panY)*(nz/zoom);zoom=nz;drawMap();updZoomUI();}
-function updZoomUI(){const z=$("zLbl");if(z)z.textContent=Math.round(zoom*100)+"%";}
+function updZoomUI(){const z=$("zLbl");if(z)z.textContent=Math.round(zoom*100)+"%";
+  if(mosaicLite&&zoom>1.6&&mosaicMeta){mosaicLite=false;loadMosaicFull(mosaicMeta.zone,mosaicMode);}}   /* S2: detail on demand */
 // cache parsed svg polygons (M/m/L/l/h/v/z subset — the l3 paths are simple relative outlines)
 const polyCache=new Map();
 function poly(p){if(polyCache.has(p.parcelId))return polyCache.get(p.parcelId);let pts=null;

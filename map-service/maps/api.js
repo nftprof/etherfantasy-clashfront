@@ -278,7 +278,8 @@ export function mapsApi(req, res) {
       if (ppuP) opts.ppu = Math.max(2, Math.min(60, ppuP));
       const { png, meta } = bakeMosaic(opts);
       if (p === "/internal/v1/mosaic.json") { J(res, 200, { ok: true, ...meta }); return true; }
-      res.writeHead(200, { "content-type": "image/png", "cache-control": "public, max-age=300", "x-mosaic-thumbed": String(meta.thumbed) });
+      const pinned = u.searchParams.get("fp") && u.searchParams.get("fp") === String(meta.fingerprint);   // versioned URL → cache for good
+      res.writeHead(200, { "content-type": "image/png", "cache-control": pinned ? "public, max-age=31536000, immutable" : "public, max-age=300", "x-mosaic-thumbed": String(meta.thumbed) });
       res.end(png);
     } catch (e) { J(res, p.endsWith(".json") ? 200 : 500, { ok: false, error: e.message }); }
     return true;

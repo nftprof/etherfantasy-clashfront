@@ -153,7 +153,7 @@ export function handleRequest(req, res) {
     const ui = /^\/ui\/([a-zA-Z0-9._-]+\.(css|js|svg))$/.exec(p);
     if (ui) return serveStatic(req, res, path.join(__dirname, "ui", ui[1]), { css: "text/css; charset=utf-8", js: "application/javascript; charset=utf-8", svg: "image/svg+xml" }[ui[2]], "public,max-age=300");
     // landing media (overhaul B2): showcase video + posters. Content-stable → long cache.
-    const md = /^\/media\/((?:continents\/)?[a-zA-Z0-9._-]+\.(webm|mp4|jpg|jpeg|png|webp))$/.exec(p);
+    const md = /^\/media\/((?:continents\/|mosaics\/)?[a-zA-Z0-9._-]+\.(webm|mp4|jpg|jpeg|png|webp))$/.exec(p);
     if (md) {
       const type = { webm: "video/webm", mp4: "video/mp4", jpg: "image/jpeg", jpeg: "image/jpeg", png: "image/png", webp: "image/webp" }[md[2]];
       return serveStatic(req, res, path.join(__dirname, "media", md[1]), type, "public,max-age=86400");

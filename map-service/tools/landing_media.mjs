@@ -4,6 +4,7 @@
 //   node tools/landing_media.mjs --test     one frame per scene → <scratch>/scene-N.png (camera tuning)
 //   node tools/landing_media.mjs --video    media/showcase.webm + media/showcase-poster.webp
 //   node tools/landing_media.mjs --stills   media/continents/<ZONE>.webp, media/tool-*.webp, media/og-card.png
+//   node tools/landing_media.mjs --mosaics  media/mosaics/<ZONE>.<mode>.<fp>.webp — light Designer base maps (run ON the box)
 //
 // The video is FRAME-STEPPED, not screen-recorded: each frame places the camera exactly via the
 // /designer/3d?showcase=1 hook (window.__CF_SHOW.setOrbit), waits for the render, screenshots, and
@@ -14,7 +15,8 @@ import fs from "node:fs";
 import path from "node:path";
 import { spawn } from "node:child_process";
 import { fileURLToPath } from "node:url";
-import pw from "/opt/node22/lib/node_modules/playwright/node_modules/playwright-core/index.js";
+// playwright-core: the box installs it next to the service (map-deploy.yml); this sandbox has a global copy
+let pw; try { pw = (await import("playwright-core")).default; } catch { pw = (await import("/opt/node22/lib/node_modules/playwright/node_modules/playwright-core/index.js")).default; }
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
@@ -140,6 +142,24 @@ async function test(browser) {
   await page.close();
 }
 
+// light Designer base maps (polish S2): 1600px webp per zone × mode, named by the mosaic fingerprint the
+// SERVING host reports — so run it against the box itself (map-deploy.yml does, after its re-bake). A miss
+// (re-bake, or never run) just makes the Designer fall back to the full PNG.
+async function liteMosaics(browser) {
+  const page = await browser.newPage(); await page.goto(`${BASE}/healthz`);
+  const st = await (await fetch(`${BASE}/internal/v1/landing-stats`)).json();
+  const dir = path.join(MEDIA, "mosaics"); fs.rmSync(dir, { recursive: true, force: true });
+  for (const z of st.zones.filter((z) => z.charted)) for (const mode of ["planner", "thumb"]) {
+    const m = await (await fetch(`${BASE}/internal/v1/mosaic.json?zone=${z.zoneId}&mode=${mode}`)).json();
+    if (!m.ok || !m.fingerprint) continue;
+    const r = await fetch(`${BASE}/internal/v1/mosaic.png?zone=${z.zoneId}&mode=${mode}`); if (!r.ok) continue;
+    const fp = String(m.fingerprint).replace(/[^a-zA-Z0-9-]/g, "");
+    const kb = await toWebp(page, Buffer.from(await r.arrayBuffer()), path.join(dir, `${z.zoneId}.${mode}.${fp}.webp`), 1600, 0.82);
+    console.log(`  mosaics/${z.zoneId}.${mode}.${fp}.webp ${(kb / 1e3).toFixed(0)} KB`);
+  }
+  await page.close();
+}
+
 async function stills(browser) {
   const page = await browser.newPage({ viewport: { width: W, height: H } });
   await page.goto(`${BASE}/healthz`);
@@ -197,9 +217,10 @@ async function stills(browser) {
   await page.close();
 }
 
-const browser = await pw.chromium.launch({ args: ARGS });
+const browser = await pw.chromium.launch({ args: ARGS, ...(process.env.PW_CHROME ? { executablePath: process.env.PW_CHROME } : {}) });
 try {
   if (process.argv.includes("--test")) await test(browser);
   if (process.argv.includes("--video")) await video(browser);
   if (process.argv.includes("--stills")) await stills(browser);
+  if (process.argv.includes("--mosaics")) await liteMosaics(browser);
 } finally { await browser.close(); }

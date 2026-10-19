@@ -113,4 +113,6 @@ jobs:
             node tools/capture_thumb.mjs --from-service --concurrency 4 --settle 1500 || echo "capture had errors (non-fatal)"
           # force a fresh bake so /designer serves the box's own thumbs (overrides committed)
           for Z in EDU; do curl -s -o /dev/null "http://127.0.0.1:8150/internal/v1/mosaic.png?zone=$Z&force=1" || true; done
+          # light 1600px webp base maps for the Designer, named by the fingerprint THIS box serves (polish S2)
+          PW_CHROME="$CH" MAPS_BASE="http://127.0.0.1:8150" node tools/landing_media.mjs --mosaics || echo "lite mosaics skipped (non-fatal)"
           echo "box capture step done."
