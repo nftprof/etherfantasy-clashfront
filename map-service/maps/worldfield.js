@@ -529,26 +529,56 @@ export function zoneName(zoneId) {
 // carries `fallbacks` = [one tier smaller, no fort]; registry.ensureDesign keeps the FIRST variant
 // that passes, so every big estate's default is sim-approved (= hosts modes = playable), always
 // with the grandest fortification its shape can take. Deterministic: the chain is fixed.
+//
+// AUTHORED forts on un-subdivided estates (a zone field's castles[] whose estate has no L3 inside —
+// e.g. UW1's Forge-Hall PALACE / Lampsend Bastion / Doorward Keep): the fort IS the estate map's
+// centre-piece (castle = final component), so it is pinned to the arena centre like a ladder fort
+// (the field's `at` = the estate centre, which the polygon window may put off-centre — measured
+// 2026-10-26: Lampsend's CASTLE at (-1,-39) walled off 4 entries). It keeps its authored kind + name
+// and gets the SAME step-down chain, so an authored estate default is sim-approved too.
+//
+// BARE last resort (2026-10-26): a few estate polygons refuse the gate with ANY fort once the world
+// field is windowed in (UW1 Lampsend: road crossings + corridors split the carved network and the
+// pocket seal strands the centre — a generator edge case, not a fort problem). The chain therefore
+// ends with `bare` variants — the estate polygon WITHOUT the world-field window (no rivers/roads/
+// ridges/crossings; the fort kept, then stepped down) — so EVERY estate, forts or not, has a
+// sim-approved default. `bareField: true` is recorded on the parcel (→ index row) so the census
+// can count the estates that lost continuity and the B-7/D work can revisit them.
 const FORT_DOWN = { PALACE: "CASTLE", CASTLE: "KEEP", KEEP: null };
+const FORT_RANK = { PALACE: 0, CASTLE: 1, KEEP: 2 };
+const EMPTY_FIELD = () => ({ rivers: [], roads: [], ridges: [], castles: [], overlayElements: [], edgeCrossings: [] });
 export function estateParcel(row, opts = {}) {
-  const { fort, noFallback, ...rest } = opts;
+  const { fort, noFallback, bare, ...rest } = opts;
   const sizeClass = String(row.sizeClass || "").toUpperCase();
   const parcel = worldParcel(row, { investLevel: ESTATE_INVEST[sizeClass] ?? 1, sizeClass, estate: true, ...rest });
-  const kind = fort === undefined ? FORT_LADDER[sizeClass] : fort;
-  const authored = !!(parcel.worldField && parcel.worldField.castles && parcel.worldField.castles.length);
-  if (kind && !authored) {
-    if (!parcel.worldField) parcel.worldField = { rivers: [], roads: [], ridges: [], castles: [], overlayElements: [], edgeCrossings: [] };
-    parcel.worldField.castles.push({
+  if (!parcel.worldField) parcel.worldField = EMPTY_FIELD();
+  const authored = (parcel.worldField.castles || []).filter((c) => c.kind in FORT_RANK).sort((a, b) => FORT_RANK[a.kind] - FORT_RANK[b.kind]);
+  if (bare) { parcel.worldField = EMPTY_FIELD(); parcel.bareField = true; }   // fieldSha stays: self-heal key unchanged
+  const wf = parcel.worldField;
+  let kind;
+  if (authored.length) {
+    // one fort per estate map, at the centre; `fort` (fallback chain) steps the authored kind down / off
+    const top = { ...authored[0], at: [0, 0], authored: true };
+    if (fort === null) wf.castles = [];
+    else {
+      if (fort !== undefined && fort !== top.kind) { top.steppedFrom = top.kind; top.kind = fort; }
+      wf.castles = [top];
+    }
+    kind = fort === undefined ? top.kind : fort;
+  } else {
+    kind = fort === undefined ? FORT_LADDER[sizeClass] : fort;
+    if (kind) wf.castles.push({
       id: `${row.zone}-${kind}-${row.parcelId}`, kind, at: [0, 0], ladder: true, autoNamed: true,
       name: `${FORT_WORD[kind]} of ${zoneName(row.zone)} #${row.sourceIndex ?? String(row.parcelId).slice(3)}`,
     });
-    if (!noFallback) {
-      parcel.fallbacks = [];
-      for (let k = FORT_DOWN[kind]; k !== undefined; k = FORT_DOWN[k]) {
-        parcel.fallbacks.push(estateParcel(row, { ...rest, fort: k, noFallback: true }));
-        if (k === null) break;
-      }
-    }
+  }
+  if (!noFallback) {
+    // fort ladder with the field → the same ladder bare; a fortless estate still gets its bare variant
+    const chain = [];
+    const ladder = (from, b) => { for (let k = FORT_DOWN[from]; k !== undefined; k = FORT_DOWN[k]) { chain.push({ fort: k, bare: b }); if (k === null) break; } };
+    if (kind) ladder(kind, false);
+    if (!bare) { chain.push({ fort: kind || null, bare: true }); if (kind) ladder(kind, true); }
+    parcel.fallbacks = chain.map((c) => estateParcel(row, { ...rest, ...c, noFallback: true }));
   }
   return parcel;
 }

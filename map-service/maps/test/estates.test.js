@@ -37,11 +37,25 @@ console.log("— ladder fortification —");
   const c = epic.worldField.castles[0];
   ok(c && c.kind === "PALACE" && c.ladder && c.autoNamed && /Palace of Porthaven/.test(c.name), `EPIC without an authored castle grows a ladder PALACE (${c && c.name})`);
   ok(epic.investLevel === 3 && epic.sizeClass === "EPIC", "EPIC = invest tier 3 + sizeClass carried");
-  ok(Array.isArray(epic.fallbacks) && epic.fallbacks.length === 3 &&
-     epic.fallbacks[0].worldField.castles[0].kind === "CASTLE" && epic.fallbacks[1].worldField.castles[0].kind === "KEEP" && !epic.fallbacks[2].worldField.castles.length,
-     "fallback chain PALACE → CASTLE → KEEP → none");
+  const kinds = (p) => p.fallbacks.map((f) => (f.worldField.castles[0] ? f.worldField.castles[0].kind : "none") + (f.bareField ? "*" : "")).join(" ");
+  ok(Array.isArray(epic.fallbacks) && kinds(epic) === "CASTLE KEEP none PALACE* CASTLE* KEEP* none*",
+     `fallback chain PALACE → CASTLE → KEEP → none, then the same ladder bare (${kinds(epic)})`);
+  ok(epic.fallbacks.every((f) => f.fieldSha === epic.fieldSha) && !epic.fallbacks[2].bareField && epic.fallbacks[3].bareField && !epic.fallbacks[3].worldField.roads.length,
+     "bare variants drop the world-field window but keep the self-heal fieldSha");
+  const small = estateParcel(l2Zone("BUS").find((e) => e.sizeClass === "SMALL"));
+  ok(kinds(small) === "none*", "a fortless estate still gets its bare last-resort variant");
   const palace = estateParcel(l2Row("1071732"));                  // HUB EPIC with the authored Vermilion Palace
-  ok(palace.worldField.castles.length === 1 && !palace.worldField.castles[0].ladder && !palace.fallbacks, "an authored castle is kept, no ladder fort, no fallbacks");
+  ok(palace.worldField.castles.length === 1 && !palace.worldField.castles[0].ladder && palace.worldField.castles[0].authored &&
+     palace.worldField.castles[0].kind === "PALACE" && /Vermilion/.test(palace.worldField.castles[0].name) &&
+     palace.worldField.castles[0].at[0] === 0 && palace.worldField.castles[0].at[1] === 0,
+     "an authored castle is kept (kind + name), no ladder fort, pinned to the arena centre");
+  ok(palace.fallbacks && kinds(palace) === "CASTLE KEEP none PALACE* CASTLE* KEEP* none*" && palace.fallbacks[0].worldField.castles[0].steppedFrom === "PALACE",
+     "authored fort gets the same step-down chain (PALACE → CASTLE → KEEP → none, then bare)");
+  // UW1 Lampsend Bastion: authored CASTLE on an un-subdivided GIANT whose field `at` falls off-centre in the window
+  const lamp = estateParcel(l2Row("2091230"));
+  ok(lamp.worldField.castles.length === 1 && lamp.worldField.castles[0].kind === "CASTLE" && /Lampsend/.test(lamp.worldField.castles[0].name) &&
+     lamp.worldField.castles[0].at[0] === 0 && lamp.worldField.castles[0].at[1] === 0, "UW1 Lampsend Bastion: authored CASTLE centred on its estate map");
+  ok([lamp, ...lamp.fallbacks].some((v) => simulate(generate(v)).pass), "Lampsend chain has a sim-approved variant");
   const medium = estateParcel(l2Zone("BUS").find((e) => e.sizeClass === "MEDIUM"));
   ok(!(medium.worldField && medium.worldField.castles.some((x) => x.ladder)) && medium.investLevel === 1, "MEDIUM/SMALL: nothing baked (ladder), tier 1");
   const a1 = generate(epic), a2 = generate(estateParcel(l2Row("1001175")));
@@ -67,6 +81,16 @@ console.log("— registry: fallback chain + batch mode —");
   ok(JSON.parse(fs.readFileSync(IDX, "utf8"))["1001175"] && fs.statSync(IDX).mtimeMs >= before, "endBatch flushes");
   const again = reg.ensureDesign(estateParcel(l2Row("1001175")));
   ok(again.row.designVersion === 0 && again.row.status === "SEED_V0", "idempotent: re-bake leaves the seeded row untouched");
+  ok(again.row.chainV === reg.CHAIN_V, `row records the fallback-chain version it settled under (chainV ${again.row.chainV})`);
+  // CHAIN RETRY: an unapproved row settled under an older chain gets exactly one more pass
+  const idxNow = JSON.parse(fs.readFileSync(IDX, "utf8"));
+  idxNow["1001175"].approved = false; idxNow["1001175"].chainV = 1;
+  fs.writeFileSync(IDX, JSON.stringify(idxNow));
+  reg._resetForTest();                                             // drop the in-memory index so the edited file is read
+  const retried = reg.ensureDesign(estateParcel(l2Row("1001175")));
+  ok(retried.row.designVersion === 1 && retried.row.approved && retried.row.chainV === reg.CHAIN_V, "unapproved row under an older chain is re-settled (v1, approved)");
+  const settled = reg.ensureDesign(estateParcel(l2Row("1001175")));
+  ok(settled.row.designVersion === 1, "…and only once (approved rows are never re-rolled)");
 }
 
 console.log("— API: lazy estate default + committed palace precedence —");

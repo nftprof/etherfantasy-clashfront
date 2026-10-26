@@ -11,6 +11,10 @@
   maps), the biggest-first execution plan, the buttons (`map-census.yml` read-only, `map-bake.yml`
   zero-downtime shard+merge, `scripts/bake-zone.mjs ALL --estates`), the quality bar, and the
   179-item catalogue of everything a populated world needs (CODE vs AUTHORED, status, owner lane).
+  Status 2026-10-26: phase 1 (all 4,518 whole-estate maps) baked on the box; BUS running; **UW1 Ironhold
+  field authored** (`tools/world_terrain_uw1.mjs`) — all 10 charted zones now have a world field.
+- **CASTLE-INVENTORY.md** — every authored KEEP/CASTLE/PALACE (77) with estate, castle parcel, location and
+  hero-POI count; regenerate with `node map-service/scripts/castle-inventory.mjs` after any field change.
 - **MAP-PIPELINE-GLOSSARY.md** — ⭐ **THE combined cross-session alignment doc — READ FIRST.** One shared
   vocabulary for every team: the three tiers (stand-in / legacy.json / parcel map), the pipeline (params →
   artifact → derived files → renders), the four layers (skeleton/obstacles/art/collision), the live-vs-static

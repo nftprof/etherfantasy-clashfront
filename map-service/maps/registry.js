@@ -9,6 +9,10 @@ import { createRequire } from "module";
 import { generate, seedFor, GEN_VERSION } from "./generate.js";
 import { simulate } from "./simulate.js";
 import { renderThumb } from "./thumb.js";
+// fallback-chain version (worldfield.estateParcel): bump when the chain gains variants, so UNAPPROVED
+// seed rows settled under a shorter chain get one retry (ensureDesign). 1 = fort ladder only;
+// 2 = + bare last-resort variants (2026-10-26).
+export const CHAIN_V = 2;
 
 // Render-manifest converter (engine-team's tools/battlefield_converter.cjs — CJS, dependency-free).
 // Loaded lazily + defensively so the server runs even if the file isn't present (manifests just
@@ -117,6 +121,8 @@ function save(parcel, artifact, status, extra = {}) {
     parcelId: id, designVersion: artifact.meta.designVersion, status,
     genVersion: artifact.meta?.genVersion ?? GEN_VERSION,            // census: stale-seed detection without opening artifacts
     ...(parcel.sizeClass ? { estateSize: parcel.sizeClass } : {}),   // whole-estate maps carry their size class
+    ...(parcel.bareField ? { bareField: true } : {}),                // estate default settled WITHOUT the world-field window (last-resort fallback)
+    ...(Array.isArray(parcel.fallbacks) && parcel.fallbacks.length ? { chainV: CHAIN_V } : {}),   // which fallback chain settled this row
     seed: seedFor(id, parcel.biome || "", parcel.zone || ""),
     biome: parcel.biome || "", zone: parcel.zone || "", sizeClass: artifact.arena.sizeM,
     laneCount: artifact.laneCount, archetype: artifact.meta.params.archetype, palette: artifact.meta.params.palette,
@@ -139,7 +145,11 @@ export function ensureDesign(parcel) {
     // registry picks up fixes on first view. Owner-touched rows (AI_ITERATED / OWNER_FROZEN) are
     // never reseeded. Old versions stay on disk (immutable).
     const fieldStale = parcel.fieldSha ? row.fieldSha !== parcel.fieldSha : false;
-    if (row.status === "SEED_V0" && artifact && (artifact.meta?.genVersion !== GEN_VERSION || fieldStale)) {
+    // CHAIN RETRY: an UNAPPROVED seed row whose parcel now carries a longer fallback chain than the
+    // one it was settled with (CHAIN_V bump — e.g. the bare last-resort variants) gets one more pass;
+    // approved rows and rows already settled under the current chain are left alone (idempotent).
+    const chainRetry = Array.isArray(parcel.fallbacks) && parcel.fallbacks.length > 0 && row.approved === false && (row.chainV | 0) < CHAIN_V;
+    if (row.status === "SEED_V0" && artifact && (artifact.meta?.genVersion !== GEN_VERSION || fieldStale || chainRetry)) {
       const g = generateDefault(parcel, (row.designVersion | 0) + 1);
       return { row: save(g.parcel, g.artifact, "SEED_V0"), artifact: g.artifact };
     }
