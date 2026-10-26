@@ -483,6 +483,76 @@ export function estateList() {
   return _estates;
 }
 
+// ---- WHOLE-ESTATE MAPS (population plan 2026-10-26, docs/maps/MAP-POPULATION-GUIDE.md) ---------
+// An L2 estate with NO L3 subdivision (4,518 of 8,482) has no parcel to fight on: its battlefield
+// is ONE ±161 arena windowed over the estate's own polygon — exactly how estate_palace_maps.mjs
+// builds the committed palace maps, generalized here so every such estate gets a DEFAULT map
+// lazily (api parcelFacts) or in bulk (scripts/bake-zone.mjs --estates). A committed cf-maps
+// artifact (hand-curated flagship) always wins over this default — api.js checks it first.
+//
+// THE FORTIFICATION LADDER (owner-CONFIRMED, CONTINUOUS-WORLD-TERRAIN §3c): EPIC = PALACE,
+// GIANT = CASTLE, LARGE = KEEP, MEDIUM/SMALL = nothing baked. An estate whose window already
+// contains an AUTHORED world castle keeps that one (the named flagship); otherwise the ladder
+// fort grows at the estate's centre, auto-named + flagged so a later naming pass can replace it.
+const FORT_LADDER = { EPIC: "PALACE", GIANT: "CASTLE", LARGE: "KEEP" };
+const ESTATE_INVEST = { EPIC: 3, GIANT: 2, LARGE: 2, MEDIUM: 1, SMALL: 1 };   // palace precedent: EPIC tier 3, flagships 2
+const FORT_WORD = { PALACE: "Palace", CASTLE: "Castle", KEEP: "Keep" };
+let _l2rows = null;
+function l2Map() {
+  if (_l2rows) return _l2rows;
+  _l2rows = new Map();
+  try {
+    const j = JSON.parse(fs.readFileSync(path.join(dataRoot(), "hexagon-city-source/parcels-l2.json"), "utf8"));
+    for (const e of j.parcels || j.estates || []) _l2rows.set(String(e.parcelId), e);
+  } catch { /* no L2 table → no estate maps */ }
+  return _l2rows;
+}
+// the FULL L2 row (svgPath + bbox + sizeClass + l3Enabled) by estate id, or null
+export function l2Row(parcelId) { return l2Map().get(String(parcelId)) || null; }
+// a zone's un-subdivided estates, BIGGEST FIRST (EPIC → SMALL, then id) — the bake order
+export const SIZE_RANK = { EPIC: 0, GIANT: 1, LARGE: 2, MEDIUM: 3, SMALL: 4 };
+export function l2Zone(zone, { unsubdividedOnly = true } = {}) {
+  const z = String(zone || "").toUpperCase();
+  return [...l2Map().values()]
+    .filter((e) => e.zone === z && (!unsubdividedOnly || !e.l3Enabled))
+    .sort((a, b) => (SIZE_RANK[a.sizeClass] ?? 9) - (SIZE_RANK[b.sizeClass] ?? 9) || (a.parcelId < b.parcelId ? -1 : 1));
+}
+export function zoneName(zoneId) {
+  try { const reg = JSON.parse(fs.readFileSync(path.join(dataRoot(), "zone-registry.json"), "utf8")); return (reg.zones || []).find((z) => z.zoneId === zoneId)?.name || zoneId; } catch { return zoneId; }
+}
+// L2 estate row → generate()-ready parcel: the estate polygon windowed into the ±161 arena through
+// the zone's world field (same path as every L3 parcel), tier by size, plus the ladder fort.
+//
+// `fort`: undefined = the ladder kind for the size; "KEEP"/"CASTLE"/"PALACE" = forced; null = none.
+// FALLBACK CHAIN (measured 2026-10-26: the ladder fort passes the sim gate on ~92% of big estates;
+// the rest fail only `flow.allEdgesReachCenter` — the ring walls off a sliver entry): the parcel
+// carries `fallbacks` = [one tier smaller, no fort]; registry.ensureDesign keeps the FIRST variant
+// that passes, so every big estate's default is sim-approved (= hosts modes = playable), always
+// with the grandest fortification its shape can take. Deterministic: the chain is fixed.
+const FORT_DOWN = { PALACE: "CASTLE", CASTLE: "KEEP", KEEP: null };
+export function estateParcel(row, opts = {}) {
+  const { fort, noFallback, ...rest } = opts;
+  const sizeClass = String(row.sizeClass || "").toUpperCase();
+  const parcel = worldParcel(row, { investLevel: ESTATE_INVEST[sizeClass] ?? 1, sizeClass, estate: true, ...rest });
+  const kind = fort === undefined ? FORT_LADDER[sizeClass] : fort;
+  const authored = !!(parcel.worldField && parcel.worldField.castles && parcel.worldField.castles.length);
+  if (kind && !authored) {
+    if (!parcel.worldField) parcel.worldField = { rivers: [], roads: [], ridges: [], castles: [], overlayElements: [], edgeCrossings: [] };
+    parcel.worldField.castles.push({
+      id: `${row.zone}-${kind}-${row.parcelId}`, kind, at: [0, 0], ladder: true, autoNamed: true,
+      name: `${FORT_WORD[kind]} of ${zoneName(row.zone)} #${row.sourceIndex ?? String(row.parcelId).slice(3)}`,
+    });
+    if (!noFallback) {
+      parcel.fallbacks = [];
+      for (let k = FORT_DOWN[kind]; k !== undefined; k = FORT_DOWN[k]) {
+        parcel.fallbacks.push(estateParcel(row, { ...rest, fort: k, noFallback: true }));
+        if (k === null) break;
+      }
+    }
+  }
+  return parcel;
+}
+
 // the 12 continents with their aggregate bbox + parcel count (world/continent zoom level).
 // Reads the registry for names/biome; derives geometry from the l3 parcels so the picker can
 // frame each continent without a separate coordinate source. Cached.

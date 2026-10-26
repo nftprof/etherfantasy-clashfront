@@ -30,7 +30,15 @@ const IDX = () => path.join(DIR(), "index.json");
 
 let _idx = null;
 const loadIdx = () => { if (_idx) return _idx; try { _idx = JSON.parse(fs.readFileSync(IDX(), "utf8")); } catch { _idx = {}; } return _idx; };
-const saveIdx = () => { fs.mkdirSync(DIR(), { recursive: true }); fs.writeFileSync(IDX(), JSON.stringify(_idx)); };
+// index.json is rewritten whole on every design write — fine for the lazy one-at-a-time path, the
+// O(n²) hot spot of a 70k-parcel bake (DEFAULT-BAKE-PLAN). A bulk run opens a BATCH: writes mark
+// the index dirty and the caller flushes every N parcels (crash-safe cadence) + at the end.
+let _batchDepth = 0, _dirty = false;
+const writeIdx = () => { fs.mkdirSync(DIR(), { recursive: true }); fs.writeFileSync(IDX(), JSON.stringify(_idx)); _dirty = false; };
+const saveIdx = () => { if (_batchDepth > 0) { _dirty = true; return; } writeIdx(); };
+export function beginBatch() { _batchDepth++; }
+export function flushIdx() { if (_dirty && _idx) writeIdx(); }
+export function endBatch() { _batchDepth = Math.max(0, _batchDepth - 1); if (_batchDepth === 0) flushIdx(); }
 const pDir = (id) => path.join(DIR(), String(id));
 const artPath = (id, v) => path.join(pDir(id), `design.v${v}.json`);
 
@@ -107,6 +115,8 @@ function save(parcel, artifact, status, extra = {}) {
   const idx = loadIdx();
   idx[id] = {
     parcelId: id, designVersion: artifact.meta.designVersion, status,
+    genVersion: artifact.meta?.genVersion ?? GEN_VERSION,            // census: stale-seed detection without opening artifacts
+    ...(parcel.sizeClass ? { estateSize: parcel.sizeClass } : {}),   // whole-estate maps carry their size class
     seed: seedFor(id, parcel.biome || "", parcel.zone || ""),
     biome: parcel.biome || "", zone: parcel.zone || "", sizeClass: artifact.arena.sizeM,
     laneCount: artifact.laneCount, archetype: artifact.meta.params.archetype, palette: artifact.meta.params.palette,
@@ -130,13 +140,29 @@ export function ensureDesign(parcel) {
     // never reseeded. Old versions stay on disk (immutable).
     const fieldStale = parcel.fieldSha ? row.fieldSha !== parcel.fieldSha : false;
     if (row.status === "SEED_V0" && artifact && (artifact.meta?.genVersion !== GEN_VERSION || fieldStale)) {
-      const fresh = generate(parcel, null, (row.designVersion | 0) + 1);
-      return { row: save(parcel, fresh, "SEED_V0"), artifact: fresh };
+      const g = generateDefault(parcel, (row.designVersion | 0) + 1);
+      return { row: save(g.parcel, g.artifact, "SEED_V0"), artifact: g.artifact };
     }
     return { row, artifact };
   }
-  const artifact = generate(parcel, null, 0);
-  return { row: save(parcel, artifact, "SEED_V0"), artifact };
+  const g = generateDefault(parcel, 0);
+  return { row: save(g.parcel, g.artifact, "SEED_V0"), artifact: g.artifact };
+}
+
+// the seed default, with the parcel's FALLBACK CHAIN (worldfield.estateParcel: ladder fort → one
+// tier smaller → none): the first variant that passes the sim gate wins, so a big estate's default
+// is always approved (= hosts modes). Parcels without `fallbacks` behave exactly as before.
+function generateDefault(parcel, v) {
+  let artifact = generate(parcel, null, v);
+  if (Array.isArray(parcel.fallbacks) && parcel.fallbacks.length) {
+    let sim; try { sim = simulate(artifact); } catch { sim = { pass: false }; }
+    if (!sim.pass) for (const alt of parcel.fallbacks) {
+      const a2 = generate(alt, null, v);
+      let s2; try { s2 = simulate(a2); } catch { s2 = { pass: false }; }
+      if (s2.pass) { artifact = a2; parcel = alt; break; }
+    }
+  }
+  return { parcel, artifact };
 }
 
 // Adopt a PRE-BUILT artifact into the registry (e.g. the committed SIEGE-TEST-1 siege map, seeded

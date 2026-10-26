@@ -1,0 +1,32 @@
+name: Map registry census (read-only)
+
+# How many maps are complete? Counts the LIVE registry on the box (~/ef-battlefields — maps are
+# server-state, never git) against the world: L3 parcels + un-subdivided estates seeded, sim-
+# approved, stale generator versions, disk. READ-ONLY — changes nothing, never stops the service.
+# docs/maps/MAP-POPULATION-GUIDE.md §2.
+
+on:
+  workflow_dispatch: {}
+
+concurrency:
+  group: map-census
+  cancel-in-progress: true
+
+jobs:
+  census:
+    runs-on: [self-hosted, cf]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Census of ~/ef-battlefields (read-only)
+        run: |
+          set +e
+          cd "$GITHUB_WORKSPACE/map-service"
+          echo "===== disk ====="; df -h "$HOME" | tail -1; du -sh "$HOME/ef-battlefields" 2>/dev/null || echo "(no registry dir)"
+          du -sh "$HOME/ef-battlefields-bake" 2>/dev/null || echo "(no bake shard)"
+          echo "===== service ====="; pm2 describe ef-map-service 2>&1 | grep -E "status|uptime|restart" || true
+          curl -sS -m 10 http://127.0.0.1:8150/internal/v1/worldmap.json | head -c 300; echo
+          echo "===== registry census ====="
+          MAPS_DIR="$HOME/ef-battlefields" node scripts/registry-census.mjs
+          echo "===== bake shard census (if a bake is in flight) ====="
+          [ -d "$HOME/ef-battlefields-bake" ] && MAPS_DIR="$HOME/ef-battlefields-bake" node scripts/registry-census.mjs || echo "(none)"
+          exit 0

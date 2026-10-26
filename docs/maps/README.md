@@ -6,6 +6,11 @@
 > `/home/ubuntu/ef-moba-server/maps/` on 13.250.39.41 (the box CF runs on).
 
 ## Docs here
+- **MAP-POPULATION-GUIDE.md** — ⭐ (2026-10-26) **the operating manual for populating every map**:
+  the completeness ladder (L0–L5), the census (288,802 map units: 284,284 parcels + 4,518 whole-estate
+  maps), the biggest-first execution plan, the buttons (`map-census.yml` read-only, `map-bake.yml`
+  zero-downtime shard+merge, `scripts/bake-zone.mjs ALL --estates`), the quality bar, and the
+  179-item catalogue of everything a populated world needs (CODE vs AUTHORED, status, owner lane).
 - **MAP-PIPELINE-GLOSSARY.md** — ⭐ **THE combined cross-session alignment doc — READ FIRST.** One shared
   vocabulary for every team: the three tiers (stand-in / legacy.json / parcel map), the pipeline (params →
   artifact → derived files → renders), the four layers (skeleton/obstacles/art/collision), the live-vs-static

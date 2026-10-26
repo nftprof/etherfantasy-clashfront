@@ -21,7 +21,7 @@ import * as reg from "./registry.js";
 import { translateDirective, llmEnabled } from "./llm.js";
 import { clampParams, budgetFor } from "./schema.js";
 import { verifyToken, loginPassword } from "../lobby/auth.js";
-import { worldParcel, l3Row, l3Zone, zoneList, loadWorldField, estateList, dataRoot } from "./worldfield.js";
+import { worldParcel, l3Row, l3Zone, zoneList, loadWorldField, estateList, dataRoot, l2Row, estateParcel } from "./worldfield.js";
 import { runAudit } from "./traverse.js";
 import { worldMap } from "./worldmap.js";
 import { bakeMosaic, landColor, loadLeaves } from "./mosaic.js";
@@ -69,6 +69,12 @@ async function parcelFacts(parcelId) {
   if (parcelId !== "__warm__") {
     const snap = l3Row(parcelId);
     if (snap) return worldParcel(snap);
+    // WHOLE-ESTATE default (2026-10-26): an un-subdivided L2 estate has no parcel to fight on, so
+    // its own polygon IS the battlefield — windowed through the same world field, ladder fort by
+    // size (EPIC palace / GIANT castle / LARGE keep). Subdivided estates are boards of their L3
+    // parcels (decision 22) and keep falling through.
+    const est = l2Row(parcelId);
+    if (est && !est.l3Enabled) return estateParcel(est);
   }
   if (Date.now() - _world.at > 600_000) {
     try {

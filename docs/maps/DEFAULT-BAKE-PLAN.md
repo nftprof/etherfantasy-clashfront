@@ -1,5 +1,10 @@
 # Default-Design Bake — making a continent a COMPLETE game map
 
+> **2026-10-26 — SUPERSEDED for operations by `MAP-POPULATION-GUIDE.md`.** The bake now runs
+> `ALL --estates` (every zone biggest first + every un-subdivided estate as a whole-estate map with its
+> ladder fort), writes the index in batches, and runs zero-downtime (shard + merge) — see the guide §3–§4.
+> This doc stays as the record of the EDU bake and the original cost measurements.
+
 > **STATUS 2026-07-21: EDU BAKED ON THE BOX ✅** — run 29807148123 (map-bake.yml, ref deploy/map @
 > c2971a2): 13,661/13,661 parcels, 0 fails, 29 min, 13,606 approved (99.6%), 6 forts (incl. the
 > off-parcel-fixed Grand Academy PALACE), service restarted health-gated. Registry lives ONLY on the

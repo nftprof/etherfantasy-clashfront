@@ -7,20 +7,33 @@ name: Bake zone defaults (server registry)
 # runner is the one hand we have on the box. Idempotent + resumable (bake-zone.mjs skips
 # already-seeded parcels at the current GEN_VERSION), so re-dispatching only fills gaps.
 #
-# NB the service is STOPPED for the bake window (~11 min for EDU): registry.js keeps index.json
-# in memory and rewrites it whole on any design write — a concurrent lazy write from the live
-# service would clobber freshly-baked rows. Stop → bake → start is the race-free order; the
-# restart also makes the service reload the now-complete index.
+# 2026-10-26 ZERO-DOWNTIME SHAPE (docs/maps/MAP-POPULATION-GUIDE.md §4): the bake writes into
+# its own SHARD registry (~/ef-battlefields-bake) while the service keeps serving; only the
+# MERGE needs the service stopped (single-writer rule for index.json) and it takes seconds —
+# parcel dirs are renamed, the index is unioned once. Owner work in the live registry always wins.
+# A census runs before and after so the run log IS the completeness report.
 
 on:
   workflow_dispatch:
     inputs:
       zones:
-        description: "Zones to bake (space-separated, e.g. 'EDU' or 'EDU BUS')"
+        description: "Zones to bake, space-separated, or ALL (= every charted zone, biggest first)"
         required: true
-        default: "EDU"
+        default: "ALL"
+      estates:
+        description: "Also bake whole-estate maps for un-subdivided estates (EPIC→SMALL, the biggest maps first)"
+        required: true
+        type: choice
+        options: ["true", "false"]
+        default: "true"
+      estates_only:
+        description: "Only the estate maps (skip the L3 parcel pass)"
+        required: true
+        type: choice
+        options: ["false", "true"]
+        default: "false"
       limit:
-        description: "Optional per-zone parcel cap (validation runs); empty = all"
+        description: "Optional per-zone cap (validation runs); empty = all"
         required: false
         default: ""
 
@@ -34,14 +47,25 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Stop ef-map-service (single-writer rule for ~/ef-battlefields)
-        run: pm2 stop ef-map-service || true
+      - name: Census BEFORE (read-only)
+        run: |
+          cd "$GITHUB_WORKSPACE/map-service"
+          df -h "$HOME" | tail -1
+          MAPS_DIR="$HOME/ef-battlefields" node scripts/registry-census.mjs || true
 
-      - name: Bake into the live registry
+      - name: Bake into the SHARD registry (service keeps running)
         run: |
           cd "$GITHUB_WORKSPACE/map-service"
           LIMIT="${{ inputs.limit }}"
-          MAPS_DIR="$HOME/ef-battlefields" node scripts/bake-zone.mjs ${{ inputs.zones }} ${LIMIT:+--limit=$LIMIT} --every=1000
+          EST=""; [ "${{ inputs.estates }}" = "true" ] && EST="--estates"
+          [ "${{ inputs.estates_only }}" = "true" ] && EST="--estates-only"
+          MAPS_DIR="$HOME/ef-battlefields-bake" node scripts/bake-zone.mjs ${{ inputs.zones }} $EST ${LIMIT:+--limit=$LIMIT} --every=1000 --flush=500
+
+      - name: Merge shard → live (service stopped for seconds)
+        run: |
+          cd "$GITHUB_WORKSPACE/map-service"
+          pm2 stop ef-map-service || true
+          node scripts/merge-registry.mjs "$HOME/ef-battlefields-bake" "$HOME/ef-battlefields"
 
       - name: Restart ef-map-service (health-gated)
         if: always()
@@ -49,6 +73,13 @@ jobs:
           pm2 restart ef-map-service || pm2 start "$HOME/ef-map-service/server.js" --name ef-map-service
           sleep 2
           for i in $(seq 1 10); do
-            curl -sf http://127.0.0.1:8150/healthz && exit 0; sleep 2
+            curl -sf http://127.0.0.1:8150/healthz && break; sleep 2
           done
-          echo "map-service failed health check after bake" >&2; exit 1
+          curl -sf http://127.0.0.1:8150/healthz >/dev/null || { echo "map-service failed health check after bake" >&2; exit 1; }
+
+      - name: Census AFTER (read-only)
+        if: always()
+        run: |
+          cd "$GITHUB_WORKSPACE/map-service"
+          MAPS_DIR="$HOME/ef-battlefields" node scripts/registry-census.mjs || true
+          df -h "$HOME" | tail -1
