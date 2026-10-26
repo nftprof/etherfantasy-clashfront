@@ -114,7 +114,7 @@ and where a flat default is most visible, (b) the biggest zones are most of the 
 |---|---|---:|---:|---:|---|
 | **0** | **Census** (`map-census.yml`) | — | 1 min | — | ✅ **2026-10-26** — surfaced the orphan-id finding (§2.2) |
 | **1** | **All whole-estate maps, EPIC→GIANT→LARGE→MEDIUM→SMALL, every zone** (`ALL --estates-only`) | 4,518 | **3 min 24 s measured** (37–63 ms/estate) | 0.5 GB | ✅ **DONE 2026-10-26** run 40361626140: 4,518/4,518, 0 fails, 250 forts, 97.1% approved (EPIC 46/48 · GIANT 44/46 · LARGE 151/159); the 131 unapproved re-settle via the bare chain on the next `--estates-only` run (chain retry) |
-| **2** | **BUS Porthaven** parcels | 70,449 | ~65 min | ~6 GB | 🔄 **RUNNING** run 40363508404 (dispatched 16:53 UTC) |
+| **2** | **BUS Porthaven** parcels | 70,449 | ~52 min (44 ms/parcel measured) | ~6 GB | 🟡 run 40363508404 reached **63,000/70,449 (97.8% approved) then the node process was OOM-killed (exit 137) and the runner went down with it**; the 63k maps sit in the shard and the run is resumable. Cause: index rows carried the full sim `checks` (~1.5 KB/row → ~110 MB index, ~4× in heap, re-stringified every 500 parcels). Fixed same day: slim rows (full verdict moved into `artifact.meta.sim`), old rows slimmed on load/merge, flush cadence 2000, rss in the progress log. **Re-dispatched** (resumes from the shard, then merges all 70k) |
 | **8→3** | **UW1 Ironhold** parcels + its 641 estates re-settled on the new field | 28,915 | ~27 min | ~2.6 GB | field authored ✅ — **next dispatch** (`zones=UW1 estates=true`, queues behind BUS) |
 | **4** | **HUB Tianxia** | 58,745 | ~55 min | ~5 GB | capital heartland, 24 EPICs — **needs disk** (see below) |
 | **5** | **ENT Mythoria** | 38,277 | ~35 min | ~3.4 GB | |
@@ -476,3 +476,6 @@ in C alone; L4–L5 is the A-9 / B-4 / D / E / F / J work.
   **UW1 Ironhold field authored** (`world_terrain_uw1.mjs`, 10 castles, 8 POIs, hero parcels); authored
   forts on un-subdivided estates centred + chained; bare last-resort variants + `CHAIN_V` retry; census
   counts orphans/approved/bare estates; `castle-inventory.mjs` (77 castles). Suite 7 files, 244 checks.
+- 2026-10-26 (3) — BUS bake OOM-killed at 63k/70k rows (fat index rows); rows slimmed (`sim` summary only,
+  full checks in `artifact.meta.sim`), `loadIdx`/merge slim legacy rows, flush 2000, rss logged; BUS
+  re-dispatched (resume) + UW1 queued. 245 checks.

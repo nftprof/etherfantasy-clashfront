@@ -33,7 +33,14 @@ const DIR = () => process.env.MAPS_DIR || path.join(process.env.HOME || ".", "ef
 const IDX = () => path.join(DIR(), "index.json");
 
 let _idx = null;
-const loadIdx = () => { if (_idx) return _idx; try { _idx = JSON.parse(fs.readFileSync(IDX(), "utf8")); } catch { _idx = {}; } return _idx; };
+const loadIdx = () => {
+  if (_idx) return _idx;
+  try { _idx = JSON.parse(fs.readFileSync(IDX(), "utf8")); } catch { _idx = {}; }
+  // one-time normalisation of pre-2026-10-26 rows: drop the per-check verdict array from the index
+  // (≈1.2 KB/row; the slim summary stays) — see save(). Idempotent; the service's own heap shrinks too.
+  for (const r of Object.values(_idx)) if (r && r.sim && r.sim.checks) delete r.sim.checks;
+  return _idx;
+};
 // index.json is rewritten whole on every design write — fine for the lazy one-at-a-time path, the
 // O(n²) hot spot of a 70k-parcel bake (DEFAULT-BAKE-PLAN). A bulk run opens a BATCH: writes mark
 // the index dirty and the caller flushes every N parcels (crash-safe cadence) + at the end.
@@ -107,8 +114,12 @@ function save(parcel, artifact, status, extra = {}) {
   let sim;
   try { sim = simulate(artifact); } catch (e) { console.error("[maps] sim:", e.message); sim = { pass: false, score: 0, modes: [], checks: [], summary: "sim_error" }; }
   artifact.meta.modes = sim.modes;
-  artifact.meta.sim = { pass: sim.pass, score: sim.score, summary: sim.summary };
-  extra.sim = sim; extra.approved = sim.pass;
+  // The FULL verdict (per-check ok/detail) lives in the artifact file; the index row keeps only the
+  // slim summary. Measured 2026-10-26: a row with checks ≈ 1.5 KB → a 70k-parcel index ≈ 108 MB on
+  // disk and ~4× that in heap, which OOM-killed the BUS bake at 63k rows; slim rows ≈ 0.35 KB.
+  artifact.meta.sim = { pass: sim.pass, score: sim.score, summary: sim.summary, checks: sim.checks || [] };
+  extra.sim = { pass: sim.pass, score: sim.score, summary: sim.summary, modes: sim.modes || [] };
+  extra.approved = sim.pass;
   fs.mkdirSync(pDir(id), { recursive: true });
   fs.writeFileSync(artPath(id, artifact.meta.designVersion), JSON.stringify(artifact));
   // D7 thumbnail alongside the artifact (best-effort — a thumb failure never blocks a design)

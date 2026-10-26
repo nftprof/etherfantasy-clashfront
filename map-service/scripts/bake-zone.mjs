@@ -66,7 +66,8 @@ function runPass(zone, items, build, label) {
     } catch (e) { tally.fails.push([snap.parcelId, e.message]); }
     if ((i + 1) % every === 0 || i + 1 === total) {
       const el = (Date.now() - t0) / 1000;
-      process.stdout.write(`\r[${zone} ${label}] ${i + 1}/${total}  ${(el / (i + 1) * 1000).toFixed(1)} ms/${label.slice(0, -1)}  ${(el).toFixed(0)}s  approved ${tally.approved}  forts ${tally.castles}   `);
+      const rss = (process.memoryUsage().rss / 1048576).toFixed(0);
+      process.stdout.write(`\r[${zone} ${label}] ${i + 1}/${total}  ${(el / (i + 1) * 1000).toFixed(1)} ms/${label.slice(0, -1)}  ${(el).toFixed(0)}s  approved ${tally.approved}  forts ${tally.castles}  rss ${rss}MB   `);
     }
   }
   const el = (Date.now() - t0) / 1000;

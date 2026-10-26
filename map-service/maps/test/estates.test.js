@@ -71,6 +71,8 @@ console.log("— registry: fallback chain + batch mode —");
   ok(giant.row.approved && giant.row.sim.modes.length >= 3, `fallback chain yields an APPROVED default (${giant.row.sim.modes.join("/")})`);
   console.log(`    (2001107 settled on: ${giant.artifact.meta.castleGeom ? "a smaller fort" : "no fort"} — the chain keeps the grandest variant that passes)`);
   ok(giant.row.estateSize === "GIANT" && giant.row.genVersion > 0, "index row records estate size + generator version");
+  ok(!giant.row.sim.checks && Array.isArray(giant.artifact.meta.sim.checks) && giant.artifact.meta.sim.checks.length >= 6 && JSON.stringify(giant.row).length < 700,
+     `index row is SLIM (${JSON.stringify(giant.row).length} B, no checks); the full verdict lives in artifact.meta.sim`);
   ok(!fs.existsSync(IDX), "batch mode: index.json not written per design");
   reg.flushIdx();
   ok(fs.existsSync(IDX) && JSON.parse(fs.readFileSync(IDX, "utf8"))["2001107"], "flushIdx writes the index on demand");

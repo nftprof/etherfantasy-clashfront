@@ -17,6 +17,12 @@ if (!shard || !live) { console.error("usage: merge-registry.mjs <shardDir> <live
 const read = (d) => { try { return JSON.parse(fs.readFileSync(path.join(d, "index.json"), "utf8")); } catch { return {}; } };
 const sIdx = read(shard), lIdx = read(live);
 const OWNER = new Set(["AI_ITERATED", "OWNER_FROZEN"]);
+// SLIM rows on the way in: rows written before 2026-10-26 carry the full sim `checks` array (~1.2 KB
+// each — the index-size/heap problem that OOM-killed the first BUS bake). The full verdict lives in
+// the artifact (meta.sim) for new rows; for old rows it is recomputable (simulate is deterministic).
+let slimmed = 0;
+const slim = (r) => { if (r && r.sim && r.sim.checks) { const { checks, ...s } = r.sim; slimmed++; return { ...r, sim: s }; } return r; };
+for (const id of Object.keys(lIdx)) lIdx[id] = slim(lIdx[id]);
 let moved = 0, kept = 0, replaced = 0, missing = 0;
 fs.mkdirSync(live, { recursive: true });
 for (const [id, row] of Object.entries(sIdx)) {
@@ -31,11 +37,11 @@ for (const [id, row] of Object.entries(sIdx)) {
       fs.rmSync(src, { recursive: true, force: true });
       replaced++;
     } else { fs.renameSync(src, dst); moved++; }
-    lIdx[id] = row;
+    lIdx[id] = slim(row);
   } else { if (fs.existsSync(dst)) replaced++; else moved++; }
 }
 if (!dry) {
   const tmp = path.join(live, "index.json.tmp");
   fs.writeFileSync(tmp, JSON.stringify(lIdx)); fs.renameSync(tmp, path.join(live, "index.json"));   // atomic swap
 }
-console.log(`[merge] ${dry ? "DRY " : ""}shard ${Object.keys(sIdx).length} rows → live now ${Object.keys(lIdx).length} rows · moved ${moved} · overlaid ${replaced} · kept-live ${kept} · missing-dirs ${missing}`);
+console.log(`[merge] ${dry ? "DRY " : ""}shard ${Object.keys(sIdx).length} rows → live now ${Object.keys(lIdx).length} rows · moved ${moved} · overlaid ${replaced} · kept-live ${kept} · missing-dirs ${missing} · slimmed ${slimmed}`);

@@ -59,7 +59,9 @@ jobs:
           LIMIT="${{ inputs.limit }}"
           EST=""; [ "${{ inputs.estates }}" = "true" ] && EST="--estates"
           [ "${{ inputs.estates_only }}" = "true" ] && EST="--estates-only"
-          MAPS_DIR="$HOME/ef-battlefields-bake" node scripts/bake-zone.mjs ${{ inputs.zones }} $EST ${LIMIT:+--limit=$LIMIT} --every=1000 --flush=500
+          # 2026-10-26: the first BUS run was OOM-killed at 63k rows (exit 137) — index rows are slim now
+          # and the flush cadence is 2000 (each flush stringifies the whole shard index). Progress logs rss.
+          MAPS_DIR="$HOME/ef-battlefields-bake" node scripts/bake-zone.mjs ${{ inputs.zones }} $EST ${LIMIT:+--limit=$LIMIT} --every=1000 --flush=2000
 
       - name: Merge shard → live (service stopped for seconds)
         run: |
