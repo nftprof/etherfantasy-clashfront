@@ -457,12 +457,27 @@ function l3Map(zone) {
   }
   return _l3rows.get(zone);
 }
+// OLD-ID ALIAS (2026-10-27, CONTINENT-1-EDU): CF's live world (data/demo-world.json, data/towns.json, the
+// golden-9 brief) still addresses parcels by the OLD hexagon-city token id (`6` + the same 10-digit tail;
+// the l3 rows keep it as `tokenIdOld`), while the registry/fields use the current size-encoded id. Any
+// API lookup with an old id resolves to the same row, so CF's thumbnails/command.json fetches just work.
+const _l3old = new Map();
+function l3OldMap(zone) {
+  if (!_l3old.has(zone)) {
+    const m = new Map();
+    for (const r of l3Map(zone).values()) if (r.tokenIdOld != null && String(r.tokenIdOld) !== String(r.parcelId)) m.set(String(r.tokenIdOld), r);
+    _l3old.set(zone, m);
+  }
+  return _l3old.get(zone);
+}
 export function l3Row(parcelId) {
   const id = String(parcelId);
   const zone = zoneByCode(id.slice(1, 3));
   if (!zone) return null;
-  return l3Map(zone).get(id) || null;
+  return l3Map(zone).get(id) || l3OldMap(zone).get(id) || null;
 }
+// the registry key for any parcel id the API may receive (old token id → current id; unknown ids pass through)
+export function canonicalParcelId(parcelId) { const r = l3Row(parcelId); return r ? String(r.parcelId) : String(parcelId); }
 
 // the full parcel roster of a zone (the designer's world→zone→parcel picker source of truth —
 // all ~13k parcels per continent, not the 648 /api/world exposes). Cached per zone.

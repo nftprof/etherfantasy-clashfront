@@ -108,6 +108,16 @@ console.log("— API: lazy estate default + committed palace precedence —");
   ok(p.ok && p.row.status === "ESTATE_MAP" && p.row.frozen, "a committed flagship palace still wins (read-only ESTATE_MAP)");
   const t = await fetch(B + "/internal/v1/designs/1001176/thumb.png");
   ok(t.status === 200, "estate thumbnail served");
+  // OLD-ID ALIAS (CONTINENT-1-EDU): CF's `602…` token ids resolve to the current registry key
+  const { l3Row, canonicalParcelId } = await import("../worldfield.js");
+  ok(l3Row("60203670103")?.parcelId === "20203670103" && canonicalParcelId("60203670103") === "20203670103" && canonicalParcelId("20203670103") === "20203670103",
+     "l3Row/canonicalParcelId: old token id 60203670103 → current 20203670103 (Westgate Castle parcel)");
+  const old = await j("/internal/v1/designs/60203670103");
+  ok(old.ok && old.row.parcelId === "20203670103" && old.artifact.meta.castleGeom, "GET by OLD id lazily seeds + returns the CURRENT row (castle parcel, castleGeom)");
+  const same = await j("/internal/v1/designs/20203670103");
+  ok(same.ok && same.row.designVersion === old.row.designVersion && same.row.seed === old.row.seed, "old and current id hit the same registry row");
+  const ot = await fetch(B + "/internal/v1/designs/60203670103/thumb.png");
+  ok(ot.status === 200, "thumbnail served under the old id too");
   srv.close();
 }
 

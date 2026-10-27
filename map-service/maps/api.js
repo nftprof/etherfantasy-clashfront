@@ -21,7 +21,7 @@ import * as reg from "./registry.js";
 import { translateDirective, llmEnabled } from "./llm.js";
 import { clampParams, budgetFor } from "./schema.js";
 import { verifyToken, loginPassword } from "../lobby/auth.js";
-import { worldParcel, l3Row, l3Zone, zoneList, loadWorldField, estateList, dataRoot, l2Row, estateParcel } from "./worldfield.js";
+import { worldParcel, l3Row, l3Zone, zoneList, loadWorldField, estateList, dataRoot, l2Row, estateParcel, canonicalParcelId } from "./worldfield.js";
 import { runAudit } from "./traverse.js";
 import { worldMap } from "./worldmap.js";
 import { bakeMosaic, landColor, loadLeaves } from "./mosaic.js";
@@ -661,7 +661,8 @@ async function parcelsList(req) {
 async function handle(req, res, p) {
   const u = new URL(req.url, "http://x");
   const seg = p.split("/").filter(Boolean); // internal v1 designs [parcelId] [action]
-  const parcelId = seg[3], action = seg[4];
+  // CF addresses EDU parcels by the OLD token id (`602…`, CONTINENT-1-EDU) — resolve to the registry key once here
+  const parcelId = seg[3] ? canonicalParcelId(seg[3]) : seg[3], action = seg[4];
 
   if (req.method === "GET" && !parcelId)
     return J(res, 200, { ok: true, llm: llmEnabled(), rows: reg.list(u.searchParams.get("status") || null) });

@@ -479,3 +479,9 @@ in C alone; L4–L5 is the A-9 / B-4 / D / E / F / J work.
 - 2026-10-26 (3) — BUS bake OOM-killed at 63k/70k rows (fat index rows); rows slimmed (`sim` summary only,
   full checks in `artifact.meta.sim`), `loadIdx`/merge slim legacy rows, flush 2000, rss logged; BUS
   re-dispatched (resume) + UW1 queued. 245 checks.
+- 2026-10-27 — **M3 Continent 1 (EDU)** per `docs/briefs/CONTINENT-1-EDU.md`: `tools/world_continent_edu.mjs` →
+  `data/world-terrain/EDU.continent.json` (biomes for 13,663 parcels + 211 estates, 23 regions / 15 gates / 5
+  barriers, 6 lore towns, 6 ruins, 3 monuments, old→current idMap); map-service accepts CF's OLD token ids
+  (`canonicalParcelId`); EDU bake queued behind BUS/UW1 (runner still down). Report:
+  `docs/maps/CONTINENT-1-EDU-STATUS.md`. 249 checks. Catalogue: A-13 EDU ✅ (regions/gates), F-4/F-11 EDU
+  monuments+ruins designated, F-12 lore towns proposed, B-5/F-12 market-square archetype still ⬜.

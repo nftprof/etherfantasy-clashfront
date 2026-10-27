@@ -13,6 +13,10 @@
   179-item catalogue of everything a populated world needs (CODE vs AUTHORED, status, owner lane).
   Status 2026-10-26: phase 1 (all 4,518 whole-estate maps) baked on the box; BUS running; **UW1 Ironhold
   field authored** (`tools/world_terrain_uw1.mjs`) — all 10 charted zones now have a world field.
+- **CONTINENT-1-EDU-STATUS.md** — ⭐ (2026-10-27) the M3 report for `docs/briefs/CONTINENT-1-EDU.md`: EDU biomes
+  per parcel + estate, regions/gates, lore towns, ruins/monuments (`data/world-terrain/EDU.continent.json`,
+  `tools/world_continent_edu.mjs`), the two-id-scheme finding (map-service now accepts old `602…` ids) and the
+  estates-as-travel-nodes finding; bake status.
 - **CASTLE-INVENTORY.md** — every authored KEEP/CASTLE/PALACE (77) with estate, castle parcel, location and
   hero-POI count; regenerate with `node map-service/scripts/castle-inventory.mjs` after any field change.
 - **MAP-PIPELINE-GLOSSARY.md** — ⭐ **THE combined cross-session alignment doc — READ FIRST.** One shared
