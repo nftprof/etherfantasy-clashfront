@@ -495,4 +495,6 @@ in C alone; L4–L5 is the A-9 / B-4 / D / E / F / J work.
 - 2026-10-29 (2) — owner approved: **orphan-row purge** (`scripts/registry-purge-orphans.mjs`, runs inside every
   bake's stop/merge window; never touches charted ids, reference maps or owner-touched rows) and the **disk
   request to the AWS admin** (`docs/ops/BOX-DISK-AND-RUNNER-REQUEST.md`: root volume 29 → 80 GB, 4 GB swap,
-  runner `Restart=always`). §7 decisions 1 + 2 → resolved.
+  runner `Restart=always`). §7 decisions 1 + 2 → resolved. **Purge applied on the box 2026-10-29 07:14 UTC:**
+  13,669 orphan rows deleted (registry 102,319 → 88,650 rows; only the 4 reference maps remain unaddressed),
+  free disk 1.4 → **2.6 GB** — still short of UW1's ~2.6 GB, so the next bake waits for the volume (PR #19).
