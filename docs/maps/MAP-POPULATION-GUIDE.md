@@ -99,9 +99,13 @@ UW2 29,774 · UW1 28,915 · HS1 14,071 · HS2 13,694 · EDU 13,661 · HS3 11,873
   playable units (1.5%)**; phase 2 (BUS) adds up to 70,449. Everything else is L0 (lazy — playable on
   first visit, with a cold-start delay).
 - **After the §3 plan:** 288,802 / 288,802 at L2–L3 by code; L4 climbs with the authored items.
-- **Disk is the binding constraint:** 13 GB free before phase 2; BUS (~6.3 GB) + UW1 (~2.6 GB) fit,
-  **HUB and the rest (~16 GB) do not** until the box gains disk (or the orphan rows are purged, +1.3 GB,
-  and thumbnails are made lazy, −10%). See §7 decision 1.
+- **Box census 2026-10-29 06:57 UTC (after BUS + EDU):** registry **102,319 rows · 84,127 / 284,284 parcels seeded
+  (29.6 %), 82,513 approved · 4,518 / 4,518 estates (4,387 approved)**; BUS 97.8 % · EDU 99.6 % approved. Playable
+  units ≈ **86,900 (30 % of the world)**.
+- **Disk is now EXHAUSTED: 1.4 GB free of 29 GB** (registry 12 GB; 16 GB is other box content). **Nothing more can
+  be baked** — UW1 (~2.6 GB), HUB (~5 GB), ENT, UW2, the sky zones all wait. Levers: purge the 13,669 orphan rows
+  (≈1.3 GB, owner OK needed), grow the volume (≥50 GB for `~/ef-battlefields`), make thumbnails lazy (−10 %).
+  See §7 decision 1.
 
 ---
 
@@ -114,7 +118,7 @@ and where a flat default is most visible, (b) the biggest zones are most of the 
 |---|---|---:|---:|---:|---|
 | **0** | **Census** (`map-census.yml`) | — | 1 min | — | ✅ **2026-10-26** — surfaced the orphan-id finding (§2.2) |
 | **1** | **All whole-estate maps, EPIC→GIANT→LARGE→MEDIUM→SMALL, every zone** (`ALL --estates-only`) | 4,518 | **3 min 24 s measured** (37–63 ms/estate) | 0.5 GB | ✅ **DONE 2026-10-26** run 40361626140: 4,518/4,518, 0 fails, 250 forts, 97.1% approved (EPIC 46/48 · GIANT 44/46 · LARGE 151/159); the 131 unapproved re-settle via the bare chain on the next `--estates-only` run (chain retry) |
-| **2** | **BUS Porthaven** parcels | 70,449 | ~52 min (44 ms/parcel measured) | ~6 GB | 🟡 run 40363508404 reached **63,000/70,449 (97.8% approved) then the node process was OOM-killed (exit 137) and the runner went down with it**; the 63k maps sit in the shard and the run is resumable. Cause: index rows carried the full sim `checks` (~1.5 KB/row → ~110 MB index, ~4× in heap, re-stringified every 500 parcels). Fixed same day: slim rows (full verdict moved into `artifact.meta.sim`), old rows slimmed on load/merge, flush cadence 2000, rss in the progress log. **Re-dispatched** (resumes from the shard, then merges all 70k) |
+| **2** | **BUS Porthaven** parcels | 70,449 | ~52 min (44 ms/parcel measured) | ~6 GB | ✅ **DONE 2026-10-29** — run 40363508404 reached 63,000 then the node process was OOM-killed (exit 137; fat index rows, fixed same day: slim rows, flush 2000, rss logged) and took the runner down; the 63k rows merged with the EDU run (2026-10-28), the resume run 40831419250 baked the last 7,447 in 9 min. **BUS 70,449/70,449 seeded, 97.8 % approved**, 9 forts |
 | **8→3** | **UW1 Ironhold** parcels + its 641 estates re-settled on the new field | 28,915 | ~27 min | ~2.6 GB | field authored ✅ — **next dispatch** (`zones=UW1 estates=true`, queues behind BUS) |
 | **4** | **HUB Tianxia** | 58,745 | ~55 min | ~5 GB | capital heartland, 24 EPICs — **needs disk** (see below) |
 | **5** | **ENT Mythoria** | 38,277 | ~35 min | ~3.4 GB | |
@@ -485,3 +489,6 @@ in C alone; L4–L5 is the A-9 / B-4 / D / E / F / J work.
   (`canonicalParcelId`); EDU bake queued behind BUS/UW1 (runner still down). Report:
   `docs/maps/CONTINENT-1-EDU-STATUS.md`. 249 checks. Catalogue: A-13 EDU ✅ (regions/gates), F-4/F-11 EDU
   monuments+ruins designated, F-12 lore towns proposed, B-5/F-12 market-square archetype still ⬜.
+- 2026-10-28/29 — runner restarted by the owner; queue drained: EDU bake ✅ (13,661, 99.6 %), BUS resume ✅
+  (70,449, 97.8 %); live registry 102,319 rows, 84,127 parcels + 4,518 estates seeded; **disk 1.4 GB free — bakes
+  halted until the owner frees/grows disk**; merge now clears the shard index; UW1 to re-dispatch once disk allows.
