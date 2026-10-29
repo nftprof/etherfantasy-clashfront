@@ -63,11 +63,14 @@ jobs:
           # and the flush cadence is 2000 (each flush stringifies the whole shard index). Progress logs rss.
           MAPS_DIR="$HOME/ef-battlefields-bake" node scripts/bake-zone.mjs ${{ inputs.zones }} $EST ${LIMIT:+--limit=$LIMIT} --every=1000 --flush=2000
 
-      - name: Merge shard → live (service stopped for seconds)
+      - name: Merge shard → live (service stopped for seconds) + purge orphan rows
         run: |
           cd "$GITHUB_WORKSPACE/map-service"
           pm2 stop ef-map-service || true
           node scripts/merge-registry.mjs "$HOME/ef-battlefields-bake" "$HOME/ef-battlefields"
+          # owner-approved 2026-10-29: rows no current parcel table addresses (the July-2026 bake under the OLD
+          # token ids) are dead weight — purge them (reference maps + owner-touched rows are never touched)
+          MAPS_DIR="$HOME/ef-battlefields" node scripts/registry-purge-orphans.mjs --apply
 
       - name: Restart ef-map-service (health-gated)
         if: always()

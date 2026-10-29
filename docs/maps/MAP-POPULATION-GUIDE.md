@@ -492,3 +492,7 @@ in C alone; L4–L5 is the A-9 / B-4 / D / E / F / J work.
 - 2026-10-28/29 — runner restarted by the owner; queue drained: EDU bake ✅ (13,661, 99.6 %), BUS resume ✅
   (70,449, 97.8 %); live registry 102,319 rows, 84,127 parcels + 4,518 estates seeded; **disk 1.4 GB free — bakes
   halted until the owner frees/grows disk**; merge now clears the shard index; UW1 to re-dispatch once disk allows.
+- 2026-10-29 (2) — owner approved: **orphan-row purge** (`scripts/registry-purge-orphans.mjs`, runs inside every
+  bake's stop/merge window; never touches charted ids, reference maps or owner-touched rows) and the **disk
+  request to the AWS admin** (`docs/ops/BOX-DISK-AND-RUNNER-REQUEST.md`: root volume 29 → 80 GB, 4 GB swap,
+  runner `Restart=always`). §7 decisions 1 + 2 → resolved.
