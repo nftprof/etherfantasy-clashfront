@@ -120,7 +120,7 @@ and where a flat default is most visible, (b) the biggest zones are most of the 
 | **5** | **ENT Mythoria** | 38,277 | ~35 min | ~3.4 GB | |
 | **6** | **UW2 Blackmere** | 29,774 | ~27 min | ~2.6 GB | |
 | **7** | **HS1 · HS2 · HS3 · UW3** | 44,463 | ~40 min | ~4 GB | sky tier + the vault |
-| **8** | **EDU** (a REAL bake, not a refresh) | 13,661 | ~12 min | ~1.2 GB | the July bake is orphaned under old ids (§2.2) |
+| **8** | **EDU** (a REAL bake, not a refresh) | 13,661 | **9 min 16 s measured** | ~1.2 GB | ✅ **DONE 2026-10-28** run 40446390332: 13,661/13,661, 13,605 approved (99.6 %), 6 forts, 0 fails (M3 §1.1). The same merge folded the 63,002 BUS rows of the interrupted run into live. **Box now 2.4 GB free** — UW1/HUB wait on disk |
 | **9** | Naming + lore pass over the auto-named forts (§6 B-4), hero POIs for ladder estates (B-7), new archetypes (D/E) | — | ongoing | — | L4/L5 |
 
 **One dispatch does every remaining phase:** `map-bake.yml` with `zones=ALL estates=true` (≈4.5 h). Because the

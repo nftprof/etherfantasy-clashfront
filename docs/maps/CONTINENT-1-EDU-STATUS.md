@@ -9,7 +9,7 @@
 
 | § | Definition of done | Status | Where |
 |---|---|---|---|
-| 1.1 | 100 % of EDU baked into the LIVE registry on the box | 🟡 **queued, blocked by the box** — run `map-bake.yml` (zones=EDU, estates=true) is dispatched and will run the moment the self-hosted runner is restarted (M6: it died with the BUS-bake OOM on 2026-10-26 17:40 UTC; every queued run has waited since). EDU's 211 whole-estate maps ARE already live (phase 1). | §1 |
+| 1.1 | 100 % of EDU baked into the LIVE registry on the box | ✅ **DONE 2026-10-28 03:08 UTC** (run 40446390332, after the runner restart): **13,661 / 13,661 parcels baked, 13,605 sim-approved (99.6 %), 6 castle parcels with forts, 0 generation failures, 9 min 16 s** (40.7 ms/parcel, rss ≤ 720 MB with the slim rows); + the 211 whole-estate maps (203 approved). Census after: EDU 13,661 seeded / 99.6 % approved. Thumbnails + `command.json` served for every EDU parcel, under either id scheme. | §1 |
 | 1.2 | 5 authored forts with `castleGeom` + hero-POI parcels | ✅ in the field + verified; the 4 subdivided castle parcels generate `castleGeom` and pass the sim gate; the Grand Academy (EPIC, un-subdivided) rides the committed estate map | §2 |
 | 1.3 | Towns: 5 famous + lore towns | ✅ 5 famous towns located + biome/region-tagged; **6 lore towns** proposed at bridge-heads / road junctions, named per the EDU culture card | §3 |
 | 1.4 | Roads / rivers / region gates / monuments + ruins | ✅ regions + gates computed per `REGION-GATE-SPEC.md` (23 regions, 15 gates, 5 barriers); 6 RUIN + 3 MONUMENT POIs placed | §4 |
@@ -23,7 +23,8 @@ Two findings CF must act on (details §7): **(A) the id scheme** — CF's world 
 ## 1. Terrain bake (§1.1)
 
 - **Done on the box (phase 1, 2026-10-26, run 40361626140):** all 211 EDU un-subdivided estate maps (1 EPIC palace, 4 GIANT castles, 6 LARGE keeps, 41 MEDIUM, 159 SMALL), 203/211 approved; the 8 unapproved re-settle via the new bare fallback chain on the next estate pass (chain retry).
-- **Queued:** `map-bake.yml` zones=EDU estates=true (dispatched 2026-10-27 after the runner outage began). Expected: ~12 min, ~1.2 GB, ≈96–99 % sim-approved (the EDU sample measured 98.5 %). The run log prints the census before/after plus `bySize`/approved/forts and the failing-parcel list (bake-zone `FAILS`).
+- **Done 2026-10-28 (run 40446390332):** 13,661/13,661 EDU parcels baked in 9 min 16 s, **13,605 approved (99.6 %)**, 6 forts, 0 failures; modes hosted DUEL/SIEGE/GUARD 13,605 · CLASH/DOMINION 13,399. The merge also folded the 63,002 BUS parcels of the interrupted phase-2 run into the live registry (BUS 87.4 % approved so far; the resume for the last 7,447 is running). Live registry: 94,872 rows, 11 GB — **the box is at 2.4 GB free of 29 GB** (see §6).
+- **The 56 unapproved EDU parcels** (0.4 %): re-derived locally (the pipeline is deterministic) — see the list + which checks they fail in the owner report; none of them is a castle, famous-town, lore-town or golden parcel unless flagged there.
 - **Existing EDU rows are orphans.** The July 2026 EDU bake (13,66x rows) was written under the old token ids and is unreachable by current ids — the census lists them as ORPHAN rows. Recommendation (needs owner OK, server state): delete them (1.3 GB) once the new bake has merged.
 - **Failing-gate parcels that must pass** (castle / town / golden): checked locally — all 4 subdivided castle parcels pass; the 5 famous-town parcels and the 9 golden parcels will be reported from the bake log (`FAILS` list) and hand-fixed if any appear. The parcel-level bare fallback (guide §7 decision 5) would make this moot.
 - **Thumbnails + `command.json`** are served per parcel by the map-service for every baked row — **now also under the old ids** (`GET /internal/v1/designs/60203670103` ≡ `/20203670103`).
@@ -96,7 +97,8 @@ Precedence ROAD > RIVER > MOUNTAIN > HILLS > PLAINS > FOREST; noise = 2-octave s
 ## 6. Box plumbing (§1.6) — owner
 
 - `~/.ef_maps_key` (= the designer registry `x-maps-key`) and `~/.ef_maps_owners_url` → `http://localhost:8130/api/land-owners` on the cf box. Outside this agent's reach (no SSH; the runner is the only hand on the box and it is down).
-- **Runner restart is the gating item for §1.1**: `actions-runner-cf` (user ubuntu) has been offline since the OOM kill. Queued and waiting in order: deploy ×2, BUS bake resume, UW1 bake, **EDU bake**.
+- ~~Runner restart~~ — the runner came back 2026-10-28 02:58 UTC and the queue drained (MVP deploy, map deploy ce1c2ff, EDU bake all green).
+- **DISK is now the gating item for everything after EDU:** 2.4 GB free of 29 GB after the EDU + partial-BUS merge (registry 11 GB; 16 GB is other box content). The BUS resume (~0.7 GB) fits; **UW1 (~2.6 GB) and HUB (~5 GB) do not**. Two levers, both owner calls: purge the **13,669 orphan rows** of the July bake (≈1.3 GB, zero playable value — a one-line delete on the box once approved), and grow the volume (≥50 GB recommended for `~/ef-battlefields`).
 
 ## 7. Findings CF needs to act on
 

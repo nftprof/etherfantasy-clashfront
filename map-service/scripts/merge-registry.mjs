@@ -43,5 +43,11 @@ for (const [id, row] of Object.entries(sIdx)) {
 if (!dry) {
   const tmp = path.join(live, "index.json.tmp");
   fs.writeFileSync(tmp, JSON.stringify(lIdx)); fs.renameSync(tmp, path.join(live, "index.json"));   // atomic swap
+  // PRUNE the shard index: rows whose dirs were moved (or were already gone) no longer belong to the shard —
+  // leaving them made every later bake report them as "missing-dirs" and carried a growing stale index into
+  // the next run (2026-10-28: 4,513 stale estate rows rode along with the EDU bake). Rows the live side kept
+  // (owner work / newer version) are dropped too: the shard only ever supplies defaults.
+  const sTmp = path.join(shard, "index.json.tmp");
+  fs.writeFileSync(sTmp, JSON.stringify({})); fs.renameSync(sTmp, path.join(shard, "index.json"));
 }
-console.log(`[merge] ${dry ? "DRY " : ""}shard ${Object.keys(sIdx).length} rows → live now ${Object.keys(lIdx).length} rows · moved ${moved} · overlaid ${replaced} · kept-live ${kept} · missing-dirs ${missing} · slimmed ${slimmed}`);
+console.log(`[merge] ${dry ? "DRY " : ""}shard ${Object.keys(sIdx).length} rows → live now ${Object.keys(lIdx).length} rows · moved ${moved} · overlaid ${replaced} · kept-live ${kept} · missing-dirs ${missing} · slimmed ${slimmed}${dry ? "" : " · shard index cleared"}`);
